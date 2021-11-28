@@ -1,6 +1,48 @@
 {
   "version": 2,
   "projects": {
+    "common-ui-dialogs": {
+      "root": "libs/common-ui-dialogs",
+      "sourceRoot": "libs/common-ui-dialogs/src",
+      "projectType": "library",
+      "tags": [],
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/common-ui-dialogs",
+            "tsConfig": "libs/common-ui-dialogs/tsconfig.lib.json",
+            "project": "libs/common-ui-dialogs/package.json",
+            "entryFile": "libs/common-ui-dialogs/src/index.ts",
+            "external": ["react/jsx-runtime"],
+            "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+            "assets": [
+              {
+                "glob": "libs/common-ui-dialogs/README.md",
+                "input": ".",
+                "output": "."
+              }
+            ]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/common-ui-dialogs/**/*.{ts,tsx,js,jsx}"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/common-ui-dialogs"],
+          "options": {
+            "jestConfig": "libs/common-ui-dialogs/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "gdmn-nxt-server": {
       "root": "apps/gdmn-nxt-server",
       "sourceRoot": "apps/gdmn-nxt-server/src",

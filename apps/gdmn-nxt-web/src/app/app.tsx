@@ -8,9 +8,20 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
+import { SignInSignUp } from '@gsbelarus/common-ui-dialogs';
+
 export function App() {
   return (
     <div className={styles.app}>
+      <SignInSignUp />
+    </div>
+  );
+}
+
+export default App;
+
+/*
+
       <header className="flex">
         <Logo width="75" height="75" />
         <h1>Welcome to gdmn-nxt-web!</h1>
@@ -99,8 +110,6 @@ nx affected:e2e
   `}</pre>
         </details>
       </main>
-    </div>
-  );
-}
 
-export default App;
+
+*/
