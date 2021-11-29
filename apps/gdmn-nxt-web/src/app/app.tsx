@@ -13,7 +13,7 @@ import { SignInSignUp } from '@gsbelarus/common-ui-dialogs';
 export function App() {
   return (
     <div className={styles.app}>
-      <SignInSignUp />
+      <SignInSignUp checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) } />
     </div>
   );
 }
