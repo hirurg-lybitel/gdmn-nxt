@@ -7,6 +7,9 @@ import * as express from 'express';
 import * as cookieParser from 'cookie-parser';
 import * as expressSession from 'express-session';
 import * as passport from 'passport';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
@@ -21,7 +24,7 @@ app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
 
-const port = process.env.port || 3333;
+const port = process.env.SERVER_PORT || 3333;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
