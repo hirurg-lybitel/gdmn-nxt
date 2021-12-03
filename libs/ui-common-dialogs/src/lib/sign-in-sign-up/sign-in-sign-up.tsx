@@ -4,14 +4,10 @@ import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { useReducer } from 'react';
 import './sign-in-sign-up.module.less';
-
-export interface AuthResult {
-  result: 'SUCCESS' | 'UNKNOWN_USER' | 'INVALID_PASSWORD' | 'INVALID_EMAIL' | 'ACCESS_DENIED' | 'SERVER_UNAVAILABLE' | 'ERROR';
-  message?: string;
-};
+import type { IAuthResult } from '@gsbelarus/util-api-types';
 
 export interface SignInSignUpProps {
-  checkCredentials: (userName: string, password: string) => Promise<AuthResult>;
+  checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
 };
 
 type State = {
@@ -19,7 +15,7 @@ type State = {
   userName: string;
   password: string;
   email: string;
-  authResult?: AuthResult;
+  authResult?: IAuthResult;
 };
 
 const initialState: State = {
@@ -32,7 +28,7 @@ const initialState: State = {
 type Action = { type: 'SET_USERNAME', userName: string }
   | { type: 'SET_PASSWORD', password: string }
   | { type: 'SET_EMAIL', email: string }
-  | { type: 'SET_AUTHRESULT', authResult: AuthResult }
+  | { type: 'SET_AUTHRESULT', authResult: IAuthResult }
   | { type: 'SET_STAGE', stage: State['stage'] };
 
 function reducer(state: State, action: Action): State {

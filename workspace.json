@@ -204,6 +204,40 @@
         }
       }
     },
+    "util-api-types": {
+      "root": "libs/util-api-types",
+      "sourceRoot": "libs/util-api-types/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/util-api-types/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util-api-types"],
+          "options": {
+            "jestConfig": "libs/util-api-types/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/util-api-types",
+            "tsConfig": "libs/util-api-types/tsconfig.lib.json",
+            "packageJson": "libs/util-api-types/package.json",
+            "main": "libs/util-api-types/src/index.ts",
+            "assets": ["libs/util-api-types/*.md"]
+          }
+        }
+      },
+      "tags": []
+    },
     "util-helpers": {
       "root": "libs/util-helpers",
       "sourceRoot": "libs/util-helpers/src",
