@@ -1,48 +1,6 @@
 {
   "version": 2,
   "projects": {
-    "common-ui-dialogs": {
-      "root": "libs/common-ui-dialogs",
-      "sourceRoot": "libs/common-ui-dialogs/src",
-      "projectType": "library",
-      "tags": [],
-      "targets": {
-        "build": {
-          "executor": "@nrwl/web:package",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/common-ui-dialogs",
-            "tsConfig": "libs/common-ui-dialogs/tsconfig.lib.json",
-            "project": "libs/common-ui-dialogs/package.json",
-            "entryFile": "libs/common-ui-dialogs/src/index.ts",
-            "external": ["react/jsx-runtime"],
-            "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
-            "assets": [
-              {
-                "glob": "libs/common-ui-dialogs/README.md",
-                "input": ".",
-                "output": "."
-              }
-            ]
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
-          "options": {
-            "lintFilePatterns": ["libs/common-ui-dialogs/**/*.{ts,tsx,js,jsx}"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/common-ui-dialogs"],
-          "options": {
-            "jestConfig": "libs/common-ui-dialogs/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "gdmn-nxt-server": {
       "root": "apps/gdmn-nxt-server",
       "sourceRoot": "apps/gdmn-nxt-server/src",
@@ -203,6 +161,82 @@
       },
       "tags": [],
       "implicitDependencies": ["gdmn-nxt-web"]
+    },
+    "ui-common-dialogs": {
+      "root": "libs/ui-common-dialogs",
+      "sourceRoot": "libs/ui-common-dialogs/src",
+      "projectType": "library",
+      "tags": [],
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/ui-common-dialogs",
+            "tsConfig": "libs/ui-common-dialogs/tsconfig.lib.json",
+            "project": "libs/ui-common-dialogs/package.json",
+            "entryFile": "libs/ui-common-dialogs/src/index.ts",
+            "external": ["react/jsx-runtime"],
+            "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+            "assets": [
+              {
+                "glob": "libs/ui-common-dialogs/README.md",
+                "input": ".",
+                "output": "."
+              }
+            ]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/ui-common-dialogs/**/*.{ts,tsx,js,jsx}"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/ui-common-dialogs"],
+          "options": {
+            "jestConfig": "libs/ui-common-dialogs/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "util-helpers": {
+      "root": "libs/util-helpers",
+      "sourceRoot": "libs/util-helpers/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/util-helpers/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util-helpers"],
+          "options": {
+            "jestConfig": "libs/util-helpers/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/util-helpers",
+            "tsConfig": "libs/util-helpers/tsconfig.lib.json",
+            "packageJson": "libs/util-helpers/package.json",
+            "main": "libs/util-helpers/src/index.ts",
+            "assets": ["libs/util-helpers/*.md"]
+          }
+        }
+      },
+      "tags": []
     }
   }
 }

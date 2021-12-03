@@ -8,7 +8,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import { SignInSignUp } from '@gsbelarus/common-ui-dialogs';
+import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 
 export function App() {
   return (

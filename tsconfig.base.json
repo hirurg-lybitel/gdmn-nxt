@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@gsbelarus/common-ui-dialogs": ["libs/common-ui-dialogs/src/index.ts"]
+      "@gsbelarus/ui-common-dialogs": ["libs/ui-common-dialogs/src/index.ts"],
+      "@gsbelarus/util-helpers": ["libs/util-helpers/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
