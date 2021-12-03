@@ -38,3 +38,4 @@ testem.log
 .DS_Store
 Thumbs.db
 apps/gdmn-nxt-server/.env
+apps/gdmn-nxt-server/db/*.json

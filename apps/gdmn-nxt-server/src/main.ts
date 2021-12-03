@@ -8,7 +8,7 @@ import { FileDB } from '@gsbelarus/util-helpers';
 
 const MemoryStore = require('memorystore')(session);
 
-dotenv.config();
+dotenv.config({ path: '../..' });
 
 const app = express();
 
@@ -22,7 +22,7 @@ interface IUser {
 };
 
 const userDB = new FileDB<IUser>({
-  fn: `${process.env.DB_FOLDER}/user.json`
+  fn: `${process.env.GDMN_NXT_SERVER_DB_FOLDER}/user.json`
 });
 
 const userName2Key = (userName: string) => userName.toLowerCase();
@@ -67,7 +67,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   store: sessionStore,
-  cookie: { maxAge: 30 * 1000 },
+  cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 },
 }));
 
 app.use(passport.initialize());
@@ -81,45 +81,45 @@ app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
 
-app.get('/login', (_, res) => {
-  const form = '<h1>Login Page</h1><form method="POST" action="/login">\
-  Enter Username:<br><input type="text" name="username">\
-  <br>Enter Password:<br><input type="password" name="password">\
-  <br><br><input type="submit" value="Submit"></form>';
-
-  res.send(form);
-});
-
-app.post('/login',
-  passport.authenticate('local', {
-    failureRedirect: '/login-failure',
-    successRedirect: 'login-success' }),
-  (err, req, res, next) => {
-    if (err) next(err);
-  }
-);
-
-app.get('/register', (_, res) => {
-  const form = '<h1>Register Page</h1><form method="post" action="register">\
+app.route('/login')
+  .get( (_, res) => {
+    const form = '<h1>Login Page</h1><form method="POST" action="/login">\
     Enter Username:<br><input type="text" name="username">\
     <br>Enter Password:<br><input type="password" name="password">\
     <br><br><input type="submit" value="Submit"></form>';
 
-  res.send(form);
-});
+    res.send(form);
+  })
+  .post(
+    passport.authenticate('local', {
+      failureRedirect: '/login-failure',
+      successRedirect: 'login-success' }),
+    (err, _req, _res, next) => {
+      if (err) next(err);
+    }
+  );
 
-app.post('/register', async (req, res) => {
-  const userName = req.body.username;
+app.route('/register')
+  .get( (_, res) => {
+    const form = '<h1>Register Page</h1><form method="post" action="register">\
+      Enter Username:<br><input type="text" name="username">\
+      <br>Enter Password:<br><input type="password" name="password">\
+      <br><br><input type="submit" value="Submit"></form>';
 
-  const newUser: IUser = {
-    userName,
-    ...genPassword(req.body.password)
-  };
+    res.send(form);
+  })
+  .post(async (req, res) => {
+    const userName = req.body.username;
 
-  await userDB.write(userName2Key(userName), newUser, true);
+    const newUser: IUser = {
+      userName,
+      ...genPassword(req.body.password)
+    };
 
-  res.redirect('/login');
-});
+    await userDB.write(userName2Key(userName), newUser, true);
+
+    res.redirect('/login');
+  });
 
 app.get('/protected-route', (req, res) => {
   // This is how you check if a user is authenticated and protect a route.  You could turn this into a custom middleware to make it less redundant
@@ -143,10 +143,10 @@ app.get('/login-failure', (_, res) => {
   res.send('You entered the wrong password.');
 });
 
-const port = process.env.SERVER_PORT || 3333;
-const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
-});
+const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
+
+const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}/api`) );
+
 server.on('error', console.error);
 
 process
