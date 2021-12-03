@@ -90,7 +90,7 @@ export class FileDB<T extends Object> {
             const data = this._restore?.(parsed.data) ?? parsed.data;
 
             if (!this._check || this._check(data)) {
-              this._logger.info(`Data has been loaded from ${this._fn}. Keys: ${Object.keys(parsed.data).length}. Time: ${start - Date.now()}ms...`);
+              this._logger.info(`Data has been loaded from ${this._fn}. Keys: ${Object.keys(parsed.data).length}. Time: ${Date.now() - start}ms...`);
               this._data = data;
               this._setWatcher();
             }
