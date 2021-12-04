@@ -166,7 +166,7 @@ export class FileDB<T extends Object> {
 
   public async findOne(f: (rec: T) => boolean): Promise<T | undefined> {
     await this._load();
-    const found = Object.entries(this._data).find( ([_, rec]) => f(rec) );
+    const found = this._data && Object.entries(this._data).find( ([_, rec]) => f(rec) );
     return found && found[1];
   }
 

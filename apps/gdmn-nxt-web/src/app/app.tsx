@@ -13,7 +13,10 @@ import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 export function App() {
   return (
     <div className={styles.app}>
-      <SignInSignUp checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) } />
+      <SignInSignUp
+        checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) }
+        createUser = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) }
+      />
     </div>
   );
 }
