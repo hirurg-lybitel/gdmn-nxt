@@ -6,6 +6,7 @@ import { useReducer } from 'react';
 import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '../useful';
+import { MathCaptcha } from '../math-captcha/math-captcha';
 
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
@@ -19,6 +20,7 @@ type State = {
   email: string;
   email2: string;
   authResult?: IAuthResult;
+  captchaPassed?: boolean;
 };
 
 const initialState: State = {
@@ -26,7 +28,7 @@ const initialState: State = {
   userName: '',
   password: '',
   email: '',
-  email2: '',
+  email2: ''
 };
 
 type Action = { type: 'SET_USERNAME', userName: string }
@@ -34,7 +36,8 @@ type Action = { type: 'SET_USERNAME', userName: string }
   | { type: 'SET_EMAIL', email: string }
   | { type: 'SET_EMAIL2', email2: string }
   | { type: 'SET_AUTHRESULT', authResult: IAuthResult }
-  | { type: 'SET_STAGE', stage: State['stage'] };
+  | { type: 'SET_STAGE', stage: State['stage'] }
+  | { type: 'SET_CAPTCHAPASSED', captchaPassed: boolean };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -50,12 +53,14 @@ function reducer(state: State, action: Action): State {
       return { ...state, authResult: action.authResult };
     case 'SET_STAGE':
       return { ...state, stage: action.stage, authResult: undefined };
+    case 'SET_CAPTCHAPASSED':
+      return { ...state, captchaPassed: action.captchaPassed };
   }
 };
 
 export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps) {
 
-  const [{ stage, userName, password, email, email2, authResult }, dispatch] = useReducer(reducer, initialState);
+  const [{ stage, userName, password, email, email2, authResult, captchaPassed }, dispatch] = useReducer(reducer, initialState);
 
   return (
     stage === 'FORGOT_PASSWORD' ?
@@ -93,11 +98,13 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
         <TextField
           label="Retype email"
           value={email2}
+          error={email2 > '' && email2 !== email}
           onChange={ e => dispatch({ type: 'SET_EMAIL2', email2: e.target.value }) }
         />
+        <MathCaptcha onEnter={ captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed }) }/>
         <Button
           variant="contained"
-          disabled={!userName || !email || email !== email2}
+          disabled={!userName || !email || email !== email2 || !captchaPassed}
           onClick={ () => createUser(userName, email).then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) ) }
         >
           Sign up
