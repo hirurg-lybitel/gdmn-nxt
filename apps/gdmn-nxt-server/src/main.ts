@@ -81,6 +81,16 @@ app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
 
+app.route('/api/v1/user/register')
+  .post(
+    (req, res) => {
+      console.log(req.body.userName);
+      console.log(req.body.email);
+
+      res.status(200);
+    }
+  );
+
 app.route('/login')
   .get( (_, res) => {
     const form = '<h1>Login Page</h1><form method="POST" action="/login">\

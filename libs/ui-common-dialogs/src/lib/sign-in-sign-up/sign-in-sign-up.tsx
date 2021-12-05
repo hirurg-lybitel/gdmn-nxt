@@ -7,6 +7,8 @@ import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '../useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
+import { Alert, LinearProgress, Dialog } from '@mui/material';
+import Box from '@mui/system/Box/Box';
 
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
@@ -15,20 +17,23 @@ export interface SignInSignUpProps {
 
 type State = {
   stage: 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
+  waiting: boolean;
   userName: string;
   password: string;
   email: string;
   email2: string;
   authResult?: IAuthResult;
-  captchaPassed?: boolean;
+  captchaPassed: boolean;
 };
 
 const initialState: State = {
   stage: 'SIGNIN',
+  waiting: false,
   userName: '',
   password: '',
   email: '',
-  email2: ''
+  email2: '',
+  captchaPassed: false
 };
 
 type Action = { type: 'SET_USERNAME', userName: string }
@@ -36,10 +41,16 @@ type Action = { type: 'SET_USERNAME', userName: string }
   | { type: 'SET_EMAIL', email: string }
   | { type: 'SET_EMAIL2', email2: string }
   | { type: 'SET_AUTHRESULT', authResult: IAuthResult }
+  | { type: 'CLEAR_AUTHRESULT' }
   | { type: 'SET_STAGE', stage: State['stage'] }
+  | { type: 'SET_WAITING' }
   | { type: 'SET_CAPTCHAPASSED', captchaPassed: boolean };
 
 function reducer(state: State, action: Action): State {
+  if (state.waiting && action.type !== 'SET_AUTHRESULT') {
+    throw new Error(`Invalid action ${action.type} received.`);
+  }
+
   switch (action.type) {
     case 'SET_USERNAME':
       return { ...state, userName: action.userName, authResult: undefined };
@@ -50,17 +61,26 @@ function reducer(state: State, action: Action): State {
     case 'SET_EMAIL2':
       return { ...state, email2: action.email2, authResult: undefined };
     case 'SET_AUTHRESULT':
-      return { ...state, authResult: action.authResult };
+      return { ...state, authResult: action.authResult, waiting: false };
+    case 'CLEAR_AUTHRESULT':
+      return { ...state, authResult: undefined };
     case 'SET_STAGE':
       return { ...state, stage: action.stage, authResult: undefined };
+    case 'SET_WAITING':
+      return { ...state, waiting: true };
     case 'SET_CAPTCHAPASSED':
-      return { ...state, captchaPassed: action.captchaPassed };
+      return state.captchaPassed !== action.captchaPassed ? { ...state, captchaPassed: action.captchaPassed } : state;
   }
 };
 
 export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps) {
 
-  const [{ stage, userName, password, email, email2, authResult, captchaPassed }, dispatch] = useReducer(reducer, initialState);
+  const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
+
+  const dispatchAuthResult = ( fn: () => Promise<IAuthResult> ) => () => {
+    dispatch({ type: 'SET_WAITING' });
+    fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
+  };
 
   return (
     stage === 'FORGOT_PASSWORD' ?
@@ -75,7 +95,7 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
         <Button
           variant="contained"
           disabled={!email || !!authResult || !checkEmailAddress(email)}
-          onClick={ () => checkCredentials(userName, password).then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) ) }
+          onClick={ dispatchAuthResult( () => checkCredentials(userName, password) ) }
         >
           Sign in
         </Button>
@@ -85,36 +105,58 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
       </Stack>
     : stage === 'SIGNUP' ?
       <Stack direction="column" spacing={2}>
+        <Typography variant="h1">
+          New user
+        </Typography>
         <TextField
           label="User name"
           value={userName}
+          disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
         />
         <TextField
           label="Email"
           value={email}
+          disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
         />
         <TextField
           label="Retype email"
           value={email2}
+          disabled={waiting}
           error={email2 > '' && email2 !== email}
           onChange={ e => dispatch({ type: 'SET_EMAIL2', email2: e.target.value }) }
         />
-        <MathCaptcha onEnter={ captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed }) }/>
-        <Button
-          variant="contained"
-          disabled={!userName || !email || email !== email2 || !captchaPassed}
-          onClick={ () => createUser(userName, email).then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) ) }
-        >
-          Sign up
-        </Button>
+        <MathCaptcha
+          disabled={waiting}
+          onEnter={ captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed }) }
+        />
+        {
+          waiting ?
+            <Box sx={{ padding: 2, border: 1, borderColor: 'grey.50', borderRadius: 1 }}>
+              <LinearProgress />
+            </Box>
+          :
+            <Button
+              variant="contained"
+              disabled={!userName || !email || email !== email2 || !captchaPassed || !!authResult}
+              onClick={ dispatchAuthResult( () => createUser(userName, email) ) }
+            >
+              'Sign up'
+            </Button>
+        }
         <Typography>
-          Already have an account? <Button onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
+          Already have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
         </Typography>
+        <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
+          <Alert severity="error">{authResult?.message}</Alert>
+        </Dialog>
       </Stack>
     :
       <Stack direction="column" spacing={2}>
+        <Typography variant="h1">
+          Sign in the system
+        </Typography>
         <TextField
           label="User name"
           value={userName}
@@ -145,6 +187,6 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
         </Typography>
       </Stack>
   );
-}
+};
 
 export default SignInSignUp;

@@ -1,0 +1,19 @@
+openapi: 3.0.0
+paths:
+  /v1/user/signup:
+    post:
+      description: register new user
+      parameters:
+      - name: userName
+        description: user name
+        in: query
+        schema:
+          type: string
+      - name: email
+        description: user email
+        in: query
+        schema:
+          type: string
+    responses:
+      200:
+        description: user record created. new password is sent to the provided email.

@@ -4,8 +4,10 @@ import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { useState, useEffect } from 'react';
 import './math-captcha.module.less';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 export interface MathCaptchaProps {
+  disabled?: boolean;
   onEnter: (passed: boolean) => void;
 };
 
@@ -26,46 +28,46 @@ interface IState {
   passed?: boolean;
 };
 
-export function MathCaptcha({ onEnter }: MathCaptchaProps) {
+export function MathCaptcha({ disabled, onEnter }: MathCaptchaProps) {
   const [{ a, b, value, op, passed }, setData] = useState<IState>({});
 
-  useEffect( () => {
-    if (!op) {
-      const bigN1 = Math.floor(Math.random() * 100);
-      const bigN2 = Math.floor(Math.random() * 100);
-      const smallN1 = Math.floor(Math.random() * 10);
-      const smallN2 = Math.floor(Math.random() * 10);
+  const init = () => {
+    const bigN1 = Math.floor(Math.random() * 98) + 2;
+    const bigN2 = Math.floor(Math.random() * 98) + 2;
+    const smallN1 = Math.floor(Math.random() * 8) + 2;
+    const smallN2 = Math.floor(Math.random() * 8) + 2;
 
-      switch (Math.floor(Math.random() * 4)) {
-        case 0: {
-          const a = bigN1;
-          const b = bigN2;
-          setData({ a, b, op: '+' });
-          break;
-        }
-
-        case 1: {
-          const a = Math.max(bigN1, bigN2);
-          const b = Math.min(bigN1, bigN2);
-          setData({ a, b, op: '-' });
-          break;
-        }
-
-        case 2: {
-          const a = smallN1;
-          const b = smallN2;
-          setData({ a, b, op: '*' });
-          break;
-        }
-
-        case 3:
-          const a = smallN1 * smallN2;
-          const b = smallN2;
-          setData({ a, b, op: '/' });
-          break;
+    switch (Math.floor(Math.random() * 4)) {
+      case 0: {
+        const a = bigN1;
+        const b = bigN2;
+        setData({ a, b, op: '+' });
+        break;
       }
+
+      case 1: {
+        const a = Math.max(bigN1, bigN2);
+        const b = Math.min(bigN1, bigN2);
+        setData({ a, b, op: '-' });
+        break;
+      }
+
+      case 2: {
+        const a = smallN1;
+        const b = smallN2;
+        setData({ a, b, op: '*' });
+        break;
+      }
+
+      case 3:
+        const a = smallN1 * smallN2;
+        const b = smallN2;
+        setData({ a, b, op: '/' });
+        break;
     }
-  }, []);
+  };
+
+  useEffect(init, []);
 
   useEffect( () => {
     if (op && typeof a === 'number' && typeof b === 'number') {
@@ -91,10 +93,16 @@ export function MathCaptcha({ onEnter }: MathCaptchaProps) {
         <TextField
           label="Answer"
           value={value}
+          disabled={disabled}
           error={typeof value === 'number' && !passed}
           type="number"
-          onChange={ event => setData( data => ({ ...data, value: Number(event.target.value) }) ) }
+          onChange={ event => {
+            const s = event.target.value.trim();
+            const v = Number(s);
+            setData( data => ({ ...data, value: Number.isNaN(v) ? undefined : v }) );
+          } }
         />
+        <Chip label={<AutorenewIcon />} variant="outlined" onClick={ disabled ? undefined : () => { init(); onEnter(false); } } />
       </Stack>
     </Stack>
   );
