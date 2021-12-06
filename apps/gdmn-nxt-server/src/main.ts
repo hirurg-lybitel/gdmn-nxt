@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import * as crypto from 'crypto';
 import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
+import { checkEmailAddress } from '@gsbelarus/util-useful';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -81,11 +82,29 @@ app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
 
-app.route('/api/v1/user/register')
+app.route('/api/v1/user/signup')
   .post(
     (req, res) => {
-      console.log(req.body.userName);
-      console.log(req.body.email);
+      const { userName, email } = req.body;
+
+      console.log(userName);
+      console.log(email);
+
+      /*  1. проверим входные параметры на корректность  */
+
+      if (!userName || !checkEmailAddress(email)) {
+        res
+          .status(200)
+          .send()
+      }
+
+      /*
+      2. проверим на дубликат имени пользователя и имэйла
+      3. создадим пароль
+      4. создадим учетную запись с признаком временной
+      5. вышлем пароль и инструкции подключения почтой
+
+      */
 
       res.status(200);
     }

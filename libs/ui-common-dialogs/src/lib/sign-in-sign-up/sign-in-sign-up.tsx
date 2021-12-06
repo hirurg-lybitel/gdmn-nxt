@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography/Typography';
 import { useReducer } from 'react';
 import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
-import { checkEmailAddress } from '../useful';
+import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
 import Box from '@mui/system/Box/Box';

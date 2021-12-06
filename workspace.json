@@ -271,6 +271,40 @@
         }
       },
       "tags": []
+    },
+    "util-useful": {
+      "root": "libs/util-useful",
+      "sourceRoot": "libs/util-useful/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/util-useful/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util-useful"],
+          "options": {
+            "jestConfig": "libs/util-useful/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/util-useful",
+            "tsConfig": "libs/util-useful/tsconfig.lib.json",
+            "packageJson": "libs/util-useful/package.json",
+            "main": "libs/util-useful/src/index.ts",
+            "assets": ["libs/util-useful/*.md"]
+          }
+        }
+      },
+      "tags": []
     }
   }
 }
