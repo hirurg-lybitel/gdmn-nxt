@@ -1,4 +1,4 @@
-import { FSWatcher, watch, mkdirSync, existsSync } from 'fs';
+import { FSWatcher, watch, mkdirSync, existsSync, writeFileSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { dirname } from 'path';
 import { ILogger } from './log';
@@ -64,6 +64,14 @@ export class FileDB<T extends Object> {
     this._space = space;
   }
 
+  #getEnvelope(): IDataEnvelope<T> {
+    return {
+      version: '1.0',
+      dataVersion: this._dataVersion,
+      data: this._data
+    };
+  }
+
   private _setWatcher() {
     if (this._watch) {
       this._watcher = watch(this._fn, (event) => {
@@ -89,24 +97,25 @@ export class FileDB<T extends Object> {
       this._needReload = false;
 
       if (existsSync(this._fn)) {
-        let parsed;
-
         try {
           const start = Date.now();
-          parsed = JSON.parse(await readFile(this._fn, { encoding: 'utf8' }));
-          if (parsed.version === '1.0' && typeof parsed.dataVersion === 'string' && typeof parsed.data === 'object') {
+          const raw = await readFile(this._fn, { encoding: 'utf8' });
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.version === '1.0' && typeof parsed.dataVersion === 'string' && typeof parsed.data === 'object') {
 
-            if (!this._migrate && this._dataVersion !== parsed.dataVersion) {
-              throw new Error(`Invalid data structure version in file ${this._fn}`);
-            }
+              if (!this._migrate && this._dataVersion !== parsed.dataVersion) {
+                throw new Error(`Invalid data structure version in file ${this._fn}`);
+              }
 
-            // we allegedly call _migrate even if loaded dataVersion matches needed dataVersion
-            const data = this._migrate?.(parsed.dataVersion, parsed.data, this._dataVersion) ?? parsed.data;
+              // we allegedly call _migrate even if loaded dataVersion matches needed dataVersion
+              const data = this._migrate?.(parsed.dataVersion, parsed.data, this._dataVersion) ?? parsed.data;
 
-            if (!this._check || this._check(data)) {
-              this._logger.info(`Data has been loaded from ${this._fn}. Keys: ${Object.keys(parsed.data).length}. Time: ${Date.now() - start}ms...`);
-              this._data = data;
-              this._setWatcher();
+              if (!this._check || this._check(data)) {
+                this._logger.info(`Data has been loaded from ${this._fn}. Keys: ${Object.keys(parsed.data).length}. Time: ${Date.now() - start}ms...`);
+                this._data = data;
+                this._setWatcher();
+              }
             }
           }
         }
@@ -207,13 +216,6 @@ export class FileDB<T extends Object> {
 
   public async flush(force = false) {
     if (this._data && (force || this._modified)) {
-      const envelope: IDataEnvelope<T> =
-      {
-        version: '1.0',
-        dataVersion: this._dataVersion,
-        data: this._data
-      };
-
       const dirName = dirname(this._fn);
 
       try {
@@ -223,7 +225,7 @@ export class FileDB<T extends Object> {
         }
 
         this._watcher?.close();
-        await writeFile(this._fn, JSON.stringify(envelope, undefined, this._space), { encoding: 'utf8' });
+        await writeFile(this._fn, JSON.stringify(this.#getEnvelope(), undefined, this._space), { encoding: 'utf8' });
         this._setWatcher();
         this._modified = false;
         this._logger.info(`Data has been written to ${this._fn}...`);
@@ -233,5 +235,29 @@ export class FileDB<T extends Object> {
     } else {
       this._logger.info(`Appempt to flush ${this._fn} has been made. There are no data or changes to be written...`);
     }
+  }
+
+  public done() {
+    if (this._data && this._modified) {
+      const dirName = dirname(this._fn);
+
+      try {
+        if (!existsSync(dirName)) {
+          // создадим папку, если она не существует
+          mkdirSync(dirName, { recursive: true });
+        }
+
+        this._watcher?.close();
+        writeFileSync(this._fn, JSON.stringify(this.#getEnvelope(), undefined, this._space), { encoding: 'utf8' });
+        this._modified = false;
+        this._logger.info(`Data has been written to ${this._fn}...`);
+      } catch (e) {
+        this._logger.error(`Error writting to file ${this._fn}. ${e}`);
+      }
+    } else {
+      this._logger.info(`Appempt to flush ${this._fn} has been made. There are no data or changes to be written...`);
+    }
+
+    this._data = undefined;
   }
 };

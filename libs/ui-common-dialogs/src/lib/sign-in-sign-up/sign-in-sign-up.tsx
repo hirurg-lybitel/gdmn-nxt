@@ -13,6 +13,7 @@ import Box from '@mui/system/Box/Box';
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
   createUser: (userName: string, email: string) => Promise<IAuthResult>;
+  onDone: () => void;
 };
 
 type State = {
@@ -73,7 +74,7 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps) {
+export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSignUpProps) {
 
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
@@ -82,7 +83,7 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
     fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
   };
 
-  return (
+  const result =
     stage === 'FORGOT_PASSWORD' ?
       <Stack direction="column" spacing={2}>
         <TextField
@@ -112,12 +113,16 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
           label="User name"
           value={userName}
           disabled={waiting}
+          error={authResult?.result === 'DUPLICATE_USER_NAME'}
+          helperText={authResult?.result === 'DUPLICATE_USER_NAME' ? authResult?.message : undefined}
           onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
         />
         <TextField
           label="Email"
           value={email}
           disabled={waiting}
+          error={(email > '' && !checkEmailAddress(email)) || authResult?.result === 'DUPLICATE_EMAIL'}
+          helperText={authResult?.result === 'DUPLICATE_EMAIL' ? authResult?.message : undefined}
           onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
         />
         <TextField
@@ -139,7 +144,7 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
           :
             <Button
               variant="contained"
-              disabled={!userName || !email || email !== email2 || !captchaPassed || !!authResult}
+              disabled={!userName || !email || email !== email2 || !checkEmailAddress(email) || !captchaPassed || !!authResult}
               onClick={ dispatchAuthResult( () => createUser(userName, email) ) }
             >
               'Sign up'
@@ -148,9 +153,6 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
         <Typography>
           Already have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
         </Typography>
-        <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
-          <Alert severity="error">{authResult?.message}</Alert>
-        </Dialog>
       </Stack>
     :
       <Stack direction="column" spacing={2}>
@@ -185,8 +187,19 @@ export function SignInSignUp({ checkCredentials, createUser }: SignInSignUpProps
         <Typography>
           Don't have an account? <Button onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
         </Typography>
-      </Stack>
-  );
+      </Stack>;
+
+    return (
+      <>
+        {result}
+        <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
+          <Alert severity="error">{authResult?.message}</Alert>
+        </Dialog>
+        <Dialog onClose={ onDone } open={authResult?.result === 'SUCCESS'}>
+          <Alert severity="success">{authResult?.message}</Alert>
+        </Dialog>
+      </>
+    );
 };
 
 export default SignInSignUp;

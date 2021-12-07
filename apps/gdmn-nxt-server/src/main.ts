@@ -4,6 +4,7 @@ import * as passport from 'passport';
 import * as dotenv from 'dotenv';
 import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';
+import * as cors from 'cors';
 import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
@@ -15,6 +16,7 @@ dotenv.config({ path: '../..' });
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,6 +33,20 @@ const userDB = new FileDB<IUser>({
 });
 
 const userName2Key = (userName: string) => userName.toLowerCase();
+
+const purgeExpiredUsers = async () => {
+  let changed = false;
+  const data = await userDB.getMutable(false);
+  for (const k of Object.keys(data)) {
+    if (data[k].expireOn < Date.now()) {
+      delete data[k];
+      changed = true;
+    }
+  }
+  if (changed) {
+    await userDB.put(data, true);
+  }
+};
 
 passport.use(new Strategy(
   async (userName: string, password: string, cb) => {
@@ -89,41 +105,33 @@ app.get('/api', (_, res) => {
 app.route('/api/v1/user/signup')
   .post(
     async (req, res) => {
-      const { userName, email } = req.body;
+      const { userName: receivedUserName, email: receivedEmail } = req.body;
 
-      console.log(userName);
-      console.log(email);
+      console.log(receivedUserName);
+      console.log(receivedEmail);
 
       /*  1. проверим входные параметры на корректность  */
 
-      if (typeof userName !== 'string' || !userName.trim() || !checkEmailAddress(email)) {
-        return res.json(authResult('INVALID_DATA'));
+      if (typeof receivedUserName !== 'string' || !receivedUserName.trim() || !checkEmailAddress(receivedEmail)) {
+        return res.json(authResult('INVALID_DATA', 'Invalid data.'));
       }
+
+      const userName = receivedUserName.trim();
+      const email = receivedEmail.trim().toLowerCase();
 
       /* 2. Очистим БД от устаревших записей */
 
-      let changed = false;
-      const data = await userDB.getMutable(false);
-      for (const k of Object.keys(data)) {
-        if (data[k].expireOn < Date.now()) {
-          delete data[k];
-          changed = true;
-        }
-      }
-      if (changed) {
-        await userDB.put(data, true);
-      }
+      await purgeExpiredUsers();
 
       /* 3. проверим на дубликат имени пользователя */
       const un = userName.toLowerCase();
-      if (userDB.findOne( u => u.userName.toLowerCase() === un )) {
-        return res.json(authResult('DUPLICATE_USER_NAME'));
+      if (await userDB.findOne( u => u.userName.toLowerCase() === un )) {
+        return res.json(authResult('DUPLICATE_USER_NAME', `User name ${userName} already exists.`));
       };
 
       /* 4. проверим на дубликат email */
-      const em = email.toLowerCase();
-      if (userDB.findOne( u => u.email.toLowerCase() === em )) {
-        return res.json(authResult('DUPLICATE_EMAIL'));
+      if (await userDB.findOne( u => u.email === email )) {
+        return res.json(authResult('DUPLICATE_EMAIL', `User with email ${email} already exists.`));
       };
 
       /* 5. создадим предварительную учетную запись */
@@ -138,17 +146,17 @@ app.route('/api/v1/user/signup')
 
       /* 6. Пошлем пользователю email */
 
-      const transporter = nodemailer.createTransport({
-        host: "smtp.hostinger.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      });
-
       try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.hostinger.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASSWORD,
+          },
+        });
+
         await transporter.sendMail({
           from: '"GDMN System" <test@gsbelarus.com>',
           to: email,
@@ -187,7 +195,7 @@ app.route('/login')
   .post(
     passport.authenticate('local', {
       failureRedirect: '/login-failure',
-      successRedirect: 'login-success' }),
+      successRedirect: '/login-success' }),
     (err, _req, _res, next) => {
       if (err) next(err);
     }
@@ -240,20 +248,29 @@ app.get('/login-failure', (_, res) => {
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 
-const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}/api`) );
+const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`) );
 
 server.on('error', console.error);
 
+/*
+if (process.platform === "win32") {
+  const rl = require("readline").createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.on('SIGINT', () => process.exit() );
+}
+*/
+
 process
-  .on('exit', code => console.log(`Process exit event with code: ${code}`) )
-  .on('SIGINT', async () => {
-    userDB.flush();
-    process.exit();
-  })
-  .on('SIGTERM', async () => {
-    userDB.flush();
-    process.exit();
-  })
+  .on('exit', code => {
+    userDB.done();
+    console.log(`Process exit event with code: ${code}`);
+   } )
+  .on('SIGINT', process.exit)
+  .on('SIGBREAK', process.exit)
+  .on('SIGTERM', process.exit)
   .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p) )
   .on('uncaughtException', err => console.error(err) );
 

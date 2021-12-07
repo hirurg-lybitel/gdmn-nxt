@@ -6,32 +6,28 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 
-const baseURL = 'http://unexistingserver.net';
+const baseURL = 'http://localhost:4444';
 
-const axiosPost = async (url: string, data: Object, cb: (res: AxiosResponse) => Promise<IAuthResult>): Promise<IAuthResult> => {
+const axiosPost = async (url: string, data: Object): Promise<IAuthResult> => {
   try {
-    return cb(await axios({ method: 'post', url, baseURL, data }));
+    return (await axios({ method: 'post', url, baseURL, data })).data;
   }
   catch (error: any) {
     const { response, request, message } = error as AxiosError;
 
     if (response) {
-
+      return { result: 'ERROR', message: error.message };
     }
     else if (request) {
-      await new Promise( resolve => setTimeout( resolve, 4000 ));
       return { result: 'ERROR', message: `Can't reach server ${baseURL}: ${message}` };
     }
     else {
-
+      return { result: 'ERROR', message: error.message };
     }
-
-    console.log(error.message);
-    return { result: 'ERROR', message };
   }
 };
 
@@ -40,9 +36,8 @@ export function App() {
     <div className={styles.app}>
       <SignInSignUp
         checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) }
-        createUser = {
-          async (userName, email) => axiosPost('/v1/user/register', { userName, email }, () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) )
-        }
+        createUser = { (userName, email) => axiosPost('/api/v1/user/signup', { userName, email }) }
+        onDone = { () => {} }
       />
     </div>
   );
