@@ -3,9 +3,11 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
 import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
 import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
-import { checkEmailAddress } from '@gsbelarus/util-useful';
+import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
+import { authResult } from '@gsbelarus/util-api-types';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -18,8 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 
 interface IUser {
   userName: string;
+  email: string;
   hash: string;
   salt: string;
+  expireOn?: number;
 };
 
 const userDB = new FileDB<IUser>({
@@ -84,7 +88,7 @@ app.get('/api', (_, res) => {
 
 app.route('/api/v1/user/signup')
   .post(
-    (req, res) => {
+    async (req, res) => {
       const { userName, email } = req.body;
 
       console.log(userName);
@@ -92,21 +96,82 @@ app.route('/api/v1/user/signup')
 
       /*  1. проверим входные параметры на корректность  */
 
-      if (!userName || !checkEmailAddress(email)) {
-        res
-          .status(200)
-          .send()
+      if (typeof userName !== 'string' || !userName.trim() || !checkEmailAddress(email)) {
+        return res.json(authResult('INVALID_DATA'));
       }
 
-      /*
-      2. проверим на дубликат имени пользователя и имэйла
-      3. создадим пароль
-      4. создадим учетную запись с признаком временной
-      5. вышлем пароль и инструкции подключения почтой
+      /* 2. Очистим БД от устаревших записей */
 
-      */
+      let changed = false;
+      const data = await userDB.getMutable(false);
+      for (const k of Object.keys(data)) {
+        if (data[k].expireOn < Date.now()) {
+          delete data[k];
+          changed = true;
+        }
+      }
+      if (changed) {
+        await userDB.put(data, true);
+      }
 
-      res.status(200);
+      /* 3. проверим на дубликат имени пользователя */
+      const un = userName.toLowerCase();
+      if (userDB.findOne( u => u.userName.toLowerCase() === un )) {
+        return res.json(authResult('DUPLICATE_USER_NAME'));
+      };
+
+      /* 4. проверим на дубликат email */
+      const em = email.toLowerCase();
+      if (userDB.findOne( u => u.email.toLowerCase() === em )) {
+        return res.json(authResult('DUPLICATE_EMAIL'));
+      };
+
+      /* 5. создадим предварительную учетную запись */
+      const provisionalPassword = genRandomPassword();
+      const expireOn = Date.now() + 24 * 60 * 60 * 1000;
+      const provisionalUser: IUser = {
+        userName,
+        email,
+        ...genPassword(provisionalPassword),
+        expireOn
+      };
+
+      /* 6. Пошлем пользователю email */
+
+      const transporter = nodemailer.createTransport({
+        host: "smtp.hostinger.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      });
+
+      try {
+        await transporter.sendMail({
+          from: '"GDMN System" <test@gsbelarus.com>',
+          to: email,
+          subject: "Account confirmation",
+          text:
+            `Please use following credentials to sign-in into your account at ...\
+            \n\n\
+            User name: ${userName}\n\
+            Password: ${provisionalPassword}
+            \n\n\
+            This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+        });
+      } catch (err) {
+        return res.json(authResult('ERROR', err.message));
+      }
+
+      /* 7. Запишем информацию о пользователе в БД */
+
+      await userDB.write(userName2Key(userName), provisionalUser);
+
+      /* 7. Информируем пользователя о создании учетной записи */
+
+      return res.json(authResult('SUCCESS', `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString()} to confirm.`));
     }
   );
 
@@ -142,6 +207,7 @@ app.route('/register')
 
     const newUser: IUser = {
       userName,
+      email: '',
       ...genPassword(req.body.password)
     };
 

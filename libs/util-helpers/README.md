@@ -1,6 +1,6 @@
 # util-helpers
 
-This library was generated with [Nx](https://nx.dev).
+Library of routines and types to be used in back-end nodejs projects.
 
 ## Running unit tests
 

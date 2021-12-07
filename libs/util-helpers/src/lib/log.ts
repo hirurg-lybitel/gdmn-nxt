@@ -1,5 +1,5 @@
 import { promises as fsPromises, Stats } from 'fs';
-import { Semaphore } from './semaphore';
+import { Semaphore } from '@gsbelarus/util-useful';
 
 type Level = 'INFO' | 'DEBUG' | 'WARNING' | 'ERROR';
 

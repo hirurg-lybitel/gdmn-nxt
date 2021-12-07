@@ -8,15 +8,21 @@ export interface IData<T> {
 };
 
 interface IDataEnvelope<T> {
+  /** Версия структуры файла базы данных */
   version: string;
+  /** Версия структуры данных */
+  dataVersion: string;
   data: IData<T>;
 };
 
+type MigrateFn<T extends Object> = (loadedDataVersion: string, loadedData: IData<any>, neededDataVersion: string) => IData<T>;
+
 interface IFileDBParams<T extends Object> {
   fn: string;
+  dataVersion?: string;
   logger?: ILogger;
   initData?: IData<T>;
-  restore?: (data: IData<T>) => IData<T>;
+  migrate?: MigrateFn<T>;
   check?: (data: IData<T>) => boolean;
   ignore?: boolean;
   watch?: boolean;
@@ -25,10 +31,11 @@ interface IFileDBParams<T extends Object> {
 
 export class FileDB<T extends Object> {
   private _data: IData<T> | undefined;
+  private _dataVersion: string;
   private _fn: string;
   private _modified: boolean = false;
   private _initData: IData<T>;
-  private _restore?: (data: IData<T>) => IData<T>;
+  private _migrate?: MigrateFn<T>;
   private _check?: (data: IData<T>) => boolean;
   private _ignore?: boolean;
   private _logger: ILogger;
@@ -44,14 +51,15 @@ export class FileDB<T extends Object> {
    * @param check Функция для проверки считанных из файла данных на корректность.
    * @param ignore Если true, то при наличии в файле некорректных данных не будет выдаваться исключение.
    */
-  constructor ({ fn, initData, check, ignore, logger, restore, watch, space }: IFileDBParams<T>)
+  constructor ({ fn, dataVersion, initData, check, ignore, logger, migrate, watch, space }: IFileDBParams<T>)
   {
     this._fn = fn;
+    this._dataVersion = dataVersion || '1.0';
     this._initData = initData ?? {};
     this._check = check;
     this._ignore = ignore;
     this._logger = logger ?? console;
-    this._restore = restore;
+    this._migrate = migrate;
     this._watch = watch;
     this._space = space;
   }
@@ -86,8 +94,14 @@ export class FileDB<T extends Object> {
         try {
           const start = Date.now();
           parsed = JSON.parse(await readFile(this._fn, { encoding: 'utf8' }));
-          if (parsed.version === '1.0' && typeof parsed.data === 'object') {
-            const data = this._restore?.(parsed.data) ?? parsed.data;
+          if (parsed.version === '1.0' && typeof parsed.dataVersion === 'string' && typeof parsed.data === 'object') {
+
+            if (!this._migrate && this._dataVersion !== parsed.dataVersion) {
+              throw new Error(`Invalid data structure version in file ${this._fn}`);
+            }
+
+            // we allegedly call _migrate even if loaded dataVersion matches needed dataVersion
+            const data = this._migrate?.(parsed.dataVersion, parsed.data, this._dataVersion) ?? parsed.data;
 
             if (!this._check || this._check(data)) {
               this._logger.info(`Data has been loaded from ${this._fn}. Keys: ${Object.keys(parsed.data).length}. Time: ${Date.now() - start}ms...`);
@@ -170,9 +184,13 @@ export class FileDB<T extends Object> {
     return found && found[1];
   }
 
-  public put(data: IData<T>) {
+  public put(data: IData<T>, flush = true): Promise<void> {
     this._data = data;
-    this._modified = true;
+    if (flush) {
+      return this.flush(true);
+    } else {
+      this._modified = true;
+    }
   }
 
   public async merge(key: string, data: Partial<T>, omit?: (keyof T)[]) {
@@ -192,6 +210,7 @@ export class FileDB<T extends Object> {
       const envelope: IDataEnvelope<T> =
       {
         version: '1.0',
+        dataVersion: this._dataVersion,
         data: this._data
       };
 
