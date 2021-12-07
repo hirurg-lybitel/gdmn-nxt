@@ -1,7 +1,4 @@
 {
   "name": "@gsbelarus/ui-common-dialogs",
-  "version": "0.0.1",
-  "dependencies": {
-    "@mui/icons-material": "^5.2.0"
-  }
+  "version": "0.0.1"
 }
