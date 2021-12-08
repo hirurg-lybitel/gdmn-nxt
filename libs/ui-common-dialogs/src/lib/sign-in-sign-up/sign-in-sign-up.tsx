@@ -195,7 +195,7 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
         <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
           <Alert severity="error">{authResult?.message}</Alert>
         </Dialog>
-        <Dialog onClose={ onDone } open={authResult?.result === 'SUCCESS'}>
+        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_USER_CREATED'}>
           <Alert severity="success">{authResult?.message}</Alert>
         </Dialog>
       </>

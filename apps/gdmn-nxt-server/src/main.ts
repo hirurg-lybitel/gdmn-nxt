@@ -107,9 +107,6 @@ app.route('/api/v1/user/signup')
     async (req, res) => {
       const { userName: receivedUserName, email: receivedEmail } = req.body;
 
-      console.log(receivedUserName);
-      console.log(receivedEmail);
-
       /*  1. проверим входные параметры на корректность  */
 
       if (typeof receivedUserName !== 'string' || !receivedUserName.trim() || !checkEmailAddress(receivedEmail)) {
@@ -179,7 +176,7 @@ app.route('/api/v1/user/signup')
 
       /* 7. Информируем пользователя о создании учетной записи */
 
-      return res.json(authResult('SUCCESS', `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString()} to confirm.`));
+      return res.json(authResult('SUCCESS_USER_CREATED', `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString()} to confirm.`));
     }
   );
 
