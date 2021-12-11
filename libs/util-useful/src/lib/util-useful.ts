@@ -1,4 +1,4 @@
-export const checkEmailAddress = (email: string) => /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+export const checkEmailAddress = (email: string | undefined) => /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 
 const validPasswordChars = 'abcdefghijklmnopqrstuvwxyz0123456789.,!?*+-=$_%^&';
 

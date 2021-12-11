@@ -78,7 +78,7 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
 
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
-  const dispatchAuthResult = ( fn: () => Promise<IAuthResult> ) => () => {
+  const waitAndDispatch = ( fn: () => Promise<IAuthResult> ) => () => {
     dispatch({ type: 'SET_WAITING' });
     fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
   };
@@ -90,17 +90,21 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
           label="Email"
           value={email}
           error={authResult?.result === 'INVALID_EMAIL'}
-          helperText={authResult?.result === 'INVALID_EMAIL' ? (authResult?.message ?? 'Unknown email') : undefined}
+          helperText={authResult?.result === 'INVALID_EMAIL' ? authResult?.message : undefined}
+          disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
         />
         <Button
           variant="contained"
-          disabled={!email || !!authResult || !checkEmailAddress(email)}
-          onClick={ dispatchAuthResult( () => checkCredentials(userName, password) ) }
+          disabled={waiting || !!authResult || !checkEmailAddress(email)}
         >
           Sign in
         </Button>
-        <Button variant="outlined" onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>
+        <Button
+          variant="outlined"
+          disabled={waiting}
+          onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }
+        >
           Return to sign in
         </Button>
       </Stack>
@@ -144,8 +148,8 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
           :
             <Button
               variant="contained"
-              disabled={!userName || !email || email !== email2 || !checkEmailAddress(email) || !captchaPassed || !!authResult}
-              onClick={ dispatchAuthResult( () => createUser(userName, email) ) }
+              disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
+              onClick={ waitAndDispatch( () => createUser(userName, email) ) }
             >
               'Sign up'
             </Button>
@@ -163,7 +167,8 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
           label="User name"
           value={userName}
           error={authResult?.result === 'UNKNOWN_USER'}
-          helperText={authResult?.result === 'UNKNOWN_USER' ? (authResult?.message ?? 'Unknown user name') : undefined}
+          helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+          disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
         />
         <TextField
@@ -171,21 +176,22 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
           type="password"
           value={password}
           error={authResult?.result === 'INVALID_PASSWORD'}
-          helperText={authResult?.result === 'INVALID_PASSWORD' ? (authResult?.message ?? 'Invalid password') : undefined}
+          helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
+          disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_PASSWORD', password: e.target.value }) }
         />
         <Button
           variant="contained"
-          disabled={!userName || !password || !!authResult}
+          disabled={waiting || !userName || !password || !!authResult}
           onClick={ () => checkCredentials(userName, password).then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) ) }
         >
           Login
         </Button>
-        <Button variant="outlined" onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
+        <Button variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
           Forgot password?
         </Button>
         <Typography>
-          Don't have an account? <Button onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
+          Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
         </Typography>
       </Stack>;
 
