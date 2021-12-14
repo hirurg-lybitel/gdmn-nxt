@@ -10,6 +10,8 @@ export type AuthResult =
 
   | 'SUCCESS_USER_CREATED'
 
+  /** Authenticate user */
+
   | 'UNKNOWN_USER'
   | 'INVALID_PASSWORD'
   /** email unknown to the system */

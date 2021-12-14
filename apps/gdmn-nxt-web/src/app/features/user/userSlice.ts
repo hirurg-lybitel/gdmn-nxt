@@ -1,24 +1,24 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface UserState {
-  login: string | undefined;
+  userName: string | undefined;
 };
 
 const initialState: UserState = {
-  login: undefined
+  userName: undefined
 };
 
 export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setLogin: (state, action: PayloadAction<string>) => {
-      state.login = action.payload
+    setUserName: (state, action: PayloadAction<string>) => {
+      state.userName = action.payload
     }
   }
 });
 
 // Action creators are generated for each case reducer function
-export const { setLogin } = userSlice.actions;
+export const { setUserName } = userSlice.actions;
 
 export default userSlice.reducer;

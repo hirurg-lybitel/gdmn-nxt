@@ -29,7 +29,8 @@ interface IUser {
 };
 
 const userDB = new FileDB<IUser>({
-  fn: `${process.env.GDMN_NXT_SERVER_DB_FOLDER}/user.json`
+  fn: `${process.env.GDMN_NXT_SERVER_DB_FOLDER}/user.json`,
+  space: 2
 });
 
 const userName2Key = (userName: string) => userName.toLowerCase();
@@ -51,6 +52,8 @@ const purgeExpiredUsers = async () => {
 passport.use(new Strategy(
   async (userName: string, password: string, cb) => {
     try {
+      await purgeExpiredUsers();
+
       const user = await userDB.read(userName2Key(userName));
 
       if (!user) {
@@ -133,6 +136,7 @@ app.route('/api/v1/user/signup')
 
       /* 5. создадим предварительную учетную запись */
       const provisionalPassword = genRandomPassword();
+
       const expireOn = Date.now() + 24 * 60 * 60 * 1000;
       const provisionalUser: IUser = {
         userName,
@@ -145,7 +149,7 @@ app.route('/api/v1/user/signup')
 
       try {
         const transporter = nodemailer.createTransport({
-          host: "smtp.hostinger.com",
+          host: process.env.SMTP_HOST,
           port: 465,
           secure: true,
           auth: {
@@ -176,8 +180,47 @@ app.route('/api/v1/user/signup')
 
       /* 7. Информируем пользователя о создании учетной записи */
 
-      return res.json(authResult('SUCCESS_USER_CREATED', `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString()} to confirm.`));
+      return res.json(authResult(
+        'SUCCESS_USER_CREATED',
+        `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
+      ));
     }
+  );
+
+app.route('/api/v1/user/signin')
+  .post(
+    async (req, res, next) => {
+      const { userName, password } = req.body;
+
+      /*  1. проверим входные параметры на корректность  */
+
+      if (typeof userName !== 'string' || typeof password !== 'string') {
+        return res.json(authResult('INVALID_DATA', 'Invalid data.'));
+      }
+
+      /* 2. Очистим БД от устаревших записей */
+
+      await purgeExpiredUsers();
+
+      /* 3. ищем пользователя */
+      const un = userName.toLowerCase();
+      const user = await userDB.findOne( u => u.userName.toLowerCase() === un );
+
+      if (!user) {
+        return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
+      };
+
+      next();
+    },
+    passport.authenticate('local', {}),
+    async (req, res) => {
+      const { userName } = req.body;
+
+      return res.json(authResult(
+        'SUCCESS',
+        `You are logged in as ${userName}.`
+      ));
+    },
   );
 
 app.route('/login')

@@ -13,7 +13,7 @@ import Box from '@mui/system/Box/Box';
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
   createUser: (userName: string, email: string) => Promise<IAuthResult>;
-  onDone: () => void;
+  onDone: (userName: string) => void;
 };
 
 type State = {

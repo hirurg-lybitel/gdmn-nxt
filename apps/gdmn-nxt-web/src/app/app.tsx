@@ -9,10 +9,15 @@ import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from './store';
+import Typography from '@mui/material/Typography/Typography';
+import Button from '@mui/material/Button/Button';
+import { setUserName } from './features/user/userSlice';
 
 const baseURL = 'http://localhost:4444';
 
-const axiosPost = async (url: string, data: Object): Promise<IAuthResult> => {
+const post = async (url: string, data: Object): Promise<IAuthResult> => {
   try {
     return (await axios({ method: 'post', url, baseURL, data })).data;
   }
@@ -32,15 +37,25 @@ const axiosPost = async (url: string, data: Object): Promise<IAuthResult> => {
 };
 
 export function App() {
-  return (
+
+  const login = useSelector<RootState>( state => state.user.userName );
+  const dispatch = useDispatch<AppDispatch>();
+
+  const result =
     <div className={styles.app}>
-      <SignInSignUp
-        checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) }
-        createUser = { (userName, email) => axiosPost('/api/v1/user/signup', { userName, email }) }
-        onDone = { () => {} }
-      />
-    </div>
-  );
-}
+      {
+        login ?
+          <Typography>You are logged in as {login}. <Button>Logout</Button></Typography>
+        :
+          <SignInSignUp
+            checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) }
+            createUser = { (userName, email) => post('/api/v1/user/signup', { userName, email }) }
+            onDone = { userName => dispatch(setUserName(userName)) }
+          />
+      }
+    </div>;
+
+  return result;
+};
 
 export default App;
