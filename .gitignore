@@ -42,3 +42,4 @@ apps/gdmn-nxt-server/db/*.json
 
 /**/node_modules
 .env
+.env
