@@ -247,10 +247,14 @@ export class FileDB<T extends Object> {
           mkdirSync(dirName, { recursive: true });
         }
 
-        this._watcher?.close();
-        writeFileSync(this._fn, JSON.stringify(this.#getEnvelope(), undefined, this._space), { encoding: 'utf8' });
-        this._modified = false;
-        this._logger.info(`Data has been written to ${this._fn}...`);
+        if (!existsSync(dirName)) {
+          this._logger.error(`Can't create folder ${dirName}`);
+        } else {
+          this._watcher?.close();
+          writeFileSync(this._fn, JSON.stringify(this.#getEnvelope(), undefined, this._space), { encoding: 'utf8' });
+          this._modified = false;
+          this._logger.info(`Data has been written to ${this._fn}...`);
+        }
       } catch (e) {
         this._logger.error(`Error writting to file ${this._fn}. ${e}`);
       }
