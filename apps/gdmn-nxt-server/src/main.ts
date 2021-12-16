@@ -176,9 +176,10 @@ app.route('/api/v1/user/signup')
 
       /* 7. Запишем информацию о пользователе в БД */
 
-      await userDB.write(userName2Key(userName), provisionalUser);
+      //TODO: форсированно пишем на диск, пока не разберемся почему не отлавливает Ctrl-C в некоторых терминалах
+      await userDB.write(userName2Key(userName), provisionalUser, true);
 
-      /* 7. Информируем пользователя о создании учетной записи */
+      /* 8. Информируем пользователя о создании учетной записи */
 
       return res.json(authResult(
         'SUCCESS_USER_CREATED',
