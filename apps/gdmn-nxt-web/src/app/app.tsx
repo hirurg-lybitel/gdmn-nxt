@@ -48,7 +48,7 @@ export function App() {
           <Typography>You are logged in as {login}. <Button>Logout</Button></Typography>
         :
           <SignInSignUp
-            checkCredentials = { () => Promise.resolve({ result: 'UNKNOWN_USER', message: 'User not found' }) }
+            checkCredentials = { (userName, password) => post('/api/v1/user/signin', { userName, password }) }
             createUser = { (userName, email) => post('/api/v1/user/signup', { userName, email }) }
             onDone = { userName => dispatch(setUserName(userName)) }
           />
