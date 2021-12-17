@@ -49,38 +49,42 @@ const purgeExpiredUsers = async () => {
   }
 };
 
-passport.use(new Strategy(
-  async (userName: string, password: string, cb) => {
+passport.use(new Strategy({
+  usernameField: 'userName',
+  passwordField: 'password'
+  },
+  async (userName: string, password: string, done) => {
     try {
       await purgeExpiredUsers();
 
       const user = await userDB.read(userName2Key(userName));
 
       if (!user) {
-        return cb(null, false);
+        return done(null, false);
       }
 
       if (validPassword(password, user.hash, user.salt)) {
-        return cb(null, user);
+        console.log('Пароль проверен')
+        return done(null, user);
       } else {
-        return cb(null, false);
+        return done(null, false);
       }
     }
     catch(err) {
-      cb(err);
+      done(err);
     }
   }
 ));
 
-passport.serializeUser( (user: IUser, cb) => cb(null, userName2Key(user.userName)) );
+passport.serializeUser( (user: IUser, done) => done(null, userName2Key(user.userName)) );
 
-passport.deserializeUser( async (id: string, cb) => {
-  const user = await userDB.read(id);
+passport.deserializeUser( async (userName: string, done) => {
+  const user = await userDB.read(userName);
 
   if (user) {
-    cb(null, user);
+    done(null, user);
   } else {
-    cb(`Unknown user id ${id}`);
+    done(`Unknown user userName: ${userName}`);
   }
 });
 
@@ -192,7 +196,6 @@ app.route('/api/v1/user/signin')
   .post(
     async (req, res, next) => {
       const { userName, password } = req.body;
-
       /*  1. проверим входные параметры на корректность  */
 
       if (typeof userName !== 'string' || typeof password !== 'string') {
