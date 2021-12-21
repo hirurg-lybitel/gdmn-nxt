@@ -1,6 +1,7 @@
 import { FSWatcher, watch, mkdirSync, existsSync, writeFileSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { dirname } from 'path';
+import { rawListeners } from 'process';
 import { ILogger } from './log';
 
 export interface IData<T> {
@@ -97,6 +98,8 @@ export class FileDB<T extends Object> {
       this._needReload = false;
 
       if (existsSync(this._fn)) {
+        let emptyFile = false;
+
         try {
           const start = Date.now();
           const raw = await readFile(this._fn, { encoding: 'utf8' });
@@ -117,6 +120,8 @@ export class FileDB<T extends Object> {
                 this._setWatcher();
               }
             }
+          } else {
+            emptyFile = true;
           }
         }
         catch (e) {
@@ -131,7 +136,7 @@ export class FileDB<T extends Object> {
           }
         }
 
-        if (!this._data && !this._ignore) {
+        if (!this._data && !this._ignore && !emptyFile) {
           throw new Error(`Invalid data in file: ${this._fn}`);
         }
       }
