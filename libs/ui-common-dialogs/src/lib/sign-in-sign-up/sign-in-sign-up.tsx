@@ -13,6 +13,7 @@ import Box from '@mui/system/Box/Box';
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
   createUser: (userName: string, email: string) => Promise<IAuthResult>;
+  newPassword: (email: string) => Promise<IAuthResult>;
   onDone: (userName: string) => void;
 };
 
@@ -74,7 +75,7 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSignUpProps) {
+export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone }: SignInSignUpProps) {
 
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
@@ -89,16 +90,17 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
         <TextField
           label="Email"
           value={email}
-          error={authResult?.result === 'INVALID_EMAIL'}
-          helperText={authResult?.result === 'INVALID_EMAIL' ? authResult?.message : undefined}
+          error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
+          helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
         />
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
+          onClick = {waitAndDispatch( () => newPassword(email))}
         >
-          Sign in
+          Request new Password
         </Button>
         <Button
           variant="outlined"
@@ -151,7 +153,7 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
               disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
               onClick={ waitAndDispatch( () => createUser(userName, email) ) }
             >
-              'Sign up'
+              Sign up
             </Button>
         }
         <Typography>
