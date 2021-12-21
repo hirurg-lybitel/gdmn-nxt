@@ -83,6 +83,10 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
     dispatch({ type: 'SET_WAITING' });
     fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
   };
+  const waitAndDispatchPW = ( fn: () => Promise<IAuthResult> ) => () => {
+    dispatch({ type: 'SET_WAITING' });
+    fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
+  };
 
   const result =
     stage === 'FORGOT_PASSWORD' ?
@@ -98,7 +102,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick = {waitAndDispatch( () => newPassword(email))}
+          onClick = {waitAndDispatchPW(() => newPassword(email))}
         >
           Request new Password
         </Button>
@@ -204,6 +208,12 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
           <Alert severity="error">{authResult?.message}</Alert>
         </Dialog>
         <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_USER_CREATED'}>
+          <Alert severity="success">{authResult?.message}</Alert>
+        </Dialog>
+        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_PASSWORD_CHANGED'}>
+          <Alert severity="success">{authResult?.message}</Alert>
+        </Dialog>
+        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS'}>
           <Alert severity="success">{authResult?.message}</Alert>
         </Dialog>
       </>

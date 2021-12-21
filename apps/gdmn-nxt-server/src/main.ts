@@ -9,6 +9,7 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
+import SendmailTransport = require('nodemailer/lib/sendmail-transport');
 
 const MemoryStore = require('memorystore')(session);
 
@@ -67,6 +68,7 @@ passport.use(new Strategy({
         console.log('Пароль проверен')
         return done(null, user);
       } else {
+        console.log('Пароль неверный')
         return done(null, false);
       }
     }
@@ -257,8 +259,10 @@ app.route('/api/v1/user/signin')
       const provisionalPassword = genRandomPassword();
       const expireOn = Date.now() + 24 * 60 * 60 * 1000;
 
-      user.salt = genPassword(provisionalPassword).salt;
-      user.hash = genPassword(provisionalPassword).hash;
+      const {salt, hash} = genPassword(provisionalPassword);
+
+      user.salt = salt;
+      user.hash = hash;
       user.expireOn = expireOn;
       await userDB.write(user.userName, user, true);
 
@@ -290,9 +294,11 @@ app.route('/api/v1/user/signin')
       } catch (err) {
         return res.json(authResult('ERROR', err.message));
       }
-      
-      
-      next();
+      /* 6. Сообщим о письме на почте с информацией */
+      return res.json(authResult(
+        'SUCCESS_PASSWORD_CHANGED',
+        `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
+      ));
     })
 
 app.route('/login')
@@ -401,6 +407,8 @@ process
  */
 function validPassword(password: string, hash: string, salt: string) {
   const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  console.log('Cheking.....')
+  console.log(hashVerify)
   return hash === hashVerify;
 };
 
