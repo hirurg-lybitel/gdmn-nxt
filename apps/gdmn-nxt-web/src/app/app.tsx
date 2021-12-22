@@ -19,7 +19,7 @@ const baseURL = 'http://localhost:4444';
 
 const post = async (url: string, data: Object): Promise<IAuthResult> => {
   try {
-    return (await axios({ method: 'post', url, baseURL, data })).data;
+    return (await axios({ method: 'post', url, baseURL, data, withCredentials:true})).data;
   }
   catch (error: any) {
     const { response, request, message } = error as AxiosError;

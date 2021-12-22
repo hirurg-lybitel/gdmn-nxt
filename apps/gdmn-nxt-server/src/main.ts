@@ -16,9 +16,19 @@ dotenv.config({ path: '../..' });
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: 'http://localhost:4200'
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Credentials', 'true');
+//   res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+//   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+//   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+//   next();
+// });
 
 interface IUser {
   userName: string;
@@ -64,7 +74,6 @@ passport.use(new Strategy({
       }
 
       if (validPassword(password, user.hash, user.salt)) {
-        console.log('Пароль проверен')
         return done(null, user);
       } else {
         return done(null, false);
@@ -91,15 +100,14 @@ passport.deserializeUser( async (userName: string, done) => {
 const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
 
 app.use(session({
+  name: 'Sid',
   secret: 'kjdsfgfghfghfghfghfghfghhf',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: sessionStore,
-  cookie: {
-    maxAge: 14 * 24 * 60 * 60 * 1000,
-    domain: 'localhost',
-    sameSite: 'none'
-    },
+  cookie:{
+    maxAge: 24*60*60*1000
+  }
 }));
 
 app.use(passport.initialize());
@@ -196,9 +204,12 @@ app.route('/api/v1/user/signup')
     }
   );
 
+  
+
 app.route('/api/v1/user/signin')
   .post(
     async (req, res, next) => {
+      
       const { userName, password } = req.body;
       /*  1. проверим входные параметры на корректность  */
 
@@ -216,8 +227,8 @@ app.route('/api/v1/user/signin')
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
       };
-      
       next();
+      
     },
     passport.authenticate('local', {}),
     async (req, res) => {
@@ -230,10 +241,10 @@ app.route('/api/v1/user/signin')
     },
   );
 
+
   app.route('/api/v1/user/forgot-password')
   .post(
-    async (req, res, next) => {
-
+    async (req, res) => {
       const { email } = req.body;
       /*  1. проверим входные параметры на корректность  */
 
@@ -257,8 +268,10 @@ app.route('/api/v1/user/signin')
       const provisionalPassword = genRandomPassword();
       const expireOn = Date.now() + 24 * 60 * 60 * 1000;
 
-      user.salt = genPassword(provisionalPassword).salt;
-      user.hash = genPassword(provisionalPassword).hash;
+      const {salt, hash} = genPassword(provisionalPassword);
+
+      user.salt = salt;
+      user.hash = hash;
       user.expireOn = expireOn;
       await userDB.write(user.userName, user, true);
 
@@ -290,9 +303,11 @@ app.route('/api/v1/user/signin')
       } catch (err) {
         return res.json(authResult('ERROR', err.message));
       }
-      
-      
-      next();
+      /* 6. Сообщим о письме на почте с информацией */
+      return res.json(authResult(
+        'SUCCESS_PASSWORD_CHANGED',
+        `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
+      ));
     })
 
 app.route('/login')
