@@ -10,6 +10,7 @@ export type AuthResult =
 
   | 'SUCCESS_PASSWORD_CHANGED'
   | 'SUCCESS_USER_CREATED'
+  | 'SUCCESS_PASSWORD_CHANGED'
 
   /** Authenticate user */
 

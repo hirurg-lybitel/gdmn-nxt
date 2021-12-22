@@ -9,6 +9,7 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
+import SendmailTransport = require('nodemailer/lib/sendmail-transport');
 
 const MemoryStore = require('memorystore')(session);
 
@@ -76,6 +77,7 @@ passport.use(new Strategy({
       if (validPassword(password, user.hash, user.salt)) {
         return done(null, user);
       } else {
+        console.log('Пароль неверный')
         return done(null, false);
       }
     }
@@ -416,6 +418,8 @@ process
  */
 function validPassword(password: string, hash: string, salt: string) {
   const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  console.log('Cheking.....')
+  console.log(hashVerify)
   return hash === hashVerify;
 };
 
