@@ -4,6 +4,8 @@ import * as tmp from 'temp-fs';
 
 require('dotenv').config({ path: '../../../../.env' });
 
+// это тесты под конкретную базу б*ісс
+// на другой базе они не пойдут и их надо отключать
 describe('Server', () => {
 
   const testConfig = {
@@ -23,6 +25,7 @@ describe('Server', () => {
       testConfig.host == '127.0.0.1';
   };
 
+  /*
   function getTempFile(name: string): string {
     const database = `${testConfig.tmpDir}/${name}`;
     return (testConfig.host ?? '') +
@@ -30,6 +33,7 @@ describe('Server', () => {
       (testConfig.host ? ':' : '') +
       database;
   };
+  */
 
   const holdingList = 148284864;
   const id = '148529707';
