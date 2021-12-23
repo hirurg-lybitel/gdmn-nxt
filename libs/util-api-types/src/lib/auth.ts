@@ -8,7 +8,9 @@ export type AuthResult =
   | 'DUPLICATE_USER_NAME'
   | 'DUPLICATE_EMAIL'
 
+  | 'SUCCESS_PASSWORD_CHANGED'
   | 'SUCCESS_USER_CREATED'
+  | 'SUCCESS_PASSWORD_CHANGED'
 
   /** Authenticate user */
 

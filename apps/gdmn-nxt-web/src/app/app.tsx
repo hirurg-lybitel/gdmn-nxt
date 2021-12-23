@@ -19,7 +19,7 @@ const baseURL = 'http://localhost:4444';
 
 const post = async (url: string, data: Object): Promise<IAuthResult> => {
   try {
-    return (await axios({ method: 'post', url, baseURL, data })).data;
+    return (await axios({ method: 'post', url, baseURL, data, withCredentials:true})).data;
   }
   catch (error: any) {
     const { response, request, message } = error as AxiosError;
@@ -50,6 +50,7 @@ export function App() {
           <SignInSignUp
             checkCredentials = { (userName, password) => post('/api/v1/user/signin', { userName, password }) }
             createUser = { (userName, email) => post('/api/v1/user/signup', { userName, email }) }
+            newPassword = {(email) => post('/api/v1/user/forgot-password', {email})}
             onDone = { userName => dispatch(setUserName(userName)) }
           />
       }

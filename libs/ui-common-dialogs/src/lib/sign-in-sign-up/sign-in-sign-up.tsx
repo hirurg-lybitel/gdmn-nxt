@@ -13,6 +13,7 @@ import Box from '@mui/system/Box/Box';
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
   createUser: (userName: string, email: string) => Promise<IAuthResult>;
+  newPassword: (email: string) => Promise<IAuthResult>;
   onDone: (userName: string) => void;
 };
 
@@ -74,11 +75,15 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSignUpProps) {
+export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone }: SignInSignUpProps) {
 
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
   const waitAndDispatch = ( fn: () => Promise<IAuthResult> ) => () => {
+    dispatch({ type: 'SET_WAITING' });
+    fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
+  };
+  const waitAndDispatchPW = ( fn: () => Promise<IAuthResult> ) => () => {
     dispatch({ type: 'SET_WAITING' });
     fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
   };
@@ -89,16 +94,17 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
         <TextField
           label="Email"
           value={email}
-          error={authResult?.result === 'INVALID_EMAIL'}
-          helperText={authResult?.result === 'INVALID_EMAIL' ? authResult?.message : undefined}
+          error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
+          helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
           onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
         />
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
+          onClick = {waitAndDispatchPW(() => newPassword(email))}
         >
-          Sign in
+          Request new Password
         </Button>
         <Button
           variant="outlined"
@@ -151,7 +157,7 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
               disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
               onClick={ waitAndDispatch( () => createUser(userName, email) ) }
             >
-              'Sign up'
+              Sign up
             </Button>
         }
         <Typography>
@@ -202,6 +208,12 @@ export function SignInSignUp({ checkCredentials, createUser, onDone }: SignInSig
           <Alert severity="error">{authResult?.message}</Alert>
         </Dialog>
         <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_USER_CREATED'}>
+          <Alert severity="success">{authResult?.message}</Alert>
+        </Dialog>
+        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_PASSWORD_CHANGED'}>
+          <Alert severity="success">{authResult?.message}</Alert>
+        </Dialog>
+        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS'}>
           <Alert severity="success">{authResult?.message}</Alert>
         </Dialog>
       </>

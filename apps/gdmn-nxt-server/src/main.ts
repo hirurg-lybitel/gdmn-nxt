@@ -9,6 +9,7 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
+import SendmailTransport = require('nodemailer/lib/sendmail-transport');
 
 const MemoryStore = require('memorystore')(session);
 
@@ -16,9 +17,19 @@ dotenv.config({ path: '../..' });
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: 'http://localhost:4200'
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Credentials', 'true');
+//   res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+//   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+//   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+//   next();
+// });
 
 interface IUser {
   userName: string;
@@ -64,9 +75,9 @@ passport.use(new Strategy({
       }
 
       if (validPassword(password, user.hash, user.salt)) {
-        console.log('Пароль проверен')
         return done(null, user);
       } else {
+        console.log('Пароль неверный')
         return done(null, false);
       }
     }
@@ -91,11 +102,14 @@ passport.deserializeUser( async (userName: string, done) => {
 const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
 
 app.use(session({
+  name: 'Sid',
   secret: 'kjdsfgfghfghfghfghfghfghhf',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: sessionStore,
-  cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 },
+  cookie:{
+    maxAge: 24*60*60*1000
+  }
 }));
 
 app.use(passport.initialize());
@@ -192,9 +206,12 @@ app.route('/api/v1/user/signup')
     }
   );
 
+  
+
 app.route('/api/v1/user/signin')
   .post(
     async (req, res, next) => {
+      
       const { userName, password } = req.body;
       /*  1. проверим входные параметры на корректность  */
 
@@ -205,7 +222,6 @@ app.route('/api/v1/user/signin')
       /* 2. Очистим БД от устаревших записей */
 
       await purgeExpiredUsers();
-
       /* 3. ищем пользователя */
       const un = userName.toLowerCase();
       const user = await userDB.findOne( u => u.userName.toLowerCase() === un );
@@ -213,8 +229,8 @@ app.route('/api/v1/user/signin')
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
       };
-
       next();
+      
     },
     passport.authenticate('local', {}),
     async (req, res) => {
@@ -226,6 +242,75 @@ app.route('/api/v1/user/signin')
       ));
     },
   );
+
+
+  app.route('/api/v1/user/forgot-password')
+  .post(
+    async (req, res) => {
+      const { email } = req.body;
+      /*  1. проверим входные параметры на корректность  */
+
+      if (typeof email !== 'string') {
+        return res.json(authResult('INVALID_DATA', 'Invalid data.'));
+      }
+
+      /* 2. Очистим БД от устаревших записей */
+
+      await purgeExpiredUsers();
+
+      /* 3. ищем пользователя */
+      const em = email.toLowerCase();
+      const user = await userDB.findOne( u => u.email.toLowerCase() === em );
+
+      if (!user) {
+        return res.json(authResult('UNKNOWN_USER', `User email ${email} not found.`));
+      };
+      
+      /* 4. Поменяем данные профиля */
+      const provisionalPassword = genRandomPassword();
+      const expireOn = Date.now() + 24 * 60 * 60 * 1000;
+
+      const {salt, hash} = genPassword(provisionalPassword);
+
+      user.salt = salt;
+      user.hash = hash;
+      user.expireOn = expireOn;
+      await userDB.write(user.userName, user, true);
+
+      /* 5. Пошлем пользователю email */
+
+      try {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASSWORD,
+          },
+        });
+
+        await transporter.sendMail({
+          from: '"GDMN System" <test@gsbelarus.com>',
+          to: email,
+          subject: "Password change complete",
+          text:
+            `Please use following credentials to sign-in into your account at ...\
+            \n\n\
+            User name: ${user.userName}\n\
+            Password: ${provisionalPassword}
+            \n\n\
+            This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+        });
+      } catch (err) {
+        return res.json(authResult('ERROR', err.message));
+      }
+      /* 6. Сообщим о письме на почте с информацией */
+      return res.json(authResult(
+        'SUCCESS_PASSWORD_CHANGED',
+        `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
+      ));
+    })
 
 app.route('/login')
   .get( (_, res) => {
@@ -333,6 +418,8 @@ process
  */
 function validPassword(password: string, hash: string, salt: string) {
   const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  console.log('Cheking.....')
+  console.log(hashVerify)
   return hash === hashVerify;
 };
 
