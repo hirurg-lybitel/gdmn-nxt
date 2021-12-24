@@ -376,7 +376,9 @@ app.get('/login-failure', (_, res) => {
   res.send('You entered the wrong password.');
 });
 
-app.get('/rs', getReconciliationStatement);
+app.get('/reconciliation-statement', getReconciliationStatement);
+
+app.get('*', () => console.log('Unknown request') );
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 

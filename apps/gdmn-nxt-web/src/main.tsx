@@ -14,7 +14,7 @@ ReactDOM.render(
       <StrictMode>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="recstm" element={<ReconciliationStatement />} />
+          <Route path="/rs" element={<ReconciliationStatement />} />
         </Routes>
       </StrictMode>
     </BrowserRouter>
