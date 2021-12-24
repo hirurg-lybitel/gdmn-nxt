@@ -18,7 +18,7 @@ export interface SignInSignUpProps {
 };
 
 type State = {
-  stage: 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
+  stage: 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD' | 'HOME';
   waiting: boolean;
   userName: string;
   password: string;
@@ -164,7 +164,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
           Already have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
         </Typography>
       </Stack>
-    :
+    : stage === 'SIGNIN' ?
       <Stack direction="column" spacing={2}>
         <Typography variant="h1">
           Sign in the system
@@ -199,7 +199,14 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Typography>
           Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
         </Typography>
-      </Stack>;
+      </Stack>
+    :
+      <Stack>
+        <h1>You are logged in</h1>
+        <Button variant="outlined" onClick={() => fetch('http://localhost:4444/logout',{method: "GET"}).then(() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }))}>
+          LOGOUT
+        </Button>
+      </Stack>
 
     return (
       <>

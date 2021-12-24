@@ -14,6 +14,8 @@ import { AppDispatch, RootState } from './store';
 import Typography from '@mui/material/Typography/Typography';
 import Button from '@mui/material/Button/Button';
 import { setUserName } from './features/user/userSlice';
+import { useEffect, useState } from 'react';
+import { response } from 'express';
 
 const baseURL = 'http://localhost:4444';
 
@@ -37,15 +39,22 @@ const post = async (url: string, data: Object): Promise<IAuthResult> => {
 };
 
 export function App() {
-
-  const login = useSelector<RootState>( state => state.user.userName );
   const dispatch = useDispatch<AppDispatch>();
+  const [login, setLogin] = useState(0);
+  
+  useEffect(() =>{
+    fetch('http://localhost:4444/user', {method: 'GET', credentials: 'include'}).then(response => {
+      response.status == 200 ? setLogin(login + 1) : setLogin(login * 0)
+    })
+  }, [])
 
   const result =
     <div className={styles.app}>
       {
         login ?
-          <Typography>You are logged in as {login}. <Button>Logout</Button></Typography>
+          <Typography>You are logged in. <Button 
+          onClick = {() =>fetch('http://localhost:4444/logout', {method: 'GET'}).then()}
+          >Logout</Button></Typography>
         :
           <SignInSignUp
             checkCredentials = { (userName, password) => post('/api/v1/user/signin', { userName, password }) }

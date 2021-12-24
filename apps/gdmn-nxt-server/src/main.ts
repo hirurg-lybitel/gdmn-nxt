@@ -16,6 +16,10 @@ const MemoryStore = require('memorystore')(session);
 dotenv.config({ path: '../..' });
 
 const app = express();
+const checkAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) { return next() }
+  res.redirect("/")
+}
 
 app.use(cors({
   credentials: true,
@@ -105,15 +109,16 @@ app.use(session({
   name: 'Sid',
   secret: 'kjdsfgfghfghfghfghfghfghhf',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: sessionStore,
-  cookie:{
+  cookie:{ 
     maxAge: 24*60*60*1000
   }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 app.get('/', (_, res) => {
   res.send('<h1>Home</h1><p>Please <a href="/register">register</a></p>');
@@ -122,6 +127,15 @@ app.get('/', (_, res) => {
 app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
+
+
+app.get('/user', (req, res) => {
+  console.log(req.session)
+  console.log(req.user )
+  console.log(req.isAuthenticated())
+
+  req.isAuthenticated() ? res.status(200).send('Success') : res.status(401).send('Error')
+})
 
 app.route('/api/v1/user/signup')
   .post(
@@ -211,8 +225,8 @@ app.route('/api/v1/user/signup')
 app.route('/api/v1/user/signin')
   .post(
     async (req, res, next) => {
-      
       const { userName, password } = req.body;
+
       /*  1. проверим входные параметры на корректность  */
 
       if (typeof userName !== 'string' || typeof password !== 'string') {
@@ -364,7 +378,7 @@ app.get('/protected-route', (req, res) => {
 
 app.get('/logout', (req, res) => {
   req.logout();
-  res.redirect('/protected-route');
+  res.redirect('/');
 });
 
 app.get('/login-success', (_, res) => {
@@ -417,9 +431,7 @@ process
  * the decrypted hash/salt with the password that the user provided at login
  */
 function validPassword(password: string, hash: string, salt: string) {
-  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  console.log('Cheking.....')
-  console.log(hashVerify)
+  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');  
   return hash === hashVerify;
 };
 
