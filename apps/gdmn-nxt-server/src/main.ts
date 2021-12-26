@@ -9,7 +9,6 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
-import SendmailTransport = require('nodemailer/lib/sendmail-transport');
 import { getReconciliationStatement } from './app/app';
 
 const MemoryStore = require('memorystore')(session);

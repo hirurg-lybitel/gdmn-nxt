@@ -35,8 +35,9 @@ describe('Server', () => {
   };
   */
 
-  const holdingList = 148284864;
-  const id = '148529707';
+  const holdingId = 148_284_864;
+  const account_id = 148_529_707;
+  const customerId = 148_333_193;
 
   jest.setTimeout(60000);
 
@@ -115,7 +116,7 @@ describe('Server', () => {
         sum(e.debitncu - e.creditncu) <> 0
       order by
         2 desc`;
-    const rs = await attachment.executeQuery(transaction, query, [new Date(), 148_333_193]);
+    const rs = await attachment.executeQuery(transaction, query, [new Date(), customerId]);
     const ret = await rs.fetchAsObject<any[]>();
     expect(ret.length).toBeGreaterThan(0);
     await rs.close();
@@ -143,7 +144,7 @@ describe('Server', () => {
         and cust.ID = ?
       Order by 1
       `;
-    const rs = await attachment.executeQuery(transaction, query, [148_333_193]);
+    const rs = await attachment.executeQuery(transaction, query, [customerId]);
     const ret = await rs.fetchAsObject<any[]>();
     expect(ret.length).toBeGreaterThan(0);
     await rs.close();
@@ -155,7 +156,7 @@ describe('Server', () => {
     const attachment = await client.connect(`${host}/${port}:${db}`);
     const transaction = await attachment.startTransaction();
     const query = `select * from gd_contact where id = ?`;
-    const rs = await attachment.executeQuery(transaction, query, [148_333_193]);
+    const rs = await attachment.executeQuery(transaction, query, [customerId]);
     const ret = await rs.fetchAsObject<any[]>();
     expect(ret.length).toBeGreaterThan(0);
     await rs.close();
@@ -170,10 +171,10 @@ describe('Server', () => {
       SELECT SUM(e.debitncu - e.creditncu) as Saldo
       FROM ac_entry e JOIN ac_account a ON e.accountkey = a.id
           and e.entrydate < ? and e.usr$GS_CUSTOMER = ?
-      JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${id})
-      JOIN ac_record r ON e.recordkey = r.id and r.companykey + 0 IN (${holdingList})
+      JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${account_id})
+      JOIN ac_record r ON e.recordkey = r.id and r.companykey + 0 IN (${holdingId})
     `;
-    const rs = await attachment.executeQuery(transaction, query, [new Date(), 148_333_193]);
+    const rs = await attachment.executeQuery(transaction, query, [new Date(), customerId]);
     const ret = await rs.fetchAsObject<any[]>();
     expect(ret.length).toBeGreaterThan(0);
     await rs.close();
@@ -189,8 +190,8 @@ describe('Server', () => {
    CAST(0 as numeric(15,2)) as GiveSum2
  FROM ac_entry entry JOIN ac_account a ON entry.accountkey = a.id
     and entry.entrydate >= ? and entry.entrydate <= ? and entry.usr$GS_CUSTOMER = ?
-    JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${id})
-    JOIN ac_record r ON entry.recordkey = r.id  AND r.companykey + 0 IN (${holdingList})
+    JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${account_id})
+    JOIN ac_record r ON entry.recordkey = r.id  AND r.companykey + 0 IN (${holdingId})
     LEFT JOIN gd_document doc ON r.documentkey = doc.id
     LEFT JOIN usr$bg_contractjob job ON job.id = entry.usr$bg_dcontractjobkey
     LEFT JOIN gd_documenttype doct ON doc.documenttypekey = doct.id
@@ -216,8 +217,8 @@ describe('Server', () => {
  SELECT  entry.usr$bg_dcontractjobkey as job, a.alias, doct.name, doc.number, doc.documentdate, r.description, job.usr$number as jobnumber, CAST(0 as numeric(15,2)) as GiveSum, SUM(entry.debitncu) as GiveSum2
  FROM ac_entry entry JOIN ac_account a ON entry.accountkey = a.id
     and entry.entrydate >= ? and entry.entrydate <= ? and entry.usr$GS_CUSTOMER = ?
-    JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${id})
-    JOIN ac_record r ON entry.recordkey = r.id  AND r.companykey + 0 IN (${holdingList})
+    JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${account_id})
+    JOIN ac_record r ON entry.recordkey = r.id  AND r.companykey + 0 IN (${holdingId})
     LEFT JOIN gd_document doc ON entry.usr$GS_document = doc.id
     LEFT JOIN usr$bg_contractjob job ON job.id = entry.usr$bg_dcontractjobkey
     LEFT JOIN gd_documenttype doct ON doc.documenttypekey = doct.id
@@ -239,8 +240,7 @@ describe('Server', () => {
  HAVING SUM(entry.debitncu) <> 0
   ORDER BY  1, 5, 3, 4
     `;
-    const rs = await attachment.executeQuery(transaction, query, [new Date(), new Date(), 148_333_193, new Date(), new Date(), 148_333_193]);
-    const ret = await rs.fetchAsObject<any[]>();
+    const rs = await attachment.executeQuery(transaction, query, [new Date(), new Date(), customerId, new Date(), new Date(), customerId]);
     await rs.close();
     await transaction.commit();
     await attachment.disconnect();
@@ -253,8 +253,8 @@ describe('Server', () => {
  SELECT r.description, doct.name, doc.number, doc.documentdate, SUM(entry.debitncu) as GiveSum
  FROM ac_entry entry JOIN ac_account a ON entry.accountkey = a.id
     and entry.entrydate >= ? and entry.entrydate <= ? and entry.usr$GS_CUSTOMER = ?
-    JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${id})
-    JOIN ac_record r ON entry.recordkey = r.id  AND r.companykey + 0 IN (${holdingList})
+    JOIN ac_account a1 ON a.LB >= a1.LB and a.RB <= a1.RB and a1.id in (${account_id})
+    JOIN ac_record r ON entry.recordkey = r.id  AND r.companykey + 0 IN (${holdingId})
     LEFT JOIN gd_document doc ON r.documentkey = doc.id
     LEFT JOIN gd_documenttype doct ON doc.documenttypekey = doct.id
  WHERE
@@ -275,8 +275,7 @@ describe('Server', () => {
  HAVING SUM(entry.debitncu) <> 0
  ORDER BY doc.documentdate, doct.name, doc.number
  `;
-    const rs = await attachment.executeQuery(transaction, query, [new Date(), new Date(), 148_333_193]);
-    const ret = await rs.fetchAsObject<any[]>();
+    const rs = await attachment.executeQuery(transaction, query, [new Date(), new Date(), customerId]);
     await rs.close();
     await transaction.commit();
     await attachment.disconnect();
@@ -291,8 +290,7 @@ SELECT con.*, com.*, chief.Name as Chief, acc.Name as Account FROM gd_contact co
  LEFT JOIN gd_contact acc ON com.CHIEFACCOUNTANTKEY = acc.id
  WHERE con.id = ?
  `;
-    const rs = await attachment.executeQuery(transaction, query, [id]);
-    const ret = await rs.fetchAsObject<any[]>();
+    const rs = await attachment.executeQuery(transaction, query, [holdingId]);
     await rs.close();
     await transaction.commit();
     await attachment.disconnect();
