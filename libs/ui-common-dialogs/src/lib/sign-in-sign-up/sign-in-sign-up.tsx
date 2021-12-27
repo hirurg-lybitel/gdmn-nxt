@@ -83,10 +83,6 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
     dispatch({ type: 'SET_WAITING' });
     fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
   };
-  const waitAndDispatchPW = ( fn: () => Promise<IAuthResult> ) => () => {
-    dispatch({ type: 'SET_WAITING' });
-    fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
-  };
 
   const result =
     stage === 'FORGOT_PASSWORD' ?
@@ -102,7 +98,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick = {waitAndDispatchPW(() => newPassword(email))}
+          onClick = {waitAndDispatch(() => newPassword(email))}
         >
           Request new Password
         </Button>
@@ -189,7 +185,10 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Button
           variant="contained"
           disabled={waiting || !userName || !password || !!authResult}
-          onClick={ () => checkCredentials(userName, password).then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) ) }
+          onClick={ () => checkCredentials(userName, password).then( r => {
+            dispatch({ type: 'SET_AUTHRESULT', authResult: r });
+            if(r.result == 'SUCCESS'){location.reload()}else{alert('Wrong PASSWORD')}
+          } ) }
         >
           Login
         </Button>

@@ -16,6 +16,7 @@ import Button from '@mui/material/Button/Button';
 import { setUserName } from './features/user/userSlice';
 import { useEffect, useState } from 'react';
 import { baseURL } from './const';
+import { Cookie } from '@mui/icons-material';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -40,28 +41,41 @@ const post = (url: string, data: Object) => query({ method: 'post', url, baseURL
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const [login, setLogin] = useState(0);
+  const [login, setLogin] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() =>{
-    fetch('http://localhost:4444/user', {method: 'GET', credentials: 'include'}).then(response => {
-      response.status == 200 ? setLogin(login + 1) : setLogin(login * 0)
-    })
+    const login_f = async () => {
+      await fetch('http://localhost:4444/user', {method: 'GET', credentials: 'include'}).then(response => {
+        response.status == 200 ? setLogin(true) : setLogin(false)
+      })
+      setTimeout(() => {
+        setLoading(false);
+      },500)
+      
+    } 
+    login_f();  
   }, [])
 
   const result =
     <div className={styles.app}>
       {
-        login ?
-          <Typography>You are logged in. <Button 
-          onClick = {() =>fetch('http://localhost:4444/logout', {method: 'GET'}).then()}
-          >Logout</Button></Typography>
+        loading ?
+        <h1>Loading...</h1>
         :
-          <SignInSignUp
-            checkCredentials = { (userName, password) => post('/api/v1/user/signin', { userName, password }) }
-            createUser = { (userName, email) => post('/api/v1/user/signup', { userName, email }) }
-            newPassword = {(email) => post('/api/v1/user/forgot-password', {email})}
-            onDone = { userName => dispatch(setUserName(userName)) }
-          />
+          login ?
+            <Typography variant = 'h1'>You are auto logged in. <Button 
+            onClick = {() => fetch('http://localhost:4444/logout', {method: 'GET', credentials: 'include'}).then(response => {
+              response.status == 200 ? setLogin(false) : setLogin(true)
+            })}
+            >Logout</Button></Typography>
+          :
+            <SignInSignUp
+              checkCredentials = { (userName, password) => post('/api/v1/user/signin', { userName, password }) }
+              createUser = { (userName, email) => post('/api/v1/user/signup', { userName, email }) }
+              newPassword = {(email) => post('/api/v1/user/forgot-password', {email})}
+              onDone = { userName => dispatch(setUserName(userName)) }
+            />
       }
     </div>;
 
