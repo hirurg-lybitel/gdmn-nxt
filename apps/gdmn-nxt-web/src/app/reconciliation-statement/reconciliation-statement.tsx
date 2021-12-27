@@ -2,7 +2,7 @@ import Button from '@mui/material/Button/Button';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { baseURL } from '../const';
-import styles from './reconciliation-statement.module.css';
+import styles from './reconciliation-statement.module.less';
 
 /* eslint-disable-next-line */
 export interface ReconciliationStatementProps {}
