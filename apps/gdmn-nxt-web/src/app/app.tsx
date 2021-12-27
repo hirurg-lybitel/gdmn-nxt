@@ -7,7 +7,7 @@ import '@fontsource/roboto/700.css';
 
 import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
-import type { AxiosError } from 'axios';
+import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
@@ -15,13 +15,11 @@ import Typography from '@mui/material/Typography/Typography';
 import Button from '@mui/material/Button/Button';
 import { setUserName } from './features/user/userSlice';
 import { useEffect, useState } from 'react';
-import { response } from 'express';
+import { baseURL } from './const';
 
-const baseURL = 'http://localhost:4444';
-
-const post = async (url: string, data: Object): Promise<IAuthResult> => {
+const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
-    return (await axios({ method: 'post', url, baseURL, data, withCredentials:true})).data;
+    return (await axios(config)).data;
   }
   catch (error: any) {
     const { response, request, message } = error as AxiosError;
@@ -37,6 +35,8 @@ const post = async (url: string, data: Object): Promise<IAuthResult> => {
     }
   }
 };
+
+const post = (url: string, data: Object) => query({ method: 'post', url, baseURL, data, withCredentials: true });
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();

@@ -10,6 +10,7 @@ import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
 import SendmailTransport = require('nodemailer/lib/sendmail-transport');
+import { getReconciliationStatement } from './app/app';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -220,7 +221,7 @@ app.route('/api/v1/user/signup')
     }
   );
 
-  
+
 
 app.route('/api/v1/user/signin')
   .post(
@@ -244,7 +245,7 @@ app.route('/api/v1/user/signin')
         return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
       };
       next();
-      
+
     },
     passport.authenticate('local', {}),
     async (req, res) => {
@@ -279,7 +280,7 @@ app.route('/api/v1/user/signin')
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User email ${email} not found.`));
       };
-      
+
       /* 4. Поменяем данные профиля */
       const provisionalPassword = genRandomPassword();
       const expireOn = Date.now() + 24 * 60 * 60 * 1000;
@@ -388,6 +389,10 @@ app.get('/login-success', (_, res) => {
 app.get('/login-failure', (_, res) => {
   res.send('You entered the wrong password.');
 });
+
+app.get('/reconciliation-statement', getReconciliationStatement);
+
+app.get('*', () => console.log('Unknown request') );
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 
