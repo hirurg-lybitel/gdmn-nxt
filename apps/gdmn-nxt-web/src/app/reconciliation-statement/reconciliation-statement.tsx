@@ -22,8 +22,8 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
       {
         data && data.customerDebt ?
           <div className={styles.container}>
-            <div className="rs-orders-area">
-              <div className="rs-orders-table">
+            <div className={styles['rs-orders-area']}>
+              <div className={styles['rs-orders-table']}>
                 <table>
                   <thead>
                     <tr><th>Заказ</th><th>Предоплата</th><th>Долг</th></tr>
@@ -46,16 +46,16 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                 </table>
               </div>
             </div>
-            <div className="rs-header"></div>
-            <div className="rs-title">
-              <div className="rs-title-first"></div>
-              <div className="rs-title-second"></div>
+            <div className={styles['rs-header']}></div>
+            <div className={styles['rs-title']}>
+              <div className={styles['rs-title-first']}></div>
+              <div className={styles['rs-title-second']}></div>
             </div>
-            <div className="rs-main-table"></div>
-            <div className="rs-footer">
-              <div className="rs-footer-first"></div>
-              <div className="rs-footer-second"></div>
-              <div className="rs-footer-third"></div>
+            <div className={styles['rs-main-table']}></div>
+            <div className={styles['rs-footer']}>
+              <div className={styles['rs-footer-first']}></div>
+              <div className={styles['rs-footer-second']}></div>
+              <div className={styles['rs-footer-third']}></div>
             </div>
           </div>
         :
