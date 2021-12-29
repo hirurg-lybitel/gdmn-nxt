@@ -48,15 +48,19 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
             </div>
             <div className={styles['rs-header']}>
               <table>
+                <colgroup>
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '55%' }} />
+                </colgroup>
                 <thead>
                   <tr>
                     {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th>{s}</th> )}
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th>{s}</th> )}
-                  </tr>
+                  {data?.customerAct?.map( (r: any) => <tr>{['DOCUMENTDATE', 'SUMACT', 'EMPLNAME', 'USR$DESCRIPTION'].map( s => <th>{r[s]}</th> )}</tr> )}
                 </tbody>
               </table>
             </div>
