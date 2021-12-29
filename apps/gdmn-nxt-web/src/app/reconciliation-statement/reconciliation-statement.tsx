@@ -75,7 +75,46 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                 <div>{`с ${data?.params?.dateBegin} по ${data?.params?.dateEnd}`}</div>
               </div>
             </div>
-            <div className={styles['rs-main-table']}></div>
+            <div className={styles['rs-main-table']}>
+              <table>
+                <tbody>
+                  {[...new Set(data.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any) =>
+                    <>
+                      <tr>
+                        <td colSpan={6}>{j}</td>
+                      </tr>
+                      {
+                        data.movement.filter( (m: any) => m.JOBNUMBER === j ).map( (l: any) =>
+                          <tr>
+                            <td>{l.NUMBER}</td>
+                            <td>{l.DOCUMENTDATE}</td>
+                            <td>{l.ALIAS}</td>
+                            <td>{l.NAME} {l.DESCRIPTION ? `(${l.DESCRIPTION})` : null}</td>
+                            <td>{l.GIVESUM2 || null}</td>
+                            <td>{l.GIVESUM || null}</td>
+                          </tr>
+                        )
+                      }
+                      <tr>
+                        <td colSpan={4}>{`Итого по ${j}:`}</td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </>
+                  )}
+                  <tr>
+                    <td colSpan={4}>{`Оборот:`}</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colSpan={4}>{`Сальдо на конец:`}</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <div className={styles['rs-footer']}>
               <div className={styles['rs-footer-first']}></div>
               <div className={styles['rs-footer-second']}></div>

@@ -1,7 +1,7 @@
 .container {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr auto auto 1fr 1fr;
+  grid-template-rows: auto auto auto auto auto;
   gap: 0px 0px;
   grid-template-areas:
     "rs-orders-area"
@@ -30,6 +30,7 @@
   table {
     border-collapse: collapse;
     width: 100%;
+    overflow: auto;
     td,th {
       border: 1px solid black;
       padding: 8px;
