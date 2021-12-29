@@ -46,7 +46,20 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                 </table>
               </div>
             </div>
-            <div className={styles['rs-header']}></div>
+            <div className={styles['rs-header']}>
+              <table>
+                <thead>
+                  <tr>
+                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th>{s}</th> )}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th>{s}</th> )}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <div className={styles['rs-title']}>
               <div className={styles['rs-title-first']}></div>
               <div className={styles['rs-title-second']}></div>
