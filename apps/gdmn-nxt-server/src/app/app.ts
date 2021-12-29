@@ -200,7 +200,7 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
     const result = await Promise.all(queries.map( q => execQuery(q) ));
 
-    return res.json(Object.fromEntries(result))
+    return res.json({ ...Object.fromEntries(result), params: { dateBegin, dateEnd } })
   } finally {
     await transaction?.commit();
     await attachment?.disconnect();

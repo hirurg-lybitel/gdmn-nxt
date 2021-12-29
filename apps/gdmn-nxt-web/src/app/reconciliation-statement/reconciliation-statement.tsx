@@ -65,8 +65,15 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
               </table>
             </div>
             <div className={styles['rs-title']}>
-              <div className={styles['rs-title-first']}></div>
-              <div className={styles['rs-title-second']}></div>
+              <div className={styles['rs-title-first']}>
+                <div>Предприятие БелГИСС</div>
+                <div>Заказ: Все</div>
+              </div>
+              <div className={styles['rs-title-second']}>
+                <div>АКТ СВЕРКИ</div>
+                <div>{`взаимных расчетов между БелГИСС и ${data?.customerAct?.[0]?.['CUSTOMER']}`}</div>
+                <div>{`с ${data?.params?.dateBegin} по ${data?.params?.dateEnd}`}</div>
+              </div>
             </div>
             <div className={styles['rs-main-table']}></div>
             <div className={styles['rs-footer']}>
