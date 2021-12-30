@@ -9,6 +9,7 @@ import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
 import Box from '@mui/system/Box/Box';
+import { LogedUser } from '@gsbelarus/ui-common-dialogs';
 
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
@@ -18,7 +19,7 @@ export interface SignInSignUpProps {
 };
 
 type State = {
-  stage: 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD' | 'HOME';
+  stage: 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
   waiting: boolean;
   userName: string;
   password: string;
@@ -151,7 +152,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
             <Button
               variant="contained"
               disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
-              onClick={ waitAndDispatch( () => createUser(userName, email) ) }
+              onClick={ waitAndDispatch( () => createUser(userName, email)) }
             >
               Sign up
             </Button>
@@ -160,7 +161,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
           Already have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
         </Typography>
       </Stack>
-    : stage === 'SIGNIN' ?
+    :
       <Stack direction="column" spacing={2}>
         <Typography variant="h1">
           Sign in the system
@@ -187,7 +188,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
           disabled={waiting || !userName || !password || !!authResult}
           onClick={ () => checkCredentials(userName, password).then( r => {
             dispatch({ type: 'SET_AUTHRESULT', authResult: r });
-            if(r.result == 'SUCCESS'){location.reload()}else{alert('Wrong PASSWORD')}
+            if(r.result == 'SUCCESS'){location.reload()}
           } ) }
         >
           Login
@@ -199,15 +200,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
           Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
         </Typography>
       </Stack>
-    :
-      <Stack>
-        <h1>You are logged in</h1>
-        <Button variant="outlined" onClick={() => fetch('http://localhost:4444/logout',{method: "GET"}).then(() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }))}>
-          LOGOUT
-        </Button>
-      </Stack>
-
-    return (
+      return (
       <>
         {result}
         <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>

@@ -83,7 +83,7 @@ passport.use(new Strategy({
         return done(null, user);
       } else {
         console.log('Пароль неверный')
-        return done(null, false);
+        return done(null, false)
       }
     }
     catch(err) {
@@ -244,6 +244,11 @@ app.route('/api/v1/user/signin')
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
       };
+
+      /*4. Проверка пароля */
+      if (!validPassword(password, user.hash, user.salt)) {
+        return res.json(authResult('INVALID_PASSWORD', `Wrong password`)); // Убрать после обработки пасспорта P.S. Костыль
+      }
       next();
 
     },
@@ -378,8 +383,8 @@ app.get('/protected-route', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  res.clearCookie('Sid', {path: '/'})
-  res.sendStatus(200)
+  console.log('Logout')
+  res.clearCookie('Sid', {path: '/'}).send()
 });
 
 app.get('/login-success', (_, res) => {
