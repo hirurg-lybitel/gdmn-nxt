@@ -67,12 +67,16 @@ export function LogedUser({logout, onDone }: LogedUserProps) {
 
   const result  =
     stage === 'HOME' ?
-      <Typography variant = 'h1'>You are logged in. 
-        <Button onClick={logout}>Logout</Button>
-      </Typography>
+      <Stack direction = 'column' spacing={2}>
+        <Typography variant = 'h1'>You are logged in</Typography>
+        <Button 
+          variant="contained"
+          onClick={logout}>
+          Logout
+          </Button>
+      </Stack>
     :
       <h1>INFO</h1>
-    ;
     return (
       <>
         {result}

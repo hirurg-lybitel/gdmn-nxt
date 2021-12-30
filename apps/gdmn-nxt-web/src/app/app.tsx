@@ -46,7 +46,9 @@ export function App() {
       switch (appState){
         case 'LOG_IN':
           await fetch('http://localhost:4444/user', {method: 'GET', credentials: 'include'}).then(response => {
-            response.status == 200 ? setAppState('LOGGED_IN') : setAppState('LOGGED_OUT') // Переделать Костыль
+            response.json().then(data => {
+              data['success'] ? setAppState('LOGGED_IN') : setAppState('LOGGED_OUT')
+            })
           })
         break;
         case 'LOG_OUT':

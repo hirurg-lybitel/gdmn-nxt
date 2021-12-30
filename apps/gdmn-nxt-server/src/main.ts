@@ -131,11 +131,10 @@ app.get('/api', (_, res) => {
 
 
 app.get('/user', (req, res) => {
-  console.log(req.session)
-  console.log(req.user )
-  console.log(req.isAuthenticated())
-
-  req.isAuthenticated() ? res.sendStatus(200) : res.sendStatus(401)
+  req.isAuthenticated() ? 
+    res.json({success: true}) 
+  : 
+    res.json({success: false}) 
 })
 
 app.route('/api/v1/user/signup')
@@ -383,7 +382,6 @@ app.get('/protected-route', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  console.log('Logout')
   res.clearCookie('Sid', {path: '/'}).send()
 });
 
