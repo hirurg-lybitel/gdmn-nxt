@@ -16,10 +16,6 @@ const MemoryStore = require('memorystore')(session);
 dotenv.config({ path: '../..' });
 
 const app = express();
-const checkAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) { return next() }
-  res.redirect("/")
-}
 
 app.use(cors({
   credentials: true,
@@ -82,7 +78,7 @@ passport.use(new Strategy({
         return done(null, user);
       } else {
         console.log('Пароль неверный')
-        return done(null, false)
+        return done(null, false);
       }
     }
     catch(err) {
@@ -109,16 +105,15 @@ app.use(session({
   name: 'Sid',
   secret: 'kjdsfgfghfghfghfghfghfghhf',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: sessionStore,
-  cookie:{ 
+  cookie:{
     maxAge: 24*60*60*1000
   }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 app.get('/', (_, res) => {
   res.send('<h1>Home</h1><p>Please <a href="/register">register</a></p>');
@@ -127,15 +122,6 @@ app.get('/', (_, res) => {
 app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
-
-
-app.get('/user', (req, res) => {
-  console.log(req.session)
-  console.log(req.user )
-  console.log(req.isAuthenticated())
-
-  req.isAuthenticated() ? res.sendStatus(200) : res.sendStatus(401)
-})
 
 app.route('/api/v1/user/signup')
   .post(
@@ -225,8 +211,8 @@ app.route('/api/v1/user/signup')
 app.route('/api/v1/user/signin')
   .post(
     async (req, res, next) => {
-      const { userName, password } = req.body;
 
+      const { userName, password } = req.body;
       /*  1. проверим входные параметры на корректность  */
 
       if (typeof userName !== 'string' || typeof password !== 'string') {
@@ -243,11 +229,6 @@ app.route('/api/v1/user/signin')
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
       };
-
-      /*4. Проверка пароля */
-      if (!validPassword(password, user.hash, user.salt)) {
-        return res.json(authResult('INVALID_PASSWORD', `Wrong password`)); // Убрать после обработки пасспорта P.S. Костыль
-      }
       next();
 
     },
@@ -382,8 +363,8 @@ app.get('/protected-route', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  console.log('Logout')
-  res.clearCookie('Sid', {path: '/'}).send()
+  req.logout();
+  res.redirect('/protected-route');
 });
 
 app.get('/login-success', (_, res) => {
@@ -440,7 +421,9 @@ process
  * the decrypted hash/salt with the password that the user provided at login
  */
 function validPassword(password: string, hash: string, salt: string) {
-  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');  
+  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  console.log('Cheking.....')
+  console.log(hashVerify)
   return hash === hashVerify;
 };
 
