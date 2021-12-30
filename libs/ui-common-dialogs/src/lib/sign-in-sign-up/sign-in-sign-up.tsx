@@ -9,6 +9,7 @@ import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
 import Box from '@mui/system/Box/Box';
+import { LogedUser } from '@gsbelarus/ui-common-dialogs';
 
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
@@ -83,10 +84,6 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
     dispatch({ type: 'SET_WAITING' });
     fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
   };
-  const waitAndDispatchPW = ( fn: () => Promise<IAuthResult> ) => () => {
-    dispatch({ type: 'SET_WAITING' });
-    fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
-  };
 
   const result =
     stage === 'FORGOT_PASSWORD' ?
@@ -102,7 +99,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick = {waitAndDispatchPW(() => newPassword(email))}
+          onClick = {waitAndDispatch(() => newPassword(email))}
         >
           Request new Password
         </Button>
@@ -155,7 +152,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
             <Button
               variant="contained"
               disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
-              onClick={ waitAndDispatch( () => createUser(userName, email) ) }
+              onClick={ waitAndDispatch( () => createUser(userName, email)) }
             >
               Sign up
             </Button>
@@ -189,7 +186,10 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Button
           variant="contained"
           disabled={waiting || !userName || !password || !!authResult}
-          onClick={ () => checkCredentials(userName, password).then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) ) }
+          onClick={ () => checkCredentials(userName, password).then( r => {
+            dispatch({ type: 'SET_AUTHRESULT', authResult: r });
+            if(r.result == 'SUCCESS'){location.reload()}
+          } ) }
         >
           Login
         </Button>
@@ -199,9 +199,8 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Typography>
           Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
         </Typography>
-      </Stack>;
-
-    return (
+      </Stack>
+      return (
       <>
         {result}
         <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
