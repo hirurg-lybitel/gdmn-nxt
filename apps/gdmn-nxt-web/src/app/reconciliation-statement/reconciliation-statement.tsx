@@ -1,6 +1,6 @@
 import Button from '@mui/material/Button/Button';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { baseURL } from '../const';
 import styles from './reconciliation-statement.module.less';
 
@@ -16,6 +16,20 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
     axios({ method: 'get', url: '/reconciliation-statement', baseURL, withCredentials: true })
       .then( res => setData(res.data) );
   }, [refresh]);
+
+  const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName } = useMemo( () => {
+    const giveSum = data?.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0);
+    const giveSum2 = data?.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0);
+    const saldo = data?.saldo?.[0]?.['SALDO'] ?? 0;
+    return {
+      giveSum,
+      giveSum2,
+      saldo,
+      saldoEnd: saldo + giveSum2 - giveSum,
+      customerName: data?.customerAct?.[0]?.['CUSTOMER'],
+      ourName: 'БелГИСС'
+    }
+  }, [data]);
 
   return (
     <div>
@@ -71,52 +85,80 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
               </div>
               <div className={styles['rs-title-second']}>
                 <div>АКТ СВЕРКИ</div>
-                <div>{`взаимных расчетов между БелГИСС и ${data?.customerAct?.[0]?.['CUSTOMER']}`}</div>
+                <div>{`взаимных расчетов между ${ourName} и ${customerName}`}</div>
                 <div>{`с ${data?.params?.dateBegin} по ${data?.params?.dateEnd}`}</div>
               </div>
             </div>
             <div className={styles['rs-main-table']}>
               <table>
+                <thead>
+                  <tr>
+                    <th>Номер</th>
+                    <th>Дата</th>
+                    <th colSpan={2}>Документ</th>
+                    <th>Акт</th>
+                    <th>Оплаты</th>
+                  </tr>
+                  <tr>
+                    <th colSpan={4} style={{ textAlign: 'left' }}>Сальдо на начало:</th>
+                    <th>{saldo > 0 ? saldo : null}</th>
+                    <th>{saldo < 0 ? saldo : null}</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {[...new Set(data.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any) =>
-                    <>
-                      <tr>
-                        <td colSpan={6}>{j}</td>
-                      </tr>
-                      {
-                        data.movement.filter( (m: any) => m.JOBNUMBER === j ).map( (l: any) =>
-                          <tr>
-                            <td>{l.NUMBER}</td>
-                            <td>{l.DOCUMENTDATE}</td>
-                            <td>{l.ALIAS}</td>
-                            <td>{l.NAME} {l.DESCRIPTION ? `(${l.DESCRIPTION})` : null}</td>
-                            <td>{l.GIVESUM2 || null}</td>
-                            <td>{l.GIVESUM || null}</td>
-                          </tr>
-                        )
-                      }
-                      <tr>
-                        <td colSpan={4}>{`Итого по ${j}:`}</td>
-                        <td></td>
-                        <td></td>
-                      </tr>
-                    </>
+                  {[...new Set(data.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any) => {
+                    const filtered = data.movement.filter( (m: any) => m.JOBNUMBER === j );
+
+                    return (
+                      <>
+                        <tr>
+                          <td colSpan={6}>{j}</td>
+                        </tr>
+                        {
+                          filtered.map( (l: any) =>
+                            <tr>
+                              <td>{l.NUMBER}</td>
+                              <td>{l.DOCUMENTDATE}</td>
+                              <td>{l.ALIAS}</td>
+                              <td>{l.NAME} {l.DESCRIPTION ? `(${l.DESCRIPTION})` : null}</td>
+                              <td>{l.GIVESUM2 || null}</td>
+                              <td>{l.GIVESUM || null}</td>
+                            </tr>
+                          )
+                        }
+                        <tr>
+                          <td colSpan={4} style={{ textAlign: 'right' }}>{`Итого по ${j}:`}</td>
+                          <td>{filtered.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0) || null}</td>
+                          <td>{filtered.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) || null}</td>
+                        </tr>
+                      </>
+                    );
+                  }
                   )}
+                </tbody>
+                <tfoot>
                   <tr>
                     <td colSpan={4}>{`Оборот:`}</td>
-                    <td></td>
-                    <td></td>
+                    <td>{giveSum2 || null}</td>
+                    <td>{giveSum || null}</td>
                   </tr>
                   <tr>
-                    <td colSpan={4}>{`Сальдо на конец:`}</td>
-                    <td></td>
-                    <td></td>
+                    <th colSpan={4} style={{ textAlign: 'left' }}>Сальдо на конец:</th>
+                    <th>{saldoEnd > 0 ? saldoEnd : null}</th>
+                    <th>{saldoEnd < 0 ? saldoEnd : null}</th>
                   </tr>
-                </tbody>
+                </tfoot>
               </table>
             </div>
             <div className={styles['rs-footer']}>
-              <div className={styles['rs-footer-first']}></div>
+              {
+                saldoEnd ?
+                  <div className={styles['rs-footer-first']}>
+                    Долг за {saldoEnd > 0 ? customerName : ourName} на ... составляет <span style={{ borderBottom: '1px solid black' }}>{Math.abs(saldoEnd)}</span>
+                  </div>
+                :
+                  null
+              }
               <div className={styles['rs-footer-second']}></div>
               <div className={styles['rs-footer-third']}></div>
             </div>
