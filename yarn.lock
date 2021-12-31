@@ -7587,6 +7587,11 @@ number-is-nan@^1.0.0:
   resolved "https://registry.yarnpkg.com/number-is-nan/-/number-is-nan-1.0.1.tgz#097b602b53422a522c1afb8790318336941a011d"
   integrity sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=
 
+number-to-words-ru@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/number-to-words-ru/-/number-to-words-ru-2.3.2.tgz#a5a3d765a2d2b9cb3883a38d3e9a58cc2a551727"
+  integrity sha512-vJg1es14Z0imNhH7UwE3fdgEmpHbYh1fyDLfiOOftVrCbt+5/aW35TmVJ1d++c9G2EkMEeftYxP6nGR2bBqs5Q==
+
 nwsapi@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.0.tgz#204879a9e3d068ff2a55139c2c772780681a38b7"

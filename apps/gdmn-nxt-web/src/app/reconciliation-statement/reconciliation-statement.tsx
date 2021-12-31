@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { baseURL } from '../const';
 import styles from './reconciliation-statement.module.less';
+import numberToWordsRu from 'number-to-words-ru';
 
 /* eslint-disable-next-line */
 export interface ReconciliationStatementProps {}
@@ -17,17 +18,37 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
       .then( res => setData(res.data) );
   }, [refresh]);
 
-  const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName } = useMemo( () => {
+  const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo( () => {
     const giveSum = data?.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0);
     const giveSum2 = data?.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0);
     const saldo = data?.saldo?.[0]?.['SALDO'] ?? 0;
+    const saldoEnd = saldo + giveSum2 - giveSum;
     return {
       giveSum,
       giveSum2,
       saldo,
-      saldoEnd: saldo + giveSum2 - giveSum,
+      saldoEnd,
       customerName: data?.customerAct?.[0]?.['CUSTOMER'],
-      ourName: 'БелГИСС'
+      ourName: data?.firm?.[0]?.NAME ?? '',
+      accountantName: data?.firm?.[0]?.ACCOUNT ?? '',
+      written: numberToWordsRu.convert(Math.abs(saldoEnd), {
+        currency: 'rub',
+        declension: 'nominative',
+        roundNumber: -1,
+        convertMinusSignToWord: true,
+        showNumberParts: {
+          integer: true,
+          fractional: true,
+        },
+        convertNumbertToWords: {
+          integer: true,
+          fractional: false,
+        },
+        showCurrency: {
+          integer: true,
+          fractional: true,
+        },
+      })
     }
   }, [data]);
 
@@ -155,11 +176,54 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                 saldoEnd ?
                   <div className={styles['rs-footer-first']}>
                     Долг за {saldoEnd > 0 ? customerName : ourName} на ... составляет <span style={{ borderBottom: '1px solid black' }}>{Math.abs(saldoEnd)}</span>
+                    <p/>
+                    ({written})
                   </div>
                 :
                   null
               }
-              <div className={styles['rs-footer-second']}></div>
+              <div className={styles['rs-footer-second']}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{ourName}</th>
+                      <th>{customerName}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div>
+                          <div>Главный бухгалтер</div>
+                          <div>должность</div>
+                        </div>
+                        <div>
+                          <div>&nbsp;</div>
+                          <div>подпись</div>
+                        </div>
+                        <div>
+                          <div>{accountantName}</div>
+                          <div>расшифровка подписи</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div>
+                          <div>Главный бухгалтер</div>
+                          <div>должность</div>
+                        </div>
+                        <div>
+                          <div>&nbsp;</div>
+                          <div>подпись</div>
+                        </div>
+                        <div>
+                          <div>&nbsp;</div>
+                          <div>расшифровка подписи</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div className={styles['rs-footer-third']}></div>
             </div>
           </div>

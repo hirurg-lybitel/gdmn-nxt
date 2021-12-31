@@ -80,7 +80,30 @@
       "rs-footer-third";
     grid-area: rs-footer;
     .rs-footer-first { grid-area: rs-footer-first; }
-    .rs-footer-second { grid-area: rs-footer-second; }
+    .rs-footer-second {
+      grid-area: rs-footer-second;
+      th {
+        border: none;
+        width: 50%;
+      }
+      td {
+        border: none;
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+        div {
+          display: flex;
+          flex-direction: column;
+          :first-child {
+            border-bottom: 1px solid black;
+          }
+          :last-child {
+            vertical-align: super;
+            font-size: 60%;
+          }
+        }
+      }
+    }
     .rs-footer-third { grid-area: rs-footer-third; }
   }
 }
