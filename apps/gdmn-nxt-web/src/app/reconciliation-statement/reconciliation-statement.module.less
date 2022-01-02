@@ -14,18 +14,17 @@
     grid-template-columns: 60% 40%;
     grid-template-rows: 1fr;
     gap: 0px 0px;
+    margin-bottom: 1rem;
     grid-template-areas:
       ". rs-orders-table";
     grid-area: rs-orders-area;
-    background-color: aqua  ;
     .rs-orders-table {
       grid-area: rs-orders-table;
-      background-color: blue;
     }
   }
   .rs-header {
     grid-area: rs-header;
-    background-color: pink;
+    margin-bottom: 2rem;
   }
   table {
     border-collapse: collapse;
@@ -45,10 +44,9 @@
       "rs-title-first"
       "rs-title-second";
     grid-area: rs-title;
-    padding-top: 2rem;
+    margin-bottom: 1rem;
     .rs-title-first {
       grid-area: rs-title-first;
-      background-color: blueviolet;
       display: flex;
       flex-direction: row;
       width: 100%;
@@ -59,15 +57,14 @@
     }
     .rs-title-second {
       grid-area: rs-title-second;
-      background-color: burlywood;
       display: flex;
       flex-direction: column;
       align-items: center;
+      font-weight: bold;
     }
   }
   .rs-main-table {
     grid-area: rs-main-table;
-    background-color: chartreuse;
   }
   .rs-footer {
     display: grid;
@@ -88,18 +85,21 @@
       }
       td {
         border: none;
-        display: flex;
-        flex-direction: row;
-        justify-content: stretch;
         div {
           display: flex;
-          flex-direction: column;
-          :first-child {
-            border-bottom: 1px solid black;
-          }
-          :last-child {
-            vertical-align: super;
-            font-size: 60%;
+          flex-direction: row;
+          width: 100%;
+          gap: 0.5rem;
+          div {
+            display: flex;
+            flex-direction: column;
+            :first-child {
+              border-bottom: 1px solid black;
+            }
+            :last-child {
+              vertical-align: super;
+              font-size: 60%;
+            }
           }
         }
       }

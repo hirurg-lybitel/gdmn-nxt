@@ -30,10 +30,44 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
     attachment = await client.connect(`${host}/${port}:${db}`);
     transaction = await attachment.startTransaction();
 
+    const _schema = {
+      customerDebt: {
+        SALDO: {
+          type: 'curr'
+        }
+      },
+      customerAct: {
+        DOCUMENTDATE: {
+          type: 'date'
+        }
+      },
+      _params: {
+        dateBegin: {
+          type: 'date'
+        },
+        dateEnd: {
+          type: 'date'
+        }
+      }
+    };
+
     const execQuery = async ({ name, query, params }: { name: string, query: string, params: any[] }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
-        return [name, await rs.fetchAsObject()];
+        const data = await rs.fetchAsObject();
+        const sch = _schema[name];
+
+        if (sch) {
+          for (const rec of data) {
+            for (const fld of Object.keys(rec)) {
+              if (sch[fld] && sch[fld].type === 'date') {
+                rec[fld] = (rec[fld] as Date).getTime();
+              }
+            }
+          }
+        }
+
+        return [name, data];
       } finally {
         await rs.close();
       }
@@ -200,7 +234,11 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
     const result = await Promise.all(queries.map( q => execQuery(q) ));
 
-    return res.json({ ...Object.fromEntries(result), params: { dateBegin, dateEnd } })
+    return res.json({
+      ...Object.fromEntries(result),
+      _params: [{ dateBegin: dateBegin.getTime(), dateEnd: dateEnd.getTime() }],
+      _schema
+    });
   } finally {
     await transaction?.commit();
     await attachment?.disconnect();

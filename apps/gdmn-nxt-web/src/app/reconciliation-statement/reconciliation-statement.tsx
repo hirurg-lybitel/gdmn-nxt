@@ -5,13 +5,64 @@ import { baseURL } from '../const';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 
+const shortenName = (s: string) => {
+  const arr = s.split(' ')
+    .map( l => l.trim() )
+    .filter(Boolean)
+    .filter( (_, idx) => idx < 3 )
+    .map( (l, idx) => idx ? l.substring(0, 1).toUpperCase() : l );
+  return arr.length === 2 ? `${arr[1]}. ${arr[0]}` : `${arr[1]}. ${arr[2]}. ${arr[0]}`;
+};
+
+const skipPatrName = (s: string) => s.split(' ')
+  .map( l => l.trim() )
+  .filter(Boolean)
+  .filter( (_, idx) => idx < 2 )
+  .join(' ');
+
+const formatValue = (rec: any, rs: string, fld: string, schema: any) => {
+  const fldDef = schema?.[rs]?.[fld];
+
+  if (fldDef) {
+    if (typeof rec === 'object') {
+      if (fldDef.type === 'date' && rec[fld] instanceof Date) {
+        return rec[fld].toLocaleDateString('ru-BE');
+      }
+
+      if (fldDef.type === 'date' && typeof rec[fld] === 'number') {
+        return new Date(rec[fld]).toLocaleDateString('ru-BE');
+      }
+
+      if (fldDef.type === 'curr' && typeof rec[fld] === 'number') {
+        return new Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(rec[fld]);
+      }
+    } else {
+      if (fldDef.type === 'date' && rec instanceof Date) {
+        return rec.toLocaleDateString('ru-BE');
+      }
+
+      if (fldDef.type === 'date' && typeof rec === 'number') {
+        return new Date(rec).toLocaleDateString('ru-BE');
+      }
+
+      if (fldDef.type === 'curr' && typeof rec === 'number') {
+        return new Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(rec);
+      }
+    }
+  } else {
+    return rec[fld];
+  }
+};
+
 /* eslint-disable-next-line */
 export interface ReconciliationStatementProps {}
 
-export function ReconciliationStatement(props: ReconciliationStatementProps) {
+export function ReconciliationStatement(_props: ReconciliationStatementProps) {
 
   const [data, setData] = useState<any>({});
   const [refresh, setRefresh] = useState(0);
+  const params = data?._params?.[0];
+  const schema = data?._schema;
 
   useEffect( () => {
     axios({ method: 'get', url: '/reconciliation-statement', baseURL, withCredentials: true })
@@ -52,6 +103,8 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
     }
   }, [data]);
 
+  const fv = (rec: any, rs: string, fld: string) => formatValue(rec, rs, fld, schema);
+
   return (
     <div>
       {
@@ -68,8 +121,8 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                       data?.customerDebt?.map( (d: any) =>
                         <tr key={d['USR$NUMBER']}>
                           <td>{d['USR$NUMBER']}</td>
-                          <td>{d['SALDO'] <= 0 ? -d['SALDO'] : undefined}</td>
-                          <td>{d['SALDO'] > 0 ? d['SALDO'] : undefined}</td>
+                          <td>{d['SALDO'] <= 0 ? fv(-d['SALDO'], 'customerDebt', 'SALDO') : undefined}</td>
+                          <td>{d['SALDO'] > 0 ? fv(d, 'customerDebt', 'SALDO') : undefined}</td>
                         </tr>
                       )
                     }
@@ -95,7 +148,15 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.customerAct?.map( (r: any) => <tr>{['DOCUMENTDATE', 'SUMACT', 'EMPLNAME', 'USR$DESCRIPTION'].map( s => <th>{r[s]}</th> )}</tr> )}
+                  {data?.customerAct?.map(
+                    (r: any) =>
+                      <tr>
+                        <td>{fv(r, 'customerAct', 'DOCUMENTDATE')}</td>
+                        <td>{r['SUMACT']}</td>
+                        <td>{skipPatrName(r['EMPLNAME'])}</td>
+                        <td>{r['USR$DESCRIPTION']}</td>
+                      </tr> )
+                  }
                 </tbody>
               </table>
             </div>
@@ -107,7 +168,7 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
               <div className={styles['rs-title-second']}>
                 <div>АКТ СВЕРКИ</div>
                 <div>{`взаимных расчетов между ${ourName} и ${customerName}`}</div>
-                <div>{`с ${data?.params?.dateBegin} по ${data?.params?.dateEnd}`}</div>
+                <div>{`с ${fv(params, '_params', 'dateBegin')} по ${fv(params, '_params', 'dateEnd')}`}</div>
               </div>
             </div>
             <div className={styles['rs-main-table']}>
@@ -194,30 +255,34 @@ export function ReconciliationStatement(props: ReconciliationStatementProps) {
                     <tr>
                       <td>
                         <div>
-                          <div>Главный бухгалтер</div>
-                          <div>должность</div>
-                        </div>
-                        <div>
-                          <div>&nbsp;</div>
-                          <div>подпись</div>
-                        </div>
-                        <div>
-                          <div>{accountantName}</div>
-                          <div>расшифровка подписи</div>
+                          <div>
+                            <div>Главный бухгалтер</div>
+                            <div>должность</div>
+                          </div>
+                          <div>
+                            <div>&nbsp;</div>
+                            <div>подпись</div>
+                          </div>
+                          <div>
+                            <div>{shortenName(accountantName)}</div>
+                            <div>расшифровка подписи</div>
+                          </div>
                         </div>
                       </td>
                       <td>
                         <div>
-                          <div>Главный бухгалтер</div>
-                          <div>должность</div>
-                        </div>
-                        <div>
-                          <div>&nbsp;</div>
-                          <div>подпись</div>
-                        </div>
-                        <div>
-                          <div>&nbsp;</div>
-                          <div>расшифровка подписи</div>
+                          <div>
+                            <div>Главный бухгалтер</div>
+                            <div>должность</div>
+                          </div>
+                          <div>
+                            <div>&nbsp;</div>
+                            <div>подпись</div>
+                          </div>
+                          <div>
+                            <div>&nbsp;</div>
+                            <div>расшифровка подписи</div>
+                          </div>
                         </div>
                       </td>
                     </tr>
