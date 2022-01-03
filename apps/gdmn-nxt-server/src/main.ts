@@ -131,10 +131,11 @@ app.get('/api', (_, res) => {
 
 
 app.get('/user', (req, res) => {
+  console.log(req.user)
   req.isAuthenticated() ? 
-    res.json({success: true}) 
+    res.json(req.user) 
   : 
-    res.json({success: false}) 
+    res.json({success: false})
 })
 
 app.route('/api/v1/user/signup')

@@ -8,8 +8,8 @@ import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
+import { store } from 'C:/Golden/gdmn-nxt/apps/gdmn-nxt-web/src/app/store';
 import Box from '@mui/system/Box/Box';
-import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 
 export interface LogedUserProps {
     logout: () => void;
@@ -56,6 +56,8 @@ function reducer(state: State, action: Action): State {
   }
 };
 
+const userName = store.getState().user.userName;
+
 export function LogedUser({logout, onDone }: LogedUserProps) {
   
   const [{ stage, userName, isLogged, authResult, waiting }, dispatch] = useReducer(reducer, initialState);
@@ -68,12 +70,17 @@ export function LogedUser({logout, onDone }: LogedUserProps) {
   const result  =
     stage === 'HOME' ?
       <Stack direction = 'column' spacing={2}>
-        <Typography variant = 'h1'>You are logged in</Typography>
+        <Typography variant = 'h1'>You are logged in as </Typography>
         <Button 
           variant="contained"
           onClick={logout}>
           Logout
-          </Button>
+        </Button>
+        <Button 
+          variant="contained"
+          onClick={() => dispatch({ type: 'SET_STAGE', stage: 'INFO' })}>
+          CHECK THE ACT
+        </Button>
       </Stack>
     :
       <h1>INFO</h1>
