@@ -39,35 +39,36 @@ const get = (url: string) => query({method: 'get', url, baseURL, withCredentials
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const [appState, setAppState] = useState<'LOG_IN' | 'LOGGED_IN' | 'LOGGED_OUT' | 'LOG_OUT'>('LOG_IN');
+  const [appState, setAppState] = useState<'QUERY_LOGIN' | 'CLIENT' | 'SIGN_IN' | 'QUERY_LOGOUT'>('QUERY_LOGIN');
 
   useEffect(() => {
      const app_f = async () =>{
       switch (appState){
-        case 'LOG_IN':
+        case 'QUERY_LOGIN':
           await fetch('http://localhost:4444/user', {method: 'GET', credentials: 'include'}).then(response => {
             response.json().then(data => {
-              data['success'] ? setAppState('LOGGED_IN') : setAppState('LOGGED_OUT')
+              data['userName'] ? setAppState('CLIENT') : setAppState('SIGN_IN')
             })
           })
         break;
-        case 'LOG_OUT':
+        case 'QUERY_LOGOUT':
           await get('/logout')
-          setAppState('LOGGED_OUT')
+          setAppState('SIGN_IN')
         break;
       }      
     }
     app_f();
-  })
+  }, [appState]);
 
   const result =
     <div className={styles.app}>
       {
-        appState == 'LOG_IN' ?
+        appState == 'QUERY_LOGIN' ?
         <h1>Loading...</h1>
-        : appState == 'LOGGED_IN' ?
+        : appState == 'CLIENT' ?
           <LogedUser
-            logout ={() =>  setAppState('LOG_OUT')}
+            
+            logout ={() =>  setAppState('QUERY_LOGOUT')}
             onDone = { userName => dispatch(setUserName(userName)) }
           />
           :

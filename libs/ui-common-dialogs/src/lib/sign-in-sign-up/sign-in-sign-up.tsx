@@ -9,7 +9,6 @@ import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
 import Box from '@mui/system/Box/Box';
-import { LogedUser } from '@gsbelarus/ui-common-dialogs';
 
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
