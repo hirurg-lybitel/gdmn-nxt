@@ -8,7 +8,6 @@ import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
-import { store } from '../../../../../apps/gdmn-nxt-web/src/app/store';
 import Box from '@mui/system/Box/Box';
 
 export interface LogedUserProps {
@@ -56,7 +55,6 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-const userName = store.getState().user.userName;
 
 export function LogedUser({logout, onDone }: LogedUserProps) {
   
