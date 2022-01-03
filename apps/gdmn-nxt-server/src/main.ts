@@ -18,9 +18,9 @@ dotenv.config({ path: '../..' });
 
 const app = express();
 const checkAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) { return next() }
-  res.redirect("/")
-}
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect("/");
+};
 
 app.use(cors({
   credentials: true,
@@ -55,8 +55,8 @@ const purgeExpiredUsers = async () => {
   let changed = false;
   const data = await userDB.getMutable(false);
   for (const k of Object.keys(data)) {
-    if (data[k].expireOn < Date.now()) {
-      delete data[k];
+    if (data[ k ].expireOn < Date.now()) {
+      delete data[ k ];
       changed = true;
     }
   }
@@ -68,7 +68,7 @@ const purgeExpiredUsers = async () => {
 passport.use(new Strategy({
   usernameField: 'userName',
   passwordField: 'password'
-  },
+},
   async (userName: string, password: string, done) => {
     try {
       await purgeExpiredUsers();
@@ -82,19 +82,19 @@ passport.use(new Strategy({
       if (validPassword(password, user.hash, user.salt)) {
         return done(null, user);
       } else {
-        console.log('Пароль неверный')
-        return done(null, false)
+        console.log('Пароль неверный');
+        return done(null, false);
       }
     }
-    catch(err) {
+    catch (err) {
       done(err);
     }
   }
 ));
 
-passport.serializeUser( (user: IUser, done) => done(null, userName2Key(user.userName)) );
+passport.serializeUser((user: IUser, done) => done(null, userName2Key(user.userName)));
 
-passport.deserializeUser( async (userName: string, done) => {
+passport.deserializeUser(async (userName: string, done) => {
   const user = await userDB.read(userName);
 
   if (user) {
@@ -112,8 +112,8 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   store: sessionStore,
-  cookie:{ 
-    maxAge: 24*60*60*1000
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
@@ -131,12 +131,12 @@ app.get('/api', (_, res) => {
 
 
 app.get('/user', (req, res) => {
-  console.log(req.user)
-  req.isAuthenticated() ? 
-    res.json(req.user) 
-  : 
-    res.json({success: false})
-})
+  console.log(req.user);
+  req.isAuthenticated() ?
+    res.json(req.user)
+    :
+    res.json({ success: false });
+});
 
 app.route('/api/v1/user/signup')
   .post(
@@ -158,12 +158,12 @@ app.route('/api/v1/user/signup')
 
       /* 3. проверим на дубликат имени пользователя */
       const un = userName.toLowerCase();
-      if (await userDB.findOne( u => u.userName.toLowerCase() === un )) {
+      if (await userDB.findOne(u => u.userName.toLowerCase() === un)) {
         return res.json(authResult('DUPLICATE_USER_NAME', `User name ${userName} already exists.`));
       };
 
       /* 4. проверим на дубликат email */
-      if (await userDB.findOne( u => u.email === email )) {
+      if (await userDB.findOne(u => u.email === email)) {
         return res.json(authResult('DUPLICATE_EMAIL', `User with email ${email} already exists.`));
       };
 
@@ -239,7 +239,7 @@ app.route('/api/v1/user/signin')
       await purgeExpiredUsers();
       /* 3. ищем пользователя */
       const un = userName.toLowerCase();
-      const user = await userDB.findOne( u => u.userName.toLowerCase() === un );
+      const user = await userDB.findOne(u => u.userName.toLowerCase() === un);
 
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
@@ -264,7 +264,7 @@ app.route('/api/v1/user/signin')
   );
 
 
-  app.route('/api/v1/user/forgot-password')
+app.route('/api/v1/user/forgot-password')
   .post(
     async (req, res) => {
       const { email } = req.body;
@@ -280,7 +280,7 @@ app.route('/api/v1/user/signin')
 
       /* 3. ищем пользователя */
       const em = email.toLowerCase();
-      const user = await userDB.findOne( u => u.email.toLowerCase() === em );
+      const user = await userDB.findOne(u => u.email.toLowerCase() === em);
 
       if (!user) {
         return res.json(authResult('UNKNOWN_USER', `User email ${email} not found.`));
@@ -290,7 +290,7 @@ app.route('/api/v1/user/signin')
       const provisionalPassword = genRandomPassword();
       const expireOn = Date.now() + 24 * 60 * 60 * 1000;
 
-      const {salt, hash} = genPassword(provisionalPassword);
+      const { salt, hash } = genPassword(provisionalPassword);
 
       user.salt = salt;
       user.hash = hash;
@@ -330,10 +330,10 @@ app.route('/api/v1/user/signin')
         'SUCCESS_PASSWORD_CHANGED',
         `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
       ));
-    })
+    });
 
 app.route('/login')
-  .get( (_, res) => {
+  .get((_, res) => {
     const form = '<h1>Login Page</h1><form method="POST" action="/login">\
     Enter Username:<br><input type="text" name="username">\
     <br>Enter Password:<br><input type="password" name="password">\
@@ -344,14 +344,15 @@ app.route('/login')
   .post(
     passport.authenticate('local', {
       failureRedirect: '/login-failure',
-      successRedirect: '/login-success' }),
+      successRedirect: '/login-success'
+    }),
     (err, _req, _res, next) => {
       if (err) next(err);
     }
   );
 
 app.route('/register')
-  .get( (_, res) => {
+  .get((_, res) => {
     const form = '<h1>Register Page</h1><form method="post" action="register">\
       Enter Username:<br><input type="text" name="username">\
       <br>Enter Password:<br><input type="password" name="password">\
@@ -376,14 +377,14 @@ app.route('/register')
 app.get('/protected-route', (req, res) => {
   // This is how you check if a user is authenticated and protect a route.  You could turn this into a custom middleware to make it less redundant
   if (req.isAuthenticated()) {
-      res.send('<h1>You are authenticated</h1><p><a href="/logout">Logout and reload</a></p>');
+    res.send('<h1>You are authenticated</h1><p><a href="/logout">Logout and reload</a></p>');
   } else {
-      res.send('<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>');
+    res.send('<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>');
   }
 });
 
 app.get('/logout', (req, res) => {
-  res.clearCookie('Sid', {path: '/'}).send()
+  res.clearCookie('Sid', { path: '/' }).send();
 });
 
 app.get('/login-success', (_, res) => {
@@ -396,11 +397,11 @@ app.get('/login-failure', (_, res) => {
 
 app.get('/reconciliation-statement', getReconciliationStatement);
 
-app.get('*', () => console.log('Unknown request') );
+app.get('*', () => console.log('Unknown request'));
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 
-const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`) );
+const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
 
@@ -419,12 +420,12 @@ process
   .on('exit', code => {
     userDB.done();
     console.log(`Process exit event with code: ${code}`);
-   } )
+  })
   .on('SIGINT', process.exit)
   .on('SIGBREAK', process.exit)
   .on('SIGTERM', process.exit)
-  .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p) )
-  .on('uncaughtException', err => console.error(err) );
+  .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
+  .on('uncaughtException', err => console.error(err));
 
 /**
  * -------------- HELPER FUNCTIONS ----------------
@@ -440,7 +441,7 @@ process
  * the decrypted hash/salt with the password that the user provided at login
  */
 function validPassword(password: string, hash: string, salt: string) {
-  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');  
+  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
   return hash === hashVerify;
 };
 
