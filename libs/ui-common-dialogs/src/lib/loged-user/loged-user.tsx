@@ -8,7 +8,7 @@ import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
-import { store } from 'C:/Golden/gdmn-nxt/apps/gdmn-nxt-web/src/app/store';
+import { store } from '../../../../../apps/gdmn-nxt-web/src/app/store';
 import Box from '@mui/system/Box/Box';
 
 export interface LogedUserProps {
