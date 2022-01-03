@@ -39,13 +39,15 @@ const get = (url: string) => query({ method: 'get', url, baseURL, withCredential
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage, userName } = useSelector<RootState, UserState>( state => state.user );
+  const { loginStage } = useSelector<RootState, UserState>( state => state.user );
 
   useEffect(() => {
     (async function () {
       switch (loginStage) {
         case 'LAUNCHING':
           // приложение загружается
+          // здесь мы можем разместить код, который еще
+          // до первой связи с сервером необходимо выполнить
           dispatch(setLoginStage('QUERY_LOGIN'));
           break;
 

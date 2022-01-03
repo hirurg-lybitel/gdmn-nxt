@@ -1,3 +1,4 @@
+import { IUserProfile } from '@gsbelarus/util-api-types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type LoginStage =
@@ -9,12 +10,11 @@ export type LoginStage =
 
 export interface UserState {
   loginStage: LoginStage;
-  userName: string | undefined;
+  userProfile?: IUserProfile;
 };
 
 const initialState: UserState = {
   loginStage: 'LAUNCHING',
-  userName: undefined
 };
 
 export const userSlice = createSlice({
@@ -22,7 +22,11 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setUserName: (state, action: PayloadAction<string>) => {
-      state.userName = action.payload
+      if (state.userProfile) {
+        state.userProfile = { ...state.userProfile, userName: action.payload };
+      } else {
+        state.userProfile = { userName: action.payload };
+      }
     },
     setLoginStage: (state, action: PayloadAction<LoginStage>) => {
       state.loginStage = action.payload;
