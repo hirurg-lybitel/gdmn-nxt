@@ -1,4 +1,7 @@
 {
     "terminal.integrated.defaultProfile.windows": "Command Prompt",
-    "git.postCommitCommand": "sync"
+    "git.postCommitCommand": "sync",
+    "javascript.format.semicolons": "insert",
+    "typescript.format.insertSpaceAfterCommaDelimiter": true,
+    "typescript.format.semicolons": "insert",
 }
