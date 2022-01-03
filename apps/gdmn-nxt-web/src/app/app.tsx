@@ -35,48 +35,48 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
 };
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL, data, withCredentials: true });
-const get = (url: string) => query({method: 'get', url, baseURL, withCredentials: true})
+const get = (url: string) => query({ method: 'get', url, baseURL, withCredentials: true });
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const [appState, setAppState] = useState<'QUERY_LOGIN' | 'CLIENT' | 'SIGN_IN' | 'QUERY_LOGOUT'>('QUERY_LOGIN');
+  const [ appState, setAppState ] = useState<'QUERY_LOGIN' | 'CLIENT' | 'SIGN_IN' | 'QUERY_LOGOUT'>('QUERY_LOGIN');
 
   useEffect(() => {
-     const app_f = async () =>{
-      switch (appState){
+    const app_f = async () => {
+      switch (appState) {
         case 'QUERY_LOGIN':
-          await fetch('http://localhost:4444/user', {method: 'GET', credentials: 'include'}).then(response => {
+          await fetch('http://localhost:4444/user', { method: 'GET', credentials: 'include' }).then(response => {
             response.json().then(data => {
-              data['userName'] ? setAppState('CLIENT') : setAppState('SIGN_IN')
-            })
-          })
-        break;
+              data[ 'userName' ] ? setAppState('CLIENT') : setAppState('SIGN_IN');
+            });
+          });
+          break;
         case 'QUERY_LOGOUT':
-          await get('/logout')
-          setAppState('SIGN_IN')
-        break;
-      }      
-    }
+          await get('/logout');
+          setAppState('SIGN_IN');
+          break;
+      }
+    };
     app_f();
-  }, [appState]);
+  }, [ appState ]);
 
   const result =
     <div className={styles.app}>
       {
         appState == 'QUERY_LOGIN' ?
-        <h1>Loading...</h1>
-        : appState == 'CLIENT' ?
-          <LogedUser
-            
-            logout ={() =>  setAppState('QUERY_LOGOUT')}
-            onDone = { userName => dispatch(setUserName(userName)) }
-          />
-          :
+          <h1>Loading...</h1>
+          : appState == 'CLIENT' ?
+            <LogedUser
+
+              logout={() => setAppState('QUERY_LOGOUT')}
+              onDone={userName => dispatch(setUserName(userName))}
+            />
+            :
             <SignInSignUp
-              checkCredentials = {(userName, password) => post('/api/v1/user/signin', { userName, password }) }
-              createUser = { (userName, email) => post('/api/v1/user/signup', { userName, email }) } // Переделать с useEffect P.S. Костыль
-              newPassword = {(email) => post('/api/v1/user/forgot-password', {email})}
-              onDone = { userName => dispatch(setUserName(userName)) }
+              checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password })}
+              createUser={(userName, email) => post('/api/v1/user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
+              newPassword={(email) => post('/api/v1/user/forgot-password', { email })}
+              onDone={userName => dispatch(setUserName(userName))}
             />
       }
     </div>;
