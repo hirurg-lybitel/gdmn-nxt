@@ -28,6 +28,7 @@
     "memorystore": "^1.6.6",
     "node-firebird-driver-native": "^2.3.0",
     "nodemailer": "^6.7.2",
+    "number-to-words-ru": "^2.3.2",
     "passport": "^0.5.0",
     "passport-local": "^1.0.0",
     "react": "17.0.2",
