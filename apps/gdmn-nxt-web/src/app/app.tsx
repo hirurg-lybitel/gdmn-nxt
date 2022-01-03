@@ -58,7 +58,7 @@ export function App() {
       }      
     }
     app_f();
-  })
+  }, [appState]);
 
   const result =
     <div className={styles.app}>
