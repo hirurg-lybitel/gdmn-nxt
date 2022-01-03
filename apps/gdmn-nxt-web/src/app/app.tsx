@@ -11,7 +11,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { setUserName } from './features/user/userSlice';
+import { setLoginStage, setUserName, UserState } from './features/user/userSlice';
 import { useEffect, useState } from 'react';
 import { baseURL } from './const';
 
@@ -39,36 +39,40 @@ const get = (url: string) => query({ method: 'get', url, baseURL, withCredential
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const [ appState, setAppState ] = useState<'QUERY_LOGIN' | 'CLIENT' | 'SIGN_IN' | 'QUERY_LOGOUT'>('QUERY_LOGIN');
+  const { loginStage, userName } = useSelector<RootState, UserState>( state => state.user );
 
   useEffect(() => {
-    const app_f = async () => {
-      switch (appState) {
-        case 'QUERY_LOGIN':
-          await fetch('http://localhost:4444/user', { method: 'GET', credentials: 'include' }).then(response => {
-            response.json().then(data => {
-              data[ 'userName' ] ? setAppState('CLIENT') : setAppState('SIGN_IN');
-            });
-          });
+    (async function () {
+      switch (loginStage) {
+        case 'LAUNCHING':
+          // приложение загружается
+          dispatch(setLoginStage('QUERY_LOGIN'));
           break;
+
+        case 'QUERY_LOGIN':
+          await fetch('http://localhost:4444/user', { method: 'GET', credentials: 'include' })
+            .then( response => response.json() )
+            .then( data => {
+              data[ 'userName' ] ? dispatch(setLoginStage('CLIENT')) : dispatch(setLoginStage('SIGN_IN'));
+            });
+          break;
+
         case 'QUERY_LOGOUT':
           await get('/logout');
-          setAppState('SIGN_IN');
+          dispatch(setLoginStage('SIGN_IN'));
           break;
       }
-    };
-    app_f();
-  }, [ appState ]);
+    })();
+  }, [ loginStage ]);
 
   const result =
     <div className={styles.app}>
       {
-        appState == 'QUERY_LOGIN' ?
+        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
-          : appState == 'CLIENT' ?
+          : loginStage === 'CLIENT' ?
             <LogedUser
-
-              logout={() => setAppState('QUERY_LOGOUT')}
+              logout={() => dispatch(setLoginStage('QUERY_LOGOUT'))}
               onDone={userName => dispatch(setUserName(userName))}
             />
             :

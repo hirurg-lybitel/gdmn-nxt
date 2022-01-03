@@ -129,7 +129,6 @@ app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
 
-
 app.get('/user', (req, res) => {
   console.log(req.user);
   req.isAuthenticated() ?
