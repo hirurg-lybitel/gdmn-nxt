@@ -213,7 +213,22 @@ app.route('/api/v1/user/signup')
 app.route('/api/v1/user/signin')
   .post(
     async (req, res, next) => {
-      const { userName, password } = req.body;
+      const { userName, password, employeeMode } = req.body;
+
+
+      /*
+
+        если это сотрудник, то проверять мы должны в базе гедымина
+        если нет, то проверяем в нашем JSON
+
+        если сотрудник предприятия, то надо ли его записывать в JSON?
+        тогда вознинект вопрос синхронизации.
+
+        если в JSON не записываем, то тогда везде надо проверять и
+        на JSON и из базы.
+
+      */
+
 
       /*  1. проверим входные параметры на корректность  */
 

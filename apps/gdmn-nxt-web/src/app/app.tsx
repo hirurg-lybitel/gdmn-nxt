@@ -15,6 +15,7 @@ import { setLoginStage, setUserName, UserState } from './features/user/userSlice
 import { useEffect, useState } from 'react';
 import { baseURL } from './const';
 import { LoggedUser } from './logged-user/logged-user';
+import { SelectMode } from './select-mode/select-mode';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -56,13 +57,13 @@ export function App() {
           await fetch('http://localhost:4444/user', { method: 'GET', credentials: 'include' })
             .then( response => response.json() )
             .then( data => {
-              data[ 'userName' ] ? dispatch(setLoginStage('CLIENT')) : dispatch(setLoginStage('SIGN_IN'));
+              data[ 'userName' ] ? dispatch(setLoginStage('CLIENT')) : dispatch(setLoginStage('SELECT_MODE'));
             });
           break;
 
         case 'QUERY_LOGOUT':
           await get('/logout');
-          dispatch(setLoginStage('SIGN_IN'));
+          dispatch(setLoginStage('SELECT_MODE'));
           break;
       }
     })();
@@ -73,12 +74,26 @@ export function App() {
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
+          : loginStage === 'SELECT_MODE' ?
+            <SelectMode
+              employeeModeSelected={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }
+              customerModeSelected={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }
+            />
           : loginStage === 'CLIENT' ?
             <LoggedUser
               logout={() => dispatch(setLoginStage('QUERY_LOGOUT'))}
               onDone={userName => dispatch(setUserName(userName))}
             />
-            :
+          : loginStage === 'EMPLOYEE' ?
+            <div>
+              Мы в режиме сотрудника
+            </div>
+          : loginStage === 'SIGN_IN_EMPLOYEE' ?
+            <SignInSignUp
+              checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password, employeeMode: true })}
+              onDone={userName => dispatch(setUserName(userName))}
+            />
+          :
             <SignInSignUp
               checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password })}
               createUser={(userName, email) => post('/api/v1/user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль

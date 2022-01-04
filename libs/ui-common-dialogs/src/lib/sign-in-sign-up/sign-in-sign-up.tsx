@@ -12,8 +12,12 @@ import Box from '@mui/system/Box/Box';
 
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
-  createUser: (userName: string, email: string) => Promise<IAuthResult>;
-  newPassword: (email: string) => Promise<IAuthResult>;
+  /**
+   * Если call-back для создания пользователя не задан, то в окне будет отключен
+   * функционал создания новой учетной записи.
+   */
+  createUser?: (userName: string, email: string) => Promise<IAuthResult>;
+  newPassword?: (email: string) => Promise<IAuthResult>;
   onDone: (userName: string) => void;
 };
 
@@ -98,7 +102,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick = {waitAndDispatch(() => newPassword(email))}
+          onClick = {newPassword && waitAndDispatch(() => newPassword(email))}
         >
           Request new Password
         </Button>
@@ -151,7 +155,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
             <Button
               variant="contained"
               disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
-              onClick={ waitAndDispatch( () => createUser(userName, email)) }
+              onClick={ createUser && waitAndDispatch( () => createUser(userName, email) ) }
             >
               Sign up
             </Button>
@@ -192,12 +196,20 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         >
           Login
         </Button>
-        <Button variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
-          Forgot password?
-        </Button>
-        <Typography>
-          Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
-        </Typography>
+        {
+          newPassword
+          &&
+          <Button variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
+            Forgot password?
+          </Button>
+        }
+        {
+          createUser
+          &&
+          <Typography>
+            Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
+          </Typography>
+        }
       </Stack>
       return (
       <>
@@ -218,4 +230,4 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
     );
 };
 
-export default SignInSignUp;  
+export default SignInSignUp;
