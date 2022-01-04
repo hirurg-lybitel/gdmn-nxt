@@ -11,11 +11,12 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { setLoginStage, setUserName, UserState } from './features/user/userSlice';
-import { useEffect, useState } from 'react';
+import { setLoginStage, setSelectMode, UserState } from './features/user/userSlice';
+import { useEffect } from 'react';
 import { baseURL } from './const';
 import { LoggedUser } from './logged-user/logged-user';
 import { SelectMode } from './select-mode/select-mode';
+import { Button, Typography } from '@mui/material';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -57,13 +58,21 @@ export function App() {
           await fetch('http://localhost:4444/user', { method: 'GET', credentials: 'include' })
             .then( response => response.json() )
             .then( data => {
-              data[ 'userName' ] ? dispatch(setLoginStage('CLIENT')) : dispatch(setLoginStage('SELECT_MODE'));
+              if (data[ 'userName' ]) {
+                if (data['gedeminUser']) {
+                  dispatch(setLoginStage('EMPLOYEE'));
+                } else {
+                  dispatch(setLoginStage('CLIENT'));
+                }
+              } else {
+                dispatch(setSelectMode());
+              }
             });
           break;
 
         case 'QUERY_LOGOUT':
           await get('/logout');
-          dispatch(setLoginStage('SELECT_MODE'));
+          dispatch(setSelectMode());
           break;
       }
     })();
@@ -82,23 +91,27 @@ export function App() {
           : loginStage === 'CLIENT' ?
             <LoggedUser
               logout={() => dispatch(setLoginStage('QUERY_LOGOUT'))}
-              onDone={userName => dispatch(setUserName(userName))}
             />
           : loginStage === 'EMPLOYEE' ?
             <div>
-              Мы в режиме сотрудника
+              <Typography>
+                Мы в режиме сотрудника
+              </Typography>
+              <Button onClick={ () => dispatch(setSelectMode()) }>
+                Выйти
+              </Button>
             </div>
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password, employeeMode: true })}
-              onDone={userName => dispatch(setUserName(userName))}
+              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }>Войти в режиме клиента</Button>}
             />
           :
             <SignInSignUp
               checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password })}
               createUser={(userName, email) => post('/api/v1/user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
               newPassword={(email) => post('/api/v1/user/forgot-password', { email })}
-              onDone={userName => dispatch(setUserName(userName))}
+              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }>Войти в режиме сотрудника</Button>}
             />
       }
     </div>;

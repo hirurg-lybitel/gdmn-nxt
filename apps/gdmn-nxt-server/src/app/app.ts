@@ -43,8 +43,6 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
     try {
       const data = await rs.fetchAsObject();
 
-      console.log(data);
-
       if (data.length === 1) {
         if (data[0]['PASSW'] !== password) {
           return {
@@ -70,6 +68,47 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
         return {
           result: 'UNKNOWN_USER'
         };
+      } else {
+        throw new Error('Data corrupted.')
+      }
+    } finally {
+      await rs.close();
+    }
+  } finally {
+    await transaction?.commit();
+    await attachment?.disconnect();
+    await client?.dispose();
+  }
+};
+
+export const getGedeminUser = async (userName: string): Promise<{ userName: string } | undefined> => {
+  const query = `
+    SELECT
+      u.name
+    FROM
+      gd_user u
+    WHERE UPPER(u.name) = ?
+  `;
+
+  let client: Client;
+  let attachment: Attachment;
+  let transaction: Transaction;
+
+  try {
+    const { host, port, db } = config;
+    client = createNativeClient(getDefaultLibraryFilename());
+    attachment = await client.connect(`${host}/${port}:${db}`);
+    transaction = await attachment.startTransaction();
+    const rs = await attachment.executeQuery(transaction, query, [userName.toLocaleUpperCase()]);
+    try {
+      const data = await rs.fetchAsObject();
+
+      if (data.length === 1) {
+        return {
+          userName
+        }
+      } else if (!data.length) {
+        return undefined;
       } else {
         throw new Error('Data corrupted.')
       }

@@ -10,6 +10,8 @@ import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog } from '@mui/material';
 import Box from '@mui/system/Box/Box';
 
+type Stage = 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
+
 export interface SignInSignUpProps {
   checkCredentials: (userName: string, password: string) => Promise<IAuthResult>;
   /**
@@ -18,11 +20,12 @@ export interface SignInSignUpProps {
    */
   createUser?: (userName: string, email: string) => Promise<IAuthResult>;
   newPassword?: (email: string) => Promise<IAuthResult>;
-  onDone: (userName: string) => void;
+  topDecorator?: (stage?: Stage) => JSX.Element;
+  bottomDecorator?: (stage?: Stage) => JSX.Element;
 };
 
 type State = {
-  stage: 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
+  stage: Stage;
   waiting: boolean;
   userName: string;
   password: string;
@@ -79,7 +82,7 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone }: SignInSignUpProps) {
+export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator }: SignInSignUpProps) {
 
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
@@ -91,6 +94,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
   const result =
     stage === 'FORGOT_PASSWORD' ?
       <Stack direction="column" spacing={2}>
+        {topDecorator?.(stage)}
         <TextField
           label="Email"
           value={email}
@@ -113,9 +117,11 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         >
           Return to sign in
         </Button>
+        {bottomDecorator?.(stage)}
       </Stack>
     : stage === 'SIGNUP' ?
       <Stack direction="column" spacing={2}>
+        {topDecorator?.(stage)}
         <Typography variant="h1">
           New user
         </Typography>
@@ -163,9 +169,11 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
         <Typography>
           Already have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
         </Typography>
+        {bottomDecorator?.(stage)}
       </Stack>
     :
       <Stack direction="column" spacing={2}>
+        {topDecorator?.(stage)}
         <Typography variant="h1">
           Sign in the system
         </Typography>
@@ -210,6 +218,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, onDone
             Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
           </Typography>
         }
+        {bottomDecorator?.(stage)}
       </Stack>
       return (
       <>

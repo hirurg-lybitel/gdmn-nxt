@@ -14,6 +14,7 @@ export type LoginStage =
 export interface UserState {
   loginStage: LoginStage;
   userProfile?: IUserProfile;
+  gedeminUser?: boolean;
 };
 
 const initialState: UserState = {
@@ -24,13 +25,15 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUserName: (state, action: PayloadAction<string>) => {
+    setUserName: (state, action: PayloadAction<{ userName: string, gedeminUser: boolean }>) => {
       if (state.userProfile) {
-        state.userProfile = { ...state.userProfile, userName: action.payload };
+        state.userProfile = { ...state.userProfile, userName: action.payload.userName };
       } else {
-        state.userProfile = { userName: action.payload };
+        state.userProfile = { userName: action.payload.userName };
       }
+      state.gedeminUser = action.payload.gedeminUser;
     },
+    setSelectMode: () => ({ loginStage: 'SELECT_MODE' } as UserState),
     setLoginStage: (state, action: PayloadAction<LoginStage>) => {
       state.loginStage = action.payload;
     }
@@ -38,6 +41,6 @@ export const userSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { setUserName, setLoginStage } = userSlice.actions;
+export const { setUserName, setLoginStage, setSelectMode } = userSlice.actions;
 
 export default userSlice.reducer;

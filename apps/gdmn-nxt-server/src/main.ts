@@ -9,7 +9,7 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
-import { getReconciliationStatement } from './app/app';
+import { checkGedeminUser, getGedeminUser, getReconciliationStatement } from './app/app';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -24,15 +24,28 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-interface IUser {
+interface IBaseUser {
   userName: string;
+};
+
+interface IGedeminUser extends IBaseUser {
+  gedeminUser: true;
+};
+
+interface ICustomerUser extends IBaseUser {
   email: string;
   hash: string;
   salt: string;
   expireOn?: number;
 };
 
-const userDB = new FileDB<IUser>({
+type IUser = IGedeminUser | ICustomerUser;
+
+function isIGedeminUser(u: IUser): u is IGedeminUser {
+  return 'gedeminUser' in u;
+};
+
+const userDB = new FileDB<ICustomerUser>({
   fn: `${process.env.GDMN_NXT_SERVER_DB_FOLDER}/user.json`,
   space: 2
 });
@@ -55,23 +68,39 @@ const purgeExpiredUsers = async () => {
 
 passport.use(new Strategy({
   usernameField: 'userName',
-  passwordField: 'password'
+  passwordField: 'password',
+  passReqToCallback: true
 },
-  async (userName: string, password: string, done) => {
+  async (req: any, userName: string, password: string, done) => {
+    const { employeeMode } = req.body;
+
     try {
-      await purgeExpiredUsers();
+      if (employeeMode) {
+        const res = await checkGedeminUser(userName, password);
 
-      const user = await userDB.read(userName2Key(userName));
+        if (res.result === 'UNKNOWN_USER') {
+          return done(null, false);
+        }
 
-      if (!user) {
-        return done(null, false);
-      }
-
-      if (validPassword(password, user.hash, user.salt)) {
-        return done(null, user);
+        if (res.result === 'SUCCESS') {
+          return done(null, { userName, gedeminUser: true });
+        } else {
+          return done(null, false);
+        }
       } else {
-        console.log('Пароль неверный');
-        return done(null, false);
+        await purgeExpiredUsers();
+
+        const user = await userDB.read(userName2Key(userName));
+
+        if (!user) {
+          return done(null, false);
+        }
+
+        if (validPassword(password, user.hash, user.salt)) {
+          return done(null, { ...user, gedeminUser: false });
+        } else {
+          return done(null, false);
+        }
       }
     }
     catch (err) {
@@ -80,15 +109,28 @@ passport.use(new Strategy({
   }
 ));
 
-passport.serializeUser((user: IUser, done) => done(null, userName2Key(user.userName)));
+passport.serializeUser((user: IUser, done) => done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`));
 
-passport.deserializeUser(async (userName: string, done) => {
-  const user = await userDB.read(userName);
+passport.deserializeUser(async (un: string, done) => {
+  const userType = un.slice(0, 1);
+  const userName = un.slice(1);
 
-  if (user) {
-    done(null, user);
+  if (userType === 'U') {
+    const user = await userDB.read(userName);
+
+    if (user) {
+      done(null, user);
+    } else {
+      done(`Unknown user userName: ${userName}`);
+    }
   } else {
-    done(`Unknown user userName: ${userName}`);
+    const res = await getGedeminUser(userName);
+
+    if (res) {
+      done(null, { ...res, gedeminUser: true });
+    } else {
+      done(`Unknown user userName: ${userName}`);
+    }
   }
 });
 
@@ -118,7 +160,6 @@ app.get('/api', (_, res) => {
 });
 
 app.get('/user', (req, res) => {
-  console.log(req.user);
   req.isAuthenticated() ?
     res.json(req.user)
     :
@@ -158,7 +199,7 @@ app.route('/api/v1/user/signup')
       const provisionalPassword = genRandomPassword();
 
       const expireOn = Date.now() + 24 * 60 * 60 * 1000;
-      const provisionalUser: IUser = {
+      const provisionalUser: ICustomerUser = {
         userName,
         email,
         ...genPassword(provisionalPassword),
@@ -209,51 +250,49 @@ app.route('/api/v1/user/signup')
   );
 
 
-
 app.route('/api/v1/user/signin')
   .post(
-    async (req, res, next) => {
-      const { userName, password, employeeMode } = req.body;
+    // async (req, res, next) => {
+    //   const { userName, password, employeeMode } = req.body;
 
 
-      /*
+    //   /*
 
-        если это сотрудник, то проверять мы должны в базе гедымина
-        если нет, то проверяем в нашем JSON
+    //     если это сотрудник, то проверять мы должны в базе гедымина
+    //     если нет, то проверяем в нашем JSON
 
-        если сотрудник предприятия, то надо ли его записывать в JSON?
-        тогда вознинект вопрос синхронизации.
+    //     если сотрудник предприятия, то надо ли его записывать в JSON?
+    //     тогда вознинект вопрос синхронизации.
 
-        если в JSON не записываем, то тогда везде надо проверять и
-        на JSON и из базы.
+    //     если в JSON не записываем, то тогда везде надо проверять и
+    //     на JSON и из базы.
 
-      */
+    //   */
 
 
-      /*  1. проверим входные параметры на корректность  */
+    //   /*  1. проверим входные параметры на корректность  */
 
-      if (typeof userName !== 'string' || typeof password !== 'string') {
-        return res.json(authResult('INVALID_DATA', 'Invalid data.'));
-      }
+    //   if (typeof userName !== 'string' || typeof password !== 'string') {
+    //     return res.json(authResult('INVALID_DATA', 'Invalid data.'));
+    //   }
 
-      /* 2. Очистим БД от устаревших записей */
+    //   /* 2. Очистим БД от устаревших записей */
 
-      await purgeExpiredUsers();
-      /* 3. ищем пользователя */
-      const un = userName.toLowerCase();
-      const user = await userDB.findOne(u => u.userName.toLowerCase() === un);
+    //   await purgeExpiredUsers();
+    //   /* 3. ищем пользователя */
+    //   const un = userName.toLowerCase();
+    //   const user = await userDB.findOne(u => u.userName.toLowerCase() === un);
 
-      if (!user) {
-        return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
-      };
+    //   if (!user) {
+    //     return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
+    //   };
 
-      /*4. Проверка пароля */
-      if (!validPassword(password, user.hash, user.salt)) {
-        return res.json(authResult('INVALID_PASSWORD', `Wrong password`)); // Убрать после обработки пасспорта P.S. Костыль
-      }
-      next();
-
-    },
+    //   /*4. Проверка пароля */
+    //   if (!validPassword(password, user.hash, user.salt)) {
+    //     return res.json(authResult('INVALID_PASSWORD', `Wrong password`)); // Убрать после обработки пасспорта P.S. Костыль
+    //   }
+    //   next();
+    // },
     passport.authenticate('local', {}),
     async (req, res) => {
       const { userName } = req.body;
@@ -365,7 +404,7 @@ app.route('/register')
   .post(async (req, res) => {
     const userName = req.body.username;
 
-    const newUser: IUser = {
+    const newUser: ICustomerUser = {
       userName,
       email: '',
       ...genPassword(req.body.password)

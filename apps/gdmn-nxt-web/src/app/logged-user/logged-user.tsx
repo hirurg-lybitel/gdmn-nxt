@@ -5,7 +5,6 @@ import './logged-user.module.less';
 
 export interface LoggedUserProps {
   logout: () => void;
-  onDone: (userName: string) => void;
 };
 
 type State = {
@@ -48,14 +47,10 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function LoggedUser({ logout, onDone }: LoggedUserProps) {
+export function LoggedUser({ logout }: LoggedUserProps) {
 
-  const [{ stage, userName, isLogged, authResult, waiting }, dispatch] = useReducer(reducer, initialState);
+  const [{ stage, authResult }, dispatch] = useReducer(reducer, initialState);
 
-  const waitAndDispatch = (fn: () => Promise<IAuthResult>) => () => {
-    dispatch({ type: 'SET_WAITING' });
-    fn().then(r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }));
-  };
 
   const result =
     stage === 'HOME' ?
