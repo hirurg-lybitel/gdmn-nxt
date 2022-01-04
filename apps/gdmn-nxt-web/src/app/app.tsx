@@ -5,7 +5,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import { SignInSignUp, LogedUser } from '@gsbelarus/ui-common-dialogs';
+import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
@@ -14,6 +14,7 @@ import { AppDispatch, RootState } from './store';
 import { setLoginStage, setUserName, UserState } from './features/user/userSlice';
 import { useEffect, useState } from 'react';
 import { baseURL } from './const';
+import { LoggedUser } from './logged-user/logged-user';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -73,7 +74,7 @@ export function App() {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
           : loginStage === 'CLIENT' ?
-            <LogedUser
+            <LoggedUser
               logout={() => dispatch(setLoginStage('QUERY_LOGOUT'))}
               onDone={userName => dispatch(setUserName(userName))}
             />
