@@ -1,3 +1,5 @@
+import { IUserProfile } from "..";
+
 export type AuthResult =
   'SUCCESS'
 
@@ -27,6 +29,7 @@ export type AuthResult =
 export interface IAuthResult {
   result: AuthResult;
   message?: string;
+  userProfile?: IUserProfile;
 };
 
 export const authResult = (result: AuthResult, message?: string): IAuthResult => ({ result, message });

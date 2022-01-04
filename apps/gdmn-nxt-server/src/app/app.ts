@@ -1,3 +1,4 @@
+import { IAuthResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 
@@ -10,6 +11,76 @@ const config = {
   port: process.env.NODE_FB_TEST_PORT,
   tmpDir: process.env.NODE_FB_TEST_TMP_DIR,
   db: process.env.NODE_FB_TEST_DB
+};
+
+export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
+  const query = `
+    SELECT
+      u.passw,
+      u.ingroup,
+      u.disabled as userDisabled,
+      c.name as contactName,
+      c.disabled as contactDisabled,
+      p.firstname,
+      p.surname
+    FROM
+      gd_user u
+      JOIN gd_contact c ON c.id = u.contactkey
+      JOIN gd_people p ON p.contactkey = c.id
+    WHERE UPPER(u.name) = ?
+  `;
+
+  let client: Client;
+  let attachment: Attachment;
+  let transaction: Transaction;
+
+  try {
+    const { host, port, db } = config;
+    client = createNativeClient(getDefaultLibraryFilename());
+    attachment = await client.connect(`${host}/${port}:${db}`);
+    transaction = await attachment.startTransaction();
+    const rs = await attachment.executeQuery(transaction, query, [userName.toLocaleUpperCase()]);
+    try {
+      const data = await rs.fetchAsObject();
+
+      console.log(data);
+
+      if (data.length === 1) {
+        if (data[0]['PASSW'] !== password) {
+          return {
+            result: 'INVALID_PASSWORD'
+          };
+        }
+
+        if (data[0]['USERDISABLED'] || data[0]['CONTACTDISABLED']) {
+          return {
+            result: 'ACCESS_DENIED'
+          };
+        }
+
+        return {
+          result: 'SUCCESS',
+          userProfile: {
+            userName,
+            firstname: data[0]['FIRSTNAME'],
+            surname: data[0]['SURNAME']
+          }
+        };
+      } else if (!data.length) {
+        return {
+          result: 'UNKNOWN_USER'
+        };
+      } else {
+        throw new Error('Data corrupted.')
+      }
+    } finally {
+      await rs.close();
+    }
+  } finally {
+    await transaction?.commit();
+    await attachment?.disconnect();
+    await client?.dispose();
+  }
 };
 
 export const getReconciliationStatement: RequestHandler = async (req, res) => {

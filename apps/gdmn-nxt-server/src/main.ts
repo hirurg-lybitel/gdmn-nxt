@@ -9,7 +9,6 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
-import SendmailTransport = require('nodemailer/lib/sendmail-transport');
 import { getReconciliationStatement } from './app/app';
 
 const MemoryStore = require('memorystore')(session);
@@ -17,10 +16,6 @@ const MemoryStore = require('memorystore')(session);
 dotenv.config({ path: '../..' });
 
 const app = express();
-const checkAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect("/");
-};
 
 app.use(cors({
   credentials: true,
@@ -28,13 +23,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Credentials', 'true');
-//   res.header("Access-Control-Allow-Origin", "http://localhost:4200");
-//   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
-//   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
-//   next();
-// });
 
 interface IUser {
   userName: string;
