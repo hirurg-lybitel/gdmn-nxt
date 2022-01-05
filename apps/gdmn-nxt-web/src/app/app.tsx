@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
 import { setLoginStage, setSelectMode, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
-import { baseURL } from './const';
+import { baseUrl } from './const';
 import { SelectMode } from './select-mode/select-mode';
 import { Button } from '@mui/material';
 import EmployeeHomePage from './employee-home-page/employee-home-page';
@@ -30,7 +30,7 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
       return { result: 'ERROR', message: error.message };
     }
     else if (request) {
-      return { result: 'ERROR', message: `Can't reach server ${baseURL}: ${message}` };
+      return { result: 'ERROR', message: `Can't reach server ${baseUrl}: ${message}` };
     }
     else {
       return { result: 'ERROR', message: error.message };
@@ -38,8 +38,8 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   }
 };
 
-const post = (url: string, data: Object) => query({ method: 'post', url, baseURL, data, withCredentials: true });
-const get = (url: string) => query({ method: 'get', url, baseURL, withCredentials: true });
+const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
+const get = (url: string) => query({ method: 'get', url, baseURL: baseUrl, withCredentials: true });
 
 export function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -56,7 +56,7 @@ export function App() {
           break;
 
         case 'QUERY_LOGIN':
-          await fetch(`${baseURL}user`, { method: 'GET', credentials: 'include' })
+          await fetch(`${baseUrl}user`, { method: 'GET', credentials: 'include' })
             .then( response => response.json() )
             .then( data => {
               if (data[ 'userName' ]) {
@@ -93,14 +93,14 @@ export function App() {
           : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
-              checkCredentials={(userName, password) => post('api/v1/user/signin', { userName, password, employeeMode: true })}
+              checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
               bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }>Войти в режиме клиента</Button>}
             />
           :
             <SignInSignUp
-              checkCredentials={(userName, password) => post('api/v1/user/signin', { userName, password })}
-              createUser={(userName, email) => post('api/v1/user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
-              newPassword={(email) => post('api/v1/user/forgot-password', { email })}
+              checkCredentials={(userName, password) => post('user/signin', { userName, password })}
+              createUser={(userName, email) => post('user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
+              newPassword={(email) => post('user/forgot-password', { email })}
               bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }>Войти в режиме сотрудника</Button>}
             />
       }

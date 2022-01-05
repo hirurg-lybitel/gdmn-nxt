@@ -1,6 +1,6 @@
 export const checkEmailAddress = (email: string | undefined) => !!email && /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 
-const validPasswordChars = 'abcdefghijklmnopqrstuvwxyz0123456789.,!?*+-=$_%^&';
+const validPasswordChars = 'abcdefghijklmnopqrstuvwxyz0123456789'; // 'abcdefghijklmnopqrstuvwxyz0123456789.,!?*+-=$_%^&';
 
 export const genRandomPassword = (len = 10) => Array(len)
   .fill(undefined)

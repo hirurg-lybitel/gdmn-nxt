@@ -56,7 +56,7 @@ const purgeExpiredUsers = async () => {
   let changed = false;
   const data = await userDB.getMutable(false);
   for (const k of Object.keys(data)) {
-    if (data[ k ].expireOn < Date.now()) {
+    if (data[ k ].expireOn && (data[ k ].expireOn < Date.now())) {
       delete data[ k ];
       changed = true;
     }
@@ -72,6 +72,8 @@ passport.use(new Strategy({
   passReqToCallback: true
 },
   async (req: any, userName: string, password: string, done) => {
+    console.log(req.body);
+
     const { employeeMode } = req.body;
 
     try {
@@ -97,6 +99,11 @@ passport.use(new Strategy({
         }
 
         if (validPassword(password, user.hash, user.salt)) {
+
+          if (user.expireOn) {
+            await userDB.write(userName2Key(userName), { ...user, expireOn: undefined }, true);
+          }
+
           return done(null, user);
         } else {
           return done(null, false);
@@ -116,7 +123,7 @@ passport.deserializeUser(async (un: string, done) => {
   const userName = un.slice(1);
 
   if (userType === 'U') {
-    const user = await userDB.read(userName);
+    const user = await userDB.read(userName2Key(userName));
 
     if (user) {
       done(null, user);
@@ -159,7 +166,7 @@ app.get('/api', (_, res) => {
   res.send({ message: 'Welcome to gdmn-nxt-server!' });
 });
 
-app.get('/user', (req, res) => {
+app.get('/api/v1/user', (req, res) => {
   req.isAuthenticated() ?
     res.json(req.user)
     :
@@ -304,7 +311,6 @@ app.route('/api/v1/user/signin')
     },
   );
 
-
 app.route('/api/v1/user/forgot-password')
   .post(
     async (req, res) => {
@@ -373,6 +379,17 @@ app.route('/api/v1/user/forgot-password')
       ));
     });
 
+app.get('/api/v1/logout', (_, res) => {
+  res.clearCookie('Sid', { path: '/' }).json({});
+});
+
+app.get('/api/v1/contacts', (_, res) => {
+  return res.json([{ }]);
+});
+
+app.get('/reconciliation-statement', getReconciliationStatement);
+
+/*
 app.route('/login')
   .get((_, res) => {
     const form = '<h1>Login Page</h1><form method="POST" action="/login">\
@@ -424,10 +441,6 @@ app.get('/protected-route', (req, res) => {
   }
 });
 
-app.get('/logout', (req, res) => {
-  res.clearCookie('Sid', { path: '/' }).send();
-});
-
 app.get('/login-success', (_, res) => {
   res.send('<p>You successfully logged in. --> <a href="/protected-route">Go to protected route</a></p>');
 });
@@ -435,8 +448,7 @@ app.get('/login-success', (_, res) => {
 app.get('/login-failure', (_, res) => {
   res.send('You entered the wrong password.');
 });
-
-app.get('/reconciliation-statement', getReconciliationStatement);
+*/
 
 app.get('*', () => console.log('Unknown request'));
 

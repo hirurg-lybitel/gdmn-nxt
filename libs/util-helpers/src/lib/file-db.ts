@@ -1,7 +1,6 @@
 import { FSWatcher, watch, mkdirSync, existsSync, writeFileSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { dirname } from 'path';
-import { rawListeners } from 'process';
 import { ILogger } from './log';
 
 export interface IData<T> {
@@ -233,7 +232,7 @@ export class FileDB<T extends Object> {
         await writeFile(this._fn, JSON.stringify(this.#getEnvelope(), undefined, this._space), { encoding: 'utf8' });
         this._setWatcher();
         this._modified = false;
-        this._logger.info(`Data has been written to ${this._fn}...`);
+        this._logger.info(`Data has been written to ${this._fn}. Keys: ${Object.keys(this._data).length}...`);
       } catch (e) {
         this._logger.error(`Error writting to file ${this._fn}. ${e}`);
       }
@@ -258,7 +257,7 @@ export class FileDB<T extends Object> {
           this._watcher?.close();
           writeFileSync(this._fn, JSON.stringify(this.#getEnvelope(), undefined, this._space), { encoding: 'utf8' });
           this._modified = false;
-          this._logger.info(`Data has been written to ${this._fn}...`);
+          this._logger.info(`Data has been written to ${this._fn}. Keys: ${Object.keys(this._data).length}...`);
         }
       } catch (e) {
         this._logger.error(`Error writting to file ${this._fn}. ${e}`);

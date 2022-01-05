@@ -6,12 +6,12 @@ export interface IWithRUID {
   ruid: string;
 };
 
-export interface IContact {
+export interface IBaseContact {
   name: string;
   phone?: string;
   email?: string;
 };
 
-export interface ICompany extends IContact {
+export interface ICompany extends IBaseContact {
   fullName: string;
 };

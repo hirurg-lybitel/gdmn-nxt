@@ -1,7 +1,7 @@
 import Button from '@mui/material/Button/Button';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
-import { baseURL } from '../const';
+import { baseUrl } from '../const';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 
@@ -65,7 +65,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
   const schema = data?._schema;
 
   useEffect( () => {
-    axios({ method: 'get', url: 'reconciliation-statement', baseURL, withCredentials: true })
+    axios({ method: 'get', url: 'reconciliation-statement', baseURL: baseUrl, withCredentials: true })
       .then( res => setData(res.data) );
   }, [refresh]);
 
