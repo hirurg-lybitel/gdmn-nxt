@@ -17,6 +17,7 @@ import { baseURL } from './const';
 import { LoggedUser } from './logged-user/logged-user';
 import { SelectMode } from './select-mode/select-mode';
 import { Button, Typography } from '@mui/material';
+import { WrapperBelgiss } from './wrapper-belgiss/wrapper-belgiss';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -89,9 +90,11 @@ export function App() {
               customerModeSelected={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }
             />
           : loginStage === 'CLIENT' ?
-            <LoggedUser
+            <WrapperBelgiss userType='User' logout ={() => dispatch(setLoginStage('QUERY_LOGOUT'))}>
+              <LoggedUser
               logout={() => dispatch(setLoginStage('QUERY_LOGOUT'))}
-            />
+              />
+            </WrapperBelgiss>
           : loginStage === 'EMPLOYEE' ?
             <div>
               <Typography>
