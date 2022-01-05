@@ -12,7 +12,7 @@ export function PageHeader(props: {children: ReactChild | ReactFragment | null})
     <Stack direction='column' spacing={4}>
       <Stack direction='row' justifyContent='space-around' alignItems='center'>
         <h1>БелГИСС</h1>
-        <h1>Режим {user.loginStage === 'CLIENT' ? 'Клиента' : 'Работника'}</h1>
+        <h1>Режим {user.loginStage === 'CUSTOMER' ? 'Клиента' : 'Работника'}</h1>
         <Button onClick = {() => dispatch(setLoginStage('QUERY_LOGOUT'))}>
           Log Out
         </Button>

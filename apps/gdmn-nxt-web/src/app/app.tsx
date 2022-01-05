@@ -14,10 +14,10 @@ import { AppDispatch, RootState } from './store';
 import { setLoginStage, setSelectMode, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseURL } from './const';
-import { LoggedUser } from './logged-user/logged-user';
 import { SelectMode } from './select-mode/select-mode';
-import { Button, Typography } from '@mui/material';
-import { PageHeader } from './page-header/page-header';
+import { Button } from '@mui/material';
+import EmployeeHomePage from './employee-home-page/employee-home-page';
+import CustomerHomePage from './customer-home-page/customer-home-page';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -63,7 +63,7 @@ export function App() {
                 if (data['gedeminUser']) {
                   dispatch(setLoginStage('EMPLOYEE'));
                 } else {
-                  dispatch(setLoginStage('CLIENT'));
+                  dispatch(setLoginStage('CUSTOMER'));
                 }
               } else {
                 dispatch(setSelectMode());
@@ -89,21 +89,8 @@ export function App() {
               employeeModeSelected={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }
               customerModeSelected={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }
             />
-          : loginStage === 'CLIENT' ?
-            <PageHeader>
-              <LoggedUser
-              logout={() => dispatch(setLoginStage('QUERY_LOGOUT'))}
-              />
-            </PageHeader>
-          : loginStage === 'EMPLOYEE' ?
-            <div>
-              <Typography>
-                Мы в режиме сотрудника
-              </Typography>
-              <Button onClick={ () => dispatch(setSelectMode()) }>
-                Выйти
-              </Button>
-            </div>
+          : loginStage === 'CUSTOMER' ? <CustomerHomePage />
+          : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password, employeeMode: true })}
