@@ -109,7 +109,7 @@ passport.use(new Strategy({
   }
 ));
 
-passport.serializeUser((user: IUser, done) => done(null, `${!isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`));
+passport.serializeUser((user: IUser, done) => done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`));
 // ПРоверить потом passport.serializeUser изменил на обратное, но так ли должно работать?
 passport.deserializeUser(async (un: string, done) => {
   const userType = un.slice(0, 1);
