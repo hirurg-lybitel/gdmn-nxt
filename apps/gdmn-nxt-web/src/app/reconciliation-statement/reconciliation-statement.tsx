@@ -65,7 +65,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
   const schema = data?._schema;
 
   useEffect( () => {
-    axios({ method: 'get', url: '/reconciliation-statement', baseURL, withCredentials: true })
+    axios({ method: 'get', url: 'reconciliation-statement', baseURL, withCredentials: true })
       .then( res => setData(res.data) );
   }, [refresh]);
 

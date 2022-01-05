@@ -56,7 +56,7 @@ export function App() {
           break;
 
         case 'QUERY_LOGIN':
-          await fetch('http://localhost:4444/user', { method: 'GET', credentials: 'include' })
+          await fetch(`${baseURL}user`, { method: 'GET', credentials: 'include' })
             .then( response => response.json() )
             .then( data => {
               if (data[ 'userName' ]) {
@@ -72,7 +72,7 @@ export function App() {
           break;
 
         case 'QUERY_LOGOUT':
-          await get('/logout');
+          await get('logout');
           dispatch(setSelectMode());
           break;
       }
@@ -93,14 +93,14 @@ export function App() {
           : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
-              checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password, employeeMode: true })}
+              checkCredentials={(userName, password) => post('api/v1/user/signin', { userName, password, employeeMode: true })}
               bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }>Войти в режиме клиента</Button>}
             />
           :
             <SignInSignUp
-              checkCredentials={(userName, password) => post('/api/v1/user/signin', { userName, password })}
-              createUser={(userName, email) => post('/api/v1/user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
-              newPassword={(email) => post('/api/v1/user/forgot-password', { email })}
+              checkCredentials={(userName, password) => post('api/v1/user/signin', { userName, password })}
+              createUser={(userName, email) => post('api/v1/user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
+              newPassword={(email) => post('api/v1/user/forgot-password', { email })}
               bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }>Войти в режиме сотрудника</Button>}
             />
       }

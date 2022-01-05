@@ -1,1 +1,1 @@
-export const baseURL = 'http://localhost:4444';
+export const baseURL = 'http://localhost:4444/';
