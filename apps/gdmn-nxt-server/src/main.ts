@@ -42,7 +42,7 @@ interface ICustomerUser extends IBaseUser {
 type IUser = IGedeminUser | ICustomerUser;
 
 function isIGedeminUser(u: IUser): u is IGedeminUser {
-  return 'gedeminUser' in u;
+  return !!u['gedeminUser'];
 };
 
 const userDB = new FileDB<ICustomerUser>({
@@ -97,7 +97,7 @@ passport.use(new Strategy({
         }
 
         if (validPassword(password, user.hash, user.salt)) {
-          return done(null, { ...user, gedeminUser: false });
+          return done(null, user);
         } else {
           return done(null, false);
         }
@@ -336,7 +336,7 @@ app.route('/api/v1/user/forgot-password')
       user.salt = salt;
       user.hash = hash;
       user.expireOn = expireOn;
-      await userDB.write(user.userName, user, true);
+      await userDB.write(userName2Key(user.userName), user, true);
 
       /* 5. Пошлем пользователю email */
 
