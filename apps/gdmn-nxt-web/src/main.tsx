@@ -7,10 +7,10 @@ import { store } from './app/store';
 import { Provider } from 'react-redux';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
-import { registerMUI } from './mui-license';
 
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
+import { registerMUI } from './mui-license';
 registerMUI();
 
 ReactDOM.render(
