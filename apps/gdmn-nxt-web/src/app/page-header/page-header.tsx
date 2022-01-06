@@ -39,8 +39,9 @@ export function PageHeader(props: {children: ReactChild | ReactFragment | null})
           <IconButton
             size="large"
             color="inherit"
+            onClick={ handleClick }
           >
-            <Avatar onClick={ handleClick } />
+            <Avatar />
           </IconButton>
         </Toolbar>
       </AppBar>

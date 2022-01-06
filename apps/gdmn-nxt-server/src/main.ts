@@ -11,6 +11,7 @@ import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
+import { getContacts } from './app/contacts';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -341,11 +342,9 @@ app.get('/api/v1/logout', (_, res) => {
   res.clearCookie('Sid', { path: '/' }).json({});
 });
 
-app.get('/api/v1/contacts', (_, res) => {
-  return res.json([{ }]);
-});
+app.get('/api/v1/contacts', getContacts);
 
-app.get('/reconciliation-statement', getReconciliationStatement);
+app.get('/api/v1/reconciliation-statement', getReconciliationStatement);
 
 /*
 app.route('/login')
