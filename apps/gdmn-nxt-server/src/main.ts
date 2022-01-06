@@ -9,7 +9,8 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
-import { checkGedeminUser, getGedeminUser, getReconciliationStatement } from './app/app';
+import { checkGedeminUser, getGedeminUser } from './app/app';
+import { getReconciliationStatement } from './app/reconciliationStatement';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -72,8 +73,6 @@ passport.use(new Strategy({
   passReqToCallback: true
 },
   async (req: any, userName: string, password: string, done) => {
-    console.log(req.body);
-
     const { employeeMode } = req.body;
 
     try {
@@ -259,47 +258,6 @@ app.route('/api/v1/user/signup')
 
 app.route('/api/v1/user/signin')
   .post(
-    // async (req, res, next) => {
-    //   const { userName, password, employeeMode } = req.body;
-
-
-    //   /*
-
-    //     если это сотрудник, то проверять мы должны в базе гедымина
-    //     если нет, то проверяем в нашем JSON
-
-    //     если сотрудник предприятия, то надо ли его записывать в JSON?
-    //     тогда вознинект вопрос синхронизации.
-
-    //     если в JSON не записываем, то тогда везде надо проверять и
-    //     на JSON и из базы.
-
-    //   */
-
-
-    //   /*  1. проверим входные параметры на корректность  */
-
-    //   if (typeof userName !== 'string' || typeof password !== 'string') {
-    //     return res.json(authResult('INVALID_DATA', 'Invalid data.'));
-    //   }
-
-    //   /* 2. Очистим БД от устаревших записей */
-
-    //   await purgeExpiredUsers();
-    //   /* 3. ищем пользователя */
-    //   const un = userName.toLowerCase();
-    //   const user = await userDB.findOne(u => u.userName.toLowerCase() === un);
-
-    //   if (!user) {
-    //     return res.json(authResult('UNKNOWN_USER', `User name ${userName} not found.`));
-    //   };
-
-    //   /*4. Проверка пароля */
-    //   if (!validPassword(password, user.hash, user.salt)) {
-    //     return res.json(authResult('INVALID_PASSWORD', `Wrong password`)); // Убрать после обработки пасспорта P.S. Костыль
-    //   }
-    //   next();
-    // },
     passport.authenticate('local', {}),
     async (req, res) => {
       const { userName } = req.body;

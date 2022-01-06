@@ -10,7 +10,9 @@ export function Customers(props: CustomersProps) {
 
   return (
     <div>
-      <h1>Welcome to Customers!</h1>
+      <pre>
+        {JSON.stringify(data)}
+      </pre>
     </div>
   );
 }
