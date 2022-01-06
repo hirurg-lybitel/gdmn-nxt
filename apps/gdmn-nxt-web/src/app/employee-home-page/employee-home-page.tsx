@@ -1,3 +1,4 @@
+import Customers from '../customers/customers';
 import { PageHeader } from '../page-header/page-header';
 import './employee-home-page.module.less';
 
@@ -7,7 +8,7 @@ export interface EmployeeHomePageProps {}
 export function EmployeeHomePage(props: EmployeeHomePageProps) {
   return (
     <PageHeader>
-      <h1>Welcome to EmployeeHomePage!</h1>
+      <Customers />
     </PageHeader>
   );
 }

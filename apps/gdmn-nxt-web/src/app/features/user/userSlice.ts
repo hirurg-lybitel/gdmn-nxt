@@ -5,7 +5,7 @@ export type LoginStage =
   'LAUNCHING'            // the application is launching
   | 'QUERY_LOGIN'        // we are in the process of querying server for saved session
   | 'SELECT_MODE'        // choose between belgiss employee and customer mode
-  | 'CUSTOMER'             //
+  | 'CUSTOMER'           //
   | 'EMPLOYEE'           //
   | 'SIGN_IN_EMPLOYEE'   // show sign-in or sign-up screen for an employee
   | 'SIGN_IN_CUSTOMER'   // show sign-in or sign-up screen for a customer
@@ -25,22 +25,17 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUserName: (state, action: PayloadAction<{ userName: string, gedeminUser: boolean }>) => {
-      if (state.userProfile) {
-        state.userProfile = { ...state.userProfile, userName: action.payload.userName };
-      } else {
-        state.userProfile = { userName: action.payload.userName };
-      }
-      state.gedeminUser = action.payload.gedeminUser;
-    },
-    setSelectMode: () => ({ loginStage: 'SELECT_MODE' } as UserState),
-    setLoginStage: (state, action: PayloadAction<LoginStage>) => {
-      state.loginStage = action.payload;
-    }
+    queryLogin: () => ({ loginStage: 'QUERY_LOGIN' } as UserState),
+    selectMode: () => ({ loginStage: 'SELECT_MODE' } as UserState),
+    signInEmployee: () => ({ loginStage: 'SIGN_IN_EMPLOYEE' } as UserState),
+    signInCustomer: () => ({ loginStage: 'SIGN_IN_CUSTOMER' } as UserState),
+    signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
+    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CUSTOMER', userProfile: action.payload } as UserState),
+    queryLogout: () => ({ loginStage: 'QUERY_LOGOUT' } as UserState),
   }
 });
 
 // Action creators are generated for each case reducer function
-export const { setUserName, setLoginStage, setSelectMode } = userSlice.actions;
+export const { queryLogin, selectMode, signInEmployee, signInCustomer, signedInEmployee, signedInCustomer, queryLogout } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -11,13 +11,13 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { setLoginStage, setSelectMode, UserState } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
-import { SelectMode } from './select-mode/select-mode';
 import { Button } from '@mui/material';
 import EmployeeHomePage from './employee-home-page/employee-home-page';
 import CustomerHomePage from './customer-home-page/customer-home-page';
+import { SelectMode } from './select-mode/select-mode';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -52,7 +52,7 @@ export function App() {
           // приложение загружается
           // здесь мы можем разместить код, который еще
           // до первой связи с сервером необходимо выполнить
-          dispatch(setLoginStage('QUERY_LOGIN'));
+          dispatch(queryLogin());
           break;
 
         case 'QUERY_LOGIN':
@@ -61,47 +61,49 @@ export function App() {
             .then( data => {
               if (data[ 'userName' ]) {
                 if (data['gedeminUser']) {
-                  dispatch(setLoginStage('EMPLOYEE'));
+                  dispatch(signedInEmployee({ userName: data['userName'] }));
                 } else {
-                  dispatch(setLoginStage('CUSTOMER'));
+                  dispatch(signedInCustomer({ userName: data['userName'] }));
                 }
               } else {
-                dispatch(setSelectMode());
+                dispatch(selectMode());
               }
             });
           break;
 
         case 'QUERY_LOGOUT':
           await get('logout');
-          dispatch(setSelectMode());
+          dispatch(selectMode());
           break;
       }
     })();
   }, [ loginStage ]);
 
+  const className = styles.app + (loginStage === 'CUSTOMER' || loginStage === 'EMPLOYEE' ? '' : (' ' + styles.login));
+
   const result =
-    <div className={styles.app}>
+    <div className={className}>
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
           : loginStage === 'SELECT_MODE' ?
             <SelectMode
-              employeeModeSelected={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }
-              customerModeSelected={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }
+              employeeModeSelected={ () => dispatch(signInEmployee()) }
+              customerModeSelected={ () => dispatch(signInCustomer()) }
             />
           : loginStage === 'CUSTOMER' ? <CustomerHomePage />
           : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
-              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_CUSTOMER')) }>Войти в режиме клиента</Button>}
+              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(signInCustomer()) }>Войти в режиме клиента</Button>}
             />
           :
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password })}
               createUser={(userName, email) => post('user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
               newPassword={(email) => post('user/forgot-password', { email })}
-              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(setLoginStage('SIGN_IN_EMPLOYEE')) }>Войти в режиме сотрудника</Button>}
+              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(signInEmployee()) }>Войти в режиме сотрудника</Button>}
             />
       }
     </div>;
