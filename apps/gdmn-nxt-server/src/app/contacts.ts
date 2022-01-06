@@ -41,7 +41,7 @@ export const getContacts: RequestHandler = async (req, res) => {
     const queries = [
       {
         name: 'contacts',
-        query: `select name, phone from gd_contact`,
+        query: `select id, name, phone from gd_contact`,
       },
     ];
 
