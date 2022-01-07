@@ -1,3 +1,4 @@
+import { IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
@@ -49,17 +50,22 @@ export const getContacts: RequestHandler = async (req, res) => {
             p.name as folderName
           FROM
             gd_contact c JOIN gd_contact p ON p.id = c.parent
+            ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
           WHERE
             c.contacttype IN (2,3,5)`,
+        params: req.params.taxId ? [req.params.taxId] : undefined
       },
     ];
 
-    const result = await Promise.all(queries.map( q => execQuery(q) ));
-
-    return res.json({
-      ...Object.fromEntries(result),
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+      },
+      _params: req.params.taxId ? [{ taxId: req.params.taxId }] : undefined,
       _schema
-    });
+    };
+
+    return res.json(result);
   } finally {
     await transaction?.commit();
     await attachment?.disconnect();

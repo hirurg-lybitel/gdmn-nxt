@@ -25,7 +25,7 @@ export function Customers(props: CustomersProps) {
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
         <DataGridPro
-          rows={data?.contacts ?? []}
+          rows={data?.queries.contacts ?? []}
           columns={columns}
           pagination
           loading={isLoading}

@@ -11,13 +11,14 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, UserState } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
-import { Button } from '@mui/material';
+import { Button, Divider } from '@mui/material';
 import EmployeeHomePage from './employee-home-page/employee-home-page';
 import CustomerHomePage from './customer-home-page/customer-home-page';
 import { SelectMode } from './select-mode/select-mode';
+import CreateCustomerAccount from './create-customer-account/create-customer-account';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -93,6 +94,7 @@ export function App() {
             />
           : loginStage === 'CUSTOMER' ? <CustomerHomePage />
           : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
+          : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
@@ -101,9 +103,15 @@ export function App() {
           :
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password })}
-              createUser={(userName, email) => post('user/signup', { userName, email })} // Переделать с useEffect P.S. Костыль
               newPassword={(email) => post('user/forgot-password', { email })}
-              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(signInEmployee()) }>Войти в режиме сотрудника</Button>}
+              bottomDecorator={
+                () =>
+                  <>
+                    <Button variant="contained" onClick={ () => dispatch(createCustomerAccount()) }>Создать учетную запись</Button>
+                    <Divider />
+                    <Button variant="contained" onClick={ () => dispatch(signInEmployee()) }>Войти в режиме сотрудника</Button>
+                  </>
+              }
             />
       }
     </div>;

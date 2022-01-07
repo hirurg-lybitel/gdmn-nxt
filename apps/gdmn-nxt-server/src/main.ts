@@ -343,6 +343,7 @@ app.get('/api/v1/logout', (_, res) => {
 });
 
 app.get('/api/v1/contacts', getContacts);
+app.get('/api/v1/contacts/taxId/:taxId', getContacts);
 
 app.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
