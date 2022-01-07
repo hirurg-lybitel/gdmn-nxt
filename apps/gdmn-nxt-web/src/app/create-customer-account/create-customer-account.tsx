@@ -12,23 +12,25 @@ export interface CreateCustomerAccountProps {
   onCancel: () => void;
 };
 
-type Step = 'ENTER_TAXID' | 'CHECK_TAXID' | 'INVALID_TAXID' | 'ENTER_PROFILE';
+type Step = 'ENTER_TAXID' | 'CHECK_TAXID' | 'INVALID_TAXID' | 'INVALID_DB' | 'ENTER_PROFILE';
 
 export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) {
 
   const [taxId, setTaxId] = useState<string>('');
   const [step, setStep] = useState<Step>('ENTER_TAXID');
-  const { data, isLoading } = useGetContactByTaxIdQuery({ taxId }, { skip: step !== 'CHECK_TAXID' });
+  const { data, isFetching } = useGetContactByTaxIdQuery(step === 'CHECK_TAXID' ? { taxId } : skipToken);
 
   useEffect( () => {
-    if (step === 'CHECK_TAXID' && !isLoading && data) {
-      if (data.queries.contacts.length) {
+    if (step === 'CHECK_TAXID' && !isFetching && data) {
+      if (data.queries.contacts.length === 1) {
         setStep('ENTER_PROFILE');
+      } else if (data.queries.contacts.length > 1) {
+        setStep('INVALID_DB');
       } else {
         setStep('INVALID_TAXID');
       }
     }
-  }, [step, isLoading]);
+  }, [step, isFetching]);
 
   return (
     <Stack direction="column" spacing={2}>
@@ -41,13 +43,13 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             <TextField
               label="УНП"
               value={taxId}
-              disabled={isLoading}
+              disabled={isFetching}
               autoFocus
-              onChange={ e => setTaxId(parseInt(e.target.value).toString()) }
+              onChange={ e => setTaxId( (!e.target.value || !isNaN(parseInt(e.target.value))) ? e.target.value : taxId) }
             />
             <Button
               variant="contained"
-              disabled={isLoading || isNaN(parseInt(taxId))}
+              disabled={isFetching || isNaN(parseInt(taxId))}
               onClick = { () => setStep('CHECK_TAXID') }
             >
               Проверить
@@ -77,14 +79,42 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
               Вернуться в начало
             </Button>
           </>
+        : step === 'INVALID_DB' ?
+          <>
+            <Typography variant='h1'>
+              {`В базе данных найдено несколько предприятий с УНП ${taxId}!`}
+            </Typography>
+            <Button
+              variant="contained"
+              onClick = { onCancel }
+            >
+              Вернуться в начало
+            </Button>
+          </>
         :
-          undefined
+          <>
+            <Typography variant='h1'>
+              {`Предприятие ${data?.queries.contacts[0].name}`}
+            </Typography>
+            <Button
+              variant="contained"
+              onClick = { onCancel }
+            >
+              Вернуться в начало
+            </Button>
+          </>
       }
       <div>
         <h1>Welcome to CreateCustomerAccount!</h1>
-        {
-          JSON.stringify(data, undefined, 2)
-        }
+        <div>
+          {step}
+        </div>
+        <div>
+          isFetching {isFetching ? 't' : 'f'}
+        </div>
+        <div>
+          data: {JSON.stringify(data, undefined, 2)}
+        </div>
       </div>
     </Stack>
   );
