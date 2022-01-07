@@ -33,20 +33,20 @@ export interface IRequestResult<R = IResults> {
 };
 
 export interface IWithID {
-  id: number;
+  ID: number;
 };
 
 export interface IWithRUID {
-  ruid: string;
+  RUID: string;
 };
 
 export interface IBaseContact {
-  name: string;
-  phone?: string;
-  email?: string;
-  folderName?: string;
+  NAME: string;
+  PHONE?: string;
+  EMAIL?: string;
+  FOLDERNAME?: string;
 };
 
 export interface ICompany extends IBaseContact {
-  fullName: string;
+  FULLNAME: string;
 };

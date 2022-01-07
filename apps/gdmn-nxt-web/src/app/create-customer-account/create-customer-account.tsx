@@ -17,6 +17,12 @@ type Step = 'ENTER_TAXID' | 'CHECK_TAXID' | 'INVALID_TAXID' | 'INVALID_DB' | 'EN
 export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) {
 
   const [taxId, setTaxId] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [position, setPosition] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [email2, setEmail2] = useState<string>('');
   const [step, setStep] = useState<Step>('ENTER_TAXID');
   const { data, isFetching } = useGetContactByTaxIdQuery(step === 'CHECK_TAXID' ? { taxId } : skipToken);
 
@@ -94,8 +100,45 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
         :
           <>
             <Typography variant='h1'>
-              {`Предприятие ${data?.queries.contacts[0].name}`}
+              {`Предприятие ${data?.queries.contacts[0].NAME}`}
             </Typography>
+            <TextField
+              label="Фамилия"
+              value={lastName}
+              disabled={isFetching}
+              autoFocus
+              onChange={ e => setLastName(e.target.value) }
+            />
+            <TextField
+              label="Имя"
+              value={firstName}
+              disabled={isFetching}
+              onChange={ e => setFirstName(e.target.value) }
+            />
+            <TextField
+              label="Должность"
+              value={position}
+              disabled={isFetching}
+              onChange={ e => setPosition(e.target.value) }
+            />
+            <TextField
+              label="Номер рабочего телефона"
+              value={phone}
+              disabled={isFetching}
+              onChange={ e => setPhone(e.target.value) }
+            />
+            <TextField
+              label="Электронная почта"
+              value={email}
+              disabled={isFetching}
+              onChange={ e => setEmail(e.target.value) }
+            />
+            <TextField
+              label="Повторите ввод электронной почты"
+              value={email2}
+              disabled={isFetching}
+              onChange={ e => setEmail2(e.target.value) }
+            />
             <Button
               variant="contained"
               onClick = { onCancel }
