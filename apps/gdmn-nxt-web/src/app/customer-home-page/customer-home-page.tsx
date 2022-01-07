@@ -8,7 +8,9 @@ export interface CustomerHomePageProps {}
 export function CustomerHomePage(props: CustomerHomePageProps) {
   return (
     <PageHeader>
-      <ReconciliationStatement />
+      <ReconciliationStatement
+        custId={148333193}
+      />
     </PageHeader>
   );
 }

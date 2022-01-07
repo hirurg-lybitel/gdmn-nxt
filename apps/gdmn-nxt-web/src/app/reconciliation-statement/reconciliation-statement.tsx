@@ -54,11 +54,13 @@ const formatValue = (rec: any, rs: string, fld: string, schema: any) => {
 };
 
 /* eslint-disable-next-line */
-export interface ReconciliationStatementProps {}
+export interface ReconciliationStatementProps {
+  custId: number
+}
 
-export function ReconciliationStatement(_props: ReconciliationStatementProps) {
+export function ReconciliationStatement({ custId }: ReconciliationStatementProps) {
 
-  const { data, refetch, isLoading } = useGetReconciliationStatementQuery({ custId: 148333193, dateBegin: new Date(2021, 0, 1), dateEnd: new Date(2021, 2, 1) });
+  const { data, refetch, isLoading } = useGetReconciliationStatementQuery({ custId, dateBegin: new Date(2021, 0, 1), dateEnd: new Date(2021, 2, 1) });
   const params = data?._params?.[0];
   const schema = data?._schema;
 
