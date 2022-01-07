@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { baseUrl } from '../const';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
+import { IRequestResult } from '@gsbelarus/util-api-types';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
@@ -59,7 +60,7 @@ export interface ReconciliationStatementProps {}
 
 export function ReconciliationStatement(_props: ReconciliationStatementProps) {
 
-  const [data, setData] = useState<any>({});
+  const [data, setData] = useState<IRequestResult | undefined>();
   const [refresh, setRefresh] = useState(0);
   const params = data?._params?.[0];
   const schema = data?._schema;
@@ -70,18 +71,18 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
   }, [refresh]);
 
   const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo( () => {
-    const giveSum = data?.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0);
-    const giveSum2 = data?.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0);
-    const saldo = data?.saldo?.[0]?.['SALDO'] ?? 0;
+    const giveSum = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) ?? 0;
+    const giveSum2 = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0);
+    const saldo = data?.queries.saldo?.[0]?.['SALDO'] ?? 0;
     const saldoEnd = saldo + giveSum2 - giveSum;
     return {
       giveSum,
       giveSum2,
       saldo,
       saldoEnd,
-      customerName: data?.customerAct?.[0]?.['CUSTOMER'],
-      ourName: data?.firm?.[0]?.NAME ?? '',
-      accountantName: data?.firm?.[0]?.ACCOUNT ?? '',
+      customerName: data?.queries.customerAct?.[0]?.['CUSTOMER'],
+      ourName: data?.queries.firm?.[0]?.NAME ?? '',
+      accountantName: data?.queries.firm?.[0]?.ACCOUNT ?? '',
       written: numberToWordsRu.convert(Math.abs(saldoEnd), {
         currency: 'rub',
         declension: 'nominative',
@@ -108,7 +109,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
   return (
     <div>
       {
-        data && data.customerDebt ?
+        data?.queries.customerDebt ?
           <div className={styles.container}>
             <div className={styles['rs-orders-area']}>
               <div className={styles['rs-orders-table']}>
@@ -118,7 +119,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
                   </thead>
                   <tbody>
                     {
-                      data?.customerDebt?.map( (d: any) =>
+                      data?.queries.customerDebt?.map( (d: any) =>
                         <tr key={d['USR$NUMBER']}>
                           <td>{d['USR$NUMBER']}</td>
                           <td>{d['SALDO'] <= 0 ? fv(-d['SALDO'], 'customerDebt', 'SALDO') : undefined}</td>
@@ -148,7 +149,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.customerAct?.map(
+                  {data?.queries.customerAct?.map(
                     (r: any) =>
                       <tr>
                         <td>{fv(r, 'customerAct', 'DOCUMENTDATE')}</td>
@@ -188,8 +189,8 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...new Set(data.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any) => {
-                    const filtered = data.movement.filter( (m: any) => m.JOBNUMBER === j );
+                  {[...new Set(data.queries.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any) => {
+                    const filtered = data.queries.movement.filter( (m: any) => m.JOBNUMBER === j );
 
                     return (
                       <>
