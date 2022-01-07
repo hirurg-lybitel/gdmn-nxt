@@ -41,7 +41,16 @@ export const getContacts: RequestHandler = async (req, res) => {
     const queries = [
       {
         name: 'contacts',
-        query: `select id, name, phone from gd_contact`,
+        query: `
+          SELECT
+            c.id,
+            c.name,
+            c.phone,
+            p.name as folderName
+          FROM
+            gd_contact c JOIN gd_contact p ON p.id = c.parent
+          WHERE
+            c.contacttype IN (2,3,5)`,
       },
     ];
 
