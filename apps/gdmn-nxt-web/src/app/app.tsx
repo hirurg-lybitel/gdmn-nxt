@@ -94,7 +94,7 @@ export function App() {
             />
           : loginStage === 'CUSTOMER' ? <CustomerHomePage />
           : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
-          : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount />
+          : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}

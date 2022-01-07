@@ -101,6 +101,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
           helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
+          autoFocus
           onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
         />
         <Button
@@ -129,6 +130,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           label="User name"
           value={userName}
           disabled={waiting}
+          autoFocus
           error={authResult?.result === 'DUPLICATE_USER_NAME'}
           helperText={authResult?.result === 'DUPLICATE_USER_NAME' ? authResult?.message : undefined}
           onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
@@ -183,6 +185,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           error={authResult?.result === 'UNKNOWN_USER'}
           helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
+          autoFocus
           onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
         />
         <TextField
