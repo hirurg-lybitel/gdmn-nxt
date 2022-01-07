@@ -60,7 +60,7 @@ export interface ReconciliationStatementProps {
 
 export function ReconciliationStatement({ custId }: ReconciliationStatementProps) {
 
-  const { data, refetch, isLoading } = useGetReconciliationStatementQuery({ custId, dateBegin: new Date(2021, 0, 1), dateEnd: new Date(2021, 2, 1) });
+  const { data, refetch, isFetching } = useGetReconciliationStatementQuery({ custId, dateBegin: new Date(2021, 0, 1), dateEnd: new Date(2021, 2, 1) });
   const params = data?._params?.[0];
   const schema = data?._schema;
 
@@ -294,7 +294,7 @@ export function ReconciliationStatement({ custId }: ReconciliationStatementProps
       <pre>
         {JSON.stringify(data, undefined, 2)}
       </pre>
-      <Button disabled={isLoading} onClick={ refetch }>Refresh</Button>
+      <Button disabled={isFetching} onClick={ refetch }>Refresh</Button>
     </div>
   );
 }
