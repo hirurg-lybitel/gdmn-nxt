@@ -1,10 +1,8 @@
 import Button from '@mui/material/Button/Button';
-import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
-import { baseUrl } from '../const';
+import { useMemo, useState } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
-import { IRequestResult } from '@gsbelarus/util-api-types';
+import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
@@ -60,15 +58,9 @@ export interface ReconciliationStatementProps {}
 
 export function ReconciliationStatement(_props: ReconciliationStatementProps) {
 
-  const [data, setData] = useState<IRequestResult | undefined>();
-  const [refresh, setRefresh] = useState(0);
+  const { data, refetch, isLoading } = useGetReconciliationStatementQuery({ custId: 148333193, dateBegin: new Date(2021, 0, 1), dateEnd: new Date(2021, 2, 1) });
   const params = data?._params?.[0];
   const schema = data?._schema;
-
-  useEffect( () => {
-    axios({ method: 'get', url: `reconciliation-statement/148333193/${new Date(2021, 0, 1).getTime()}-${new Date(2021, 2, 1).getTime()}`, baseURL: baseUrl, withCredentials: true })
-      .then( res => setData(res.data) );
-  }, [refresh]);
 
   const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo( () => {
     const giveSum = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) ?? 0;
@@ -300,7 +292,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
       <pre>
         {JSON.stringify(data, undefined, 2)}
       </pre>
-      <Button onClick={ () => setRefresh(refresh + 1) }>Refresh</Button>
+      <Button disabled={isLoading} onClick={ refetch }>Refresh</Button>
     </div>
   );
 }

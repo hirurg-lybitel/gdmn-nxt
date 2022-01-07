@@ -1,15 +1,18 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { contactApi } from './features/contact/contactApi';
+import { reconciliationStatementApi } from './features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from './features/user/userSlice';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
     [contactApi.reducerPath]: contactApi.reducer,
+    [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(contactApi.middleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+    .concat(contactApi.middleware)
+    .concat(reconciliationStatementApi.middleware),
 });
 
 setupListeners(store.dispatch);
