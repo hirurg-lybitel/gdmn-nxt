@@ -66,7 +66,7 @@ export function ReconciliationStatement(_props: ReconciliationStatementProps) {
   const schema = data?._schema;
 
   useEffect( () => {
-    axios({ method: 'get', url: 'reconciliation-statement', baseURL: baseUrl, withCredentials: true })
+    axios({ method: 'get', url: `reconciliation-statement/148333193/${new Date(2021, 0, 1).getTime()}-${new Date(2021, 2, 1).getTime()}`, baseURL: baseUrl, withCredentials: true })
       .then( res => setData(res.data) );
   }, [refresh]);
 

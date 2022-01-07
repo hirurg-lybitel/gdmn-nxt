@@ -1,13 +1,14 @@
 import { IDataSchema, IQuery, IDataRecord, IRequestResult } from "@gsbelarus/util-api-types";
+import { parseIntDef } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
 
 export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
-  const dateBegin = new Date(2021, 0, 1);
-  const dateEnd = new Date(2021, 2, 1);
-  const customerId = 148_333_193;
+  const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date(2021, 0, 1).getTime()));
+  const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date(2021, 2, 1).getTime()));
+  const customerId = parseIntDef(req.params.custId, 148_333_193);
   const holdingId = 148_284_864;
   const account_id = 148529707;
 

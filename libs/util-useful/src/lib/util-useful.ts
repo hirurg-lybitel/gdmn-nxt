@@ -11,3 +11,8 @@ export const genRandomPassword = (len = 10) => Array(len)
 export function utilUseful(): string {
   return 'util-useful';
 };
+
+export const parseIntDef = (v: string, def = 0) => {
+  const parsed = parseInt(v);
+  return isNaN(parsed) ? def : parsed;
+};
