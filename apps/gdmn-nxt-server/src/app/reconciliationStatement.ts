@@ -1,12 +1,14 @@
+import { IDataSchema, IQuery, IDataRecord, IRequestResult } from "@gsbelarus/util-api-types";
+import { parseIntDef } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
 
 export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
-  const dateBegin = new Date(2021, 0, 1);
-  const dateEnd = new Date(2021, 2, 1);
-  const customerId = 148_333_193;
+  const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date(2021, 0, 1).getTime()));
+  const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date(2021, 2, 1).getTime()));
+  const customerId = parseIntDef(req.params.custId, 148_333_193);
   const holdingId = 148_284_864;
   const account_id = 148529707;
 
@@ -20,7 +22,7 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
     attachment = await client.connect(`${host}/${port}:${db}`);
     transaction = await attachment.startTransaction();
 
-    const _schema = {
+    const _schema: IDataSchema = {
       customerDebt: {
         SALDO: {
           type: 'curr'
@@ -41,16 +43,16 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params: any[] }) => {
+    const execQuery = async ({ name, query, params }: IQuery) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
-        const data = await rs.fetchAsObject();
+        const data = await rs.fetchAsObject<IDataRecord>();
         const sch = _schema[name];
 
         if (sch) {
           for (const rec of data) {
             for (const fld of Object.keys(rec)) {
-              if (sch[fld] && sch[fld].type === 'date') {
+              if (sch[fld]?.type === 'date') {
                 rec[fld] = (rec[fld] as Date).getTime();
               }
             }
@@ -63,7 +65,7 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
       }
     };
 
-    const queries = [
+    const queries: IQuery[] = [
       {
         name: 'customerDebt',
         query:
@@ -222,13 +224,15 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
       }
     ];
 
-    const result = await Promise.all(queries.map( q => execQuery(q) ));
-
-    return res.json({
-      ...Object.fromEntries(result),
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+      },
       _params: [{ dateBegin: dateBegin.getTime(), dateEnd: dateEnd.getTime() }],
       _schema
-    });
+    };
+
+    return res.json(result);
   } finally {
     await transaction?.commit();
     await attachment?.disconnect();

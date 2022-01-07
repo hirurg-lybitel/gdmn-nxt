@@ -1,4 +1,5 @@
 import { PageHeader } from '../page-header/page-header';
+import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
 import './customer-home-page.module.less';
 
 /* eslint-disable-next-line */
@@ -7,7 +8,7 @@ export interface CustomerHomePageProps {}
 export function CustomerHomePage(props: CustomerHomePageProps) {
   return (
     <PageHeader>
-      <h1>Welcome to CustomerHomePage!</h1>
+      <ReconciliationStatement />
     </PageHeader>
   );
 }
