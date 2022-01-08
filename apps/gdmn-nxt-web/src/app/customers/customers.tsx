@@ -10,7 +10,9 @@ import { Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
+import EditIcon from '@mui/icons-material/Edit';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import CustomerEdit from '../customer-edit/customer-edit';
 
 
 const columns: GridColDef[] = [
@@ -33,16 +35,17 @@ export function Customers(props: CustomersProps) {
   const [snackBarMessage, setSnackBarMessage] = React.useState('');
   const [paramsDates, setParamsDates] = React.useState<DateRange<Date | null>>([null, null]);
 
+  const [openEditForm, setOpenEditForm] = React.useState(false);
+
   /** Close snackbar manually */
-  const handleSnackBarClose = (event: any, reason?: any) => {
-    if (reason && reason === 'clickaway') {
+  const handleSnackBarClose = (event?: any, reason?: any) => {
+    if (reason !== 'clickaway') {
       return;
     };
     setOpenSnackBar(false);
   };
 
   const handleReconciliationClick = () => {
-    console.log('currentOrganization', currentOrganization);
     if (!currentOrganization) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
@@ -68,15 +71,38 @@ export function Customers(props: CustomersProps) {
   };
 
   /** Close reconciliation report */
-  const handleReconcilitationBackonClick = () => {
+  const handleReconcilitationBackOnClick = () => {
     setReconciliationShow(false);
+  };
+
+  /** Edit select organization */
+  const handleOrganiztionEditClick = () => {
+    if (!currentOrganization) {
+      setSnackBarMessage('Не указана организация');
+      setOpenSnackBar(true);
+      return;
+    }
+
+    setOpenEditForm(true);
+  };
+
+  /** Save organization change */
+  const handleOrganiztionEditSaveClick = () => {
+    console.log('save data');
+    setOpenEditForm(false);
+  };
+
+  /** Cancel organization change */
+  const handleOrganiztionEditCancelClick = () => {
+    console.log('cancel data');
+    setOpenEditForm(false);
   };
 
 
   if (reconciliationShow) {
     return (
       <Stack direction="column" spacing={2}>
-        <Button onClick={handleReconcilitationBackonClick} variant="contained" size="large" startIcon={<ArrowBackIcon />}>
+        <Button onClick={handleReconcilitationBackOnClick} variant="contained" size="large" startIcon={<ArrowBackIcon />}>
           Вернуться
         </Button>
         <ReconciliationStatement
@@ -91,7 +117,8 @@ export function Customers(props: CustomersProps) {
   return (
     <Stack direction="column">
       <Stack direction="row">
-        <Button onClick={refetch} disabled={isFetching}>Refetch</Button>
+        <Button onClick={refetch} disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+        <Button onClick={handleOrganiztionEditClick} disabled={isFetching} startIcon={<EditIcon />}>Редактировать</Button>
         <Button onClick={handleReconciliationClick} disabled={isFetching}>Акт сверки</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
@@ -116,6 +143,12 @@ export function Customers(props: CustomersProps) {
         onDateChange={handleDateChange}
         onSaveClick={handleSaveClick}
         onCancelClick={handleCancelClick}
+      />
+      <CustomerEdit
+        open={openEditForm}
+        customer={data?.queries.contacts.find((element) => element.ID === currentOrganization) || null}
+        onSaveClick={handleOrganiztionEditSaveClick}
+        onCancelClick={handleOrganiztionEditCancelClick}
       />
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
