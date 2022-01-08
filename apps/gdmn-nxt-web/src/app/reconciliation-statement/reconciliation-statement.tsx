@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
+import { ParseableDate } from '@mui/lab/internal/pickers/constants/prop-types';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
@@ -55,14 +56,22 @@ const formatValue = (rec: any, rs: string, fld: string, schema: any) => {
 
 /* eslint-disable-next-line */
 export interface ReconciliationStatementProps {
-  custId: number
+  custId: number;
+  dateBegin?: Date | null;
+  dateEnd?: Date | null;
 }
 
-export function ReconciliationStatement({ custId }: ReconciliationStatementProps) {
+export function ReconciliationStatement({ custId, dateBegin, dateEnd }: ReconciliationStatementProps) {
 
-  const { data, refetch, isFetching } = useGetReconciliationStatementQuery({ custId, dateBegin: new Date(2021, 0, 1), dateEnd: new Date(2021, 2, 1) });
+  const { data, refetch, isFetching } = useGetReconciliationStatementQuery({
+    custId,
+    dateBegin: dateBegin ? dateBegin : new Date(2021, (new Date()).getMonth(), 1),
+    dateEnd: dateEnd ? dateEnd : new Date(2021, (new Date()).getMonth()+1, 1)
+  });
   const params = data?._params?.[0];
   const schema = data?._schema;
+
+  console.log('param_dateBegin', dateBegin);
 
   const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo( () => {
     const giveSum = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) ?? 0;
