@@ -14,7 +14,7 @@ export interface CreateCustomerAccountProps {
   onCancel: () => void;
 };
 
-type Step = 'ENTER_TAXID' | 'CHECK_TAXID' | 'INVALID_TAXID' | 'INVALID_DB' | 'ENTER_PROFILE';
+type Step = 'ENTER_TAXID' | 'CHECKING_TAXID' | 'INVALID_TAXID' | 'INVALID_DB' | 'ENTER_PROFILE' | 'SAVING_PROFILE';
 
 export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) {
 
@@ -26,25 +26,35 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   const [email, setEmail] = useState<string>('');
   const [email2, setEmail2] = useState<string>('');
   const [step, setStep] = useState<Step>('ENTER_TAXID');
-  const { data: contactData, isFetching: isFetchingContact } = useGetContactByTaxIdQuery(step === 'CHECK_TAXID' ? { taxId } : skipToken);
+  const { data: contactData, isFetching: isFetchingContact } = useGetContactByTaxIdQuery(step === 'CHECKING_TAXID' ? { taxId } : skipToken);
   const { data: accountData, isFetching: isFetchingAccount } = useGetAccountByEmailQuery(checkEmailAddress(email) ? { email } : skipToken);
 
   useEffect( () => {
-    if (step === 'CHECK_TAXID' && !isFetchingContact && contactData) {
-      if (contactData.queries.contacts.length === 1) {
-        setStep('ENTER_PROFILE');
-      } else if (contactData.queries.contacts.length > 1) {
-        setStep('INVALID_DB');
-      } else {
-        setStep('INVALID_TAXID');
+    if (step === 'CHECKING_TAXID') {
+      if (!isFetchingContact && contactData) {
+        if (contactData.queries.contacts.length === 1) {
+          setStep('ENTER_PROFILE');
+        } else if (contactData.queries.contacts.length > 1) {
+          setStep('INVALID_DB');
+        } else {
+          setStep('INVALID_TAXID');
+        }
       }
     }
-  }, [step, isFetchingContact]);
+  }, [step, contactData, isFetchingContact]);
+
+  useEffect( () => {
+    if (step === 'SAVING_PROFILE') {
+      if (!isFetchingAccount && (!accountData || !accountData.queries.accounts.length)) {
+
+      }
+    }
+  }, [step, isFetchingAccount, accountData]);
 
   return (
     <Stack direction="column" spacing={2}>
       {
-        step === 'ENTER_TAXID' || step === 'CHECK_TAXID' ?
+        step === 'ENTER_TAXID' || step === 'CHECKING_TAXID' ?
           <>
             <Typography variant='h1'>
               Введите УНП предприятия:
@@ -59,7 +69,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             <Button
               variant="contained"
               disabled={isFetchingContact || isNaN(parseInt(taxId))}
-              onClick = { () => setStep('CHECK_TAXID') }
+              onClick = { () => setStep('CHECKING_TAXID') }
             >
               Проверить
             </Button>
@@ -138,6 +148,17 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
               value={email2}
               onChange={ e => setEmail2(e.target.value) }
             />
+            <Button
+              variant="contained"
+              disabled={
+                isFetchingAccount || !lastName || !firstName || !phone || !position ||
+                !checkEmailAddress(email) || email !== email2 ||
+                !!accountData?.queries.accounts.length
+              }
+              onClick = { () => setStep('SAVING_PROFILE') }
+            >
+              Создать учетную запись
+            </Button>
             <Button
               variant="contained"
               onClick = { onCancel }

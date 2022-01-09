@@ -3,6 +3,50 @@ import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
 
+export const addAccount: RequestHandler = async (req, res) => {
+
+  let { firstName, lastName, position, phone, email, companykey, approved, expireOn } = req.body;
+
+  if (typeof expireOn === 'number') {
+    expireOn = new Date(expireOn);
+  }
+
+  if (typeof approved === 'boolean') {
+    approved = approved ? 1 : 0;
+  }
+
+  let client: Client;
+  let attachment: Attachment;
+  let transaction: Transaction;
+
+  try {
+    const { host, port, db } = config;
+    client = createNativeClient(getDefaultLibraryFilename());
+    attachment = await client.connect(`${host}/${port}:${db}`);
+    transaction = await attachment.startTransaction();
+
+    let id: number;
+
+    const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
+    try {
+      id = await rs.fetchAsObject()[0].id;
+    } finally {
+      await rs.close();
+    }
+
+    await attachment.execute(transaction,
+      `INSERT INTO usr$crm_account (id, usr$firstname, usr$lastname, usr$postion, usr$phone, usr$email, usr$companykey, usr$approved, usr$expireon)
+       VALUES                      (?,  ?,             ?,            ?,           ?,         ?,         ?,              ?,            ?`,
+       [                            id, firstName,     lastName,     position,    phone,     email,     companykey,     approved,     expireOn]);
+
+    return res.status(200);
+  } finally {
+    await transaction?.commit();
+    await attachment?.disconnect();
+    await client?.dispose();
+  }
+};
+
 export const getAccounts: RequestHandler = async (req, res) => {
 
   let client: Client;
@@ -72,8 +116,8 @@ export const getAccounts: RequestHandler = async (req, res) => {
                 GD_CONTACT C
               ON
                 Z_USR$COMPANYKEY.CONTACTKEY  =  C.ID
-            ${req.params.email ? 'WHERE Z.EMAIL = ?' : ''}`,
-        params: req.params.email ? [req.params.email] : undefined
+            ${req.params.id ? 'WHERE Z.ID = ?' : req.params.email ? 'WHERE Z.EMAIL = ?' : ''}`,
+        params: req.params.id ? [req.params.id] : req.params.email ? [req.params.email] : undefined
       },
     ];
 
