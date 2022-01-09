@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
+import { accountApi } from './features/account/accountApi';
 import { contactApi } from './features/contact/contactApi';
 import { reconciliationStatementApi } from './features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from './features/user/userSlice';
@@ -8,6 +9,7 @@ export const store = configureStore({
   reducer: {
     user: userReducer,
     [contactApi.reducerPath]: contactApi.reducer,
+    [accountApi.reducerPath]: accountApi.reducer,
     [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware()

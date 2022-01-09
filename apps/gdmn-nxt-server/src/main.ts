@@ -12,6 +12,7 @@ import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts } from './app/contacts';
+import { getAccounts } from './app/accounts';
 
 const MemoryStore = require('memorystore')(session);
 
@@ -344,6 +345,9 @@ app.get('/api/v1/logout', (_, res) => {
 
 app.get('/api/v1/contacts', getContacts);
 app.get('/api/v1/contacts/taxId/:taxId', getContacts);
+
+app.get('/api/v1/accounts', getAccounts);
+app.get('/api/v1/accounts/email/:email', getAccounts);
 
 app.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 

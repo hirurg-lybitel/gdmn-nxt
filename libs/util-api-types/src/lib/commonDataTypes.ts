@@ -1,4 +1,4 @@
-export type FieldDataType = 'date' | 'curr';
+export type FieldDataType = 'date' | 'timestamp' | 'curr';
 
 export interface IFieldSchema {
   type: FieldDataType;
@@ -49,4 +49,14 @@ export interface IBaseContact {
 
 export interface ICompany extends IBaseContact {
   FULLNAME: string;
+};
+
+export interface IAccount {
+  FIRSTNAME: string;
+  LASTNAME: string;
+  EXPIREON?: Date;
+  APPROVED?: boolean;
+  PHONE?: string;
+  EMAIL: string;
+  COMPANY: Pick<(IBaseContact & IWithID), 'ID' | 'NAME'>;
 };

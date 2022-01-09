@@ -1,9 +1,11 @@
+import { checkEmailAddress } from '@gsbelarus/util-useful';
 import Button from '@mui/material/Button/Button';
 import Stack from '@mui/material/Stack/Stack';
 import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { skipToken } from '@reduxjs/toolkit/dist/query';
 import { useEffect, useState } from 'react';
+import { useGetAccountByEmailQuery } from '../features/account/accountApi';
 import { useGetContactByTaxIdQuery } from '../features/contact/contactApi';
 import './create-customer-account.module.less';
 
@@ -24,19 +26,20 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   const [email, setEmail] = useState<string>('');
   const [email2, setEmail2] = useState<string>('');
   const [step, setStep] = useState<Step>('ENTER_TAXID');
-  const { data, isFetching } = useGetContactByTaxIdQuery(step === 'CHECK_TAXID' ? { taxId } : skipToken);
+  const { data: contactData, isFetching: isFetchingContact } = useGetContactByTaxIdQuery(step === 'CHECK_TAXID' ? { taxId } : skipToken);
+  const { data: accountData, isFetching: isFetchingAccount } = useGetAccountByEmailQuery(checkEmailAddress(email) ? { email } : skipToken);
 
   useEffect( () => {
-    if (step === 'CHECK_TAXID' && !isFetching && data) {
-      if (data.queries.contacts.length === 1) {
+    if (step === 'CHECK_TAXID' && !isFetchingContact && contactData) {
+      if (contactData.queries.contacts.length === 1) {
         setStep('ENTER_PROFILE');
-      } else if (data.queries.contacts.length > 1) {
+      } else if (contactData.queries.contacts.length > 1) {
         setStep('INVALID_DB');
       } else {
         setStep('INVALID_TAXID');
       }
     }
-  }, [step, isFetching]);
+  }, [step, isFetchingContact]);
 
   return (
     <Stack direction="column" spacing={2}>
@@ -49,13 +52,13 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             <TextField
               label="УНП"
               value={taxId}
-              disabled={isFetching}
+              disabled={isFetchingContact}
               autoFocus
               onChange={ e => setTaxId( (!e.target.value || !isNaN(parseInt(e.target.value))) ? e.target.value : taxId) }
             />
             <Button
               variant="contained"
-              disabled={isFetching || isNaN(parseInt(taxId))}
+              disabled={isFetchingContact || isNaN(parseInt(taxId))}
               onClick = { () => setStep('CHECK_TAXID') }
             >
               Проверить
@@ -100,43 +103,39 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
         :
           <>
             <Typography variant='h1'>
-              {`Предприятие ${data?.queries.contacts[0].NAME}`}
+              {`Предприятие ${contactData?.queries.contacts[0].NAME}`}
             </Typography>
             <TextField
               label="Фамилия"
               value={lastName}
-              disabled={isFetching}
               autoFocus
               onChange={ e => setLastName(e.target.value) }
             />
             <TextField
               label="Имя"
               value={firstName}
-              disabled={isFetching}
               onChange={ e => setFirstName(e.target.value) }
             />
             <TextField
               label="Должность"
               value={position}
-              disabled={isFetching}
               onChange={ e => setPosition(e.target.value) }
             />
             <TextField
               label="Номер рабочего телефона"
               value={phone}
-              disabled={isFetching}
               onChange={ e => setPhone(e.target.value) }
             />
             <TextField
               label="Электронная почта"
               value={email}
-              disabled={isFetching}
+              error={ !!accountData?.queries.accounts.length }
+              helperText={ accountData?.queries.accounts.length ? 'Учетная запись с таким адресом электронной почты уже существует!' : undefined }
               onChange={ e => setEmail(e.target.value) }
             />
             <TextField
               label="Повторите ввод электронной почты"
               value={email2}
-              disabled={isFetching}
               onChange={ e => setEmail2(e.target.value) }
             />
             <Button
@@ -147,18 +146,6 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             </Button>
           </>
       }
-      <div>
-        <h1>Welcome to CreateCustomerAccount!</h1>
-        <div>
-          {step}
-        </div>
-        <div>
-          isFetching {isFetching ? 't' : 'f'}
-        </div>
-        <div>
-          data: {JSON.stringify(data, undefined, 2)}
-        </div>
-      </div>
     </Stack>
   );
 }
