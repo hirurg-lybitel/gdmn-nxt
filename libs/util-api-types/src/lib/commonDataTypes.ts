@@ -52,11 +52,14 @@ export interface ICompany extends IBaseContact {
 };
 
 export interface IAccount {
-  FIRSTNAME: string;
-  LASTNAME: string;
-  EXPIREON?: Date;
-  APPROVED?: boolean;
-  PHONE?: string;
-  EMAIL: string;
-  COMPANY: Pick<(IBaseContact & IWithID), 'ID' | 'NAME'>;
+  USR$FIRSTNAME: string;
+  USR$LASTNAME: string;
+  USR$POSITION?: string;
+  USR$EXPIREON?: Date;
+  USR$APPROVED?: boolean;
+  USR$PHONE?: string;
+  USR$EMAIL: string;
+  USR$COMPANYKEY?: number;
+  USR$HASH: string;
+  USR$SALT: string;
 };

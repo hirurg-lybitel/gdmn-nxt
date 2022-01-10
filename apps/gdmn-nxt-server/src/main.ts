@@ -9,7 +9,7 @@ import { Strategy } from 'passport-local';
 import { FileDB } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
-import { checkGedeminUser, getGedeminUser } from './app/app';
+import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts } from './app/contacts';
 import { addAccount, getAccounts } from './app/accounts';
@@ -79,6 +79,7 @@ passport.use(new Strategy({
 
     try {
       if (employeeMode) {
+        //TODO: надо возвращать запись пользователя и все остальные проверки делать тут
         const res = await checkGedeminUser(userName, password);
 
         if (res.result === 'UNKNOWN_USER') {
@@ -91,6 +92,20 @@ passport.use(new Strategy({
           return done(null, false);
         }
       } else {
+
+        const account = await getAccount(userName);
+
+        if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
+          return done(null, false);
+        }
+
+        if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
+          return done(null, { userName });
+        } else {
+          return done(null, false);
+        }
+
+        /*
         await purgeExpiredUsers();
 
         const user = await userDB.read(userName2Key(userName));
@@ -109,6 +124,7 @@ passport.use(new Strategy({
         } else {
           return done(null, false);
         }
+        */
       }
     }
     catch (err) {
@@ -124,10 +140,10 @@ passport.deserializeUser(async (un: string, done) => {
   const userName = un.slice(1);
 
   if (userType === 'U') {
-    const user = await userDB.read(userName2Key(userName));
+    const account = await getAccount(userName);
 
-    if (user) {
-      done(null, user);
+    if (account) {
+      done(null, { userName });
     } else {
       done(`Unknown user userName: ${userName}`);
     }

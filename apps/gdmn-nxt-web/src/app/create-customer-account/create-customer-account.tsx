@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { skipToken } from '@reduxjs/toolkit/dist/query';
 import { useEffect, useState } from 'react';
-import { useGetAccountByEmailQuery } from '../features/account/accountApi';
+import { useAddAccountMutation, useGetAccountByEmailQuery } from '../features/account/accountApi';
 import { useGetContactByTaxIdQuery } from '../features/contact/contactApi';
 import './create-customer-account.module.less';
 
@@ -14,7 +14,14 @@ export interface CreateCustomerAccountProps {
   onCancel: () => void;
 };
 
-type Step = 'ENTER_TAXID' | 'CHECKING_TAXID' | 'INVALID_TAXID' | 'INVALID_DB' | 'ENTER_PROFILE' | 'SAVING_PROFILE';
+type Step = 'ENTER_TAXID'
+  | 'CHECKING_TAXID'
+  | 'INVALID_TAXID'
+  | 'INVALID_DB'
+  | 'ENTER_PROFILE'
+  | 'SAVING_PROFILE'
+  | 'PROFILE_CREATED'
+  | 'PROFILE_ERROR';
 
 export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) {
 
@@ -28,6 +35,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   const [step, setStep] = useState<Step>('ENTER_TAXID');
   const { data: contactData, isFetching: isFetchingContact } = useGetContactByTaxIdQuery(step === 'CHECKING_TAXID' ? { taxId } : skipToken);
   const { data: accountData, isFetching: isFetchingAccount } = useGetAccountByEmailQuery(checkEmailAddress(email) ? { email } : skipToken);
+  const [addAccount, { error, isSuccess, isError, isLoading }] = useAddAccountMutation();
 
   useEffect( () => {
     if (step === 'CHECKING_TAXID') {
@@ -45,11 +53,33 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
 
   useEffect( () => {
     if (step === 'SAVING_PROFILE') {
-      if (!isFetchingAccount && (!accountData || !accountData.queries.accounts.length)) {
-
+      if (isFetchingAccount
+        || isLoading
+        || (accountData && accountData.queries.accounts.length)  // we already have an account with such email in the db
+        || !(contactData?.queries.contacts.length)
+      ) {
+        return;
       }
+
+      addAccount({
+        USR$FIRSTNAME: firstName,
+        USR$LASTNAME: lastName,
+        USR$POSITION: position,
+        USR$PHONE: phone,
+        USR$EMAIL: email,
+        USR$COMPANYKEY: contactData?.queries.contacts[0].ID,
+        USR$EXPIREON: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000)
+      });
     }
-  }, [step, isFetchingAccount, accountData]);
+  }, [step, isFetchingAccount, accountData, contactData]);
+
+  useEffect( () => {
+    if (isSuccess) {
+      setStep('PROFILE_CREATED');
+    } else if (isError) {
+      setStep('PROFILE_ERROR');
+    }
+  }, [isSuccess, isError]);
 
   return (
     <Stack direction="column" spacing={2}>
@@ -108,6 +138,30 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
               onClick = { onCancel }
             >
               Вернуться в начало
+            </Button>
+          </>
+        : step === 'PROFILE_CREATED' ?
+          <>
+            <Typography variant='body1'>
+              Учетная запись успешно создана. В течение нескольких минут вы получите на электронную почту письмо с паролем.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick = { onCancel }
+            >
+              Войти в систему
+            </Button>
+          </>
+        : step === 'PROFILE_ERROR' ?
+          <>
+            <Typography variant='body1'>
+              {`Произошла ошибка при создании учетной записи: ${error}`}
+            </Typography>
+            <Button
+              variant="contained"
+              onClick = { onCancel }
+            >
+              Войти в систему
             </Button>
           </>
         :

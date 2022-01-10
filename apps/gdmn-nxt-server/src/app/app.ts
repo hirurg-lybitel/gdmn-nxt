@@ -1,4 +1,4 @@
-import { IAuthResult } from "@gsbelarus/util-api-types";
+import { IAccount, IAuthResult, IWithID } from "@gsbelarus/util-api-types";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
 
@@ -100,6 +100,47 @@ export const getGedeminUser = async (userName: string): Promise<{ userName: stri
         return undefined;
       } else {
         throw new Error('Data corrupted.')
+      }
+    } finally {
+      await rs.close();
+    }
+  } finally {
+    await transaction?.commit();
+    await attachment?.disconnect();
+    await client?.dispose();
+  }
+};
+
+export const getAccount = async (email: string): Promise<(IAccount & IWithID) | undefined> => {
+  console.log('getAccount...');
+
+  const query = `
+    SELECT
+      acc.*
+    FROM
+      usr$crm_account acc
+    WHERE UPPER(acc.email) = ?
+  `;
+
+  let client: Client;
+  let attachment: Attachment;
+  let transaction: Transaction;
+
+  try {
+    const { host, port, db } = config;
+    client = createNativeClient(getDefaultLibraryFilename());
+    attachment = await client.connect(`${host}/${port}:${db}`);
+    transaction = await attachment.startTransaction();
+    const rs = await attachment.executeQuery(transaction, query, [email.toLocaleUpperCase()]);
+    try {
+      const data = await rs.fetchAsObject<IAccount & IWithID>();
+
+      if (data.length === 1) {
+        return data[0];
+      } else if (!data.length) {
+        return undefined;
+      } else {
+        throw new Error('More than one account with the same email.')
       }
     } finally {
       await rs.close();
