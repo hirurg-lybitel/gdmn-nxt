@@ -1,3 +1,4 @@
+import { IContactWithID } from "@gsbelarus/util-api-types";
 import {
   createSlice,
   createEntityAdapter,
@@ -6,7 +7,7 @@ import {
 } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { store, RootState } from "../../store";
-import { contactApi, IContacts, IContactWithID } from "../contact/contactApi";
+import { contactApi, IContacts, useUpdateContactMutation } from "../contact/contactApi";
 import customerAPI from "./customerApi";
 
 export interface IBaseContact {
@@ -85,9 +86,39 @@ export const updateCustomer = createAsyncThunk<
   }
 );
 
+export const addCustomer = createAsyncThunk(
+  "customers/addCustomer",
+  async (newCustomer: IContactWithID, { fulfillWithValue, rejectWithValue }) => {
+    try {
+      const response = await customerAPI.customers.add(newCustomer);
+
+      return fulfillWithValue(response);
+
+    } catch (error: any) {
+      console.log('addCustomer', error.errorMessage);
+      return rejectWithValue(error);
+
+    };
+  }
+);
+
+export const deleteCustomer = createAsyncThunk(
+  "customers/deleteCustomer",
+  async (id: number, { fulfillWithValue, rejectWithValue} ) => {
+    try {
+      const response = await customerAPI.customers.delete(id);
+
+      return fulfillWithValue(response);
+
+    } catch (error: any) {
+      return rejectWithValue(error);
+    }
+  }
+)
 
 
-interface Customer extends IBaseContact {
+
+interface Customer extends IContactWithID {
   error: string | null | undefined;
   loading: boolean;
   ids: Array<number>;
@@ -111,13 +142,13 @@ const customersSlice = createSlice({
   name: "customers",
   initialState: initialState,
   reducers: {
-    addCustomer: customersAdapter.addOne,
+    //addCustomer: customersAdapter.addOne,
     selectAllCustomers: customersAdapter.setAll,
     // updateCustomer(state, action) {
     //   console.log("updateCustomer_state", state);
     //   console.log("updateCustomer_action", action);
     // },
-    deleteCustomer: customersAdapter.removeOne
+    //deleteCustomer: customersAdapter.removeOne
   },
   extraReducers:{
     [updateCustomer.fulfilled.toString()](state, action: PayloadAction<IContactWithID> ) {
@@ -139,7 +170,7 @@ const customersSlice = createSlice({
       state.error = null;
     },
     [fetchCustomers.fulfilled.toString()](state, action) {
-      console.log('fetchCustomers_fulfilled');
+
       state.loading = false;
       state.error = null;
       customersAdapter.setAll(state, action.payload.queries.contacts)
@@ -149,51 +180,40 @@ const customersSlice = createSlice({
     },
     [fetchCustomers.rejected.toString()](state, action) {
       console.log('fetchCustomers_rejected', action);
+      state.error = action.payload.errorMessage;
     },
+    [addCustomer.fulfilled.toString()](state, action: PayloadAction<IContactWithID>) {
 
+      state.loading = false;
+      state.error = null;
 
+      const newCustomer: Customer = { ...initialState, ...action.payload };
 
+      console.log('addCustomer_fulfilled', newCustomer);
 
-    // builder.addCase(
-    //   updateCustomer.fulfilled,
-    //   (state, { payload }) =>{
-    //     console.log('extraReducers_fulfilled_payload', payload);
-    //     const { ID, ...changes } = payload as IContactWithID ;
+      customersAdapter.addOne(state, newCustomer);
+    },
+    [addCustomer.pending.toString()](state, action) {
+      state.loading = true;
+      state.error = null;
+    },
+    [addCustomer.rejected.toString()](state, action: PayloadAction<ValidationErrors>) {
+      console.log('addCustomer_rejected', action);
+      state.loading = false;
+      state.error = action.payload.errorMessage;
+    },
+    [deleteCustomer.fulfilled.toString()](state, action){
+      state.loading = false;
+      state.error = null;
 
-    //     console.log('extraReducers_fulfilled_payload2', ID, changes);
-    //     customersAdapter.updateOne(state,  { id: ID, changes } );
-    //   }
-    // )
-    // builder.addCase(
-    //   updateCustomer.rejected,
-    //   (state, action) => {
-    //     //console.log('extraReducers_rejected_state', state);
-    //     if (action.payload) {
-    //       console.log('extraReducers_rejected_payload', action.payload);
-    //       state.error = action.payload.errorMessage;
-    //     } else {
-    //       console.log('extraReducers_rejected_payload', action.error.message);
-    //       state.error = action.error.message as string;
-    //     }
-    //   }
-    // )
-    // builder.addCase( fetchCustomers.fulfilled, (state, action ) => {
-    //   console.log('fetchCustomers_fulfilled', action);
-    //   //customersAdapter.upsertMany(state, action.payload.customers);
-    // })
-    // builder.addCase(fetchCustomers.pending, (state, action) => {
-    //   console.log('fetchCustomers_rejected', action);
-    //   state.loading = true;
-    // });
-    // builder.addCase( fetchCustomers.rejected, (state, action ) => {
-    //   console.log('fetchCustomers_rejected', action);
-    //   //state.error = action.payload.errorMessage;
-    // })
+      console.log('deleteCustomer_fulfilled', action);
+      customersAdapter.removeOne(state, action.payload);
+    }
   }
 
 });
 
-export const { selectAllCustomers, addCustomer, deleteCustomer } = customersSlice.actions;
+export const { selectAllCustomers } = customersSlice.actions;
 
 
 export const customersSelectors = customersAdapter.getSelectors<RootState>(

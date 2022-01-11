@@ -59,6 +59,12 @@ export function CustomerEdit(props: CustomerEditProps) {
 
   });
 
+  //const [onConfirm, setOnConfirm] = React.useState<any>(formik.handleSubmit());
+
+  const handleDeleteClick = () => {
+    //setConfirmOpen(true);
+  };
+
 
   if (!customer) return (<div></div>);
 
@@ -99,7 +105,7 @@ export function CustomerEdit(props: CustomerEditProps) {
         </form>
       </DialogContent>
       <DialogActions>
-        <IconButton>
+        <IconButton onClick={handleDeleteClick}>
             <DeleteIcon />
         </IconButton>
         <Divider orientation="vertical" flexItem />

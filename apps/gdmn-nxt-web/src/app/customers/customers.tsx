@@ -10,12 +10,14 @@ import { Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCustomer, updateCustomer, fetchCustomers, customersSelectors } from '../features/customer/customerSlice';
-import { AppDispatch, RootState } from '../store';
+import { addCustomer, updateCustomer, fetchCustomers, customersSelectors, deleteCustomer } from '../features/customer/customerSlice';
+import { RootState } from '../store';
 import { IBaseContact, IWithID } from '@gsbelarus/util-api-types';
 
 
@@ -52,6 +54,7 @@ export function Customers(props: CustomersProps) {
 
   useEffect(() => {
     if (error) {
+
       setSnackBarMessage(error.toString());
       setOpenSnackBar(true);
     }
@@ -134,8 +137,24 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(false);
 
     dispatch(updateCustomer(values));
+  };
 
-    if (error) console.log('handleOrganiztionEditSubmit_error', error);
+
+
+  const handleAddOrganization = () => {
+    dispatch(addCustomer({ ID: 0, NAME: "ADD", PHONE: "ADD_TEL", EMAIL: "ADD_EMAIL"}));
+  };
+
+  const handleOrganizationDeleteOnClick = () => {
+    console.log('handleOrganizationDeleteOnClick');
+
+    if (!currentOrganization) {
+      setSnackBarMessage('Не выбрана организация');
+      setOpenSnackBar(true);
+      return;
+    }
+
+    dispatch(deleteCustomer(currentOrganization));
   };
 
 
@@ -160,7 +179,9 @@ export function Customers(props: CustomersProps) {
     <Stack direction="column">
       <Stack direction="row">
         <Button onClick={()=> dispatch(fetchCustomers())} disabled={loading} startIcon={<RefreshIcon/>}>Обновить</Button>
+        <Button onClick={handleAddOrganization} disabled={loading} startIcon={<AddIcon/>}>Добавить</Button>
         <Button onClick={handleOrganiztionEditClick} disabled={loading} startIcon={<EditIcon />}>Редактировать</Button>
+        <Button onClick={handleOrganizationDeleteOnClick} disabled={loading} startIcon={<DeleteIcon />}>Удалить</Button>
         <Button onClick={handleReconciliationClick} disabled={loading}>Акт сверки</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
@@ -173,7 +194,8 @@ export function Customers(props: CustomersProps) {
           loading={loading}
           getRowId={row => row.ID}
           onSelectionModelChange={(ids)=>{
-            setCurrentOrganization(Number(ids[0].toString()));
+            console.log('ids', ids);
+            setCurrentOrganization(ids[0] ? Number(ids[0]) : 0);
           }}
           components={{
             Toolbar: GridToolbar,
@@ -193,6 +215,7 @@ export function Customers(props: CustomersProps) {
         onSubmit={handleOrganiztionEditSubmit}
         //onSaveClick={handleOrganiztionEditSaveClick}
         onCancelClick={handleOrganiztionEditCancelClick}
+        onDeleteClick={handleOrganizationDeleteOnClick}
       />
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>

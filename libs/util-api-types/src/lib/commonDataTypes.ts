@@ -47,6 +47,8 @@ export interface IBaseContact {
   FOLDERNAME?: string;
 };
 
+export interface IContactWithID extends IBaseContact, IWithID {}
+
 export interface ICompany extends IBaseContact {
   FULLNAME: string;
 };

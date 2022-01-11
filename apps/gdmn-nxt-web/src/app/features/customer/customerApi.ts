@@ -1,5 +1,5 @@
+import { IContactWithID } from '@gsbelarus/util-api-types';
 import { baseUrl } from '../../const';
-import { IContactWithID } from '../contact/contactApi';
 
 const _headers = {
   Accept: 'application/json',
@@ -13,8 +13,6 @@ interface IError {
 const customerAPI = {
   customers: {
     async list(): Promise<IContactWithID[] | IError> {
-
-      console.log('list', `${baseUrl}/contacts`);
       const result = await fetch(`${baseUrl}contacts`, {
         method: "GET",
         headers: _headers
@@ -49,6 +47,36 @@ const customerAPI = {
         throw resBodу;
       }
       return resBodу;
+    },
+    async add(customer: IContactWithID): Promise<IContactWithID | IError> {
+      const response = await fetch(`${baseUrl}contacts`, {
+        method: "POST",
+        headers: _headers,
+        body: JSON.stringify(customer)
+      });
+      const responseBodу = await response.json();
+
+      if (!response.ok) {
+        //console.log('customerAPI_add', responseBodу);
+        throw responseBodу;
+      }
+
+      return responseBodу;
+    },
+    async delete(id: number): Promise< any | IError> {
+      const response = await fetch(`${baseUrl}contacts/${id}`, {
+        method: "DELETE",
+        headers: _headers
+      });
+
+      console.log('customerAPI_delete', response.body);
+      const responseBodу = await response.json();
+
+      if (!response.ok) {
+        throw responseBodу;
+      }
+
+      return responseBodу;
     }
   }
 };
