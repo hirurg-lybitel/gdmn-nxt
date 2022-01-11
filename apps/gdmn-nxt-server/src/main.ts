@@ -359,6 +359,8 @@ app.get('/api/v1/logout', (_, res) => {
   res.clearCookie('Sid', { path: '/' }).json({});
 });
 
+app.get('/api/v1/lookupCompany/taxId/:taxId', lookupCompany);
+
 app.get('/api/v1/contacts', getContacts);
 app.get('/api/v1/contacts/taxId/:taxId', getContacts);
 app.put('/api/v1/contacts/:id', updateContact);
