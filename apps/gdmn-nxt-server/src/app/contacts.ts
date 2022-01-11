@@ -72,3 +72,64 @@ export const getContacts: RequestHandler = async (req, res) => {
     await client?.dispose();
   }
 };
+
+export const updateContact: RequestHandler = async (req, res) => {
+
+  const { id } = req.params;
+  const { NAME, PHONE } = req.body;
+
+
+  let client: Client;
+  let attachment: Attachment;
+  let transaction: Transaction;
+
+  try {
+    const { host, port, db } = config;
+
+    client = createNativeClient(getDefaultLibraryFilename());
+    attachment = await client.connect(`${host}/${port}:${db}`);
+    transaction = await attachment.startTransaction();
+
+    try {
+      await attachment.execute(
+        transaction,
+        `UPDATE GD_CONTACT
+         SET
+           NAME = ?,
+           PHONE = ?
+         WHERE ID = ?`,
+         [ NAME, PHONE, id ]
+      );
+
+    } catch (error) {
+        return res.status(500).send({ "errorMessage": error.message });
+    }
+
+    const resultSet = await attachment.executeQuery(
+      transaction,
+      `SELECT
+         ID,
+         NAME,
+         PHONE
+       FROM GD_CONTACT
+       WHERE ID = ?`,
+      [id]
+    );
+
+    const row = await resultSet.fetch();
+    const result = { ID: row[0][0], NAME: row[0][1], PHONE: row[0][2]}
+
+    resultSet.close();
+
+    return res.status(200).send(result);
+
+  } catch (error) {
+      return res.status(500).send({ "errorMessage": error });
+
+  } finally {
+    await transaction?.commit();
+    await attachment?.disconnect();
+    await client?.dispose();
+
+  }
+};

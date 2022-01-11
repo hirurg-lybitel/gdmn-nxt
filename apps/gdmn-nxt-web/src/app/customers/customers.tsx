@@ -4,7 +4,7 @@ import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import ReportParams from '../report-params/report-params';
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
 import { Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
@@ -13,6 +13,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CustomerEdit from '../customer-edit/customer-edit';
+import { useDispatch, useSelector } from 'react-redux';
+import { addCustomer, updateCustomer, fetchCustomers, customersSelectors } from '../features/customer/customerSlice';
+import { AppDispatch, RootState } from '../store';
+import { IBaseContact, IWithID } from '@gsbelarus/util-api-types';
 
 
 const columns: GridColDef[] = [
@@ -26,7 +30,7 @@ export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
 
-  const { data, error, isFetching, refetch } = useGetAllContactsQuery();
+  //const { data, isFetching, refetch } = useGetAllContactsQuery();
 
   const [reconciliationParamsOpen, setReconciliationParamsOpen] = React.useState(false);
   const [reconciliationShow, setReconciliationShow] = React.useState(false);
@@ -37,11 +41,30 @@ export function Customers(props: CustomersProps) {
 
   const [openEditForm, setOpenEditForm] = React.useState(false);
 
+  const dispatch = useDispatch();
+  const allCustomers = useSelector(customersSelectors.selectAll);
+  const { error, loading } = useSelector((state: RootState) => state.cutomers);
+
+
+  useEffect(() => {
+    dispatch(fetchCustomers());
+  }, [])
+
+  useEffect(() => {
+    if (error) {
+      setSnackBarMessage(error.toString());
+      setOpenSnackBar(true);
+    }
+  }, [error])
+
   /** Close snackbar manually */
-  const handleSnackBarClose = (event?: any, reason?: any) => {
-    if (reason !== 'clickaway') {
+  const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+    console.log('handleSnackBarClose', reason);
+    if (reason === 'clickaway') {
+      console.log('handleSnackBarClose2', reason);
       return;
     };
+    console.log('handleSnackBarClose3', reason);
     setOpenSnackBar(false);
   };
 
@@ -88,14 +111,31 @@ export function Customers(props: CustomersProps) {
 
   /** Save organization change */
   const handleOrganiztionEditSaveClick = () => {
-    console.log('save data');
-    setOpenEditForm(false);
+    console.log('save data', currentOrganization);
+
+    // dispatch(updateCustomer({ ID: currentOrganization, NAME: "TEST2", PHONE: "TEL" }));
+
+    // setOpenEditForm(false);
+
+    // if (error) {
+    //   setSnackBarMessage(error);
+    //   setOpenSnackBar(true);
+
+    // };
   };
 
   /** Cancel organization change */
   const handleOrganiztionEditCancelClick = () => {
     console.log('cancel data');
     setOpenEditForm(false);
+  };
+
+  const handleOrganiztionEditSubmit = async (values: IBaseContact & IWithID) => {
+    setOpenEditForm(false);
+
+    dispatch(updateCustomer(values));
+
+    if (error) console.log('handleOrganiztionEditSubmit_error', error);
   };
 
 
@@ -114,20 +154,23 @@ export function Customers(props: CustomersProps) {
     );
   };
 
+
+
   return (
     <Stack direction="column">
       <Stack direction="row">
-        <Button onClick={refetch} disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
-        <Button onClick={handleOrganiztionEditClick} disabled={isFetching} startIcon={<EditIcon />}>Редактировать</Button>
-        <Button onClick={handleReconciliationClick} disabled={isFetching}>Акт сверки</Button>
+        <Button onClick={()=> dispatch(fetchCustomers())} disabled={loading} startIcon={<RefreshIcon/>}>Обновить</Button>
+        <Button onClick={handleOrganiztionEditClick} disabled={loading} startIcon={<EditIcon />}>Редактировать</Button>
+        <Button onClick={handleReconciliationClick} disabled={loading}>Акт сверки</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
         <DataGridPro
-          rows={data?.queries.contacts ?? []}
+          //rows={data?.queries.contacts ?? []}
+          rows={allCustomers ?? []}
           columns={columns}
           pagination
           disableMultipleSelection
-          loading={isFetching}
+          loading={loading}
           getRowId={row => row.ID}
           onSelectionModelChange={(ids)=>{
             setCurrentOrganization(Number(ids[0].toString()));
@@ -146,8 +189,9 @@ export function Customers(props: CustomersProps) {
       />
       <CustomerEdit
         open={openEditForm}
-        customer={data?.queries.contacts.find((element) => element.ID === currentOrganization) || null}
-        onSaveClick={handleOrganiztionEditSaveClick}
+        customer={allCustomers.find((element) => element.ID === currentOrganization) || { ID: currentOrganization, NAME: "undefined", PHONE: "undefined" }}
+        onSubmit={handleOrganiztionEditSubmit}
+        //onSaveClick={handleOrganiztionEditSaveClick}
         onCancelClick={handleOrganiztionEditCancelClick}
       />
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
@@ -155,6 +199,50 @@ export function Customers(props: CustomersProps) {
       </Snackbar>
     </Stack>
   );
+
+  // return (
+  //   <Stack direction="column">
+  //     <Stack direction="row">
+  //       <Button onClick={refetch} disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+  //       <Button onClick={handleOrganiztionEditClick} disabled={isFetching} startIcon={<EditIcon />}>Редактировать</Button>
+  //       <Button onClick={handleReconciliationClick} disabled={isFetching}>Акт сверки</Button>
+  //     </Stack>
+  //     <div style={{ width: '100%', height: '800px' }}>
+  //       <DataGridPro
+  //         //rows={data?.queries.contacts ?? []}
+  //         rows={allCustomers ?? []}
+  //         columns={columns}
+  //         pagination
+  //         disableMultipleSelection
+  //         loading={isFetching}
+  //         getRowId={row => row.ID}
+  //         onSelectionModelChange={(ids)=>{
+  //           setCurrentOrganization(Number(ids[0].toString()));
+  //         }}
+  //         components={{
+  //           Toolbar: GridToolbar,
+  //         }}
+  //       />
+  //     </div>
+  //     <ReportParams
+  //       open={reconciliationParamsOpen}
+  //       dates={paramsDates}
+  //       onDateChange={handleDateChange}
+  //       onSaveClick={handleSaveClick}
+  //       onCancelClick={handleCancelClick}
+  //     />
+  //     <CustomerEdit
+  //       open={openEditForm}
+  //       customer={data?.queries.contacts.find((element) => element.ID === currentOrganization) || { ID: currentOrganization, NAME: "undefined1", PHONE: "TEL" }}
+  //       onSubmit={handleOrganiztionEditSubmit}
+  //       //onSaveClick={handleOrganiztionEditSaveClick}
+  //       onCancelClick={handleOrganiztionEditCancelClick}
+  //     />
+  //     <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
+  //       <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
+  //     </Snackbar>
+  //   </Stack>
+  // );
 }
 
 export default Customers;

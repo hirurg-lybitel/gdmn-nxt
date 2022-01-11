@@ -19,6 +19,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { IBaseContact, IWithID } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import React from 'react';
+import { Formik, useFormik, Form, FormikHelpers } from 'formik';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -31,19 +32,33 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export interface CustomerEditProps {
   open: boolean;
-  customer: (IBaseContact & IWithID) | null;
-  onSaveClick: () => void;
+  customer: (IBaseContact & IWithID);
+  onSubmit: (values: (IBaseContact & IWithID)) => void;
+  onSaveClick?: () => void;
   onCancelClick: () => void;
   onDeleteClick?: () => void;
 }
 
 export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
-  const { onSaveClick, onCancelClick, onDeleteClick } = props;
+  const { onSaveClick, onCancelClick, onDeleteClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
 
   const classes = useStyles();
+
+  const formik = useFormik<(IBaseContact & IWithID)>({
+    enableReinitialize: true,
+    initialValues: {
+      ...customer,
+    },
+    onSubmit: (values) => {
+      setConfirmOpen(false);
+      onSubmit(values);
+    },
+
+  });
+
 
   if (!customer) return (<div></div>);
 
@@ -53,21 +68,35 @@ export function CustomerEdit(props: CustomerEditProps) {
         Редактирование: {customer.NAME}
       </DialogTitle>
       <DialogContent dividers>
-        <Stack direction="column" spacing={3}>
-          <TextField
-            label="Наименование"
-            type="text"
-            required
-            defaultValue={customer.NAME}/>
-          <TextField
-            label="Телефон"
-            defaultValue={customer.PHONE}/>
-          <TextField
-            label="Email"
-            type="email"
-            defaultValue={customer.EMAIL}/>
-        </Stack>
-
+        <form id="mainForm" onSubmit={formik.handleSubmit}>
+          <Stack direction="column" spacing={3}>
+            <TextField
+              label="Наименование"
+              type="text"
+              required
+              name="NAME"
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.NAME}
+            />
+            <TextField
+              label="Телефон"
+              type="text"
+              name="PHONE"
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.PHONE}
+            />
+            <TextField
+              label="Email"
+              type="email"
+              name="EMAIL"
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.EMAIL}
+            />
+          </Stack>
+        </form>
       </DialogContent>
       <DialogActions>
         <IconButton>
@@ -82,6 +111,8 @@ export function CustomerEdit(props: CustomerEditProps) {
             Отменить
         </Button>
         <Button
+          //type="submit"
+          form="mainForm"
           onClick={() => {
             setConfirmOpen(true);
           }}
@@ -91,15 +122,16 @@ export function CustomerEdit(props: CustomerEditProps) {
         >
             OK
         </Button>
-
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        title="Вы уверены?"
-        onConfirm={onSaveClick}
+        title="Подтвердите действие"
+        text="Вы уверены что хотите продолжить?"
+        onConfirm={formik.handleSubmit}
       />
     </Dialog>
+
   );
 }
 
