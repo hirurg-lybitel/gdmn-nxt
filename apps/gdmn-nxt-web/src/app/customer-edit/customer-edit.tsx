@@ -16,9 +16,10 @@ import {
 import { makeStyles, createStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
-import { IBaseContact, IWithID } from '@gsbelarus/util-api-types';
+import { IContactWithID } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import React from 'react';
+import { useFormik } from 'formik';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -28,49 +29,85 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-
 export interface CustomerEditProps {
   open: boolean;
-  customer: (IBaseContact & IWithID) | null;
-  onSaveClick: () => void;
+  customer: IContactWithID | null;
+  onSubmit: (arg1: IContactWithID, arg2: boolean) => void;
+  onSaveClick?: () => void;
   onCancelClick: () => void;
   onDeleteClick?: () => void;
 }
 
 export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
-  const { onSaveClick, onCancelClick, onDeleteClick } = props;
+  const { onCancelClick, onDeleteClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const classes = useStyles();
 
-  if (!customer) return (<div></div>);
+  const initValue: IContactWithID = {
+    ID: customer?.ID || 0,
+    NAME: customer?.NAME || '',
+  }
+
+  const formik = useFormik<IContactWithID>({
+    enableReinitialize: true,
+    initialValues: {
+      ...customer,
+      ...initValue
+    },
+    onSubmit: (values) => {
+      setConfirmOpen(false);
+      onSubmit(values, deleting);
+    },
+
+  });
+
+  const handleDeleteClick = () => {
+    setDeleting(true);
+    setConfirmOpen(true);
+  };
 
   return (
     <Dialog classes={{ paper: classes.dialog}} open={open}>
       <DialogTitle>
-        Редактирование: {customer.NAME}
+        {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
       </DialogTitle>
       <DialogContent dividers>
-        <Stack direction="column" spacing={3}>
-          <TextField
-            label="Наименование"
-            type="text"
-            required
-            defaultValue={customer.NAME}/>
-          <TextField
-            label="Телефон"
-            defaultValue={customer.PHONE}/>
-          <TextField
-            label="Email"
-            type="email"
-            defaultValue={customer.EMAIL}/>
-        </Stack>
-
+        <form id="mainForm" onSubmit={formik.handleSubmit}>
+          <Stack direction="column" spacing={3}>
+            <TextField
+              label="Наименование"
+              type="text"
+              required
+              name="NAME"
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.NAME}
+            />
+            <TextField
+              label="Телефон"
+              type="text"
+              name="PHONE"
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.PHONE}
+            />
+            <TextField
+              label="Email"
+              type="email"
+              name="EMAIL"
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.EMAIL}
+            />
+          </Stack>
+        </form>
       </DialogContent>
       <DialogActions>
-        <IconButton>
+        <IconButton onClick={handleDeleteClick}>
             <DeleteIcon />
         </IconButton>
         <Divider orientation="vertical" flexItem />
@@ -82,7 +119,10 @@ export function CustomerEdit(props: CustomerEditProps) {
             Отменить
         </Button>
         <Button
+          //type="submit"
+          form="mainForm"
           onClick={() => {
+            setDeleting(false);
             setConfirmOpen(true);
           }}
           variant="contained"
@@ -91,15 +131,16 @@ export function CustomerEdit(props: CustomerEditProps) {
         >
             OK
         </Button>
-
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        title="Вы уверены?"
-        onConfirm={onSaveClick}
+        title="Подтвердите действие"
+        text="Вы уверены что хотите продолжить?"
+        onConfirm={formik.handleSubmit}
       />
     </Dialog>
+
   );
 }
 
