@@ -44,7 +44,7 @@ export const getContacts: RequestHandler = async (req, res) => {
             gd_contact c JOIN gd_contact p ON p.id = c.parent
             ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
           WHERE
-            c.contacttype IN (2,3,5) order by 1 desc`,
+            c.contacttype IN (2,3,5)`,
         params: req.params.taxId ? [req.params.taxId] : undefined
       },
     ];
