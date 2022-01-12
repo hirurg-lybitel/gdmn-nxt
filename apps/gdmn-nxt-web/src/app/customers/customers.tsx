@@ -18,7 +18,7 @@ import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, customersSelectors, deleteCustomer } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IBaseContact, IWithID } from '@gsbelarus/util-api-types';
+import { IBaseContact, IContactWithID, IWithID } from '@gsbelarus/util-api-types';
 
 
 const columns: GridColDef[] = [
@@ -45,8 +45,7 @@ export function Customers(props: CustomersProps) {
 
   const dispatch = useDispatch();
   const allCustomers = useSelector(customersSelectors.selectAll);
-  const { error, loading } = useSelector((state: RootState) => state.cutomers);
-
+  const { ids, error, loading } = useSelector((state: RootState) => state.cutomers);
 
   useEffect(() => {
     dispatch(fetchCustomers());
@@ -133,16 +132,26 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(false);
   };
 
-  const handleOrganiztionEditSubmit = async (values: IBaseContact & IWithID) => {
+  const handleOrganiztionEditSubmit = async (values: IContactWithID, deleting: boolean) => {
     setOpenEditForm(false);
+
+    if (deleting) {
+      dispatch(deleteCustomer(values.ID));
+      return;
+    }
+
+    if (!values.ID) {
+      dispatch(addCustomer(values));
+      return;
+    }
 
     dispatch(updateCustomer(values));
   };
 
 
-
   const handleAddOrganization = () => {
-    dispatch(addCustomer({ ID: 0, NAME: "ADD", PHONE: "ADD_TEL", EMAIL: "ADD_EMAIL"}));
+    setCurrentOrganization(0);
+    setOpenEditForm(true);
   };
 
   const handleOrganizationDeleteOnClick = () => {
@@ -174,14 +183,12 @@ export function Customers(props: CustomersProps) {
   };
 
 
-
   return (
     <Stack direction="column">
       <Stack direction="row">
         <Button onClick={()=> dispatch(fetchCustomers())} disabled={loading} startIcon={<RefreshIcon/>}>Обновить</Button>
         <Button onClick={handleAddOrganization} disabled={loading} startIcon={<AddIcon/>}>Добавить</Button>
         <Button onClick={handleOrganiztionEditClick} disabled={loading} startIcon={<EditIcon />}>Редактировать</Button>
-        <Button onClick={handleOrganizationDeleteOnClick} disabled={loading} startIcon={<DeleteIcon />}>Удалить</Button>
         <Button onClick={handleReconciliationClick} disabled={loading}>Акт сверки</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
@@ -193,10 +200,7 @@ export function Customers(props: CustomersProps) {
           disableMultipleSelection
           loading={loading}
           getRowId={row => row.ID}
-          onSelectionModelChange={(ids)=>{
-            console.log('ids', ids);
-            setCurrentOrganization(ids[0] ? Number(ids[0]) : 0);
-          }}
+          onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0) }
           components={{
             Toolbar: GridToolbar,
           }}
@@ -211,7 +215,7 @@ export function Customers(props: CustomersProps) {
       />
       <CustomerEdit
         open={openEditForm}
-        customer={allCustomers.find((element) => element.ID === currentOrganization) || { ID: currentOrganization, NAME: "undefined", PHONE: "undefined" }}
+        customer={allCustomers.find((element) => element.ID === currentOrganization) || null}
         onSubmit={handleOrganiztionEditSubmit}
         //onSaveClick={handleOrganiztionEditSaveClick}
         onCancelClick={handleOrganiztionEditCancelClick}
@@ -222,50 +226,6 @@ export function Customers(props: CustomersProps) {
       </Snackbar>
     </Stack>
   );
-
-  // return (
-  //   <Stack direction="column">
-  //     <Stack direction="row">
-  //       <Button onClick={refetch} disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
-  //       <Button onClick={handleOrganiztionEditClick} disabled={isFetching} startIcon={<EditIcon />}>Редактировать</Button>
-  //       <Button onClick={handleReconciliationClick} disabled={isFetching}>Акт сверки</Button>
-  //     </Stack>
-  //     <div style={{ width: '100%', height: '800px' }}>
-  //       <DataGridPro
-  //         //rows={data?.queries.contacts ?? []}
-  //         rows={allCustomers ?? []}
-  //         columns={columns}
-  //         pagination
-  //         disableMultipleSelection
-  //         loading={isFetching}
-  //         getRowId={row => row.ID}
-  //         onSelectionModelChange={(ids)=>{
-  //           setCurrentOrganization(Number(ids[0].toString()));
-  //         }}
-  //         components={{
-  //           Toolbar: GridToolbar,
-  //         }}
-  //       />
-  //     </div>
-  //     <ReportParams
-  //       open={reconciliationParamsOpen}
-  //       dates={paramsDates}
-  //       onDateChange={handleDateChange}
-  //       onSaveClick={handleSaveClick}
-  //       onCancelClick={handleCancelClick}
-  //     />
-  //     <CustomerEdit
-  //       open={openEditForm}
-  //       customer={data?.queries.contacts.find((element) => element.ID === currentOrganization) || { ID: currentOrganization, NAME: "undefined1", PHONE: "TEL" }}
-  //       onSubmit={handleOrganiztionEditSubmit}
-  //       //onSaveClick={handleOrganiztionEditSaveClick}
-  //       onCancelClick={handleOrganiztionEditCancelClick}
-  //     />
-  //     <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
-  //       <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
-  //     </Snackbar>
-  //   </Stack>
-  // );
 }
 
 export default Customers;

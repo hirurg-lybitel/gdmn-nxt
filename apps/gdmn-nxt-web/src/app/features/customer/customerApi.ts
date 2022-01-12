@@ -12,18 +12,19 @@ interface IError {
 
 const customerAPI = {
   customers: {
-    async list(): Promise<IContactWithID[] | IError> {
-      const result = await fetch(`${baseUrl}contacts`, {
+    async list(): Promise<any> {
+      console.log('request', "GET", `${baseUrl}contacts`);
+
+      const response = await fetch(`${baseUrl}contacts`, {
         method: "GET",
         headers: _headers
       });
 
-      const status = result.status;
-      const resBodу = await result.json();
+      const resBodу = await response.json();
 
-      console.log('customerAPI_list', status, resBodу);
+      console.log('✉️ response', response.status,  resBodу);
 
-      if (!result.ok) {
+      if (!response.ok) {
         throw resBodу;
       }
       return resBodу;
@@ -31,30 +32,37 @@ const customerAPI = {
       //return {errorMessage: "error_Test"};
 
     },
-    async update(customerData: IContactWithID): Promise<IContactWithID | IError> {
-      const result = await fetch(`${baseUrl}contacts/${customerData.ID}`, {
+    async update(customerData: IContactWithID): Promise<any> {
+      console.log('request', "PUT", `${baseUrl}contacts/${customerData.ID}`);
+
+      const response = await fetch(`${baseUrl}contacts/${customerData.ID}`, {
         method: "PUT",
         headers: _headers,
         body: JSON.stringify(customerData)
       });
 
-      const status = result.status;
-      const resBodу = await result.json();
+      const status = response.status;
+      const resBodу = await response.json();
 
-      console.log('customerAPI_update', status, resBodу);
+      console.log('✉️ response', response.status,  resBodу);
 
-      if (!result.ok) {
+      if (!response.ok) {
         throw resBodу;
       }
       return resBodу;
     },
     async add(customer: IContactWithID): Promise<IContactWithID | IError> {
+      console.log('request', "POST", `${baseUrl}contacts`);
+
       const response = await fetch(`${baseUrl}contacts`, {
         method: "POST",
         headers: _headers,
         body: JSON.stringify(customer)
       });
+
       const responseBodу = await response.json();
+
+      console.log('✉️ response', response.status,  responseBodу);
 
       if (!response.ok) {
         //console.log('customerAPI_add', responseBodу);
@@ -64,13 +72,16 @@ const customerAPI = {
       return responseBodу;
     },
     async delete(id: number): Promise< any | IError> {
+      console.log('request', "DELETE", `${baseUrl}contacts/${id}`);
+
       const response = await fetch(`${baseUrl}contacts/${id}`, {
         method: "DELETE",
         headers: _headers
       });
 
-      console.log('customerAPI_delete', response.body);
       const responseBodу = await response.json();
+
+      console.log('✉️ response', response.status,  responseBodу);
 
       if (!response.ok) {
         throw responseBodу;

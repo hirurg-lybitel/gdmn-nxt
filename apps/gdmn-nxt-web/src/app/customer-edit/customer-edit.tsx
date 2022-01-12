@@ -16,10 +16,10 @@ import {
 import { makeStyles, createStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
-import { IBaseContact, IWithID } from '@gsbelarus/util-api-types';
+import { IContactWithID } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import React from 'react';
-import { Formik, useFormik, Form, FormikHelpers } from 'formik';
+import { useFormik } from 'formik';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,11 +29,10 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-
 export interface CustomerEditProps {
   open: boolean;
-  customer: (IBaseContact & IWithID);
-  onSubmit: (values: (IBaseContact & IWithID)) => void;
+  customer: IContactWithID | null;
+  onSubmit: (arg1: IContactWithID, arg2: boolean) => void;
   onSaveClick?: () => void;
   onCancelClick: () => void;
   onDeleteClick?: () => void;
@@ -41,37 +40,40 @@ export interface CustomerEditProps {
 
 export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
-  const { onSaveClick, onCancelClick, onDeleteClick, onSubmit } = props;
+  const { onCancelClick, onDeleteClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const classes = useStyles();
 
-  const formik = useFormik<(IBaseContact & IWithID)>({
+  const initValue: IContactWithID = {
+    ID: customer?.ID || 0,
+    NAME: customer?.NAME || '',
+  }
+
+  const formik = useFormik<IContactWithID>({
     enableReinitialize: true,
     initialValues: {
       ...customer,
+      ...initValue
     },
     onSubmit: (values) => {
       setConfirmOpen(false);
-      onSubmit(values);
+      onSubmit(values, deleting);
     },
 
   });
 
-  //const [onConfirm, setOnConfirm] = React.useState<any>(formik.handleSubmit());
-
   const handleDeleteClick = () => {
-    //setConfirmOpen(true);
+    setDeleting(true);
+    setConfirmOpen(true);
   };
-
-
-  if (!customer) return (<div></div>);
 
   return (
     <Dialog classes={{ paper: classes.dialog}} open={open}>
       <DialogTitle>
-        Редактирование: {customer.NAME}
+        {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
       </DialogTitle>
       <DialogContent dividers>
         <form id="mainForm" onSubmit={formik.handleSubmit}>
@@ -120,6 +122,7 @@ export function CustomerEdit(props: CustomerEditProps) {
           //type="submit"
           form="mainForm"
           onClick={() => {
+            setDeleting(false);
             setConfirmOpen(true);
           }}
           variant="contained"

@@ -6,6 +6,7 @@ import {
   PayloadAction
 } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
+import { useDispatch } from "react-redux";
 import { store, RootState } from "../../store";
 import { contactApi, IContacts, useUpdateContactMutation } from "../contact/contactApi";
 import customerAPI from "./customerApi";
@@ -53,7 +54,7 @@ IContactWithID[] | ValidationErrors,
 
 
 export const updateCustomer = createAsyncThunk<
-  IContactWithID | ValidationErrors,
+  any,
   IContactWithID,
   {
     rejectValue: ValidationErrors
@@ -64,8 +65,6 @@ export const updateCustomer = createAsyncThunk<
   async (customerData: IContactWithID, { fulfillWithValue, rejectWithValue }) => {
     try {
       const response = await customerAPI.customers.update(customerData);
-
-      console.log('updateCustomer', response);
 
       return response;
 
@@ -92,7 +91,7 @@ export const addCustomer = createAsyncThunk(
     try {
       const response = await customerAPI.customers.add(newCustomer);
 
-      return fulfillWithValue(response);
+      return (response);
 
     } catch (error: any) {
       console.log('addCustomer', error.errorMessage);
@@ -121,8 +120,6 @@ export const deleteCustomer = createAsyncThunk(
 interface Customer extends IContactWithID {
   error: string | null | undefined;
   loading: boolean;
-  ids: Array<number>;
-  entities: Record<any, any>
 };
 
 const initialState: Customer = {
@@ -130,17 +127,16 @@ const initialState: Customer = {
   loading: false,
   ID: 0,
   NAME: "",
-  ids: [],
-  entities: {},
 };
 
 export const customersAdapter = createEntityAdapter<Customer>({
   selectId: (customer) => customer.ID,
+  sortComparer: (a, b) => b.ID - a.ID,
 });
 
 const customersSlice = createSlice({
   name: "customers",
-  initialState: initialState,
+  initialState: customersAdapter.getInitialState(initialState),
   reducers: {
     //addCustomer: customersAdapter.addOne,
     selectAllCustomers: customersAdapter.setAll,
@@ -151,10 +147,10 @@ const customersSlice = createSlice({
     //deleteCustomer: customersAdapter.removeOne
   },
   extraReducers:{
-    [updateCustomer.fulfilled.toString()](state, action: PayloadAction<IContactWithID> ) {
-      const { ID, ...changes } = action.payload;
-
+    [updateCustomer.fulfilled.toString()](state, action ) {
+      const { ID, ...changes } = action.payload.queries.contact[0];
       state.loading = false;
+
       customersAdapter.updateOne(state,  { id: ID, changes } );
     },
     [updateCustomer.rejected.toString()](state, action) {
@@ -182,14 +178,11 @@ const customersSlice = createSlice({
       console.log('fetchCustomers_rejected', action);
       state.error = action.payload.errorMessage;
     },
-    [addCustomer.fulfilled.toString()](state, action: PayloadAction<IContactWithID>) {
-
+    [addCustomer.fulfilled.toString()](state, action) {
       state.loading = false;
       state.error = null;
 
-      const newCustomer: Customer = { ...initialState, ...action.payload };
-
-      console.log('addCustomer_fulfilled', newCustomer);
+      const newCustomer: Customer = { ...initialState, ...action.payload.queries.contact[0] };
 
       customersAdapter.addOne(state, newCustomer);
     },
@@ -208,9 +201,22 @@ const customersSlice = createSlice({
 
       console.log('deleteCustomer_fulfilled', action);
       customersAdapter.removeOne(state, action.payload);
+    },
+    [deleteCustomer.rejected.toString()](state, action){
+      console.log('deleteCustomer_rejected', action);
+      state.loading = false;
+      if (action.payload) {
+        state.error = action.payload.errorMessage;
+      } else {
+        state.error = action.errorMessage;
+      }
+    },
+    [deleteCustomer.pending.toString()](state, action){
+      state.loading = true;
+      state.error = null;
+      console.log('deleteCustomer_pending', action);
     }
   }
-
 });
 
 export const { selectAllCustomers } = customersSlice.actions;
