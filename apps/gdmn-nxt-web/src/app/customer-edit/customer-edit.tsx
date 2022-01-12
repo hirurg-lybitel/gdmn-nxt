@@ -28,10 +28,18 @@ const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
     minWidth: '50%',
   },
+  dialogAction: {
+    marginLeft: '2%',
+    marginRight: '2%',
+    //paddingRigth: 100,
+  },
   helperText: {
     '& p':{
       color:'#ec5555',
     },
+  },
+  button: {
+    width: '120px',
   },
 }));
 
@@ -130,12 +138,13 @@ export function CustomerEdit(props: CustomerEditProps) {
           </Form>
         </FormikProvider>
       </DialogContent>
-      <DialogActions>
-        <IconButton onClick={handleDeleteClick}>
+      <DialogActions className={classes.dialogAction}>
+        <IconButton onClick={handleDeleteClick} size="large">
             <DeleteIcon />
         </IconButton>
         <Divider orientation="vertical" flexItem />
         <Button
+          className={classes.button}
           onClick={handleCancelClick}
           variant="contained"
           color="primary"
@@ -143,6 +152,7 @@ export function CustomerEdit(props: CustomerEditProps) {
             Отменить
         </Button>
         <Button
+          className={classes.button}
           type={!formik.isValid ? "submit" : "button"}
           form="mainForm"
           onClick={() => {
@@ -160,11 +170,10 @@ export function CustomerEdit(props: CustomerEditProps) {
         open={confirmOpen}
         setOpen={setConfirmOpen}
         title="Подтвердите действие"
-        text="Вы уверены что хотите продолжить?"
+        text="Вы уверены, что хотите продолжить?"
         onConfirm={formik.handleSubmit}
       />
     </Dialog>
-
   );
 }
 
