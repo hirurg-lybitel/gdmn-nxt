@@ -16,18 +16,32 @@ import {
 import { makeStyles, createStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
+import WarningIcon from '@mui/icons-material/Warning';
 import { IContactWithID } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import React from 'react';
-import { useFormik } from 'formik';
+import { Form, FormikProvider, useFormik } from 'formik';
+import * as yup from 'yup';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    dialog: {
-      minWidth: '50%',
+
+const useStyles = makeStyles((theme: Theme) => ({
+  dialog: {
+    minWidth: '50%',
+  },
+  dialogAction: {
+    marginLeft: '2%',
+    marginRight: '2%',
+    //paddingRigth: 100,
+  },
+  helperText: {
+    '& p':{
+      color:'#ec5555',
     },
-  }),
-);
+  },
+  button: {
+    width: '120px',
+  },
+}));
 
 export interface CustomerEditProps {
   open: boolean;
@@ -50,6 +64,8 @@ export function CustomerEdit(props: CustomerEditProps) {
   const initValue: IContactWithID = {
     ID: customer?.ID || 0,
     NAME: customer?.NAME || '',
+    PHONE: customer?.PHONE || '',
+    EMAIL: customer?.EMAIL || '',
   }
 
   const formik = useFormik<IContactWithID>({
@@ -58,16 +74,26 @@ export function CustomerEdit(props: CustomerEditProps) {
       ...customer,
       ...initValue
     },
+    validationSchema: yup.object().shape({
+      NAME:  yup.string().required('').max(80, 'Слишком длинное наименование'),
+      EMAIL: yup.string().matches(/@./),
+    }),
     onSubmit: (values) => {
       setConfirmOpen(false);
       onSubmit(values, deleting);
     },
-
   });
 
   const handleDeleteClick = () => {
     setDeleting(true);
     setConfirmOpen(true);
+  };
+
+  const handleCancelClick = () => {
+    console.log('handleCancelClick');
+    setDeleting(false);
+    formik.resetForm();
+    onCancelClick();
   };
 
   return (
@@ -76,54 +102,62 @@ export function CustomerEdit(props: CustomerEditProps) {
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
       </DialogTitle>
       <DialogContent dividers>
-        <form id="mainForm" onSubmit={formik.handleSubmit}>
-          <Stack direction="column" spacing={3}>
-            <TextField
-              label="Наименование"
-              type="text"
-              required
-              name="NAME"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              value={formik.values.NAME}
-            />
-            <TextField
-              label="Телефон"
-              type="text"
-              name="PHONE"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              value={formik.values.PHONE}
-            />
-            <TextField
-              label="Email"
-              type="email"
-              name="EMAIL"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              value={formik.values.EMAIL}
-            />
-          </Stack>
-        </form>
+        <FormikProvider value={formik}>
+          <Form id="mainForm" onSubmit={formik.handleSubmit}>
+            <Stack direction="column" spacing={3}>
+              <TextField
+                label="Наименование"
+                className={classes.helperText}
+                type="text"
+                required
+                name="NAME"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.NAME}
+                helperText={formik.errors.NAME}
+              />
+              <TextField
+                label="Телефон"
+                className={classes.helperText}
+                type="text"
+                name="PHONE"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.PHONE}
+                helperText={formik.errors.PHONE}
+              />
+              <TextField
+                label="Email"
+                type="email"
+                name="EMAIL"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.EMAIL}
+              />
+            </Stack>
+          </Form>
+        </FormikProvider>
       </DialogContent>
-      <DialogActions>
-        <IconButton onClick={handleDeleteClick}>
+      <DialogActions className={classes.dialogAction}>
+        <IconButton onClick={handleDeleteClick} size="large">
             <DeleteIcon />
         </IconButton>
         <Divider orientation="vertical" flexItem />
         <Button
-          onClick={onCancelClick}
+          className={classes.button}
+          onClick={handleCancelClick}
           variant="contained"
           color="primary"
         >
             Отменить
         </Button>
         <Button
-          //type="submit"
+          className={classes.button}
+          type={!formik.isValid ? "submit" : "button"}
           form="mainForm"
           onClick={() => {
             setDeleting(false);
-            setConfirmOpen(true);
+            setConfirmOpen(formik.isValid);
           }}
           variant="contained"
           color="success"
@@ -136,11 +170,10 @@ export function CustomerEdit(props: CustomerEditProps) {
         open={confirmOpen}
         setOpen={setConfirmOpen}
         title="Подтвердите действие"
-        text="Вы уверены что хотите продолжить?"
+        text="Вы уверены, что хотите продолжить?"
         onConfirm={formik.handleSubmit}
       />
     </Dialog>
-
   );
 }
 

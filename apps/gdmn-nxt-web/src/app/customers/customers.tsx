@@ -12,8 +12,8 @@ import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import SummarizeIcon from '@mui/icons-material/Summarize';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, customersSelectors, deleteCustomer } from '../features/customer/customerSlice';
@@ -61,12 +61,9 @@ export function Customers(props: CustomersProps) {
 
   /** Close snackbar manually */
   const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
-    console.log('handleSnackBarClose', reason);
     if (reason === 'clickaway') {
-      console.log('handleSnackBarClose2', reason);
       return;
     };
-    console.log('handleSnackBarClose3', reason);
     setOpenSnackBar(false);
   };
 
@@ -189,7 +186,7 @@ export function Customers(props: CustomersProps) {
         <Button onClick={()=> dispatch(fetchCustomers())} disabled={loading} startIcon={<RefreshIcon/>}>Обновить</Button>
         <Button onClick={handleAddOrganization} disabled={loading} startIcon={<AddIcon/>}>Добавить</Button>
         <Button onClick={handleOrganiztionEditClick} disabled={loading} startIcon={<EditIcon />}>Редактировать</Button>
-        <Button onClick={handleReconciliationClick} disabled={loading}>Акт сверки</Button>
+        <Button onClick={handleReconciliationClick} disabled={loading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
         <DataGridPro

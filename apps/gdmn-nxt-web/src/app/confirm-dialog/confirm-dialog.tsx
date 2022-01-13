@@ -30,6 +30,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         </Button>
         <Button
           className={classes.button}
+          type="submit"
           onClick={ () => {
             setOpen(false);
             onConfirm({});

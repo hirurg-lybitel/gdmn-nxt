@@ -4,7 +4,7 @@ import { accountApi } from './features/account/accountApi';
 import { contactApi } from './features/contact/contactApi';
 import { reconciliationStatementApi } from './features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from './features/user/userSlice';
-import customersReducer, { customersAdapter } from './features/customer/customerSlice';
+import customersReducer from './features/customer/customerSlice';
 
 export const store = configureStore({
   reducer: {
