@@ -11,54 +11,63 @@ import {
   DialogActions,
   Button } from '@mui/material';
 import React from 'react';
-import { RangeInput } from '@mui/lab/DateRangePicker/RangeTypes';
+import { useStyles } from './styles';
+import ruLocale from 'date-fns/locale/ru';
 
 export interface ReportParamsProps {
   open: boolean;
-  dates: RangeInput<Date | null>;
-  onDateChange: (newValue: DateRange<Date | null>) => void;
+  dates: DateRange<Date | null>;
+  //onDateChange?: (newValue: DateRange<Date | null>) => void;
   onCancelClick: () => void;
-  onSaveClick: () => void;
+  onSaveClick: (arg: DateRange<Date>) => void;
 }
 
 export function ReportParams(props: ReportParamsProps) {
   const { open } = props;
-  const { onSaveClick, onCancelClick, onDateChange } = props;
+  const { onSaveClick, onCancelClick } = props;
   const { dates } = props;
+
+  const [value, setValue] = React.useState<DateRange<Date>>(dates[0] && dates[1] ? dates : [new Date(), new Date()]);
+
+  const classes = useStyles();
 
   return (
     <Dialog open={open}>
       <DialogTitle>Введите параметры</DialogTitle>
       <DialogContent dividers>
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
           <DateRangePicker
             startText="Начало периода"
             endText="Конец периода"
-            value={dates}
-            onChange={onDateChange}
+            value={value}
+            onChange={(newValue) => setValue(newValue)}
             renderInput={(startProps, endProps) => (
               <React.Fragment>
                 <TextField {...startProps} />
-                <Box sx={{ mx: 2 }}> to </Box>
+                <Box sx={{ mx: 2 }}/>
                 <TextField {...endProps} />
               </React.Fragment>
             )}
           />
         </LocalizationProvider>
       </DialogContent>
-      <DialogActions>
+      <DialogActions className={classes.dialogAction} >
         <Button
+          className={classes.button}
           onClick={onCancelClick}
           variant="contained"
           color="primary"
-          size="small">
+          //size="small"
+        >
             Отменить
         </Button>
         <Button
-          onClick={onSaveClick}
+          className={classes.button}
+          onClick={() => onSaveClick(value)}
           variant="contained"
           color="primary"
-          size="small">
+          //size="small"
+        >
             OK
         </Button>
       </DialogActions>

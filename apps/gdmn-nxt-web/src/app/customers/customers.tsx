@@ -4,7 +4,7 @@ import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import ReportParams from '../report-params/report-params';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
 import { Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
@@ -34,30 +34,28 @@ export function Customers(props: CustomersProps) {
 
   //const { data, isFetching, refetch } = useGetAllContactsQuery();
 
-  const [reconciliationParamsOpen, setReconciliationParamsOpen] = React.useState(false);
-  const [reconciliationShow, setReconciliationShow] = React.useState(false);
-  const [currentOrganization, setCurrentOrganization] = React.useState(0);
-  const [openSnackBar, setOpenSnackBar] = React.useState(false);
-  const [snackBarMessage, setSnackBarMessage] = React.useState('');
-  const [paramsDates, setParamsDates] = React.useState<DateRange<Date | null>>([null, null]);
-
-  const [openEditForm, setOpenEditForm] = React.useState(false);
-
-  const dispatch = useDispatch();
+  const [reconciliationParamsOpen, setReconciliationParamsOpen] = useState(false);
+  const [reconciliationShow, setReconciliationShow] = useState(false);
+  const [currentOrganization, setCurrentOrganization] = useState(0);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
+  const [paramsDates, setParamsDates] = useState<DateRange<Date | null>>([null, null]);
+  const [openEditForm, setOpenEditForm] = useState(false);
   const allCustomers = useSelector(customersSelectors.selectAll);
-  const { ids, error, loading } = useSelector((state: RootState) => state.cutomers);
+  const { error: cutomersError , loading: customersLoading } = useSelector((state: RootState) => state.cutomers);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchCustomers());
   }, [])
 
   useEffect(() => {
-    if (error) {
+    if (cutomersError) {
 
-      setSnackBarMessage(error.toString());
+      setSnackBarMessage(cutomersError.toString());
       setOpenSnackBar(true);
     }
-  }, [error])
+  }, [cutomersError])
 
   /** Close snackbar manually */
   const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
@@ -77,7 +75,8 @@ export function Customers(props: CustomersProps) {
   };
 
   /** Save report params */
-  const handleSaveClick = () => {
+  const handleSaveClick = (dates: DateRange<Date>) => {
+    setParamsDates(dates);
     setReconciliationParamsOpen(false);
     setReconciliationShow(true);
   };
@@ -85,11 +84,6 @@ export function Customers(props: CustomersProps) {
   /** Cancel report params */
   const handleCancelClick = () => {
     setReconciliationParamsOpen(false);
-  };
-
-  /** Handler for datePicker */
-  const handleDateChange = (newValue: DateRange<Date | null>) => {
-    setParamsDates(newValue);
   };
 
   /** Close reconciliation report */
@@ -106,21 +100,6 @@ export function Customers(props: CustomersProps) {
     }
 
     setOpenEditForm(true);
-  };
-
-  /** Save organization change */
-  const handleOrganiztionEditSaveClick = () => {
-    console.log('save data', currentOrganization);
-
-    // dispatch(updateCustomer({ ID: currentOrganization, NAME: "TEST2", PHONE: "TEL" }));
-
-    // setOpenEditForm(false);
-
-    // if (error) {
-    //   setSnackBarMessage(error);
-    //   setOpenSnackBar(true);
-
-    // };
   };
 
   /** Cancel organization change */
@@ -183,19 +162,18 @@ export function Customers(props: CustomersProps) {
   return (
     <Stack direction="column">
       <Stack direction="row">
-        <Button onClick={()=> dispatch(fetchCustomers())} disabled={loading} startIcon={<RefreshIcon/>}>Обновить</Button>
-        <Button onClick={handleAddOrganization} disabled={loading} startIcon={<AddIcon/>}>Добавить</Button>
-        <Button onClick={handleOrganiztionEditClick} disabled={loading} startIcon={<EditIcon />}>Редактировать</Button>
-        <Button onClick={handleReconciliationClick} disabled={loading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
+        <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
+        <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+        <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
+        <Button onClick={handleReconciliationClick} disabled={customersLoading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
         <DataGridPro
-          //rows={data?.queries.contacts ?? []}
           rows={allCustomers ?? []}
           columns={columns}
           pagination
           disableMultipleSelection
-          loading={loading}
+          loading={customersLoading}
           getRowId={row => row.ID}
           onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0) }
           components={{
@@ -206,7 +184,6 @@ export function Customers(props: CustomersProps) {
       <ReportParams
         open={reconciliationParamsOpen}
         dates={paramsDates}
-        onDateChange={handleDateChange}
         onSaveClick={handleSaveClick}
         onCancelClick={handleCancelClick}
       />
@@ -214,7 +191,6 @@ export function Customers(props: CustomersProps) {
         open={openEditForm}
         customer={allCustomers.find((element) => element.ID === currentOrganization) || null}
         onSubmit={handleOrganiztionEditSubmit}
-        //onSaveClick={handleOrganiztionEditSaveClick}
         onCancelClick={handleOrganiztionEditCancelClick}
         onDeleteClick={handleOrganizationDeleteOnClick}
       />

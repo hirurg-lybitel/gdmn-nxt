@@ -4,6 +4,7 @@ import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
 import { ParseableDate } from '@mui/lab/internal/pickers/constants/prop-types';
+import CircularIndeterminateProps from '../circular-indeterminate/circular-indeterminate';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
@@ -70,8 +71,6 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
   });
   const params = data?._params?.[0];
   const schema = data?._schema;
-
-  console.log('param_dateBegin', dateBegin);
 
   const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo( () => {
     const giveSum = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) ?? 0;
@@ -297,7 +296,8 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
             </div>
           </div>
         :
-          <div>no data</div>
+        <CircularIndeterminateProps open={isFetching}/>
+          // <div>no data</div>
       }
 
       <pre>

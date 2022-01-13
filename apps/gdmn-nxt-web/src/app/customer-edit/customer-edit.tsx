@@ -29,9 +29,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     minWidth: '50%',
   },
   dialogAction: {
-    marginLeft: '2%',
-    marginRight: '2%',
-    //paddingRigth: 100,
+    paddingRight: '3%',
+    paddingLeft: '3%',
   },
   helperText: {
     '& p':{
