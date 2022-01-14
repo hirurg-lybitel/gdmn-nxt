@@ -83,10 +83,11 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
       if (isSuccess) {
         setStep('PROFILE_CREATED');
       } else if (isError) {
+        console.log(error);
         setStep('PROFILE_ERROR');
       }
     }
-  }, [step, isSuccess, isError]);
+  }, [step, isSuccess, isError, error]);
 
   const duplAccount = useMemo( () => accountData?.queries.accounts.length ?
     'Учетная запись с таким адресом электронной почты уже существует!' : undefined, [accountData] );
@@ -156,7 +157,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
         : step === 'PROFILE_ERROR' ?
           <>
             <Typography variant='body1'>
-              {`Произошла ошибка при создании учетной записи: ${JSON.stringify(error, undefined, 2)}`}
+              Произошла ошибка при создании учетной записи!
             </Typography>
             <CancelButton />
           </>

@@ -2,7 +2,6 @@ import * as express from 'express';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
-import * as nodemailer from 'nodemailer';
 import * as cors from 'cors';
 import { Strategy } from 'passport-local';
 import { FileDB, genPassword, validPassword } from '@gsbelarus/util-helpers';
@@ -12,6 +11,7 @@ import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact } from './app/contacts';
 import { addAccount, getAccounts } from './app/accounts';
+import { sendEmail } from './app/mail';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -233,28 +233,17 @@ app.route('/api/v1/user/signup')
       /* 6. Пошлем пользователю email */
 
       try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: 465,
-          secure: true,
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASSWORD,
-          },
-        });
-
-        await transporter.sendMail({
-          from: '"GDMN System" <test@gsbelarus.com>',
-          to: email,
-          subject: "Account confirmation",
-          text:
-            `Please use following credentials to sign-in into your account at ...\
-            \n\n\
-            User name: ${userName}\n\
-            Password: ${provisionalPassword}
-            \n\n\
-            This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-        });
+        await sendEmail(
+          '"GDMN System" <test@gsbelarus.com>',
+          email,
+          "Account confirmation",
+          `Please use following credentials to sign-in into your account at ...\
+          \n\n\
+          User name: ${userName}\n\
+          Password: ${provisionalPassword}
+          \n\n\
+          This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+        );
       } catch (err) {
         return res.json(authResult('ERROR', err.message));
       }
@@ -323,28 +312,17 @@ app.route('/api/v1/user/forgot-password')
       /* 5. Пошлем пользователю email */
 
       try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: 465,
-          secure: true,
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASSWORD,
-          },
-        });
-
-        await transporter.sendMail({
-          from: '"GDMN System" <test@gsbelarus.com>',
-          to: email,
-          subject: "Password change complete",
-          text:
-            `Please use following credentials to sign-in into your account at ...\
-            \n\n\
-            User name: ${user.userName}\n\
-            Password: ${provisionalPassword}
-            \n\n\
-            This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-        });
+        await sendEmail(
+          '"GDMN System" <test@gsbelarus.com>',
+          email,
+          "Password change complete",
+          `Please use following credentials to sign-in into your account at ...\
+          \n\n\
+          User name: ${user.userName}\n\
+          Password: ${provisionalPassword}
+          \n\n\
+          This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+        );
       } catch (err) {
         return res.json(authResult('ERROR', err.message));
       }
@@ -436,7 +414,6 @@ app.get('/login-failure', (_, res) => {
 app.get('*', () => console.log('Unknown request'));
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
-
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
@@ -461,4 +438,4 @@ process
   .on('SIGBREAK', process.exit)
   .on('SIGTERM', process.exit)
   .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
-  .on('uncaughtException', err => console.error(err));
+  .on('uncaughtException', console.error);

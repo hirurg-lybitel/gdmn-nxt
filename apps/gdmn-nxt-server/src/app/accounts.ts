@@ -1,15 +1,12 @@
-import { IAccount, IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
+import { IDataSchema, IRequestResult, IWithID } from "@gsbelarus/util-api-types";
 import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
-import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
-import * as nodemailer from 'nodemailer';
 import { closeConnection, setConnection } from "./db-connection";
+import { sendEmail } from "./mail";
 
 export const addAccount: RequestHandler = async (req, res) => {
   const { client, attachment, transaction} = await setConnection();
-
-  console.log(req.body);
 
   let { USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, USR$EMAIL, USR$COMPANYKEY, USR$EXPIREON, USR$APPROVED } = req.body;
 
@@ -25,27 +22,28 @@ export const addAccount: RequestHandler = async (req, res) => {
     // purge expired records
     await attachment.execute(transaction, 'DELETE FROM usr$crm_account WHERE usr$expireon <= ?', [new Date()]);
 
-    let id: number;
+    let ID: number;
 
     const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
     try {
-      id = await rs.fetchAsObject()[0].id;
+      ID = (await rs.fetchAsObject<IWithID>())[0].ID;
     } finally {
       await rs.close();
     }
 
     const provisionalPassword = genRandomPassword();
-    const { salt, hash } = genPassword(provisionalPassword)
+    const { salt, hash } = genPassword(provisionalPassword);
 
     // conversion to lower case is mandatory for email field
     // as we check uniquiness with index in the database
     const fields = ['ID', 'USR$FIRSTNAME', 'USR$LASTNAME', 'USR$POSITION', 'USR$PHONE', 'USR$EMAIL', 'USR$COMPANYKEY', 'USR$APPROVED', 'USR$EXPIREON', 'USR$SALT', 'USR$HASH'];
-    const fields_string = fields.map( f => `'${f}'` ).join(',');
-    const row = await attachment.executeReturning(transaction,
-      `INSERT INTO usr$crm_account (${fields_string})
-       VALUES                      (?,  ?,             ?,            ?,            ?,         ?,         ?,              ?,            ?,            ?,        ?
-       RETURNING                    ${fields_string}`,
-       [                            id, USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, email,     USR$COMPANYKEY, approved,     expireOn,     salt,     hash]);
+    const fields_string = fields.join(',');
+    const params_string = fields.map( f => '?' ).join(',');
+    const sql = `INSERT INTO usr$crm_account (${fields_string}) VALUES (${params_string}) RETURNING ${fields_string}`;
+    let row;
+    row = await attachment.executeReturning(transaction, sql,
+      [ID, USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, email, USR$COMPANYKEY, approved, expireOn, salt, hash]);
+
     const result: IRequestResult = {
       queries: {
         accounts: [Object.fromEntries( fields.map( (f, idx) => ([f, row[idx]]) ) )]
@@ -53,33 +51,20 @@ export const addAccount: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    console.log(JSON.stringify(result));
-
     res.json(result);
 
     try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      });
-
-      await transporter.sendMail({
-        from: '"GDMN System" <test@gsbelarus.com>',
-        to: email,
-        subject: "Account confirmation",
-        text:
-          `Please use following credentials to sign-in into your account at ...\
-          \n\n\
-          User name: ${email}\n\
-          Password: ${provisionalPassword}
-          \n\n\
-          This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-      });
+      await sendEmail(
+        '"GDMN System" <test@gsbelarus.com>',
+        email,
+        "Account confirmation",
+        `Please use following credentials to sign-in into your account at ...\
+        \n\n\
+        User name: ${USR$EMAIL}\n\
+        Password: ${provisionalPassword}
+        \n\n\
+        This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+      );
     } catch (err) {
       console.error(err);
     }
