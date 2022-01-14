@@ -1,4 +1,4 @@
-import { IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
+import { IAccount, IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
 import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
@@ -39,10 +39,23 @@ export const addAccount: RequestHandler = async (req, res) => {
 
     // conversion to lower case is mandatory for email field
     // as we check uniquiness with index in the database
-    await attachment.execute(transaction,
-      `INSERT INTO usr$crm_account (id, usr$firstname, usr$lastname, usr$position, usr$phone, usr$email, usr$companykey, usr$approved, usr$expireon, usr$salt, usr$hash)
-       VALUES                      (?,  ?,             ?,            ?,            ?,         ?,         ?,              ?,            ?,            ?,        ?`,
+    const fields = ['ID', 'USR$FIRSTNAME', 'USR$LASTNAME', 'USR$POSITION', 'USR$PHONE', 'USR$EMAIL', 'USR$COMPANYKEY', 'USR$APPROVED', 'USR$EXPIREON', 'USR$SALT', 'USR$HASH'];
+    const fields_string = fields.map( f => `'${f}'` ).join(',');
+    const row = await attachment.executeReturning(transaction,
+      `INSERT INTO usr$crm_account (${fields_string})
+       VALUES                      (?,  ?,             ?,            ?,            ?,         ?,         ?,              ?,            ?,            ?,        ?
+       RETURNING                    ${fields_string}`,
        [                            id, USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, email,     USR$COMPANYKEY, approved,     expireOn,     salt,     hash]);
+    const result: IRequestResult = {
+      queries: {
+        accounts: [Object.fromEntries( fields.map( (f, idx) => ([f, row[idx]]) ) )]
+      },
+      _schema: undefined
+    };
+
+    console.log(JSON.stringify(result));
+
+    res.json(result);
 
     try {
       const transporter = nodemailer.createTransport({
@@ -73,8 +86,6 @@ export const addAccount: RequestHandler = async (req, res) => {
   } finally {
     await closeConnection(client, attachment, transaction);
   }
-
-  return res.status(200);
 };
 
 export const getAccounts: RequestHandler = async (req, res) => {
