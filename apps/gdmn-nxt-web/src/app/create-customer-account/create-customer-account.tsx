@@ -4,10 +4,21 @@ import Stack from '@mui/material/Stack/Stack';
 import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { skipToken } from '@reduxjs/toolkit/dist/query';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAddAccountMutation, useGetAccountByEmailQuery } from '../features/account/accountApi';
 import { useGetContactByTaxIdQuery } from '../features/contact/contactApi';
 import './create-customer-account.module.less';
+
+const isTaxId = (taxId: string | undefined) => {
+  if (taxId) {
+    const parsed = parseInt(taxId);
+
+    if (!isNaN(parsed) && (parsed >= 100_000_000)) {
+      return true;
+    }
+  }
+  return false;
+};
 
 /* eslint-disable-next-line */
 export interface CreateCustomerAccountProps {
@@ -53,33 +64,43 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
 
   useEffect( () => {
     if (step === 'SAVING_PROFILE') {
-      if (isFetchingAccount
-        || isLoading
-        || (accountData && accountData.queries.accounts.length)  // we already have an account with such email in the db
-        || !(contactData?.queries.contacts.length)
-      ) {
-        return;
+      if (!isFetchingAccount && !isLoading && !duplAccount && contactData?.queries.contacts.length) {
+        addAccount({
+          USR$FIRSTNAME: firstName,
+          USR$LASTNAME: lastName,
+          USR$POSITION: position,
+          USR$PHONE: phone,
+          USR$EMAIL: email,
+          USR$COMPANYKEY: contactData?.queries.contacts[0].ID,
+          USR$EXPIREON: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000)
+        });
       }
-
-      addAccount({
-        USR$FIRSTNAME: firstName,
-        USR$LASTNAME: lastName,
-        USR$POSITION: position,
-        USR$PHONE: phone,
-        USR$EMAIL: email,
-        USR$COMPANYKEY: contactData?.queries.contacts[0].ID,
-        USR$EXPIREON: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000)
-      });
     }
   }, [step, isFetchingAccount, accountData, contactData]);
 
   useEffect( () => {
-    if (isSuccess) {
-      setStep('PROFILE_CREATED');
-    } else if (isError) {
-      setStep('PROFILE_ERROR');
+    if (step === 'SAVING_PROFILE') {
+      if (isSuccess) {
+        setStep('PROFILE_CREATED');
+      } else if (isError) {
+        setStep('PROFILE_ERROR');
+      }
     }
-  }, [isSuccess, isError]);
+  }, [step, isSuccess, isError]);
+
+  const duplAccount = useMemo( () => accountData?.queries.accounts.length ?
+    'Учетная запись с таким адресом электронной почты уже существует!' : undefined, [accountData] );
+
+  const accountDataEntered = Boolean(lastName.trim() && firstName.trim() && phone.trim() && position.trim()
+    && checkEmailAddress(email) && email === email2 && !duplAccount);
+
+  const CancelButton = useMemo( () => ({ caption }: { caption?: string }) =>
+    <Button
+      variant="contained"
+      onClick = { onCancel }
+    >
+      {caption ?? 'Вернуться в начало'}
+    </Button>, [onCancel]);
 
   return (
     <Stack direction="column" spacing={2}>
@@ -94,21 +115,16 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
               value={taxId}
               disabled={isFetchingContact}
               autoFocus
-              onChange={ e => setTaxId( (!e.target.value || !isNaN(parseInt(e.target.value))) ? e.target.value : taxId) }
+              onChange={ e => setTaxId(e.target.value) }
             />
             <Button
               variant="contained"
-              disabled={isFetchingContact || isNaN(parseInt(taxId))}
+              disabled={isFetchingContact || !isTaxId(taxId)}
               onClick = { () => setStep('CHECKING_TAXID') }
             >
               Проверить
             </Button>
-            <Button
-              variant="contained"
-              onClick = { onCancel }
-            >
-              Вернуться в начало
-            </Button>
+            <CancelButton />
           </>
         : step === 'INVALID_TAXID' ?
           <>
@@ -121,48 +137,28 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             >
               Повторить ввод
             </Button>
-            <Button
-              variant="contained"
-              onClick = { onCancel }
-            >
-              Вернуться в начало
-            </Button>
+            <CancelButton />
           </>
         : step === 'INVALID_DB' ?
           <>
             <Typography variant='h1'>
-              {`В базе данных найдено несколько предприятий с УНП ${taxId}!`}
+              {`В базе данных найдено несколько предприятий с УНП ${taxId}! Обратитесь к системному администратору.`}
             </Typography>
-            <Button
-              variant="contained"
-              onClick = { onCancel }
-            >
-              Вернуться в начало
-            </Button>
+            <CancelButton />
           </>
         : step === 'PROFILE_CREATED' ?
           <>
             <Typography variant='body1'>
               Учетная запись успешно создана. В течение нескольких минут вы получите на электронную почту письмо с паролем.
             </Typography>
-            <Button
-              variant="contained"
-              onClick = { onCancel }
-            >
-              Войти в систему
-            </Button>
+            <CancelButton caption="Войти в систему" />
           </>
         : step === 'PROFILE_ERROR' ?
           <>
             <Typography variant='body1'>
-              {`Произошла ошибка при создании учетной записи: ${error}`}
+              {`Произошла ошибка при создании учетной записи: ${JSON.stringify(error, undefined, 2)}`}
             </Typography>
-            <Button
-              variant="contained"
-              onClick = { onCancel }
-            >
-              Войти в систему
-            </Button>
+            <CancelButton />
           </>
         :
           <>
@@ -193,8 +189,8 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             <TextField
               label="Электронная почта"
               value={email}
-              error={ !!accountData?.queries.accounts.length }
-              helperText={ accountData?.queries.accounts.length ? 'Учетная запись с таким адресом электронной почты уже существует!' : undefined }
+              error={!!duplAccount}
+              helperText={duplAccount}
               onChange={ e => setEmail(e.target.value) }
             />
             <TextField
@@ -204,21 +200,12 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             />
             <Button
               variant="contained"
-              disabled={
-                isFetchingAccount || !lastName || !firstName || !phone || !position ||
-                !checkEmailAddress(email) || email !== email2 ||
-                !!accountData?.queries.accounts.length
-              }
+              disabled={isFetchingAccount || !accountDataEntered}
               onClick = { () => setStep('SAVING_PROFILE') }
             >
               Создать учетную запись
             </Button>
-            <Button
-              variant="contained"
-              onClick = { onCancel }
-            >
-              Вернуться в начало
-            </Button>
+            <CancelButton />
           </>
       }
     </Stack>

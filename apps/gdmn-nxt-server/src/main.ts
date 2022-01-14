@@ -2,11 +2,10 @@ import * as express from 'express';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
-import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';
 import * as cors from 'cors';
 import { Strategy } from 'passport-local';
-import { FileDB } from '@gsbelarus/util-helpers';
+import { FileDB, genPassword, validPassword } from '@gsbelarus/util-helpers';
 import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
@@ -463,27 +462,3 @@ process
   .on('SIGTERM', process.exit)
   .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
   .on('uncaughtException', err => console.error(err));
-
-/**
- * -------------- HELPER FUNCTIONS ----------------
- */
-
-/**
- *
- * @param {*} password - The plain text password
- * @param {*} hash - The hash stored in the database
- * @param {*} salt - The salt stored in the database
- *
- * This function uses the crypto library to decrypt the hash using the salt and then compares
- * the decrypted hash/salt with the password that the user provided at login
- */
-function validPassword(password: string, hash: string, salt: string) {
-  const hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  return hash === hashVerify;
-};
-
-function genPassword(password: string) {
-  const salt = crypto.randomBytes(32).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-  return { salt, hash };
-};

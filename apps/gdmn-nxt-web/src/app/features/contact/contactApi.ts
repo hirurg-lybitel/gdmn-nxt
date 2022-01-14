@@ -6,8 +6,6 @@ export interface IContacts {
   contacts: (IBaseContact & IWithID)[];
 };
 
-//export type IContactWithID = IBaseContact & IWithID;
-
 export type IContactRequestResult = IRequestResult<IContacts>;
 
 export const contactApi = createApi({
@@ -37,14 +35,6 @@ export const contactApi = createApi({
         return [];
       },
     })
-    // update: builder.mutation<IContactWithID | any, IContactWithID>({
-    //   query: (body) => ({
-    //     url: `contacts/${body.ID}`,
-    //     method: 'PUT',
-    //     body: body
-    //   }),
-    //   transformResponse: (response: { data: IContactWithID }, meta, arg) => response.data,
-    // })
   }),
 });
 

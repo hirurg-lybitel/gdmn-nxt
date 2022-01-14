@@ -1,23 +1,17 @@
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
 
-
-let client: Client = null;
-let attachment: Attachment = null;
-let transaction: Transaction = null;
-
 const { host, port, db } = config;
 
 export const setConnection = async () => {
-  client = createNativeClient(getDefaultLibraryFilename());
-  attachment = await client.connect(`${host}/${port}:${db}`);
-  transaction = await attachment.startTransaction();
-}
+  const client = createNativeClient(getDefaultLibraryFilename());
+  const attachment = await client.connect(`${host}/${port}:${db}`);
+  const transaction = await attachment.startTransaction();
+  return { client, attachment, transaction };
+};
 
-export const closeConnection = async () => {
-  await transaction?.commit();
-  await attachment?.disconnect();
-  await client?.dispose();
-}
-
-export { client, attachment, transaction };
+export const closeConnection = async (client: Client, attachment: Attachment, transaction: Transaction) => {
+  await transaction.commit();
+  await attachment.disconnect();
+  await client.dispose();
+};

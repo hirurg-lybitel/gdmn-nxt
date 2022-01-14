@@ -1,18 +1,26 @@
 import { IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
+import { genPassword } from "@gsbelarus/util-helpers";
+import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
+import * as nodemailer from 'nodemailer';
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: '../../..' });
 
 export const addAccount: RequestHandler = async (req, res) => {
 
-  let { firstName, lastName, position, phone, email, companykey, approved, expireOn } = req.body;
+  console.log(req.body);
 
-  if (typeof expireOn === 'number') {
-    expireOn = new Date(expireOn);
-  }
+  let { USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, USR$EMAIL, USR$COMPANYKEY, USR$EXPIREON, USR$APPROVED } = req.body;
 
-  if (typeof approved === 'boolean') {
-    approved = approved ? 1 : 0;
+  const email = USR$EMAIL.trim().toLowerCase();
+  let expireOn = USR$EXPIREON && new Date(USR$EXPIREON);
+  let approved = USR$APPROVED;
+
+  if (typeof USR$APPROVED === 'boolean') {
+    approved = USR$APPROVED ? 1 : 0;
   }
 
   let client: Client;
@@ -25,6 +33,9 @@ export const addAccount: RequestHandler = async (req, res) => {
     attachment = await client.connect(`${host}/${port}:${db}`);
     transaction = await attachment.startTransaction();
 
+    // purge expired records
+    await attachment.execute(transaction, 'DELETE FROM usr$crm_account WHERE usr$expireon <= ?', [new Date()]);
+
     let id: number;
 
     const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
@@ -34,17 +45,49 @@ export const addAccount: RequestHandler = async (req, res) => {
       await rs.close();
     }
 
-    await attachment.execute(transaction,
-      `INSERT INTO usr$crm_account (id, usr$firstname, usr$lastname, usr$postion, usr$phone, usr$email, usr$companykey, usr$approved, usr$expireon)
-       VALUES                      (?,  ?,             ?,            ?,           ?,         ?,         ?,              ?,            ?`,
-       [                            id, firstName,     lastName,     position,    phone,     email,     companykey,     approved,     expireOn]);
+    const provisionalPassword = genRandomPassword();
+    const { salt, hash } = genPassword(provisionalPassword)
 
-    return res.status(200);
+    // conversion to lower case is mandatory for email field
+    // as we check uniquiness with index in the database
+    await attachment.execute(transaction,
+      `INSERT INTO usr$crm_account (id, usr$firstname, usr$lastname, usr$position, usr$phone, usr$email, usr$companykey, usr$approved, usr$expireon, usr$salt, usr$hash)
+       VALUES                      (?,  ?,             ?,            ?,            ?,         ?,         ?,              ?,            ?,            ?,        ?`,
+       [                            id, USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, email,     USR$COMPANYKEY, approved,     expireOn,     salt,     hash]);
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      });
+
+      await transporter.sendMail({
+        from: '"GDMN System" <test@gsbelarus.com>',
+        to: email,
+        subject: "Account confirmation",
+        text:
+          `Please use following credentials to sign-in into your account at ...\
+          \n\n\
+          User name: ${email}\n\
+          Password: ${provisionalPassword}
+          \n\n\
+          This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+      });
+    } catch (err) {
+      console.error(err);
+    }
   } finally {
     await transaction?.commit();
     await attachment?.disconnect();
     await client?.dispose();
   }
+
+  return res.status(200);
 };
 
 export const getAccounts: RequestHandler = async (req, res) => {
@@ -116,7 +159,7 @@ export const getAccounts: RequestHandler = async (req, res) => {
                 GD_CONTACT C
               ON
                 Z_USR$COMPANYKEY.CONTACTKEY  =  C.ID
-            ${req.params.id ? 'WHERE Z.ID = ?' : req.params.email ? 'WHERE Z.EMAIL = ?' : ''}`,
+            ${req.params.id ? 'WHERE Z.ID = ?' : req.params.email ? 'WHERE Z.USR$EMAIL = ?' : ''}`,
         params: req.params.id ? [req.params.id] : req.params.email ? [req.params.email] : undefined
       },
     ];

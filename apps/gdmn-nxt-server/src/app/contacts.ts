@@ -1,12 +1,12 @@
 import { IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
-import { attachment, closeConnection, setConnection, transaction } from "./db-connection";
+import { closeConnection, setConnection } from "./db-connection";
 
 export const getContacts: RequestHandler = async (req, res) => {
 
-  try {
-    await setConnection();
+  const { client, attachment, transaction } = await setConnection();
 
+  try {
     const _schema = { };
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
@@ -59,7 +59,7 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection();
+    await closeConnection(client, attachment, transaction);
   }
 };
 
@@ -67,10 +67,9 @@ export const updateContact: RequestHandler = async (req, res) => {
 
   const { id } = req.params;
   const { NAME, PHONE } = req.body;
+  const { client, attachment, transaction } = await setConnection();
 
   try {
-    await setConnection();
-
     try {
       await attachment.execute(
         transaction,
@@ -81,9 +80,8 @@ export const updateContact: RequestHandler = async (req, res) => {
          WHERE ID = ?`,
          [ NAME, PHONE, id ]
       );
-
     } catch (error) {
-        return res.status(500).send({ "errorMessage": error.message });
+      return res.status(500).send({ "errorMessage": error.message });
     }
 
     const resultSet = await attachment.executeQuery(
@@ -121,18 +119,16 @@ export const updateContact: RequestHandler = async (req, res) => {
       return res.status(500).send({ "errorMessage": error });
 
   } finally {
-    await closeConnection();
-
+    await closeConnection(client, attachment, transaction);
   }
 };
 
 export const addContact: RequestHandler = async (req, res) => {
 
   const { NAME, PHONE, EMAIL } = req.body;
+  const { client, attachment, transaction} = await setConnection();
 
   try {
-    await setConnection();
-
     const resultSet = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
@@ -190,18 +186,16 @@ export const addContact: RequestHandler = async (req, res) => {
       return res.status(500).send({ "errorMessage": error.message});
 
   } finally {
-    await closeConnection();
+    await closeConnection(client, attachment, transaction);
   };
-
 };
 
 
 export const deleteContact: RequestHandler = async (req, res) => {
-
   const { id } = req.params;
+  const { client, attachment, transaction} = await setConnection();
 
   try {
-    await setConnection();
     await attachment.execute(
       transaction,
       `EXECUTE BLOCK(
@@ -220,8 +214,7 @@ export const deleteContact: RequestHandler = async (req, res) => {
 
   } catch (error) {
     return res.status(500).send({ "errorMessage": error.message});
-
   } finally {
-    await closeConnection();
+    await closeConnection(client, attachment, transaction);
   }
 };
