@@ -3,13 +3,11 @@ import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
-import { config } from "./db-config";
 import * as nodemailer from 'nodemailer';
-import * as dotenv from 'dotenv';
-
-dotenv.config({ path: '../../..' });
+import { closeConnection, setConnection } from "./db-connection";
 
 export const addAccount: RequestHandler = async (req, res) => {
+  const { client, attachment, transaction} = await setConnection();
 
   console.log(req.body);
 
@@ -23,16 +21,7 @@ export const addAccount: RequestHandler = async (req, res) => {
     approved = USR$APPROVED ? 1 : 0;
   }
 
-  let client: Client;
-  let attachment: Attachment;
-  let transaction: Transaction;
-
   try {
-    const { host, port, db } = config;
-    client = createNativeClient(getDefaultLibraryFilename());
-    attachment = await client.connect(`${host}/${port}:${db}`);
-    transaction = await attachment.startTransaction();
-
     // purge expired records
     await attachment.execute(transaction, 'DELETE FROM usr$crm_account WHERE usr$expireon <= ?', [new Date()]);
 
@@ -82,26 +71,16 @@ export const addAccount: RequestHandler = async (req, res) => {
       console.error(err);
     }
   } finally {
-    await transaction?.commit();
-    await attachment?.disconnect();
-    await client?.dispose();
+    await closeConnection(client, attachment, transaction);
   }
 
   return res.status(200);
 };
 
 export const getAccounts: RequestHandler = async (req, res) => {
-
-  let client: Client;
-  let attachment: Attachment;
-  let transaction: Transaction;
+  const { client, attachment, transaction} = await setConnection();
 
   try {
-    const { host, port, db } = config;
-    client = createNativeClient(getDefaultLibraryFilename());
-    attachment = await client.connect(`${host}/${port}:${db}`);
-    transaction = await attachment.startTransaction();
-
     const _schema: IDataSchema = {
       accounts: {
         EXPIREON: {
@@ -174,8 +153,6 @@ export const getAccounts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await transaction?.commit();
-    await attachment?.disconnect();
-    await client?.dispose();
+    await closeConnection(client, attachment, transaction);
   }
 };
