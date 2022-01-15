@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
 import { ReactChild, ReactFragment, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
@@ -7,18 +7,105 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import './page-header.module.less';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
 
-export function PageHeader(props: {children: ReactChild | ReactFragment | null}) {
+interface IMenuItem {
+  type: 'item';
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  caption: string;
+  onClick: () => void;
+};
+
+interface IMenuDivider {
+  type: 'divider'
+};
+
+export type MenuItem = IMenuItem | IMenuDivider;
+
+interface ICustomMenuProps {
+  anchorEl: Element | null;
+  handleClose: () => void;
+  items: MenuItem[];
+};
+
+const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
+  <Menu
+    anchorEl={anchorEl}
+    open={Boolean(anchorEl)}
+    onClose={handleClose}
+    onClick={handleClose}
+    PaperProps={{
+      elevation: 0,
+      sx: {
+        overflow: 'visible',
+        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+        mt: 1.5,
+        '& .MuiAvatar-root': {
+          width: 32,
+          height: 32,
+          ml: -0.5,
+          mr: 1,
+        },
+        '&:before': {
+          content: '""',
+          display: 'block',
+          position: 'absolute',
+          top: 0,
+          right: 14,
+          width: 10,
+          height: 10,
+          bgcolor: 'background.paper',
+          transform: 'translateY(-50%) rotate(45deg)',
+          zIndex: 0,
+        },
+      },
+    }}
+    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+  >
+    {items.map( i =>
+      i.type === 'divider' ?
+        <Divider />
+      :
+        <MenuItem onClick={i.onClick}>
+          {i.Icon &&
+            <ListItemIcon>
+              <i.Icon fontSize="small" />
+            </ListItemIcon>
+          }
+          {i.caption}
+        </MenuItem>
+    )}
+  </Menu>;
+
+interface IPageHeaderProps {
+  menuItems: MenuItem[];
+  children: ReactChild | ReactFragment | null;
+};
+
+export function PageHeader({ menuItems, children }: IPageHeaderProps) {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>( state => state.user );
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: any) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const [anchorProfileEl, setAnchorProfileEl] = useState(null);
+  const [anchorMenuEl, setAnchorMenuEl] = useState(null);
+
+  const profileMenuItems: MenuItem[] = [
+    {
+      type: 'item',
+      caption: user.userProfile?.userName ?? 'unknown user',
+      Icon: Settings,
+      onClick: () => {}
+    },
+    {
+      type: 'divider'
+    },
+    {
+      type: 'item',
+      caption: 'Logout',
+      Icon: Logout,
+      onClick: () => dispatch(queryLogout())
+    }
+  ];
 
   return (
     <Stack direction='column' spacing={4} width='100%'>
@@ -30,6 +117,7 @@ export function PageHeader(props: {children: ReactChild | ReactFragment | null})
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
+            onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
           >
             <MenuIcon />
           </IconButton>
@@ -39,63 +127,25 @@ export function PageHeader(props: {children: ReactChild | ReactFragment | null})
           <IconButton
             size="large"
             color="inherit"
-            onClick={ handleClick }
+            onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
           >
             <Avatar />
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        onClick={handleClose}
-        PaperProps={{
-          elevation: 0,
-          sx: {
-            overflow: 'visible',
-            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-            mt: 1.5,
-            '& .MuiAvatar-root': {
-              width: 32,
-              height: 32,
-              ml: -0.5,
-              mr: 1,
-            },
-            '&:before': {
-              content: '""',
-              display: 'block',
-              position: 'absolute',
-              top: 0,
-              right: 14,
-              width: 10,
-              height: 10,
-              bgcolor: 'background.paper',
-              transform: 'translateY(-50%) rotate(45deg)',
-              zIndex: 0,
-            },
-          },
-        }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          {user.userProfile?.userName}
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={ () => dispatch(queryLogout()) }>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
-      {props.children}
+      <CustomMenu
+        anchorEl={anchorProfileEl}
+        handleClose={ () => setAnchorProfileEl(null) }
+        items={profileMenuItems}
+      />
+      <CustomMenu
+        anchorEl={anchorMenuEl}
+        handleClose={ () => setAnchorMenuEl(null) }
+        items={menuItems}
+      />
+      {children}
     </Stack>
   );
-}
+};
 
 export default PageHeader;

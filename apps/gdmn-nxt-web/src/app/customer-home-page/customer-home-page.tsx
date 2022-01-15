@@ -7,7 +7,7 @@ export interface CustomerHomePageProps {}
 
 export function CustomerHomePage(props: CustomerHomePageProps) {
   return (
-    <PageHeader>
+    <PageHeader menuItems={[]}>
       <ReconciliationStatement
         custId={148333193}
       />
