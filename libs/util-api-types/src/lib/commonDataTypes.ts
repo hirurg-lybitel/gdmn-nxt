@@ -1,4 +1,4 @@
-export type FieldDataType = 'date' | 'timestamp' | 'curr';
+export type FieldDataType = 'date' | 'timestamp' | 'curr' | 'boolean';
 
 export interface IFieldSchema {
   type: FieldDataType;
