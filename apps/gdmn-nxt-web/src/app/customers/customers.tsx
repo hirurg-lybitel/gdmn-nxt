@@ -1,4 +1,3 @@
-import { useGetAllContactsQuery } from '../features/contact/contactApi';
 import { DataGridPro, GridColDef, GridToolbar } from '@mui/x-data-grid-pro';
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
@@ -18,7 +17,7 @@ import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, customersSelectors, deleteCustomer } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IBaseContact, IContactWithID, IWithID } from '@gsbelarus/util-api-types';
+import { IContactWithID } from '@gsbelarus/util-api-types';
 
 
 const columns: GridColDef[] = [
@@ -142,7 +141,6 @@ export function Customers(props: CustomersProps) {
     dispatch(deleteCustomer(currentOrganization));
   };
 
-
   if (reconciliationShow) {
     return (
       <Stack direction="column" spacing={2}>
@@ -157,7 +155,6 @@ export function Customers(props: CustomersProps) {
       </Stack>
     );
   };
-
 
   return (
     <Stack direction="column">

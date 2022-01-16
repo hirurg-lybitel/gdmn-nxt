@@ -80,7 +80,6 @@ export const accountApi = createApi({
       // Invalidates all queries that subscribe to this Post `id` only.
       invalidatesTags: (result, error, id) => [{ type: 'Accounts', id }],
     }),
-
   }),
 });
 
