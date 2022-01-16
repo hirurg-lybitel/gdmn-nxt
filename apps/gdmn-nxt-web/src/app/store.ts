@@ -4,12 +4,13 @@ import { accountApi } from './features/account/accountApi';
 import { contactApi } from './features/contact/contactApi';
 import { reconciliationStatementApi } from './features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from './features/user/userSlice';
-import customersReducer from './features/customer/customerSlice';
+import { customersReducer, hierarchyReducer } from './features/customer/customerSlice';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
-    cutomers: customersReducer,
+    customers: customersReducer,
+    customersHierarchy: hierarchyReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,

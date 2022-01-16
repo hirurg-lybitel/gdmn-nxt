@@ -20,7 +20,7 @@ export const getContacts: RequestHandler = async (req, res) => {
             for (const fld of Object.keys(rec)) {
               if (sch[fld] && sch[fld].type === 'date') {
                 rec[fld] = (rec[fld] as Date).getTime();
-              }
+              };
             }
           }
         }
@@ -31,21 +31,38 @@ export const getContacts: RequestHandler = async (req, res) => {
       }
     };
 
+    const getParams: any = (withKeys: boolean) => {
+      const arr: Array<string | { [key: string]: string}> = [];
+      req.params.taxId ?
+        withKeys ? arr.push({ taxId: req.params.taxId}) : arr.push( req.params.taxId)
+      : null;
+      req.params.rootId ?
+        withKeys ? arr.push({ rootId: req.params.rootId}) : arr.push( req.params.rootId)
+      : null;
+
+      return (arr?.length > 0 ? arr : undefined);
+    };
+
+
     const queries = [
       {
         name: 'contacts',
         query: `
           SELECT
             c.id,
-            c.name,
+            IIF(COALESCE(c.name, '') = '', '<не указано>', c.name)  name,
             c.phone,
+            p.id as parent,
             p.name as folderName
           FROM
-            gd_contact c JOIN gd_contact p ON p.id = c.parent
+            gd_contact c
+            JOIN gd_contact p ON p.id = c.parent
             ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
+            ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
           WHERE
             c.contacttype IN (2,3,5)`,
-        params: req.params.taxId ? [req.params.taxId] : undefined
+        params: getParams(false)
+        //params: req.params.taxId ? [req.params.taxId] : undefined
       },
     ];
 
@@ -53,7 +70,8 @@ export const getContacts: RequestHandler = async (req, res) => {
       queries: {
         ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
       },
-      _params: req.params.taxId ? [{ taxId: req.params.taxId }] : undefined,
+      _params: getParams(true),
+      //_params: req.params.taxId ? [{ taxId: req.params.taxId }] : undefined,
       _schema
     };
 
@@ -214,6 +232,57 @@ export const deleteContact: RequestHandler = async (req, res) => {
 
   } catch (error) {
     return res.status(500).send({ "errorMessage": error.message});
+  } finally {
+    await closeConnection(client, attachment, transaction);
+  }
+};
+
+
+
+export const getContactHierarchy : RequestHandler = async (req, res) => {
+
+  const { client, attachment, transaction } = await setConnection();
+
+  try {
+    const _schema = { };
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const rs = await attachment.executeQuery(transaction, query, params);
+      try {
+        const data = await rs.fetchAsObject();
+        const sch = _schema[name];
+
+        return [name, data];
+      } finally {
+        await rs.close();
+      }
+    };
+
+    const queries = [
+      {
+        name: 'hierarchy',
+        query: `
+          SELECT
+            z.ID,
+            z.LB,
+            z.RB,
+            z.PARENT,
+            z.NAME
+          FROM
+            GD_CONTACT z
+          WHERE
+            Z.CONTACTTYPE  =  0`
+      },
+    ];
+
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+      },
+      _schema
+    };
+
+    return res.json(result);
   } finally {
     await closeConnection(client, attachment, transaction);
   }

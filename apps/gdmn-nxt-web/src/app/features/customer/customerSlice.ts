@@ -1,121 +1,11 @@
-import { IContactWithID } from "@gsbelarus/util-api-types";
+import { IContactHierarchy, IContactWithID } from "@gsbelarus/util-api-types";
 import {
   createSlice,
   createEntityAdapter,
-  createAsyncThunk,
   PayloadAction
 } from "@reduxjs/toolkit";
-import { AxiosError } from "axios";
-import { useDispatch } from "react-redux";
-import { store, RootState } from "../../store";
-import { contactApi, IContacts, useUpdateContactMutation } from "../contact/contactApi";
-import customerAPI from "./customerApi";
-
-export interface IBaseContact {
-  ID: number;
-  NAME: string;
-  PHONE?: string;
-  EMAIL?: string;
-  FOLDERNAME?: string;
-};
-
-interface ValidationErrors {
-  errorMessage: string
-  field_errors?: Record<string, string>
-}
-
-// interface IError {
-//   errorMessage: string
-// }
-
-export const fetchCustomers = createAsyncThunk<
-IContactWithID[] | ValidationErrors,
-  void,
-  {rejectValue:ValidationErrors}
->(
-  "customers/fetchCustomers",
-  async (_, { rejectWithValue}) => {
-    try {
-      const response = await customerAPI.customers.list();
-      console.log('fetchCustomers', response);
-
-      return response;
-
-    } catch (error: any) {
-      const err: AxiosError<ValidationErrors> = error;
-      // if (!err.response){
-      //   throw error;
-      // }
-
-      return rejectWithValue(error);
-    }
-  }
-);
-
-
-export const updateCustomer = createAsyncThunk<
-  any,
-  IContactWithID,
-  {
-    rejectValue: ValidationErrors
-    //fulfilledMeta: IContactWithID
-  }
-  >(
-  "customers/updateCustomers",
-  async (customerData: IContactWithID, { fulfillWithValue, rejectWithValue }) => {
-    try {
-      const response = await customerAPI.customers.update(customerData);
-
-      return response;
-
-    } catch (error: any) {
-      const err: AxiosError<ValidationErrors> = error;
-      // if (!err.response){
-      //   throw error;
-      // }
-
-      return rejectWithValue(error);
-    }
-
-    //return response.data.customer;
-
-    // normalize the data so reducers can responded to a predictable payload, in this case: `action.payload = { users: {}, articles: {}, comments: {} }`
-    //const normalized = normalize(data, articleEntity);
-    //return normalized.entities;
-  }
-);
-
-export const addCustomer = createAsyncThunk(
-  "customers/addCustomer",
-  async (newCustomer: IContactWithID, { fulfillWithValue, rejectWithValue }) => {
-    try {
-      const response = await customerAPI.customers.add(newCustomer);
-
-      return (response);
-
-    } catch (error: any) {
-      console.log('addCustomer', error.errorMessage);
-      return rejectWithValue(error);
-
-    };
-  }
-);
-
-export const deleteCustomer = createAsyncThunk(
-  "customers/deleteCustomer",
-  async (id: number, { fulfillWithValue, rejectWithValue} ) => {
-    try {
-      const response = await customerAPI.customers.delete(id);
-
-      return fulfillWithValue(response);
-
-    } catch (error: any) {
-      return rejectWithValue(error);
-    }
-  }
-)
-
-
+import { RootState } from "../../store";
+import { addCustomer, deleteCustomer, fetchCustomers, fetchCustomersByRootID, fetchHierarchy, updateCustomer, ValidationErrors } from "./actions";
 
 interface Customer extends IContactWithID {
   error: string | null | undefined;
@@ -138,13 +28,10 @@ const customersSlice = createSlice({
   name: "customers",
   initialState: customersAdapter.getInitialState(initialState),
   reducers: {
-    //addCustomer: customersAdapter.addOne,
     selectAllCustomers: customersAdapter.setAll,
-    // updateCustomer(state, action) {
-    //   console.log("updateCustomer_state", state);
-    //   console.log("updateCustomer_action", action);
-    // },
-    //deleteCustomer: customersAdapter.removeOne
+    selectHierarchy(state) {
+      console.log('selectHierarchy');
+    }
   },
   extraReducers:{
     [updateCustomer.fulfilled.toString()](state, action ) {
@@ -191,7 +78,6 @@ const customersSlice = createSlice({
       state.error = null;
     },
     [addCustomer.rejected.toString()](state, action: PayloadAction<ValidationErrors>) {
-      console.log('addCustomer_rejected', action);
       state.loading = false;
       state.error = action.payload.errorMessage;
     },
@@ -199,7 +85,6 @@ const customersSlice = createSlice({
       state.loading = false;
       state.error = null;
 
-      console.log('deleteCustomer_fulfilled', action);
       customersAdapter.removeOne(state, action.payload);
     },
     [deleteCustomer.rejected.toString()](state, action){
@@ -215,15 +100,77 @@ const customersSlice = createSlice({
       state.loading = true;
       state.error = null;
       console.log('deleteCustomer_pending', action);
+    },
+    [fetchCustomersByRootID.fulfilled.toString()](state, action) {
+      state.loading = false;
+      state.error = null;
+      customersAdapter.setAll(state, action.payload.queries.contacts)
+    },
+    [fetchCustomersByRootID.pending.toString()](state, action) {
+      state.loading = true;
+    },
+    [fetchCustomersByRootID.rejected.toString()](state, action) {
+      state.error = action.payload.errorMessage;
+    },
+  }
+});
+
+
+interface IHierarchy extends IContactHierarchy {
+  error: string | null | undefined;
+  loading: boolean;
+};
+
+const initialStateHierarchy: IHierarchy = {
+  error: null,
+  loading: false,
+  ID: 0,
+  NAME: "",
+  LB: 0,
+  RB:0
+};
+
+export const hierarchysAdapter = createEntityAdapter<IHierarchy>({
+  selectId: (hierarchy) => hierarchy.ID,
+  sortComparer: (a, b) => b.LB - a.LB,
+});
+
+export const hierarchySlice = createSlice({
+  name: "customerHierarchy",
+  initialState: hierarchysAdapter.getInitialState(initialStateHierarchy),
+  reducers: {
+    selectAllHierarchy: hierarchysAdapter.setAll,
+  },
+  extraReducers: {
+    [fetchHierarchy.fulfilled.toString()](state, action){
+      state.loading = false;
+      state.error = null;
+
+      customersAdapter.setAll(state, action.payload.queries.hierarchy)
+    },
+    [fetchHierarchy.pending.toString()](state, action){
+      state.loading = true;
+      state.error = null;
+    },
+    [fetchHierarchy.rejected.toString()](state, action){
+      state.loading = false;
+      state.error = action.payload.errorMessage;
     }
   }
 });
 
+
 export const { selectAllCustomers } = customersSlice.actions;
+export const { selectAllHierarchy } = hierarchySlice.actions;
 
 
 export const customersSelectors = customersAdapter.getSelectors<RootState>(
-  (state) => state.cutomers
+  (state) => state.customers
 );
 
-export default customersSlice.reducer;
+export const hierarchySelectors = hierarchysAdapter.getSelectors<RootState>(
+  (state) => state.customersHierarchy
+);
+
+export const customersReducer = customersSlice.reducer;
+export const hierarchyReducer = hierarchySlice.reducer;

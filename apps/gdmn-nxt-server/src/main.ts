@@ -1,6 +1,6 @@
-import * as express from 'express';
-import * as session from 'express-session';
-import * as passport from 'passport';
+import express from 'express';
+import session from 'express-session';
+import passport  from 'passport';
 import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import { Strategy } from 'passport-local';
@@ -9,7 +9,7 @@ import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
 import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
-import { getContacts, updateContact, addContact, deleteContact } from './app/contacts';
+import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
 import { addAccount, getAccounts } from './app/accounts';
 import { sendEmail } from './app/mail';
 
@@ -19,6 +19,8 @@ const MemoryStore = require('memorystore')(session);
 dotenv.config({ path: '../..' });
 
 const app = express();
+
+const cors = require('cors');
 
 app.use(cors({
   credentials: true,
@@ -339,9 +341,11 @@ app.get('/api/v1/logout', (_, res) => {
 
 app.get('/api/v1/contacts', getContacts);
 app.get('/api/v1/contacts/taxId/:taxId', getContacts);
+app.get('/api/v1/contacts/rootId/:rootId', getContacts);
 app.put('/api/v1/contacts/:id', updateContact);
 app.post('/api/v1/contacts', addContact);
 app.delete('/api/v1/contacts/:id', deleteContact);
+app.get('/api/v1/contacts/hierarchy', getContactHierarchy);
 
 app.get('/api/v1/accounts', getAccounts);
 app.get('/api/v1/accounts/email/:email', getAccounts);
