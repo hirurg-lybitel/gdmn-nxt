@@ -19,11 +19,6 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
   const { data, refetch, isFetching } = useGetAllAccountsQuery();
   const [updateAccount, { error, isSuccess, isError, isLoading, status }] = useUpdateAccountMutation();
   const accounts = data?.queries.accounts;
-  const [cnt, setCnt] = useState(0);
-
-  useEffect( () => {
-    setCnt( c => c + 1 );
-  }, [data]);
 
   useEffect( () => {
     if (!isLoading && status !== QueryStatus.uninitialized) {
@@ -53,7 +48,6 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
     <Stack direction="column">
       <Stack direction="row">
         <Button onClick={ refetch } disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
-        <Typography>{cnt}</Typography>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
         <DataGridPro
