@@ -119,7 +119,7 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       acc.*
     FROM
       usr$crm_account acc
-    WHERE UPPER(acc.email) = ?
+    WHERE UPPER(acc.usr$email) = ?
   `;
 
   let client: Client;

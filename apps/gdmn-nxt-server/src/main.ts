@@ -351,6 +351,7 @@ app.get('/api/v1/accounts', getAccounts);
 app.get('/api/v1/accounts/email/:email', getAccounts);
 app.get('/api/v1/account/:id', getAccounts);
 app.post('/api/v1/account', addAccount);
+app.put('/api/v1/account/:id', addAccount);
 
 app.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 

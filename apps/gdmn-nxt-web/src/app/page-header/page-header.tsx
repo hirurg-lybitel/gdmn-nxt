@@ -63,11 +63,11 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
   >
-    {items.map( i =>
+    {items.map( (i, idx) =>
       i.type === 'divider' ?
         <Divider />
       :
-        <MenuItem onClick={i.onClick}>
+        <MenuItem key={idx} onClick={i.onClick}>
           {i.Icon &&
             <ListItemIcon>
               <i.Icon fontSize="small" />

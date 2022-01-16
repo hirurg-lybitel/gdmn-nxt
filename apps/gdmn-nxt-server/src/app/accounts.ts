@@ -8,65 +8,90 @@ import { sendEmail } from "./mail";
 export const addAccount: RequestHandler = async (req, res) => {
   const { client, attachment, transaction} = await setConnection();
 
-  let { USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, USR$EMAIL, USR$COMPANYKEY, USR$EXPIREON, USR$APPROVED } = req.body;
-
-  const email = USR$EMAIL.trim().toLowerCase();
-  let expireOn = USR$EXPIREON && new Date(USR$EXPIREON);
-  let approved = USR$APPROVED;
-
-  if (typeof USR$APPROVED === 'boolean') {
-    approved = USR$APPROVED ? 1 : 0;
-  }
-
   try {
     // purge expired records
+    //TODO: extract into separate method
     await attachment.execute(transaction, 'DELETE FROM usr$crm_account WHERE usr$expireon <= ?', [new Date()]);
 
     let ID: number;
 
-    const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
-    try {
-      ID = (await rs.fetchAsObject<IWithID>())[0].ID;
-    } finally {
-      await rs.close();
+    if (parseInt(req.params['id']) > 0) {
+      ID = parseInt(req.params['id']);
+    } else {
+      const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
+      try {
+        ID = (await rs.fetchAsObject<IWithID>())[0].ID;
+      } finally {
+        await rs.close();
+      }
     }
 
     const provisionalPassword = genRandomPassword();
     const { salt, hash } = genPassword(provisionalPassword);
 
-    // conversion to lower case is mandatory for email field
-    // as we check uniquiness with index in the database
-    const fields = ['ID', 'USR$FIRSTNAME', 'USR$LASTNAME', 'USR$POSITION', 'USR$PHONE', 'USR$EMAIL', 'USR$COMPANYKEY', 'USR$APPROVED', 'USR$EXPIREON', 'USR$SALT', 'USR$HASH'];
-    const fields_string = fields.join(',');
-    const params_string = fields.map( f => '?' ).join(',');
-    const sql = `INSERT INTO usr$crm_account (${fields_string}) VALUES (${params_string}) RETURNING ${fields_string}`;
+    const allFields = ['ID', 'USR$FIRSTNAME', 'USR$LASTNAME', 'USR$POSITION', 'USR$PHONE', 'USR$EMAIL', 'USR$COMPANYKEY', 'USR$APPROVED', 'USR$EXPIREON', 'USR$SALT', 'USR$HASH'];
+    const presentFields = allFields.filter( f => (typeof req.body[f] !== 'undefined') || (f === 'USR$SALT') || (f === 'USR$HASH') || (f === 'ID') );
+    const fieldsNames = presentFields.join(',');
+    const paramsString = presentFields.map( f => '?' ).join(',');
+    const params = presentFields.map( f => {
+      switch (f){
+        case 'ID':
+          return ID;
+
+        case 'USR$SALT':
+          return salt;
+
+        case 'USR$HASH':
+          return hash;
+
+        case 'USR$EMAIL':
+          return req.body['USR$EMAIL'].trim().toLowerCase();
+
+        case 'USR$EXPIREON':
+          return req.body['USR$EXPIREON'] === null ? null : new Date(req.body['USR$EXPIREON']);
+
+        case 'USR$APPROVED': {
+          const USR$APPROVED = req.body['USR$APPROVED'];
+          if (typeof USR$APPROVED === 'boolean') {
+            return USR$APPROVED ? 1 : 0;
+          }
+        }
+      }
+
+      return req.body[f];
+    });
+    const sql = `UPDATE OR INSERT INTO usr$crm_account (${fieldsNames}) VALUES (${paramsString}) MATCHING (ID) RETURNING ${fieldsNames}`;
     let row;
-    row = await attachment.executeReturning(transaction, sql,
-      [ID, USR$FIRSTNAME, USR$LASTNAME, USR$POSITION, USR$PHONE, email, USR$COMPANYKEY, approved, expireOn, salt, hash]);
+    row = await attachment.executeReturning(transaction, sql, params);
 
     const result: IRequestResult = {
       queries: {
-        accounts: [Object.fromEntries( fields.map( (f, idx) => ([f, row[idx]]) ) )]
+        accounts: [Object.fromEntries( allFields.map( (f, idx) => ([f, row[idx]]) ) )]
       },
       _schema: undefined
     };
 
     res.json(result);
 
-    try {
-      await sendEmail(
-        '"GDMN System" <test@gsbelarus.com>',
-        email,
-        "Account confirmation",
-        `Please use following credentials to sign-in into your account at ...\
-        \n\n\
-        User name: ${USR$EMAIL}\n\
-        Password: ${provisionalPassword}
-        \n\n\
-        This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-      );
-    } catch (err) {
-      console.error(err);
+    const email = req.body['USR$EMAIL'];
+    const expireOn = req.body['USR$EXPIREON'] && new Date(req.body['USR$EXPIREON']);
+
+    if (email && expireOn) {
+      try {
+        await sendEmail(
+          '"GDMN System" <test@gsbelarus.com>',
+          email,
+          "Account confirmation",
+          `Please use following credentials to sign-in into your account at ...\
+          \n\n\
+          User name: ${email}\n\
+          Password: ${provisionalPassword}
+          \n\n\
+          This temporary record will expire on ${expireOn.toLocaleDateString()}`
+        );
+      } catch (err) {
+        console.error(err);
+      }
     }
   } finally {
     await closeConnection(client, attachment, transaction);
@@ -79,8 +104,11 @@ export const getAccounts: RequestHandler = async (req, res) => {
   try {
     const _schema: IDataSchema = {
       accounts: {
-        EXPIREON: {
+        USR$EXPIREON: {
           type: 'timestamp'
+        },
+        USR$APPROVED: {
+          type: 'boolean'
         }
       }
     };

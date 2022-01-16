@@ -17,6 +17,7 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware()
     .concat(contactApi.middleware)
+    .concat(accountApi.middleware)
     .concat(reconciliationStatementApi.middleware),
 });
 
