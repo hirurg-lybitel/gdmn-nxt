@@ -40,6 +40,10 @@ export interface IWithRUID {
   RUID: string;
 };
 
+export interface IWithParent {
+  PARENT?: number;
+};
+
 export interface IBaseContact {
   NAME: string;
   PHONE?: string;
@@ -47,7 +51,7 @@ export interface IBaseContact {
   FOLDERNAME?: string;
 };
 
-export interface IContactWithID extends IBaseContact, IWithID {}
+export interface IContactWithID extends IBaseContact, IWithID, IWithParent {}
 
 export interface ICompany extends IBaseContact {
   FULLNAME: string;
@@ -65,3 +69,12 @@ export interface IAccount {
   USR$HASH: string;
   USR$SALT: string;
 };
+
+
+export interface IContactHierarchy {
+  ID: number,
+  PARENT?: number;
+  LB: number;
+  RB: number;
+  NAME: string
+}

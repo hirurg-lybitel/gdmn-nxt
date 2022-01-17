@@ -13,7 +13,8 @@ interface IError {
 const customerAPI = {
   customers: {
     async list(): Promise<any> {
-      console.log('request', "GET", `${baseUrl}contacts`);
+      const startTimeM = new Date().getTime();
+      console.log('⏩ request', "GET", `${baseUrl}contacts`);
 
       const response = await fetch(`${baseUrl}contacts`, {
         method: "GET",
@@ -22,7 +23,32 @@ const customerAPI = {
 
       const resBodу = await response.json();
 
-      console.log('✉️ response', response.status,  resBodу);
+      const durationM = new Date().getTime() - startTimeM
+
+      console.log('✉️ response', response.status,  resBodу, `Duration: ${durationM/1000} sec.`);
+
+      if (!response.ok) {
+        throw resBodу;
+      }
+      return resBodу;
+
+      //return {errorMessage: "error_Test"};
+
+    },
+    async listByRootID(rootId: string): Promise<any> {
+      const startTimeM = new Date().getTime();
+      console.log('⏩ request', "GET", `${baseUrl}contacts/rootId/${rootId}`);
+
+      const response = await fetch(`${baseUrl}contacts/rootId/${rootId}`, {
+        method: "GET",
+        headers: _headers
+      });
+
+      const resBodу = await response.json();
+
+      const durationM = new Date().getTime() - startTimeM
+
+      console.log('✉️ response', response.status,  resBodу, `Duration: ${durationM/1000} sec.`);
 
       if (!response.ok) {
         throw resBodу;
@@ -88,7 +114,27 @@ const customerAPI = {
       }
 
       return responseBodу;
+    },
+    async hierarchy(): Promise<any> {
+      const startTimeM = new Date().getTime();
+      console.log('⏩ request', "GET", `${baseUrl}contacts/hierarchy`);
+
+      const response = await fetch(`${baseUrl}contacts/hierarchy`, {
+        method: "GET",
+        headers: _headers
+      });
+
+      const resBodу = await response.json();
+
+      const durationM = new Date().getTime() - startTimeM
+      console.log('✉️ response', response.status,  resBodу, `Duration: ${durationM/1000} sec.`);
+
+      if (!response.ok) {
+        throw resBodу;
+      }
+      return resBodу;
     }
+
   }
 };
 
