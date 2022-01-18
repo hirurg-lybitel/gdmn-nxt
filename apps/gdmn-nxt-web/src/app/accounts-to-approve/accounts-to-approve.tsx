@@ -9,7 +9,6 @@ import Snackbar from '@mui/material/Snackbar/Snackbar';
 import Alert, { AlertColor } from '@mui/material/Alert/Alert';
 import { useEffect, useState } from 'react';
 import { QueryStatus } from '@reduxjs/toolkit/dist/query';
-import { Typography } from '@mui/material';
 
 /* eslint-disable-next-line */
 export interface AccountsToApproveProps {}

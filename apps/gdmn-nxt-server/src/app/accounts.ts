@@ -9,18 +9,17 @@ export const addAccount: RequestHandler = async (req, res) => {
   const { client, attachment, transaction} = await setConnection();
 
   try {
-    // purge expired records
-    //TODO: extract into separate method
-    await attachment.execute(transaction, 'DELETE FROM usr$crm_account WHERE usr$expireon <= ?', [new Date()]);
-
     let ID: number;
+    let insert: boolean;
 
     if (parseInt(req.params['id']) > 0) {
       ID = parseInt(req.params['id']);
+      insert = false;
     } else {
       const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
       try {
         ID = (await rs.fetchAsObject<IWithID>())[0].ID;
+        insert = true;
       } finally {
         await rs.close();
       }
