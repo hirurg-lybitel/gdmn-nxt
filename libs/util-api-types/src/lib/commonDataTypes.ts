@@ -70,6 +70,7 @@ export interface IAccount {
   USR$SALT: string;
 };
 
+export type IAccountWithID = IAccount & IWithID;
 
 export interface IContactHierarchy {
   ID: number,

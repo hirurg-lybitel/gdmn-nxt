@@ -10,7 +10,7 @@ import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
-import { addAccount, getAccounts } from './app/accounts';
+import { upsertAccount, getAccounts } from './app/accounts';
 import { sendEmail } from './app/mail';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -350,8 +350,8 @@ app.get('/api/v1/contacts/hierarchy', getContactHierarchy);
 app.get('/api/v1/accounts', getAccounts);
 app.get('/api/v1/accounts/email/:email', getAccounts);
 app.get('/api/v1/account/:id', getAccounts);
-app.post('/api/v1/account', addAccount);
-app.put('/api/v1/account/:id', addAccount);
+app.post('/api/v1/account', upsertAccount);
+app.put('/api/v1/account/:ID', upsertAccount);
 
 app.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 

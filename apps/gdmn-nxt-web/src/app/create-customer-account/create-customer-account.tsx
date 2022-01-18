@@ -150,7 +150,9 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
         : step === 'PROFILE_CREATED' ?
           <>
             <Typography variant='body1'>
-              Учетная запись успешно создана. В течение нескольких минут вы получите на электронную почту письмо с паролем.
+              Учетная запись успешно создана.
+              После прохождения проверки, вы получите на электронную почту
+              письмо с логином и паролем для входа в систему.
             </Typography>
             <CancelButton caption="Войти в систему" />
           </>

@@ -1,19 +1,19 @@
-import { IDataSchema, IRequestResult, IWithID } from "@gsbelarus/util-api-types";
+import { IAccount, IAccountWithID, IDataSchema, IRequestResult, IWithID } from "@gsbelarus/util-api-types";
 import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
 import { closeConnection, setConnection } from "./db-connection";
 import { sendEmail } from "./mail";
 
-export const addAccount: RequestHandler = async (req, res) => {
+export const upsertAccount: RequestHandler = async (req, res) => {
   const { client, attachment, transaction} = await setConnection();
 
   try {
     let ID: number;
-    let insert: boolean;
+    let insert: boolean;  // we know that this is an insert of a new account by the absence of the ID field
 
-    if (parseInt(req.params['id']) > 0) {
-      ID = parseInt(req.params['id']);
+    if (parseInt(req.params['ID']) > 0) {
+      ID = parseInt(req.params['ID']);
       insert = false;
     } else {
       const rs = await attachment.executeQuery(transaction, 'SELECT id FROM gd_p_getnextid');
@@ -25,14 +25,46 @@ export const addAccount: RequestHandler = async (req, res) => {
       }
     }
 
-    const provisionalPassword = genRandomPassword();
-    const { salt, hash } = genPassword(provisionalPassword);
+    let newCredentials;
+    let approvalSet = Boolean(req.body['USR$APPROVED']);
+
+    if (insert) {
+      newCredentials = approvalSet;
+    } else {
+      const rs = await attachment.executeQuery(transaction, 'SELECT usr$approved FROM usr$crm_account WHERE id = ?', [ID]);
+      try {
+        const res = await rs.fetchAsObject<Pick<IAccount, 'USR$APPROVED'>>();
+        const approvalWas = !!res[0]?.USR$APPROVED;
+        newCredentials = approvalSet && !approvalWas;
+      } finally {
+        await rs.close();
+      }
+    }
+
+    const provisionalPassword = newCredentials ? genRandomPassword() : null;
+    const { salt, hash } = newCredentials ? genPassword(provisionalPassword) : { salt: null, hash: null };
 
     const allFields = ['ID', 'USR$FIRSTNAME', 'USR$LASTNAME', 'USR$POSITION', 'USR$PHONE', 'USR$EMAIL', 'USR$COMPANYKEY', 'USR$APPROVED', 'USR$EXPIREON', 'USR$SALT', 'USR$HASH'];
-    const presentFields = allFields.filter( f => (typeof req.body[f] !== 'undefined') || (f === 'USR$SALT') || (f === 'USR$HASH') || (f === 'ID') );
-    const fieldsNames = presentFields.join(',');
-    const paramsString = presentFields.map( f => '?' ).join(',');
-    const params = presentFields.map( f => {
+    const allFieldsNames = allFields.join(',');
+    const actualFields = allFields.filter( f => typeof req.body[f] !== 'undefined' );
+
+    if (!actualFields.includes('ID')) {
+      actualFields.push('ID');
+    }
+
+    if (newCredentials) {
+      if (!actualFields.includes('USR$HASH')) {
+        actualFields.push('USR$HASH');
+      }
+
+      if (!actualFields.includes('USR$SALT')) {
+        actualFields.push('USR$SALT');
+      }
+    }
+
+    const actualFieldsNames = actualFields.join(',');
+    const paramsString = actualFields.map( _ => '?' ).join(',');
+    const params = actualFields.map( f => {
       switch (f){
         case 'ID':
           return ID;
@@ -47,52 +79,71 @@ export const addAccount: RequestHandler = async (req, res) => {
           return req.body['USR$EMAIL'].trim().toLowerCase();
 
         case 'USR$EXPIREON':
-          return req.body['USR$EXPIREON'] === null ? null : new Date(req.body['USR$EXPIREON']);
+          return req.body['USR$EXPIREON'] ? new Date(req.body['USR$EXPIREON']) : null;
 
         case 'USR$APPROVED': {
           const USR$APPROVED = req.body['USR$APPROVED'];
           if (typeof USR$APPROVED === 'boolean') {
             return USR$APPROVED ? 1 : 0;
+          } else if (typeof USR$APPROVED === 'undefined') {
+            return null;
           }
         }
       }
 
       return req.body[f];
     });
-    const sql = `UPDATE OR INSERT INTO usr$crm_account (${fieldsNames}) VALUES (${paramsString}) MATCHING (ID) RETURNING ${fieldsNames}`;
-    let row;
-    row = await attachment.executeReturning(transaction, sql, params);
 
-    const result: IRequestResult = {
+    const sql = `UPDATE OR INSERT INTO usr$crm_account (${actualFieldsNames}) VALUES (${paramsString}) MATCHING (ID) RETURNING ${allFieldsNames}`;
+
+    const row = await attachment.executeReturning(transaction, sql, params);
+
+    const result: IRequestResult<{ accounts: IAccountWithID[] }> = {
       queries: {
-        accounts: [Object.fromEntries( allFields.map( (f, idx) => ([f, row[idx]]) ) )]
+        accounts: [Object.fromEntries( allFields.map( (f, idx) => ([f, row[idx]]) ) ) as IAccountWithID]
       },
       _schema: undefined
     };
 
     res.json(result);
 
-    const email = req.body['USR$EMAIL'];
-    const expireOn = req.body['USR$EXPIREON'] && new Date(req.body['USR$EXPIREON']);
+    const email = result.queries.accounts[0]?.USR$EMAIL;
 
-    if (email && expireOn) {
+    if (email) {
       try {
-        await sendEmail(
-          '"GDMN System" <test@gsbelarus.com>',
-          email,
-          "Account confirmation",
-          `Please use following credentials to sign-in into your account at ...\
-          \n\n\
-          User name: ${email}\n\
-          Password: ${provisionalPassword}
-          \n\n\
-          This temporary record will expire on ${expireOn.toLocaleDateString()}`
-        );
+        if (newCredentials) {
+          await sendEmail(
+            'CRM система БелГИСС <test@gsbelarus.com>',
+            email,
+            'Учетная запись и пароль для входа в систему',
+            `Используйте следующую учетную запись и пароль для входа на портал БелГИСС:\
+            \n\n\
+            Пользователь: ${email}\n\
+            Пароль: ${provisionalPassword}`
+          );
+        } else if (insert) {
+          await sendEmail(
+            'CRM система БелГИСС <test@gsbelarus.com>',
+            email,
+            'Подтверждение учетной записи',
+            `Уважаемый пользователь!
+
+            В ближайшее время мы рассмотрим вашу заявку на регистрацию в системе.
+
+            После подтверждения вы получите на этот адрес электронной почты
+            письмо с именем учетной записи и паролем.`
+          );
+        }
       } catch (err) {
         console.error(err);
       }
     }
-  } finally {
+  }
+  catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+  finally {
     await closeConnection(client, attachment, transaction);
   }
 };
