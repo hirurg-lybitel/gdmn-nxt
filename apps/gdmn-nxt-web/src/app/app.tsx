@@ -14,7 +14,7 @@ import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
-import { Button, Divider } from '@mui/material';
+import { Button, Divider, Typography } from '@mui/material';
 import EmployeeHomePage from './employee-home-page/employee-home-page';
 import CustomerHomePage from './customer-home-page/customer-home-page';
 import { SelectMode } from './select-mode/select-mode';
@@ -98,7 +98,7 @@ export function App() {
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
-              bottomDecorator={ () => <Button variant="contained" onClick={ () => dispatch(signInCustomer()) }>Войти в режиме клиента</Button>}
+              bottomDecorator={ () => <Typography>Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography> }
             />
           :
             <SignInSignUp
@@ -107,9 +107,9 @@ export function App() {
               bottomDecorator={
                 () =>
                   <>
-                    <Button variant="contained" onClick={ () => dispatch(createCustomerAccount()) }>Создать учетную запись</Button>
+                    <Typography>Создать новую<Button onClick={ () => dispatch(createCustomerAccount()) }>учетную запись</Button></Typography>
                     <Divider />
-                    <Button variant="contained" onClick={ () => dispatch(signInEmployee()) }>Войти в режиме сотрудника</Button>
+                    <Typography>Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography>
                   </>
               }
             />

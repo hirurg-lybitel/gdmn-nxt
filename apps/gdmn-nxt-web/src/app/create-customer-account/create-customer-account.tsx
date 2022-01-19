@@ -96,12 +96,8 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
     && checkEmailAddress(email) && email === email2 && !duplAccount);
 
   const CancelButton = useMemo( () => ({ caption }: { caption?: string }) =>
-    <Button
-      variant="contained"
-      onClick = { onCancel }
-    >
-      {caption ?? 'Вернуться в начало'}
-    </Button>, [onCancel]);
+    <Typography>Вернуться в<Button onClick={ onCancel }>начало</Button></Typography>,
+  [onCancel]);
 
   return (
     <Stack direction="column" spacing={2}>
