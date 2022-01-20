@@ -65,7 +65,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
   >
     {items.map( (i, idx) =>
       i.type === 'divider' ?
-        <Divider />
+        <Divider key={idx} />
       :
         <MenuItem key={idx} onClick={i.onClick}>
           {i.Icon &&

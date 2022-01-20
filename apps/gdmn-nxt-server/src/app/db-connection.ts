@@ -11,7 +11,9 @@ export const setConnection = async () => {
 };
 
 export const closeConnection = async (client: Client, attachment: Attachment, transaction: Transaction) => {
-  await transaction.commit();
+  if ((transaction as any).attachment) {
+    await transaction.commit();
+  }
   await attachment.disconnect();
   await client.dispose();
 };

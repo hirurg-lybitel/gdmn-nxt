@@ -97,6 +97,7 @@ export const upsertAccount: RequestHandler = async (req, res) => {
     const sql = `UPDATE OR INSERT INTO usr$crm_account (${actualFieldsNames}) VALUES (${paramsString}) MATCHING (ID) RETURNING ${allFieldsNames}`;
 
     const row = await attachment.executeReturning(transaction, sql, params);
+    await transaction.commit();
 
     const result: IRequestResult<{ accounts: IAccountWithID[] }> = {
       queries: {

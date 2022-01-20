@@ -17,25 +17,15 @@ export const accountApi = createApi({
   endpoints: (builder) => ({
     getAllAccounts: builder.query<IAccountRequestResult, void>({
       query: () => `accounts`,
-      providesTags: (result, error) =>
-        result && !error ?
-          [
-            ...result.queries.accounts.map( ({ ID: id }) => ({ type: 'Accounts', id } as const) ),
-            { type: 'Accounts', id: 'LIST' }
-          ]
-        :
-          [{ type: 'Accounts', id: 'LIST' }]
+      providesTags: ['Accounts']
     }),
     getAccountByEmail: builder.query<IAccountRequestResult, { email: string }>({
       query: ({ email }) => `accounts/email/${email}`,
-      providesTags: (result, error) =>
-        result && !error ?
-          [
-            ...result.queries.accounts.map( ({ ID: id }) => ({ type: 'Accounts', id } as const) ),
-            { type: 'Accounts', id: 'LIST' }
-          ]
-        :
-          [{ type: 'Accounts', id: 'LIST' }]
+      providesTags: ['Accounts']
+    }),
+    getAccount: builder.query<IAccountRequestResult, number>({
+      query: (ID) => `account/${ID}`,
+      providesTags: ['Accounts']
     }),
     addAccount: builder.mutation<IAccountRequestResult, Partial<IAccountWithID>>({
       query(body) {
@@ -47,17 +37,7 @@ export const accountApi = createApi({
       },
       // Invalidates all Post-type queries providing the `LIST` id - after all, depending of the sort order,
       // that newly created post could show up in any lists.
-      invalidatesTags: [{ type: 'Accounts', id: 'LIST' }]
-    }),
-    getAccount: builder.query<IAccountRequestResult, number>({
-      query: (id) => `account/${id}`,
-      providesTags: (result, error, id) =>
-        result && !error ?
-          [
-            { type: 'Accounts', id }
-          ]
-        :
-          [{ type: 'Accounts', id: 'LIST' }]
+      invalidatesTags: ['Accounts']
     }),
     updateAccount: builder.mutation<IAccountRequestResult, Partial<IAccountWithID>>({
       query(data) {
@@ -70,18 +50,12 @@ export const accountApi = createApi({
       },
       // Invalidates all queries that subscribe to this Post `id` only.
       // In this case, `getPost` will be re-run. `getPosts` *might*  rerun, if this id was under its results.
-      invalidatesTags: (result, error, { ID: id }) =>
-        result && !error ?
-          [
-            { type: 'Accounts', id }
-          ]
-        :
-          [{ type: 'Accounts', id: 'LIST' }]
+      invalidatesTags: ['Accounts']
     }),
     deleteAccount: builder.mutation<{ success: boolean; id: number }, number>({
-      query(id) {
+      query(ID) {
         return {
-          url: `account/${id}`,
+          url: `account/${ID}`,
           method: 'DELETE',
         }
       },

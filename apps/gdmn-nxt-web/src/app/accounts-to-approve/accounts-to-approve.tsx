@@ -39,7 +39,7 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
     { field: 'USR$LASTNAME', headerName: 'Фамилия', width: 250 },
     { field: 'USR$POSITION', headerName: 'Должность', width: 250 },
     { field: 'USR$APPROVED', headerName: 'Подтверждение', width: 250,
-      renderCell: ({ value, id }) => <div><Switch checked={!!value} onChange={ () => updateAccount({ ID: gridRowId2Id(id), USR$APPROVED: !value }) }/></div>
+      renderCell: ({ value, id }) => <Switch checked={!!value} onChange={ () => updateAccount({ ID: gridRowId2Id(id), USR$APPROVED: !value }) }/>
     }
   ];
 
