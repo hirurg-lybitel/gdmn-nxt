@@ -1,10 +1,9 @@
-import Button from '@mui/material/Button/Button';
 import { useMemo } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
-import { ParseableDate } from '@mui/lab/internal/pickers/constants/prop-types';
 import CircularIndeterminateProps from '../circular-indeterminate/circular-indeterminate';
+import Paper from '@mui/material/Paper/Paper';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
@@ -64,7 +63,7 @@ export interface ReconciliationStatementProps {
 
 export function ReconciliationStatement({ custId, dateBegin, dateEnd }: ReconciliationStatementProps) {
 
-  const { data, refetch, isFetching } = useGetReconciliationStatementQuery({
+  const { data, isFetching } = useGetReconciliationStatementQuery({
     custId,
     dateBegin: dateBegin ? dateBegin : new Date(2021, (new Date()).getMonth(), 1),
     dateEnd: dateEnd ? dateEnd : new Date(2021, (new Date()).getMonth()+1, 1)
@@ -109,7 +108,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
   const fv = (rec: any, rs: string, fld: string) => formatValue(rec, rs, fld, schema);
 
   return (
-    <div>
+    <Paper sx={{ padding: '4rem' }}>
       {
         data?.queries.customerDebt ?
           <div className={styles.container}>
@@ -299,12 +298,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
         <CircularIndeterminateProps open={isFetching}/>
           // <div>no data</div>
       }
-
-      <pre>
-        {JSON.stringify(data, undefined, 2)}
-      </pre>
-      <Button disabled={isFetching} onClick={ refetch }>Refresh</Button>
-    </div>
+    </Paper>
   );
 }
 

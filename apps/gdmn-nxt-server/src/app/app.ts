@@ -1,6 +1,7 @@
 import { IAccount, IAuthResult, IWithID } from "@gsbelarus/util-api-types";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
+import { closeConnection, setConnection } from "./db-connection";
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
@@ -121,16 +122,9 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       usr$crm_account acc
     WHERE UPPER(acc.usr$email) = ?
   `;
-
-  let client: Client;
-  let attachment: Attachment;
-  let transaction: Transaction;
+  const { client, attachment, transaction} = await setConnection();
 
   try {
-    const { host, port, db } = config;
-    client = createNativeClient(getDefaultLibraryFilename());
-    attachment = await client.connect(`${host}/${port}:${db}`);
-    transaction = await attachment.startTransaction();
     const rs = await attachment.executeQuery(transaction, query, [email.toLocaleUpperCase()]);
     try {
       const data = await rs.fetchAsObject<IAccount & IWithID>();
@@ -146,8 +140,6 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       await rs.close();
     }
   } finally {
-    await transaction?.commit();
-    await attachment?.disconnect();
-    await client?.dispose();
+    await closeConnection(client, attachment, transaction);
   }
 };
