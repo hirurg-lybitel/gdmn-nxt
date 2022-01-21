@@ -1,6 +1,8 @@
 import './customer-edit.module.less';
 import {
+  Autocomplete,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -8,7 +10,8 @@ import {
   Divider,
   IconButton,
   Stack,
-  TextField
+  TextField,
+  Box
  } from '@mui/material';
  import {
   Theme
@@ -17,11 +20,16 @@ import { makeStyles, createStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import WarningIcon from '@mui/icons-material/Warning';
-import { IContactWithID } from '@gsbelarus/util-api-types';
+import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
-import React from 'react';
+import { useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
+import { useSelector } from 'react-redux';
+import { hierarchySelectors } from '../features/customer/customerSlice';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { useGetLabelsContactQuery } from '../features/labels/labelsApi';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -44,8 +52,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export interface CustomerEditProps {
   open: boolean;
-  customer: IContactWithID | null;
-  onSubmit: (arg1: IContactWithID, arg2: boolean) => void;
+  customer: IContactWithLabels | null;
+  onSubmit: (arg1: IContactWithLabels, arg2: boolean) => void;
   onSaveClick?: () => void;
   onCancelClick: () => void;
   onDeleteClick?: () => void;
@@ -55,19 +63,24 @@ export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
   const { onCancelClick, onDeleteClick, onSubmit } = props;
 
-  const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [deleting, setDeleting] = React.useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const allHierarchy = useSelector(hierarchySelectors.selectAll);
+
 
   const classes = useStyles();
 
-  const initValue: IContactWithID = {
+  const initValue: IContactWithLabels = {
     ID: customer?.ID || 0,
     NAME: customer?.NAME || '',
     PHONE: customer?.PHONE || '',
     EMAIL: customer?.EMAIL || '',
+    PARENT: customer?.PARENT || undefined,
+    labels: []
   }
 
-  const formik = useFormik<IContactWithID>({
+  const formik = useFormik<IContactWithLabels>({
     enableReinitialize: true,
     initialValues: {
       ...customer,
@@ -76,12 +89,16 @@ export function CustomerEdit(props: CustomerEditProps) {
     validationSchema: yup.object().shape({
       NAME:  yup.string().required('').max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string().matches(/@./),
+      PARENT: yup.string().required('')
     }),
     onSubmit: (values) => {
+      //console.log('values', values);
       setConfirmOpen(false);
       onSubmit(values, deleting);
     },
   });
+
+  const { data, error, isLoading, refetch } = useGetLabelsContactQuery(formik.values.ID);
 
   const handleDeleteClick = () => {
     setDeleting(true);
@@ -89,7 +106,6 @@ export function CustomerEdit(props: CustomerEditProps) {
   };
 
   const handleCancelClick = () => {
-    console.log('handleCancelClick');
     setDeleting(false);
     formik.resetForm();
     onCancelClick();
@@ -115,6 +131,42 @@ export function CustomerEdit(props: CustomerEditProps) {
                 value={formik.values.NAME}
                 helperText={formik.errors.NAME}
               />
+              <Autocomplete
+                options={allHierarchy}
+                getOptionLabel={option => option.NAME}
+                //defaultValue={allHierarchy.filter(el => el.ID === formik.values.PARENT)[0] || null}
+                value={allHierarchy.filter(el => el.ID === formik.values.PARENT)[0] || null}
+                onChange={(e, value) => {
+                  console.log('value', value);
+                  formik.setFieldValue(
+                    "PARENT",
+                    value ? value.ID : initValue.PARENT
+                  );
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.ID}>
+                      {option.NAME}
+                    </li>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    key={params.id}
+                    label="Папка"
+                    className={classes.helperText}
+                    type="text"
+                    required
+                    name="PARENT"
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    value={formik.values.PARENT}
+                    helperText={formik.errors.PARENT}
+                    placeholder="Выберите папку"
+                  />
+                )}
+              />
               <TextField
                 label="Телефон"
                 className={classes.helperText}
@@ -132,6 +184,55 @@ export function CustomerEdit(props: CustomerEditProps) {
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.EMAIL}
+              />
+              <Autocomplete
+                multiple
+                limitTags={2}
+                disableCloseOnSelect
+                onChange={(e, value) => {
+                  console.log('onChange', value);
+
+                  formik.setFieldValue(
+                    "labels",
+                    value
+                      ? value.map((el) => {
+                          return {ID: 0, CONTACT: formik.values.ID, LABEL: el.ID} as ILabelsContact
+                        })
+                      : initValue.labels
+                  );
+                }}
+                // value={
+                //   data?.queries.labels
+                //     .filter(el => el.CONTACT === formik.values.ID)
+                //     .map(el => allHierarchy
+                //       .filter(el2 => el2.ID === el.LABEL)
+                //       )[0]
+                // }
+                defaultValue={
+                  allHierarchy
+                    .filter(hierarchy => data?.queries.labels
+                      .find(label => label.LABEL === hierarchy.ID && label.CONTACT === formik.values.ID))
+                }
+                options={allHierarchy}
+                getOptionLabel={opt => opt.NAME}
+                renderOption={(props, option, { selected }) => (
+                  <li {...props} key={option.ID}>
+                    <Checkbox
+                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                      checkedIcon={<CheckBoxIcon fontSize="small" />}
+                      style={{ marginRight: 8 }}
+                      checked={selected}
+                    />
+                    {option.NAME}
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Метки"
+                    placeholder="Выберите метки"
+                  />
+                )}
               />
             </Stack>
           </Form>

@@ -79,3 +79,11 @@ export interface IContactHierarchy {
   RB: number;
   NAME: string
 }
+export interface ILabelsContact extends IWithID {
+  CONTACT: number;
+  LABEL: number;
+}
+
+export interface IContactWithLabels extends IContactWithID {
+  labels?: ILabelsContact[]
+}

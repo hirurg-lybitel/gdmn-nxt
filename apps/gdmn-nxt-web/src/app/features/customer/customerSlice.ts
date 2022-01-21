@@ -1,4 +1,4 @@
-import { IContactHierarchy, IContactWithID } from "@gsbelarus/util-api-types";
+import { IContactHierarchy, IContactWithLabels } from "@gsbelarus/util-api-types";
 import {
   createSlice,
   createEntityAdapter,
@@ -7,7 +7,7 @@ import {
 import { RootState } from "../../store";
 import { addCustomer, deleteCustomer, fetchCustomers, fetchCustomersByRootID, fetchHierarchy, updateCustomer, ValidationErrors } from "./actions";
 
-interface Customer extends IContactWithID {
+interface Customer extends IContactWithLabels {
   error: string | null | undefined;
   loading: boolean;
 };
@@ -17,6 +17,7 @@ const initialState: Customer = {
   loading: false,
   ID: 0,
   NAME: "",
+  labels: []
 };
 
 export const customersAdapter = createEntityAdapter<Customer>({
@@ -160,7 +161,7 @@ export const hierarchySlice = createSlice({
 });
 
 
-export const { selectAllCustomers } = customersSlice.actions;
+export const { selectAllCustomers, selectHierarchy } = customersSlice.actions;
 export const { selectAllHierarchy } = hierarchySlice.actions;
 
 
