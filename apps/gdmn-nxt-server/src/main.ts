@@ -12,7 +12,7 @@ import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
 import { upsertAccount, getAccounts } from './app/accounts';
 import { sendEmail } from './app/mail';
-import { addLabelsContact, getLabelsContact } from './app/labels';
+import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -349,7 +349,8 @@ app.delete('/api/v1/contacts/:id', deleteContact);
 app.get('/api/v1/contacts/hierarchy', getContactHierarchy);
 app.get('/api/v1/contacts/labels/:contactId', getLabelsContact);
 app.get('/api/v1/contacts/labels', getLabelsContact);
-app.post('/api/v1/contacts/labels/:contactId', addLabelsContact);
+app.post('/api/v1/contacts/labels', addLabelsContact);
+app.delete('/api/v1/contacts/labels/:contactId', deleteLabelsContact);
 
 app.get('/api/v1/accounts', getAccounts);
 app.get('/api/v1/accounts/email/:email', getAccounts);
