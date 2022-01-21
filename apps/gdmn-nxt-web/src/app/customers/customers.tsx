@@ -1,5 +1,5 @@
 import { useGetAllContactsQuery } from '../features/contact/contactApi';
-import { DataGridPro, DataGridProProps, GridColDef, GridRenderCellParams, GridRowModel, GridToolbar, useGridApiContext, useGridSelector, ruRU, GridSortModel } from '@mui/x-data-grid-pro';
+import { DataGridPro, DataGridProProps, GridColDef, GridRenderCellParams, GridRowModel, GridToolbar, useGridApiContext, useGridSelector, ruRU, GridSortModel, GridFilterItem, GridFilterInputValueProps, GridFilterModel, GridFilterOperator } from '@mui/x-data-grid-pro';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem'
 import './customers.module.less';
@@ -8,7 +8,7 @@ import Button from '@mui/material/Button/Button';
 import ReportParams from '../report-params/report-params';
 import React, { useEffect, useState } from 'react';
 import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
-import { Snackbar } from '@mui/material';
+import { List, ListItem, ListItemButton, Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -22,28 +22,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy, fetchCustomersByRootID } from '../features/customer/actions';
 import { customersSelectors, hierarchySelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IContactWithID } from '@gsbelarus/util-api-types';
+import { IContactWithID, IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
 import SalesFunnel from '../sales-funnel/sales-funnel';
+import { useAddLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
 
 
-const columns: GridColDef[] = [
-  { field: 'NAME', headerName: 'Наименование', width: 350 },
-  { field: 'PHONE', headerName: 'Телефон', width: 250 },
-  // {
-  //   field: 'isGroup',
-  //   headerName: 'isGroup',
-  //   type: 'boolean',
-  //   hide: false,
-  //   valueGetter: (params) => params.id.toString().startsWith('auto-generated-row'),
-  // },
-  //{ field: 'FOLDERNAME', headerName: 'Folder', width: 250 },
-];
-
-/* eslint-disable-next-line */
 export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
@@ -59,32 +46,288 @@ export function Customers(props: CustomersProps) {
   const [openEditForm, setOpenEditForm] = useState(false);
   const [salesFunnelOpen, setSalesFunnelOpen] = useState(false);
 
+  const [filterModel, setFilterModel] = useState<GridFilterModel>();
+
   const allCustomers = useSelector(customersSelectors.selectAll);
   const allHierarchy = useSelector(hierarchySelectors.selectAll);
   const { error: customersError , loading: customersLoading } = useSelector((state: RootState) => state.customers);
   const dispatch = useDispatch();
 
-
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: "isGroup", sort: "desc" }
-  ]);
-
-  let curOrg: number;
+  const [addLabelsContact, { error, isSuccess, isError, isLoading, status }] = useAddLabelsContactMutation();
 
 
-
-  const tree: NestedSets = new NestedSets({
-    id: 'ID',
-    parentId: 'PARENT',
-    lft: 'LB',
-    rgt: 'RB'
-  });
-
-  const arr: CollectionEl[] = allHierarchy.map(({error, loading, NAME, ...el}) => ({ ...el, PARENT: el.PARENT || 0}) );
-  tree.loadTree(arr, {createIndexes: true});
+  const { data: labelsContact, currentData, error: labelError } = useGetLabelsContactQuery();
 
 
-  //console.log('allCustomers', allCustomers);
+  const ratingOnlyOperators: GridFilterOperator[] = [
+    {
+      label: 'From',
+      value: 'from',
+      getApplyFilterFn: (filterItem: GridFilterItem) => {
+        if (
+          !filterItem.columnField ||
+          !filterItem.value ||
+          !filterItem.operatorValue
+        ) {
+          return null;
+        }
+
+
+        return (params: any): boolean => {
+          return params.row.labels.find((label: any) => label.LABEL === filterItem.value);
+        };
+      },
+      //InputComponent: <Button/>,
+      InputComponentProps: { type: 'number' },
+    },
+  ];
+
+  const columns: GridColDef[] = [
+    { field: 'NAME', headerName: 'Наименование', width: 350 },
+    { field: 'PHONE', headerName: 'Телефон', width: 250 },
+    { field: 'labels',
+      headerName: 'Метки',
+      flex: 1,
+      width: 300,
+      filterOperators: ratingOnlyOperators,
+      renderCell: (params) => {
+
+        const labels: ILabelsContact[] | [] = labelsContact?.queries.labels.filter(el => el.CONTACT === params.id) || [];
+
+        if (!labels.length) {
+          return;
+        }
+
+        return (
+          <Stack
+            direction="column"
+          >
+            <List
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                padding: 0,
+                margin: 1,
+                width: 'fit-content'
+                }}
+            >
+              {labels
+                .slice(0, labels.length > 3 ? Math.trunc(labels.length/2) : 3)
+                .map(label => {
+                  return (
+                    <ListItemButton
+                      key={label.ID}
+                      onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'from' }]})}
+                      style={{
+                        display: 'inline-block',
+                        fontSize: '0.625rem',
+                        fontWeight: 'bold',
+                        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                        textTransform: 'uppercase',
+                        border: '1px solid hsl(198, 100%, 60%)',
+                        borderRadius: '2em',
+                        backgroundColor: 'hsla(198, 100%, 72%, 0.2)',
+                        color: 'hsl(198, 100%, 60%)',
+                        padding: '2.5px 9px',
+                        margin: '0px 5px'
+                      }}
+                    >
+                    {allHierarchy.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
+                    </ListItemButton>
+                  )
+              })}
+            </List>
+            {labels.length > 3 ?
+              <List
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  padding: 0,
+                  margin: 1,
+                  width: 'fit-content'
+                  }}
+              >
+                {labels
+                  .slice(Math.trunc(labels.length/2))
+                  .map(label => {
+                    return (
+                      <ListItem
+                        key={label.ID}
+                        style={{
+                          display: 'inline-block',
+                          fontSize: '0.625rem',
+                          fontWeight: 'bold',
+                          fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                          textTransform: 'uppercase',
+                          border: '1px solid hsl(198, 100%, 60%)',
+                          borderRadius: '2em',
+                          backgroundColor: 'hsla(198, 100%, 72%, 0.2)',
+                          color: 'hsl(198, 100%, 60%)',
+                          padding: '2.5px 9px',
+                          margin: '0px 5px'
+                        }}
+                      >
+                      {allHierarchy.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
+                      </ListItem>
+                    )
+                  })
+                }
+
+              </List>
+              : null}
+
+          </Stack>
+        );
+
+        return null;
+
+        return (
+          <Stack
+            direction="column"
+          >
+            {Math.floor(Math.random() * 2) === 1 ?
+          <List style={{
+            display: 'flex',
+            flexDirection: 'row',
+            padding: 0,
+            margin: 1,
+            width: 'fit-content'
+            }}
+          >
+            {Math.floor(Math.random() * 2) === 1 ?
+            <ListItem
+              key={1}
+              style={{
+                display: 'inline-block',
+                fontSize: '0.625rem',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                textTransform: 'uppercase',
+                border: '1px solid rgb(255, 163, 25)',
+                borderRadius: '2em',
+                backgroundColor: 'rgba(255, 190, 94, 0.2)',
+                color: 'rgb(255, 163, 25)',
+                padding: '2.5px 9px',
+                margin: '0px 5px'
+              }}
+              hidden={ Math.floor(Math.random() * 2) === 1}
+            >Label 1</ListItem>
+            : null}
+            {Math.floor(Math.random() * 2) === 1 ?
+            <ListItem
+              key={2}
+              hidden={ Math.floor(Math.random() * 2) === 1}
+              style={{
+                display: 'inline-block',
+                fontSize: '0.625rem',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                textTransform: 'uppercase',
+                border: '1px solid rgb(255, 163, 25)',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 94, 123, 0.2)',
+                color: 'rgb(255, 25, 67)',
+                padding: '2.5px 9px',
+                margin: '0px 5px'
+              }}
+            >Label 2</ListItem>
+            : null}
+            {Math.floor(Math.random() * 2) === 1 ?
+            <ListItem
+              key={3}
+              hidden={ Math.floor(Math.random() * 2) === 1}
+              style={{
+                display: 'inline-block',
+                fontSize: '0.625rem',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                textTransform: 'uppercase',
+                border: '0px solid black',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(112, 212, 255, 0.2)',
+                color: 'rgb(51, 194, 255)',
+                padding: '2.5px 9px',
+                margin: '0px 5px'
+              }}
+            >Label 3</ListItem>
+            : null }
+          </List>
+          : null}
+          {Math.floor(Math.random() * 2) === 1 ?
+          <List style={{
+            display: 'flex',
+            flexDirection: 'row',
+            padding: 0,
+            margin: 1,
+            width: 'fit-content'
+            }}
+          >
+            {Math.floor(Math.random() * 2) === 1 ?
+            <ListItem
+              key={1}
+              style={{
+                display: 'inline-block',
+                fontSize: '0.625rem',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                textTransform: 'uppercase',
+                border: '1px solid rgb(87, 202, 34)',
+                borderRadius: '2em',
+                backgroundColor: 'rgba(221, 244, 210, 0.2)',
+                color: 'rgb(87, 202, 34)',
+                padding: '2.5px 9px',
+                margin: '0px 5px'
+              }}
+              hidden={ Math.floor(Math.random() * 2) === 1}
+            >Label 4</ListItem>
+            : null}
+            {Math.floor(Math.random() * 2) === 1 ?
+            <ListItem
+              key={2}
+              hidden={ Math.floor(Math.random() * 2) === 1}
+              style={{
+                display: 'inline-block',
+                fontSize: '0.625rem',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                textTransform: 'uppercase',
+                border: '1px solid rgb(255, 163, 25)',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 94, 123, 0.2)',
+                color: 'rgb(255, 25, 67)',
+                padding: '2.5px 9px',
+                margin: '0px 5px'
+              }}
+            >Label 5</ListItem>
+            : null}
+            {Math.floor(Math.random() * 2) === 1 ?
+            <ListItem
+              key={3}
+              hidden={ Math.floor(Math.random() * 2) === 1}
+              style={{
+                display: 'inline-block',
+                fontSize: '0.625rem',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                textTransform: 'uppercase',
+                border: '0px solid black',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(112, 212, 255, 0.2)',
+                color: 'rgb(51, 194, 255)',
+                padding: '2.5px 9px',
+                margin: '0px 5px'
+              }}
+            >Label 6</ListItem>
+            : null}
+          </List>
+          : null
+          }
+          </Stack>
+        )
+      }
+    },
+  ];
+
 
   useEffect(() => {
     dispatch(fetchCustomers());
@@ -97,6 +340,18 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
     }
   }, [customersError])
+
+
+  /** Перевод вложенной структуры с lb rb в бинарное дерево */
+  const tree: NestedSets = new NestedSets({
+    id: 'ID',
+    parentId: 'PARENT',
+    lft: 'LB',
+    rgt: 'RB'
+  });
+
+  const arr: CollectionEl[] = allHierarchy.map(({error, loading, NAME, ...el}) => ({ ...el, PARENT: el.PARENT || 0}) );
+  tree.loadTree(arr, {createIndexes: true});
 
   useEffect(() => {
     dispatch(fetchHierarchy());
@@ -162,8 +417,13 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(false);
   };
 
-  const handleOrganiztionEditSubmit = async (values: IContactWithID, deleting: boolean) => {
+  const handleOrganiztionEditSubmit = async (values: IContactWithLabels, deleting: boolean) => {
     setOpenEditForm(false);
+
+    console.log('handleOrganiztionEditSubmit', values);
+
+    addLabelsContact({ contactId: values.ID, labels: values.labels || []});
+
 
     if (deleting) {
       dispatch(deleteCustomer(values.ID));
@@ -242,10 +502,54 @@ export function Customers(props: CustomersProps) {
       </TreeItem>);
   };
 
-  // const groupingColDef: DataGridProProps['groupingColDef'] = {
-  //   headerName: 'Группа',
-  //   renderCell: (params) => <CustomGridTreeDataGroupingCell {...params} />,
+
+  // function RatingInputValue(props: GridFilterInputValueProps) {
+  //   const { item, applyValue, focusElementRef } = props;
+
+  //   const ratingRef: React.Ref<any> = React.useRef(null);
+  //   React.useImperativeHandle(focusElementRef, () => ({
+  //     focus: () => {
+  //       ratingRef.current
+  //         .querySelector(`input[value="${Number(item.value) || ''}"]`)
+  //         .focus();
+  //     },
+  //   }));
+
+  // const ratingOnlyOperators: GridFilterOperator[] = [
+  //   {
+  //     label: 'From',
+  //     value: 'from',
+  //     getApplyFilterFn: (filterItem: GridFilterItem) => {
+  //       if (
+  //         !filterItem.columnField ||
+  //         !filterItem.value ||
+  //         !filterItem.operatorValue
+  //       ) {
+  //         return null;
+  //       }
+
+
+  //       return (params: any): boolean => {
+  //         //if (filterItem.value === 147636485) console.log('value', params);
+  //         return params.row.PARENT === filterItem.value;
+  //       };
+  //     },
+  //     //InputComponent: <Button/>,
+  //     InputComponentProps: { type: 'number' },
+  //   },
+  // ];
+
+  // const ratingColumn = columns.find((col) => col.field === 'labels');
+  // const newRatingColumn: GridColDef = {
+  //   ...ratingColumn!,
+  //   filterOperators: ratingOnlyOperators,
   // };
+
+  // //console.log('newRatingColumn', newRatingColumn);
+
+  // const ratingColIndex = columns.findIndex((col) => col.field === 'labels');
+  // columns[ratingColIndex] = newRatingColumn;
+
 
   return (
     <Stack direction="column">
@@ -276,8 +580,6 @@ export function Customers(props: CustomersProps) {
             color='primary'
           />}
           onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => {
-            console.log('el', nodeId);
-
             dispatch(fetchCustomersByRootID(nodeId));
           }}
         >
@@ -287,26 +589,15 @@ export function Customers(props: CustomersProps) {
             .map((node) => renderTree(node))}
         </TreeView>
         <div style={{ width: '100%', height: '800px' }}>
-
           <DataGridPro
             localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-            rows={allCustomers ?? []}
-            //treeData
-            // groupingColDef={groupingColDef}
-            // getTreeDataPath={(row: GridRowModel) => {
-            //   const element = tree.getElById(row.PARENT || 0).results[0];
-
-            //   const arr: Array<any> = element ?
-            //     tree.getAllParents(element, false).results
-            //       .sort((a, b) => Number(a.LB) - Number(b.LB))
-            //       .map((el) => allHierarchy.find((elem) => elem.ID === el.ID)?.NAME)
-            //     : ['Прочее'];
-
-            //    arr.push(row.ID);
-
-            //   return arr;
-            // }}
-            //defaultGroupingExpansionDepth={1}
+            rows={
+              allCustomers
+                .map((customer) => ({
+                  ...customer,
+                  labels: labelsContact?.queries.labels.filter(label => label.CONTACT === customer.ID) || []
+                  })
+                ) ?? []}
             columns={columns}
             pagination
             disableMultipleSelection
@@ -316,6 +607,8 @@ export function Customers(props: CustomersProps) {
             components={{
               Toolbar: GridToolbar,
             }}
+            filterModel={filterModel}
+            onFilterModelChange={(model, detail) => setFilterModel(model)}
           />
         </div>
       </Stack>
@@ -325,13 +618,16 @@ export function Customers(props: CustomersProps) {
         onSaveClick={handleSaveClick}
         onCancelClick={handleCancelClick}
       />
-      <CustomerEdit
-        open={openEditForm}
-        customer={allCustomers.find((element) => element.ID === currentOrganization) || null}
-        onSubmit={handleOrganiztionEditSubmit}
-        onCancelClick={handleOrganiztionEditCancelClick}
-        onDeleteClick={handleOrganizationDeleteOnClick}
-      />
+      {openEditForm ?
+        <CustomerEdit
+          open={openEditForm}
+          customer={allCustomers.find((element) => element.ID === currentOrganization) || null}
+          onSubmit={handleOrganiztionEditSubmit}
+          onCancelClick={handleOrganiztionEditCancelClick}
+          onDeleteClick={handleOrganizationDeleteOnClick}
+        />
+        : null
+      }
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
       </Snackbar>

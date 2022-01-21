@@ -52,8 +52,10 @@ export const getContacts: RequestHandler = async (req, res) => {
             c.id,
             IIF(COALESCE(c.name, '') = '', '<не указано>', c.name)  name,
             c.phone,
+            c.email,
             p.id as parent,
-            p.name as folderName
+            p.name as folderName,
+            null as labels
           FROM
             gd_contact c
             JOIN gd_contact p ON p.id = c.parent
@@ -82,9 +84,8 @@ export const getContacts: RequestHandler = async (req, res) => {
 };
 
 export const updateContact: RequestHandler = async (req, res) => {
-
   const { id } = req.params;
-  const { NAME, PHONE } = req.body;
+  const { NAME, PHONE, EMAIL, PARENT } = req.body;
   const { client, attachment, transaction } = await setConnection();
 
   try {
@@ -94,9 +95,11 @@ export const updateContact: RequestHandler = async (req, res) => {
         `UPDATE GD_CONTACT
          SET
            NAME = ?,
-           PHONE = ?
+           PHONE = ?,
+           EMAIL = ?,
+           PARENT = ?
          WHERE ID = ?`,
-         [ NAME, PHONE, id ]
+         [ NAME, PHONE, EMAIL, PARENT, id ]
       );
     } catch (error) {
       return res.status(500).send({ "errorMessage": error.message });
@@ -106,7 +109,9 @@ export const updateContact: RequestHandler = async (req, res) => {
       transaction,
       `SELECT
          con.ID,
+         con.PARENT,
          con.NAME,
+         con.EMAIL,
          con.PHONE,
          par.NAME
        FROM GD_CONTACT con
@@ -116,18 +121,22 @@ export const updateContact: RequestHandler = async (req, res) => {
     );
 
     const row = await resultSet.fetch();
-    //const result2 = { ID: row[0][0], NAME: row[0][1], PHONE: row[0][2]}
 
     const _schema = { };
 
     const result: IRequestResult = {
       queries: {
-        contact: [ { ID: row[0][0], NAME: row[0][1], PHONE: row[0][2], FOLDERNAME: row[0][3]} ]
+        contact: [ {
+          ID: row[0][0],
+          PARENT: row[0][1],
+          NAME: row[0][2],
+          EMAIL: row[0][3],
+          PHONE: row[0][4],
+          FOLDERNAME: row[0][5]
+        } ]
       },
       _schema
     };
-
-    //console.log('updateContact', result);
 
     await resultSet.close();
 
@@ -143,7 +152,7 @@ export const updateContact: RequestHandler = async (req, res) => {
 
 export const addContact: RequestHandler = async (req, res) => {
 
-  const { NAME, PHONE, EMAIL } = req.body;
+  const { NAME, PHONE, EMAIL, PARENT } = req.body;
   const { client, attachment, transaction} = await setConnection();
 
   try {
@@ -152,23 +161,25 @@ export const addContact: RequestHandler = async (req, res) => {
       `EXECUTE BLOCK(
         NAME  TYPE OF COLUMN GD_CONTACT.NAME = ?,
         EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL = ?,
-        PHONE TYPE OF COLUMN GD_CONTACT.PHONE = ?
+        PHONE TYPE OF COLUMN GD_CONTACT.PHONE = ?,
+        PARENT TYPE OF COLUMN GD_CONTACT.PARENT = ?
       )
       RETURNS(
         ret_ID    INTEGER,
         ret_NAME  TYPE OF COLUMN GD_CONTACT.NAME,
         ret_EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL,
         ret_PHONE TYPE OF COLUMN GD_CONTACT.PHONE,
+        ret_PARENT TYPE OF COLUMN GD_CONTACT.PARENT,
         ret_FOLDERNAME TYPE OF COLUMN GD_CONTACT.NAME
       )
       AS
-      DECLARE VARIABLE PARENT TYPE OF COLUMN GD_CONTACT.PARENT;
       BEGIN
         INSERT INTO GD_CONTACT(CONTACTTYPE, PARENT, NAME, PHONE, EMAIL)
-        VALUES(3, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :NAME, :PHONE, :EMAIL)
-        RETURNING ID, PARENT, NAME, PHONE, EMAIL INTO :ret_ID, :PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL;
+        VALUES(3, IIF(:PARENT IS NULL, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :PARENT), :NAME, :PHONE, :EMAIL)
+        RETURNING ID, PARENT, NAME, PHONE, EMAIL
+        INTO :ret_ID, :ret_PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL;
 
-        SELECT NAME FROM GD_CONTACT WHERE ID = :PARENT
+        SELECT NAME FROM GD_CONTACT WHERE ID = :ret_PARENT
         INTO :ret_FOLDERNAME;
 
         IF (ret_ID IS NOT NULL) THEN
@@ -181,7 +192,7 @@ export const addContact: RequestHandler = async (req, res) => {
 
         SUSPEND;
       END`,
-      [ NAME, PHONE, EMAIL ]
+      [ NAME, EMAIL, PHONE, PARENT ]
     );
 
     const _schema = {}
@@ -189,14 +200,22 @@ export const addContact: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        contact: [ { ID: rows[0][0], NAME: rows[0][1], PHONE: rows[0][2], EMAIL: rows[0][3], FOLDERNAME: rows[0][4] } ]
+        contact: [ {
+          ID: rows[0][0],
+          NAME: rows[0][1],
+          EMAIL: rows[0][2],
+          PHONE: rows[0][3],
+          PARENT: rows[0][4],
+          FOLDERNAME: rows[0][5],
+          labels: []
+        } ]
       },
       _schema
     };
 
     await resultSet.close();
 
-    return res.status(200).json(result);//send(result);
+    return res.status(200).json(result);
 
   } catch (error) {
 

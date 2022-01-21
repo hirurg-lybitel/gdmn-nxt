@@ -5,6 +5,7 @@ import { contactApi } from './features/contact/contactApi';
 import { reconciliationStatementApi } from './features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from './features/user/userSlice';
 import { customersReducer, hierarchyReducer } from './features/customer/customerSlice';
+import { labelsApi } from './features/labels/labelsApi';
 
 export const store = configureStore({
   reducer: {
@@ -13,11 +14,13 @@ export const store = configureStore({
     customersHierarchy: hierarchyReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
+    [labelsApi.reducerPath]: labelsApi.reducer,
     [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware()
     .concat(contactApi.middleware)
     .concat(accountApi.middleware)
+    .concat(labelsApi.middleware)
     .concat(reconciliationStatementApi.middleware),
 });
 

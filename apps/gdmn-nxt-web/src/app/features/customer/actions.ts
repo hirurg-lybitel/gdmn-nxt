@@ -1,4 +1,4 @@
-import { IContactWithID } from "@gsbelarus/util-api-types";
+import { IContactWithID, IContactWithLabels } from "@gsbelarus/util-api-types";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import customerAPI from "./customerApi";
@@ -9,7 +9,7 @@ export interface ValidationErrors {
 }
 
 export const fetchCustomers = createAsyncThunk<
-IContactWithID[] | ValidationErrors,
+IContactWithLabels[] | ValidationErrors,
   void,
   {rejectValue:ValidationErrors}
 >(
@@ -32,7 +32,7 @@ IContactWithID[] | ValidationErrors,
 );
 
 export const fetchCustomersByRootID = createAsyncThunk<
-IContactWithID[] | ValidationErrors,
+IContactWithLabels[] | ValidationErrors,
   string,
   {rejectValue:ValidationErrors}
 >(
@@ -57,14 +57,14 @@ IContactWithID[] | ValidationErrors,
 
 export const updateCustomer = createAsyncThunk<
   any,
-  IContactWithID,
+  IContactWithLabels,
   {
     rejectValue: ValidationErrors
     //fulfilledMeta: IContactWithID
   }
   >(
   "customers/updateCustomers",
-  async (customerData: IContactWithID, { fulfillWithValue, rejectWithValue }) => {
+  async (customerData: IContactWithLabels, { fulfillWithValue, rejectWithValue }) => {
     try {
       const response = await customerAPI.customers.update(customerData);
 
@@ -89,7 +89,7 @@ export const updateCustomer = createAsyncThunk<
 
 export const addCustomer = createAsyncThunk(
   "customers/addCustomer",
-  async (newCustomer: IContactWithID, { fulfillWithValue, rejectWithValue }) => {
+  async (newCustomer: IContactWithLabels, { fulfillWithValue, rejectWithValue }) => {
     try {
       const response = await customerAPI.customers.add(newCustomer);
 
@@ -119,7 +119,7 @@ export const deleteCustomer = createAsyncThunk(
 
 
 export const fetchHierarchy = createAsyncThunk<
-IContactWithID[] | ValidationErrors,
+IContactWithLabels[] | ValidationErrors,
   void,
   {rejectValue:ValidationErrors}
 >(

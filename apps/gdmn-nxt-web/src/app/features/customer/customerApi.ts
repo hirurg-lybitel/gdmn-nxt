@@ -1,4 +1,4 @@
-import { IContactWithID } from '@gsbelarus/util-api-types';
+import { IContactWithID, IContactWithLabels } from '@gsbelarus/util-api-types';
 import { baseUrl } from '../../const';
 
 const _headers = {
@@ -58,7 +58,7 @@ const customerAPI = {
       //return {errorMessage: "error_Test"};
 
     },
-    async update(customerData: IContactWithID): Promise<any> {
+    async update(customerData: IContactWithLabels): Promise<any> {
       console.log('request', "PUT", `${baseUrl}contacts/${customerData.ID}`);
 
       const response = await fetch(`${baseUrl}contacts/${customerData.ID}`, {
@@ -77,7 +77,7 @@ const customerAPI = {
       }
       return resBodу;
     },
-    async add(customer: IContactWithID): Promise<IContactWithID | IError> {
+    async add(customer: IContactWithLabels): Promise<IContactWithLabels | IError> {
       console.log('request', "POST", `${baseUrl}contacts`);
 
       const response = await fetch(`${baseUrl}contacts`, {
