@@ -51,9 +51,9 @@ export const labelsApi = createApi({
         console.log('getLabelsContact_onCacheEntryAdded', getCacheEntry);
       },
     }),
-    addLabelsContact: builder.mutation<ILabelsContactRequestResult, {contactId: number, labels: ILabelsContact[]}>({
-      query: ({contactId, labels}) => ({
-        url: `contacts/labels/${contactId}`,
+    addLabelsContact: builder.mutation<ILabelsContactRequestResult, ILabelsContact[]>({
+      query: (labels) => ({
+        url: `contacts/labels`,
         method: 'POST',
         body: labels
       }),
@@ -73,8 +73,18 @@ export const labelsApi = createApi({
         console.log('addLabelsContact_onCacheEntryAdded');
       }
     }),
+    deleteLabelsContact: builder.mutation<{ success: boolean; id: number }, number>({
+      query(contactId){
+        return {
+          url: `contacts/labels/${contactId}`,
+          method: 'DELETE'
+        }
+      },
+      invalidatesTags: ['labelsContact']
+
+    })
   }),
 });
 
-export const { useGetLabelsContactQuery, useAddLabelsContactMutation } = labelsApi;
+export const { useGetLabelsContactQuery, useAddLabelsContactMutation, useDeleteLabelsContactMutation } = labelsApi;
 

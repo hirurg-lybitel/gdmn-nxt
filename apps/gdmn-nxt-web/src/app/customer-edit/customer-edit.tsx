@@ -16,10 +16,9 @@ import {
  import {
   Theme
  } from '@mui/material';
-import { makeStyles, createStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
-import WarningIcon from '@mui/icons-material/Warning';
 import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import { useState } from 'react';
@@ -29,7 +28,6 @@ import { useSelector } from 'react-redux';
 import { hierarchySelectors } from '../features/customer/customerSlice';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { useGetLabelsContactQuery } from '../features/labels/labelsApi';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -77,7 +75,7 @@ export function CustomerEdit(props: CustomerEditProps) {
     PHONE: customer?.PHONE || '',
     EMAIL: customer?.EMAIL || '',
     PARENT: customer?.PARENT || undefined,
-    labels: []
+    labels: customer?.labels || []
   }
 
   const formik = useFormik<IContactWithLabels>({
@@ -97,8 +95,6 @@ export function CustomerEdit(props: CustomerEditProps) {
       onSubmit(values, deleting);
     },
   });
-
-  const { data, error, isLoading, refetch } = useGetLabelsContactQuery(formik.values.ID);
 
   const handleDeleteClick = () => {
     setDeleting(true);
@@ -134,7 +130,6 @@ export function CustomerEdit(props: CustomerEditProps) {
               <Autocomplete
                 options={allHierarchy}
                 getOptionLabel={option => option.NAME}
-                //defaultValue={allHierarchy.filter(el => el.ID === formik.values.PARENT)[0] || null}
                 value={allHierarchy.filter(el => el.ID === formik.values.PARENT)[0] || null}
                 onChange={(e, value) => {
                   console.log('value', value);
@@ -201,17 +196,9 @@ export function CustomerEdit(props: CustomerEditProps) {
                       : initValue.labels
                   );
                 }}
-                // value={
-                //   data?.queries.labels
-                //     .filter(el => el.CONTACT === formik.values.ID)
-                //     .map(el => allHierarchy
-                //       .filter(el2 => el2.ID === el.LABEL)
-                //       )[0]
-                // }
-                defaultValue={
+                value={
                   allHierarchy
-                    .filter(hierarchy => data?.queries.labels
-                      .find(label => label.LABEL === hierarchy.ID && label.CONTACT === formik.values.ID))
+                    .filter(hierarchy => formik.values.labels?.find(label => label.LABEL === hierarchy.ID && label.CONTACT === formik.values.ID))
                 }
                 options={allHierarchy}
                 getOptionLabel={opt => opt.NAME}
