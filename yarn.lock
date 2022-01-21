@@ -2389,20 +2389,20 @@
     react-is "^17.0.2"
 
 "@mui/x-data-grid-pro@^5.2.1":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid-pro/-/x-data-grid-pro-5.2.2.tgz#c1999d974e9f8aff179fc832b8506ffe2fde2f51"
-  integrity sha512-tfY/CEii2jgpwvnQWqMnWXp6+w7GYg6k+YJZmK3i5dOeGleNEJSyPAZb9vpnf99cZpN+N55VyY2KBgzQlsq2zg==
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid-pro/-/x-data-grid-pro-5.3.0.tgz#957be37aa5edf2af3de496731748aedc58331f1a"
+  integrity sha512-Ped5VWX0euZS7FuqgIMINgru4NVS6eimGkpI6v2rXR5j61nghfMYafDBj+vpLsoeXy/0uchmwTgYoqNatwcNwA==
   dependencies:
     "@mui/utils" "^5.2.3"
-    "@mui/x-license-pro" "5.2.2"
+    "@mui/x-license-pro" "5.3.0"
     clsx "^1.0.4"
-    prop-types "^15.8.0"
+    prop-types "^15.8.1"
     reselect "^4.1.5"
 
-"@mui/x-license-pro@5.2.2":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-license-pro/-/x-license-pro-5.2.2.tgz#8868924e9ac3fdb74ef5d65167e183d2fdc6bbbd"
-  integrity sha512-wvamuRSMXEBcOMXv2snRW5I7a4wfFi9txGI3zBkAnGvyFjtuBNMDXI6AHVBh4vA62TJ0J8ju2CLWpNmRXn3kiQ==
+"@mui/x-license-pro@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-license-pro/-/x-license-pro-5.3.0.tgz#0c117f21ce42c3f07e581cb09c3cf2ab67bc0116"
+  integrity sha512-JZFfO9b71ZCv8nQzRE+4vhmiFRWqEpQQhNjDxc7KsK8D1HHchtqL5cCw9tqrSIZPVBXi36b0cEG1mqh+Axi/og==
   dependencies:
     "@mui/utils" "^5.2.3"
     esm "^3.2.25"
@@ -9410,7 +9410,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.0:
+prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
