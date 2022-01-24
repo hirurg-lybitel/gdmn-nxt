@@ -10,7 +10,11 @@ export interface SelectModeProps {
 export function SelectMode({ employeeModeSelected, customerModeSelected }: SelectModeProps) {
   return (
     <>
-      <Typography variant="h1">Добро пожаловать на портал БелГИСС</Typography>
+      <Typography
+        variant="h1"
+      >
+        Добро пожаловать на портал БелГИСС
+      </Typography>
       <Stack direction="row" justifyContent="center" alignContent="stretch" spacing={2}>
         <Button
           onClick={employeeModeSelected}
