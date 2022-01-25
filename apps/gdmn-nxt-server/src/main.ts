@@ -4,14 +4,12 @@ import passport  from 'passport';
 import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import { Strategy } from 'passport-local';
-import { FileDB, genPassword, validPassword } from '@gsbelarus/util-helpers';
-import { checkEmailAddress, genRandomPassword } from '@gsbelarus/util-useful';
+import { validPassword } from '@gsbelarus/util-helpers';
 import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
 import { upsertAccount, getAccounts } from './app/accounts';
-import { sendEmail } from './app/mail';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -51,26 +49,7 @@ function isIGedeminUser(u: IUser): u is IGedeminUser {
   return !!u['gedeminUser'];
 };
 
-const userDB = new FileDB<ICustomerUser>({
-  fn: `${process.env.GDMN_NXT_SERVER_DB_FOLDER}/user.json`,
-  space: 2
-});
-
 const userName2Key = (userName: string) => userName.toLowerCase();
-
-const purgeExpiredUsers = async () => {
-  let changed = false;
-  const data = await userDB.getMutable(false);
-  for (const k of Object.keys(data)) {
-    if (data[ k ].expireOn && (data[ k ].expireOn < Date.now())) {
-      delete data[ k ];
-      changed = true;
-    }
-  }
-  if (changed) {
-    await userDB.put(data, true);
-  }
-};
 
 passport.use(new Strategy({
   usernameField: 'userName',
@@ -193,79 +172,6 @@ app.get('/api/v1/user', (req, res) => {
     res.json({ success: false });
 });
 
-app.route('/api/v1/user/signup')
-  .post(
-    async (req, res) => {
-      const { userName: receivedUserName, email: receivedEmail } = req.body;
-
-      /*  1. проверим входные параметры на корректность  */
-
-      if (typeof receivedUserName !== 'string' || !receivedUserName.trim() || !checkEmailAddress(receivedEmail)) {
-        return res.json(authResult('INVALID_DATA', 'Invalid data.'));
-      }
-
-      const userName = receivedUserName.trim();
-      const email = receivedEmail.trim().toLowerCase();
-
-      /* 2. Очистим БД от устаревших записей */
-
-      await purgeExpiredUsers();
-
-      /* 3. проверим на дубликат имени пользователя */
-      const un = userName.toLowerCase();
-      if (await userDB.findOne(u => u.userName.toLowerCase() === un)) {
-        return res.json(authResult('DUPLICATE_USER_NAME', `User name ${userName} already exists.`));
-      };
-
-      /* 4. проверим на дубликат email */
-      if (await userDB.findOne(u => u.email === email)) {
-        return res.json(authResult('DUPLICATE_EMAIL', `User with email ${email} already exists.`));
-      };
-
-      /* 5. создадим предварительную учетную запись */
-      const provisionalPassword = genRandomPassword();
-
-      const expireOn = Date.now() + 24 * 60 * 60 * 1000;
-      const provisionalUser: ICustomerUser = {
-        userName,
-        email,
-        ...genPassword(provisionalPassword),
-        expireOn
-      };
-
-      /* 6. Пошлем пользователю email */
-
-      try {
-        await sendEmail(
-          '"GDMN System" <test@gsbelarus.com>',
-          email,
-          "Account confirmation",
-          `Please use following credentials to sign-in into your account at ...\
-          \n\n\
-          User name: ${userName}\n\
-          Password: ${provisionalPassword}
-          \n\n\
-          This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-        );
-      } catch (err) {
-        return res.json(authResult('ERROR', err.message));
-      }
-
-      /* 7. Запишем информацию о пользователе в БД */
-
-      //TODO: форсированно пишем на диск, пока не разберемся почему не отлавливает Ctrl-C в некоторых терминалах
-      await userDB.write(userName2Key(userName), provisionalUser, true);
-
-      /* 8. Информируем пользователя о создании учетной записи */
-
-      return res.json(authResult(
-        'SUCCESS_USER_CREATED',
-        `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
-      ));
-    }
-  );
-
-
 app.route('/api/v1/user/signin')
   .post(
     passport.authenticate('local', {}),
@@ -291,49 +197,51 @@ app.route('/api/v1/user/forgot-password')
 
       /* 2. Очистим БД от устаревших записей */
 
-      await purgeExpiredUsers();
+      //await purgeExpiredUsers();
 
       /* 3. ищем пользователя */
-      const em = email.toLowerCase();
-      const user = await userDB.findOne(u => u.email.toLowerCase() === em);
+      //const em = email.toLowerCase();
+      //const user = await userDB.findOne(u => u.email.toLowerCase() === em);
 
-      if (!user) {
-        return res.json(authResult('UNKNOWN_USER', `User email ${email} not found.`));
-      };
+      //if (!user) {
+      //  return res.json(authResult('UNKNOWN_USER', `User email ${email} not found.`));
+      //};
 
       /* 4. Поменяем данные профиля */
-      const provisionalPassword = genRandomPassword();
-      const expireOn = Date.now() + 24 * 60 * 60 * 1000;
+      //const provisionalPassword = genRandomPassword();
+      //const expireOn = Date.now() + 24 * 60 * 60 * 1000;
 
-      const { salt, hash } = genPassword(provisionalPassword);
+      //const { salt, hash } = genPassword(provisionalPassword);
 
-      user.salt = salt;
-      user.hash = hash;
-      user.expireOn = expireOn;
-      await userDB.write(userName2Key(user.userName), user, true);
+      // user.salt = salt;
+      // user.hash = hash;
+      // user.expireOn = expireOn;
+      // await userDB.write(userName2Key(user.userName), user, true);
 
       /* 5. Пошлем пользователю email */
 
-      try {
-        await sendEmail(
-          '"GDMN System" <test@gsbelarus.com>',
-          email,
-          "Password change complete",
-          `Please use following credentials to sign-in into your account at ...\
-          \n\n\
-          User name: ${user.userName}\n\
-          Password: ${provisionalPassword}
-          \n\n\
-          This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-        );
-      } catch (err) {
-        return res.json(authResult('ERROR', err.message));
-      }
+      // try {
+      //   await sendEmail(
+      //     '"GDMN System" <test@gsbelarus.com>',
+      //     email,
+      //     "Password change complete",
+      //     `Please use following credentials to sign-in into your account at ...\
+      //     \n\n\
+      //     User name: ${user.userName}\n\
+      //     Password: ${provisionalPassword}
+      //     \n\n\
+      //     This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
+      //   );
+      // } catch (err) {
+      //   return res.json(authResult('ERROR', err.message));
+      // }
       /* 6. Сообщим о письме на почте с информацией */
-      return res.json(authResult(
-        'SUCCESS_PASSWORD_CHANGED',
-        `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
-      ));
+      // return res.json(authResult(
+      //   'SUCCESS_PASSWORD_CHANGED',
+      //   `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
+      // ));
+
+      return res.sendStatus(500);
     });
 
 app.get('/api/v1/logout', (_, res) => {
@@ -441,7 +349,6 @@ if (process.platform === "win32") {
 
 process
   .on('exit', code => {
-    userDB.done();
     console.log(`Process exit event with code: ${code}`);
   })
   .on('SIGINT', process.exit)

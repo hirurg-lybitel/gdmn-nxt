@@ -5,4 +5,5 @@
     "typescript.format.insertSpaceAfterCommaDelimiter": true,
     "typescript.format.semicolons": "insert",
     "workbench.editor.wrapTabs": true,
+    "files.autoSave": "onFocusChange",
 }
