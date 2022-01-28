@@ -2006,9 +2006,9 @@
     strip-json-comments "^3.1.1"
 
 "@fontsource/roboto@^4.5.1":
-  version "4.5.1"
-  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-4.5.1.tgz#63f7b783f755d8f6727eb60198627e7e1be3ac20"
-  integrity sha512-3mhfL+eNPG/woMNqwD/OHaW5qMpeGEBsDwzmhFmjB1yUV+M+M9P0NhP/AyHvnGz3DrqkvZ7CPzNMa+UkVLeELg==
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-4.5.2.tgz#98dd67e579984e255fac4315b496520d890ae989"
+  integrity sha512-KkMqloXIM64EvaVPOqC5Mkms0qdOWvx4nRvQBIMCoG0GGsDa8tFfNwhyowHeR9k09P0LuT5u09d29Y21JhaA6Q==
 
 "@gar/promisify@^1.0.1":
   version "1.1.2"
@@ -8798,9 +8798,9 @@ number-is-nan@^1.0.0:
   integrity sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=
 
 number-to-words-ru@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/number-to-words-ru/-/number-to-words-ru-2.3.2.tgz#a5a3d765a2d2b9cb3883a38d3e9a58cc2a551727"
-  integrity sha512-vJg1es14Z0imNhH7UwE3fdgEmpHbYh1fyDLfiOOftVrCbt+5/aW35TmVJ1d++c9G2EkMEeftYxP6nGR2bBqs5Q==
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/number-to-words-ru/-/number-to-words-ru-2.3.3.tgz#4cce95e6f47f4c9480e4183b26aa59d9af029d12"
+  integrity sha512-9hSB2OrEVsmOxwfdzrsUtbGEQ6sd6+yfjfUE2T9/bdrweh8x4v9l8m7qBHXjIjNr8/7B+GTUf64w903gFloSYg==
 
 nwsapi@^2.2.0:
   version "2.2.0"
