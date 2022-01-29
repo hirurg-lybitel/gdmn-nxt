@@ -8,7 +8,7 @@ import Button from '@mui/material/Button/Button';
 import ReportParams from '../report-params/report-params';
 import React, { useEffect, useState } from 'react';
 import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
-import { List, ListItem, ListItemButton, Snackbar } from '@mui/material';
+import { Box, List, ListItem, ListItemButton, Snackbar, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -22,14 +22,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy, fetchCustomersByRootID } from '../features/customer/actions';
 import { customersSelectors, hierarchySelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IContactWithID, IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
+import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
 import SalesFunnel from '../sales-funnel/sales-funnel';
 import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
-import { height, padding } from '@mui/system';
 
 
 const labelStyle: React.CSSProperties = {
@@ -63,6 +64,8 @@ export function Customers(props: CustomersProps) {
   const [openEditForm, setOpenEditForm] = useState(false);
   const [salesFunnelOpen, setSalesFunnelOpen] = useState(false);
 
+  const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
+
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
 
   const allCustomers = useSelector(customersSelectors.selectAll);
@@ -74,8 +77,7 @@ export function Customers(props: CustomersProps) {
   const [deleteLabelsContact, { error: deleteLabelsError}] = useDeleteLabelsContactMutation();
 
 
-  const { data: labelsContact, currentData, error: labelError } = useGetLabelsContactQuery();
-
+  const { data: labelsContact, currentData, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
 
   function CurrentLabelFilter(props: GridFilterInputValueProps) {
     const { item, applyValue, focusElementRef } = props;;
@@ -205,6 +207,10 @@ export function Customers(props: CustomersProps) {
   }, [])
 
   useEffect(() => {
+    refetchLabels();
+  }, [allCustomers]);
+
+  useEffect(() => {
     if (customersError) {
 
       setSnackBarMessage(customersError.toString());
@@ -284,7 +290,6 @@ export function Customers(props: CustomersProps) {
 
   /** Cancel organization change */
   const handleOrganiztionEditCancelClick = () => {
-    console.log('cancel data');
     setOpenEditForm(false);
   };
 
@@ -299,11 +304,10 @@ export function Customers(props: CustomersProps) {
 
     if (!values.ID) {
       dispatch(addCustomer(values));
-      if (values.labels) addLabelsContact(values.labels);
       return;
     }
 
-    if (values.labels) {
+    if (values.labels?.length) {
       addLabelsContact(values.labels);
     } else {
       deleteLabelsContact(values.ID);
@@ -318,8 +322,6 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleOrganizationDeleteOnClick = () => {
-    console.log('handleOrganizationDeleteOnClick');
-
     if (!currentOrganization) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
@@ -356,6 +358,7 @@ export function Customers(props: CustomersProps) {
     );
   };
 
+
   const renderTree = (nodes: CollectionEl) => {
     return (
       <TreeItem
@@ -367,7 +370,24 @@ export function Customers(props: CustomersProps) {
         }}
         key={nodes.ID}
         nodeId={nodes.ID.toString()}
-        label={allHierarchy.find((elem) => elem.ID === nodes.ID)?.NAME}
+        label={
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <FolderIcon color='primary' />
+            <span
+              style={{
+                flex: 1,
+                paddingLeft: 3
+              }}
+            >
+              {allHierarchy.find((elem) => elem.ID === nodes.ID)?.NAME}
+            </span>
+          </Box>
+        }
       >
         {Array.isArray(tree.getChilds(nodes, false).results)
             ? tree.getChilds(nodes, false).results.map((node) => renderTree(node))
@@ -375,10 +395,19 @@ export function Customers(props: CustomersProps) {
       </TreeItem>);
   };
 
+
   return (
     <Stack direction="column">
       <Stack direction="row">
-        <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
+        <Button
+          onClick={()=> {
+            dispatch(fetchCustomers());
+          }}
+          disabled={customersLoading}
+          startIcon={<RefreshIcon/>}
+        >
+          Обновить
+        </Button>
         <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
         <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
         <Button onClick={handleReconciliationClick} disabled={customersLoading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
@@ -396,15 +425,11 @@ export function Customers(props: CustomersProps) {
              borderRadius: '4px',
              borderColor: 'grey.300',
           }}
-          defaultCollapseIcon={<FolderOpenIcon
-            color='primary'
-
-          />}
-          defaultExpandIcon={<FolderIcon
-            color='primary'
-          />}
+          defaultCollapseIcon={<KeyboardArrowDownIcon/>}
+          defaultExpandIcon={<KeyboardArrowRightIcon/>}
           onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => {
-            dispatch(fetchCustomersByRootID(nodeId));
+            //dispatch(fetchCustomersByRootID(nodeId));
+            setTreeNodeId(Number(nodeId));
           }}
         >
           {tree.all
@@ -417,6 +442,7 @@ export function Customers(props: CustomersProps) {
             localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
             rows={
               allCustomers
+                .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
                 .map((customer) => ({
                   ...customer,
                   labels: labelsContact?.queries.labels.filter(label => label.CONTACT === customer.ID) || []

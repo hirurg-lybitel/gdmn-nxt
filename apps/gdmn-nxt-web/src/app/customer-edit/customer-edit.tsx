@@ -132,7 +132,6 @@ export function CustomerEdit(props: CustomerEditProps) {
                 getOptionLabel={option => option.NAME}
                 value={allHierarchy.filter(el => el.ID === formik.values.PARENT)[0] || null}
                 onChange={(e, value) => {
-                  console.log('value', value);
                   formik.setFieldValue(
                     "PARENT",
                     value ? value.ID : initValue.PARENT
@@ -185,8 +184,6 @@ export function CustomerEdit(props: CustomerEditProps) {
                 limitTags={2}
                 disableCloseOnSelect
                 onChange={(e, value) => {
-                  console.log('onChange', value);
-
                   formik.setFieldValue(
                     "labels",
                     value

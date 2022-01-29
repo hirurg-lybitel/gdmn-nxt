@@ -4,7 +4,7 @@ import { closeConnection, setConnection } from "./db-connection";
 
 export const getLabelsContact: RequestHandler = async (req, res) => {
 
-  // console.log('getLabelsContact', req.params.contactId ? req.params.contactId : 666);
+  //  console.log('getLabelsContact', req.params.contactId ? req.params.contactId : 666);
 
   // return res.status(500).send({ "errorMessage": "test"});
 
