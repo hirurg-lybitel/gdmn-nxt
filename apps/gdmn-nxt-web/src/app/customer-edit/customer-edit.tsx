@@ -230,7 +230,7 @@ export function CustomerEdit(props: CustomerEditProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="contained"
+          variant="text"
           color="primary"
         >
             Отменить
@@ -245,7 +245,7 @@ export function CustomerEdit(props: CustomerEditProps) {
           }}
           variant="contained"
           color="success"
-          startIcon={<SaveIcon />}
+          // startIcon={<SaveIcon />}
         >
             OK
         </Button>

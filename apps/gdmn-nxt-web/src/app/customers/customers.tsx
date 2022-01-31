@@ -8,7 +8,7 @@ import Button from '@mui/material/Button/Button';
 import ReportParams from '../report-params/report-params';
 import React, { useEffect, useState } from 'react';
 import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
-import { Box, List, ListItem, ListItemButton, Snackbar, Typography } from '@mui/material';
+import { Box, List, ListItem, ListItemButton, Menu, MenuItem, Snackbar, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -31,6 +31,7 @@ import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
 import SalesFunnel from '../sales-funnel/sales-funnel';
 import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
+import CustomTreeView from '../custom-tree-view/custom-tree-view';
 
 
 const labelStyle: React.CSSProperties = {
@@ -360,84 +361,134 @@ export function Customers(props: CustomersProps) {
 
 
   const renderTree = (nodes: CollectionEl) => {
+    // const initialRightClickStateCreator = () => ({
+    //   mouseX: null,
+    //   mouseY: null
+    // });
+
+    // const [right, setRight] = React.useState<{
+    //   mouseX: null | number;
+    //   mouseY: null | number;
+    // }>(initialRightClickStateCreator());
+
+    // const onClose = React.useCallback(() => {
+    //   setRight(initialRightClickStateCreator());
+    // }, []);
+
+    // const rightClick = (event: React.MouseEvent<HTMLLIElement>) => {
+    //   event.preventDefault();
+    //   event.stopPropagation();
+    //   setRight({
+    //     mouseX: event.clientX - 2,
+    //     mouseY: event.clientY - 4
+    //   });
+    //   console.log('rightClick', nodes.ID)
+    // };
+
     return (
-      <TreeItem
-        sx={{
-          paddingTop: 0.8,
-          paddingBottom: 0.8,
-          fontSize: 2,
-          color: '#1976d2'
-        }}
-        key={nodes.ID}
-        nodeId={nodes.ID.toString()}
-        label={
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <FolderIcon color='primary' />
-            <span
-              style={{
-                flex: 1,
-                paddingLeft: 3
+      <>
+        <TreeItem
+          sx={{
+            paddingTop: 0.8,
+            paddingBottom: 0.8,
+            fontSize: 2,
+            color: '#1976d2'
+          }}
+          key={nodes.ID}
+          nodeId={nodes.ID.toString()}
+          onContextMenu={() => console.log(1)}
+          label={
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center'
               }}
             >
-              {allHierarchy.find((elem) => elem.ID === nodes.ID)?.NAME}
-            </span>
-          </Box>
-        }
-      >
-        {Array.isArray(tree.getChilds(nodes, false).results)
-            ? tree.getChilds(nodes, false).results.map((node) => renderTree(node))
-            : null}
-      </TreeItem>);
+              <FolderIcon color='primary' />
+              <span
+                style={{
+                  flex: 1,
+                  paddingLeft: 3
+                }}
+              >
+                {allHierarchy.find((elem) => elem.ID === nodes.ID)?.NAME}
+              </span>
+            </Box>
+          }
+        >
+          {Array.isArray(tree.getChilds(nodes, false).results)
+              ? tree.getChilds(nodes, false).results.map((node) => renderTree(node))
+              : null}
+        </TreeItem>
+        {/* <Menu
+          BackdropProps={{
+            invisible: true,
+            onContextMenu: (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onClose();
+            }
+          }}
+          open={right.mouseY !== null}
+          onClose={onClose}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            right.mouseY !== null && right.mouseX !== null
+              ? { top: right.mouseY, left: right.mouseX }
+              : undefined
+          }
+        >
+          <MenuItem>1</MenuItem>
+          <MenuItem>2</MenuItem>
+        </Menu> */}
+      </>
+    );
   };
 
 
   return (
     <Stack direction="column">
       <Stack direction="row">
-        <Button
-          onClick={()=> {
-            dispatch(fetchCustomers());
-          }}
-          disabled={customersLoading}
-          startIcon={<RefreshIcon/>}
-        >
-          Обновить
-        </Button>
-        <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
-        <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
-        <Button onClick={handleReconciliationClick} disabled={customersLoading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
-        <Button onClick={handleSalesFunnelClick} disabled={customersLoading} startIcon={<FilterAltIcon />}>Воронка продаж</Button>
-      </Stack>
-      <Stack direction="row">
-        <TreeView
-          sx={{
-             paddingTop: 12,
-             marginRight: 1,
-             flexGrow: 1,
-             maxWidth: 400,
-             overflowY: 'auto',
-             border: 1,
-             borderRadius: '4px',
-             borderColor: 'grey.300',
-          }}
-          defaultCollapseIcon={<KeyboardArrowDownIcon/>}
-          defaultExpandIcon={<KeyboardArrowRightIcon/>}
-          onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => {
-            //dispatch(fetchCustomersByRootID(nodeId));
-            setTreeNodeId(Number(nodeId));
-          }}
-        >
-          {tree.all
-            .filter((node) => node.PARENT === 0)
-            .sort((a, b) => Number(a.LB) - Number(b.LB))
-            .map((node) => renderTree(node))}
-        </TreeView>
-        <div style={{ width: '100%', height: '800px' }}>
+        <Box style={{ height: '800px'}}>
+          <Button disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+          <CustomTreeView
+            hierarchy={allHierarchy}
+            tree={tree}
+            onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => setTreeNodeId(Number(nodeId))}
+          />
+          {/* <TreeView
+            sx={{
+              // paddingTop: 12,
+              marginRight: 1,
+              flexGrow: 1,
+              maxWidth: 400,
+              height: '100%',
+              overflowY: 'auto',
+              border: 1,
+              borderRadius: '4px',
+              borderColor: 'grey.300',
+            }}
+            defaultCollapseIcon={<KeyboardArrowDownIcon/>}
+            defaultExpandIcon={<KeyboardArrowRightIcon/>}
+            onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => {
+              //dispatch(fetchCustomersByRootID(nodeId));
+              setTreeNodeId(Number(nodeId));
+            }}
+          >
+            {tree.all
+              .filter((node) => node.PARENT === 0)
+              .sort((a, b) => Number(a.LB) - Number(b.LB))
+              .map((node) => renderTree(node))}
+          </TreeView> */}
+        </Box>
+        <div style={{ width: '100%', height: '800px'}}>
+          <Stack direction="row">
+            <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
+            <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+            <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
+            <Button onClick={handleReconciliationClick} disabled={customersLoading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
+            <Button onClick={handleSalesFunnelClick} disabled={customersLoading} startIcon={<FilterAltIcon />}>Воронка продаж</Button>
+          </Stack>
           <DataGridPro
             localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
             rows={
