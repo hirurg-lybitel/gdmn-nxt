@@ -35,6 +35,7 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
 
   const columns: GridColDef[] = [
     { field: 'COMPANYNAME', headerName: 'Организация', width: 350 },
+    { field: 'USR$EMAIL', headerName: 'Email', width: 250 },
     { field: 'USR$FIRSTNAME', headerName: 'Имя', width: 250 },
     { field: 'USR$LASTNAME', headerName: 'Фамилия', width: 250 },
     { field: 'USR$POSITION', headerName: 'Должность', width: 250 },
