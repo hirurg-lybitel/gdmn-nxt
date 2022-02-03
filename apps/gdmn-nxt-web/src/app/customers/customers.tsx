@@ -32,6 +32,7 @@ import { CollectionEl } from 'nested-sets-tree';
 import SalesFunnel from '../sales-funnel/sales-funnel';
 import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
 import CustomTreeView from '../custom-tree-view/custom-tree-view';
+import GoodGroupEdit, { GoodGroupEditForm } from '../good-group-edit/good-group-edit';
 
 
 const labelStyle: React.CSSProperties = {
@@ -63,6 +64,7 @@ export function Customers(props: CustomersProps) {
   const [snackBarMessage, setSnackBarMessage] = useState('');
   const [paramsDates, setParamsDates] = useState<DateRange<Date | null>>([null, null]);
   const [openEditForm, setOpenEditForm] = useState(false);
+  const [openGoodGroupEditForm, setOpenGoodGroupEditForm] = useState(false);
   const [salesFunnelOpen, setSalesFunnelOpen] = useState(false);
 
   const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
@@ -359,93 +361,6 @@ export function Customers(props: CustomersProps) {
     );
   };
 
-
-  const renderTree = (nodes: CollectionEl) => {
-    // const initialRightClickStateCreator = () => ({
-    //   mouseX: null,
-    //   mouseY: null
-    // });
-
-    // const [right, setRight] = React.useState<{
-    //   mouseX: null | number;
-    //   mouseY: null | number;
-    // }>(initialRightClickStateCreator());
-
-    // const onClose = React.useCallback(() => {
-    //   setRight(initialRightClickStateCreator());
-    // }, []);
-
-    // const rightClick = (event: React.MouseEvent<HTMLLIElement>) => {
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    //   setRight({
-    //     mouseX: event.clientX - 2,
-    //     mouseY: event.clientY - 4
-    //   });
-    //   console.log('rightClick', nodes.ID)
-    // };
-
-    return (
-      <>
-        <TreeItem
-          sx={{
-            paddingTop: 0.8,
-            paddingBottom: 0.8,
-            fontSize: 2,
-            color: '#1976d2'
-          }}
-          key={nodes.ID}
-          nodeId={nodes.ID.toString()}
-          onContextMenu={() => console.log(1)}
-          label={
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <FolderIcon color='primary' />
-              <span
-                style={{
-                  flex: 1,
-                  paddingLeft: 3
-                }}
-              >
-                {allHierarchy.find((elem) => elem.ID === nodes.ID)?.NAME}
-              </span>
-            </Box>
-          }
-        >
-          {Array.isArray(tree.getChilds(nodes, false).results)
-              ? tree.getChilds(nodes, false).results.map((node) => renderTree(node))
-              : null}
-        </TreeItem>
-        {/* <Menu
-          BackdropProps={{
-            invisible: true,
-            onContextMenu: (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onClose();
-            }
-          }}
-          open={right.mouseY !== null}
-          onClose={onClose}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            right.mouseY !== null && right.mouseX !== null
-              ? { top: right.mouseY, left: right.mouseX }
-              : undefined
-          }
-        >
-          <MenuItem>1</MenuItem>
-          <MenuItem>2</MenuItem>
-        </Menu> */}
-      </>
-    );
-  };
-
-
   return (
     <Stack direction="column">
       <Stack direction="row">
@@ -456,30 +371,6 @@ export function Customers(props: CustomersProps) {
             tree={tree}
             onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => setTreeNodeId(Number(nodeId))}
           />
-          {/* <TreeView
-            sx={{
-              // paddingTop: 12,
-              marginRight: 1,
-              flexGrow: 1,
-              maxWidth: 400,
-              height: '100%',
-              overflowY: 'auto',
-              border: 1,
-              borderRadius: '4px',
-              borderColor: 'grey.300',
-            }}
-            defaultCollapseIcon={<KeyboardArrowDownIcon/>}
-            defaultExpandIcon={<KeyboardArrowRightIcon/>}
-            onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => {
-              //dispatch(fetchCustomersByRootID(nodeId));
-              setTreeNodeId(Number(nodeId));
-            }}
-          >
-            {tree.all
-              .filter((node) => node.PARENT === 0)
-              .sort((a, b) => Number(a.LB) - Number(b.LB))
-              .map((node) => renderTree(node))}
-          </TreeView> */}
         </Box>
         <div style={{ width: '100%', height: '800px'}}>
           <Stack direction="row">
@@ -537,6 +428,9 @@ export function Customers(props: CustomersProps) {
         />
         : null
       }
+      {/* {openGoodGroupEditForm ?
+        <GoodGroupEditForm/>
+        : null} */}
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
       </Snackbar>
