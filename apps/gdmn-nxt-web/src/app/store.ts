@@ -6,22 +6,29 @@ import { reconciliationStatementApi } from './features/reconciliation-statement/
 import userReducer from './features/user/userSlice';
 import { customersReducer, hierarchyReducer } from './features/customer/customerSlice';
 import { labelsApi } from './features/labels/labelsApi';
+import { contactGroupApi } from './features/contact/contactGroupApi';
+import { errorMiddleware } from './features/error-slice/errorMiddleware';
+import errorReducer from './features/error-slice/error-slice';
 
 export const store = configureStore({
   reducer: {
+    error: errorReducer,
     user: userReducer,
     customers: customersReducer,
     customersHierarchy: hierarchyReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,
+    [contactGroupApi.reducerPath]: contactGroupApi.reducer,
     [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false})
     .concat(contactApi.middleware)
     .concat(accountApi.middleware)
     .concat(labelsApi.middleware)
-    .concat(reconciliationStatementApi.middleware),
+    .concat(contactGroupApi.middleware)
+    .concat(reconciliationStatementApi.middleware)
+    .concat(errorMiddleware),
 });
 
 setupListeners(store.dispatch);

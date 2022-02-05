@@ -1,4 +1,4 @@
-import { IRequestResult } from "@gsbelarus/util-api-types";
+import { ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { closeConnection, setConnection } from "./db-connection";
 
@@ -152,7 +152,7 @@ export const updateContact: RequestHandler = async (req, res) => {
 
 export const addContact: RequestHandler = async (req, res) => {
 
-  const { NAME, PHONE, EMAIL, PARENT } = req.body;
+  const { NAME, PHONE, EMAIL, PARENT, labels } = req.body;
   const { client, attachment, transaction} = await setConnection();
 
   try {
@@ -198,22 +198,32 @@ export const addContact: RequestHandler = async (req, res) => {
     const _schema = {}
     const rows = await resultSet.fetch();
 
+    await resultSet.close();
+
+    const row = rows[0];
+    // console.log('rows', rows);
+
+    // const rec = await upsertLabels({ attachment, transaction}, row[0], labels);
+    // console.log('rec', rec);
+
     const result: IRequestResult = {
       queries: {
         contact: [ {
-          ID: rows[0][0],
-          NAME: rows[0][1],
-          EMAIL: rows[0][2],
-          PHONE: rows[0][3],
-          PARENT: rows[0][4],
-          FOLDERNAME: rows[0][5],
-          labels: []
+          ID: row[0],
+          NAME: row[1],
+          EMAIL: row[2],
+          PHONE: row[3],
+          PARENT: row[4],
+          FOLDERNAME: row[5],
+          labels: await upsertLabels({ attachment, transaction}, row[0], labels)
         } ]
       },
       _schema
     };
 
-    await resultSet.close();
+
+
+    await transaction.commit();
 
     return res.status(200).json(result);
 
@@ -305,4 +315,65 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
   } finally {
     await closeConnection(client, attachment, transaction);
   }
+};
+
+
+const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabelsContact[]): Promise<ILabelsContact[]> => {
+
+  if (labels.length === 0) {
+    return;
+  };
+
+  const newLabels = labels.map(label => ({...label, CONTACT: contactId}))
+
+  const {attachment, transaction} = firebirdPropsL;
+
+  try {
+    /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
+    const deleteSQL = `DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?`;
+
+    await Promise.all(
+      [...new Set(newLabels.map(el => el.CONTACT))]
+        .map(async label => {
+        await attachment.execute(transaction, deleteSQL, [label]);
+        })
+    );
+
+      const insertSQL = `
+        EXECUTE BLOCK(
+          ID TYPE OF COLUMN USR$CRM_CONTACT_LABELS.ID = ?,
+          CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY = ?,
+          LABELKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$LABELKEY = ?
+        )
+        RETURNS(
+          res_ID TYPE OF COLUMN USR$CRM_CONTACT_LABELS.ID,
+          res_CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY,
+          res_LABELKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$LABELKEY
+        )
+
+        AS
+        BEGIN
+          DELETE FROM USR$CRM_CONTACT_LABELS WHERE ID = :ID;
+
+          INSERT INTO USR$CRM_CONTACT_LABELS(USR$CONTACTKEY, USR$LABELKEY)
+          VALUES(:CONTACTKEY, :LABELKEY)
+          RETURNING ID, USR$CONTACTKEY, USR$LABELKEY INTO :res_ID, :res_CONTACTKEY, :res_LABELKEY;
+
+          SUSPEND;
+        END`;
+
+      const records = await Promise.all(newLabels.map(async label => {
+        return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
+      }));
+
+      return records as ILabelsContact[];
+    } catch (error) {
+
+      console.log('catch', error);
+
+      return;
+
+  } finally {
+    //await closeConnection(client, attachment, transaction);
+  };
 };

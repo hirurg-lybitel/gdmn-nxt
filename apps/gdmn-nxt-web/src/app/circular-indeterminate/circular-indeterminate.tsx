@@ -5,7 +5,7 @@ export interface CircularIndeterminateProps {
   open: boolean;
 }
 
-export default function CircularIndeterminate(props: CircularIndeterminateProps) {
+export function CircularIndeterminate(props: CircularIndeterminateProps) {
   const { open } = props;
 
   if (!open) return null;

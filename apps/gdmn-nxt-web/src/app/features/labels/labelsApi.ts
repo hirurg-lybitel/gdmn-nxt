@@ -16,13 +16,13 @@ export const labelsApi = createApi({
     getLabelsContact: builder.query<ILabelsContactRequestResult, number | void>({
       query: (contactId?) => `contacts/labels${contactId ? `/${contactId}` : ``}`,
       transformResponse: (response: IRequestResult<ILabels>, meta, arg) => {
-        console.log('getLabelsContact_transform', response);
-        console.log('getLabelsContact_meta', meta);
+        // console.log('getLabelsContact_transform', response);
+        // console.log('getLabelsContact_meta', meta);
         return response;
       },
       providesTags: (result, error) => {
-        console.log('getLabelsContact_providesTags_result', result);
-        console.log('getLabelsContact_providesTags_error', error);
+        // console.log('getLabelsContact_providesTags_result', result);
+        // console.log('getLabelsContact_providesTags_error', error);
 
         return result
           ? [
@@ -43,12 +43,12 @@ export const labelsApi = createApi({
           updateCachedData,
         }
       ) {
-        console.log('getLabelsContact_onQueryStarted', arg);
-        console.log('getLabelsContact_onQueryStarted', getCacheEntry);
+        // console.log('getLabelsContact_onQueryStarted', arg);
+        // console.log('getLabelsContact_onQueryStarted', getCacheEntry);
       },
       onCacheEntryAdded(arg, { dispatch, getState, extra, requestId, cacheEntryRemoved, cacheDataLoaded, getCacheEntry }) {
-        console.log('getLabelsContact_onCacheEntryAdded', arg);
-        console.log('getLabelsContact_onCacheEntryAdded', getCacheEntry);
+        // console.log('getLabelsContact_onCacheEntryAdded', arg);
+        // console.log('getLabelsContact_onCacheEntryAdded', getCacheEntry);
       },
     }),
     addLabelsContact: builder.mutation<ILabelsContactRequestResult, ILabelsContact[]>({

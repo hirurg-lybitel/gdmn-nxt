@@ -87,3 +87,7 @@ export interface ILabelsContact extends IWithID {
 export interface IContactWithLabels extends IContactWithID {
   labels?: ILabelsContact[]
 }
+
+export interface IResultError {
+  errorMessage: string
+}

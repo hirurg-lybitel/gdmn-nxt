@@ -55,7 +55,7 @@ export function ReportParams(props: ReportParamsProps) {
         <Button
           className={classes.button}
           onClick={onCancelClick}
-          variant="contained"
+          variant="text"
           color="primary"
           //size="small"
         >
