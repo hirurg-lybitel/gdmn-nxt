@@ -199,32 +199,32 @@ app.get('/api/v1/logout', (req, res) => {
 
 const router = express.Router();
 
-router.get('/api/v1/contacts', getContacts);
-router.get('/api/v1/contacts/taxId/:taxId', getContacts);
-router.get('/api/v1/contacts/rootId/:rootId', getContacts);
-router.put('/api/v1/contacts/:id', updateContact);
-router.post('/api/v1/contacts', addContact);
-router.delete('/api/v1/contacts/:id', deleteContact);
-router.get('/api/v1/contacts/hierarchy', getContactHierarchy);
-router.get('/api/v1/contacts/labels/:contactId', getLabelsContact);
-router.get('/api/v1/contacts/labels', getLabelsContact);
-router.post('/api/v1/contacts/labels', addLabelsContact);
-router.delete('/api/v1/contacts/labels/:contactId', deleteLabelsContact);
+router.get('/contacts', getContacts);
+router.get('/contacts/taxId/:taxId', getContacts);
+router.get('/contacts/rootId/:rootId', getContacts);
+router.put('/contacts/:id', updateContact);
+router.post('/contacts', addContact);
+router.delete('/contacts/:id', deleteContact);
+router.get('/contacts/hierarchy', getContactHierarchy);
+router.get('/contacts/labels/:contactId', getLabelsContact);
+router.get('/contacts/labels', getLabelsContact);
+router.post('/contacts/labels', addLabelsContact);
+router.delete('/contacts/labels/:contactId', deleteLabelsContact);
 
-app.get(Api.v1 + '/contactgroups', contactGroups.get);
-app.post(Api.v1 + '/contactgroups', contactGroups.add);
-app.put(Api.v1 + '/contactgroups/:id', contactGroups.update);
-app.delete(Api.v1 + '/contactgroups/:id', contactGroups.remove);
+router.get('/contactgroups', contactGroups.get);
+router.post('/contactgroups', contactGroups.add);
+router.put('/contactgroups/:id', contactGroups.update);
+router.delete('/contactgroups/:id', contactGroups.remove);
 
-router.get('/api/v1/accounts', getAccounts);
-router.get('/api/v1/accounts/email/:email', getAccounts);
-router.get('/api/v1/account/:id', getAccounts);
-router.post('/api/v1/account', upsertAccount);
-router.put('/api/v1/account/:ID', upsertAccount);
+router.get('/accounts', getAccounts);
+router.get('/accounts/email/:email', getAccounts);
+router.get('/account/:id', getAccounts);
+router.post('/account', upsertAccount);
+router.put('/account/:ID', upsertAccount);
 
-router.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
+router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
-app.use(router);
+app.use('/api/v1', router);
 
 app.get('*', () => console.log('Unknown request'));
 
