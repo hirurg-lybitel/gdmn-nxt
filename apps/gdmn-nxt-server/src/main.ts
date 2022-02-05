@@ -11,7 +11,6 @@ import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
 import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
-import contactGroups from './app/contactGrops';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -19,7 +18,6 @@ const MemoryStore = require('memorystore')(session);
 dotenv.config({ path: '../..' });
 
 const app = express();
-
 const cors = require('cors');
 
 app.use(cors({
@@ -28,11 +26,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const Api = {
-  v1: "/api/v1",
-  v2: "/api/v2",
-}
 
 interface IBaseUser {
   userName: string;
@@ -65,6 +58,8 @@ passport.use(new Strategy({
   async (req: any, userName: string, password: string, done) => {
     const { employeeMode } = req.body;
 
+    console.log('this is passport');
+
     try {
       if (employeeMode) {
         //TODO: надо возвращать запись пользователя и все остальные проверки делать тут
@@ -92,27 +87,6 @@ passport.use(new Strategy({
         } else {
           return done(null, false);
         }
-
-        /*
-        await purgeExpiredUsers();
-
-        const user = await userDB.read(userName2Key(userName));
-
-        if (!user) {
-          return done(null, false);
-        }
-
-        if (validPassword(password, user.hash, user.salt)) {
-
-          if (user.expireOn) {
-            await userDB.write(userName2Key(userName), { ...user, expireOn: undefined }, true);
-          }
-
-          return done(null, user);
-        } else {
-          return done(null, false);
-        }
-        */
       }
     }
     catch (err) {
@@ -121,9 +95,14 @@ passport.use(new Strategy({
   }
 ));
 
-passport.serializeUser((user: IUser, done) => done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`));
+passport.serializeUser( (user: IUser, done) => {
+  console.log('passport serialize');
+  done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`);
+});
 
 passport.deserializeUser(async (un: string, done) => {
+  console.log('passport deserialize');
+
   const userType = un.slice(0, 1);
   const userName = un.slice(1);
 
@@ -161,7 +140,6 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 app.get('/', (_, res) => {
   res.send('<h1>Home</h1><p>Please <a href="/register">register</a></p>');
@@ -201,83 +179,63 @@ app.route('/api/v1/user/forgot-password')
         return res.json(authResult('INVALID_DATA', 'Invalid data.'));
       }
 
-      /* 2. Очистим БД от устаревших записей */
-
-      //await purgeExpiredUsers();
-
-      /* 3. ищем пользователя */
-      //const em = email.toLowerCase();
-      //const user = await userDB.findOne(u => u.email.toLowerCase() === em);
-
-      //if (!user) {
-      //  return res.json(authResult('UNKNOWN_USER', `User email ${email} not found.`));
-      //};
-
-      /* 4. Поменяем данные профиля */
-      //const provisionalPassword = genRandomPassword();
-      //const expireOn = Date.now() + 24 * 60 * 60 * 1000;
-
-      //const { salt, hash } = genPassword(provisionalPassword);
-
-      // user.salt = salt;
-      // user.hash = hash;
-      // user.expireOn = expireOn;
-      // await userDB.write(userName2Key(user.userName), user, true);
-
-      /* 5. Пошлем пользователю email */
-
-      // try {
-      //   await sendEmail(
-      //     '"GDMN System" <test@gsbelarus.com>',
-      //     email,
-      //     "Password change complete",
-      //     `Please use following credentials to sign-in into your account at ...\
-      //     \n\n\
-      //     User name: ${user.userName}\n\
-      //     Password: ${provisionalPassword}
-      //     \n\n\
-      //     This temporary record will expire on ${new Date(expireOn).toLocaleDateString()}`
-      //   );
-      // } catch (err) {
-      //   return res.json(authResult('ERROR', err.message));
-      // }
-      /* 6. Сообщим о письме на почте с информацией */
-      // return res.json(authResult(
-      //   'SUCCESS_PASSWORD_CHANGED',
-      //   `Password was sent to ${email}. Please, sign in until ${new Date(expireOn).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })} to confirm.`
-      // ));
-
       return res.sendStatus(500);
     });
 
-app.get('/api/v1/logout', (_, res) => {
-  res.clearCookie('Sid', { path: '/' }).json({});
+app.get('/api/v1/logout', (req, res) => {
+  if (req.session) {
+    req.session.destroy( err => { if (err) console.error(err); } );
+  } else {
+    res.end();
+  }
+  //res.clearCookie('Sid', { path: '/' }).json({});
 });
 
-app.get('/api/v1/contacts', getContacts);
-app.get('/api/v1/contacts/taxId/:taxId', getContacts);
-app.get('/api/v1/contacts/rootId/:rootId', getContacts);
-app.put('/api/v1/contacts/:id', updateContact);
-app.post('/api/v1/contacts', addContact);
-app.delete('/api/v1/contacts/:id', deleteContact);
-app.get('/api/v1/contacts/hierarchy', getContactHierarchy);
-app.get('/api/v1/contacts/labels/:contactId', getLabelsContact);
-app.get('/api/v1/contacts/labels', getLabelsContact);
-app.post('/api/v1/contacts/labels', addLabelsContact);
-app.delete('/api/v1/contacts/labels/:contactId', deleteLabelsContact);
+const router = express.Router();
 
-app.get(Api.v1 + '/contactgroups', contactGroups.get);
-app.post(Api.v1 + '/contactgroups', contactGroups.add);
-app.put(Api.v1 + '/contactgroups/:id', contactGroups.update);
-app.delete(Api.v1 + '/contactgroups/:id', contactGroups.remove);
+router.get('/api/v1/contacts', getContacts);
+router.get('/api/v1/contacts/taxId/:taxId', getContacts);
+router.get('/api/v1/contacts/rootId/:rootId', getContacts);
+router.put('/api/v1/contacts/:id', updateContact);
+router.post('/api/v1/contacts', addContact);
+router.delete('/api/v1/contacts/:id', deleteContact);
+router.get('/api/v1/contacts/hierarchy', getContactHierarchy);
+router.get('/api/v1/contacts/labels/:contactId', getLabelsContact);
+router.get('/api/v1/contacts/labels', getLabelsContact);
+router.post('/api/v1/contacts/labels', addLabelsContact);
+router.delete('/api/v1/contacts/labels/:contactId', deleteLabelsContact);
 
-app.get('/api/v1/accounts', getAccounts);
-app.get('/api/v1/accounts/email/:email', getAccounts);
-app.get('/api/v1/account/:id', getAccounts);
-app.post('/api/v1/account', upsertAccount);
-app.put('/api/v1/account/:ID', upsertAccount);
+router.get('/api/v1/accounts', getAccounts);
+router.get('/api/v1/accounts/email/:email', getAccounts);
+router.get('/api/v1/account/:id', getAccounts);
+router.post('/api/v1/account', upsertAccount);
+router.put('/api/v1/account/:ID', upsertAccount);
 
-app.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
+router.get('/api/v1/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
+
+app.use(router);
+
+app.get('*', () => console.log('Unknown request'));
+
+const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
+const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
+
+server.on('error', console.error);
+
+process
+  .on('exit', code => {
+    console.log(`Process exit event with code: ${code}`);
+  })
+  .on('SIGINT', process.exit)
+  .on('SIGBREAK', process.exit)
+  .on('SIGTERM', process.exit)
+  .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
+  .on('uncaughtException', console.error);
+
+
+////////////////////////////////////////////////////////////////////////////
+// garbage
+////////////////////////////////////////////////////////////////////////////
 
 /*
 app.route('/login')
@@ -340,30 +298,3 @@ app.get('/login-failure', (_, res) => {
 });
 */
 
-app.get('*', () => console.log('Unknown request'));
-
-const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
-const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
-
-server.on('error', console.error);
-
-/*
-if (process.platform === "win32") {
-  const rl = require("readline").createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  rl.on('SIGINT', () => process.exit() );
-}
-*/
-
-process
-  .on('exit', code => {
-    console.log(`Process exit event with code: ${code}`);
-  })
-  .on('SIGINT', process.exit)
-  .on('SIGBREAK', process.exit)
-  .on('SIGTERM', process.exit)
-  .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
-  .on('uncaughtException', console.error);
