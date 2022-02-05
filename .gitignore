@@ -44,3 +44,5 @@ apps/gdmn-nxt-server/db/*.json
 .env
 .env
 apps/gdmn-nxt-web/src/mui-license.ts
+
+openssl/*
