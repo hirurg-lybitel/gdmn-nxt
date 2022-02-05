@@ -1,10 +1,10 @@
 import { IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
+import { ResultSet } from "node-firebird-driver-native";
 import { closeConnection, setConnection } from "./db-connection";
 import { resultError } from "./responseMessages";
 
 const get: RequestHandler = async (req, res)  => {
-  console.log('group_get');
 
   const { client, attachment, transaction } = await setConnection();
 
@@ -49,10 +49,11 @@ const get: RequestHandler = async (req, res)  => {
 
     await transaction.commit()
 
+    //return res.status(500).json(resultError('my test error message for get query'));
     return res.status(200).json(result);
   } catch(error) {
 
-    return res.status(500).send({ "errorMessage": error.message});
+    return res.status(500).send(resultError(error.message));
   }finally {
     await closeConnection(client, attachment, transaction);
   }
@@ -60,8 +61,6 @@ const get: RequestHandler = async (req, res)  => {
 
 
 const add: RequestHandler = async(req, res) => {
-
-  console.log('group_add');
 
   const {NAME} = req.body;
   let {PARENT = null} = req.body;
@@ -140,8 +139,6 @@ const add: RequestHandler = async(req, res) => {
 
 const update: RequestHandler = async(req, res) => {
 
-  console.log('group_update');
-
   const { id } = req.params;
   const {NAME} = req.body;
   let {PARENT = null} = req.body;
@@ -173,7 +170,7 @@ const update: RequestHandler = async(req, res) => {
 
     const queries = [
       {
-        name: 'group',
+        name: 'groups',
         query:
           `EXECUTE BLOCK(
             input_ID      TYPE OF COLUMN GD_CONTACT.ID = ?,
@@ -213,6 +210,7 @@ const update: RequestHandler = async(req, res) => {
 
     await transaction.commit();
 
+    //return res.status(500).json(resultError('my test error message'));
     return res.status(200).json(result);
 
   } catch (error) {
@@ -225,13 +223,12 @@ const update: RequestHandler = async(req, res) => {
 }
 
 const remove: RequestHandler = async(req, res) => {
-  console.log('group_remove');
-
   const { id } = req.params;
   const {client, attachment, transaction} = await setConnection();
 
+  let result: ResultSet;
   try {
-      const result = await attachment.executeQuery(
+      result = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
         ID INTEGER = ?
@@ -259,12 +256,15 @@ const remove: RequestHandler = async(req, res) => {
       return res.status(500).send(resultError('Объект не найден'))
     }
 
+
     await transaction.commit();
 
-    return res.status(200).send({'id': id});
+    return res.status(200).json({'id': id});
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
+
+    await result.close()
     await closeConnection(client, attachment, transaction);
   }
 

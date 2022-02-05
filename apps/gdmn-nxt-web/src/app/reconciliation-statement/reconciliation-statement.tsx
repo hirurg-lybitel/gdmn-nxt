@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
-import CircularIndeterminateProps from '../circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '../circular-indeterminate/circular-indeterminate';
 import Paper from '@mui/material/Paper/Paper';
 
 const shortenName = (s: string) => {
@@ -295,7 +295,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
             </div>
           </div>
         :
-        <CircularIndeterminateProps open={isFetching}/>
+        <CircularIndeterminate open={isFetching}/>
           // <div>no data</div>
       }
     </Paper>

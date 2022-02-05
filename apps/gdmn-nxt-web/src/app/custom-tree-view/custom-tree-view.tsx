@@ -1,26 +1,22 @@
 import './custom-tree-view.module.less';
 import TreeView from '@mui/lab/TreeView';
 import FolderIcon from '@mui/icons-material/Folder';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NestedSets, { CollectionEl } from 'nested-sets-tree';
-import { Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Button, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import TreeItem from '@mui/lab/TreeItem';
 import { useCallback, useState } from 'react';
 
-
-export interface CustomTreeViewProps {
-  hierarchy: any[];
-  tree: NestedSets;
-  onNodeSelect: (event: React.SyntheticEvent, nodeId: string) => void;
+interface CustomizedTreeItemProps extends CustomTreeViewProps {
+  node: CollectionEl;
 }
 
-
-const RenderTree = (props: CustomTreeViewProps, nodes: CollectionEl) => {
-  const { hierarchy, tree } = props;
+const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
+  const {node, tree, hierarchy} = props;
+  const {onEdit, onDelete} = props;
 
   const [nodeId, setNodeId] = useState<number>();
 
@@ -45,21 +41,21 @@ const RenderTree = (props: CustomTreeViewProps, nodes: CollectionEl) => {
       mouseX: event.clientX - 2,
       mouseY: event.clientY - 4
     });
-    setNodeId(nodes.ID);
+    setNodeId(node.ID);
   };
 
   const handleEditClick = () => {
-    console.log('handleEditClick', nodeId);
+    if (onEdit) onEdit(Number(nodeId));
     onClose();
   }
 
   const handleDeleteClick = () => {
-    console.log('handleDeleteClick', nodeId);
+    if (onDelete) onDelete(Number(nodeId));
     onClose();
   }
 
   return (
-    <>
+    <Box>
       <TreeItem
         sx={{
           paddingTop: 0.8,
@@ -67,8 +63,8 @@ const RenderTree = (props: CustomTreeViewProps, nodes: CollectionEl) => {
           fontSize: 2,
           color: '#1976d2'
         }}
-        key={nodes.ID}
-        nodeId={nodes.ID.toString()}
+        key={node.ID}
+        nodeId={node.ID.toString()}
         onContextMenu={rightClick}
         label={
           <Box
@@ -84,14 +80,15 @@ const RenderTree = (props: CustomTreeViewProps, nodes: CollectionEl) => {
                 paddingLeft: 3
               }}
             >
-              {hierarchy.find((elem) => elem.ID === nodes.ID)?.NAME}
+              {hierarchy.find((elem) => elem.ID === node.ID)?.NAME}
             </span>
           </Box>
         }
       >
-        {Array.isArray(tree.getChilds(nodes, false).results)
-            ? tree.getChilds(nodes, false).results.map((node) => RenderTree(props, node))
+        {Array.isArray(tree.getChilds(node, false).results)
+            ? tree.getChilds(node, false).results.map((node) => <RecursiveCustomizedTreeItem {...props} node={node}  />)
             : null}
+
       </TreeItem>
       <Menu
         BackdropProps={{
@@ -111,53 +108,62 @@ const RenderTree = (props: CustomTreeViewProps, nodes: CollectionEl) => {
             : undefined
         }
       >
-        <MenuItem onClick={handleEditClick}>
+        <MenuItem key={1} onClick={handleEditClick}>
           <ListItemIcon>
             <EditIcon fontSize="small" />
           </ListItemIcon>
           <Typography variant="inherit">Редактировать</Typography>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleDeleteClick}>
+        <MenuItem key={2}  onClick={handleDeleteClick}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
           <Typography variant="inherit">Удалить</Typography>
         </MenuItem>
       </Menu>
-    </>
+    </Box>
   );
 };
 
+
+export interface CustomTreeViewProps {
+  hierarchy: any[];
+  tree: NestedSets;
+  onNodeSelect?: (event: React.SyntheticEvent, nodeId: string) => void;
+  onEdit?: (nodeId: number) => void;
+  onDelete?: (nodeId: number) => void;
+}
+
 export function CustomTreeView(props: CustomTreeViewProps) {
-  const { hierarchy, tree } = props;
+  const { tree } = props;
   const { onNodeSelect } = props;
 
-
-
-
   return (
-    <TreeView
-    sx={{
-      // paddingTop: 12,
-      marginRight: 1,
-      flexGrow: 1,
-      maxWidth: 400,
-      height: '100%',
-      overflowY: 'auto',
-      border: 1,
-      borderRadius: '4px',
-      borderColor: 'grey.300',
-    }}
-    defaultCollapseIcon={<KeyboardArrowDownIcon/>}
-    defaultExpandIcon={<KeyboardArrowRightIcon/>}
-    onNodeSelect={onNodeSelect}
-  >
-    {tree.all
-      .filter((node) => node.PARENT === 0)
-      .sort((a, b) => Number(a.LB) - Number(b.LB))
-      .map((node) => RenderTree(props, node))}
-  </TreeView>
+    <Box
+      sx={{
+        // paddingTop: 12,
+        marginRight: 1,
+        flexGrow: 1,
+        maxWidth: 400,
+        height: '100%',
+        overflowY: 'auto',
+        border: 1,
+        borderRadius: '4px',
+        borderColor: 'grey.300',
+      }}
+    >
+      <TreeView
+        defaultCollapseIcon={<KeyboardArrowDownIcon/>}
+        defaultExpandIcon={<KeyboardArrowRightIcon/>}
+        onNodeSelect={onNodeSelect}
+      >
+      {tree.all
+        .filter((node) => node.PARENT === 0)
+        .sort((a, b) => Number(a.LB) - Number(b.LB))
+        .map((node) => <RecursiveCustomizedTreeItem {...props} node={node} />)}
+    </TreeView>
+  </Box>
   );
 }
 

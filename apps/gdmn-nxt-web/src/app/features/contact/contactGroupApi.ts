@@ -13,17 +13,23 @@ export const contactGroupApi = createApi({
   tagTypes: ['Groups'],
   baseQuery: fetchBaseQuery({ baseUrl }),
   endpoints: (builder) => ({
-    getGroups: builder.query<IContactGroupsRequestResult, void>({
+    getGroups: builder.query<IContactHierarchy[], void>({
       query: () => `contactgroups`,
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.queries.groups.map(({ ID }) => ({ type: 'Groups' as const, ID })),
-              { type: 'Groups', id: 'LIST' },
-          ]
-          : [{ type: 'Groups', id: 'LIST' }],
+      async onQueryStarted(){console.log('⏩ request', "GET", `${baseUrl}contactgroups`)},
+      transformResponse: (response: IContactGroupsRequestResult) => response.queries?.groups || [],
+      providesTags: (result, error) =>
+      result
+      ? [
+          ...result.map(({ ID }) => ({ type: 'Groups' as const, ID })),
+          { type: 'Groups', id: 'LIST' },
+        ]
+      : error
+        ? [{ type: 'Groups', id: 'ERROR' }]
+        : [{ type: 'Groups', id: 'LIST' }]
+
     }),
     updateGroup: builder.mutation<IContactGroupsRequestResult, Partial<IContactHierarchy>>({
+      async onQueryStarted({ID:id}){console.log('⏩ request', "PUT", `${baseUrl}contactgroups/${id}`)},
       query(body) {
         const {ID:id} = body;
         return {
@@ -32,15 +38,18 @@ export const contactGroupApi = createApi({
           body: body
         }
       },
-      invalidatesTags: (result) =>
+      invalidatesTags: (result, error) =>
         result
           ? [
               ...result.queries.groups.map(({ ID }) => ({ type: 'Groups' as const, ID })),
               { type: 'Groups', id: 'LIST' },
             ]
-          : [{ type: 'Groups', id: 'LIST' }],
+          : error
+            ? [{ type: 'Groups', id: 'ERROR' }]
+            : [{ type: 'Groups', id: 'LIST' }]
     }),
-    addGroup: builder.mutation<IContactGroupsRequestResult, Partial<IContactHierarchy>>({
+    addGroup: builder.mutation<IContactHierarchy[], Partial<IContactHierarchy>>({
+      async onQueryStarted(){console.log('⏩ request', "POST", `${baseUrl}contactgroups`)},
       query(body) {
         return {
           url: `contactgroups`,
@@ -48,16 +57,23 @@ export const contactGroupApi = createApi({
           body: body
         }
       },
+      transformResponse: (response: IContactGroupsRequestResult) => response.queries.groups,
       invalidatesTags: (result) =>
         result
           ? [
-              ...result.queries.groups.map(({ ID }) => ({ type: 'Groups' as const, ID })),
+              ...result.map(({ ID }) => ({ type: 'Groups' as const, ID })),
               { type: 'Groups', id: 'LIST' },
             ]
           : [{ type: 'Groups', id: 'LIST' }],
     }),
     deleteGroup: builder.mutation<{id: number}, number>({
-      query: (id) => `contactgroups/${id}`,
+      async onQueryStarted(id){console.log('⏩ request', "DELETE", `${baseUrl}contactgroups/${id}`)},
+      query(id) {
+        return {
+          url: `contactgroups/${id}`,
+          method: 'DELETE'
+        }
+      },
       invalidatesTags: (result) => {
         const id = result?.id;
         return (

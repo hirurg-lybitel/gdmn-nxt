@@ -28,6 +28,7 @@ import { useSelector } from 'react-redux';
 import { hierarchySelectors } from '../features/customer/customerSlice';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { useGetGroupsQuery } from '../features/contact/contactGroupApi';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -65,6 +66,7 @@ export function CustomerEdit(props: CustomerEditProps) {
   const [deleting, setDeleting] = useState(false);
 
   const allHierarchy = useSelector(hierarchySelectors.selectAll);
+  const { data: groups } = useGetGroupsQuery();
 
 
   const classes = useStyles();
@@ -121,6 +123,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                 className={classes.helperText}
                 type="text"
                 required
+                autoFocus
                 name="NAME"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -128,9 +131,9 @@ export function CustomerEdit(props: CustomerEditProps) {
                 helperText={formik.errors.NAME}
               />
               <Autocomplete
-                options={allHierarchy}
+                options={groups || []}
                 getOptionLabel={option => option.NAME}
-                value={allHierarchy.filter(el => el.ID === formik.values.PARENT)[0] || null}
+                value={groups?.filter(el => el.ID === formik.values.PARENT)[0] || null}
                 onChange={(e, value) => {
                   formik.setFieldValue(
                     "PARENT",
@@ -194,10 +197,10 @@ export function CustomerEdit(props: CustomerEditProps) {
                   );
                 }}
                 value={
-                  allHierarchy
-                    .filter(hierarchy => formik.values.labels?.find(label => label.LABEL === hierarchy.ID && label.CONTACT === formik.values.ID))
+                  groups
+                    ?.filter(hierarchy => formik.values.labels?.find(label => label.LABEL === hierarchy.ID && label.CONTACT === formik.values.ID))
                 }
-                options={allHierarchy}
+                options={groups || []}
                 getOptionLabel={opt => opt.NAME}
                 renderOption={(props, option, { selected }) => (
                   <li {...props} key={option.ID}>

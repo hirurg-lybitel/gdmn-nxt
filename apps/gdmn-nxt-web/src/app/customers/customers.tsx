@@ -1,14 +1,20 @@
-import { useGetAllContactsQuery } from '../features/contact/contactApi';
-import { DataGridPro, DataGridProProps, GridColDef, GridRenderCellParams, GridRowModel, GridToolbar, useGridApiContext, useGridSelector, ruRU, GridSortModel, GridFilterItem, GridFilterInputValueProps, GridFilterModel, GridFilterOperator } from '@mui/x-data-grid-pro';
-import TreeView from '@mui/lab/TreeView';
-import TreeItem from '@mui/lab/TreeItem'
+import {
+  DataGridPro,
+  GridColDef,
+  GridToolbar,
+  ruRU,
+  GridSortModel,
+  GridFilterItem,
+  GridFilterInputValueProps,
+  GridFilterModel,
+  GridFilterOperator } from '@mui/x-data-grid-pro';
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import ReportParams from '../report-params/report-params';
 import React, { useEffect, useState } from 'react';
 import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
-import { Box, List, ListItem, ListItemButton, Menu, MenuItem, Snackbar, Typography } from '@mui/material';
+import { Box, List, ListItemButton, Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -20,19 +26,17 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy, fetchCustomersByRootID } from '../features/customer/actions';
-import { customersSelectors, hierarchySelectors } from '../features/customer/customerSlice';
+import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
-import FolderIcon from '@mui/icons-material/Folder';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { IContactWithLabels, ILabelsContact, IResultError } from '@gsbelarus/util-api-types';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
 import SalesFunnel from '../sales-funnel/sales-funnel';
 import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
 import CustomTreeView from '../custom-tree-view/custom-tree-view';
-import GoodGroupEdit, { GoodGroupEditForm } from '../good-group-edit/good-group-edit';
+import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
+import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
+import { clearError } from '../features/error-slice/error-slice';
 
 
 const labelStyle: React.CSSProperties = {
@@ -64,15 +68,14 @@ export function Customers(props: CustomersProps) {
   const [snackBarMessage, setSnackBarMessage] = useState('');
   const [paramsDates, setParamsDates] = useState<DateRange<Date | null>>([null, null]);
   const [openEditForm, setOpenEditForm] = useState(false);
-  const [openGoodGroupEditForm, setOpenGoodGroupEditForm] = useState(false);
+  const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
   const [salesFunnelOpen, setSalesFunnelOpen] = useState(false);
-
   const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
-
+  const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
+  const [addingGroup, setAddingGroup] = useState(false);
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
 
   const allCustomers = useSelector(customersSelectors.selectAll);
-  const allHierarchy = useSelector(hierarchySelectors.selectAll);
   const { error: customersError , loading: customersLoading } = useSelector((state: RootState) => state.customers);
   const dispatch = useDispatch();
 
@@ -80,7 +83,14 @@ export function Customers(props: CustomersProps) {
   const [deleteLabelsContact, { error: deleteLabelsError}] = useDeleteLabelsContactMutation();
 
 
-  const { data: labelsContact, currentData, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
+  const { data: labelsContact, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
+
+  const { data: groups, isFetching: groupIsFetching } = useGetGroupsQuery();
+  const [addGroup] = useAddGroupMutation();
+  const [updateGroup] = useUpdateGroupMutation();
+  const [deleteGroup] = useDeleteGroupMutation();
+
+  const { errorMessage } = useSelector((state: RootState) => state.error);
 
   function CurrentLabelFilter(props: GridFilterInputValueProps) {
     const { item, applyValue, focusElementRef } = props;;
@@ -98,7 +108,7 @@ export function Customers(props: CustomersProps) {
         <div
           style={labelStyle}
         >
-          {allHierarchy.find(el => el.ID === item.value)?.NAME}
+          {groups?.find(el => el.ID === item.value)?.NAME}
         </div>
       </div>
     )
@@ -165,7 +175,7 @@ export function Customers(props: CustomersProps) {
                       onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'is' }]})}
                       style={labelStyle}
                     >
-                    {allHierarchy.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
+                    {groups?.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
                     </ListItemButton>
                   )
               })}
@@ -189,7 +199,7 @@ export function Customers(props: CustomersProps) {
                         onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'is' }]})}
                         style={labelStyle}
                       >
-                        {allHierarchy.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
+                        {groups?.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
                       </ListItemButton>
                     )
                   })
@@ -215,11 +225,16 @@ export function Customers(props: CustomersProps) {
 
   useEffect(() => {
     if (customersError) {
-
       setSnackBarMessage(customersError.toString());
       setOpenSnackBar(true);
     }
-  }, [customersError])
+
+    if (errorMessage) {
+      setSnackBarMessage(errorMessage);
+      setOpenSnackBar(true);
+    }
+  }, [customersError, errorMessage])
+
 
 
   /** Перевод вложенной структуры с lb rb в бинарное дерево */
@@ -230,8 +245,10 @@ export function Customers(props: CustomersProps) {
     rgt: 'RB'
   });
 
-  const arr: CollectionEl[] = allHierarchy.map(({error, loading, NAME, ...el}) => ({ ...el, PARENT: el.PARENT || 0}) );
-  tree.loadTree(arr, {createIndexes: true});
+  if (groups) {
+    const arr: CollectionEl[] = groups.map(({NAME, ...el}) => ({ ...el, PARENT: el.PARENT || 0}) );
+    tree.loadTree(arr, {createIndexes: true});
+  }
 
   useEffect(() => {
     dispatch(fetchHierarchy());
@@ -243,6 +260,7 @@ export function Customers(props: CustomersProps) {
     if (reason === 'clickaway') {
       return;
     };
+    dispatch(clearError());
     setOpenSnackBar(false);
   };
 
@@ -335,6 +353,36 @@ export function Customers(props: CustomersProps) {
   };
 
 
+  const contactGroupHandlers = {
+    handleAdd: async () => {
+      setAddingGroup(true);
+      setOpenContactGroupEditForm(true);
+    },
+    handleCancel: async () => setOpenContactGroupEditForm(false),
+    onSubmit: async (value: IContactWithLabels) => {
+      setOpenContactGroupEditForm(false);
+
+      if (!value.ID) {
+        addGroup(value);
+        return;
+      }
+
+      updateGroup(value);
+    },
+    handleEdit: async (nodeId: number) => {
+      setAddingGroup(false);
+      setEditingTreeNodeId(nodeId);
+      setOpenContactGroupEditForm(true);
+    },
+    handleDelete: async(nodeId: number) => {
+      /** если удаляем текущую папку */
+      if (treeNodeId === nodeId) setTreeNodeId(null);
+
+      deleteGroup(nodeId);
+    }
+
+  };
+
   if (reconciliationShow) {
     return (
       <Stack direction="column" spacing={2}>
@@ -365,12 +413,22 @@ export function Customers(props: CustomersProps) {
     <Stack direction="column">
       <Stack direction="row">
         <Box style={{ height: '800px'}}>
-          <Button disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+          <Button onClick={contactGroupHandlers.handleAdd} disabled={groupIsFetching} startIcon={<AddIcon/>}>Добавить</Button>
           <CustomTreeView
-            hierarchy={allHierarchy}
+            hierarchy={groups || []}
             tree={tree}
             onNodeSelect={(event: React.SyntheticEvent, nodeId: string) => setTreeNodeId(Number(nodeId))}
+            onEdit={contactGroupHandlers.handleEdit}
+            onDelete={contactGroupHandlers.handleDelete}
           />
+          {openContactGroupEditForm ?
+            <ContactGroupEditForm
+              group={addingGroup ? null : groups?.find(el => el.ID === editingTreeNodeId) || null}
+              tree={tree}
+              onSubmit={contactGroupHandlers.onSubmit}
+              onCancel={contactGroupHandlers.handleCancel}
+            />
+            : null}
         </Box>
         <div style={{ width: '100%', height: '800px'}}>
           <Stack direction="row">
@@ -428,9 +486,6 @@ export function Customers(props: CustomersProps) {
         />
         : null
       }
-      {/* {openGoodGroupEditForm ?
-        <GoodGroupEditForm/>
-        : null} */}
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
       </Snackbar>
