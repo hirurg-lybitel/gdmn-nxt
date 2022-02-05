@@ -138,7 +138,6 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
 
 export const deleteLabelsContact: RequestHandler = async (req, res) => {
   const { contactId } = req.params;
-
   const { client, attachment, transaction} = await setConnection();
 
   try {
@@ -153,7 +152,7 @@ export const deleteLabelsContact: RequestHandler = async (req, res) => {
     return res.status(204).send();
 
   } catch (error) {
-    return res.status(500).send({ "errorMessage": error.message});
+    return res.status(500).send({ "errorMessage": error.message });
   } finally {
     await closeConnection(client, attachment, transaction);
   }

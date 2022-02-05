@@ -93,7 +93,7 @@ export function Customers(props: CustomersProps) {
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
   function CurrentLabelFilter(props: GridFilterInputValueProps) {
-    const { item, applyValue, focusElementRef } = props;;
+    const { item, applyValue, focusElementRef } = props;
 
     return (
       <div

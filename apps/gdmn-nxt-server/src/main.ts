@@ -224,7 +224,7 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
-app.use('/api/v1', router);
+app.use('/api/v1', /*passport.authenticate('local', {}),*/ router);
 
 app.get('*', () => console.log('Unknown request'));
 
