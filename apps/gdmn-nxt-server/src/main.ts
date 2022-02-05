@@ -11,6 +11,7 @@ import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
 import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
+import contactGroups from './app/contactGrops';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -26,6 +27,11 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const Api = {
+  v1: "/api/v1",
+  v2: "/api/v2",
+}
 
 interface IBaseUser {
   userName: string;
@@ -204,6 +210,11 @@ router.get('/api/v1/contacts/labels/:contactId', getLabelsContact);
 router.get('/api/v1/contacts/labels', getLabelsContact);
 router.post('/api/v1/contacts/labels', addLabelsContact);
 router.delete('/api/v1/contacts/labels/:contactId', deleteLabelsContact);
+
+app.get(Api.v1 + '/contactgroups', contactGroups.get);
+app.post(Api.v1 + '/contactgroups', contactGroups.add);
+app.put(Api.v1 + '/contactgroups/:id', contactGroups.update);
+app.delete(Api.v1 + '/contactgroups/:id', contactGroups.remove);
 
 router.get('/api/v1/accounts', getAccounts);
 router.get('/api/v1/accounts/email/:email', getAccounts);
