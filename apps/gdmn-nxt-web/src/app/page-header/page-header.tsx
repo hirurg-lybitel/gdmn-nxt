@@ -8,6 +8,7 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import './page-header.module.less';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { Box } from '@mui/system';
 
 interface IMenuItem {
   type: 'item';
@@ -108,7 +109,7 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
   ];
 
   return (
-    <Stack direction='column' spacing={4} width='100%'>
+    <Stack direction='column' width='100%'>
       <AppBar position="static">
         <Toolbar>
           <IconButton

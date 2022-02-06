@@ -3,7 +3,7 @@ import { setError } from './error-slice';
 
 export const errorMiddleware: Middleware = ({dispatch}) => (next) => (action) => {
 
-  if ('error' in action) {
+  if (action && 'error' in action) {
     const errorData = action.payload?.data;
     if (typeof errorData === 'object' && errorData?.errorMessage) {
       // console.log('testMiddleware_error', errorData.errorMessage);
