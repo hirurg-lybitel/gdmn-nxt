@@ -1,6 +1,6 @@
 import { IContactHierarchy, IRequestResult } from "@gsbelarus/util-api-types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
-import { baseUrl } from '../../const';
+import { baseUrlApi } from '../../const';
 
 interface IGroups {
   groups: IContactHierarchy[];
@@ -11,11 +11,11 @@ type IContactGroupsRequestResult = IRequestResult<IGroups>;
 export const contactGroupApi = createApi({
   reducerPath: 'contactGroup',
   tagTypes: ['Groups'],
-  baseQuery: fetchBaseQuery({ baseUrl }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
   endpoints: (builder) => ({
     getGroups: builder.query<IContactHierarchy[], void>({
       query: () => `contactgroups`,
-      async onQueryStarted(){console.log('⏩ request', "GET", `${baseUrl}contactgroups`)},
+      async onQueryStarted(){console.log('⏩ request', "GET", `${baseUrlApi}contactgroups`)},
       transformResponse: (response: IContactGroupsRequestResult) => response.queries?.groups || [],
       providesTags: (result, error) =>
       result
@@ -29,7 +29,7 @@ export const contactGroupApi = createApi({
 
     }),
     updateGroup: builder.mutation<IContactGroupsRequestResult, Partial<IContactHierarchy>>({
-      async onQueryStarted({ID:id}){console.log('⏩ request', "PUT", `${baseUrl}contactgroups/${id}`)},
+      async onQueryStarted({ID:id}){console.log('⏩ request', "PUT", `${baseUrlApi}contactgroups/${id}`)},
       query(body) {
         const {ID:id} = body;
         return {
@@ -49,7 +49,7 @@ export const contactGroupApi = createApi({
             : [{ type: 'Groups', id: 'LIST' }]
     }),
     addGroup: builder.mutation<IContactHierarchy[], Partial<IContactHierarchy>>({
-      async onQueryStarted(){console.log('⏩ request', "POST", `${baseUrl}contactgroups`)},
+      async onQueryStarted(){console.log('⏩ request', "POST", `${baseUrlApi}contactgroups`)},
       query(body) {
         return {
           url: `contactgroups`,
@@ -67,7 +67,7 @@ export const contactGroupApi = createApi({
           : [{ type: 'Groups', id: 'LIST' }],
     }),
     deleteGroup: builder.mutation<{id: number}, number>({
-      async onQueryStarted(id){console.log('⏩ request', "DELETE", `${baseUrl}contactgroups/${id}`)},
+      async onQueryStarted(id){console.log('⏩ request', "DELETE", `${baseUrlApi}contactgroups/${id}`)},
       query(id) {
         return {
           url: `contactgroups/${id}`,

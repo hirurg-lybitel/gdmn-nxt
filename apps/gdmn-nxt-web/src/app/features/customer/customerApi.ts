@@ -1,5 +1,5 @@
 import { IContactWithID, IContactWithLabels } from '@gsbelarus/util-api-types';
-import { baseUrl } from '../../const';
+import { baseUrlApi } from '../../const';
 
 const _headers = {
   Accept: 'application/json',
@@ -14,9 +14,9 @@ const customerAPI = {
   customers: {
     async list(): Promise<any> {
       const startTimeM = new Date().getTime();
-      console.log('⏩ request', "GET", `${baseUrl}contacts`);
+      console.log('⏩ request', "GET", `${baseUrlApi}contacts`);
 
-      const response = await fetch(`${baseUrl}contacts`, {
+      const response = await fetch(`${baseUrlApi}contacts`, {
         method: "GET",
         headers: _headers
       });
@@ -37,9 +37,9 @@ const customerAPI = {
     },
     async listByRootID(rootId: string): Promise<any> {
       const startTimeM = new Date().getTime();
-      console.log('⏩ request', "GET", `${baseUrl}contacts/rootId/${rootId}`);
+      console.log('⏩ request', "GET", `${baseUrlApi}contacts/rootId/${rootId}`);
 
-      const response = await fetch(`${baseUrl}contacts/rootId/${rootId}`, {
+      const response = await fetch(`${baseUrlApi}contacts/rootId/${rootId}`, {
         method: "GET",
         headers: _headers
       });
@@ -59,9 +59,9 @@ const customerAPI = {
 
     },
     async update(customerData: IContactWithLabels): Promise<any> {
-      console.log('request', "PUT", `${baseUrl}contacts/${customerData.ID}`);
+      console.log('request', "PUT", `${baseUrlApi}contacts/${customerData.ID}`);
 
-      const response = await fetch(`${baseUrl}contacts/${customerData.ID}`, {
+      const response = await fetch(`${baseUrlApi}contacts/${customerData.ID}`, {
         method: "PUT",
         headers: _headers,
         body: JSON.stringify(customerData)
@@ -78,9 +78,9 @@ const customerAPI = {
       return resBodу;
     },
     async add(customer: IContactWithLabels): Promise<IContactWithLabels | IError> {
-      console.log('request', "POST", `${baseUrl}contacts`);
+      console.log('request', "POST", `${baseUrlApi}contacts`);
 
-      const response = await fetch(`${baseUrl}contacts`, {
+      const response = await fetch(`${baseUrlApi}contacts`, {
         method: "POST",
         headers: _headers,
         body: JSON.stringify(customer)
@@ -98,9 +98,9 @@ const customerAPI = {
       return responseBodу;
     },
     async delete(id: number): Promise< any | IError> {
-      console.log('request', "DELETE", `${baseUrl}contacts/${id}`);
+      console.log('request', "DELETE", `${baseUrlApi}contacts/${id}`);
 
-      const response = await fetch(`${baseUrl}contacts/${id}`, {
+      const response = await fetch(`${baseUrlApi}contacts/${id}`, {
         method: "DELETE",
         headers: _headers
       });
@@ -117,9 +117,9 @@ const customerAPI = {
     },
     async hierarchy(): Promise<any> {
       const startTimeM = new Date().getTime();
-      console.log('⏩ request', "GET", `${baseUrl}contacts/hierarchy`);
+      console.log('⏩ request', "GET", `${baseUrlApi}contacts/hierarchy`);
 
-      const response = await fetch(`${baseUrl}contacts/hierarchy`, {
+      const response = await fetch(`${baseUrlApi}contacts/hierarchy`, {
         method: "GET",
         headers: _headers
       });

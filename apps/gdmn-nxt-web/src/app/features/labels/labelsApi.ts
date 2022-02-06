@@ -1,6 +1,6 @@
 import { IRequestResult, ILabelsContact } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrl } from '../../const';
+import { baseUrlApi } from '../../const';
 
 export interface ILabels {
   labels: ILabelsContact[];
@@ -11,7 +11,7 @@ export type ILabelsContactRequestResult = IRequestResult<ILabels>;
 export const labelsApi = createApi({
   reducerPath: 'labels',
   tagTypes: ['labelsContact'],
-  baseQuery: fetchBaseQuery({ baseUrl }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
   endpoints: (builder) => ({
     getLabelsContact: builder.query<ILabelsContactRequestResult, number | void>({
       query: (contactId?) => `contacts/labels${contactId ? `/${contactId}` : ``}`,

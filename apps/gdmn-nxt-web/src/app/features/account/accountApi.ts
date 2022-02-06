@@ -1,6 +1,6 @@
 import { IAccount, IRequestResult, IWithID } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrl } from '../../const';
+import { baseUrlApi } from '../../const';
 
 type IAccountWithID = IAccount & IWithID;
 
@@ -12,7 +12,7 @@ export type IAccountRequestResult = IRequestResult<IAccounts>;
 
 export const accountApi = createApi({
   reducerPath: 'account',
-  baseQuery: fetchBaseQuery({ baseUrl }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
   tagTypes: ['Accounts'],
   endpoints: (builder) => ({
     getAllAccounts: builder.query<IAccountRequestResult, void>({
