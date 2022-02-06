@@ -19,7 +19,7 @@
             "production": {
               "optimization": true,
               "extractLicenses": true,
-              "inspect": false,
+              "inspect": true,
               "fileReplacements": [
                 {
                   "replace": "apps/gdmn-nxt-server/src/environments/environment.ts",
