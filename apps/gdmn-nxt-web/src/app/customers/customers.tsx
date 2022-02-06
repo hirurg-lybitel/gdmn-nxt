@@ -11,10 +11,8 @@ import {
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
-import ReportParams from '../report-params/report-params';
 import React, { useEffect, useState } from 'react';
-import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
-import { Box, List, ListItemButton, Snackbar } from '@mui/material';
+import { Box, Card, List, ListItemButton, Snackbar, Container, Grid } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -25,10 +23,10 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy, fetchCustomersByRootID } from '../features/customer/actions';
+import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IContactWithLabels, ILabelsContact, IResultError } from '@gsbelarus/util-api-types';
+import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
 import SalesFunnel from '../sales-funnel/sales-funnel';
@@ -37,6 +35,7 @@ import CustomTreeView from '../custom-tree-view/custom-tree-view';
 import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
 import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
 import { clearError } from '../features/error-slice/error-slice';
+import ReconciliationAct from "../pages/UserReports/ReconciliationAct";
 
 
 const labelStyle: React.CSSProperties = {
@@ -270,7 +269,7 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
       return;
     }
-    setReconciliationParamsOpen(true);
+    setReconciliationShow(true);
   };
 
   const handleSalesFunnelClick = () => {
@@ -280,18 +279,6 @@ export function Customers(props: CustomersProps) {
   const handleSalesFunnelBackOnClick = () => {
     setSalesFunnelOpen(false);
   }
-
-  /** Save report params */
-  const handleSaveClick = (dates: DateRange<Date>) => {
-    setParamsDates(dates);
-    setReconciliationParamsOpen(false);
-    setReconciliationShow(true);
-  };
-
-  /** Cancel report params */
-  const handleCancelClick = () => {
-    setReconciliationParamsOpen(false);
-  };
 
   /** Close reconciliation report */
   const handleReconcilitationBackOnClick = () => {
@@ -389,11 +376,7 @@ export function Customers(props: CustomersProps) {
         <Button onClick={handleReconcilitationBackOnClick} variant="contained" size="large" startIcon={<ArrowBackIcon />}>
           Вернуться
         </Button>
-        <ReconciliationStatement
-          custId={currentOrganization}
-          dateBegin={paramsDates[0]}
-          dateEnd={paramsDates[1]}
-        />
+        <ReconciliationAct customerId={currentOrganization} />
       </Stack>
     );
   };
@@ -410,6 +393,7 @@ export function Customers(props: CustomersProps) {
   };
 
   return (
+
     <Stack direction="column">
       <Stack direction="row">
         <Box style={{ height: '800px'}}>
@@ -462,12 +446,6 @@ export function Customers(props: CustomersProps) {
           />
         </div>
       </Stack>
-      <ReportParams
-        open={reconciliationParamsOpen}
-        dates={paramsDates}
-        onSaveClick={handleSaveClick}
-        onCancelClick={handleCancelClick}
-      />
       {openEditForm ?
         <CustomerEdit
           open={openEditForm}
