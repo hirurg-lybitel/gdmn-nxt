@@ -63,7 +63,6 @@ const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
           fontSize: 2,
           color: '#1976d2'
         }}
-        key={node.ID}
         nodeId={node.ID.toString()}
         onContextMenu={rightClick}
         label={
@@ -86,7 +85,7 @@ const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
         }
       >
         {Array.isArray(tree.getChilds(node, false).results)
-            ? tree.getChilds(node, false).results.map((node) => <RecursiveCustomizedTreeItem {...props} node={node}  />)
+            ? tree.getChilds(node, false).results.map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node}  />)
             : null}
 
       </TreeItem>
@@ -161,7 +160,7 @@ export function CustomTreeView(props: CustomTreeViewProps) {
       {tree.all
         .filter((node) => node.PARENT === 0)
         .sort((a, b) => Number(a.LB) - Number(b.LB))
-        .map((node) => <RecursiveCustomizedTreeItem {...props} node={node} />)}
+        .map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
     </TreeView>
   </Box>
   );
