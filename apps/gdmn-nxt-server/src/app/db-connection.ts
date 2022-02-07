@@ -20,8 +20,9 @@ interface IDBSessions {
 const sessions: IDBSessions = {};
 const semaphore = new Semaphore('dbSessions');
 
+//TODO: время жизни сессии вынести с настройки
 /** Minimal time of life of open unused attachment */
-const minTimeOfLife = 60 * 60 * 1000;
+const minTimeOfLife = 1 * 60 * 1000;
 
 const releaseSessions = () => {
   const t = new Date().getTime();
@@ -46,6 +47,13 @@ const cleanupInterval = setInterval(
     await semaphore.acquire();
     try {
       await releaseSessions();
+
+      for (const sessionId of Object.keys(sessions)) {
+        if (!sessions[sessionId].attachment.isValid) {
+          console.log(`DB Session ${sessionId} has been deleted due to inactivity...`);
+          delete sessions[sessionId];
+        }
+      }
     } finally {
       semaphore.release();
     }
