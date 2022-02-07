@@ -2,12 +2,11 @@ import { IAccount, IAccountWithID, IDataSchema, IRequestResult, IWithID } from "
 import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
-import { closeConnection, setConnection } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
 import { sendEmail } from "./mail";
 
 export const upsertAccount: RequestHandler = async (req, res) => {
-  const { attachment, transaction} = await setConnection();
-
+  const { attachment, transaction} = await startTransaction(req.sessionID);
   try {
     let ID: number;
     let insert: boolean;  // we know that this is an insert of a new account by the absence of the ID field
@@ -96,7 +95,7 @@ export const upsertAccount: RequestHandler = async (req, res) => {
 
     const sql = `UPDATE OR INSERT INTO usr$crm_account (${actualFieldsNames}) VALUES (${paramsString}) MATCHING (ID) RETURNING ${allFieldsNames}`;
 
-    const row = await attachment.executeReturning(transaction, sql, params);
+    const row = await attachment.executeSingleton(transaction, sql, params);
     await transaction.commit();
 
     const result: IRequestResult<{ accounts: IAccountWithID[] }> = {
@@ -145,12 +144,12 @@ export const upsertAccount: RequestHandler = async (req, res) => {
     res.sendStatus(500);
   }
   finally {
-    await closeConnection(attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   }
 };
 
 export const getAccounts: RequestHandler = async (req, res) => {
-  const { attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await getReadTransaction(req.sessionID);
 
   try {
     const _schema: IDataSchema = {
@@ -228,6 +227,6 @@ export const getAccounts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection(attachment, transaction);
+    await releaseReadTransaction(req.sessionID);
   }
 };

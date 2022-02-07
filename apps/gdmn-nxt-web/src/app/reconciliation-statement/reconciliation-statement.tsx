@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, Fragment } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
@@ -120,8 +120,8 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                   </thead>
                   <tbody>
                     {
-                      data?.queries.customerDebt?.map( (d: any) =>
-                        <tr key={d['USR$NUMBER']}>
+                      data?.queries.customerDebt?.map( (d: any, idx) =>
+                        <tr key={idx}>
                           <td>{d['USR$NUMBER']}</td>
                           <td>{d['SALDO'] <= 0 ? fv(-d['SALDO'], 'customerDebt', 'SALDO') : undefined}</td>
                           <td>{d['SALDO'] > 0 ? fv(d, 'customerDebt', 'SALDO') : undefined}</td>
@@ -129,9 +129,9 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                       )
                     }
                   </tbody>
+                  <tfoot>
                     <tr><th>ИТОГО:</th><th></th><th></th></tr>
                     <tr><th colSpan={3}>Долг</th></tr>
-                  <tfoot>
                   </tfoot>
                 </table>
               </div>
@@ -146,13 +146,13 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                 </colgroup>
                 <thead>
                   <tr>
-                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th>{s}</th> )}
+                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th key={s}>{s}</th> )}
                   </tr>
                 </thead>
                 <tbody>
                   {data?.queries.customerAct?.map(
-                    (r: any) =>
-                      <tr>
+                    (r: any, idx) =>
+                      <tr key={idx}>
                         <td>{fv(r, 'customerAct', 'DOCUMENTDATE')}</td>
                         <td>{r['SUMACT']}</td>
                         <td>{skipPatrName(r['EMPLNAME'])}</td>
@@ -190,17 +190,17 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                   </tr>
                 </thead>
                 <tbody>
-                  {[...new Set(data.queries.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any) => {
+                  {[...new Set(data.queries.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any, idx) => {
                     const filtered = data.queries.movement.filter( (m: any) => m.JOBNUMBER === j );
 
                     return (
-                      <>
+                      <Fragment key={idx}>
                         <tr>
                           <td colSpan={6}>{j}</td>
                         </tr>
                         {
-                          filtered.map( (l: any) =>
-                            <tr>
+                          filtered.map( (l: any, i) =>
+                            <tr key={i}>
                               <td>{l.NUMBER}</td>
                               <td>{l.DOCUMENTDATE}</td>
                               <td>{l.ALIAS}</td>
@@ -215,7 +215,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                           <td>{filtered.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0) || null}</td>
                           <td>{filtered.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) || null}</td>
                         </tr>
-                      </>
+                      </Fragment>
                     );
                   }
                   )}
@@ -296,7 +296,6 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
           </div>
         :
         <CircularIndeterminate open={isFetching}/>
-          // <div>no data</div>
       }
     </Paper>
   );
