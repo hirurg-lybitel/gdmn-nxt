@@ -7,12 +7,13 @@ import {
   GridFilterItem,
   GridFilterInputValueProps,
   GridFilterModel,
-  GridFilterOperator } from '@mui/x-data-grid-pro';
+  GridFilterOperator,
+  GridOverlay} from '@mui/x-data-grid-pro';
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { useEffect, useState } from 'react';
-import { Box, Card, List, ListItemButton, Snackbar, Container, Grid } from '@mui/material';
+import { Box, Card, List, ListItemButton, Snackbar, Container, Grid, LinearProgress } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -36,6 +37,9 @@ import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
 import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
 import { clearError } from '../features/error-slice/error-slice';
 import ReconciliationAct from "../pages/UserReports/ReconciliationAct";
+import { useTheme } from '@mui/system';
+import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
+import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
 
 
 const labelStyle: React.CSSProperties = {
@@ -81,7 +85,6 @@ export function Customers(props: CustomersProps) {
   const [addLabelsContact, { error: addLabelsError }] = useAddLabelsContactMutation();
   const [deleteLabelsContact, { error: deleteLabelsError}] = useDeleteLabelsContactMutation();
 
-
   const { data: labelsContact, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
 
   const { data: groups, isFetching: groupIsFetching } = useGetGroupsQuery();
@@ -90,6 +93,8 @@ export function Customers(props: CustomersProps) {
   const [deleteGroup] = useDeleteGroupMutation();
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
+
+  const theme = useTheme();
 
   function CurrentLabelFilter(props: GridFilterInputValueProps) {
     const { item, applyValue, focusElementRef } = props;
@@ -142,7 +147,6 @@ export function Customers(props: CustomersProps) {
     { field: 'labels',
       headerName: 'Метки',
       flex: 1,
-      width: 300,
       filterOperators: labelsOnlyOperators,
       renderCell: (params) => {
 
@@ -206,6 +210,8 @@ export function Customers(props: CustomersProps) {
 
               </List>
               : null}
+
+
 
           </Stack>
         );
@@ -370,16 +376,6 @@ export function Customers(props: CustomersProps) {
 
   };
 
-  if (reconciliationShow) {
-    return (
-      <Stack direction="column" spacing={2}>
-        <Button onClick={handleReconcilitationBackOnClick} variant="contained" size="large" startIcon={<ArrowBackIcon />}>
-          Вернуться
-        </Button>
-        <ReconciliationAct customerId={currentOrganization} />
-      </Stack>
-    );
-  };
 
   if (salesFunnelOpen) {
     return (
@@ -392,12 +388,14 @@ export function Customers(props: CustomersProps) {
     );
   };
 
-  return (
 
+  return (
     <Stack direction="column">
       <Stack direction="row">
         <Box style={{ height: '800px'}}>
-          <Button onClick={contactGroupHandlers.handleAdd} disabled={groupIsFetching} startIcon={<AddIcon/>}>Добавить</Button>
+          <Box sx={{ mb: 1 }}>
+            <Button onClick={contactGroupHandlers.handleAdd} disabled={groupIsFetching} startIcon={<AddIcon/>}>Добавить</Button>
+          </Box>
           <CustomTreeView
             hierarchy={groups || []}
             tree={tree}
@@ -414,14 +412,23 @@ export function Customers(props: CustomersProps) {
             />
             : null}
         </Box>
-        <div style={{ width: '100%', height: '800px'}}>
-          <Stack direction="row">
-            <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
-            <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
-            <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
-            <Button onClick={handleReconciliationClick} disabled={customersLoading} startIcon={<SummarizeIcon />}>Акт сверки</Button>
-            <Button onClick={handleSalesFunnelClick} disabled={customersLoading} startIcon={<FilterAltIcon />}>Воронка продаж</Button>
-          </Stack>
+        {/* <div style={{ width: '100%', height: '800px'}}>         */}
+        <Stack direction="column"  style={{ width: '100%'}}>
+          <Box sx={{ mb: 1 }}>
+            <Stack direction="row">
+              <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
+              <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+              <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
+              <Button
+                component="a"
+                href={`reports/reconciliation/${currentOrganization}`}
+                disabled={customersLoading}
+                startIcon={<SummarizeIcon />}
+              >Акт сверки</Button>
+              <Button onClick={handleSalesFunnelClick} disabled={customersLoading} startIcon={<FilterAltIcon />}>Воронка продаж</Button>
+            </Stack>
+          </Box>
+          <Card style={{  height: '800px', boxShadow: `${(theme.shadows as Array<any>)[2]}` }}>
           <DataGridPro
             localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
             rows={
@@ -440,11 +447,15 @@ export function Customers(props: CustomersProps) {
             onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
             components={{
               Toolbar: GridToolbar,
+              LoadingOverlay: CustomLoadingOverlay,
+              NoRowsOverlay: CustomNoRowsOverlay
             }}
             filterModel={filterModel}
             onFilterModelChange={(model, detail) => setFilterModel(model)}
           />
-        </div>
+          </Card>
+          </Stack>
+        {/* </div> */}
       </Stack>
       {openEditForm ?
         <CustomerEdit

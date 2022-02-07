@@ -1,15 +1,17 @@
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import DateRangePicker, { DateRange } from '@mui/lab/DateRangePicker';
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
-import { Autocomplete, Button, Card, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField } from "@mui/material";
-import { Box } from "@mui/system";
+import { Autocomplete, Button, Card, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from "@mui/material";
+import { Box, useTheme } from "@mui/system";
 import { createRef, Fragment, useEffect, useRef, useState } from "react";
 import ruLocale from 'date-fns/locale/ru';
 import { useDispatch, useSelector } from "react-redux";
 import { customersSelectors } from "../../features/customer/customerSlice";
 import { IContactWithLabels } from "@gsbelarus/util-api-types";
 import ReconciliationStatement from "../../reconciliation-statement/reconciliation-statement";
-
+import { useParams } from "react-router-dom";
+import { fetchCustomers } from "../../features/customer/actions";
+import { RootState } from "../../store";
 
 const filterOptions = createFilterOptions({
   matchFrom: 'any',
@@ -22,23 +24,27 @@ interface ReconciliationAct {
   customerId?: number;
 }
 
+interface IInputParams {
+  cutomerId: number | null;
+  dateBegin: Date | null;
+  dateEnd: Date | null;
+}
+
+interface IInitState {
+  cutomerId: number | null;
+  dates: DateRange<Date>;
+}
+const initState: IInitState = {
+  cutomerId: null,
+  dates: [new Date(), new Date()]
+}
+
 const ReconciliationAct = (props: ReconciliationAct) => {
-  const {customerId: inCustomerId} = props
+  const { customerId: id } = useParams();
 
-  interface IInputParams {
-    cutomerId: number | null;
-    dateBegin: Date | null;
-    dateEnd: Date | null;
-  }
+  const inCustomerId = Number(id)
 
-  interface IInitState {
-    cutomerId: number | null;
-    dates: DateRange<Date>;
-  }
-  const initState: IInitState = {
-    cutomerId: null,
-    dates: [new Date(), new Date()]
-  }
+  const theme = useTheme();
 
   const [customerId, setCustomerId] = useState(inCustomerId ? inCustomerId : initState.cutomerId);
   const [dates, setDates] = useState<DateRange<Date>>(initState.dates);
@@ -47,13 +53,16 @@ const ReconciliationAct = (props: ReconciliationAct) => {
   const [inputParams, setInputParams] = useState<IInputParams>();
 
   const allCustomers = useSelector(customersSelectors.selectAll);
+  const { loading: customersLoading } = useSelector((state: RootState) => state.customers);
 
   const scollToRef = useRef<HTMLInputElement>(null);
 
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log('useEffect');
-  })
+    dispatch(fetchCustomers());
+  }, [])
+
 
   const handleGenerate = () => {
     setInputParams((prevState) => ({
@@ -74,14 +83,15 @@ const ReconciliationAct = (props: ReconciliationAct) => {
     setGenerate(false);
   }
 
+
   return(
     <Box>
       <Stack direction="column" spacing={2}>
         {/* <Button  variant="contained" size="large">
           Вернуться
         </Button> */}
-        <Card>
-          <CardHeader title="Акт сверки"/>
+        <Card sx={{ boxShadow: `${(theme.shadows as Array<any>)[2]}` }}>
+          <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
             <Grid container spacing={3} direction={"column"}>
@@ -113,6 +123,8 @@ const ReconciliationAct = (props: ReconciliationAct) => {
                     />
                     )
                   }
+                  loading={customersLoading}
+                  loadingText="Загрузка данных..."
                 />
               </Grid>
               <Grid item>
@@ -159,8 +171,9 @@ const ReconciliationAct = (props: ReconciliationAct) => {
         </CardActions>
         </Card>
 
+
         {generate
-          ? <Card sx={{ p: 1 }} ref={scollToRef}
+          ? <Card sx={{ p: 1, boxShadow: `${(theme.shadows as Array<any>)[2]}` }} ref={scollToRef}
           onChange={()=> console.log('onChange')}
           onScroll={()=> console.log('onChange')}
           onBlur={()=> console.log('onChange')}
