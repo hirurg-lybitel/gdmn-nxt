@@ -3,17 +3,26 @@ import { config } from "./db-config";
 
 const { host, port, db, username, password } = config;
 
+let client: Client;
+
 export const setConnection = async () => {
-  const client = createNativeClient(getDefaultLibraryFilename());
+  if (!client?.isValid) {
+    client = createNativeClient(getDefaultLibraryFilename());
+  }
   const attachment = await client.connect(`${host}/${port}:${db}`, { username, password });
   const transaction = await attachment.startTransaction({ isolation: TransactionIsolation.READ_COMMITTED, readCommittedMode: 'RECORD_VERSION', waitMode: 'NO_WAIT' });
-  return { client, attachment, transaction };
+  return { attachment, transaction };
 };
 
-export const closeConnection = async (client: Client, attachment: Attachment, transaction: Transaction) => {
+export const closeConnection = async (attachment: Attachment, transaction: Transaction) => {
   if (transaction.isValid) {
     await transaction.commit();
   }
   await attachment.disconnect();
-  await client.dispose();
 };
+
+export const disposeConnection = async () => {
+  if (client?.isValid) {
+    await client.dispose();
+  }
+}; 

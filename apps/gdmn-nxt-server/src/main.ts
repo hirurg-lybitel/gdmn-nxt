@@ -203,6 +203,7 @@ app.get('/logout', (req, res) => {
 
 const router = express.Router();
 
+/*
 router.use(
   (req, res, next) => {
     console.log('123');
@@ -215,6 +216,7 @@ router.use(
     }
   }
 );
+*/
 
 router.get('/test', (req, res) => {
   if (req.isAuthenticated()) {

@@ -4,7 +4,7 @@ import { closeConnection, setConnection } from "./db-connection";
 
 export const getContacts: RequestHandler = async (req, res) => {
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await setConnection();
 
   try {
     const _schema = { };
@@ -79,14 +79,14 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
 
 export const updateContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
   const { NAME, PHONE, EMAIL, PARENT } = req.body;
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await setConnection();
 
   try {
     try {
@@ -146,14 +146,14 @@ export const updateContact: RequestHandler = async (req, res) => {
       return res.status(500).send({ "errorMessage": error });
 
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
 
 export const addContact: RequestHandler = async (req, res) => {
 
   const { NAME, PHONE, EMAIL, PARENT, labels } = req.body;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await setConnection();
 
   try {
     const resultSet = await attachment.executeQuery(
@@ -233,14 +233,14 @@ export const addContact: RequestHandler = async (req, res) => {
       return res.status(500).send({ "errorMessage": error.message});
 
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   };
 };
 
 
 export const deleteContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await setConnection();
 
   try {
     await attachment.execute(
@@ -262,7 +262,7 @@ export const deleteContact: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send({ "errorMessage": error.message});
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
 
@@ -270,7 +270,7 @@ export const deleteContact: RequestHandler = async (req, res) => {
 
 export const getContactHierarchy : RequestHandler = async (req, res) => {
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await setConnection();
 
   try {
     const _schema = { };
@@ -313,7 +313,7 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
 

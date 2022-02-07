@@ -6,7 +6,7 @@ import { resultError } from "./responseMessages";
 
 const get: RequestHandler = async (req, res)  => {
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await setConnection();
 
   try {
     const _schema = { };
@@ -55,7 +55,7 @@ const get: RequestHandler = async (req, res)  => {
 
     return res.status(500).send(resultError(error.message));
   }finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
 
@@ -71,7 +71,7 @@ const add: RequestHandler = async(req, res) => {
 
   if (PARENT === 0) PARENT = null;
 
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await setConnection();
 
   try {
 
@@ -132,7 +132,7 @@ const add: RequestHandler = async(req, res) => {
       return res.status(500).send(resultError(error.message));
 
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   };
 
 }
@@ -149,7 +149,7 @@ const update: RequestHandler = async(req, res) => {
 
   if (PARENT === 0) PARENT = null;
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await setConnection();
 
   try {
 
@@ -217,14 +217,14 @@ const update: RequestHandler = async(req, res) => {
     return res.status(500).send(resultError(error.message));
 
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 
 }
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const {client, attachment, transaction} = await setConnection();
+  const {attachment, transaction} = await setConnection();
 
   let result: ResultSet;
   try {
@@ -265,7 +265,7 @@ const remove: RequestHandler = async(req, res) => {
   } finally {
 
     await result.close()
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 
 };

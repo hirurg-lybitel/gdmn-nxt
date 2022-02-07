@@ -122,7 +122,7 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       usr$crm_account acc
     WHERE UPPER(acc.usr$email) = ?
   `;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await setConnection();
 
   try {
     const rs = await attachment.executeQuery(transaction, query, [email.toLocaleUpperCase()]);
@@ -140,6 +140,6 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       await rs.close();
     }
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };

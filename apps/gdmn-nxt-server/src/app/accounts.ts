@@ -6,7 +6,7 @@ import { closeConnection, setConnection } from "./db-connection";
 import { sendEmail } from "./mail";
 
 export const upsertAccount: RequestHandler = async (req, res) => {
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await setConnection();
 
   try {
     let ID: number;
@@ -145,12 +145,12 @@ export const upsertAccount: RequestHandler = async (req, res) => {
     res.sendStatus(500);
   }
   finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
 
 export const getAccounts: RequestHandler = async (req, res) => {
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await setConnection();
 
   try {
     const _schema: IDataSchema = {
@@ -228,6 +228,6 @@ export const getAccounts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await closeConnection(attachment, transaction);
   }
 };
