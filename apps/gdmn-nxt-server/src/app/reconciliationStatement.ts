@@ -1,8 +1,7 @@
 import { IDataSchema, IQuery, IDataRecord, IRequestResult } from "@gsbelarus/util-api-types";
 import { parseIntDef } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
-import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
-import { config } from "./db-config";
+import { getReadTransaction, releaseReadTransaction } from "./db-connection";
 
 export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
@@ -11,17 +10,9 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
   const customerId = parseIntDef(req.params.custId, 148_333_193);
   const holdingId = 148_284_864;
   const account_id = 148529707;
-
-  let client: Client;
-  let attachment: Attachment;
-  let transaction: Transaction;
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
-    const { host, port, db } = config;
-    client = createNativeClient(getDefaultLibraryFilename());
-    attachment = await client.connect(`${host}/${port}:${db}`);
-    transaction = await attachment.startTransaction();
-
     const _schema: IDataSchema = {
       customerDebt: {
         SALDO: {
@@ -234,8 +225,6 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await transaction?.commit();
-    await attachment?.disconnect();
-    await client?.dispose();
+    await releaseReadTransaction(req.sessionID);
   }
 };
