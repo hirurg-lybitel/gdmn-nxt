@@ -29,9 +29,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const Api = {
-  v1: "/api/v1",
-  v2: "/api/v2",
-}
+  v1: '/api/v1',
+  v2: '/api/v2'
+};
 
 interface IBaseUser {
   userName: string;
@@ -76,6 +76,7 @@ passport.use(new Strategy({
         }
 
         if (res.result === 'SUCCESS') {
+          console.log('valid gedemin user');
           return done(null, { userName, gedeminUser: true });
         } else {
           return done(null, false);
@@ -89,6 +90,7 @@ passport.use(new Strategy({
         }
 
         if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
+          console.log('valid user');
           return done(null, { userName });
         } else {
           return done(null, false);
@@ -133,39 +135,42 @@ passport.deserializeUser(async (un: string, done) => {
 
 const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
 
-app.use(session({
-  name: 'Sid',
-  secret: 'kjdsfgfghfghfghfghfghfghhf',
-  resave: false,
-  saveUninitialized: true,
-  store: sessionStore,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000
+const middlewares = [
+  session({
+    name: 'Sid',
+    secret: 'kjdsfgfghfghfghfghfghfghhf',
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000
+    }
+  }),
+  passport.initialize(),
+  passport.session()
+];
+
+app.use(middlewares);
+
+app.get('/test', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.send(`Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
+  } else {    
+    return res.send(`Not authenticated!`);
   }
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.get('/', (_, res) => {
-  res.send('<h1>Home</h1><p>Please <a href="/register">register</a></p>');
 });
 
-app.get('/api', (_, res) => {
-  res.send({ message: 'Welcome to gdmn-nxt-server!' });
-});
-
-app.get('/api/v1/user', (req, res) => {
+app.get('/user', (req, res) => {
   req.isAuthenticated() ?
     res.json(req.user)
     :
     res.json({ success: false });
 });
 
-app.route('/api/v1/user/signin')
+app.route('/user/signin')
   .post(
     passport.authenticate('local', {}),
-    async (req, res) => {
+    (req, res) => {
       const { userName } = req.body;
 
       return res.json(authResult(
@@ -175,7 +180,7 @@ app.route('/api/v1/user/signin')
     },
   );
 
-app.route('/api/v1/user/forgot-password')
+app.route('/user/forgot-password')
   .post(
     async (req, res) => {
       const { email } = req.body;
@@ -188,16 +193,36 @@ app.route('/api/v1/user/forgot-password')
       return res.sendStatus(500);
     });
 
-app.get('/api/v1/logout', (req, res) => {
+app.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy( err => { if (err) console.error(err); } );
   } else {
     res.end();
   }
-  //res.clearCookie('Sid', { path: '/' }).json({});
 });
 
 const router = express.Router();
+
+router.use(
+  (req, res, next) => {
+    console.log('123');
+    if (req.isAuthenticated()) {
+      console.log('123-OK');
+      return next();
+    } else {
+      console.log('123-BAD');
+      return res.sendStatus(403);
+    }
+  }
+);
+
+router.get('/test', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.send(`from router: Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
+  } else {    
+    return res.send(`from router: Not authenticated!`);
+  }
+});
 
 router.get('/contacts', getContacts);
 router.get('/contacts/taxId/:taxId', getContacts);
@@ -224,9 +249,9 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
-app.use('/api/v1', /*passport.authenticate('local', {}),*/ router);
+app.use('/api/v1', router);
 
-app.get('*', () => console.log('Unknown request'));
+app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
