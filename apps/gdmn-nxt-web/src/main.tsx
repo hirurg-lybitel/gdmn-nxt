@@ -14,18 +14,23 @@ import Routes from './app/routes'
 import { registerMUI } from './mui-license';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
+import { UserState } from './app/features/user/userSlice';
 
 
 registerMUI();
 
 const Main = () => {
   const customization = useSelector((state: RootState) => state.settings.customization);
+  const { loginStage } = useSelector<RootState, UserState>( state => state.user );
+  const isLogged = (loginStage === 'CUSTOMER' || loginStage === 'EMPLOYEE')
+
+  console.log('isLogged', isLogged);
 
   return (
     <BrowserRouter>
       <StrictMode>
         <ThemeProvider theme={theme(customization)}>
-          <Routes />
+          <Routes isLogged={isLogged} />
         </ThemeProvider>
       </StrictMode>
     </BrowserRouter>

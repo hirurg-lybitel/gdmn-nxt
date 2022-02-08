@@ -177,7 +177,7 @@ const MainLayout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h1" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
             Портал БелГИСС
           </Typography>
           <IconButton

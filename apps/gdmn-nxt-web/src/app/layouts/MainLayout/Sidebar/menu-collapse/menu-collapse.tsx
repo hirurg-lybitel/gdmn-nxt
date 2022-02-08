@@ -15,8 +15,6 @@ export interface MenuCollapseProps {
 export function MenuCollapse(props: MenuCollapseProps) {
   const {menu} = props;
 
-  console.log('MenuCollapse');
-
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
 

@@ -3,9 +3,9 @@ import { ThemeOptions } from "@mui/material";
 export default function typography(theme: ThemeOptions) {
   return {
     h1: {
-      fontSize: '2rem',
+      fontSize: '1.5rem',
       fontWeight: 700,
-      color: theme.headColor,
+      color: theme.textColor,
     },
     h2: {
       fontSize: '0.8rem',
