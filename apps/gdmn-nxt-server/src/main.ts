@@ -12,7 +12,9 @@ import { getContacts, updateContact, addContact, deleteContact, getContactHierar
 import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 import contactGroups from './app/contactGrops';
-import { disposeConnection } from './app/db-connection';
+import { disposeConnection, getReadTransaction, releaseReadTransaction } from './app/db-connection';
+import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from './app/er/rdb-utils';
+import { IRDBFields, IRDBRelationFields, IRDBRelations } from './app/er/rdb-types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -260,6 +262,21 @@ const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
+
+let rdbFields: IRDBFields;
+let rdbRelations: IRDBRelations;
+let rdbRelationFields: IRDBRelationFields;
+let t = new Date().getTime();
+
+getReadTransaction('rdb')
+  .then( ({ attachment: a, transaction: t }) => Promise.all([
+    loadRDBFields(a, t), 
+    loadRDBRelations(a, t),
+    loadRDBRelationFields(a, t),
+  ]) )
+  .then( ([f, r, rf]) => (rdbFields = f, rdbRelations = r, rdbRelationFields = rf) )
+  .then( _ => console.log(`rdb data read in ${new Date().getTime() - t}ms`) )
+  .finally( () => releaseReadTransaction('rdb') );
 
 process
   .on('exit', code => {
