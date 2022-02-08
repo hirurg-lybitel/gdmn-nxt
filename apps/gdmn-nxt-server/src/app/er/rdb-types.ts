@@ -64,4 +64,4 @@ export interface IRDBRelationField {
 
 export interface IRDBRelationFields {
   [RDB$RELATION_NAME: string]: IRDBRelationField[];
-}
+};

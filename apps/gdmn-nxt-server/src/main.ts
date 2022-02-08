@@ -15,6 +15,8 @@ import contactGroups from './app/contactGrops';
 import { disposeConnection, getReadTransaction, releaseReadTransaction } from './app/db-connection';
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from './app/er/rdb-utils';
 import { IRDBFields, IRDBRelationFields, IRDBRelations } from './app/er/rdb-types';
+import { IAtFields, IAtRelationFields, IAtRelations } from './app/er/at-types';
+import { loadAtFields, loadAtRelationFields, loadAtRelations } from './app/er/at-utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -266,18 +268,31 @@ server.on('error', console.error);
 let rdbFields: IRDBFields;
 let rdbRelations: IRDBRelations;
 let rdbRelationFields: IRDBRelationFields;
+let atFields: IAtFields;
+let atRelations: IAtRelations;
+let atRelationFields: IAtRelationFields;
 let t = new Date().getTime();
 
 getReadTransaction('rdb')
-  .then( ({ attachment: a, transaction: t }) => Promise.all([
-    loadRDBFields(a, t), 
-    loadRDBRelations(a, t),
-    loadRDBRelationFields(a, t),
+  .then( ({ attachment, transaction }) => Promise.all([
+    loadRDBFields(attachment, transaction), 
+    loadRDBRelations(attachment, transaction),
+    loadRDBRelationFields(attachment, transaction),
+    loadAtFields(attachment, transaction),
+    loadAtRelations(attachment, transaction),
+    loadAtRelationFields(attachment, transaction),
   ]) )
-  .then( ([f, r, rf]) => (rdbFields = f, rdbRelations = r, rdbRelationFields = rf) )
+  .then( ([f, r, rf, af, ar, arf]) => (
+    rdbFields = f, 
+    rdbRelations = r, 
+    rdbRelationFields = rf,
+    atFields = af,
+    atRelations = ar,
+    atRelationFields = arf
+  ) )
   .then( _ => console.log(`rdb data read in ${new Date().getTime() - t}ms`) )
   .finally( () => releaseReadTransaction('rdb') );
-
+  
 process
   .on('exit', code => {
     disposeConnection();

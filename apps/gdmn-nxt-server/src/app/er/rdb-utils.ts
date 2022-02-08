@@ -62,9 +62,10 @@ export const loadRDBRelationFields = async (attachment: Attachment, transaction:
   try {
     return (await rs.fetchAsObject<IRDBRelationField>()).reduce( (p, r) => {
       if (!p[r.RDB$RELATION_NAME]) {
-        p[r.RDB$RELATION_NAME] = [];
+        p[r.RDB$RELATION_NAME] = [r];
+      } else {
+        p[r.RDB$RELATION_NAME].push(r);
       }
-      p[r.RDB$RELATION_NAME].push(r);
       return p;
     }, {} as IRDBRelationFields);
   } finally {
