@@ -13,6 +13,7 @@
     "lib": ["es2019", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@gsbelarus/ui-common-dialogs": ["libs/ui-common-dialogs/src/index.ts"],

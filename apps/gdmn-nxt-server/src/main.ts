@@ -12,11 +12,8 @@ import { getContacts, updateContact, addContact, deleteContact, getContactHierar
 import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 import contactGroups from './app/contactGrops';
-import { disposeConnection, getReadTransaction, releaseReadTransaction } from './app/db-connection';
-import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from './app/er/rdb-utils';
-import { IRDBFields, IRDBRelationFields, IRDBRelations } from './app/er/rdb-types';
-import { IAtFields, IAtRelationFields, IAtRelations } from './app/er/at-types';
-import { loadAtFields, loadAtRelationFields, loadAtRelations } from './app/er/at-utils';
+import { disposeConnection } from './app/db-connection';
+import { importERModel } from './app/er/er-utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -265,33 +262,8 @@ const server = app.listen(port, () => console.log(`Listening at http://localhost
 
 server.on('error', console.error);
 
-let rdbFields: IRDBFields;
-let rdbRelations: IRDBRelations;
-let rdbRelationFields: IRDBRelationFields;
-let atFields: IAtFields;
-let atRelations: IAtRelations;
-let atRelationFields: IAtRelationFields;
-let t = new Date().getTime();
-
-getReadTransaction('rdb')
-  .then( ({ attachment, transaction }) => Promise.all([
-    loadRDBFields(attachment, transaction), 
-    loadRDBRelations(attachment, transaction),
-    loadRDBRelationFields(attachment, transaction),
-    loadAtFields(attachment, transaction),
-    loadAtRelations(attachment, transaction),
-    loadAtRelationFields(attachment, transaction),
-  ]) )
-  .then( ([f, r, rf, af, ar, arf]) => (
-    rdbFields = f, 
-    rdbRelations = r, 
-    rdbRelationFields = rf,
-    atFields = af,
-    atRelations = ar,
-    atRelationFields = arf
-  ) )
-  .then( _ => console.log(`rdb data read in ${new Date().getTime() - t}ms`) )
-  .finally( () => releaseReadTransaction('rdb') );
+const t = new Date().getTime();
+importERModel().then( () => console.log(`ERModel imported in ${new Date().getTime() - t}ms`) );
   
 process
   .on('exit', code => {
@@ -303,7 +275,6 @@ process
   .on('SIGTERM', process.exit)
   .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
   .on('uncaughtException', console.error);
-
 
 ////////////////////////////////////////////////////////////////////////////
 // garbage
