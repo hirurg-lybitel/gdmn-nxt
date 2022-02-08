@@ -3,7 +3,7 @@ import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
 import { CircularIndeterminate } from '../circular-indeterminate/circular-indeterminate';
-import Paper from '@mui/material/Paper/Paper';
+import { Box } from '@mui/material';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
@@ -108,7 +108,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
   const fv = (rec: any, rs: string, fld: string) => formatValue(rec, rs, fld, schema);
 
   return (
-    <Paper sx={{ padding: '4rem' }}>
+    <Box>
       {
         data?.queries.customerDebt ?
           <div className={styles.container}>
@@ -297,7 +297,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
         :
         <CircularIndeterminate open={isFetching}/>
       }
-    </Paper>
+    </Box>
   );
 }
 

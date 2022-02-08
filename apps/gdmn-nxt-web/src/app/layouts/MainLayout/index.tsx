@@ -1,14 +1,58 @@
-import { AppBar, Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
-import { ReactChild, ReactFragment, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store';
-import { queryLogout, UserState } from '../features/user/userSlice';
+import { AppBar, Avatar, Box, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, SvgIconTypeMap, Toolbar, Typography, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
-import './page-header.module.less';
+import Settings from '@mui/icons-material/Settings';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
+import { queryLogout, UserState } from '../../features/user/userSlice';
+import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar/sidebar-view/sidebar-view';
+import { setStyleMode, toggleMenu } from '../../store/settingsSlice'
+import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { Box } from '@mui/system';
+
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
+  ...theme.mainContent,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
+  ...(menuOpened
+      ? {
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen
+         }),
+          marginLeft: 0,
+          width: `calc(100% - ${theme.drawerWidth}px)`,
+          [theme.breakpoints.down('md')]: {
+            marginLeft: '20px'
+          },
+          [theme.breakpoints.down('sm')]: {
+            marginLeft: '10px'
+          }
+      }
+      : {
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen
+          }),
+          [theme.breakpoints.up('md')]: {
+            marginLeft: -(theme.drawerWidth - 20),
+            width: `calc(100% - ${theme.drawerWidth}px)`
+          },
+          [theme.breakpoints.down('md')]: {
+              marginLeft: '20px',
+              width: `calc(100% - ${theme.drawerWidth}px)`,
+              padding: '16px'
+          },
+          [theme.breakpoints.down('sm')]: {
+              marginLeft: '10px',
+              width: `calc(100% - ${theme.drawerWidth}px)`,
+              padding: '16px',
+              marginRight: '10px'
+          }
+      })
+}));
 
 interface IMenuItem {
   type: 'item';
@@ -20,7 +64,6 @@ interface IMenuItem {
 interface IMenuDivider {
   type: 'divider'
 };
-
 export type MenuItem = IMenuItem | IMenuDivider;
 
 interface ICustomMenuProps {
@@ -28,6 +71,7 @@ interface ICustomMenuProps {
   handleClose: () => void;
   items: MenuItem[];
 };
+
 
 const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
   <Menu
@@ -79,16 +123,18 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     )}
   </Menu>;
 
-interface IPageHeaderProps {
-  menuItems: MenuItem[];
-  children: ReactChild | ReactFragment | null;
-};
-
-export function PageHeader({ menuItems, children }: IPageHeaderProps) {
+const MainLayout = () => {
+  const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>( state => state.user );
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [anchorMenuEl, setAnchorMenuEl] = useState(null);
+
+  const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
+
+  const handleDrawerToggle = () => {
+    dispatch(toggleMenu(!menuOpened));
+  }
 
   const profileMenuItems: MenuItem[] = [
     {
@@ -108,9 +154,17 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
     }
   ];
 
+
   return (
-    <Stack direction='column' width='100%'>
-      <AppBar position="static">
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          transition: menuOpened ? theme.transitions.create('width') : 'none'
+        }}
+      >
         <Toolbar>
           <IconButton
             size="large"
@@ -118,16 +172,16 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
-            onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
+            // onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
+            onClick={handleDrawerToggle}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
             Портал БелГИСС
           </Typography>
           <IconButton
             size="large"
-            color="inherit"
             onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
           >
             <Avatar />
@@ -139,14 +193,16 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
         handleClose={ () => setAnchorProfileEl(null) }
         items={profileMenuItems}
       />
-      <CustomMenu
-        anchorEl={anchorMenuEl}
-        handleClose={ () => setAnchorMenuEl(null) }
-        items={menuItems}
+      <Sidebar
+        open={menuOpened}
+        onToogle={handleDrawerToggle}
       />
-      {children}
-    </Stack>
-  );
-};
+      <Main menuOpened={menuOpened}>
+        <Outlet />
+      </Main>
+    </Box>
 
-export default PageHeader;
+  )
+}
+
+export default MainLayout;

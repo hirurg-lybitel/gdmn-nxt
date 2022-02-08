@@ -1,17 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
-import { accountApi } from './features/account/accountApi';
-import { contactApi } from './features/contact/contactApi';
-import { reconciliationStatementApi } from './features/reconciliation-statement/reconciliationStatementApi';
-import userReducer from './features/user/userSlice';
-import { customersReducer, hierarchyReducer } from './features/customer/customerSlice';
-import { labelsApi } from './features/labels/labelsApi';
-import { contactGroupApi } from './features/contact/contactGroupApi';
-import { errorMiddleware } from './features/error-slice/errorMiddleware';
-import errorReducer from './features/error-slice/error-slice';
+import { accountApi } from '../features/account/accountApi';
+import { contactApi } from '../features/contact/contactApi';
+import { reconciliationStatementApi } from '../features/reconciliation-statement/reconciliationStatementApi';
+import userReducer from '../features/user/userSlice';
+import { customersReducer, hierarchyReducer } from '../features/customer/customerSlice';
+import { labelsApi } from '../features/labels/labelsApi';
+import { contactGroupApi } from '../features/contact/contactGroupApi';
+import { errorMiddleware } from '../features/error-slice/errorMiddleware';
+import errorReducer from '../features/error-slice/error-slice';
+import settingsReducer from './settingsSlice';
 
 export const store = configureStore({
   reducer: {
+    settings: settingsReducer,
     error: errorReducer,
     user: userReducer,
     customers: customersReducer,

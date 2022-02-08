@@ -6,9 +6,10 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NestedSets, { CollectionEl } from 'nested-sets-tree';
-import { Box, Button, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Button, Card, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import TreeItem from '@mui/lab/TreeItem';
 import { useCallback, useState } from 'react';
+import { useTheme } from '@mui/system';
 
 interface CustomizedTreeItemProps extends CustomTreeViewProps {
   node: CollectionEl;
@@ -137,9 +138,10 @@ export interface CustomTreeViewProps {
 export function CustomTreeView(props: CustomTreeViewProps) {
   const { tree } = props;
   const { onNodeSelect } = props;
+  const theme = useTheme();
 
   return (
-    <Box
+    <Card
       sx={{
         // paddingTop: 12,
         marginRight: 1,
@@ -147,9 +149,9 @@ export function CustomTreeView(props: CustomTreeViewProps) {
         maxWidth: 400,
         height: '100%',
         overflowY: 'auto',
-        border: 1,
-        borderRadius: '4px',
-        borderColor: 'grey.300',
+        boxShadow: `${(theme.shadows as Array<any>)[2]}`
+        // border: 1,
+        // borderColor: 'grey.300',
       }}
     >
       <TreeView
@@ -162,7 +164,7 @@ export function CustomTreeView(props: CustomTreeViewProps) {
         .sort((a, b) => Number(a.LB) - Number(b.LB))
         .map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
     </TreeView>
-  </Box>
+  </Card>
   );
 }
 

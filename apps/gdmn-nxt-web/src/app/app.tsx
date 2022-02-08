@@ -14,11 +14,12 @@ import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
-import { Button, Divider, Typography } from '@mui/material';
+import { Button, CssBaseline, Divider, Typography, Card, Box, Grid } from '@mui/material';
 import EmployeeHomePage from './employee-home-page/employee-home-page';
 import CustomerHomePage from './customer-home-page/customer-home-page';
 import { SelectMode } from './select-mode/select-mode';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
+import { Navigate } from 'react-router-dom';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -42,9 +43,11 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
 const get = (url: string) => query({ method: 'get', url, baseURL: baseUrl, withCredentials: true });
 
-export function App() {
+const App = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { loginStage } = useSelector<RootState, UserState>( state => state.user );
+
+  console.log('App');
 
   useEffect(() => {
     (async function () {
@@ -83,7 +86,10 @@ export function App() {
   const className = styles.app + (loginStage === 'CUSTOMER' || loginStage === 'EMPLOYEE' ? '' : (' ' + styles.login));
 
   const result =
-    <div className={className}>
+    // <div className={className}>
+
+      <Grid container direction="column" justifyContent="center" alignContent="center" sx={{ minHeight: '100vh' }}>
+      {/* <CssBaseline /> */}
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
@@ -92,13 +98,13 @@ export function App() {
               employeeModeSelected={ () => dispatch(signInEmployee()) }
               customerModeSelected={ () => dispatch(signInCustomer()) }
             />
-          : loginStage === 'CUSTOMER' ? <CustomerHomePage />
-          : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
+          : loginStage === 'CUSTOMER' ? <Navigate to={`/`} /> // <CustomerHomePage />
+          : loginStage === 'EMPLOYEE' ? <Navigate to={`/`} /> //<EmployeeHomePage />
           : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
-              bottomDecorator={ () => <Typography>Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography> }
+              bottomDecorator={ () => <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography> }
             />
           :
             <SignInSignUp
@@ -106,15 +112,35 @@ export function App() {
               newPassword={(email) => post('user/forgot-password', { email })}
               bottomDecorator={
                 () =>
-                  <>
-                    <Typography>Создать новую<Button onClick={ () => dispatch(createCustomerAccount()) }>учетную запись</Button></Typography>
-                    <Divider />
-                    <Typography>Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography>
-                  </>
+                  <Grid
+                    container
+                    direction="column"
+                    justifyContent="center"
+                    sx={{ mt: 1 }}
+                    spacing={2}
+
+
+                  >
+                    <Grid item xs={12}>
+                      <Typography align="center">Создать новую<Button onClick={ () => dispatch(createCustomerAccount()) }>учетную запись</Button></Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Divider />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography>
+                    </Grid>
+
+                  </Grid>
+
+
               }
             />
       }
-    </div>;
+    </Grid>
+
+    // </div>;
 
   return result;
 };

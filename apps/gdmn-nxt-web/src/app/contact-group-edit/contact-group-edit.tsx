@@ -110,7 +110,7 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
                 renderOption={(props, option) => {
                   return (
                     <li {...props} key={option.ID}>
-                      {option.NAME} + 1
+                      {option.NAME}
                     </li>
                   );
                 }}
