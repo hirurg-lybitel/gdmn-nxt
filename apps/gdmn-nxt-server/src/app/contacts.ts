@@ -1,10 +1,10 @@
 import { ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
-import { closeConnection, setConnection } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
 
 export const getContacts: RequestHandler = async (req, res) => {
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
     const _schema = { };
@@ -79,14 +79,14 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseReadTransaction(req.sessionID);
   }
 };
 
 export const updateContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
   const { NAME, PHONE, EMAIL, PARENT } = req.body;
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
     try {
@@ -139,21 +139,20 @@ export const updateContact: RequestHandler = async (req, res) => {
     };
 
     await resultSet.close();
+    await transaction.commit();
 
-    return res.status(200).json(result);//send(result);
-
+    return res.status(200).json(result);
   } catch (error) {
-      return res.status(500).send({ "errorMessage": error });
-
+    return res.status(500).send({ "errorMessage": error });
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   }
 };
 
 export const addContact: RequestHandler = async (req, res) => {
 
   const { NAME, PHONE, EMAIL, PARENT, labels } = req.body;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await startTransaction(req.sessionID);
 
   try {
     const resultSet = await attachment.executeQuery(
@@ -221,26 +220,20 @@ export const addContact: RequestHandler = async (req, res) => {
       _schema
     };
 
-
-
     await transaction.commit();
 
     return res.status(200).json(result);
-
   } catch (error) {
-
       console.log('addContact_error', error.message);
       return res.status(500).send({ "errorMessage": error.message});
-
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   };
 };
 
-
 export const deleteContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
@@ -257,21 +250,17 @@ export const deleteContact: RequestHandler = async (req, res) => {
       [ id ]
     );
 
+    await transaction.commit();
     return res.status(200).send(id);
-
   } catch (error) {
     return res.status(500).send({ "errorMessage": error.message});
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   }
 };
 
-
-
 export const getContactHierarchy : RequestHandler = async (req, res) => {
-
-  const { client, attachment, transaction } = await setConnection();
-
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
   try {
     const _schema = { };
 
@@ -313,13 +302,11 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseReadTransaction(req.sessionID);
   }
 };
 
-
 const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabelsContact[]): Promise<ILabelsContact[]> => {
-
   if (labels.length === 0) {
     return;
   };
@@ -372,7 +359,6 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
       console.log('catch', error);
 
       return;
-
   } finally {
     //await closeConnection(client, attachment, transaction);
   };

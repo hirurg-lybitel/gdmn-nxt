@@ -1,7 +1,7 @@
 import { IAccount, IAuthResult, IWithID } from "@gsbelarus/util-api-types";
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
 import { config } from "./db-config";
-import { closeConnection, setConnection } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction } from "./db-connection";
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
@@ -20,15 +20,8 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
     WHERE UPPER(u.name) = ?
   `;
 
-  let client: Client;
-  let attachment: Attachment;
-  let transaction: Transaction;
-
+  const { attachment, transaction } = await getReadTransaction('passport');
   try {
-    const { host, port, db } = config;
-    client = createNativeClient(getDefaultLibraryFilename());
-    attachment = await client.connect(`${host}/${port}:${db}`);
-    transaction = await attachment.startTransaction();
     const rs = await attachment.executeQuery(transaction, query, [userName.toLocaleUpperCase()]);
     try {
       const data = await rs.fetchAsObject();
@@ -65,9 +58,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
       await rs.close();
     }
   } finally {
-    await transaction?.commit();
-    await attachment?.disconnect();
-    await client?.dispose();
+    await releaseReadTransaction('passport');
   }
 };
 
@@ -80,15 +71,8 @@ export const getGedeminUser = async (userName: string): Promise<{ userName: stri
     WHERE UPPER(u.name) = ?
   `;
 
-  let client: Client;
-  let attachment: Attachment;
-  let transaction: Transaction;
-
+  const { attachment, transaction } = await getReadTransaction('passport');
   try {
-    const { host, port, db } = config;
-    client = createNativeClient(getDefaultLibraryFilename());
-    attachment = await client.connect(`${host}/${port}:${db}`);
-    transaction = await attachment.startTransaction();
     const rs = await attachment.executeQuery(transaction, query, [userName.toLocaleUpperCase()]);
     try {
       const data = await rs.fetchAsObject();
@@ -106,13 +90,11 @@ export const getGedeminUser = async (userName: string): Promise<{ userName: stri
       await rs.close();
     }
   } finally {
-    await transaction?.commit();
-    await attachment?.disconnect();
-    await client?.dispose();
+    await releaseReadTransaction('passport');
   }
 };
 
-export const getAccount = async (email: string): Promise<(IAccount & IWithID) | undefined> => {
+export const getAccount = async (sessionId: string, email: string): Promise<(IAccount & IWithID) | undefined> => {
   console.log('getAccount...');
 
   const query = `
@@ -122,7 +104,7 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       usr$crm_account acc
     WHERE UPPER(acc.usr$email) = ?
   `;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await getReadTransaction(sessionId);
 
   try {
     const rs = await attachment.executeQuery(transaction, query, [email.toLocaleUpperCase()]);
@@ -140,6 +122,6 @@ export const getAccount = async (email: string): Promise<(IAccount & IWithID) | 
       await rs.close();
     }
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseReadTransaction(sessionId);
   }
 };

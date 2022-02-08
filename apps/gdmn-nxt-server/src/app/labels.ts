@@ -1,6 +1,6 @@
 import { ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
-import { closeConnection, setConnection } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
 
 export const getLabelsContact: RequestHandler = async (req, res) => {
 
@@ -8,7 +8,7 @@ export const getLabelsContact: RequestHandler = async (req, res) => {
 
   // return res.status(500).send({ "errorMessage": "test"});
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
     const _schema = { };
@@ -62,7 +62,7 @@ export const getLabelsContact: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send({ "errorMessage": error.message});
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseReadTransaction(req.sessionID);
   }
 };
 
@@ -72,7 +72,7 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
   if (labels.length === 0) {
     return res.status(400).send({"errorMessage": "Пустой набор входящих данных"});
   }
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await startTransaction(req.sessionID);
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
@@ -125,20 +125,16 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
       };
 
       return res.status(200).json(result);
-
-
   } catch (error) {
-
       return res.status(500).send({ "errorMessage": error.message});
-
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   };
 };
 
 export const deleteLabelsContact: RequestHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
@@ -154,6 +150,6 @@ export const deleteLabelsContact: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send({ "errorMessage": error.message });
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   }
 };

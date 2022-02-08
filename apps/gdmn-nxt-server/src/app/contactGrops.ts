@@ -1,12 +1,12 @@
 import { IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { ResultSet } from "node-firebird-driver-native";
-import { closeConnection, setConnection } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
 import { resultError } from "./responseMessages";
 
 const get: RequestHandler = async (req, res)  => {
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
     const _schema = { };
@@ -47,15 +47,12 @@ const get: RequestHandler = async (req, res)  => {
       _schema
     };
 
-    await transaction.commit()
-
-    //return res.status(500).json(resultError('my test error message for get query'));
     return res.status(200).json(result);
   } catch(error) {
 
     return res.status(500).send(resultError(error.message));
   }finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseReadTransaction(req.sessionID);
   }
 };
 
@@ -71,7 +68,7 @@ const add: RequestHandler = async(req, res) => {
 
   if (PARENT === 0) PARENT = null;
 
-  const { client, attachment, transaction} = await setConnection();
+  const { attachment, transaction} = await startTransaction(req.sessionID);
 
   try {
 
@@ -130,9 +127,8 @@ const add: RequestHandler = async(req, res) => {
 
   } catch (error) {
       return res.status(500).send(resultError(error.message));
-
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   };
 
 }
@@ -149,7 +145,7 @@ const update: RequestHandler = async(req, res) => {
 
   if (PARENT === 0) PARENT = null;
 
-  const { client, attachment, transaction } = await setConnection();
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
 
@@ -215,16 +211,14 @@ const update: RequestHandler = async(req, res) => {
 
   } catch (error) {
     return res.status(500).send(resultError(error.message));
-
   } finally {
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   }
-
 }
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const {client, attachment, transaction} = await setConnection();
+  const {attachment, transaction} = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
@@ -251,23 +245,19 @@ const remove: RequestHandler = async(req, res) => {
     );
 
     const data: {SUCCESS: boolean}[] = await result.fetchAsObject();
+    await result.close()
+    await transaction.commit();
 
     if (!data[0].SUCCESS) {
       return res.status(500).send(resultError('Объект не найден'))
     }
 
-
-    await transaction.commit();
-
     return res.status(200).json({'id': id});
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-
-    await result.close()
-    await closeConnection(client, attachment, transaction);
+    await releaseTransaction(req.sessionID, transaction);
   }
-
 };
 
 export default {get, add, update, remove};

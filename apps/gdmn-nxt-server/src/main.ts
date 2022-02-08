@@ -12,6 +12,7 @@ import { getContacts, updateContact, addContact, deleteContact, getContactHierar
 import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 import contactGroups from './app/contactGrops';
+import { disposeConnection } from './app/db-connection';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -83,7 +84,7 @@ passport.use(new Strategy({
         }
       } else {
 
-        const account = await getAccount(userName);
+        const account = await getAccount(req.sessionID, userName);
 
         if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
           return done(null, false);
@@ -115,7 +116,7 @@ passport.deserializeUser(async (un: string, done) => {
   const userName = un.slice(1);
 
   if (userType === 'U') {
-    const account = await getAccount(userName);
+    const account = await getAccount('passport', userName);
 
     if (account) {
       done(null, { userName });
@@ -203,6 +204,7 @@ app.get('/logout', (req, res) => {
 
 const router = express.Router();
 
+/*
 router.use(
   (req, res, next) => {
     console.log('123');
@@ -215,6 +217,7 @@ router.use(
     }
   }
 );
+*/
 
 router.get('/test', (req, res) => {
   if (req.isAuthenticated()) {
@@ -260,6 +263,7 @@ server.on('error', console.error);
 
 process
   .on('exit', code => {
+    disposeConnection();
     console.log(`Process exit event with code: ${code}`);
   })
   .on('SIGINT', process.exit)
