@@ -2,6 +2,7 @@ import React from "react";
 import analytics from "./analytics";
 import dashboard from "./dashboard";
 import managment from "./managment";
+import { systemMenu } from "./system";
 
 export interface IMenuItem {
   id: string;
@@ -13,7 +14,7 @@ export interface IMenuItem {
 }
 
 const menuItems = {
-  items: [dashboard, managment, analytics]
+  items: [dashboard, managment, analytics, systemMenu]
 };
 
 export default menuItems;
