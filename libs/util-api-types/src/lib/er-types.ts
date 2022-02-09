@@ -27,7 +27,7 @@ export type Attr = IStringAttr | IIntegerAttr | IDoubleAttr;
 export type Entity = IEntity;
 
 export interface IEntity {
-  parent?: Entity;
+  parent?: string;
   name: string;
   abstract?: boolean;
   attributes: Attr[];
@@ -35,7 +35,7 @@ export interface IEntity {
 };
 
 export interface IEntities {
-  [name: string]: IEntity;
+  [name: string]: Entity;
 };
 
 export interface IERModel {

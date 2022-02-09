@@ -17,6 +17,7 @@ interface IgdbaseImport {
 };
 
 export const importERModel = async () => {
+  const t = new Date().getTime();
   const { attachment, transaction } = await getReadTransaction('rdb');
   try {
     const [f, r, rf, af, ar, arf] = await Promise.all([
@@ -31,7 +32,7 @@ export const importERModel = async () => {
     const gdbase = gdbaseRaw as IgdbaseImport;
     const entities: IEntities = {};
 
-    const importGdbase = (g: IgdbaseImport, parent?: Entity) => {
+    const importGdbase = (g: IgdbaseImport, parent?: string) => {
       const e: Entity = {
         parent,
         name: g.className,
@@ -47,12 +48,14 @@ export const importERModel = async () => {
 
       if (g.children) {
         for (const ch of g.children) {
-          importGdbase(ch, e);
+          importGdbase(ch, g.className);
         }
       }
     };
 
     importGdbase(gdbase);
+
+    console.log(`ERModel imported in ${new Date().getTime() - t}ms`);
 
     return { entities } as IERModel;
   } finally {
