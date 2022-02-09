@@ -3,18 +3,18 @@ import App from "../app";
 import MinimalLayout from "../layouts/MinimalLayout";
 
 function AuthenticationRoutes(isLogged: boolean) {
-  return{
+  return {
     path: '/',
     element: !isLogged ? <MinimalLayout /> : <Navigate to={`/`} />,
     children: [
-        {
-            path: '/authentication/login',
-            element: <App />
-        },
-        {
-            path: '/authentication/register',
-            element: <App />
-        }
+      {
+        path: 'authentication/login',
+        element: <App />
+      },
+      {
+        path: 'authentication/register',
+        element: <App />
+      }
     ]
   }
 };

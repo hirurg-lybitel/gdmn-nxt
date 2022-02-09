@@ -4,13 +4,11 @@ import MainRoutes from "./MainRoutes";
 
 interface IRoutesProps {
   isLogged: boolean;
-}
+};
 
-export default function Routes(props: IRoutesProps) {
-  const {isLogged} = props;
-
+export default function Routes({ isLogged }: IRoutesProps) {
   return useRoutes([
     MainRoutes(isLogged),
     AuthenticationRoutes(isLogged)
   ]);
-}
+};

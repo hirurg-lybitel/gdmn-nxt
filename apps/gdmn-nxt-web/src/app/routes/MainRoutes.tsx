@@ -12,35 +12,31 @@ function MainRoutes(isLogged: boolean) {
     element: isLogged ? <MainLayout /> : <Navigate to={`/authentication/login`} />,
     children: [
       {
-        path: '/',
+        path: 'dashboard',
         element: <Dashboard />
       },
       {
-        path: '/dashboard',
-        element: <Navigate to="/" />
-      },
-      {
-        path: '/customers/list',
+        path: 'customers/list',
         element: <CustomersList />
       },
       {
-        path: '/customers/orders/list',
+        path: 'customers/orders/list',
         element: <OrderList />
       },
       {
-        path: '/reports/reconciliation',
+        path: 'reports/reconciliation',
         element: <ReconciliationAct />
       },
       {
-        path: '/reports/reconciliation/:customerId',
+        path: 'reports/reconciliation/:customerId',
         element: <ReconciliationAct />
       },
       {
-        path: '/system/er-model',
+        path: 'system/er-model',
         element: <ErModel />
       },
     ]
   }
-}
+};
 
 export default MainRoutes;
