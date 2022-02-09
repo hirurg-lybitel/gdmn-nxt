@@ -1,6 +1,6 @@
+import { Entity, IEntities, IERModel } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
-import { Entity, IEntities, IEntity, IERModel } from "./er-types";
 import gdbaseRaw from "./gdbase.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
 
