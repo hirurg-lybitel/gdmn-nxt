@@ -1,6 +1,6 @@
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
-import { IERModel } from "./er-types";
+import { Entity, IEntities, IEntity, IERModel } from "./er-types";
 import gdbaseRaw from "./gdbase.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
 
@@ -29,10 +29,28 @@ export const importERModel = async () => {
     ]);
 
     const gdbase = gdbaseRaw as IgdbaseImport;
+    const entities: IEntities = {};
 
-    return {
-      entities: {}
-    } as IERModel;
+    const importGdbase = (g: IgdbaseImport, parent?: Entity) => {
+      const e: Entity = {
+        parent,
+        name: g.className,
+        abstract: g.abstract,
+        attributes: [],
+        adapter: 
+          g.listTable ? { 
+            relation: { name: g.listTable.name, alias: 'z' } 
+          } : undefined
+      };
+
+      entities[e.name] = e;
+
+      for (const ch of g.children) {
+        importGdbase(ch, e);
+      }
+    };
+
+    return { entities } as IERModel;
   } finally {
     releaseReadTransaction('rdb');
   }  
