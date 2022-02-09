@@ -84,9 +84,7 @@ const App = () => {
   const className = styles.app + (loginStage === 'CUSTOMER' || loginStage === 'EMPLOYEE' ? '' : (' ' + styles.login));
 
   const result =
-    // <div className={className}>
-
-      <Grid container direction="column" justifyContent="center" alignContent="center" sx={{ minHeight: '100vh' }}>
+    <Grid container direction="column" justifyContent="center" alignContent="center" sx={{ minHeight: '100vh' }}>
       {/* <CssBaseline /> */}
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
@@ -137,8 +135,6 @@ const App = () => {
             />
       }
     </Grid>
-
-    // </div>;
 
   return result;
 };

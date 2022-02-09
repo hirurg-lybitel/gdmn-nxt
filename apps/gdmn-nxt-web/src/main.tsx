@@ -1,11 +1,9 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom';
 
-import App from './app/app';
-
 import { RootState, store } from './app/store';
 import { Provider, useSelector } from 'react-redux';
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 import Routes from './app/routes'
 
