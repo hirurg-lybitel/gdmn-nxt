@@ -45,10 +45,14 @@ export const importERModel = async () => {
 
       entities[e.name] = e;
 
-      for (const ch of g.children) {
-        importGdbase(ch, e);
+      if (g.children) {
+        for (const ch of g.children) {
+          importGdbase(ch, e);
+        }
       }
     };
+
+    importGdbase(gdbase);
 
     return { entities } as IERModel;
   } finally {
