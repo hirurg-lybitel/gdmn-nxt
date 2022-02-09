@@ -1,5 +1,3 @@
-import styles from './app.module.less';
-
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -18,6 +16,7 @@ import { Button, Divider, Typography, Grid } from '@mui/material';
 import { SelectMode } from './select-mode/select-mode';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate } from 'react-router-dom';
+import { EmployeeHomePage } from './employee-home-page/employee-home-page';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -44,8 +43,6 @@ const get = (url: string) => query({ method: 'get', url, baseURL: baseUrl, withC
 const App = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { loginStage } = useSelector<RootState, UserState>( state => state.user );
-
-  console.log('App');
 
   useEffect(() => {
     (async function () {
@@ -81,11 +78,8 @@ const App = () => {
     })();
   }, [ loginStage ]);
 
-  const className = styles.app + (loginStage === 'CUSTOMER' || loginStage === 'EMPLOYEE' ? '' : (' ' + styles.login));
-
   const result =
     <Grid container direction="column" justifyContent="center" alignContent="center" sx={{ minHeight: '100vh' }}>
-      {/* <CssBaseline /> */}
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
@@ -95,7 +89,7 @@ const App = () => {
               customerModeSelected={ () => dispatch(signInCustomer()) }
             />
           : loginStage === 'CUSTOMER' ? <Navigate to={`/`} /> // <CustomerHomePage />
-          : loginStage === 'EMPLOYEE' ? <Navigate to={`/`} /> //<EmployeeHomePage />
+          : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
           : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
@@ -114,8 +108,6 @@ const App = () => {
                     justifyContent="center"
                     sx={{ mt: 1 }}
                     spacing={2}
-
-
                   >
                     <Grid item xs={12}>
                       <Typography align="center">Создать новую<Button onClick={ () => dispatch(createCustomerAccount()) }>учетную запись</Button></Typography>
@@ -123,14 +115,10 @@ const App = () => {
                     <Grid item xs={12}>
                       <Divider />
                     </Grid>
-
                     <Grid item xs={12}>
                       <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography>
                     </Grid>
-
                   </Grid>
-
-
               }
             />
       }
