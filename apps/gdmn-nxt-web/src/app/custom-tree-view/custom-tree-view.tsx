@@ -6,7 +6,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NestedSets, { CollectionEl } from 'nested-sets-tree';
-import { Box, Button, Card, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Card, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import TreeItem from '@mui/lab/TreeItem';
 import { useCallback, useState } from 'react';
 import { useTheme } from '@mui/system';
@@ -160,9 +160,9 @@ export function CustomTreeView(props: CustomTreeViewProps) {
         onNodeSelect={onNodeSelect}
       >
       {tree.all
-        .filter((node) => node.PARENT === 0)
-        .sort((a, b) => Number(a.LB) - Number(b.LB))
-        .map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
+        .filter( ({ PARENT }) => !PARENT )
+        .sort( (a, b) => Number(a.LB) - Number(b.LB) )
+        .map( (node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
     </TreeView>
   </Card>
   );
