@@ -253,6 +253,12 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
+const erModel = importERModel();
+
+router.get('/er-model', async (req, res) => {
+  res.json(await erModel);  
+});
+
 app.use('/api/v1', router);
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
@@ -261,10 +267,7 @@ const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
-
-const t = new Date().getTime();
-importERModel().then( () => console.log(`ERModel imported in ${new Date().getTime() - t}ms`) );
-  
+ 
 process
   .on('exit', code => {
     disposeConnection();
