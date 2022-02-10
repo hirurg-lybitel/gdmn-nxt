@@ -25,6 +25,8 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { CssBaseline } from '@mui/material';
+import StandardOrder from './app/standard-order/standard-order';
+import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
 
 registerMUI();
 
@@ -61,10 +63,11 @@ const Main = () => {
               </Routes>
             : loginStage === 'CUSTOMER' ?
               <Routes>
-                <Route path="/customer">
-                  <Route path="home" element={<CustomerHomePage />} />
+                <Route path="/customer" element={<CustomerHomePage />}>
+                  <Route path="standard-order" element={<StandardOrder />} />
+                  <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
                 </Route>  
-                <Route path="*" element={<Navigate to="/customer/home" />} />
+                <Route path="*" element={<Navigate to="/customer" />} />
               </Routes>  
             :
               <Routes>

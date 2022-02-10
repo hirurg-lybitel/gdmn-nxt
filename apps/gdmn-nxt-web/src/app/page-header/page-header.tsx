@@ -8,7 +8,7 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import './page-header.module.less';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { Box } from '@mui/system';
+import { Link } from 'react-router-dom';
 
 interface IMenuItem {
   type: 'item';
@@ -17,11 +17,18 @@ interface IMenuItem {
   onClick: () => void;
 };
 
+interface IMenuLink {
+  type: 'link';
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  caption: string;
+  link: string;
+};
+
 interface IMenuDivider {
   type: 'divider'
 };
 
-export type MenuItem = IMenuItem | IMenuDivider;
+export type MenuItem = IMenuItem | IMenuDivider | IMenuLink;
 
 interface ICustomMenuProps {
   anchorEl: Element | null;
@@ -67,7 +74,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     {items.map( (i, idx) =>
       i.type === 'divider' ?
         <Divider key={idx} />
-      :
+      : i.type === 'item' ?
         <MenuItem key={idx} onClick={i.onClick}>
           {i.Icon &&
             <ListItemIcon>
@@ -75,6 +82,17 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
             </ListItemIcon>
           }
           {i.caption}
+        </MenuItem>
+      :  
+        <MenuItem key={idx}>
+          {i.Icon &&
+            <ListItemIcon>
+              <i.Icon fontSize="small" />
+            </ListItemIcon>
+          }
+          <Link to={i.link}>
+            {i.caption}
+          </Link>
         </MenuItem>
     )}
   </Menu>;

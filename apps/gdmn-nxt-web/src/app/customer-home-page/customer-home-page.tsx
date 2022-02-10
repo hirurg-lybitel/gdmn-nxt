@@ -1,44 +1,24 @@
-import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import { MenuItem, PageHeader } from '../page-header/page-header';
-import ReconciliationStatement from '../reconciliation-statement/reconciliation-statement';
-import { StandardOrder } from '../standard-order/standard-order';
 import './customer-home-page.module.less';
 
-/* eslint-disable-next-line */
-export interface CustomerHomePageProps {}
-
-type Pages = 'BLANK' | 'RECSTMT' | 'STANDARD_ORDER';
-
-export function CustomerHomePage(props: CustomerHomePageProps) {
-
-  const [currPage, setCurrPage] = useState<Pages>('BLANK');
+export function CustomerHomePage() {
 
   const menuItems: MenuItem[] = [
     {
-      type: 'item',
+      type: 'link',
       caption: 'Акт сверки',
-      onClick: () => setCurrPage('RECSTMT')
+      link: 'reconciliation-statement'
     },
     {
-      type: 'item',
+      type: 'link',
       caption: 'Покупка стандарта',
-      onClick: () => setCurrPage('STANDARD_ORDER')
+      link: 'standard-order'
     },
   ];
 
   return (
-    <PageHeader menuItems={menuItems}>
-      {
-        currPage === 'BLANK' ?
-          <StandardOrder />
-        : currPage === 'RECSTMT' ?
-          <ReconciliationStatement
-            custId={148333193}
-          />
-        :
-          <div></div>
-      }
-    </PageHeader>
+    <PageHeader menuItems={menuItems}><Outlet /></PageHeader>
   );
 }
 

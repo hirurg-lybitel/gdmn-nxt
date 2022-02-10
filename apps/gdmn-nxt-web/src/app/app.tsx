@@ -77,7 +77,7 @@ const App = () => {
               employeeModeSelected={ () => dispatch(signInEmployee()) }
               customerModeSelected={ () => dispatch(signInCustomer()) }
             />
-          : loginStage === 'CUSTOMER' ? <Navigate to="/customer/home" /> 
+          : loginStage === 'CUSTOMER' ? <Navigate to="/customer" /> 
           : loginStage === 'EMPLOYEE' ? <Navigate to="/employee/dashboard" />
           : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
