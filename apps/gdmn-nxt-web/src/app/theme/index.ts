@@ -13,12 +13,10 @@ declare module '@mui/material/styles' {
   export interface ThemeOptions extends styledTheme {}
 }
 
-
 export const theme = (customization: ICustomization) => {
   const themeOption = {
     backgroundColor: colors.grey[100],
     backgroundDefault: colors.blue[300],
-    //backgroundDefault: colors.grey[50],
     textColor: colors.grey[900],
     secondaryColor: colors.grey[50],
     headColor: colors.grey[50],
@@ -69,5 +67,4 @@ export const theme = (customization: ICustomization) => {
   themes.components = componentStyleOverrides(themeOptions);
 
   return themes;
-
-}
+};

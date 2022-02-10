@@ -12,7 +12,7 @@ import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
-import { Button, Divider, Typography, Grid } from '@mui/material';
+import { Button, Divider, Typography, Grid, Stack } from '@mui/material';
 import { SelectMode } from './select-mode/select-mode';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate } from 'react-router-dom';
@@ -79,7 +79,7 @@ const App = () => {
   }, [ loginStage ]);
 
   const result =
-    <Grid container direction="column" justifyContent="center" alignContent="center" sx={{ minHeight: '100vh' }}>
+    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto',  height: '100vh' }}>
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
@@ -100,29 +100,16 @@ const App = () => {
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password })}
               newPassword={(email) => post('user/forgot-password', { email })}
-              bottomDecorator={
-                () =>
-                  <Grid
-                    container
-                    direction="column"
-                    justifyContent="center"
-                    sx={{ mt: 1 }}
-                    spacing={2}
-                  >
-                    <Grid item xs={12}>
-                      <Typography align="center">Создать новую<Button onClick={ () => dispatch(createCustomerAccount()) }>учетную запись</Button></Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Divider />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography>
-                    </Grid>
-                  </Grid>
+              bottomDecorator={ () =>
+                <Stack direction="column">
+                  <Typography align="center">Создать новую<Button onClick={ () => dispatch(createCustomerAccount()) }>учетную запись</Button></Typography>
+                  <Divider />
+                  <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography>
+                </Stack>
               }
             />
       }
-    </Grid>
+    </Stack>
 
   return result;
 };
