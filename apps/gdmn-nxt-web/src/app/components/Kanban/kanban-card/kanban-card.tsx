@@ -1,10 +1,10 @@
 import './kanban-card.module.less';
 import { useDrag, useDrop} from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { useEffect, useRef } from 'react';
+import { useRef, useState } from 'react';
 import MainCard from '../../main-card/main-card';
-import { useTheme } from '@mui/material';
-import { ICard } from '../../../pages/Dashboard/deals/deals';
+import { Stack, Typography, useTheme } from '@mui/material';
+import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
+import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 
 
 /* eslint-disable-next-line */
@@ -12,6 +12,9 @@ export interface KanbanCardProps {
   card: ICard;
   index: number;
   moveCard: (dragIndex: number, hoverIndex: number, dragGroupIndex: any, hoverGroupIndex: any) => void;
+  columns: IColumn[];
+  onEdit: (card: ICard) => void;
+  onDelete: (card: ICard) => void;
 }
 
 interface IItem {
@@ -22,10 +25,13 @@ interface IItem {
 
 
 export function KanbanCard(props: KanbanCardProps) {
-  const { card, index, moveCard } = props;
+  const { card, index, columns } = props;
+  const { onEdit, onDelete, moveCard } = props;
 
   const myRef = useRef(null);
   const theme = useTheme();
+
+  const [editCard, setEditCard] = useState(false);
 
 
 
@@ -85,22 +91,52 @@ export function KanbanCard(props: KanbanCardProps) {
   }), []
   );
 
+  const cardHandlers = {
+    handleSubmit: async (card: ICard, deleting: boolean) => {
+      if (card.id <= 0) return;
+
+      if (deleting) {
+        onDelete(card);
+        setEditCard(false);
+        return;
+      };
+
+      onEdit(card);
+      setEditCard(false);
+    },
+    handleCancel: async () => setEditCard(false),
+  };
+
   return (
     <div ref={dropRef}>
-    {/* <div ref={dragRef} style={{ backgroundColor: 'green', height: 200, width: 200 }}>{item.title}</div> */}
-    <MainCard
-      border
-      key={card.id}
-      ref={dragRef}
-      style={{
-        opacity,
-        height: 100,
-        borderLeft: `solid ${theme.menu?.backgroundColor}`,
-        padding: 5
-      }}
-    >
-      {card.title}
-    </MainCard>
+      <MainCard
+        border
+        key={card.id}
+        ref={dragRef}
+        style={{
+          opacity,
+          height: 100,
+          maxWidth: '10.4rem',
+          textOverflow: "ellipsis",
+          borderLeft: `solid ${theme.menu?.backgroundColor}`,
+          padding: 5
+        }}
+        onDoubleClick={() => setEditCard(true)}
+      >
+        <Stack direction="column" spacing={1}>
+          <Typography variant="h2">{card.title}</Typography>
+          <Typography variant="caption" noWrap>{card.customer}</Typography>
+          <Typography>{(Math.round((card.amount || 0) * 100)/100).toFixed(2)} Br</Typography>
+        </Stack>
+      </MainCard>
+      {editCard &&
+        <KanbanEditCard
+          deal={card}
+          currentStage={columns.find(column => column.id === card.status)}
+          stages={columns}
+          onSubmit={cardHandlers.handleSubmit}
+          onCancelClick={cardHandlers.handleCancel}
+        />}
     </div>
   );
 }

@@ -4,7 +4,9 @@ import { MainLayout } from "../layouts/MainLayout";
 import CustomersList from "../pages/Customers/customers-list/customers-list";
 import OrderList from "../pages/Customers/order-list/order-list";
 import Dashboard from "../pages/Dashboard/dashboard/dashboard";
-import { ReconciliationAct } from "../pages/UserReports/ReconciliationAct";
+import { ReconciliationAct } from "../pages/Analytics/UserReports/ReconciliationAct";
+import NotFound from "../pages/NotFound";
+
 
 function MainRoutes(isLogged: boolean) {
   return {
@@ -34,6 +36,10 @@ function MainRoutes(isLogged: boolean) {
       {
         path: 'system/er-model',
         element: <ErModel />
+      },
+      {
+        path: '404',
+        element: <NotFound />
       },
     ]
   }

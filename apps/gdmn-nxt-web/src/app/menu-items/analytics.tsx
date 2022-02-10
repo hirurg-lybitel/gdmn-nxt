@@ -25,7 +25,7 @@ const analytics: IMenuItem = {
       id: 'salesFunnel',
       title: 'Продажи',
       type: 'item',
-      url: '/analytics/salesfunnel',
+      url: 'analytics/salesfunnel',
       icon: <FilterAltIcon color="secondary" />
     }
   ]

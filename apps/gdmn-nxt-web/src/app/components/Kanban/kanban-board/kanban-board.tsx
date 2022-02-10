@@ -21,6 +21,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
   const [flipId, setFlipId] = useState(inColumns.map(column => column.id).join(''));
   const [columns, setColumns] = useState<IColumn[]>([]);
+  //const [cards, setCards] = useState<ICard[]>(inCards);
   //let flipId = '';
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
     const dragGroupIndex = columns.findIndex(column => column.id === dragGroup);
     const hoverGroupIndex = columns.findIndex(column => column.id === hoverGroup)
 
-    console.log('moveCard', dragGroupIndex, hoverGroupIndex)
+    console.log('moveCard', dragIndex, hoverIndex, dragGroupIndex, hoverGroupIndex);
 
     if (dragGroupIndex === hoverGroupIndex) {
 
@@ -57,8 +58,28 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
   };
 
+  const handleTitleEdit = (newColumn: IColumn) => {
+    const newColumns = columns.map(column => column.id === newColumn.id ? newColumn : column);
+    setColumns(newColumns);
+  };
+
+  const handleTitleDelete = (column: IColumn) => {
+
+    const newColumns = [...columns];
+    newColumns.splice(columns.indexOf(column), 1);
+    setColumns(newColumns);
+  };
+
+
+  const handleAddCard = (newCard: ICard) => {
+    newCard.id = newCard.status * 10 + columns.find(el => el.id === newCard.status)!.cards.length + 1
+
+    const newColumns = [...columns];
+    newColumns.find(el => el.id === newCard.status)?.cards.push(newCard)
+    setColumns(newColumns);
+  };
+
   useEffect(() => {
-    console.log('columns', columns);
     setFlipId(columns.map(column => column.id).join(''));
   }, [columns])
 
@@ -70,23 +91,57 @@ export function KanbanBoard(props: KanbanBoardProps) {
     const newColumn: IColumn = {
       id: columns.length + 1,
       title: 'Новая группа',
+      cards: []
     }
 
     const newArr = [...columns];
     newArr.push(newColumn);
     setColumns(newArr);
-    //setFlipId(columns.map(column => column.id).join(''));
 
+    //setFlipId(columns.map(column => column.id).join(''));
 
   }
 
-  console.log('KanbanBoard');
+  const cardHandlers = {
+    handleEditCard: async (newCard: ICard) => {
+      console.log('handleEditCard', newCard);
+      console.log('handleEditCard', columns);
+      const newColumns =
+        columns
+          .map(column => {
+            /** если в карте поменялся родитель */
+            const newCardIndex = column.cards.findIndex(card => card.id === newCard.id);
+
+            if ((column.id === newCard.status) && (newCardIndex < 0)) {
+              column.cards.push(newCard);
+              return {...column}
+            };
+
+            if ((column.id !== newCard.status) && (newCardIndex >= 0)) {
+              column.cards.splice(newCardIndex, 1);
+              return {...column}
+            };
+
+            return {...column, cards: column.cards.map(card => card.id === newCard.id ? {...card, ...newCard} : card)}
+        })
+
+      setColumns(newColumns);
+    },
+    handleDeleteCard: async (deletinCard: ICard) => {
+      const newColumns =
+        columns
+          .map(column => {
+            const indexCard = column.cards.findIndex(card => card.id === deletinCard.id);
+            if (indexCard > 0) column.cards.splice(column.cards.indexOf(deletinCard), 1);
+            return {...column}
+            }
+          );
+      setColumns(newColumns);
+    },
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
-      {/* <Stack direction="row" spacing={4}>
-        {columns.map((el, index) => (<div>{el.title}-{index}</div>))}
-      </Stack> */}
       <Flipper flipKey={flipId} >
         <Stack direction="row" spacing={2}>
           {columns.map((column, index) => (
@@ -94,18 +149,24 @@ export function KanbanBoard(props: KanbanBoardProps) {
               <KanbanColumn
                 key={column.id}
                 item={column}
+                columns={columns}
                 index={index}
                 moveCard={moveColumn}
+                onEdit={handleTitleEdit}
+                onDelete={handleTitleDelete}
+                onAddCard={handleAddCard}
               >
-                {cards
-                  .filter(card => card.status === column.id)
+                {column.cards
                   .map((card, index) => (
                     <Flipped key={card.id} flipId={card.id}>
                       <KanbanCard
                         key={card.id}
                         index={index}
                         card={card}
+                        columns={columns}
                         moveCard={moveCard}
+                        onEdit={cardHandlers.handleEditCard}
+                        onDelete={cardHandlers.handleDeleteCard}
                       />
                     </Flipped>
                   ))}

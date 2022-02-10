@@ -18,7 +18,7 @@ const dashboard: IMenuItem = {
       id: 'deals',
       title: 'Сделки',
       type: 'item',
-      url: '/dashboard/deals',
+      url: 'dashboard/deals',
       icon: <WorkIcon color="secondary" />
     }
 

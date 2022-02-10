@@ -241,13 +241,15 @@ export function CustomerEdit(props: CustomerEditProps) {
         <Button
           className={classes.button}
           type={!formik.isValid ? "submit" : "button"}
+
           form="mainForm"
           onClick={() => {
             setDeleting(false);
             setConfirmOpen(formik.isValid);
           }}
           variant="contained"
-          color="success"
+          //color="warning"
+          //color="success"
           // startIcon={<SaveIcon />}
         >
             OK

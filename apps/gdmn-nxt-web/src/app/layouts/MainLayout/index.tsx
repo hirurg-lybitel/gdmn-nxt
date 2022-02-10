@@ -37,7 +37,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
             duration: theme.transitions.duration.leavingScreen
           }),
           [theme.breakpoints.up('md')]: {
-            marginLeft: -(theme.drawerWidth - 20),
+            marginLeft: -(theme.drawerWidth - 30),
             width: `calc(100% - ${theme.drawerWidth}px)`
           },
           [theme.breakpoints.down('md')]: {
@@ -154,7 +154,7 @@ export const MainLayout = () => {
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
       <AppBar
         position="fixed"
         elevation={0}

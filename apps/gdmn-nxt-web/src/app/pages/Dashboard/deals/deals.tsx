@@ -4,6 +4,7 @@ import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 export interface IColumn {
   id: number,
   title: string,
+  cards: ICard[]
 }
 
 export interface ICard {
@@ -57,18 +58,21 @@ const cards: ICard[] = [
   },
 ]
 
-const columns: IColumn[] = [
+export const columns: IColumn[] = [
   {
     id: 1,
     title: 'Оценка',
+    cards: cards.filter(card => card.status === 1)
   },
   {
     id: 2,
-    title: 'Коммерческое предложение',
+    title: 'Счёт',
+    cards: cards.filter(card => card.status === 2)
   },
   {
     id: 3,
     title: 'Оплата',
+    cards: cards.filter(card => card.status === 3)
   },
 ]
 
