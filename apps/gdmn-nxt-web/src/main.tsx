@@ -30,15 +30,6 @@ import ReconciliationStatement from './app/reconciliation-statement/reconciliati
 
 registerMUI();
 
-const myTheme = createTheme({
-  typography: {
-    h1: {
-      fontSize: '1.5rem',
-      fontWeight: 700
-    }
-  }
-} as any);
-
 const Main = () => {
   const customization = useSelector( (state: RootState) => state.settings.customization );
   const { loginStage } = useSelector<RootState, UserState>( state => state.user );
