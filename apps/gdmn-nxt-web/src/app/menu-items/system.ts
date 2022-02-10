@@ -9,7 +9,7 @@ export const systemMenu: IMenuItem = {
       id: 'er-model',
       title: 'ER Model',
       type: 'item',
-      url: '/system/er-model'
+      url: 'system/er-model'
     }
   ]
 };

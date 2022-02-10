@@ -15,7 +15,7 @@ const analytics: IMenuItem = {
         {
           id: 'reconciliation',
           title: 'Акт сверки',
-          url: '/reports/reconciliation',
+          url: 'reports/reconciliation',
           type: 'item',
         }
       ]

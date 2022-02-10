@@ -16,13 +16,13 @@ const managment: IMenuItem = {
           id: 'customers-list',
           title: 'Список клиентов',
           type: 'item',
-          url: '/customers/list'
+          url: 'customers/list'
         },
         {
           id: 'customers-orders-list',
           title: 'Список заказов',
           type: 'item',
-          url: '/customers/orders/list'
+          url: 'customers/orders/list'
         }
       ]
     }

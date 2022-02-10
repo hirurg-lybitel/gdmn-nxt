@@ -39,7 +39,7 @@ const initState: IInitState = {
   dates: [new Date(), new Date()]
 }
 
-const ReconciliationAct = (props: ReconciliationAct) => {
+export const ReconciliationAct = (props: ReconciliationAct) => {
   const { customerId: id } = useParams();
 
   const inCustomerId = Number(id)
@@ -193,7 +193,5 @@ const ReconciliationAct = (props: ReconciliationAct) => {
       </Stack>
     </Box>
   )
+};
 
-}
-
-export default ReconciliationAct;

@@ -12,11 +12,10 @@ import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
-import { Button, Divider, Typography, Grid, Stack } from '@mui/material';
+import { Button, Divider, Typography, Stack } from '@mui/material';
 import { SelectMode } from './select-mode/select-mode';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
-import { Navigate } from 'react-router-dom';
-import { EmployeeHomePage } from './employee-home-page/employee-home-page';
+import { Navigate, Routes } from 'react-router-dom';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -69,17 +68,15 @@ const App = () => {
               }
             });
           break;
-
-        case 'QUERY_LOGOUT':
-          await get('logout');
-          dispatch(selectMode());
-          break;
       }
     })();
   }, [ loginStage ]);
 
   const result =
     <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto',  height: '100vh' }}>
+      <Routes>
+        
+      </Routes>
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>
@@ -88,8 +85,8 @@ const App = () => {
               employeeModeSelected={ () => dispatch(signInEmployee()) }
               customerModeSelected={ () => dispatch(signInCustomer()) }
             />
-          : loginStage === 'CUSTOMER' ? <Navigate to={`/`} /> // <CustomerHomePage />
-          : loginStage === 'EMPLOYEE' ? <EmployeeHomePage />
+          : loginStage === 'CUSTOMER' ? <Navigate to="/customer/home" /> 
+          : loginStage === 'EMPLOYEE' ? <Navigate to="/employee/dashboard" />
           : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp

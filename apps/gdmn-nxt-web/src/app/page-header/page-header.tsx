@@ -2,7 +2,7 @@ import { AppBar, Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stac
 import { ReactChild, ReactFragment, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
-import { queryLogout, UserState } from '../features/user/userSlice';
+import { logoutUser, UserState } from '../features/user/userSlice';
 import MenuIcon from '@mui/icons-material/Menu';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
@@ -104,7 +104,7 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
       type: 'item',
       caption: 'Logout',
       Icon: Logout,
-      onClick: () => dispatch(queryLogout())
+      onClick: () => dispatch(logoutUser())
     }
   ];
 

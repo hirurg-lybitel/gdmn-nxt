@@ -36,7 +36,7 @@ import CustomTreeView from '../custom-tree-view/custom-tree-view';
 import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
 import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
 import { clearError } from '../features/error-slice/error-slice';
-import ReconciliationAct from "../pages/UserReports/ReconciliationAct";
+import { ReconciliationAct } from "../pages/UserReports/ReconciliationAct";
 import { useTheme } from '@mui/system';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
