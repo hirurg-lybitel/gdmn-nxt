@@ -1,14 +1,14 @@
-import { AppBar, Avatar, Box, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, SvgIconTypeMap, Toolbar, Typography, useMediaQuery } from '@mui/material';
+import { AppBar, Avatar, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
-import { queryLogout, UserState } from '../../features/user/userSlice';
+import { logoutUser, UserState } from '../../features/user/userSlice';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
-import { setStyleMode, toggleMenu } from '../../store/settingsSlice'
+import { toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 
@@ -72,7 +72,6 @@ interface ICustomMenuProps {
   items: MenuItem[];
 };
 
-
 const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
   <Menu
     anchorEl={anchorEl}
@@ -123,7 +122,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     )}
   </Menu>;
 
-const MainLayout = () => {
+export const MainLayout = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>( state => state.user );
@@ -150,14 +149,12 @@ const MainLayout = () => {
       type: 'item',
       caption: 'Logout',
       Icon: Logout,
-      onClick: () => dispatch(queryLogout())
+      onClick: () => dispatch(logoutUser())
     }
   ];
 
-
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
       <AppBar
         position="fixed"
         elevation={0}
@@ -201,8 +198,5 @@ const MainLayout = () => {
         <Outlet />
       </Main>
     </Box>
-
   )
-}
-
-export default MainLayout;
+};

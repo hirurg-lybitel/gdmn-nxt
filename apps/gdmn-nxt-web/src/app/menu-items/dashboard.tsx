@@ -11,7 +11,7 @@ const dashboard: IMenuItem = {
       id: 'overview',
       title: 'Обзор',
       type: 'item',
-      url: '/dashboard',
+      url: 'dashboard',
       icon: <HomeIcon color="secondary" />
     },
     {

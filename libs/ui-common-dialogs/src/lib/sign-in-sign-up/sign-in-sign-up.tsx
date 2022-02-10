@@ -7,7 +7,7 @@ import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
-import { Alert, LinearProgress, Dialog, Card, CardHeader, cardHeaderClasses, Divider, CardContent, Grid } from '@mui/material';
+import { Alert, LinearProgress, Dialog } from '@mui/material';
 import Box from '@mui/system/Box/Box';
 
 type Stage = 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
@@ -93,53 +93,33 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
 
   const result =
     stage === 'FORGOT_PASSWORD' ?
-      <CardContent>
-        <Grid
-            container
-            direction="column"
-            justifyContent="center"
-            spacing={2}
+      <Stack direction="column" spacing={2}>
+        {topDecorator?.(stage)}
+        <TextField
+          label="Email"
+          value={email}
+          error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
+          helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+          disabled={waiting}
+          autoFocus
+          onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
+        />
+        <Button
+          variant="contained"
+          disabled={waiting || !!authResult || !checkEmailAddress(email)}
+          onClick = {newPassword && waitAndDispatch(() => newPassword(email))}
         >
-          <Grid item xs={12}>
-            {topDecorator?.(stage)}
-          </Grid>
-          <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Email"
-            value={email}
-            error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
-            helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-            disabled={waiting}
-            autoFocus
-            onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
-          />
-          </Grid>
-          <Grid item xs={12}>
-          <Button
-            fullWidth
-            variant="contained"
-            disabled={waiting || !!authResult || !checkEmailAddress(email)}
-            onClick = {newPassword && waitAndDispatch(() => newPassword(email))}
-          >
-            Request new Password
-          </Button>
-          </Grid>
-          <Grid item xs={12}>
-          <Button
-            fullWidth
-            variant="outlined"
-            disabled={waiting}
-            onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }
-          >
-            Return to sign in
-          </Button>
-          </Grid>
-          <Grid item xs={12}>
-          {bottomDecorator?.(stage)}
-          </Grid>
-        </Grid>
-      </CardContent>
+          Request new Password
+        </Button>
+        <Button
+          variant="outlined"
+          disabled={waiting}
+          onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }
+        >
+          Return to sign in
+        </Button>
+        {bottomDecorator?.(stage)}
+      </Stack>
     : stage === 'SIGNUP' ?
       <Stack direction="column" spacing={2}>
         {topDecorator?.(stage)}
@@ -194,85 +174,58 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         {bottomDecorator?.(stage)}
       </Stack>
     :
-      <Stack direction="column">
+      <Stack direction="column" spacing={2}>
         {topDecorator?.(stage)}
-        <CardHeader title={<Typography variant="h1" align="center" noWrap>Sign in the system</Typography>} />
-        <CardContent>
-          <Grid
-            container
-            direction="column"
-            justifyContent="center"
-            spacing={2}
-          >
-            <Grid item xs={12} >
-                <TextField
-                  fullWidth
-                  label="User name"
-                  value={userName}
-                  error={authResult?.result === 'UNKNOWN_USER'}
-                  helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-                  disabled={waiting}
-                  autoFocus
-                  onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
-                />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={password}
-                error={authResult?.result === 'INVALID_PASSWORD'}
-                helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
-                disabled={waiting}
-                onChange={ e => dispatch({ type: 'SET_PASSWORD', password: e.target.value }) }
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                disabled={waiting || !userName || !password || !!authResult}
-                onClick={ () => checkCredentials(userName, password).then( r => {
-                  dispatch({ type: 'SET_AUTHRESULT', authResult: r });
-                  if(r.result == 'SUCCESS'){location.reload()}
-                } ) }
-              >
-                Login
-              </Button>
-            </Grid>
-
-
-
+        <Typography variant="h1">
+          Sign in the system
+        </Typography>
+        <TextField
+          label="User name"
+          value={userName}
+          error={authResult?.result === 'UNKNOWN_USER'}
+          helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+          disabled={waiting}
+          autoFocus
+          onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
+        />
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          error={authResult?.result === 'INVALID_PASSWORD'}
+          helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
+          disabled={waiting}
+          onChange={ e => dispatch({ type: 'SET_PASSWORD', password: e.target.value }) }
+        />
+        <Button
+          variant="contained"
+          disabled={waiting || !userName || !password || !!authResult}
+          onClick={ () => checkCredentials(userName, password).then( r => {
+            dispatch({ type: 'SET_AUTHRESULT', authResult: r });
+            if(r.result == 'SUCCESS'){location.reload()}
+          } ) }
+        >
+          Login
+        </Button>
         {
           newPassword
           &&
-          <Grid item xs={12}>
-            <Button fullWidth variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
-              Forgot password?
-            </Button>
-          </Grid>
+          <Button variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
+            Forgot password?
+          </Button>
         }
         {
           createUser
           &&
-          <Grid item xs={12} justifyContent="center">
-            <Typography>
-              Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
-            </Typography>
-          </Grid>
+          <Typography>
+            Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
+          </Typography>
         }
-        <Grid item xs={12}>
-          {bottomDecorator?.(stage)}
-        </Grid>
-        </Grid>
-        </CardContent>
+        {bottomDecorator?.(stage)}
       </Stack>
       return (
-
-      <Card sx={{ width: 500}}>
+      <>
         {result}
-
         <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
           <Alert severity="error">{authResult?.message}</Alert>
         </Dialog>
@@ -285,8 +238,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS'}>
           <Alert severity="success">{authResult?.message}</Alert>
         </Dialog>
-      </Card>
-
+      </>
     );
 };
 

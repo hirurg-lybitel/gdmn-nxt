@@ -1,5 +1,12 @@
 import { IUserProfile } from '@gsbelarus/util-api-types';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
+import { baseUrl } from '../../const';
+
+export const logoutUser = createAsyncThunk(
+  'user/logout',
+  () => axios({ method: 'get', url: 'logout', baseURL: baseUrl, withCredentials: true })
+);
 
 export type LoginStage =
   'LAUNCHING'                   // the application is launching
@@ -9,8 +16,7 @@ export type LoginStage =
   | 'EMPLOYEE'                  //
   | 'SIGN_IN_EMPLOYEE'          // show sign-in or sign-up screen for an employee
   | 'SIGN_IN_CUSTOMER'          // show sign-in or sign-up screen for a customer
-  | 'CREATE_CUSTOMER_ACCOUNT'   //
-  | 'QUERY_LOGOUT';             //
+  | 'CREATE_CUSTOMER_ACCOUNT';
 
 export interface UserState {
   loginStage: LoginStage;
@@ -32,9 +38,11 @@ export const userSlice = createSlice({
     signInCustomer: () => ({ loginStage: 'SIGN_IN_CUSTOMER' } as UserState),
     createCustomerAccount: () => ({ loginStage: 'CREATE_CUSTOMER_ACCOUNT' } as UserState),
     signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
-    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CUSTOMER', userProfile: action.payload } as UserState),
-    queryLogout: () => ({ loginStage: 'QUERY_LOGOUT' } as UserState),
-  }
+    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CUSTOMER', userProfile: action.payload } as UserState)
+  },
+  extraReducers: (builder) => {
+    builder.addCase(logoutUser.fulfilled, () => ({ loginStage: 'SELECT_MODE'}) )
+  },  
 });
 
 // Action creators are generated for each case reducer function
@@ -46,7 +54,6 @@ export const {
   signedInEmployee,
   signedInCustomer,
   createCustomerAccount,
-  queryLogout
 } = userSlice.actions;
 
 export default userSlice.reducer;

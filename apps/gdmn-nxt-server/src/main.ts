@@ -198,9 +198,8 @@ app.route('/user/forgot-password')
 app.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy( err => { if (err) console.error(err); } );
-  } else {
-    res.end();
-  }
+  } 
+  res.sendStatus(200);
 });
 
 const router = express.Router();

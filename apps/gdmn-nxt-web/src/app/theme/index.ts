@@ -11,14 +11,12 @@ declare module '@mui/material/styles' {
   // allow configuration using `createTheme`
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   export interface ThemeOptions extends styledTheme {}
-}
-
+};
 
 export const theme = (customization: ICustomization) => {
   const themeOption = {
     backgroundColor: colors.grey[100],
     backgroundDefault: colors.blue[300],
-    //backgroundDefault: colors.grey[50],
     textColor: colors.grey[900],
     secondaryColor: colors.grey[50],
     headColor: colors.grey[50],
@@ -70,5 +68,4 @@ export const theme = (customization: ICustomization) => {
   themes.shadows[1] = '0px 4px 20px rgba(170, 180, 190, 0.3)';
 
   return themes;
-
-}
+};

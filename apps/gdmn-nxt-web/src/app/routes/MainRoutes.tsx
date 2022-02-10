@@ -1,30 +1,19 @@
 import { Navigate } from "react-router-dom";
-import MainLayout from "../layouts/MainLayout";
-import SalesFunnel from "../pages/Analytics/sales-funnel/sales-funnel";
-import ReconciliationAct from "../pages/Analytics/UserReports/ReconciliationAct";
+import ErModel from "../er-model/er-model";
+import { MainLayout } from "../layouts/MainLayout";
 import CustomersList from "../pages/Customers/customers-list/customers-list";
 import OrderList from "../pages/Customers/order-list/order-list";
 import Dashboard from "../pages/Dashboard/dashboard/dashboard";
-import Deals from "../pages/Dashboard/deals/deals";
-import NotFound from "../pages/NotFound";
-import ErModel from "../er-model/er-model";
+import { ReconciliationAct } from "../pages/UserReports/ReconciliationAct";
 
 function MainRoutes(isLogged: boolean) {
   return {
     path: '/',
-    element: isLogged ? <MainLayout /> : <Navigate to={`/authentication`} />,
+    element: isLogged ? <MainLayout /> : <Navigate to={`/authentication/login`} />,
     children: [
       {
-        path: '/',
-        element: <Dashboard />
-      },
-      {
         path: 'dashboard',
-        element: <Navigate to="/" />
-      },
-      {
-        path: 'dashboard/deals',
-        element: <Deals />
+        element: <Dashboard />
       },
       {
         path: 'customers/list',
@@ -43,16 +32,8 @@ function MainRoutes(isLogged: boolean) {
         element: <ReconciliationAct />
       },
       {
-        path: 'analytics/salesfunnel',
-        element: <SalesFunnel />
-      },
-      {
         path: 'system/er-model',
         element: <ErModel />
-      },
-      {
-        path: '404',
-        element: <NotFound />
       },
     ]
   }
