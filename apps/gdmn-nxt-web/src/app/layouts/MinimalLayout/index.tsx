@@ -1,13 +1,14 @@
-import { Box, CssBaseline } from '@mui/material';
+import { Box, CssBaseline, Grid } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 const MinimalLayout = () => (
-    <>
-      <Box sx={{ display: 'flex' }}>
+  <>
+    <Grid container direction="column" justifyContent="center" alignContent="center" sx={{ minHeight: '100vh' }}>
       <CssBaseline />
       <Outlet />
-      </Box>
+    </Grid>
     </>
+
 );
 
 export default MinimalLayout;

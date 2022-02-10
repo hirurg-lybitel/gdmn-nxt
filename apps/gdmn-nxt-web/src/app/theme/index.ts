@@ -67,6 +67,7 @@ export const theme = (customization: ICustomization) => {
   const themes = createTheme(themeOptions);
   themes.typography = { ...themes.typography, ...themeTypography(themeOptions) };
   themes.components = componentStyleOverrides(themeOptions);
+  themes.shadows[1] = '0px 4px 20px rgba(170, 180, 190, 0.3)';
 
   return themes;
 

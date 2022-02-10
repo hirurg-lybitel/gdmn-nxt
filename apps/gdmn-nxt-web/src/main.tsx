@@ -22,8 +22,6 @@ const Main = () => {
   const { loginStage } = useSelector<RootState, UserState>( state => state.user );
   const isLogged = (loginStage === 'CUSTOMER' || loginStage === 'EMPLOYEE')
 
-  console.log('isLogged', isLogged);
-
   return (
     <BrowserRouter>
       <StrictMode>

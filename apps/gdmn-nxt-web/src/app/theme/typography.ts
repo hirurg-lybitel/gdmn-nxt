@@ -9,7 +9,7 @@ export default function typography(theme: ThemeOptions) {
     },
     h2: {
       fontSize: '0.8rem',
-      color: theme.headColor,
+      color: theme.textColor,
       fontWeight: 800
     },
     h3: {
@@ -19,18 +19,18 @@ export default function typography(theme: ThemeOptions) {
     },
     h4: {
       fontSize: '1rem',
-      color: theme.headColor,
+      color: theme.textColor,
       fontWeight: 600
     },
     h5: {
       fontSize: '0.9rem',
-      color: theme.headColor,
+      color: theme.textColor,
       fontWeight: 600,
     },
     h6: {
       fontSize: '2.75rem',
       fontWeight: 500,
-      color: theme.headColor,
+      color: theme.textColor,
     },
     caption: {
       fontSize: '0.75rem',

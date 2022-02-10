@@ -1,20 +1,18 @@
 import { Navigate } from "react-router-dom";
 import App from "../app";
 import MinimalLayout from "../layouts/MinimalLayout";
+import NotFound from "../pages/NotFound";
 
 function AuthenticationRoutes(isLogged: boolean) {
-  return {
-    path: '/',
+  return{
+    path: '/authentication',
     element: !isLogged ? <MinimalLayout /> : <Navigate to={`/`} />,
     children: [
       {
-        path: 'authentication/login',
+        path: '/authentication',
         element: <App />
       },
-      {
-        path: 'authentication/register',
-        element: <App />
-      }
+      { path: '404', element: <NotFound /> },
     ]
   }
 };
