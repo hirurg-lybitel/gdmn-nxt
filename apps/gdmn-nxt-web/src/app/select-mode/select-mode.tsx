@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Button from '@mui/material/Button/Button';
 import './select-mode.module.less';
 
@@ -9,7 +9,7 @@ export interface SelectModeProps {
 
 export function SelectMode({ employeeModeSelected, customerModeSelected }: SelectModeProps) {
   return (
-    <Stack direction="column" spacing={2}>
+    <Stack direction="column" alignItems="center" spacing={2}>
       <Typography variant="h1">
         Добро пожаловать на портал БелГИСС
       </Typography>
@@ -29,6 +29,6 @@ export function SelectMode({ employeeModeSelected, customerModeSelected }: Selec
       </Stack>
     </Stack>
   );
-}
+};
 
 export default SelectMode;

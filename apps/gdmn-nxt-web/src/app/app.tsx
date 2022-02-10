@@ -1,8 +1,3 @@
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-
 import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
@@ -73,10 +68,7 @@ const App = () => {
   }, [ loginStage ]);
 
   const result =
-    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto',  height: '100vh' }}>
-      <Routes>
-        
-      </Routes>
+    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto',  height: '100vh', maxWidth: "440px" }}>
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <h1>Loading...</h1>

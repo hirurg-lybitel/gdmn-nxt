@@ -11,7 +11,7 @@ declare module '@mui/material/styles' {
   // allow configuration using `createTheme`
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   export interface ThemeOptions extends styledTheme {}
-}
+};
 
 export const theme = (customization: ICustomization) => {
   const themeOption = {
