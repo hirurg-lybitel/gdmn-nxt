@@ -8,7 +8,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
 import { registerMUI } from './mui-license';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
 import { UserState } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
