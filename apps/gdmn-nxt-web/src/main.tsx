@@ -24,6 +24,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import { CssBaseline } from '@mui/material';
 
 registerMUI();
 
@@ -43,9 +44,10 @@ const Main = () => {
   return (
     <BrowserRouter>
       <StrictMode>
-        {
-          loginStage === 'EMPLOYEE' ?
-            <ThemeProvider theme={theme(customization)}>  
+        <CssBaseline>
+          <ThemeProvider theme={theme(customization)}>  
+          {
+            loginStage === 'EMPLOYEE' ?
               <Routes>
                 <Route path="/employee" element={<MainLayout />}>
                   <Route path="dashboard" element={<Dashboard />} />
@@ -57,22 +59,21 @@ const Main = () => {
                 </Route>
                 <Route path="*" element={<Navigate to="/employee/dashboard" />} />
               </Routes>
-            </ThemeProvider>
-          : loginStage === 'CUSTOMER' ?
-            <Routes>
-              <Route path="/customer">
-                <Route path="home" element={<CustomerHomePage />} />
-              </Route>  
-              <Route path="*" element={<Navigate to="/customer/home" />} />
-            </Routes>  
-          :
-            <ThemeProvider theme={myTheme}>
+            : loginStage === 'CUSTOMER' ?
+              <Routes>
+                <Route path="/customer">
+                  <Route path="home" element={<CustomerHomePage />} />
+                </Route>  
+                <Route path="*" element={<Navigate to="/customer/home" />} />
+              </Routes>  
+            :
               <Routes>
                 <Route path="/" element={<App />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>  
-            </ThemeProvider>
-        }
+          }
+          </ThemeProvider>  
+        </CssBaseline>
       </StrictMode>
     </BrowserRouter>
   );

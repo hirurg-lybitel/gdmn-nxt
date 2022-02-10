@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
@@ -155,7 +155,6 @@ export const MainLayout = () => {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
       <AppBar
         position="fixed"
         elevation={0}

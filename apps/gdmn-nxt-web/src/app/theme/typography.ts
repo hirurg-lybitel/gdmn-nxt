@@ -3,7 +3,7 @@ import { ThemeOptions } from "@mui/material";
 export default function typography(theme: ThemeOptions) {
   return {
     h1: {
-      fontSize: '1.5rem',
+      fontSize: '1.2rem',
       fontWeight: 700,
       color: theme.textColor,
     },
