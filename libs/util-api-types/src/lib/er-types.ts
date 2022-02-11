@@ -58,10 +58,21 @@ export interface IOperandValue {
   value: number | string;
 };
 
-export type Operand = IOperandField | IOperandList | IOperandValue;
+export interface IOperandQuery {
+  type: 'QUERY';
+  query: string;
+};
+
+export type Operand = IOperandField | IOperandList | IOperandValue | IOperandQuery;
 
 export interface IConditionIn {
   operator: 'IN';
+  left: Operand;
+  right: Operand;
+};
+
+export interface IConditionNotIn {
+  operator: 'NOT IN';
   left: Operand;
   right: Operand;
 };
@@ -72,12 +83,34 @@ export interface IConditionEq {
   right: Operand;
 };
 
-export type Condition = IConditionIn;
+export interface IConditionExists {
+  operator: 'EXISTS';
+  query: string;
+};
+
+export interface IConditionAnd {
+  operator: 'AND';
+  left: Condition;
+  right: Condition;
+};
+
+export type Condition = IConditionIn 
+  | IConditionNotIn 
+  | IConditionEq 
+  | IConditionExists 
+  | IConditionAnd;
+
+export interface IRelation {
+  name: string;
+  alias: string;
+  join?: {
+    type: 'INNER' | 'LEFT';
+    relation: IRelation;
+    condition?: Condition;
+  }
+  condition?: Condition;
+};
 
 export interface IEntityAdapter {
-  relation: {
-    name: string; 
-    alias: string;
-  },
-  condition?: Condition;
+  relation: IRelation,
 };

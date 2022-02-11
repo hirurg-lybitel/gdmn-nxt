@@ -2396,7 +2396,7 @@
   resolved "https://registry.yarnpkg.com/@mui/types/-/types-7.1.1.tgz#9cf159dc60a101ee336e6ec74193a4f5f97f6160"
   integrity sha512-33hbHFLCwenTpS+T4m4Cz7cQ/ng5g+IgtINkw1uDBVvi1oM83VNt/IGzWIQNPK8H2pr0WIfkmboD501bVdYsPw==
 
-"@mui/utils@^5.3.0", "@mui/utils@^5.4.1":
+"@mui/utils@^5.4.1":
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/@mui/utils/-/utils-5.4.1.tgz#feb365ce9a4426587510f0943fd6d6e1889e06e6"
   integrity sha512-5HzM+ZjlQqbSp7UTOvLlhAjkWB+o9Z4NzO0W+yhZ1KnxITr+zr/MBzYmmQ3kyvhui8pyhgRDoTcVgwb+02ZUZA==
@@ -2408,22 +2408,22 @@
     react-is "^17.0.2"
 
 "@mui/x-data-grid-pro@^5.2.1":
-  version "5.5.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid-pro/-/x-data-grid-pro-5.5.0.tgz#b62e9e24bcbd603aa0456ac0924f2ba0e22f8284"
-  integrity sha512-N50cwNPCMfC30OyksBX8RayfzArl4XP/GABfwoOGCvfc5ZnRJuXiFrLrpatQX06t552p+vD+BW5Kss5DS/pTaw==
+  version "5.5.1"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid-pro/-/x-data-grid-pro-5.5.1.tgz#2e11f9cb6d61f2ed5aebbb54c097a72447b84d5f"
+  integrity sha512-Fh5zWvu6Mz135uIAH7he64Zx4AWCp+ztgsc5EHISd457Mcc4rWJqpSVE6bMOo4tfNT32NFPoApJqc/LFK/33ng==
   dependencies:
-    "@mui/utils" "^5.3.0"
-    "@mui/x-license-pro" "5.5.0"
+    "@mui/utils" "^5.4.1"
+    "@mui/x-license-pro" "5.5.1"
     clsx "^1.0.4"
     prop-types "^15.8.1"
     reselect "^4.1.5"
 
-"@mui/x-license-pro@5.5.0":
-  version "5.5.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-license-pro/-/x-license-pro-5.5.0.tgz#3f6b703b3f134f5c4085bdaa0168a39be21b543c"
-  integrity sha512-X5byaKy/jdbIrKGEYNeKY2ORKoZD1PCHCRmVxNNAzggJDzhkBrQB+MBE6sjOcSq0Swx3jy4JKQdMKyyH2yn8cQ==
+"@mui/x-license-pro@5.5.1":
+  version "5.5.1"
+  resolved "https://registry.yarnpkg.com/@mui/x-license-pro/-/x-license-pro-5.5.1.tgz#c135721cc547f985495a073935c67b691fbe2245"
+  integrity sha512-GPx9u9vceYwLZWbpgItVAtBFAruwGkeOKV7fPz1oGMQo7nF5yKbJAycLzFG6gAh7dxjzSi3w5Vg561QeV1TKFQ==
   dependencies:
-    "@mui/utils" "^5.3.0"
+    "@mui/utils" "^5.4.1"
     esm "^3.2.25"
     yargs "^17.3.1"
 
@@ -8450,9 +8450,9 @@ memfs@^3.1.2, memfs@^3.2.2:
     fs-monkey "1.0.3"
 
 memorystore@^1.6.6:
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/memorystore/-/memorystore-1.6.6.tgz#8ecb5bbda1d7b2c0587f04c570030c1644ef4d76"
-  integrity sha512-EbLl1xg9+DlnjXkZK/eMUoWyhZ1IxcWMpSuFyqyA/Z4BNuH7BR+E0yC40WbLZZ6G8LxHiUZ2DPhqV8DR8+9UQQ==
+  version "1.6.7"
+  resolved "https://registry.yarnpkg.com/memorystore/-/memorystore-1.6.7.tgz#78f9b1c2b06949abfb4f85ec71f558ec4265e63d"
+  integrity sha512-OZnmNY/NDrKohPQ+hxp0muBcBKrzKNtHr55DbqSx9hLsYVNnomSAMRAtI7R64t3gf3ID7tHQA7mG4oL3Hu9hdw==
   dependencies:
     debug "^4.3.0"
     lru-cache "^4.0.3"
