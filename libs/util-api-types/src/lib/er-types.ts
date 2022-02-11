@@ -1,32 +1,65 @@
-export interface IAttrBase {
+export interface IDomainAdapter {
   name: string;
 };
 
-export interface IStringAttr extends IAttrBase {
+export interface IDomainBase {
+  name: string;
+  readonly?: boolean;
+  adapter?: IDomainAdapter;
+};
+
+export interface IStringDomain extends IDomainBase {
   type: 'STRING',
   maxLen: number;
   default?: string;
 };
 
-export interface INumAttrBase extends IAttrBase {
+export interface INumDomainBase extends IDomainBase {
   max: number;
   min: number;
   default?: number;
 };
 
-export interface ISequenceAttr extends IAttrBase {
-  type: 'SEQ'
+export interface IIntegerDomain extends INumDomainBase {
+  type: 'INTEGER';
 };
 
-export interface IIntegerAttr extends INumAttrBase {
-  type: 'INTEGER'
+export interface IDoubleDomain extends INumDomainBase {
+  type: 'DOUBLE';
 };
 
-export interface IDoubleAttr extends INumAttrBase {
-  type: 'DOUBLE'
+export interface IEntityDomainAdapter {
+  name: string;
+  relation: string;
+  listField?: string;
+  condition?: string;
 };
 
-export type Attr = IStringAttr | IIntegerAttr | IDoubleAttr | ISequenceAttr;
+export interface IEntityDomain extends IDomainBase {
+  type: 'ENTITY';
+  entityName: string;
+  adapter?: IEntityDomainAdapter;
+};
+
+export type Domain = IStringDomain | IIntegerDomain | IDoubleDomain | IEntityDomain;
+
+export interface IDomains {
+  [name: string]: Domain;
+};
+
+export interface IAttrBase {
+  name: string;
+  domain: string;
+  required?: boolean;
+  semCategory?: string;
+};
+
+export interface ISeqAttr {
+  type: 'SEQ';
+  name: string;
+};
+
+export type Attr = IAttrBase | ISeqAttr;
 
 export type Entity = IEntity;
 
@@ -44,6 +77,7 @@ export interface IEntities {
 };
 
 export interface IERModel {
+  domains: IDomains;
   entities: IEntities;
 };
 

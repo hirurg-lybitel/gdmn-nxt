@@ -6,8 +6,14 @@ export const systemMenu: IMenuItem = {
   type: 'group',
   children: [
     {
+      id: 'er-model-domains',
+      title: 'Domains',
+      type: 'item',
+      url: 'system/er-model-domains'
+    },
+    {
       id: 'er-model',
-      title: 'ER Model',
+      title: 'Entities',
       type: 'item',
       url: 'system/er-model'
     }

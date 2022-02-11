@@ -1,4 +1,4 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, Attr } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, Attr, IDomains } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
@@ -201,12 +201,13 @@ export const importERModel = async () => {
     ]);
 
     const gdbase = gdbaseRaw as IgdbaseImport;
+    const backwardCache = {} as { [relation: string]: string };
     const entities: IEntities = {};
 
     const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
       const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
       const atRelation = rdbRelation ? ar[rdbRelation.RDB$RELATION_NAME] : undefined;
-      const atRelationFields = rdbRelation ? arf[rdbRelation.RDB$RELATION_NAME] : undefined;
+      //const atRelationFields = rdbRelation ? arf[rdbRelation.RDB$RELATION_NAME] : undefined;
 
       let adapter: IEntityAdapter;
 
@@ -221,6 +222,8 @@ export const importERModel = async () => {
         }
 
         if (g.distinctRelation) {
+          backwardCache[g.distinctRelation.name] = g.className;
+
           const j = {
             type: 'INNER',
             name: g.distinctRelation.name,
@@ -232,25 +235,20 @@ export const importERModel = async () => {
           } else {
             adapter.join = [j];
           }
+        } else {
+          backwardCache[g.listTable.name] = g.className;
         }
 
         if (g.restrictCondition) {
           adapter.condition = str2cond(g.restrictCondition);
         }
-      }
-
-      const attributes = atRelationFields?.map<Attr>( f => {
-        return {
-          name: f.FIELDNAME,
-          type: 'SEQ'
-        };
-      });
+      };
 
       const e: Entity = {
         parent: parent?.name,
         name: g.className,
         abstract: g.abstract,
-        attributes,
+        attributes: [],
         semCategory: atRelation?.SEMCATEGORY ?? undefined,
         adapter
       };
@@ -266,9 +264,46 @@ export const importERModel = async () => {
 
     importGdbase(gdbase);
 
+    const domains: IDomains = {};
+
+    for (const atField of Object.values(af)) {
+      const { FIELDNAME, READONLY } = atField;
+      const { REFTABLE, REFLISTFIELD, REFCONDITION, GDCCLASSNAME, GDCSUBTYPE } = atField;
+
+      if (REFTABLE) {
+        let fullGdcClassName;
+
+        if (GDCCLASSNAME) {
+          fullGdcClassName = `${GDCCLASSNAME}${GDCSUBTYPE ? ('\\' + GDCSUBTYPE) : ''}`;
+        } else {
+          fullGdcClassName = undefined;
+        }
+
+        const entityName = fullGdcClassName && entities[fullGdcClassName]?.name;
+
+        if (entityName) {
+          domains[FIELDNAME] = {
+            name: FIELDNAME,
+            type: 'ENTITY',
+            entityName,
+            readonly: READONLY ? true : undefined,
+            adapter: {
+              name: FIELDNAME,
+              relation: REFTABLE,
+              listField: REFLISTFIELD && undefined,
+              condition: REFCONDITION && undefined
+            }
+          };
+        }
+      }
+    }
+
     console.log(`ERModel imported in ${new Date().getTime() - t}ms`);
 
-    return { entities } as IERModel;
+    return { 
+      domains,
+      entities 
+    } as IERModel;
   } finally {
     releaseReadTransaction('rdb');
   }  

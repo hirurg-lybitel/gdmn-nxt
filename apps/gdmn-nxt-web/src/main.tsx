@@ -29,6 +29,7 @@ import StandardOrder from './app/standard-order/standard-order';
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
 import Deals from './app/pages/Dashboard/deals/deals';
 import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
+import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 
 registerMUI();
 
@@ -51,6 +52,7 @@ const Main = () => {
                   <Route path="customers/orders/list" element={<OrderList />} />
                   <Route path="reports/reconciliation" element={<ReconciliationAct />} />
                   <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
+                  <Route path="system/er-model-domains" element={<ErModelDomains />} />
                   <Route path="system/er-model" element={<ErModel />} />
                   <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
                 </Route>
