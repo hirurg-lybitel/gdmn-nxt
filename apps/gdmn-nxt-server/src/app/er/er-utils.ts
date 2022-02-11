@@ -1,4 +1,4 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, Attr } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
@@ -205,6 +205,8 @@ export const importERModel = async () => {
 
     const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
       const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
+      const atRelation = rdbRelation ? ar[rdbRelation.RDB$RELATION_NAME] : undefined;
+      const atRelationFields = rdbRelation ? arf[rdbRelation.RDB$RELATION_NAME] : undefined;
 
       let adapter: IEntityAdapter;
 
@@ -237,11 +239,19 @@ export const importERModel = async () => {
         }
       }
 
+      const attributes = atRelationFields?.map<Attr>( f => {
+        return {
+          name: f.FIELDNAME,
+          type: 'SEQ'
+        };
+      });
+
       const e: Entity = {
         parent: parent?.name,
         name: g.className,
         abstract: g.abstract,
-        attributes: [],
+        attributes,
+        semCategory: atRelation?.SEMCATEGORY ?? undefined,
         adapter
       };
 

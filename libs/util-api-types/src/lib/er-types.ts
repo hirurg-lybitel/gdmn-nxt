@@ -14,6 +14,10 @@ export interface INumAttrBase extends IAttrBase {
   default?: number;
 };
 
+export interface ISequenceAttr extends IAttrBase {
+  type: 'SEQ'
+};
+
 export interface IIntegerAttr extends INumAttrBase {
   type: 'INTEGER'
 };
@@ -22,7 +26,7 @@ export interface IDoubleAttr extends INumAttrBase {
   type: 'DOUBLE'
 };
 
-export type Attr = IStringAttr | IIntegerAttr | IDoubleAttr;
+export type Attr = IStringAttr | IIntegerAttr | IDoubleAttr | ISequenceAttr;
 
 export type Entity = IEntity;
 
@@ -31,6 +35,7 @@ export interface IEntity {
   name: string;
   abstract?: boolean;
   attributes: Attr[];
+  semCategory?: string;
   adapter?: IEntityAdapter;
 };
 
