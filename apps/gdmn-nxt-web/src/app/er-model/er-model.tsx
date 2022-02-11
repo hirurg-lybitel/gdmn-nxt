@@ -50,7 +50,9 @@ export function ErModel(props: ErModelProps) {
           </TreeView>  
         </Grid>
         <Grid item xs={8}>
-          {selectedEntity}
+          <pre>
+            {JSON.stringify(data?.entities[selectedEntity], undefined, 2)}
+          </pre>
         </Grid>
       </Grid>
   );

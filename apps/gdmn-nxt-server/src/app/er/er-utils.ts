@@ -1,4 +1,4 @@
-import { Expression, Entity, IEntities, IEntityAdapter, IERModel, Operand } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
@@ -84,7 +84,7 @@ const str2cond = (s: string): (Expression | undefined) => {
   if (res) {
     if (res[3].slice(0, 7).toUpperCase() === 'SELECT ') {
       return {
-        operator: res[2] === 'IN' ? 'IN' : 'NOT IN',
+        operator: res[2].toUpperCase() === 'IN' ? 'IN' : 'NOT IN',
         left: {
           type: 'FIELD',
           alias: 'z',
@@ -106,7 +106,7 @@ const str2cond = (s: string): (Expression | undefined) => {
       };
   
       return {
-        operator: res[2] === 'IN' ? 'IN' : 'NOT IN',
+        operator: res[2].toUpperCase() === 'IN' ? 'IN' : 'NOT IN',
         left: {
           type: 'FIELD',
           alias: 'z',
@@ -150,11 +150,11 @@ const str2cond = (s: string): (Expression | undefined) => {
   }
 
   // expressions IS NULL, IS NOT NULL
-  const expIsNULL = /z\.(.+)\s+(IS NOT|IS)\s+NULL/ig;
+  const expIsNULL = /z\.(.+)\s+((IS\s+NOT)|(IS))\s+NULL/ig;
   res = expIsNULL.exec(s);
   
   if (res) {
-    if (res[2] === 'IS NOT') {
+    if (res[3]) {
       return {
         operator: 'IS NOT NULL',
         left: {
@@ -203,50 +203,53 @@ export const importERModel = async () => {
     const gdbase = gdbaseRaw as IgdbaseImport;
     const entities: IEntities = {};
 
-    const importGdbase = (g: IgdbaseImport, parent?: string) => {
+    const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
       const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
 
       let adapter: IEntityAdapter;
 
-      if (g.listTable) {
+      if (g.listTable) {        
         adapter = {
-          relation: {
-            name: g.listTable.name, 
-            alias: 'z',
-          }
+          name: g.listTable.name, 
+          alias: 'z'
         };
 
+        if (parent?.adapter?.join) {
+          adapter.join = [...parent.adapter.join];
+        }
+
         if (g.distinctRelation) {
-          adapter.relation.join = {
+          const j = {
             type: 'INNER',
-            relation: {
-              name: g.distinctRelation.name,
-              alias: 'b'
-            }
-          };
+            name: g.distinctRelation.name,
+            alias: `z${depth}`
+          } as IJoinAdapter;
+
+          if (adapter.join) {
+            adapter.join.push(j);
+          } else {
+            adapter.join = [j];
+          }
         }
 
         if (g.restrictCondition) {
-          adapter.relation.condition = str2cond(g.restrictCondition);
+          adapter.condition = str2cond(g.restrictCondition);
         }
       }
 
       const e: Entity = {
-        parent,
+        parent: parent?.name,
         name: g.className,
         abstract: g.abstract,
         attributes: [],
-        adapter: 
-          g.listTable ? { 
-            relation: { name: g.listTable.name, alias: 'z' } 
-          } : undefined
+        adapter
       };
 
       entities[e.name] = e;
 
       if (g.children) {
         for (const ch of g.children) {
-          importGdbase(ch, g.className);
+          importGdbase(ch, g.abstract ? 1 : (depth + 1), e);
         }
       }
     };

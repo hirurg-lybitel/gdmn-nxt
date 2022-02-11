@@ -127,17 +127,16 @@ export type Expression = Operand
   | IExpressionPlus 
   | IExpressionAnd;
 
-export interface IRelation {
+export interface IEntityAdapter {
   name: string;
   alias: string;
-  join?: {
-    type: 'INNER' | 'LEFT';
-    relation: IRelation;
-    condition?: Expression;
-  }
+  join?: IJoinAdapter[];
   condition?: Expression;
 };
 
-export interface IEntityAdapter {
-  relation: IRelation,
+export interface IJoinAdapter {
+  type: 'INNER' | 'LEFT'; 
+  name: string;
+  alias: string;
+  condition?: Expression;
 };
