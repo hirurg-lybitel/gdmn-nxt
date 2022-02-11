@@ -23,12 +23,12 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
             duration: theme.transitions.duration.enteringScreen
          }),
           marginLeft: 0,
-          width: `calc(100% - ${theme.drawerWidth}px)`,
+          width: `calc(100% - ${theme.drawerWidth}px - 20px)`,
           [theme.breakpoints.down('md')]: {
             marginLeft: '20px'
           },
           [theme.breakpoints.down('sm')]: {
-            marginLeft: '10px'
+            marginLeft: '20px'
           }
       }
       : {
@@ -36,21 +36,23 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen
           }),
+          marginLeft: -(theme.drawerWidth - 20),
+          width: `calc(100% - ${theme.drawerWidth}px)`,
           [theme.breakpoints.up('md')]: {
             marginLeft: -(theme.drawerWidth - 20),
             width: `calc(100% - ${theme.drawerWidth}px)`
           },
-          [theme.breakpoints.down('md')]: {
-              marginLeft: '20px',
-              width: `calc(100% - ${theme.drawerWidth}px)`,
-              padding: '16px'
-          },
-          [theme.breakpoints.down('sm')]: {
-              marginLeft: '10px',
-              width: `calc(100% - ${theme.drawerWidth}px)`,
-              padding: '16px',
-              marginRight: '10px'
-          }
+          // [theme.breakpoints.down('md')]: {
+          //     marginLeft: '10px',
+          //     width: `calc(100% - ${theme.drawerWidth}px)`,
+          //     padding: '16px'
+          // },
+          // [theme.breakpoints.down('sm')]: {
+          //     marginLeft: '10px',
+          //     width: `calc(100% - ${theme.drawerWidth}px)`,
+          //     padding: '16px',
+          //     marginRight: '10px'
+          // }
       })
 }));
 
@@ -154,7 +156,7 @@ export const MainLayout = () => {
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
       <AppBar
         position="fixed"
         elevation={0}

@@ -1,4 +1,5 @@
 import SummarizeIcon from '@mui/icons-material/Summarize';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { IMenuItem } from '.';
 
 const analytics: IMenuItem = {
@@ -19,6 +20,13 @@ const analytics: IMenuItem = {
           type: 'item',
         }
       ]
+    },
+    {
+      id: 'salesFunnel',
+      title: 'Продажи',
+      type: 'item',
+      url: 'analytics/salesfunnel',
+      icon: <FilterAltIcon color="secondary" />
     }
   ]
 }

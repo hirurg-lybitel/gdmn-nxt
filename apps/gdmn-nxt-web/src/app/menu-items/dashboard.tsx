@@ -1,4 +1,5 @@
 import HomeIcon from '@mui/icons-material/Home';
+import WorkIcon from '@mui/icons-material/Work';
 import { IMenuItem } from '.';
 
 const dashboard: IMenuItem = {
@@ -12,7 +13,15 @@ const dashboard: IMenuItem = {
       type: 'item',
       url: 'dashboard',
       icon: <HomeIcon color="secondary" />
+    },
+    {
+      id: 'deals',
+      title: 'Сделки',
+      type: 'item',
+      url: 'dashboard/deals',
+      icon: <WorkIcon color="secondary" />
     }
+
   ]
 }
 

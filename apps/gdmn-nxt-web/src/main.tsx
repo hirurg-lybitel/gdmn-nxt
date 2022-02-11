@@ -12,7 +12,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
 import { UserState } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
-import { ReconciliationAct } from './app/pages/UserReports/ReconciliationAct';
+import { ReconciliationAct } from './app/pages/Analytics/UserReports/ReconciliationAct';
 import { CustomersList } from './app/pages/Customers/customers-list/customers-list';
 import { Dashboard } from './app/pages/Dashboard/dashboard/dashboard';
 import { OrderList } from './app/pages/Customers/order-list/order-list';
@@ -27,6 +27,8 @@ import '@fontsource/roboto/700.css';
 import { CssBaseline } from '@mui/material';
 import StandardOrder from './app/standard-order/standard-order';
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
+import Deals from './app/pages/Dashboard/deals/deals';
+import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 
 registerMUI();
 
@@ -38,17 +40,19 @@ const Main = () => {
     <BrowserRouter>
       <StrictMode>
         <CssBaseline>
-          <ThemeProvider theme={theme(customization)}>  
+          <ThemeProvider theme={theme(customization)}>
           {
             loginStage === 'EMPLOYEE' ?
               <Routes>
                 <Route path="/employee" element={<MainLayout />}>
                   <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="dashboard/deals" element={<Deals />} />
                   <Route path="customers/list" element={<CustomersList />} />
                   <Route path="customers/orders/list" element={<OrderList />} />
                   <Route path="reports/reconciliation" element={<ReconciliationAct />} />
                   <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
                   <Route path="system/er-model" element={<ErModel />} />
+                  <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/employee/dashboard" />} />
               </Routes>
@@ -57,16 +61,16 @@ const Main = () => {
                 <Route path="/customer" element={<CustomerHomePage />}>
                   <Route path="standard-order" element={<StandardOrder />} />
                   <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
-                </Route>  
+                </Route>
                 <Route path="*" element={<Navigate to="/customer" />} />
-              </Routes>  
+              </Routes>
             :
               <Routes>
                 <Route path="/" element={<App />} />
                 <Route path="*" element={<Navigate to="/" />} />
-              </Routes>  
+              </Routes>
           }
-          </ThemeProvider>  
+          </ThemeProvider>
         </CssBaseline>
       </StrictMode>
     </BrowserRouter>

@@ -1,6 +1,18 @@
 import './confirm-dialog.module.less';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide } from '@mui/material';
 import useStyles from './styles';
+import { forwardRef, ReactElement, Ref } from 'react';
+import { TransitionProps } from '@mui/material/transitions';
+
+const Transition = forwardRef(function Transition(
+  props: TransitionProps & {
+    children: ReactElement<any, any>;
+  },
+  ref: Ref<unknown>,
+) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
+
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -16,7 +28,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   const classes = useStyles();
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} TransitionComponent={Transition}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent dividers>{text}</DialogContent>
       <DialogActions className={classes.dialogAction}>

@@ -2,7 +2,7 @@ import './sales-funnel.module.less';
 import { FunnelGraph } from '@trutoo/funnel-graph';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { customersSelectors } from '../features/customer/customerSlice';
+import { customersSelectors } from '../../../features/customer/customerSlice';
 
 /* eslint-disable-next-line */
 export interface SalesFunnelProps {}

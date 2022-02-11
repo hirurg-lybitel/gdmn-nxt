@@ -30,17 +30,15 @@ import { RootState } from '../store';
 import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
-import SalesFunnel from '../sales-funnel/sales-funnel';
 import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
 import CustomTreeView from '../custom-tree-view/custom-tree-view';
 import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
 import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
 import { clearError } from '../features/error-slice/error-slice';
-import { ReconciliationAct } from "../pages/UserReports/ReconciliationAct";
 import { useTheme } from '@mui/system';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
-
+import { ReconciliationAct } from '../pages/Analytics/UserReports/ReconciliationAct';
 
 const labelStyle: React.CSSProperties = {
   display: 'inline-block',
@@ -72,7 +70,6 @@ export function Customers(props: CustomersProps) {
   const [paramsDates, setParamsDates] = useState<DateRange<Date | null>>([null, null]);
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
-  const [salesFunnelOpen, setSalesFunnelOpen] = useState(false);
   const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
   const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
   const [addingGroup, setAddingGroup] = useState(false);
@@ -278,13 +275,6 @@ export function Customers(props: CustomersProps) {
     setReconciliationShow(true);
   };
 
-  const handleSalesFunnelClick = () => {
-    setSalesFunnelOpen(true);
-  }
-
-  const handleSalesFunnelBackOnClick = () => {
-    setSalesFunnelOpen(false);
-  }
 
   /** Close reconciliation report */
   const handleReconcilitationBackOnClick = () => {
@@ -376,19 +366,6 @@ export function Customers(props: CustomersProps) {
 
   };
 
-
-  if (salesFunnelOpen) {
-    return (
-      <Stack direction="column" spacing={2}>
-        <Button onClick={handleSalesFunnelBackOnClick} variant="contained" size="large" startIcon={<ArrowBackIcon />}>
-          Вернуться
-        </Button>
-        <SalesFunnel />
-      </Stack>
-    );
-  };
-
-
   return (
     <Stack direction="column">
       <Stack direction="row">
@@ -425,10 +402,12 @@ export function Customers(props: CustomersProps) {
                 disabled={customersLoading}
                 startIcon={<SummarizeIcon />}
               >Акт сверки</Button>
-              <Button onClick={handleSalesFunnelClick} disabled={customersLoading} startIcon={<FilterAltIcon />}>Воронка продаж</Button>
             </Stack>
           </Box>
-          <Card style={{  height: '800px', boxShadow: `${(theme.shadows as Array<any>)[2]}` }}>
+          <Card style={{  height: '800px',
+            boxShadow: '0px 4px 20px rgb(170 180 190 / 30%)'
+//            boxShadow: `${(theme.shadows as Array<any>)[2]}`
+          }}>
           <DataGridPro
             localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
             rows={

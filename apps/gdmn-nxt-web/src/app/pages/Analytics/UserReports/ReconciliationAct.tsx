@@ -6,12 +6,14 @@ import { Box, useTheme } from "@mui/system";
 import { createRef, Fragment, useEffect, useRef, useState } from "react";
 import ruLocale from 'date-fns/locale/ru';
 import { useDispatch, useSelector } from "react-redux";
-import { customersSelectors } from "../../features/customer/customerSlice";
+import { customersSelectors } from "../../../features/customer/customerSlice";
 import { IContactWithLabels } from "@gsbelarus/util-api-types";
-import ReconciliationStatement from "../../reconciliation-statement/reconciliation-statement";
+import ReconciliationStatement from "../../../reconciliation-statement/reconciliation-statement";
 import { useParams } from "react-router-dom";
-import { fetchCustomers } from "../../features/customer/actions";
-import { RootState } from "../../store";
+import { fetchCustomers } from "../../../features/customer/actions";
+import { RootState } from "../../../store";
+import MainCard from "../../../components/main-card/main-card";
+
 
 const filterOptions = createFilterOptions({
   matchFrom: 'any',
@@ -87,10 +89,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
   return(
     <Box>
       <Stack direction="column" spacing={2}>
-        {/* <Button  variant="contained" size="large">
-          Вернуться
-        </Button> */}
-        <Card sx={{ boxShadow: `${(theme.shadows as Array<any>)[2]}` }}>
+        <MainCard border boxShadow>
           <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
@@ -145,53 +144,53 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                 </LocalizationProvider>
             </Grid>
           </Grid>
-        </CardContent>
-        <Divider />
-        <CardActions>
-          <Grid
-            container
-            direction={"row-reverse"}
-            spacing={3}
-          >
-            <Grid item>
-              <Button
-                variant="contained"
-                //onClick={handleGenerate}
-                onClick={handleGenerate}
-              >
-                Сформировать
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button onClick={handelClear}>
-                Очистить
-              </Button>
-            </Grid>
-        </Grid>
-        </CardActions>
-        </Card>
-
+          </CardContent>
+          <Divider />
+          <CardActions>
+            <Grid
+              container
+              direction={"row-reverse"}
+              spacing={3}
+            >
+              <Grid item>
+                <Button
+                  variant="contained"
+                  //onClick={handleGenerate}
+                  onClick={handleGenerate}
+                >
+                  Сформировать
+                </Button>
+              </Grid>
+              <Grid item>
+                <Button onClick={handelClear}>
+                  Очистить
+                </Button>
+              </Grid>
+          </Grid>
+          </CardActions>
+        </MainCard>
 
         {generate
-          ? <Card sx={{ p: 1, boxShadow: `${(theme.shadows as Array<any>)[2]}` }} ref={scollToRef}
-          onChange={()=> console.log('onChange')}
-          onScroll={()=> console.log('onChange')}
-          onBlur={()=> console.log('onChange')}
-          onVolumeChange={()=> console.log('onChange')}
-          onDurationChange={()=> console.log('onChange')}
-          onTransitionEnd={()=> console.log('onChange')}
-          onLoad={()=> console.log('onChange')}
-          onTransitionEndCapture={()=> console.log('onChange')}
-          >
+          ? <MainCard border boxShadow sx={{ p: 1 }} ref={scollToRef}
+              onChange={()=> console.log('onChange')}
+              onScroll={()=> console.log('onChange')}
+              onBlur={()=> console.log('onChange')}
+              onVolumeChange={()=> console.log('onChange')}
+              onDurationChange={()=> console.log('onChange')}
+              onTransitionEnd={()=> console.log('onChange')}
+              onLoad={()=> console.log('onChange')}
+              onTransitionEndCapture={()=> console.log('onChange')}
+            >
               <ReconciliationStatement
                 custId={Number(inputParams?.cutomerId)}
                 dateBegin={inputParams?.dateBegin}
                 dateEnd={inputParams?.dateEnd}
               />
-            </Card>
+            </MainCard>
           : null}
       </Stack>
     </Box>
   )
 };
 
+export default ReconciliationAct;

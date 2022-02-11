@@ -17,11 +17,11 @@ export function Sidebar(props: SidebarProps) {
 
   const drawer = (
     <>
-        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        {/* <Box sx={{ display: { xs: 'block', md: 'none' } }}>
             <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                 123
             </Box>
-        </Box>
+        </Box> */}
         <BrowserView>
           <Box
             style={{
