@@ -65,40 +65,67 @@ export interface IOperandQuery {
 
 export type Operand = IOperandField | IOperandList | IOperandValue | IOperandQuery;
 
-export interface IConditionIn {
+export interface IExpressionIn {
   operator: 'IN';
   left: Operand;
   right: Operand;
 };
 
-export interface IConditionNotIn {
+export interface IExpressionNotIn {
   operator: 'NOT IN';
   left: Operand;
   right: Operand;
 };
 
-export interface IConditionEq {
+export interface IExpressionEq {
   operator: 'EQ';
   left: Operand;
   right: Operand;
 };
 
-export interface IConditionExists {
+export interface IExpressionLike {
+  operator: 'LIKE';
+  left: Operand;
+  right: Operand;
+};
+
+export interface IExpressionIsNull {
+  operator: 'IS NULL';
+  left: Expression;
+};
+
+export interface IExpressionIsNotNull {
+  operator: 'IS NOT NULL';
+  left: Operand;
+};
+
+export interface IExpressionExists {
   operator: 'EXISTS';
   query: string;
 };
 
-export interface IConditionAnd {
+export interface IExpressionAnd {
   operator: 'AND';
-  left: Condition;
-  right: Condition;
+  left: Expression;
+  right: Expression;
 };
 
-export type Condition = IConditionIn 
-  | IConditionNotIn 
-  | IConditionEq 
-  | IConditionExists 
-  | IConditionAnd;
+export interface IExpressionPlus {
+  operator: '+';
+  left: Operand;
+  right: Operand;
+};
+
+export type Expression = Operand
+  | IExpressionIn 
+  | IExpressionNotIn 
+  | IExpressionEq 
+  | IExpressionLike
+  | IExpressionIsNull
+  | IExpressionIsNotNull
+  | IExpressionExists 
+  | IExpressionPlus 
+  | IExpressionAnd;
 
 export interface IRelation {
   name: string;
@@ -106,9 +133,9 @@ export interface IRelation {
   join?: {
     type: 'INNER' | 'LEFT';
     relation: IRelation;
-    condition?: Condition;
+    condition?: Expression;
   }
-  condition?: Condition;
+  condition?: Expression;
 };
 
 export interface IEntityAdapter {

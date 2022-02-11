@@ -1,10 +1,38 @@
-import { Condition, Entity, IEntities, IEntityAdapter, IERModel } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IEntityAdapter, IERModel, Operand } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
 
-const str2cond = (s: string): (Condition | undefined) => {
+const str2cond = (s: string): (Expression | undefined) => {
+
+  const extractOperand = (s: string): (Operand | Expression) => {
+    const expPlus = /(\w+)\s*\+\s*((-{0,1}\d+)|('(.*)'))/ig;
+    let res = expPlus.exec(s);
+
+    if (res) {
+      return {
+        operator: '+',
+        left: {
+          type: 'FIELD',
+          alias: 'z',
+          fieldName: res[1]
+        },
+        right: {
+          type: 'VALUE',
+          value: res[3] ? Number(res[3]) : res[5]
+        }
+      }
+    } else {
+      return {
+        type: 'FIELD',
+        alias: 'z',
+        fieldName: s
+      };
+    }
+  };
+
+  // logical expressions with AND
   const expAnd = /((.+|.+\))\s*)AND(\s*(\(.+|.+))/ig;
   let res = expAnd.exec(s);
 
@@ -26,6 +54,9 @@ const str2cond = (s: string): (Condition | undefined) => {
     s = s.slice(1, s.length - 1).trim();
   }
 
+  // expressions of equation
+  // z.field_name = <NUMBER>
+  // z.field_name = <QUOTED STRING>
   const expEqValue = /z\.(\w+)\s*=\s*((-{0,1}\d+)|'(.*)')/ig;
   res = expEqValue.exec(s);
   
@@ -44,6 +75,9 @@ const str2cond = (s: string): (Condition | undefined) => {
     };
   }
   
+  // expressions with IN, NOT IN operators
+  // tested set is defined as constants list
+  // or result of a query
   const expInValue = /z\.(\w+)\s+(IN|NOT\s+IN)\s*\(\s*(.+)\s*\)/ig;
   res = expInValue.exec(s);
   
@@ -86,6 +120,7 @@ const str2cond = (s: string): (Condition | undefined) => {
     }
   }
 
+  // expressions with EXISTS
   const expExists = /EXISTS\s*\((.+)\)/ig;
   res = expExists.exec(s);
 
@@ -94,6 +129,46 @@ const str2cond = (s: string): (Condition | undefined) => {
       operator: 'EXISTS',
       query: res[1]
     };
+  }
+
+  const expLikeValue = /z\.(\w+)\s+LIKE\s+'(.+)'/ig;
+  res = expLikeValue.exec(s);
+  
+  if (res) {
+    return {
+      operator: 'LIKE',
+      left: {
+        type: 'FIELD',
+        alias: 'z',
+        fieldName: res[1]
+      },
+      right: {
+        type: 'VALUE',
+        value: res[2]
+      }
+    };
+  }
+
+  // expressions IS NULL, IS NOT NULL
+  const expIsNULL = /z\.(.+)\s+(IS NOT|IS)\s+NULL/ig;
+  res = expIsNULL.exec(s);
+  
+  if (res) {
+    if (res[2] === 'IS NOT') {
+      return {
+        operator: 'IS NOT NULL',
+        left: {
+          type: 'FIELD',
+          alias: 'z',
+          fieldName: res[1]
+        },
+      };
+    } else {
+      return {
+        operator: 'IS NULL',
+        left: extractOperand(res[1])
+      };
+    }
   }
 
   console.warn(`unknown condition ${s}`);
