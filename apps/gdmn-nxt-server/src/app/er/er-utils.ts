@@ -268,20 +268,21 @@ export const importERModel = async () => {
 
     for (const atField of Object.values(af)) {
       const { FIELDNAME, READONLY } = atField;
-      const { REFTABLE, REFLISTFIELD, REFCONDITION, GDCCLASSNAME, GDCSUBTYPE } = atField;
+      const { REFTABLE, REFLISTFIELD, REFCONDITION, GDCLASSNAME, GDSUBTYPE } = atField;
 
       if (REFTABLE) {
         let fullGdcClassName;
-
-        if (GDCCLASSNAME) {
-          fullGdcClassName = `${GDCCLASSNAME}${GDCSUBTYPE ? ('\\' + GDCSUBTYPE) : ''}`;
+        
+        if (GDCLASSNAME) {
+          fullGdcClassName = `${GDCLASSNAME}${GDSUBTYPE ? ('\\' + GDSUBTYPE) : ''}`;
         } else {
           fullGdcClassName = undefined;
         }
-
+        
         const entityName = fullGdcClassName && entities[fullGdcClassName]?.name;
-
+        
         if (entityName) {
+          console.log(fullGdcClassName);
           domains[FIELDNAME] = {
             name: FIELDNAME,
             type: 'ENTITY',

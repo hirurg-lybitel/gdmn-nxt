@@ -13,8 +13,8 @@ export interface IAtField {
   VISIBLE: number;
   COLWIDTH: number;
   READONLY: number | null;
-  GDCCLASSNAME: string | null;
-  GDCSUBTYPE: string | null;
+  GDCLASSNAME: string | null;
+  GDSUBTYPE: string | null;
 };
 
 export interface IAtFields {
