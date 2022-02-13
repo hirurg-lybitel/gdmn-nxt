@@ -2,6 +2,14 @@ import { Components, ThemeOptions } from "@mui/material";
 
 export default function componentStyleOverrides(theme: ThemeOptions): Components {
   return {
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          height: '70px',
+          padding: '15px'
+        }
+      }
+    },
     MuiAvatar: {
       styleOverrides: {
           root: {

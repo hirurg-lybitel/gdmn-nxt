@@ -1,5 +1,5 @@
 import { BrowserView, MobileView } from 'react-device-detect';
-import { Box, Drawer, useTheme } from '@mui/material';
+import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import './sidebar-view.module.less';
 import MenuList from '../menu-list/menu-list';
 
@@ -14,6 +14,8 @@ export interface SidebarProps {
 export function Sidebar(props: SidebarProps) {
   const {open, onToogle, window} = props
   const theme = useTheme();
+
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
 
   const drawer = (
     <>
@@ -50,7 +52,7 @@ export function Sidebar(props: SidebarProps) {
       <Drawer
         open={open}
         container={container}
-        variant="persistent"
+        variant={matchDownMd ? 'temporary' : 'persistent'}
         onClose={onToogle}
         anchor="left"
         ModalProps={{ keepMounted: true }}
@@ -60,7 +62,9 @@ export function Sidebar(props: SidebarProps) {
               width: theme.drawerWidth,
               borderRight: 'none',
               paddingTop: '25px',
-              top: '65px'
+              [theme.breakpoints.up('md')]: {
+                top: '70px'
+              }
           }
       }}
       >

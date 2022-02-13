@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
@@ -6,11 +6,13 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
 import { toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
+import Belgisslogo from '../../components/belgiss-logo/belgiss-logo';
+import BelgissLogo from '../../components/belgiss-logo/belgiss-logo';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -24,11 +26,9 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
          }),
           marginLeft: 0,
           width: `calc(100% - ${theme.drawerWidth}px - 20px)`,
-          [theme.breakpoints.down('md')]: {
-            marginLeft: '20px'
-          },
           [theme.breakpoints.down('sm')]: {
-            marginLeft: '20px'
+            marginLeft: -(theme.drawerWidth - 20),
+            width: `calc(100% - ${theme.drawerWidth}px)`,
           }
       }
       : {
@@ -165,6 +165,8 @@ export const MainLayout = () => {
         }}
       >
         <Toolbar>
+        {/* <ButtonBase disableRipple component={Link} to={config.defaultPath}> */}
+        {/* </ButtonBase>           */}
           <IconButton
             size="large"
             edge="start"
@@ -176,9 +178,13 @@ export const MainLayout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
+          <ButtonBase disableRipple component={Link} to={'/'} >
+            <BelgissLogo />
+          </ButtonBase>
+          <Box sx={{ flexGrow: 1 }} />
+          {/* <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
             Портал БелГИСС
-          </Typography>
+          </Typography> */}
           <IconButton
             size="large"
             onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
