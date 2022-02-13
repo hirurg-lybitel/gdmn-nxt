@@ -267,7 +267,7 @@ export const importERModel = async () => {
     const domains: IDomains = {};
 
     for (const atField of Object.values(af)) {
-      const { FIELDNAME, READONLY } = atField;
+      const { FIELDNAME, LNAME, READONLY } = atField;
       const { REFTABLE, REFLISTFIELD, REFCONDITION, GDCLASSNAME, GDSUBTYPE } = atField;
 
       if (REFTABLE) {
@@ -282,17 +282,17 @@ export const importERModel = async () => {
         const entityName = fullGdcClassName && entities[fullGdcClassName]?.name;
         
         if (entityName) {
-          console.log(fullGdcClassName);
           domains[FIELDNAME] = {
             name: FIELDNAME,
+            lName: LNAME,
             type: 'ENTITY',
             entityName,
             readonly: READONLY ? true : undefined,
             adapter: {
               name: FIELDNAME,
               relation: REFTABLE,
-              listField: REFLISTFIELD && undefined,
-              condition: REFCONDITION && undefined
+              listField: REFLISTFIELD ?? undefined,
+              condition: REFCONDITION ?? undefined
             }
           };
         }

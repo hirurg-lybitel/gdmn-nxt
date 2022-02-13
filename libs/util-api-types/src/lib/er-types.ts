@@ -4,6 +4,7 @@ export interface IDomainAdapter {
 
 export interface IDomainBase {
   name: string;
+  lName: string;
   readonly?: boolean;
   adapter?: IDomainAdapter;
 };

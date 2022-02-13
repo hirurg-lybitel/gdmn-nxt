@@ -7,15 +7,12 @@ export interface MainCardProps {}
 
 interface IMainCardProps {
   border?: boolean;
-  boxShadow?: boolean ;
-
-}
+  boxShadow?: boolean;
+};
 
 const MainCard = styled(Card)<IMainCardProps>(({theme, border, boxShadow}) => ({
-  ...(border && { border: '1px solid #E0E3E7' }),
-  ...(boxShadow && { boxShadow:  `${(theme.shadows as Array<any>)[1]}` })
-
-
-}))
+  ...(border ? { border: '1px solid #E0E3E7' } : {}),
+  ...(boxShadow ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : {})
+}));
 
 export default MainCard;
