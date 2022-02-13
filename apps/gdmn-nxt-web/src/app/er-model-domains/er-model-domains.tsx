@@ -7,6 +7,7 @@ import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
+import Box from '@mui/material/Box/Box';
 
 /* eslint-disable-next-line */
 export interface ErModelDomainsProps {}
@@ -31,25 +32,29 @@ export function ErModelDomains(props: ErModelDomainsProps) {
     { 
       field: 'lName', 
       headerName: 'Лок. наименование', 
-      width: 300 
+      width: 250
     },
     { 
       field: 'type', 
       headerName: 'Тип', 
-      width: 150,
+      width: 100,
       valueGetter: params => data?.domains[params.row.name].type
+    },
+    { 
+      field: 'entityName', 
+      headerName: 'Сущность', 
+      width: 150
     }
   ];
   
   return (
-    <div style={{ minHeight: 800, width: '100%' }}>
-      <Grid container columnSpacing={2}>
-        <Grid item xs={12}>
-          <Button onClick={ refetch } disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
-        </Grid>
+    <>
+      <Box>
+        <Button onClick={ refetch } disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+      </Box>
+      <Grid container height={800} columnSpacing={2}>
         <Grid item xs={9}>
           <DataGridPro
-            autoHeight
             rows={rows}
             columns={columns}
             pagination
@@ -84,7 +89,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           </Grid>
         }
       </Grid>
-    </div>
+    </>
   );
 }
 

@@ -5,9 +5,9 @@ export const loadRDBFields = async (attachment: Attachment, transaction: Transac
   const rs = await attachment.executeQuery(transaction, `
     SELECT 
       TRIM(rdb$field_name) AS rdb$field_name,
-      CAST(rdb$validation_source AS VARCHAR(255)) AS rdb$validation_source,
-      CAST(rdb$computed_source AS VARCHAR(255)) AS rdb$computed_source, 
-      CAST(rdb$default_source AS VARCHAR(255)) AS rdb$default_source, 
+      CAST(rdb$validation_source AS VARCHAR(1024)) AS rdb$validation_source,
+      CAST(rdb$computed_source AS VARCHAR(1024)) AS rdb$computed_source, 
+      CAST(rdb$default_source AS VARCHAR(1024)) AS rdb$default_source, 
       rdb$field_length,
       rdb$field_scale,
       rdb$field_type,
@@ -22,7 +22,8 @@ export const loadRDBFields = async (attachment: Attachment, transaction: Transac
       rdb$fields
   `);
   try {
-    return (await rs.fetchAsObject<IRDBField>()).reduce( (p, r) => (p[r.RDB$FIELD_NAME] = r, p), {} as IRDBFields);
+    const res = await rs.fetchAsObject<IRDBField>();
+    return res.reduce( (p, r) => (p[r.RDB$FIELD_NAME] = r, p), {} as IRDBFields);
   } finally {
     await rs.close();
   }

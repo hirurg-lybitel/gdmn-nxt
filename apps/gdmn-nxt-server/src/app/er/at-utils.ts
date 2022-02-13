@@ -4,7 +4,7 @@ import { IAtField, IAtFields, IAtRelation, IAtRelationField, IAtRelationFields, 
 export const loadAtFields = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
     SELECT 
-      FIELDNAME,
+      TRIM(FIELDNAME) AS FIELDNAME,
       LNAME, 
       DESCRIPTION, 
       REFTABLE, 
@@ -19,10 +19,12 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
       COLWIDTH, 
       READONLY, 
       GDCLASSNAME, 
-      GDSUBTYPE
+      GDSUBTYPE,
+      NUMERATION
     FROM
       AT_FIELDS`);
   try {
+    //TODO: преобразовывать нумерацию из блоба!
     return (await rs.fetchAsObject<IAtField>()).reduce( (p, r) => (p[r.FIELDNAME] = r, p), {} as IAtFields);
   } finally {
     await rs.close();

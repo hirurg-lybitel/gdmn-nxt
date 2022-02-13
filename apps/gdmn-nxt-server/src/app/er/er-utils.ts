@@ -1,4 +1,4 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, Attr, IDomains } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
@@ -187,6 +187,32 @@ interface IgdbaseImport {
   children?: IgdbaseImport[];
 };
 
+const getEntityScore = (e: IEntity, refTable: string) => {
+  const joinScore = e.adapter?.join?.findIndex( j => j.type === 'INNER' && j.name === refTable );
+
+  if (joinScore !== undefined) {
+    return joinScore + 1;
+  }
+
+  return e.adapter?.name === refTable ? 0 : -1;
+};
+
+const extractNumDef = (s: string | null | undefined) => {
+  if (!s) {
+    return undefined;
+  }
+
+  const numDef = /DEFAULT\s+(('(.+)')|(.+))/ig;
+  const res = numDef.exec(s);
+  const num = Number(res[3] ?? res[4]);
+
+  if (isNaN(num)) {
+    return undefined;
+  }
+
+  return num;
+};
+
 export const importERModel = async () => {
   const t = new Date().getTime();
   const { attachment, transaction } = await getReadTransaction('rdb');
@@ -265,36 +291,205 @@ export const importERModel = async () => {
     importGdbase(gdbase);
 
     const domains: IDomains = {};
-
+         
     for (const atField of Object.values(af)) {
-      const { FIELDNAME, LNAME, READONLY } = atField;
-      const { REFTABLE, REFLISTFIELD, REFCONDITION, GDCLASSNAME, GDSUBTYPE } = atField;
+      const { FIELDNAME, LNAME, READONLY, VISIBLE } = atField;
+      const { 
+        REFTABLE, REFLISTFIELD, REFCONDITION, 
+        SETTABLE, SETLISTFIELD, SETCONDITION,
+        GDCLASSNAME, GDSUBTYPE, NUMERATION 
+      } = atField;
+
+      let relation, listField, condition;
 
       if (REFTABLE) {
-        let fullGdcClassName;
+        relation = REFTABLE;
+        listField = REFLISTFIELD ?? undefined;
+        condition = REFCONDITION ?? undefined;
+      } else if (SETTABLE) {
+        relation = SETTABLE;
+        listField = SETLISTFIELD ?? undefined;
+        condition = SETCONDITION ?? undefined;
+      }
+
+      if (relation) {
+        let entityName;
         
         if (GDCLASSNAME) {
-          fullGdcClassName = `${GDCLASSNAME}${GDSUBTYPE ? ('\\' + GDSUBTYPE) : ''}`;
-        } else {
-          fullGdcClassName = undefined;
+          const fullGdcClassName = `${GDCLASSNAME}${GDSUBTYPE ? ('\\' + GDSUBTYPE) : ''}`;
+          entityName = entities[fullGdcClassName]?.name;
+        } 
+
+        if (!entityName) {
+          const found = Object.values(entities).filter( e => 
+            e.adapter?.join?.find( j => j.type === 'INNER' && j.name === relation )
+            ||
+            e.adapter?.name === relation
+          );
+
+          if (found.length === 1) {
+            entityName = found[0].name;
+          } 
+          else if (found.length) {
+            const sorted = found.sort( 
+              (a, b) => getEntityScore(a, relation) - getEntityScore(b, relation) 
+            );
+            entityName = sorted[0].name;
+          }
         }
-        
-        const entityName = fullGdcClassName && entities[fullGdcClassName]?.name;
         
         if (entityName) {
           domains[FIELDNAME] = {
             name: FIELDNAME,
             lName: LNAME,
-            type: 'ENTITY',
+            type: REFTABLE ? 'ENTITY' : 'ENTITY[]',
             entityName,
+            visible: VISIBLE ? true : undefined,
             readonly: READONLY ? true : undefined,
             adapter: {
               name: FIELDNAME,
-              relation: REFTABLE,
-              listField: REFLISTFIELD ?? undefined,
-              condition: REFCONDITION ?? undefined
+              relation,
+              listField,
+              condition
             }
           };
+        }
+      } else {
+        const rdbField = f[FIELDNAME];
+
+        if (!rdbField) {
+          console.warn(`Unknown domain ${FIELDNAME}`);
+        } else {
+          const domainBase: IDomainBase = {
+            name: FIELDNAME,
+            lName: LNAME,
+            visible: VISIBLE ? true : undefined,
+            readonly: READONLY ? true : undefined,
+            required: rdbField.RDB$NULL_FLAG ? true : undefined,
+            validationSource: rdbField.RDB$VALIDATION_SOURCE ?? undefined,
+            adapter: {
+              name: rdbField.RDB$FIELD_NAME
+            }
+          };
+
+          let domain: Domain;
+
+          if (rdbField.RDB$FIELD_PRECISION) {
+            domain = {
+              ...domainBase,
+              type: 'NUMERIC',
+              max: Number.MAX_SAFE_INTEGER,
+              min: Number.MIN_SAFE_INTEGER,
+              precision: rdbField.RDB$FIELD_PRECISION,
+              scale: rdbField.RDB$FIELD_SCALE,
+              default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
+            };
+          } else if (NUMERATION) {
+            domain = {
+              ...domainBase,
+              type: 'ENUM'
+            };
+          } else {
+            switch (rdbField.RDB$FIELD_TYPE) {
+              case 8:
+                domain = {
+                  ...domainBase,
+                  type: 'INTEGER',
+                  max: 2_147_483_647,
+                  min: -2_147_483_648,
+                  default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
+                };
+                break;
+  
+              case 7:
+                domain = {
+                  ...domainBase,
+                  type: 'INTEGER',
+                  max: 32_767,
+                  min: -32_768,
+                  default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
+                };
+                break;
+  
+              case 10:
+                domain = {
+                  ...domainBase,
+                  type: 'DOUBLE',
+                  max: 1.79E+38,
+                  min: -1.79E+38,
+                  default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
+                };
+                break;
+  
+              case 12:
+                domain = {
+                  ...domainBase,
+                  type: 'DATE',
+                  default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
+                };
+                break;
+  
+              case 13:
+                domain = {
+                  ...domainBase,
+                  type: 'TIME',
+                  default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
+                };
+                break;
+  
+              case 14:
+              case 37:  
+                domain = {
+                  ...domainBase,
+                  type: 'STRING',
+                  maxLen: rdbField.RDB$CHARACTER_LENGTH ?? rdbField.RDB$FIELD_LENGTH,
+                  charSetId: rdbField.RDB$CHARACTER_SET_ID,
+                  default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
+                };
+                break;
+  
+              case 16:
+                domain = {
+                  ...domainBase,
+                  type: 'BIGINT',
+                  max: Number.MAX_SAFE_INTEGER, //TODO: need changing to BigInt class
+                  min: Number.MIN_SAFE_INTEGER,
+                  default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
+                };
+                break;  
+  
+              case 27:
+                domain = {
+                  ...domainBase,
+                  type: 'DOUBLE',
+                  max: 3.40E+308,
+                  min: -3.40E+308,
+                  default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
+                };
+                break;
+  
+              case 35:
+                domain = {
+                  ...domainBase,
+                  type: 'TIMESTAMP',
+                  default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
+                };
+                break;
+  
+              //TODO: treat text BLOBs as strings?  
+              case 261:
+                domain = {
+                  ...domainBase,
+                  type: 'BLOB',
+                  subType: rdbField.RDB$FIELD_SUB_TYPE
+                };
+                break;
+            }
+          }
+
+          if (domain) {
+            domains[FIELDNAME] = domain;
+          }
         }
       }
     }

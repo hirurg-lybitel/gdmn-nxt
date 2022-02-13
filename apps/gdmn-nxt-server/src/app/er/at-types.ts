@@ -15,6 +15,7 @@ export interface IAtField {
   READONLY: number | null;
   GDCLASSNAME: string | null;
   GDSUBTYPE: string | null;
+  NUMERATION: string | null;
 };
 
 export interface IAtFields {

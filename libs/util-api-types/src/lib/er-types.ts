@@ -5,13 +5,17 @@ export interface IDomainAdapter {
 export interface IDomainBase {
   name: string;
   lName: string;
+  visible?: boolean;
   readonly?: boolean;
+  required?: boolean;
+  validationSource?: string;
   adapter?: IDomainAdapter;
 };
 
 export interface IStringDomain extends IDomainBase {
   type: 'STRING',
   maxLen: number;
+  charSetId: number;
   default?: string;
 };
 
@@ -21,12 +25,40 @@ export interface INumDomainBase extends IDomainBase {
   default?: number;
 };
 
+export interface IDateDomainBase extends IDomainBase {
+  max?: number;
+  min?: number;
+  default?: string;
+};
+
+export interface IDateDomain extends IDateDomainBase {
+  type: 'DATE';
+};
+
+export interface ITimeDomain extends IDateDomainBase {
+  type: 'TIME';
+};
+
+export interface ITimeStampDomain extends IDateDomainBase {
+  type: 'TIMESTAMP';
+};
+
 export interface IIntegerDomain extends INumDomainBase {
   type: 'INTEGER';
 };
 
+export interface IBigIntDomain extends INumDomainBase {
+  type: 'BIGINT';
+};
+
 export interface IDoubleDomain extends INumDomainBase {
   type: 'DOUBLE';
+};
+
+export interface INumericDomain extends INumDomainBase {
+  type: 'NUMERIC';
+  scale: number;
+  precision: number;
 };
 
 export interface IEntityDomainAdapter {
@@ -36,13 +68,39 @@ export interface IEntityDomainAdapter {
   condition?: string;
 };
 
+export interface IBlobDomain extends IDomainBase {
+  type: 'BLOB';
+  subType: number;
+};
+
+export interface IEnumDomain extends IDomainBase {
+  type: 'ENUM';
+};
+
 export interface IEntityDomain extends IDomainBase {
   type: 'ENTITY';
   entityName: string;
   adapter?: IEntityDomainAdapter;
 };
 
-export type Domain = IStringDomain | IIntegerDomain | IDoubleDomain | IEntityDomain;
+export interface IEntitySetDomain extends IDomainBase {
+  type: 'ENTITY[]';
+  entityName: string;
+  adapter?: IEntityDomainAdapter;
+};
+
+export type Domain = IStringDomain 
+  | IIntegerDomain 
+  | IBigIntDomain 
+  | IDoubleDomain 
+  | INumericDomain 
+  | IDateDomain 
+  | ITimeDomain 
+  | ITimeStampDomain 
+  | IBlobDomain 
+  | IEnumDomain 
+  | IEntityDomain
+  | IEntitySetDomain;
 
 export interface IDomains {
   [name: string]: Domain;
