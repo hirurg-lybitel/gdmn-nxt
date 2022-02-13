@@ -118,9 +118,11 @@ export interface ISeqAttr {
   name: string;
 };
 
-export type Attr = IAttrBase | ISeqAttr;
+export interface IStringAttr extends IAttrBase {
+  type: 'STRING';
+};
 
-export type Entity = IEntity;
+export type Attr = IStringAttr | ISeqAttr;
 
 export interface IEntity {
   parent?: string;
@@ -130,6 +132,8 @@ export interface IEntity {
   semCategory?: string;
   adapter?: IEntityAdapter;
 };
+
+export type Entity = IEntity;
 
 export interface IEntities {
   [name: string]: Entity;

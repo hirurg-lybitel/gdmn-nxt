@@ -1,4 +1,5 @@
 import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase } from "@gsbelarus/util-api-types";
+import { userInfo } from "os";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
@@ -233,7 +234,6 @@ export const importERModel = async () => {
     const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
       const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
       const atRelation = rdbRelation ? ar[rdbRelation.RDB$RELATION_NAME] : undefined;
-      //const atRelationFields = rdbRelation ? arf[rdbRelation.RDB$RELATION_NAME] : undefined;
 
       let adapter: IEntityAdapter;
 
@@ -289,6 +289,38 @@ export const importERModel = async () => {
     };
 
     importGdbase(gdbase);
+
+    const usrRelations = Object.values(ar).filter( r => r.RELATIONNAME.slice(0, 4) === 'USR$' );
+
+    for (const usrRelation of usrRelations) {
+      const hasID = arf[usrRelation.RELATIONNAME].find( f => f.FIELDNAME === 'ID');
+      const hasLB = arf[usrRelation.RELATIONNAME].find( f => f.FIELDNAME === 'LB');
+      const hasParent = arf[usrRelation.RELATIONNAME].find( f => f.FIELDNAME === 'PARENT');
+
+      if (hasID) {
+        const parent = hasLB ?
+          entities['TgdcAttrUserDefinedLBRBTree']
+          : hasParent ?
+          entities['TgdcAttrUserDefinedTree']
+          : 
+          entities['TgdcAttrUserDefined'];
+
+        if (parent) {
+          const name = parent.name + usrRelation.RELATIONNAME.replaceAll('$', '_');  
+  
+          entities[name] = {
+            parent: parent.name,
+            name,
+            attributes: [],
+            semCategory: usrRelation.SEMCATEGORY ?? undefined,
+            adapter: {
+              name: usrRelation.RELATIONNAME,
+              alias: 'z'
+            }
+          };  
+        }  
+      }
+    }
 
     const domains: IDomains = {};
          
@@ -490,6 +522,28 @@ export const importERModel = async () => {
           if (domain) {
             domains[FIELDNAME] = domain;
           }
+        }
+      }
+    }
+
+    for (const entity of Object.values(entities)) {
+      if (!entity.adapter) {
+        continue;
+      }
+
+      const atRelationFields = arf[entity.adapter.name];
+
+      if (!atRelationFields) {
+        console.warn(`No fields definitions for ${entity.adapter.name} found`);
+        continue;
+      }
+
+      for (const fld of atRelationFields) {
+        const domain = domains[fld.FIELDSOURCE];
+
+        if (!domain) {
+          console.warn(`Domain ${fld.FIELDSOURCE} has not been found for the field ${entity.adapter.name}.${fld.FIELDNAME}`);
+          continue;  
         }
       }
     }

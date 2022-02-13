@@ -7,19 +7,19 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
       TRIM(FIELDNAME) AS FIELDNAME,
       LNAME, 
       DESCRIPTION, 
-      REFTABLE, 
-      REFLISTFIELD, 
-      REFCONDITION, 
-      SETTABLE,
-      SETLISTFIELD, 
-      SETCONDITION, 
+      TRIM(REFTABLE) AS REFTABLE, 
+      TRIM(REFLISTFIELD) AS REFLISTFIELD, 
+      TRIM(REFCONDITION) AS REFCONDITION, 
+      TRIM(SETTABLE) AS SETTABLE,
+      TRIM(SETLISTFIELD) AS SETLISTFIELD, 
+      TRIM(SETCONDITION) AS SETCONDITION, 
       ALIGNMENT,
       FORMAT, 
       VISIBLE, 
       COLWIDTH, 
       READONLY, 
-      GDCLASSNAME, 
-      GDSUBTYPE,
+      TRIM(GDCLASSNAME) AS GDCLASSNAME, 
+      TRIM(GDSUBTYPE) AS GDSUBTYPE,
       NUMERATION
     FROM
       AT_FIELDS`);
@@ -34,14 +34,14 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
 export const loadAtRelations = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
     SELECT 
-      RELATIONNAME, 
+      TRIM(RELATIONNAME) AS RELATIONNAME, 
       LNAME, 
       LSHORTNAME, 
       DESCRIPTION, 
-      LISTFIELD, 
-      EXTENDEDFIELDS, 
+      TRIM(LISTFIELD) AS LISTFIELD, 
+      TRIM(EXTENDEDFIELDS) AS EXTENDEDFIELDS, 
       SEMCATEGORY, 
-      GENERATORNAME 
+      TRIM(GENERATORNAME) AS GENERATORNAME 
     FROM 
       AT_RELATIONS `);
   try {
@@ -54,11 +54,11 @@ export const loadAtRelations = async (attachment: Attachment, transaction: Trans
 export const loadAtRelationFields = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
     SELECT 
-      FIELDNAME,
-      RELATIONNAME, 
-      FIELDSOURCE, 
-      CROSSTABLE, 
-      CROSSFIELD, 
+      TRIM(FIELDNAME) AS FIELDNAME,
+      TRIM(RELATIONNAME) AS RELATIONNAME, 
+      TRIM(FIELDSOURCE) AS FIELDSOURCE, 
+      TRIM(CROSSTABLE) AS CROSSTABLE, 
+      TRIM(CROSSFIELD) AS CROSSFIELD, 
       LNAME,
       LSHORTNAME, 
       DESCRIPTION, 
@@ -67,8 +67,8 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
       ALIGNMENT, 
       COLWIDTH, 
       READONLY, 
-      GDCLASSNAME, 
-      GDSUBTYPE, 
+      TRIM(GDCLASSNAME) AS GDCLASSNAME, 
+      TRIM(GDSUBTYPE) AS GDSUBTYPE, 
       DELETERULE,
       SEMCATEGORY
     FROM
