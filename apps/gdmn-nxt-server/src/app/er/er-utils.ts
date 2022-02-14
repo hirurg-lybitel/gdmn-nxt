@@ -1,7 +1,7 @@
 import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase } from "@gsbelarus/util-api-types";
 import { userInfo } from "os";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
-import { loadAtFields, loadAtRelationFields, loadAtRelations } from "./at-utils";
+import { loadAtFields, loadAtRelationFields, loadAtRelations, loadDocumentTypes } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
 
@@ -218,13 +218,14 @@ export const importERModel = async () => {
   const t = new Date().getTime();
   const { attachment, transaction } = await getReadTransaction('rdb');
   try {
-    const [f, r, rf, af, ar, arf] = await Promise.all([
+    const [f, r, rf, af, ar, arf, dt] = await Promise.all([
       loadRDBFields(attachment, transaction), 
       loadRDBRelations(attachment, transaction),
       loadRDBRelationFields(attachment, transaction),
       loadAtFields(attachment, transaction),
       loadAtRelations(attachment, transaction),
       loadAtRelationFields(attachment, transaction),
+      loadDocumentTypes(attachment, transaction),
     ]);
 
     const gdbase = gdbaseRaw as IgdbaseImport;
@@ -306,6 +307,7 @@ export const importERModel = async () => {
           entities['TgdcAttrUserDefined'];
 
         if (parent) {
+          // make name looks the same way as in the Gedemin
           const name = parent.name + usrRelation.RELATIONNAME.replaceAll('$', '_');  
   
           entities[name] = {
@@ -548,12 +550,17 @@ export const importERModel = async () => {
       }
     }
 
-    console.log(`ERModel imported in ${new Date().getTime() - t}ms`);
-
-    return { 
+    const erModel: IERModel = { 
       domains,
       entities 
-    } as IERModel;
+    };
+
+    const erModelSerialized = JSON.stringify(erModel, undefined, 2);
+
+    console.log(`size of erModel: ${erModelSerialized.length} chars`)
+    console.log(`ERModel imported in ${new Date().getTime() - t}ms`);
+
+    return erModel;
   } finally {
     releaseReadTransaction('rdb');
   }  

@@ -60,3 +60,15 @@ export interface IAtRelationField {
 export interface IAtRelationFields {
   [RELATIONNAME: string]: IAtRelationField[];
 };
+
+export interface IGedeminDocType {
+  ID: number; 
+  PARENT: number | null;
+  LB: number;
+  RB: number; 
+  NAME: string; 
+  DESCRIPTION: string; 
+  CLASSNAME: string | null; 
+  DOCUMENTTYPE: string; 
+  RUID: string;  
+};
