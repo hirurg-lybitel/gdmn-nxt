@@ -1,5 +1,5 @@
 import { Attachment, Transaction } from "node-firebird-driver-native";
-import { IAtField, IAtFields, IAtRelation, IAtRelationField, IAtRelationFields, IAtRelations } from "./at-types";
+import { IAtField, IAtFields, IAtRelation, IAtRelationField, IAtRelationFields, IAtRelations, IGedeminDocType } from "./at-types";
 
 export const loadAtFields = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
@@ -83,6 +83,34 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
       }
       return p;
     }, {} as IAtRelationFields);
+  } finally {
+    await rs.close();
+  }
+};
+
+export const loadDocumentTypes = async (attachment: Attachment, transaction: Transaction) => {
+  const rs = await attachment.executeQuery(transaction, `
+    SELECT 
+      DT.ID,
+      DT.PARENT,
+      DT.LB,
+      DT.RB,
+      DT.NAME,
+      DT.DESCRIPTION,
+      DT.CLASSNAME,
+      DT.DOCUMENTTYPE,
+      DT.RUID,
+      HR.RELATIONNAME AS HEADERRELNAME,
+      LR.RELATIONNAME AS LINERELNAME
+    FROM
+      GD_DOCUMENTTYPE DT
+      LEFT JOIN AT_RELATIONS HR ON HR.ID = DT.HEADERRELKEY
+      LEFT JOIN AT_RELATIONS LR ON LR.ID = DT.LINERELKEY
+    ORDER BY
+      DT.LB
+  `);
+  try {
+    return (await rs.fetchAsObject<IGedeminDocType>());
   } finally {
     await rs.close();
   }
