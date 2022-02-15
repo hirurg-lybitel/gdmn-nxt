@@ -47,25 +47,25 @@ function getFormattedNumber(value: number){
 export function EarningCard(props: EarningCardProps) {
   const classes = useStyles();
 
+
   return (
     <MainCard
-      border
-      boxShadow
+      borders={true}
+      boxShadows
       className={classes.card}
       style= {{
         flex: 1,
       }}
     >
       <Stack direction="row">
-        <Typography className={classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
+        <Typography className={ classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
         <KeyboardDoubleArrowUpIcon fontSize="large" color="success" />
       </Stack>
 
       <Avatar className={classes.avatar}>
-        <MonetizationOnOutlinedIcon fontSize="inherit"  />
+        <MonetizationOnOutlinedIcon fontSize="inherit"/>
       </Avatar>
       <Typography className={classes.title}>Общая Выручка</Typography>
-
     </MainCard>
   );
 }

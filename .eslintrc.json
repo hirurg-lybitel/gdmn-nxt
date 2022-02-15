@@ -24,7 +24,33 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nrwl/nx/typescript"],
-      "rules": {}
+      "rules": {
+        "react/jsx-closing-bracket-location": 1,
+        "react/jsx-curly-spacing": ["warn", {
+          "when": "never",
+          "children": {
+            "when": "always"
+          }
+        }],
+        "react/jsx-boolean-value": ["never"],
+        "react/self-closing-comp": ["error", {
+          "component": true
+        }],
+        "jsx-quotes": 1,
+        "quotes": ["error", "single"],
+        "no-multi-spaces": "error",
+        "prettier/prettier": [
+          "error",
+          {
+              "bracketSpacing": true,
+              "printWidth": 140,
+              "trailingComma": "none",
+              "tabWidth": 4,
+              "useTabs": false,
+              "endOfLine": "auto"
+          }
+      ]
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

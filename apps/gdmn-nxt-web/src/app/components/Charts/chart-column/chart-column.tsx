@@ -90,8 +90,8 @@ export function ChartColumn(props: ChartColumnProps) {
 
   return (
     <MainCard
-      border
-      boxShadow
+      borders
+      boxShadows
       style={{
         flex: 1
       }}

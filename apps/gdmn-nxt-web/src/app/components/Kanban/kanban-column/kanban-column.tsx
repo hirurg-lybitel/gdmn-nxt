@@ -140,7 +140,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
       style={{ display: 'flex'}}
     >
       <MainCard
-        border
+        borders
         style={{
           minWidth: '230px',
           maxWidth: '400px',
@@ -169,13 +169,9 @@ export function KanbanColumn(props: KanbanColumnProps) {
             paddingLeft: 0,
             paddingRight: 0,
             maxHeight: 'calc(100vh - 240px)',
-            //maxHeight: 'calc(100vh - 260px)',
-            //maxHeight: '800px',
             ...(dropSnapshot.isDraggingOver
               ? {
                 backgroundColor: '#deebff',
-                //opacity: 0.7,
-                //border: `solid ${theme.menu?.backgroundColor}`
               }
               : {
               })

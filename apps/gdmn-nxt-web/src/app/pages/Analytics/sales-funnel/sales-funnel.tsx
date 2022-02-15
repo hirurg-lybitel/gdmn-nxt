@@ -41,7 +41,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
 
   return (
 
-    <MainCard border boxShadow style={{height: '800px' }}>
+    <MainCard borders boxShadows style={{height: '800px', flex: 1 }}>
       <ResponsiveFunnel
         data={funnelData}
         margin={{ top: 30, right: 20, bottom: 20, left: 20 }}

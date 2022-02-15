@@ -64,8 +64,8 @@ export function ChartDonut(props: ChartDonutProps) {
 
   return (
     <MainCard
-      border
-      boxShadow
+      borders
+      boxShadows
       style={{
         flex: 1
       }}

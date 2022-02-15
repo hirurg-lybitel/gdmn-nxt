@@ -44,7 +44,7 @@ export function KanbanCard(props: KanbanCardProps) {
   return (
     <div>
       <MainCard
-        border
+        borders
         key={card.id}
         style={{
           width: '100%',

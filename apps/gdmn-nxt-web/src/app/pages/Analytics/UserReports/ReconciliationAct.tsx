@@ -87,9 +87,9 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
 
 
   return(
-    <Box>
+    <Box flex="1">
       <Stack direction="column" spacing={2}>
-        <MainCard border boxShadow>
+        <MainCard borders boxShadows>
           <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
@@ -171,7 +171,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
         </MainCard>
 
         {generate
-          ? <MainCard border boxShadow sx={{ p: 1 }} ref={scollToRef}
+          ? <MainCard borders boxShadows sx={{ p: 1 }} ref={scollToRef}
               onChange={()=> console.log('onChange')}
               onScroll={()=> console.log('onChange')}
               onBlur={()=> console.log('onChange')}

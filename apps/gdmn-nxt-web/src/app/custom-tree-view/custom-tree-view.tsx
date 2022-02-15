@@ -141,8 +141,8 @@ export function CustomTreeView(props: CustomTreeViewProps) {
 
   return (
     <MainCard
-      border
-      boxShadow
+      borders
+      boxShadows
       sx={{
         height: '100%',
         overflowY: 'auto',

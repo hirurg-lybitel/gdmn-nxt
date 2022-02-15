@@ -16,7 +16,7 @@ export default function NotFound() {
       sx={{ height: '100%' }}
     >
       <Grid item>
-        <MainCard border boxShadow sx={{ width: 700 }}>
+        <MainCard borders boxShadows sx={{ width: 700 }}>
           <CardContent>
             <Grid
               container

@@ -50,8 +50,8 @@ export function OrderCard(props: OrderCardProps) {
 
   return (
     <MainCard
-      border
-      boxShadow
+      borders
+      boxShadows
       className={classes.card}
     >
       <Stack direction="row">

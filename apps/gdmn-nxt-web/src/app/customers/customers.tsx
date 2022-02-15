@@ -8,20 +8,20 @@ import {
   GridFilterInputValueProps,
   GridFilterModel,
   GridFilterOperator,
-  GridOverlay} from '@mui/x-data-grid-pro';
+  GridOverlay,
+  GridRowHeightParams} from '@mui/x-data-grid-pro';
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { useEffect, useState } from 'react';
-import { Box, Card, List, ListItemButton, Snackbar, Container, Grid, LinearProgress } from '@mui/material';
+import { Box, Card, List, ListItemButton, Snackbar, Container, Grid, LinearProgress, IconButton } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
@@ -39,6 +39,7 @@ import { useTheme } from '@mui/system';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
 import { ReconciliationAct } from '../pages/Analytics/UserReports/ReconciliationAct';
+import MainCard from '../components/main-card/main-card';
 
 const labelStyle: React.CSSProperties = {
   display: 'inline-block',
@@ -62,12 +63,10 @@ export function Customers(props: CustomersProps) {
 
   //const { data, isFetching, refetch } = useGetAllContactsQuery();
 
-  const [reconciliationParamsOpen, setReconciliationParamsOpen] = useState(false);
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
-  const [paramsDates, setParamsDates] = useState<DateRange<Date | null>>([null, null]);
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
   const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
@@ -143,7 +142,7 @@ export function Customers(props: CustomersProps) {
     { field: 'PHONE', headerName: 'Телефон', width: 250 },
     { field: 'labels',
       headerName: 'Метки',
-      flex: 1,
+      width: 500,
       filterOperators: labelsOnlyOperators,
       renderCell: (params) => {
 
@@ -152,68 +151,57 @@ export function Customers(props: CustomersProps) {
         if (!labels.length) {
           return;
         }
-
         return (
-          <Stack
-            direction="column"
-          >
-            <List
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                padding: 0,
-                margin: 1,
-                width: 'fit-content'
-                }}
-            >
-              {labels
-                .slice(0, labels.length > 3 ? Math.trunc(labels.length/2) : 3)
-                .map(label => {
-                  return (
-                    <ListItemButton
-                      key={label.ID}
-                      onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'is' }]})}
-                      style={labelStyle}
-                    >
-                    {groups?.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
-                    </ListItemButton>
-                  )
-              })}
-            </List>
-            {labels.length > 3 ?
-              <List
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  padding: 0,
-                  margin: 1,
-                  width: 'fit-content'
-                  }}
-              >
-                {labels
-                  .slice(Math.trunc(labels.length/2))
-                  .map(label => {
-                    return (
-                      <ListItemButton
-                        key={label.ID}
-                        onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'is' }]})}
-                        style={labelStyle}
-                      >
-                        {groups?.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
-                      </ListItemButton>
-                    )
-                  })
-                }
-
-              </List>
-              : null}
-
-
-
+          <Stack direction="column">
+            {labels.map((label, index) => {
+              if (index % 3 === 0) {
+                return(
+                  <List
+                    key={label.ID + index*10}
+                    style={{
+                      flexDirection: 'row',
+                      padding: '4px',
+                      width: 'fit-content',
+                    }}
+                  >
+                    {labels.slice(index, index + 3).map((subLabel, index) => {
+                      return(
+                        <ListItemButton
+                          key={subLabel.ID}
+                          onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: subLabel.LABEL, operatorValue: 'is' }]})}
+                          style={labelStyle}
+                        >
+                          {groups?.find(hierarchy => hierarchy.ID === subLabel.LABEL)?.NAME}
+                       </ListItemButton>
+                      )
+                    })}
+                  </List>
+                )
+              }
+              return null;
+            })}
           </Stack>
         );
       }
     },
+    {
+      field: 'Actions',
+      headerName: 'Действия',
+      align: 'center',
+      renderCell: (params) => {
+
+        const handleCustomerEdit = () => {
+          //console.log('renderCell', params)
+          setCurrentOrganization(Number(params.id))
+          setOpenEditForm(true);
+        }
+        return (
+          <IconButton onClick={handleCustomerEdit} disabled={customersLoading} >
+            <EditOutlinedIcon fontSize="small" color="primary" />
+          </IconButton>
+        );
+      }
+    }
   ];
 
 
@@ -367,9 +355,9 @@ export function Customers(props: CustomersProps) {
   };
 
   return (
-    <Stack direction="column">
-      <Stack direction="row">
-        <Box style={{ height: '800px'}}>
+    <Box flex={1} display="flex">
+      <Stack direction="row" flex={1}>
+        <Stack direction="column" flex="1" >
           <Box sx={{ mb: 1 }}>
             <Button onClick={contactGroupHandlers.handleAdd} disabled={groupIsFetching} startIcon={<AddIcon/>}>Добавить</Button>
           </Box>
@@ -388,14 +376,12 @@ export function Customers(props: CustomersProps) {
               onCancel={contactGroupHandlers.handleCancel}
             />
             : null}
-        </Box>
-        {/* <div style={{ width: '100%', height: '800px'}}>         */}
+        </Stack>
         <Stack direction="column"  style={{ width: '100%'}}>
           <Box sx={{ mb: 1 }}>
             <Stack direction="row">
               <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
               <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
-              <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
               <Button
                 component="a"
                 href={`reports/reconciliation/${currentOrganization}`}
@@ -404,11 +390,15 @@ export function Customers(props: CustomersProps) {
               >Акт сверки</Button>
             </Stack>
           </Box>
-          <Card style={{  height: '800px',
-            boxShadow: '0px 4px 20px rgb(170 180 190 / 30%)'
-//            boxShadow: `${(theme.shadows as Array<any>)[2]}`
-          }}>
+          <MainCard
+            borders
+            boxShadows
+            style={{ flex: 1}}
+          >
           <DataGridPro
+            style={{
+              border: 'none'
+            }}
             localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
             rows={
               allCustomers
@@ -431,9 +421,20 @@ export function Customers(props: CustomersProps) {
             }}
             filterModel={filterModel}
             onFilterModelChange={(model, detail) => setFilterModel(model)}
+            pinnedColumns={{left: [customersLoading ? '' : 'NAME']}}
+            getRowHeight={(params) => {
+              const customer: IContactWithLabels = params.model as IContactWithLabels;
+
+              const lables: ILabelsContact[] | [] = customer.labels || [];
+              if (lables?.length) {
+                return 50 * Math.ceil(lables.length/3)
+              }
+
+              return 50;
+            }}
           />
-          </Card>
-          </Stack>
+          </MainCard>
+        </Stack>
         {/* </div> */}
       </Stack>
       {openEditForm ?
@@ -457,7 +458,7 @@ export function Customers(props: CustomersProps) {
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
       </Snackbar>
-    </Stack>
+    </Box>
   );
 }
 
