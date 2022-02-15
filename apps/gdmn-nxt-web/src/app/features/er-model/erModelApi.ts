@@ -4,7 +4,7 @@ import { baseUrlApi } from '../../const';
 
 export const erModelApi = createApi({
   reducerPath: 'erModel',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getErModel: builder.query<IERModel, void>({
       query: () => `er-model`

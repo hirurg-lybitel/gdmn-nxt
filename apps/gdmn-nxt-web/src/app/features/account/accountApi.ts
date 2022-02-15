@@ -12,7 +12,7 @@ export type IAccountRequestResult = IRequestResult<IAccounts>;
 
 export const accountApi = createApi({
   reducerPath: 'account',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   tagTypes: ['Accounts'],
   endpoints: (builder) => ({
     getAllAccounts: builder.query<IAccountRequestResult, void>({
