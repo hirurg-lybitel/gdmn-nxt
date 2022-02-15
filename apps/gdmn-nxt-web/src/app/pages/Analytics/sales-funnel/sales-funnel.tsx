@@ -1,79 +1,72 @@
 import './sales-funnel.module.less';
-import { FunnelGraph } from '@trutoo/funnel-graph';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { customersSelectors } from '../../../features/customer/customerSlice';
+import { ResponsiveFunnel } from '@nivo/funnel'
+import MainCard from '../../../components/main-card/main-card';
 
 /* eslint-disable-next-line */
 export interface SalesFunnelProps {}
 
+/**Guid for @nivo/funnel https://nivo.rocks/funnel/ */
 export function SalesFunnel(props: SalesFunnelProps) {
-
-  const customersTotal = useSelector(customersSelectors.selectTotal);
-
-  const myFunnelGraph = new FunnelGraph({
-    container: '.funnel', // or reference to an Element
-    data: {
-      labels: ['Impressions', 'Add To Cart', 'Buy'],
-      colors: ['orange', 'red'],
-      values: [12000, 5700, 360],
-    },
-  });
-  console.log('char', myFunnelGraph);
-
-  const html = '<h1>Hello, world!</h1>'
-
-//   function iframe() {
-//     return {
-//         __html: '<iframe src="D:/Git/funnel-graph/examples/example.html" width="10040" height="850"></iframe>'
-//     }
-// }
-
-//   return (
-//     <div dangerouslySetInnerHTML={iframe()} />
-//     //React.createElement("h1", {dangerouslySetInnerHTML: {__html: html}})
-//   );
-
-const getRandom = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min) + min);
-}
-
+  const funnelData = [
+      {
+        id: "step_sent",
+        value: 66303,
+        label: "Sent"
+      },
+      {
+        id: "step_viewed",
+        value: 55213,
+        label: "Viewed"
+      },
+      {
+        id: "step_clicked",
+        value: 40714,
+        label: "Clicked"
+      },
+      {
+        id: "step_add_to_card",
+        value: 35944,
+        label: "Add To Card"
+      },
+      {
+        id: "step_purchased",
+        value: 28944,
+        label: "Purchased"
+      }
+  ]
 
 
   return (
-    <div style={{ justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
-      <svg id="d3-funnel-iChT-gyE5G_C_qzWubqfZ" width="320" height="400" >
-		<g>
-		  <path fill="#1f77b4" d="M0,0 L320,0 L261.84397163120565,205 L58.15602836879433,205 L0,0"></path>
-      <text x="160" y="102.5" fill="#fff" font-size="14px" text-anchor="middle" dominant-baseline="middle" pointer-events="none">
-        <tspan x="160" dy="-10">Клиенты</tspan>
-        <tspan x="160" dy="20">{getRandom(20000, 50000).toLocaleString()}</tspan>
-      </text>
-		</g>
-		<g>
-		  <path fill="#ff7f0e" d="M58.15602836879433,205 L261.84397163120565,205 L237.73049645390068,290 L82.26950354609929,290 L58.15602836879433,205"></path>
-      <text x="160" y="247.5" fill="#fff" font-size="14px" text-anchor="middle" dominant-baseline="middle" pointer-events="none">
-        <tspan x="160" dy="-10">Связались</tspan>
-        <tspan x="160" dy="20">{getRandom(3600, 10000).toLocaleString()}</tspan>
-      </text>
-    </g>
-		<g>
-      <path fill="#2ca02c" d="M82.26950354609929,290 L237.73049645390068,290 L219.99999999999997,352.5 L100,352.5 L82.26950354609929,290"></path>
-      <text x="160" y="321.25" fill="#fff" font-size="14px" text-anchor="middle" dominant-baseline="middle" pointer-events="none">
-        <tspan x="160" dy="-10">Запросили счёт</tspan>
-        <tspan x="160" dy="20">{getRandom(2100, 3500).toLocaleString()}</tspan>
-      </text>
-    </g>
-		<g>
-      <path fill="#d62728" d="M100,352.5 L219.99999999999997,352.5 L219.99999999999997,400 L100,400 L100,352.5"></path>
-      <text x="160" y="376.25" fill="#fff" font-size="14px" text-anchor="middle" dominant-baseline="middle" pointer-events="none">
-        <tspan x="160" dy="-10">Оплачено</tspan>
-        <tspan x="160" dy="20">{getRandom(900, 2000).toLocaleString()}</tspan>
-      </text>
-		</g>
-		</svg>
-    </div>
-  );
+
+    <MainCard border boxShadow style={{height: '800px' }}>
+      <ResponsiveFunnel
+        data={funnelData}
+        margin={{ top: 30, right: 20, bottom: 20, left: 20 }}
+        valueFormat=">-.4s"
+        colors={{ scheme: 'set2' }}
+        borderWidth={20}
+        labelColor={{
+            from: 'color',
+            modifiers: [
+                [
+                    'darker',
+                    3
+                ]
+            ]
+        }}
+        beforeSeparatorLength={100}
+        beforeSeparatorOffset={20}
+        afterSeparatorLength={100}
+        afterSeparatorOffset={20}
+        currentPartSizeExtension={10}
+        currentBorderWidth={40}
+        motionConfig="wobbly"
+      />
+    </MainCard>
+  )
 }
 
 export default SalesFunnel;

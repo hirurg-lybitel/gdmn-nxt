@@ -16,7 +16,7 @@ export function Dashboard(props: DashboardProps) {
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
 
   return (
-    <Stack direction="column" spacing={3}>
+    <Stack direction="column" spacing={3} flex={1}>
       <Stack direction={matchDownMd ? "column" : "row"} spacing={3} display="flex" height={matchDownMd ? "400px" : "200px"}>
         <EarningCard />
         <OrderCard />

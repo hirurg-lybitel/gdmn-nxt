@@ -30,7 +30,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: '60px',
     fontSize: '2.5rem',
     position: 'absolute',
-    bottom: 20,
+    bottom: 0,
+    marginBottom: 20,
     cursor: 'pointer'
   }
 }));
