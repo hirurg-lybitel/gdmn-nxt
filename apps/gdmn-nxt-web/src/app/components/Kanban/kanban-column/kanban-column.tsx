@@ -1,102 +1,40 @@
 import './kanban-column.module.less';
-import { useDrag, useDrop} from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import MainCard from '../../main-card/main-card';
-import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, TextField, Input, IconButton } from '@mui/material';
+import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, Input, IconButton, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
+import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } from 'react-beautiful-dnd';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import 'react-perfect-scrollbar/dist/css/styles.css';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 
-/* eslint-disable-next-line */
+
 export interface KanbanColumnProps {
+  provided: DraggableProvided;
+  dragSnapshot: DraggableStateSnapshot;
+  dropSnapshot: DroppableStateSnapshot;
   columns: IColumn[];
   children: JSX.Element[];
   item: IColumn;
-  index: number;
-  moveCard: (dragIndex: number, hoverIndex: number) => void;
   onEdit: (newColumn: IColumn) => void;
   onDelete: (column: IColumn) => void;
   onAddCard: (card: ICard) => void;
 }
 
-interface IItem {
-  id: number;
-  index: number;
-}
-
 export function KanbanColumn(props: KanbanColumnProps) {
-  const { children, item, index: ind, columns } = props;
-  const { moveCard, onEdit, onDelete, onAddCard} = props;
+  const { provided, dragSnapshot, dropSnapshot } = props;
+  const { children, item, columns } = props;
+  const { onEdit, onDelete, onAddCard} = props;
 
-  const [index, setIndex] = useState(ind);
+  const theme = useTheme();
 
   const [upsertCard, setUpsertCard] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-
-  const [{ canDrop, isOver, isDid }, dropRef] = useDrop(() => ({
-    //accept: ['toDo', 'doing', 'done', 'error'].filter(el => el !== item.id),
-    accept: ['card', 'group2'],
-    hover: (it: IItem, monitor) => {
-      if (it.index === index || item.id === monitor.getItem().id) return;
-      console.log('group_hover', item, index, it, monitor.getItem());
-
-      //moveCard(monitor.getItem().index, index,  );
-
-      //monitor.getItem().index = index;
-      //setIndex(it.index)
-
-
-      //moveCard(monitor.getItem().index, index);
-
-      // console.log('mutable_index_before', monitor.getItem().index);
-      //if (index > monitor.getItem().index ) return;
-      //monitor.getItem().index = index;
-      // console.log('mutable_index_after', monitor.getItem().index);
-    },
-    drop: (it, monitor) => {
-      console.log('group_drop_end', item, index, it.index, monitor.getItem());
-
-      //moveCard((monitor.getItem() as {index: number}).index, index);
-      //monitor.getItem().index = index;
-      //moveCard(monitor.getItem().index, index);
-      return monitor.getItem();
-    },
-    collect: (monitor) => ({
-      isDid: monitor.didDrop(),
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  }))
-
-  const [{ opacity }, dragRef] = useDrag(() => ({
-    type: 'group',
-    item: {
-      id: item.id,
-      index: index
-    },
-    end: (it, monitor) => {
-      if (!monitor.didDrop()) return;
-
-      console.log('group_end', item, index, it.index, monitor.getItem(), monitor.getDropResult());
-
-      //moveCard(index, (monitor.getItem() as {index: number}).index);
-
-    },
-    collect: (monitor) => ({
-      opacity: monitor.isDragging() ? 0.5 : 1,
-      canDrop: monitor.canDrag(),
-      isOver: monitor.didDrop
-    })
-  }), []
-  );
-
-  function attachRef(el: any) {
-    dragRef(el)
-    dropRef(el)
-  }
 
   const cardHandlers = {
     handleSubmit: async (card: ICard, deleting: boolean) => {
@@ -188,7 +126,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           <IconButton size="small" onClick={() => handleEditTitle()}>
             <EditIcon fontSize="small" />
           </IconButton >
-          <IconButton size="small" onClick={() => onDelete(item)}>
+          <IconButton size="small" onClick={() => setConfirmOpen(true)}>
             <DeleteIcon fontSize="small" />
           </IconButton >
         </div>
@@ -198,42 +136,65 @@ export function KanbanColumn(props: KanbanColumnProps) {
   }
 
   return (
-    <div
-      ref={attachRef}
+    <Box
+      style={{ display: 'flex'}}
     >
       <MainCard
         border
-        boxShadow
-        //ref={dragRef}
         style={{
-          opacity,
-          width: 200,
-          height: '830px',
+          minWidth: '230px',
+          maxWidth: '400px',
+          width: '250px',
           display: 'flex',
-          flexDirection: 'column'
-        }}
+          flexDirection: 'column',
+          ...(dragSnapshot.isDragging
+            ? {
+              backgroundColor: '#deebff',
+              opacity: 0.7,
+              border: `solid ${theme.menu?.backgroundColor}`
+            }
+            : {
+            }),
+      }}
       >
-        {/* <input type="text" size={40}/> */}
         <CardHeader
           sx={{ height: 10 }}
           title={header()}
+          {...provided.dragHandleProps}
         />
         <Divider />
-        <CardContent style={{ flex: 1}}>
-        <Box
-          overflow="auto"
-          flex={1}
-          display="flex"
-          height='100%'
+        <CardContent
+          style={{
+            flex: 1,
+            paddingLeft: 0,
+            paddingRight: 0,
+            maxHeight: 'calc(100vh - 240px)',
+            //maxHeight: 'calc(100vh - 260px)',
+            //maxHeight: '800px',
+            ...(dropSnapshot.isDraggingOver
+              ? {
+                backgroundColor: '#deebff',
+                //opacity: 0.7,
+                //border: `solid ${theme.menu?.backgroundColor}`
+              }
+              : {
+              })
+          }}
         >
-          <Stack
-            direction="column"
-            spacing={2}
-            flex={1}
+          <PerfectScrollbar
+            style={{
+              overflow: 'auto',
+              paddingRight: '16px',
+              paddingLeft: '16px'
+            }}
           >
-            {children}
-          </Stack>
-        </Box>
+            <Stack
+              direction="column"
+              spacing={2}
+            >
+              {children}
+            </Stack>
+          </PerfectScrollbar>
         </CardContent>
         <CardActions>
           <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
@@ -246,7 +207,14 @@ export function KanbanColumn(props: KanbanColumnProps) {
           onSubmit={cardHandlers.handleSubmit}
           onCancelClick={cardHandlers.handleCancel}
         />}
-    </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        setOpen={setConfirmOpen}
+        title={"Удаление группы: " + item.title}
+        text="Вы уверены, что хотите продолжить?"
+        onConfirm={() => onDelete(item)}
+      />
+    </Box>
   );
 }
 

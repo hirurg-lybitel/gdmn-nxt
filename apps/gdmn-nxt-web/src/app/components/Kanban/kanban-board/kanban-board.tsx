@@ -1,14 +1,11 @@
 import './kanban-board.module.less';
-import { Flipper, Flipped } from "react-flip-toolkit";
-import { Box, Button, Card, Stack } from '@mui/material';
-import { DndProvider, useDrag, useDrop } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import { Box, Button, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { arrayMoveImmutable } from "array-move";
 import KanbanCard from '../kanban-card/kanban-card';
 import { IColumn, ICard } from '../../../pages/Dashboard/deals/deals'
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from "react-beautiful-dnd";
 
 
 export interface KanbanBoardProps {
@@ -19,44 +16,11 @@ export interface KanbanBoardProps {
 export function KanbanBoard(props: KanbanBoardProps) {
   const { columns: inColumns, cards } = props;
 
-  const [flipId, setFlipId] = useState(inColumns.map(column => column.id).join(''));
   const [columns, setColumns] = useState<IColumn[]>([]);
-  //const [cards, setCards] = useState<ICard[]>(inCards);
-  //let flipId = '';
 
   useEffect(() => {
     setColumns(inColumns);
   }, [])
-
-  const moveColumn = (dragIndex: number, hoverIndex: number) => {
-    //console.log('moveGroup', dragIndex, hoverIndex);
-    if (dragIndex === hoverIndex) {
-      console.log('moveGroup1', dragIndex, hoverIndex);
-
-    } else {
-      console.log('moveGroup', dragIndex, hoverIndex);
-      const newArr = arrayMoveImmutable(columns, dragIndex, hoverIndex);
-      setColumns(newArr);
-      //setFlipId(newArr.map(column => column.id).join(''));
-    }
-  };
-
-  const moveCard = (dragIndex: number, hoverIndex: number, dragGroup: any, hoverGroup: any) => {
-    const dragGroupIndex = columns.findIndex(column => column.id === dragGroup);
-    const hoverGroupIndex = columns.findIndex(column => column.id === hoverGroup)
-
-    console.log('moveCard', dragIndex, hoverIndex, dragGroupIndex, hoverGroupIndex);
-
-    if (dragGroupIndex === hoverGroupIndex) {
-
-    } else {
-      const dragCard = cards[dragIndex];
-
-      console.log('dragCard', dragCard);
-
-    }
-
-  };
 
   const handleTitleEdit = (newColumn: IColumn) => {
     const newColumns = columns.map(column => column.id === newColumn.id ? newColumn : column);
@@ -79,13 +43,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
     setColumns(newColumns);
   };
 
-  useEffect(() => {
-    setFlipId(columns.map(column => column.id).join(''));
-  }, [columns])
-
-  // columns.forEach((column) => {
-  //   flipId += cards.filter(card => card.status === column.id).map(card => card.id).join('') ;
-  // });
 
   const handleAdd = () => {
     const newColumn: IColumn = {
@@ -97,8 +54,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
     const newArr = [...columns];
     newArr.push(newColumn);
     setColumns(newArr);
-
-    //setFlipId(columns.map(column => column.id).join(''));
 
   }
 
@@ -140,46 +95,141 @@ export function KanbanBoard(props: KanbanBoardProps) {
     },
   };
 
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Flipper flipKey={flipId} >
-        <Stack direction="row" spacing={2}>
-          {columns.map((column, index) => (
-            <Flipped key={column.id} flipId={column.id}>
-              <KanbanColumn
-                key={column.id}
-                item={column}
-                columns={columns}
-                index={index}
-                moveCard={moveColumn}
-                onEdit={handleTitleEdit}
-                onDelete={handleTitleDelete}
-                onAddCard={handleAddCard}
-              >
-                {column.cards
-                  .map((card, index) => (
-                    <Flipped key={card.id} flipId={card.id}>
-                      <KanbanCard
-                        key={card.id}
-                        index={index}
-                        card={card}
-                        columns={columns}
-                        moveCard={moveCard}
-                        onEdit={cardHandlers.handleEditCard}
-                        onDelete={cardHandlers.handleDeleteCard}
-                      />
-                    </Flipped>
-                  ))}
+  const reorder = (list: any[], startIndex: number, endIndex: number) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
-              </KanbanColumn>
-              </Flipped>
-            ))}
-            <Box>
-              <Button onClick={handleAdd} startIcon={<AddIcon/>}>Группа</Button>
-            </Box>
-        </Stack>
-      </Flipper>
-    </DndProvider>
+    return result;
+  };
+
+  function onDragEnd(result: DropResult) {
+
+    if (!result.destination) {
+      return;
+    }
+
+    if ((result.type === 'board') && (result.destination.index === result.source.index)) {
+      return;
+    }
+
+    let newColumns: IColumn[] = columns;
+
+    if (result.type === 'board') {
+      newColumns = reorder(
+        columns,
+        result.source.index,
+        result.destination.index
+      );
+    }
+
+    if (result.type === 'column') {
+      /** если перемешаем внутри одной колонки */
+      if (result.destination.droppableId === result.source.droppableId) {
+        const newCards = reorder(
+          columns[Number(result.source.droppableId)].cards,
+          result.source.index,
+          result.destination.index
+        );
+
+        newColumns = [...columns];
+        newColumns[Number(result.source.droppableId)].cards = newCards;
+      } else {
+        /** перемещаем в другую колонку */
+        newColumns = [...columns];
+        const [removedCard] = newColumns[Number(result.source.droppableId)].cards.splice(result.source.index, 1);
+        newColumns[Number(result.destination.droppableId)].cards.splice(result.destination.index, 0, removedCard);
+      }
+    }
+
+    setColumns(newColumns);
+  }
+
+
+  return (
+    <Box style={{ display: 'flex' }}>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="board" type="board" direction='horizontal'>
+          {(provided, snapshot) => (
+              <Stack
+                direction="row"
+                spacing={2}
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                display="flex"
+                overflow="auto"
+              >
+              {columns.map((column, index) => (
+                <Draggable key={column.id} draggableId={column.id.toString()} index={index}>
+                  {(provided, snapshot) => {
+                    const dragProvided: DraggableProvided = provided;
+                    const dragSnapshot = snapshot;
+                    return (
+                      <Box
+                        aria-label='box1'
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        display="flex"
+                      >
+                        <Droppable key={index} droppableId={`${index}`} type="column">
+                          {(provided, snapshot) => (
+                            <Box
+                              style={{display: 'flex'}}
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                            >
+                              <KanbanColumn
+                                provided={dragProvided}
+                                dragSnapshot={dragSnapshot}
+                                dropSnapshot={snapshot}
+                                key={column.id}
+                                item={column}
+                                columns={columns}
+                                onEdit={handleTitleEdit}
+                                onDelete={handleTitleDelete}
+                                onAddCard={handleAddCard}
+                              >
+                                {column.cards
+                                  .map((card, index) => (
+                                    <Draggable key={card.id + column.id*10} draggableId={(card.id + column.id*10).toString()} index={index}>
+                                      {(provided, snapshot) => (
+                                        <Box
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                        >
+                                          <KanbanCard
+                                            snapshot={snapshot}
+                                            key={card.id}
+                                            card={card}
+                                            columns={columns}
+                                            onEdit={cardHandlers.handleEditCard}
+                                            onDelete={cardHandlers.handleDeleteCard}
+                                          />
+                                        </Box>
+                                      )}
+
+                                    </Draggable>
+                                  ))}
+                              </KanbanColumn>
+                            {/* {provided.placeholder} */}
+                            </Box>
+                          )}
+                        </Droppable>
+                      </Box>
+                  )}}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+              <Box>
+                <Button onClick={handleAdd} startIcon={<AddIcon/>}>Группа</Button>
+              </Box>
+            </Stack>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </Box>
+
   );
 }
 

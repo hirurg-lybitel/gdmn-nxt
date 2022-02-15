@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
@@ -11,7 +11,6 @@ import Sidebar from './Sidebar/sidebar-view/sidebar-view';
 import { toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import Belgisslogo from '../../components/belgiss-logo/belgiss-logo';
 import BelgissLogo from '../../components/belgiss-logo/belgiss-logo';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
@@ -202,8 +201,10 @@ export const MainLayout = () => {
         open={menuOpened}
         onToogle={handleDrawerToggle}
       />
-      <Main menuOpened={menuOpened}>
-        <Outlet />
+      <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
+        <Box flex={1}>
+          <Outlet />
+        </Box>
       </Main>
     </Box>
   )

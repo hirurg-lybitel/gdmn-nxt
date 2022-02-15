@@ -56,6 +56,36 @@ const cards: ICard[] = [
     title: 'Сделка 6',
     customer: 'ДЦППК'
   },
+  {
+    id: 7,
+    status: 1,
+    title: 'Сделка 6',
+    customer: 'ДЦППК'
+  },
+  {
+    id: 8,
+    status: 1,
+    title: 'Сделка 8',
+    customer: 'ДЦППК'
+  },
+  {
+    id: 9,
+    status: 1,
+    title: 'Сделка 9',
+    customer: 'ДЦППК'
+  },
+  {
+    id: 10,
+    status: 1,
+    title: 'Сделка 10',
+    customer: 'ДЦППК'
+  },
+  {
+    id: 11,
+    status: 1,
+    title: 'Сделка 11',
+    customer: 'ДЦППК'
+  },
 ]
 
 export const columns: IColumn[] = [
