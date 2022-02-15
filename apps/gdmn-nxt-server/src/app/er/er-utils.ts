@@ -1,5 +1,4 @@
 import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase } from "@gsbelarus/util-api-types";
-import { userInfo } from "os";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { loadAtFields, loadAtRelationFields, loadAtRelations, loadDocumentTypes } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
@@ -188,14 +187,18 @@ interface IgdbaseImport {
   children?: IgdbaseImport[];
 };
 
-const getEntityScore = (e: IEntity, refTable: string) => {
-  const joinScore = e.adapter?.join?.findIndex( j => j.type === 'INNER' && j.name === refTable );
-
-  if (joinScore !== undefined) {
-    return joinScore + 1;
+const getEntityScore = (e: Entity, refTable: string) => {
+  if (e.type === 'SIMPLE') {
+    const joinScore = e.adapter?.join?.findIndex( j => j.type === 'INNER' && j.name === refTable );
+  
+    if (joinScore !== undefined) {
+      return joinScore + 1;
+    }
+  
+    return e.adapter?.name === refTable ? 0 : -1;
+  } else {
+    return (e.adapter?.headerRelation === refTable || e.adapter?.lineRelation === refTable) ? 0 : -1;
   }
-
-  return e.adapter?.name === refTable ? 0 : -1;
 };
 
 const extractNumDef = (s: string | null | undefined) => {
@@ -232,7 +235,7 @@ export const importERModel = async () => {
     const backwardCache = {} as { [relation: string]: string };
     const entities: IEntities = {};
 
-    const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
+    const importGdbase = (g: IgdbaseImport, depth = 0, parent?: IEntity) => {
       const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
       const atRelation = rdbRelation ? ar[rdbRelation.RDB$RELATION_NAME] : undefined;
 
@@ -271,7 +274,8 @@ export const importERModel = async () => {
         }
       };
 
-      const e: Entity = {
+      const e: IEntity = {
+        type: 'SIMPLE',
         parent: parent?.name,
         name: g.className,
         abstract: g.abstract,
@@ -311,6 +315,7 @@ export const importERModel = async () => {
           const name = parent.name + usrRelation.RELATIONNAME.replaceAll('$', '_');  
   
           entities[name] = {
+            type: 'SIMPLE',
             parent: parent.name,
             name,
             attributes: [],
@@ -356,9 +361,13 @@ export const importERModel = async () => {
 
         if (!entityName) {
           const found = Object.values(entities).filter( e => 
-            e.adapter?.join?.find( j => j.type === 'INNER' && j.name === relation )
-            ||
-            e.adapter?.name === relation
+            e.type === 'SIMPLE'
+            &&
+            (
+              e.adapter?.join?.find( j => j.type === 'INNER' && j.name === relation )
+              ||
+              e.adapter?.name === relation
+            )
           );
 
           if (found.length === 1) {
@@ -529,6 +538,10 @@ export const importERModel = async () => {
     }
 
     for (const entity of Object.values(entities)) {
+      if (entity.type !== 'SIMPLE') {
+        continue;
+      }
+
       if (!entity.adapter) {
         continue;
       }
@@ -555,10 +568,13 @@ export const importERModel = async () => {
       entities 
     };
 
-    const erModelSerialized = JSON.stringify(erModel, undefined, 2);
-
-    console.log(`size of erModel: ${erModelSerialized.length} chars`)
-    console.log(`ERModel imported in ${new Date().getTime() - t}ms`);
+    console.log(`
+      ERModel imported in ${new Date().getTime() - t} ms
+      size of erModel: ${(new TextEncoder().encode(JSON.stringify(erModel, undefined, 2))).length} bytes
+      domains: ${Object.keys(domains).length}
+      entities: ${Object.keys(entities).length}
+      attributes: ${Object.values(entities).flatMap( e => e.attributes ).length}
+    `);
 
     return erModel;
   } finally {

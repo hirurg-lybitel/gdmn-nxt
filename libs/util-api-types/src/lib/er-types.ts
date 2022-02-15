@@ -124,16 +124,25 @@ export interface IStringAttr extends IAttrBase {
 
 export type Attr = IStringAttr | ISeqAttr;
 
-export interface IEntity {
+export interface IEntityBase {
   parent?: string;
   name: string;
   abstract?: boolean;
   attributes: Attr[];
   semCategory?: string;
+}
+
+export interface IEntity extends IEntityBase {
+  type: 'SIMPLE';
   adapter?: IEntityAdapter;
 };
 
-export type Entity = IEntity;
+export interface IDocEntity extends IEntityBase {
+  type: 'DOCUMENT';
+  adapter?: IDocEntityAdapter;
+}
+
+export type Entity = IEntity | IDocEntity;
 
 export interface IEntities {
   [name: string]: Entity;
@@ -241,4 +250,9 @@ export interface IJoinAdapter {
   name: string;
   alias: string;
   condition?: Expression;
+};
+
+export interface IDocEntityAdapter {
+  headerRelation: string;
+  lineRelation?: string;
 };
