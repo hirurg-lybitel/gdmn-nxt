@@ -11,7 +11,7 @@ type IContactGroupsRequestResult = IRequestResult<IGroups>;
 export const contactGroupApi = createApi({
   reducerPath: 'contactGroup',
   tagTypes: ['Groups'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getGroups: builder.query<IContactHierarchy[], void>({
       query: () => `contactgroups`,

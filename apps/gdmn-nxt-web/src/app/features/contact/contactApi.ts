@@ -10,7 +10,7 @@ export type IContactRequestResult = IRequestResult<IContacts>;
 
 export const contactApi = createApi({
   reducerPath: 'contact',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getAllContacts: builder.query<IContactRequestResult, void>({
       query: () => `contacts`

@@ -4,6 +4,18 @@ import { loadAtFields, loadAtRelationFields, loadAtRelations, loadDocumentTypes 
 import gdbaseRaw from "./gdbase.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
 
+/*
+
+We import er model of the existing Gedemin database in following order:
+
+1. Import built-in entities from gdbase.json file.
+2. Import simple entities for USR$ tables from the database.
+3. Import user defined document entities from the database.
+4. Import domains.
+5. Import attributes for entities which has been imported at steps 1-3.
+
+*/
+
 const str2cond = (s: string): (Expression | undefined) => {
 
   const extractOperand = (s: string): (Operand | Expression) => {

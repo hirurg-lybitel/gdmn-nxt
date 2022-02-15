@@ -11,7 +11,7 @@ export type ILabelsContactRequestResult = IRequestResult<ILabels>;
 export const labelsApi = createApi({
   reducerPath: 'labels',
   tagTypes: ['labelsContact'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getLabelsContact: builder.query<ILabelsContactRequestResult, number | void>({
       query: (contactId?) => `contacts/labels${contactId ? `/${contactId}` : ``}`,
