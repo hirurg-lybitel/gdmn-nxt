@@ -68,6 +68,11 @@ export interface IEntityDomainAdapter {
   condition?: string;
 };
 
+export interface IBooleanDomain extends IDomainBase {
+  type: 'BOOLEAN';
+  default?: boolean;
+};
+
 export interface IBlobDomain extends IDomainBase {
   type: 'BLOB';
   subType: number;
@@ -97,6 +102,7 @@ export type Domain = IStringDomain
   | IDateDomain 
   | ITimeDomain 
   | ITimeStampDomain 
+  | IBooleanDomain 
   | IBlobDomain 
   | IEnumDomain 
   | IEntityDomain
@@ -106,11 +112,23 @@ export interface IDomains {
   [name: string]: Domain;
 };
 
+export interface IAttrAdapter {
+  name: string;
+};
+
+export interface ICrossAttrAdapter extends IAttrAdapter {
+  crossRelation: string;
+  crossField: string; 
+};
+
 export interface IAttrBase {
   name: string;
   domain: string;
+  lName: string;
   readonly?: boolean;
+  visible?: boolean;
   semCategory?: string;
+  adapter?: IAttrAdapter;
 };
 
 export interface ISeqAttr {
@@ -118,11 +136,15 @@ export interface ISeqAttr {
   name: string;
 };
 
-export interface IStringAttr extends IAttrBase {
-  type: 'STRING';
+export interface IEntityAttr extends IAttrBase {
+  entity: string;
 };
 
-export type Attr = IStringAttr | ISeqAttr;
+export interface IEntitySetAttr extends IEntityAttr {
+  adapter?: ICrossAttrAdapter;
+};
+
+export type Attr = IAttrBase | IEntityAttr | IEntitySetAttr | ISeqAttr;
 
 export interface IEntityBase {
   parent?: string;
@@ -132,7 +154,7 @@ export interface IEntityBase {
   attributes: Attr[];
   semCategory?: string;
   adapter?: IEntityAdapter;
-}
+};
 
 export interface IEntity extends IEntityBase {
   type: 'SIMPLE';
