@@ -88,7 +88,7 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
   }
 };
 
-export const loadDocumentTypes = async (attachment: Attachment, transaction: Transaction) => {
+export const loadGdDocumentType = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
     SELECT 
       DT.ID,
@@ -107,9 +107,7 @@ export const loadDocumentTypes = async (attachment: Attachment, transaction: Tra
       LEFT JOIN AT_RELATIONS HR ON HR.ID = DT.HEADERRELKEY
       LEFT JOIN AT_RELATIONS LR ON LR.ID = DT.LINERELKEY
     WHERE
-      DT.ID >= 147000000  
-    ORDER BY
-      DT.LB
+      DT.ID >= 147000000
   `);
   try {
     return (await rs.fetchAsObject<IGedeminDocType>());
