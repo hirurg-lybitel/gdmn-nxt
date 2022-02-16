@@ -1,8 +1,9 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase, IBaseDocTypes } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { IAtRelation, IGedeminDocType } from "./at-types";
-import { loadAtFields, loadAtRelationFields, loadAtRelations, loadDocumentTypes } from "./at-utils";
-import gdbaseRaw from "./gdbase.json";
+import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType } from "./at-utils";
+//import gdbaseRaw from "./gdbase.json";
+import entitiesRaw from "./entities.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
 
 /*
@@ -230,23 +231,38 @@ export const importERModel = async () => {
   const t = new Date().getTime();
   const { attachment, transaction } = await getReadTransaction('rdb');
   try {
-    const [f, r, rf, af, ar, arf, dt] = await Promise.all([
+    const [
+      rdbFields, 
+      rdbRelations, 
+      rdbRelationFields, 
+      atFields, 
+      atRelations, 
+      atRelationFields, 
+      gdDocumentType
+    ] = await Promise.all([
       loadRDBFields(attachment, transaction), 
       loadRDBRelations(attachment, transaction),
       loadRDBRelationFields(attachment, transaction),
       loadAtFields(attachment, transaction),
       loadAtRelations(attachment, transaction),
       loadAtRelationFields(attachment, transaction),
-      loadDocumentTypes(attachment, transaction),
+      loadGdDocumentType(attachment, transaction),
     ]);
 
+    const entities: IEntities = entitiesRaw as IEntities;
+    
+    /*
+    The code below is for importing standard Gedemin classes
+    from the predefined json file. This format was used in
+    previous GDMN platform. We converted it into current format
+    and stored as entities.json.
+
+    const relation2class = {} as { [relation: string]: string };
     const gdbase = gdbaseRaw as IgdbaseImport;
-    const backwardCache = {} as { [relation: string]: string };
-    const entities: IEntities = {};
 
     const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
-      const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
-      const atRelation = rdbRelation ? ar[rdbRelation.RDB$RELATION_NAME] : undefined;
+      const rdbRelation = g.listTable ? rdbRelations[g.listTable.name] : undefined;
+      const atRelation = rdbRelation ? atRelations[rdbRelation.RDB$RELATION_NAME] : undefined;
 
       let adapter: IEntityAdapter;
 
@@ -261,7 +277,7 @@ export const importERModel = async () => {
         }
 
         if (g.distinctRelation) {
-          backwardCache[g.distinctRelation.name] = g.className;
+          relation2class[g.distinctRelation.name] = g.className;
 
           const j = {
             type: 'INNER',
@@ -274,8 +290,17 @@ export const importERModel = async () => {
           } else {
             adapter.join = [j];
           }
+
+          //ugly hack
+          if (g.distinctRelation.name === 'GD_COMPANY') {
+            adapter.join.push({
+              type: 'LEFT',
+              name: 'GD_COMPANYCODE',
+              alias: 'cc'  
+            });
+          }
         } else {
-          backwardCache[g.listTable.name] = g.className;
+          relation2class[g.listTable.name] = g.className;
         }
 
         if (g.restrictCondition) {
@@ -304,17 +329,18 @@ export const importERModel = async () => {
 
     importGdbase(gdbase);
 
-    const usrRelations = Object.values(ar).filter( r => r.RELATIONNAME.slice(0, 4) === 'USR$' );
+    writeFileSync('c:/temp/entities.json', JSON.stringify(entities, undefined, 2));
+    */
+
+    const usrRelations = Object.values(atRelations).filter( r => r.RELATIONNAME.startsWith('USR$') );
 
     for (const usrRelation of usrRelations) {
-      const hasID = arf[usrRelation.RELATIONNAME].find( f => f.FIELDNAME === 'ID');
-      const hasLB = arf[usrRelation.RELATIONNAME].find( f => f.FIELDNAME === 'LB');
-      const hasParent = arf[usrRelation.RELATIONNAME].find( f => f.FIELDNAME === 'PARENT');
+      const arf = atRelationFields[usrRelation.RELATIONNAME];
 
-      if (hasID) {
-        const parent = hasLB ?
+      if (arf.find( f => f.FIELDNAME === 'ID')) {
+        const parent = arf.find( f => f.FIELDNAME === 'LB') ?
           entities['TgdcAttrUserDefinedLBRBTree']
-          : hasParent ?
+          : arf.find( f => f.FIELDNAME === 'PARENT') ?
           entities['TgdcAttrUserDefinedTree']
           : 
           entities['TgdcAttrUserDefined'];
@@ -346,7 +372,7 @@ export const importERModel = async () => {
     };
 
     const createDocEntity = (parentEntities: [Entity, Entity | undefined], documentType: IGedeminDocType) => {
-      const hr = ar[documentType.HEADERRELNAME];
+      const hr = atRelations[documentType.HEADERRELNAME];
       
       if (!hr) {
         console.warn(`Unknown document relation ${documentType.HEADERRELNAME}`);
@@ -376,29 +402,29 @@ export const importERModel = async () => {
 
       crEnt(parentEntities[0].name, hr);
 
-      const lr = documentType.LINERELNAME && ar[documentType.LINERELNAME];
+      const lr = documentType.LINERELNAME && atRelations[documentType.LINERELNAME];
 
       if (lr && parentEntities[1]) {
         crEnt(parentEntities[1].name, lr);
       }
     };
 
-    for (const documentType of dt) {
+    for (const documentType of gdDocumentType) {
       if (documentType.DOCUMENTTYPE === 'D' && documentType.HEADERRELNAME) {       
         createDocEntity(dtMap[documentType.CLASSNAME || 'TgdcDocumentType'], documentType);
       }
     };
 
     const domains: IDomains = {};
-         
-    for (const atField of Object.values(af)) {
-      const { FIELDNAME, LNAME, READONLY, VISIBLE } = atField;
+       
+    for (const atField of Object.values(atFields)) {
       const { 
+        FIELDNAME, LNAME, READONLY, VISIBLE,
         REFTABLE, REFLISTFIELD, REFCONDITION, 
         SETTABLE, SETLISTFIELD, SETCONDITION,
         GDCLASSNAME, GDSUBTYPE, NUMERATION 
       } = atField;
-
+ 
       let relation, listField, condition;
 
       if (REFTABLE) {
@@ -421,23 +447,31 @@ export const importERModel = async () => {
 
         if (!entityName) {
           const found = Object.values(entities).filter( e => 
-            e.type === 'SIMPLE'
-            &&
-            (
-              e.adapter?.join?.find( j => j.type === 'INNER' && j.name === relation )
-              ||
-              e.adapter?.name === relation
-            )
+            // can't restrict on INNER joins only because of presence
+            // of references to GD_COMPANYCODE relation
+            // which is weak relation for TgdcCompany class
+            e.adapter?.join?.find( j => j.name === relation )
+            ||
+            e.adapter?.name === relation
           );
 
           if (found.length === 1) {
             entityName = found[0].name;
           } 
           else if (found.length) {
-            const sorted = found.sort( 
-              (a, b) => getEntityScore(a, relation) - getEntityScore(b, relation) 
-            );
-            entityName = sorted[0].name;
+            const sorted = found
+              .map( e => ({ e, score: getEntityScore(e, relation) }) )
+              .sort( (a, b) => a.score - b.score );
+
+            if (sorted[0].score > sorted[1].score) {
+              entityName = sorted[0].e.name;
+            } else {
+              const getEntityDepth = (e: Entity) => e.parent ? (getEntityDepth(entities[e.parent]) + 1) : 0;
+              const top = sorted
+                .filter( t => t.score === sorted[0].score )
+                .sort( (a, b) => getEntityDepth(b.e) - getEntityDepth(a.e) );
+              entityName = top[0].e.name;
+            } 
           }
         }
         
@@ -456,9 +490,11 @@ export const importERModel = async () => {
               condition
             }
           };
+        } else {
+          console.warn(`Can't create domain ${FIELDNAME}. No entity for relation ${relation} found.`);
         }
       } else {
-        const rdbField = f[FIELDNAME];
+        const rdbField = rdbFields[FIELDNAME];
 
         if (!rdbField) {
           console.warn(`Unknown domain ${FIELDNAME}`);
@@ -587,6 +623,9 @@ export const importERModel = async () => {
                   subType: rdbField.RDB$FIELD_SUB_TYPE
                 };
                 break;
+
+              default:  
+                console.warn(`Unknown field type ${rdbField.RDB$FIELD_TYPE} for domain ${FIELDNAME}`);
             }
           }
 
@@ -606,14 +645,14 @@ export const importERModel = async () => {
         continue;
       }
 
-      const atRelationFields = arf[entity.adapter.name];
+      const arf = atRelationFields[entity.adapter.name];
 
-      if (!atRelationFields) {
+      if (!arf) {
         console.warn(`No fields definitions for ${entity.adapter.name} found`);
         continue;
       }
 
-      for (const fld of atRelationFields) {
+      for (const fld of arf) {
         const domain = domains[fld.FIELDSOURCE];
 
         if (!domain) {

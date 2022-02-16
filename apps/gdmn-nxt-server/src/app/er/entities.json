@@ -1,0 +1,2415 @@
+{
+  "TgdcBase": {
+    "type": "SIMPLE",
+    "name": "TgdcBase",
+    "abstract": true,
+    "attributes": []
+  },
+  "TgdcCustomFunction": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcCustomFunction",
+    "abstract": true,
+    "attributes": []
+  },
+  "TgdcFunction": {
+    "type": "SIMPLE",
+    "parent": "TgdcCustomFunction",
+    "name": "TgdcFunction",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_FUNCTION",
+      "alias": "z"
+    }
+  },
+  "TgdcTree": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTree",
+    "abstract": true,
+    "attributes": []
+  },
+  "TgdcLBRBTree": {
+    "type": "SIMPLE",
+    "parent": "TgdcTree",
+    "name": "TgdcLBRBTree",
+    "abstract": true,
+    "attributes": []
+  },
+  "TgdcDelphiObject": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcDelphiObject",
+    "attributes": [],
+    "adapter": {
+      "name": "EVT_OBJECT",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctBase": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcAcctBase",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCOUNT",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctChart": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBase",
+    "name": "TgdcAcctChart",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCOUNT",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctFolder": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBase",
+    "name": "TgdcAcctFolder",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCOUNT",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "accounttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": "F"
+        }
+      }
+    }
+  },
+  "TgdcAcctAccount": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBase",
+    "name": "TgdcAcctAccount",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCOUNT",
+      "alias": "z",
+      "condition": {
+        "operator": "IN",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "accounttype"
+        },
+        "right": {
+          "type": "LIST",
+          "values": [
+            "A",
+            "S"
+          ]
+        }
+      }
+    }
+  },
+  "TgdcAcctSubAccount": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctAccount",
+    "name": "TgdcAcctSubAccount",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCOUNT",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "accounttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": "S"
+        }
+      }
+    }
+  },
+  "TgdcBaseContact": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcBaseContact",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z"
+    }
+  },
+  "TgdcFolder": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseContact",
+    "name": "TgdcFolder",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 0
+        }
+      }
+    }
+  },
+  "TgdcGroup": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseContact",
+    "name": "TgdcGroup",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 1
+        }
+      }
+    }
+  },
+  "TgdcContact": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseContact",
+    "name": "TgdcContact",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_PEOPLE",
+          "alias": "z1"
+        }
+      ],
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 2
+        }
+      }
+    }
+  },
+  "TgdcEmployee": {
+    "type": "SIMPLE",
+    "parent": "TgdcContact",
+    "name": "TgdcEmployee",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_PEOPLE",
+          "alias": "z1"
+        },
+        {
+          "type": "INNER",
+          "name": "GD_EMPLOYEE",
+          "alias": "z2"
+        }
+      ],
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 2
+        }
+      }
+    }
+  },
+  "TgdcDepartment": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseContact",
+    "name": "TgdcDepartment",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 4
+        }
+      }
+    }
+  },
+  "TgdcCompany": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseContact",
+    "name": "TgdcCompany",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_COMPANY",
+          "alias": "z1"
+        },
+        {
+          "type": "LEFT",
+          "name": "GD_COMPANYCODE",
+          "alias": "cc"
+        }
+      ],
+      "condition": {
+        "operator": "IN",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "LIST",
+          "values": [
+            3,
+            5
+          ]
+        }
+      }
+    }
+  },
+  "TgdcOurCompany": {
+    "type": "SIMPLE",
+    "parent": "TgdcCompany",
+    "name": "TgdcOurCompany",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_COMPANY",
+          "alias": "z1"
+        },
+        {
+          "type": "LEFT",
+          "name": "GD_COMPANYCODE",
+          "alias": "cc"
+        },
+        {
+          "type": "INNER",
+          "name": "GD_OURCOMPANY",
+          "alias": "z2"
+        }
+      ],
+      "condition": {
+        "operator": "EXISTS",
+        "query": "SELECT * FROM gd_ourcompany our WHERE our.companykey = z.id"
+      }
+    }
+  },
+  "TgdcBank": {
+    "type": "SIMPLE",
+    "parent": "TgdcCompany",
+    "name": "TgdcBank",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONTACT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_COMPANY",
+          "alias": "z1"
+        },
+        {
+          "type": "LEFT",
+          "name": "GD_COMPANYCODE",
+          "alias": "cc"
+        },
+        {
+          "type": "INNER",
+          "name": "GD_BANK",
+          "alias": "z2"
+        }
+      ],
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "contacttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 5
+        }
+      }
+    }
+  },
+  "TgdcAttrUserDefinedLBRBTree": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcAttrUserDefinedLBRBTree",
+    "attributes": []
+  },
+  "TgdcBaseFile": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcBaseFile",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_FILE",
+      "alias": "z"
+    }
+  },
+  "TgdcFile": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseFile",
+    "name": "TgdcFile",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_FILE",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "filetype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": "F"
+        }
+      }
+    }
+  },
+  "TgdcFileFolder": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseFile",
+    "name": "TgdcFileFolder",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_FILE",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "filetype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": "D"
+        }
+      }
+    }
+  },
+  "TgdcBaseAcctTransaction": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcBaseAcctTransaction",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AC_TRANSACTION",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctTransaction": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseAcctTransaction",
+    "name": "TgdcAcctTransaction",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_TRANSACTION",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "AUTOTRANSACTION"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 0
+        }
+      }
+    }
+  },
+  "TgdcAutoTransaction": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseAcctTransaction",
+    "name": "TgdcAutoTransaction",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_TRANSACTION",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "AUTOTRANSACTION"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": 1
+        }
+      }
+    }
+  },
+  "TgdcReportGroup": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcReportGroup",
+    "attributes": [],
+    "adapter": {
+      "name": "RP_REPORTGROUP",
+      "alias": "z"
+    }
+  },
+  "TgdcMacrosGroup": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcMacrosGroup",
+    "attributes": [],
+    "adapter": {
+      "name": "EVT_MACROSGROUP",
+      "alias": "z"
+    }
+  },
+  "TgdcGoodGroup": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcGoodGroup",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_GOODGROUP",
+      "alias": "z"
+    }
+  },
+  "TgdcBaseDocumentType": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcBaseDocumentType",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE",
+      "alias": "z"
+    }
+  },
+  "TgdcDocumentType": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentType",
+    "name": "TgdcDocumentType",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "documenttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": "D"
+        }
+      }
+    }
+  },
+  "TgdcInvDocumentType": {
+    "type": "SIMPLE",
+    "parent": "TgdcDocumentType",
+    "name": "TgdcInvDocumentType",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE",
+      "alias": "z"
+    }
+  },
+  "TgdcInvPriceListType": {
+    "type": "SIMPLE",
+    "parent": "TgdcDocumentType",
+    "name": "TgdcInvPriceListType",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE",
+      "alias": "z"
+    }
+  },
+  "TgdcUserDocumentType": {
+    "type": "SIMPLE",
+    "parent": "TgdcDocumentType",
+    "name": "TgdcUserDocumentType",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE",
+      "alias": "z"
+    }
+  },
+  "TgdcDocumentBranch": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentType",
+    "name": "TgdcDocumentBranch",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE",
+      "alias": "z",
+      "condition": {
+        "operator": "EQ",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "documenttype"
+        },
+        "right": {
+          "type": "VALUE",
+          "value": "B"
+        }
+      }
+    }
+  },
+  "TgdcPlace": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcPlace",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_PLACE",
+      "alias": "z"
+    }
+  },
+  "TgdcMessageBox": {
+    "type": "SIMPLE",
+    "parent": "TgdcLBRBTree",
+    "name": "TgdcMessageBox",
+    "attributes": [],
+    "adapter": {
+      "name": "MSG_BOX",
+      "alias": "z"
+    }
+  },
+  "TgdcAttrUserDefinedTree": {
+    "type": "SIMPLE",
+    "parent": "TgdcTree",
+    "name": "TgdcAttrUserDefinedTree",
+    "attributes": []
+  },
+  "TgdcStorage": {
+    "type": "SIMPLE",
+    "parent": "TgdcTree",
+    "name": "TgdcStorage",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_STORAGE_DATA",
+      "alias": "z"
+    }
+  },
+  "TgdcStorageFolder": {
+    "type": "SIMPLE",
+    "parent": "TgdcStorage",
+    "name": "TgdcStorageFolder",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_STORAGE_DATA",
+      "alias": "z",
+      "condition": {
+        "operator": "IN",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "data_type"
+        },
+        "right": {
+          "type": "LIST",
+          "values": [
+            "F",
+            "G",
+            "U",
+            "O",
+            "T"
+          ]
+        }
+      }
+    }
+  },
+  "TgdcStorageValue": {
+    "type": "SIMPLE",
+    "parent": "TgdcStorage",
+    "name": "TgdcStorageValue",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_STORAGE_DATA",
+      "alias": "z",
+      "condition": {
+        "operator": "IN",
+        "left": {
+          "type": "FIELD",
+          "alias": "z",
+          "fieldName": "data_type"
+        },
+        "right": {
+          "type": "LIST",
+          "values": [
+            "S",
+            "I",
+            "C",
+            "D",
+            "L",
+            "B"
+          ]
+        }
+      }
+    }
+  },
+  "TgdcDocument": {
+    "type": "DOCUMENT",
+    "parent": "TgdcTree",
+    "name": "TgdcDocument",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctDocument": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcAcctDocument",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcTaxResult": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcTaxResult",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_TAXRESULT",
+          "alias": "z2"
+        }
+      ]
+    }
+  },
+  "TgdcTaxDesignDate": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcTaxDesignDate",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "GD_TAXDESIGNDATE",
+          "alias": "z2"
+        }
+      ]
+    }
+  },
+  "TgdcBaseBank": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcBaseBank",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcBankCatalogue": {
+    "type": "DOCUMENT",
+    "parent": "TgdcBaseBank",
+    "name": "TgdcBankCatalogue",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "BN_BANKCATALOGUE",
+          "alias": "z3"
+        }
+      ]
+    }
+  },
+  "TgdcBankStatement": {
+    "type": "DOCUMENT",
+    "parent": "TgdcBaseBank",
+    "name": "TgdcBankStatement",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "BN_BANKSTATEMENT",
+          "alias": "z3"
+        }
+      ]
+    }
+  },
+  "TgdcInvBaseDocument": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcInvBaseDocument",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvDocument": {
+    "type": "DOCUMENT",
+    "parent": "TgdcInvBaseDocument",
+    "name": "TgdcInvDocument",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvDocumentLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcInvBaseDocument",
+    "name": "TgdcInvDocumentLine",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvBasePriceList": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcInvBasePriceList",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvPriceList": {
+    "type": "DOCUMENT",
+    "parent": "TgdcInvBasePriceList",
+    "name": "TgdcInvPriceList",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "INV_PRICE",
+          "alias": "z1"
+        }
+      ]
+    }
+  },
+  "TgdcInvPriceListLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcInvBasePriceList",
+    "name": "TgdcInvPriceListLine",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "INV_PRICELINE",
+          "alias": "z1"
+        }
+      ]
+    }
+  },
+  "TgdcUserBaseDocument": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcUserBaseDocument",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "EQ",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "documenttypekey"
+          },
+          "right": {
+            "type": "VALUE",
+            "value": -1
+          }
+        },
+        "right": {
+          "operator": "IS NULL",
+          "left": {
+            "operator": "+",
+            "left": {
+              "type": "FIELD",
+              "alias": "z",
+              "fieldName": "parent"
+            },
+            "right": {
+              "type": "VALUE",
+              "value": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "TgdcUserDocument": {
+    "type": "DOCUMENT",
+    "parent": "TgdcUserBaseDocument",
+    "name": "TgdcUserDocument",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "EQ",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "documenttypekey"
+          },
+          "right": {
+            "type": "VALUE",
+            "value": -1
+          }
+        },
+        "right": {
+          "operator": "IS NULL",
+          "left": {
+            "operator": "+",
+            "left": {
+              "type": "FIELD",
+              "alias": "z",
+              "fieldName": "parent"
+            },
+            "right": {
+              "type": "VALUE",
+              "value": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "TgdcUserDocumentLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcUserBaseDocument",
+    "name": "TgdcUserDocumentLine",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "EQ",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "documenttypekey"
+          },
+          "right": {
+            "type": "VALUE",
+            "value": -1
+          }
+        },
+        "right": {
+          "operator": "IS NOT NULL",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "parent"
+          }
+        }
+      }
+    }
+  },
+  "TgdcBaseLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcDocument",
+    "name": "TgdcBaseLine",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcBankCatalogueLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcBaseLine",
+    "name": "TgdcBankCatalogueLine",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "BN_BANKCATALOGUELINE",
+          "alias": "z1"
+        }
+      ]
+    }
+  },
+  "TgdcBaseStatementLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcBaseLine",
+    "name": "TgdcBaseStatementLine",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcBankStatementLine": {
+    "type": "DOCUMENT",
+    "parent": "TgdcBaseStatementLine",
+    "name": "TgdcBankStatementLine",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENT",
+      "alias": "z",
+      "join": [
+        {
+          "type": "INNER",
+          "name": "BN_BANKSTATEMENTLINE",
+          "alias": "z1"
+        }
+      ]
+    }
+  },
+  "TgdcExplorer": {
+    "type": "SIMPLE",
+    "parent": "TgdcTree",
+    "name": "TgdcExplorer",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_COMMAND",
+      "alias": "z"
+    }
+  },
+  "TgdcConst": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcConst",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONST",
+      "alias": "z"
+    }
+  },
+  "TgdcConstValue": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcConstValue",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CONSTVALUE",
+      "alias": "z"
+    }
+  },
+  "TgdcAccount": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAccount",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_COMPANYACCOUNT",
+      "alias": "z"
+    }
+  },
+  "TgdcAttrUserDefined": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAttrUserDefined",
+    "attributes": []
+  },
+  "TgdcRplDatabase2": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcRplDatabase2",
+    "attributes": [],
+    "adapter": {
+      "name": "RPL_DATABASE",
+      "alias": "z"
+    }
+  },
+  "TgdcWgPosition": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcWgPosition",
+    "attributes": [],
+    "adapter": {
+      "name": "WG_POSITION",
+      "alias": "z"
+    }
+  },
+  "TgdcLink": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcLink",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_LINK",
+      "alias": "z"
+    }
+  },
+  "TgdcEvent": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcEvent",
+    "attributes": [],
+    "adapter": {
+      "name": "EVT_OBJECTEVENT",
+      "alias": "z"
+    }
+  },
+  "TgdcAutoTask": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAutoTask",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_AUTOTASK",
+      "alias": "z"
+    }
+  },
+  "TgdcAutoTaskLog": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAutoTaskLog",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_AUTOTASK_LOG",
+      "alias": "z"
+    }
+  },
+  "TgdcNamespace": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcNamespace",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_NAMESPACE",
+      "alias": "z"
+    }
+  },
+  "TgdcNamespaceObject": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcNamespaceObject",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_OBJECT",
+      "alias": "z"
+    }
+  },
+  "TgdcUser": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcUser",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_USER",
+      "alias": "z"
+    }
+  },
+  "TgdcUserGroup": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcUserGroup",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_USERGROUP",
+      "alias": "z"
+    }
+  },
+  "TgdcCurr": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcCurr",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CURR",
+      "alias": "z"
+    }
+  },
+  "TgdcCurrRate": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcCurrRate",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_CURRRATE",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctBaseEntryRegister": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAcctBaseEntryRegister",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AC_RECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctEntryRegister": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseEntryRegister",
+    "name": "TgdcAcctEntryRegister",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_RECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctViewEntryRegister": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseEntryRegister",
+    "name": "TgdcAcctViewEntryRegister",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_RECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctEntryLine": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAcctEntryLine",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ENTRY",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctSimpleRecord": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAcctSimpleRecord",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_RECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctQuantity": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAcctQuantity",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_QUANTITY",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctComplexRecord": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAcctComplexRecord",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_RECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcBaseAcctTransactionEntry": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcBaseAcctTransactionEntry",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_TRRECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctTransactionEntry": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseAcctTransactionEntry",
+    "name": "TgdcAcctTransactionEntry",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_TRRECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcAutoTrRecord": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseAcctTransactionEntry",
+    "name": "TgdcAutoTrRecord",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_TRRECORD",
+      "alias": "z"
+    }
+  },
+  "TgdcTaxActual": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTaxActual",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_TAXACTUAL",
+      "alias": "z"
+    }
+  },
+  "TgdcTaxName": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTaxName",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_TAXNAME",
+      "alias": "z"
+    }
+  },
+  "TgdcReport": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcReport",
+    "attributes": [],
+    "adapter": {
+      "name": "RP_REPORTLIST",
+      "alias": "z"
+    }
+  },
+  "TgdcInvDocumentTypeOptions": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcInvDocumentTypeOptions",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_DOCUMENTTYPE_OPTION",
+      "alias": "z"
+    }
+  },
+  "TgdcMetaBase": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcMetaBase",
+    "abstract": true,
+    "attributes": []
+  },
+  "TgdcField": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcField",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_FIELDS",
+      "alias": "z"
+    }
+  },
+  "TgdcRelation": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcRelation",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcBaseTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcRelation",
+    "name": "TgdcBaseTable",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseTable",
+    "name": "TgdcTable",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcSimpleTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcTable",
+    "name": "TgdcSimpleTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcPrimeTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcTable",
+    "name": "TgdcPrimeTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcTableToTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcTable",
+    "name": "TgdcTableToTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcInheritedTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcTableToTable",
+    "name": "TgdcInheritedTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcTreeTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcTable",
+    "name": "TgdcTreeTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcLBRBTreeTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcTable",
+    "name": "TgdcLBRBTreeTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcUnknownTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseTable",
+    "name": "TgdcUnknownTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcCustomTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseTable",
+    "name": "TgdcCustomTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcBaseDocumentTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcCustomTable",
+    "name": "TgdcBaseDocumentTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcInheritedDocumentTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentTable",
+    "name": "TgdcInheritedDocumentTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcDocumentTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentTable",
+    "name": "TgdcDocumentTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcBaseDocumentLineTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentTable",
+    "name": "TgdcBaseDocumentLineTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcDocumentLineTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentLineTable",
+    "name": "TgdcDocumentLineTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "LIKE",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "relationname"
+          },
+          "right": {
+            "type": "VALUE",
+            "value": "%LINE"
+          }
+        }
+      }
+    }
+  },
+  "TgdcInvSimpleDocumentLineTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentLineTable",
+    "name": "TgdcInvSimpleDocumentLineTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcInvFeatureDocumentLineTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentLineTable",
+    "name": "TgdcInvFeatureDocumentLineTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcInvInventDocumentLineTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentLineTable",
+    "name": "TgdcInvInventDocumentLineTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcInvTransformDocumentLineTable": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseDocumentLineTable",
+    "name": "TgdcInvTransformDocumentLineTable",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z",
+      "condition": {
+        "operator": "AND",
+        "left": {
+          "operator": "IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'DOCUMENTKEY'"
+          }
+        },
+        "right": {
+          "operator": "NOT IN",
+          "left": {
+            "type": "FIELD",
+            "alias": "z",
+            "fieldName": "id"
+          },
+          "right": {
+            "type": "QUERY",
+            "query": "SELECT d.relationkey FROM at_relation_fields d WHERE d.fieldname = 'MASTERKEY'"
+          }
+        }
+      }
+    }
+  },
+  "TgdcView": {
+    "type": "SIMPLE",
+    "parent": "TgdcRelation",
+    "name": "TgdcView",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcRelationField": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcRelationField",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATION_FIELDS",
+      "alias": "z"
+    }
+  },
+  "TgdcTableField": {
+    "type": "SIMPLE",
+    "parent": "TgdcRelationField",
+    "name": "TgdcTableField",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATION_FIELDS",
+      "alias": "z"
+    }
+  },
+  "TgdcViewField": {
+    "type": "SIMPLE",
+    "parent": "TgdcRelationField",
+    "name": "TgdcViewField",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_RELATION_FIELDS",
+      "alias": "z"
+    }
+  },
+  "TgdcStoredProc": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcStoredProc",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_PROCEDURES",
+      "alias": "z"
+    }
+  },
+  "TgdcException": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcException",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_EXCEPTIONS",
+      "alias": "z"
+    }
+  },
+  "TgdcIndex": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcIndex",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_INDICES",
+      "alias": "z"
+    }
+  },
+  "TgdcBaseTrigger": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcBaseTrigger",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_TRIGGERS",
+      "alias": "z"
+    }
+  },
+  "TgdcTrigger": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseTrigger",
+    "name": "TgdcTrigger",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_TRIGGERS",
+      "alias": "z"
+    }
+  },
+  "TgdcDBTrigger": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseTrigger",
+    "name": "TgdcDBTrigger",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_TRIGGERS",
+      "alias": "z"
+    }
+  },
+  "TgdcGenerator": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcGenerator",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_GENERATORS",
+      "alias": "z"
+    }
+  },
+  "TgdcCheckConstraint": {
+    "type": "SIMPLE",
+    "parent": "TgdcMetaBase",
+    "name": "TgdcCheckConstraint",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_CHECK_CONSTRAINTS",
+      "alias": "z"
+    }
+  },
+  "TgdcComponentFilter": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcComponentFilter",
+    "attributes": [],
+    "adapter": {
+      "name": "FLT_COMPONENTFILTER",
+      "alias": "z"
+    }
+  },
+  "TgdcSavedFilter": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSavedFilter",
+    "attributes": [],
+    "adapter": {
+      "name": "FLT_SAVEDFILTER",
+      "alias": "z"
+    }
+  },
+  "TgdcCompanyAccountType": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcCompanyAccountType",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_COMPACCTYPE",
+      "alias": "z"
+    }
+  },
+  "TgdcSetting": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSetting",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_SETTING",
+      "alias": "z"
+    }
+  },
+  "TgdcSettingPos": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSettingPos",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_SETTINGPOS",
+      "alias": "z"
+    }
+  },
+  "TgdcSettingStorage": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSettingStorage",
+    "attributes": [],
+    "adapter": {
+      "name": "AT_SETTING_STORAGE",
+      "alias": "z"
+    }
+  },
+  "TgdcMacros": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcMacros",
+    "attributes": [],
+    "adapter": {
+      "name": "EVT_MACROSLIST",
+      "alias": "z"
+    }
+  },
+  "TgdcTemplate": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTemplate",
+    "attributes": [],
+    "adapter": {
+      "name": "RP_REPORTTEMPLATE",
+      "alias": "z"
+    }
+  },
+  "TgdcTNVD": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTNVD",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_TNVD",
+      "alias": "z"
+    }
+  },
+  "TgdcGoodBarCode": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcGoodBarCode",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_GOODBARCODE",
+      "alias": "z"
+    }
+  },
+  "TgdcGood": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcGood",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_GOOD",
+      "alias": "z"
+    }
+  },
+  "TgdcSelectedGood": {
+    "type": "SIMPLE",
+    "parent": "TgdcGood",
+    "name": "TgdcSelectedGood",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_GOOD",
+      "alias": "z"
+    }
+  },
+  "TgdcValue": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcValue",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_VALUE",
+      "alias": "z"
+    }
+  },
+  "TgdcTax": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTax",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_TAX",
+      "alias": "z"
+    }
+  },
+  "TgdcMetal": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcMetal",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_PRECIOUSEMETAL",
+      "alias": "z"
+    }
+  },
+  "TgdcBaseAcctConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcBaseAcctConfig",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctBaseConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseAcctConfig",
+    "name": "TgdcAcctBaseConfig",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctAccConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseConfig",
+    "name": "TgdcAcctAccConfig",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctLedgerConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseConfig",
+    "name": "TgdcAcctLedgerConfig",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctCicrilationListConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseConfig",
+    "name": "TgdcAcctCicrilationListConfig",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctGeneralLedgerConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseConfig",
+    "name": "TgdcAcctGeneralLedgerConfig",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcAcctAccReviewConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcAcctBaseConfig",
+    "name": "TgdcAcctAccReviewConfig",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcInvCardConfig": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseAcctConfig",
+    "name": "TgdcInvCardConfig",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_ACCT_CONFIG",
+      "alias": "z"
+    }
+  },
+  "TgdcInvBaseRemains": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcInvBaseRemains",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "INV_MOVEMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvRemains": {
+    "type": "SIMPLE",
+    "parent": "TgdcInvBaseRemains",
+    "name": "TgdcInvRemains",
+    "attributes": [],
+    "adapter": {
+      "name": "INV_MOVEMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvGoodRemains": {
+    "type": "SIMPLE",
+    "parent": "TgdcInvRemains",
+    "name": "TgdcInvGoodRemains",
+    "attributes": [],
+    "adapter": {
+      "name": "INV_MOVEMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvMovement": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcInvMovement",
+    "attributes": [],
+    "adapter": {
+      "name": "INV_MOVEMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvCard": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcInvCard",
+    "attributes": [],
+    "adapter": {
+      "name": "INV_MOVEMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcInvRemainsOption": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcInvRemainsOption",
+    "attributes": [],
+    "adapter": {
+      "name": "INV_BALANCEOPTION",
+      "alias": "z"
+    }
+  },
+  "TgdcJournal": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcJournal",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_JOURNAL",
+      "alias": "z"
+    }
+  },
+  "TgdcSQLHistory": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSQLHistory",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_SQL_HISTORY",
+      "alias": "z"
+    }
+  },
+  "TgdcBugBase": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcBugBase",
+    "attributes": [],
+    "adapter": {
+      "name": "BUG_BUGBASE",
+      "alias": "z"
+    }
+  },
+  "TgdcBlockRule": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcBlockRule",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_BLOCK_RULE",
+      "alias": "z"
+    }
+  },
+  "TgdcRUID": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcRUID",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_RUID",
+      "alias": "z"
+    }
+  },
+  "TgdcHoliday": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcHoliday",
+    "attributes": [],
+    "adapter": {
+      "name": "WG_HOLIDAY",
+      "alias": "z"
+    }
+  },
+  "TgdcTableCalendar": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTableCalendar",
+    "attributes": [],
+    "adapter": {
+      "name": "WG_TBLCAL",
+      "alias": "z"
+    }
+  },
+  "TgdcTableCalendarDay": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcTableCalendarDay",
+    "attributes": [],
+    "adapter": {
+      "name": "WG_TBLCALDAY",
+      "alias": "z"
+    }
+  },
+  "TgdcBaseMessage": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcBaseMessage",
+    "abstract": true,
+    "attributes": [],
+    "adapter": {
+      "name": "MSG_MESSAGE",
+      "alias": "z"
+    }
+  },
+  "TgdcPhoneCall": {
+    "type": "SIMPLE",
+    "parent": "TgdcBaseMessage",
+    "name": "TgdcPhoneCall",
+    "attributes": [],
+    "adapter": {
+      "name": "MSG_MESSAGE",
+      "alias": "z"
+    }
+  },
+  "TgdcAttachment": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcAttachment",
+    "attributes": [],
+    "adapter": {
+      "name": "MSG_ATTACHMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcFKManager": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcFKManager",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_REF_CONSTRAINTS",
+      "alias": "z"
+    }
+  },
+  "TgdcGeneralLedger": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcGeneralLedger",
+    "attributes": [],
+    "adapter": {
+      "name": "AC_GENERALLEDGER",
+      "alias": "z"
+    }
+  },
+  "TgdcSQLStatement": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSQLStatement",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_SQL_STATEMENT",
+      "alias": "z"
+    }
+  },
+  "TgdcSMTP": {
+    "type": "SIMPLE",
+    "parent": "TgdcBase",
+    "name": "TgdcSMTP",
+    "attributes": [],
+    "adapter": {
+      "name": "GD_SMTP",
+      "alias": "z"
+    }
+  }
+}
