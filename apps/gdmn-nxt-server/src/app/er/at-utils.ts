@@ -43,7 +43,8 @@ export const loadAtRelations = async (attachment: Attachment, transaction: Trans
       SEMCATEGORY, 
       TRIM(GENERATORNAME) AS GENERATORNAME 
     FROM 
-      AT_RELATIONS `);
+      AT_RELATIONS 
+  `);
   try {
     return (await rs.fetchAsObject<IAtRelation>()).reduce( (p, r) => (p[r.RELATIONNAME] = r, p), {} as IAtRelations);
   } finally {
@@ -72,7 +73,7 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
       DELETERULE,
       SEMCATEGORY,
       (
-        SELECT
+        SELECT FIRST 1
           TRIM(rc2.rdb$relation_name)
         FROM
           rdb$relation_fields rf

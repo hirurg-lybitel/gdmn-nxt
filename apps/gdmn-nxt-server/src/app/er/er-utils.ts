@@ -253,16 +253,16 @@ export const importERModel = async () => {
   try {
     const [
       rdbFields, 
-      rdbRelations, 
-      rdbRelationFields, 
+      //rdbRelations, 
+      //rdbRelationFields, 
       atFields, 
       atRelations, 
       atRelationFields, 
       gdDocumentType
     ] = await Promise.all([
       loadRDBFields(attachment, transaction), 
-      loadRDBRelations(attachment, transaction),
-      loadRDBRelationFields(attachment, transaction),
+      //loadRDBRelations(attachment, transaction),
+      //loadRDBRelationFields(attachment, transaction),
       loadAtFields(attachment, transaction),
       loadAtRelations(attachment, transaction),
       loadAtRelationFields(attachment, transaction),
@@ -356,6 +356,11 @@ export const importERModel = async () => {
 
     for (const usrRelation of usrRelations) {
       const arf = atRelationFields[usrRelation.RELATIONNAME];
+
+      if (!arf) {
+        console.warn(`Unknown relation ${usrRelation.RELATIONNAME}...`);
+        continue;
+      }
 
       if (arf.find( f => f.FIELDNAME === 'ID')) {
         const parent = arf.find( f => f.FIELDNAME === 'LB') ?
