@@ -15,9 +15,9 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
       TRIM(SETCONDITION) AS SETCONDITION, 
       ALIGNMENT,
       FORMAT, 
-      VISIBLE, 
+      COALESCE(VISIBLE, 0) AS VISISBLE, 
       COLWIDTH, 
-      READONLY, 
+      COALESCE(READONLY, 0) AS READONLY, 
       TRIM(GDCLASSNAME) AS GDCLASSNAME, 
       TRIM(GDSUBTYPE) AS GDSUBTYPE,
       NUMERATION
@@ -62,15 +62,37 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
       LNAME,
       LSHORTNAME, 
       DESCRIPTION, 
-      VISIBLE, 
+      COALESCE(VISIBLE, 0) AS VISIBLE, 
       FORMAT, 
       ALIGNMENT, 
       COLWIDTH, 
-      READONLY, 
+      COALESCE(READONLY, 0) AS READONLY, 
       TRIM(GDCLASSNAME) AS GDCLASSNAME, 
       TRIM(GDSUBTYPE) AS GDSUBTYPE, 
       DELETERULE,
-      SEMCATEGORY
+      SEMCATEGORY,
+      (
+        SELECT
+          TRIM(rc2.rdb$relation_name)
+        FROM
+          rdb$relation_fields rf
+          JOIN rdb$relation_constraints rc ON
+            rc.rdb$relation_name = rf.rdb$relation_name
+            AND rc.rdb$constraint_type = 'FOREIGN KEY'
+          JOIN rdb$index_segments s ON
+            s.rdb$index_name = rc.rdb$index_name
+            AND s.rdb$field_name = rf.rdb$field_name
+          JOIN rdb$ref_constraints rfc ON
+            rfc.rdb$constraint_name = rc.rdb$constraint_name
+          JOIN rdb$relation_constraints rc2 ON
+            rc2.rdb$constraint_name = rfc.rdb$const_name_uq
+          JOIN rdb$index_segments s2 ON
+              s2.rdb$index_name = rc2.rdb$index_name
+        WHERE
+          rf.rdb$relation_name = relationname
+          AND
+          rf.rdb$field_name = fieldname
+     ) AS REF   
     FROM
       AT_RELATION_FIELDS 
   `);
@@ -116,5 +138,10 @@ export const loadGdDocumentType = async (attachment: Attachment, transaction: Tr
   }
 };
 
-export const relation2entityName = (r: string) => r ? r.replaceAll('$', '_') : '';
+/**
+ * Replace $ with _ to make name gedemin like.
+ * @param r relation name.
+ * @returns adjusted relation name.
+ */
+export const adjustRelationName = (r: string) => r ? r.replaceAll('$', '_') : '';
 

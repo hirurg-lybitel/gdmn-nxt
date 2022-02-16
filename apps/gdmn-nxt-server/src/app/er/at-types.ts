@@ -55,6 +55,7 @@ export interface IAtRelationField {
   GDSUBTYPE: string | null; 
   DELETERULE: string | null;
   SEMCATEGORY: string | null;
+  REF: string | null;
 };
 
 export interface IAtRelationFields {

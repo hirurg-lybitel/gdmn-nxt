@@ -284,6 +284,7 @@ router.get('/er-model', async (req, res) => {
       ),
     };
   }
+
   res.json(erModel);  
 });
 
