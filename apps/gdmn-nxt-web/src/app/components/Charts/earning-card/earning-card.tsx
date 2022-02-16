@@ -1,6 +1,6 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import MainCard from '../../main-card/main-card';
+import { CardWithBorderShadow } from '../../main-card/main-card';
 import './earning-card.module.less';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
@@ -48,9 +48,7 @@ export function EarningCard(props: EarningCardProps) {
   const classes = useStyles();
 
   return (
-    <MainCard
-      border
-      boxShadow
+    <CardWithBorderShadow
       className={classes.card}
       style= {{
         flex: 1,
@@ -66,7 +64,7 @@ export function EarningCard(props: EarningCardProps) {
       </Avatar>
       <Typography className={classes.title}>Общая Выручка</Typography>
 
-    </MainCard>
+    </CardWithBorderShadow>
   );
 }
 

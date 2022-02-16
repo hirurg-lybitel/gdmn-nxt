@@ -1,11 +1,10 @@
 import './kanban-card.module.less';
 import { useState } from 'react';
-import MainCard from '../../main-card/main-card';
 import { Stack, Typography, useTheme } from '@mui/material';
 import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-
+import { CardWithBorder } from '../../main-card/main-card';
 
 /* eslint-disable-next-line */
 export interface KanbanCardProps {
@@ -14,8 +13,7 @@ export interface KanbanCardProps {
   columns: IColumn[];
   onEdit: (card: ICard) => void;
   onDelete: (card: ICard) => void;
-}
-
+};
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
@@ -43,8 +41,7 @@ export function KanbanCard(props: KanbanCardProps) {
 
   return (
     <div>
-      <MainCard
-        border
+      <CardWithBorder
         key={card.id}
         style={{
           width: '100%',
@@ -66,7 +63,7 @@ export function KanbanCard(props: KanbanCardProps) {
           <Typography variant="caption" noWrap>{card.customer}</Typography>
           <Typography>{(Math.round((card.amount || 0) * 100)/100).toFixed(2)} Br</Typography>
         </Stack>
-      </MainCard>
+      </CardWithBorder>
       {editCard &&
         <KanbanEditCard
           deal={card}

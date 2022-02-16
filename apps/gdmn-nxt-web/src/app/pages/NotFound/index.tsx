@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/system';
-import { Button, Card, CardActions, CardContent, CardMedia, Grid, Typography } from "@mui/material";
-import MainCard from '../../components/main-card/main-card';
+import { Button, CardActions, CardContent, Grid, Typography } from "@mui/material";
+import { CardWithBorderShadow } from '../../components/main-card/main-card';
 //import sdfs from '../../../assets/'
 // 404
 
@@ -16,7 +16,7 @@ export default function NotFound() {
       sx={{ height: '100%' }}
     >
       <Grid item>
-        <MainCard border boxShadow sx={{ width: 700 }}>
+        <CardWithBorderShadow sx={{ width: 700 }}>
           <CardContent>
             <Grid
               container
@@ -50,7 +50,7 @@ export default function NotFound() {
             >Вернуться на главную</Button>
           </CardActions>
 
-        </MainCard>
+        </CardWithBorderShadow>
       </Grid>
     </Grid>
 

@@ -1,6 +1,5 @@
 import './kanban-column.module.less';
 import { useState } from 'react';
-import MainCard from '../../main-card/main-card';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, Input, IconButton, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-
+import { CardWithBorder } from '../../main-card/main-card';
 
 export interface KanbanColumnProps {
   provided: DraggableProvided;
@@ -139,8 +138,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
     <Box
       style={{ display: 'flex'}}
     >
-      <MainCard
-        border
+      <CardWithBorder
         style={{
           minWidth: '230px',
           maxWidth: '400px',
@@ -199,7 +197,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         <CardActions>
           <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
         </CardActions>
-      </MainCard>
+      </CardWithBorder>
       {upsertCard &&
         <KanbanEditCard
           currentStage={item}

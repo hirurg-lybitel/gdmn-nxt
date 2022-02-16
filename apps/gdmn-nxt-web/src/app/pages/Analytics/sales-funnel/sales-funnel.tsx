@@ -1,9 +1,6 @@
 import './sales-funnel.module.less';
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { customersSelectors } from '../../../features/customer/customerSlice';
 import { ResponsiveFunnel } from '@nivo/funnel'
-import MainCard from '../../../components/main-card/main-card';
+import { CardWithBorderShadow } from '../../../components/main-card/main-card';
 
 /* eslint-disable-next-line */
 export interface SalesFunnelProps {}
@@ -41,7 +38,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
 
   return (
 
-    <MainCard border boxShadow style={{height: '800px' }}>
+    <CardWithBorderShadow style={{height: '800px' }}>
       <ResponsiveFunnel
         data={funnelData}
         margin={{ top: 30, right: 20, bottom: 20, left: 20 }}
@@ -65,7 +62,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
         currentBorderWidth={40}
         motionConfig="wobbly"
       />
-    </MainCard>
+    </CardWithBorderShadow>
   )
 }
 

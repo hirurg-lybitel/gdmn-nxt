@@ -12,15 +12,13 @@ import ReconciliationStatement from "../../../reconciliation-statement/reconcili
 import { useParams } from "react-router-dom";
 import { fetchCustomers } from "../../../features/customer/actions";
 import { RootState } from "../../../store";
-import MainCard from "../../../components/main-card/main-card";
-
+import { CardWithBorderShadow } from "../../../components/main-card/main-card";
 
 const filterOptions = createFilterOptions({
   matchFrom: 'any',
   limit: 500,
   stringify: (option: IContactWithLabels) => option.NAME,
 });
-
 
 interface ReconciliationAct {
   customerId?: number;
@@ -89,7 +87,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
   return(
     <Box>
       <Stack direction="column" spacing={2}>
-        <MainCard border boxShadow>
+        <CardWithBorderShadow>
           <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
@@ -168,10 +166,10 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
               </Grid>
           </Grid>
           </CardActions>
-        </MainCard>
+        </CardWithBorderShadow>
 
         {generate
-          ? <MainCard border boxShadow sx={{ p: 1 }} ref={scollToRef}
+          ? <CardWithBorderShadow sx={{ p: 1 }} ref={scollToRef}
               onChange={()=> console.log('onChange')}
               onScroll={()=> console.log('onChange')}
               onBlur={()=> console.log('onChange')}
@@ -186,7 +184,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                 dateBegin={inputParams?.dateBegin}
                 dateEnd={inputParams?.dateEnd}
               />
-            </MainCard>
+            </CardWithBorderShadow>
           : null}
       </Stack>
     </Box>
