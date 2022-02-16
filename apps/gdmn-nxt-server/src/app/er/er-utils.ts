@@ -637,11 +637,12 @@ export const importERModel = async () => {
     }
 
     for (const entity of Object.values(entities)) {
-      if (entity.type !== 'SIMPLE') {
+      if (entity.abstract) {
         continue;
       }
 
       if (!entity.adapter) {
+        console.warn(`No adapter for entity ${entity.name} found`);
         continue;
       }
 
@@ -650,7 +651,7 @@ export const importERModel = async () => {
       if (!arf) {
         console.warn(`No fields definitions for ${entity.adapter.name} found`);
         continue;
-      }
+      }      
 
       for (const fld of arf) {
         const domain = domains[fld.FIELDSOURCE];
@@ -658,6 +659,15 @@ export const importERModel = async () => {
         if (!domain) {
           console.warn(`Domain ${fld.FIELDSOURCE} has not been found for the field ${entity.adapter.name}.${fld.FIELDNAME}`);
           continue;  
+        }
+
+        if (fld.FIELDNAME === 'ID') {
+          entity.attributes.push({
+            type: 'SEQ',
+            name: 'ID'
+          });
+        } else {
+          
         }
       }
     }
