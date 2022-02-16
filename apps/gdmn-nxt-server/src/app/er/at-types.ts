@@ -69,6 +69,8 @@ export interface IGedeminDocType {
   NAME: string; 
   DESCRIPTION: string; 
   CLASSNAME: string | null; 
-  DOCUMENTTYPE: string; 
+  DOCUMENTTYPE: string | null; 
   RUID: string;  
+  HEADERRELNAME: string;  
+  LINERELNAME: string | null;  
 };

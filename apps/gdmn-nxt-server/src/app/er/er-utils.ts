@@ -1,5 +1,6 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IEntityAdapter, IJoinAdapter, IDomains, IEntity, Domain, IDomainBase, IBaseDocTypes } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
+import { IAtRelation, IGedeminDocType } from "./at-types";
 import { loadAtFields, loadAtRelationFields, loadAtRelations, loadDocumentTypes } from "./at-utils";
 import gdbaseRaw from "./gdbase.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
@@ -200,17 +201,13 @@ interface IgdbaseImport {
 };
 
 const getEntityScore = (e: Entity, refTable: string) => {
-  if (e.type === 'SIMPLE') {
-    const joinScore = e.adapter?.join?.findIndex( j => j.type === 'INNER' && j.name === refTable );
-  
-    if (joinScore !== undefined) {
-      return joinScore + 1;
-    }
-  
-    return e.adapter?.name === refTable ? 0 : -1;
-  } else {
-    return (e.adapter?.headerRelation === refTable || e.adapter?.lineRelation === refTable) ? 0 : -1;
+  const joinScore = e.adapter?.join?.findIndex( j => j.type === 'INNER' && j.name === refTable );
+
+  if (joinScore !== undefined) {
+    return joinScore + 1;
   }
+
+  return e.adapter?.name === refTable ? 0 : -1;
 };
 
 const extractNumDef = (s: string | null | undefined) => {
@@ -247,7 +244,7 @@ export const importERModel = async () => {
     const backwardCache = {} as { [relation: string]: string };
     const entities: IEntities = {};
 
-    const importGdbase = (g: IgdbaseImport, depth = 0, parent?: IEntity) => {
+    const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
       const rdbRelation = g.listTable ? r[g.listTable.name] : undefined;
       const atRelation = rdbRelation ? ar[rdbRelation.RDB$RELATION_NAME] : undefined;
 
@@ -286,8 +283,8 @@ export const importERModel = async () => {
         }
       };
 
-      const e: IEntity = {
-        type: 'SIMPLE',
+      const e: Entity = {
+        type: g.listTable?.name === 'GD_DOCUMENT' ? 'DOCUMENT' : 'SIMPLE',
         parent: parent?.name,
         name: g.className,
         abstract: g.abstract,
@@ -340,6 +337,57 @@ export const importERModel = async () => {
         }  
       }
     }
+
+    const dtMap = {
+      TgdcDocumentType: [entities['TgdcDocument'], undefined],
+      TgdcUserDocumentType: [entities['TgdcUserDocument'], entities['TgdcUserDocumentLine']], 
+      TgdcInvDocumentType: [entities['TgdcInvDocument'], entities['TgdcInvDocumentLine']],
+      TgdcInvPriceListType: [entities['TgdcInvPriceList'], entities['TgdcInvPriceListLine']]
+    };
+
+    const createDocEntity = (parentEntities: [Entity, Entity | undefined], documentType: IGedeminDocType) => {
+      const hr = ar[documentType.HEADERRELNAME];
+      
+      if (!hr) {
+        console.warn(`Unknown document relation ${documentType.HEADERRELNAME}`);
+        return;
+      }
+      
+      const crEnt = (parent: string, r: IAtRelation) => {
+        const name = parent + documentType.RUID;  
+        entities[name] = {
+          type: 'DOCUMENT',
+          parent,
+          name,
+          lName: documentType.NAME ?? undefined,
+          attributes: [],
+          semCategory: r.SEMCATEGORY ?? undefined,
+          adapter: {
+            name: 'GD_DOCUMENT',
+            alias: 'z',
+            join: [{
+              type: 'INNER',
+              name: r.RELATIONNAME,
+              alias: 'z1'
+            }]
+          }
+        };  
+      };
+
+      crEnt(parentEntities[0].name, hr);
+
+      const lr = documentType.LINERELNAME && ar[documentType.LINERELNAME];
+
+      if (lr && parentEntities[1]) {
+        crEnt(parentEntities[1].name, lr);
+      }
+    };
+
+    for (const documentType of dt) {
+      if (documentType.DOCUMENTTYPE === 'D' && documentType.HEADERRELNAME) {       
+        createDocEntity(dtMap[documentType.CLASSNAME || 'TgdcDocumentType'], documentType);
+      }
+    };
 
     const domains: IDomains = {};
          

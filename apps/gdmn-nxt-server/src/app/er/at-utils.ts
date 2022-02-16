@@ -106,6 +106,8 @@ export const loadDocumentTypes = async (attachment: Attachment, transaction: Tra
       GD_DOCUMENTTYPE DT
       LEFT JOIN AT_RELATIONS HR ON HR.ID = DT.HEADERRELKEY
       LEFT JOIN AT_RELATIONS LR ON LR.ID = DT.LINERELKEY
+    WHERE
+      DT.ID >= 147000000  
     ORDER BY
       DT.LB
   `);

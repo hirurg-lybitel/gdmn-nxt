@@ -127,20 +127,20 @@ export type Attr = IStringAttr | ISeqAttr;
 export interface IEntityBase {
   parent?: string;
   name: string;
+  lName?: string;
   abstract?: boolean;
   attributes: Attr[];
   semCategory?: string;
+  adapter?: IEntityAdapter;
 }
 
 export interface IEntity extends IEntityBase {
   type: 'SIMPLE';
-  adapter?: IEntityAdapter;
 };
 
 export interface IDocEntity extends IEntityBase {
   type: 'DOCUMENT';
-  adapter?: IDocEntityAdapter;
-}
+};
 
 export type Entity = IEntity | IDocEntity;
 
@@ -252,7 +252,10 @@ export interface IJoinAdapter {
   condition?: Expression;
 };
 
-export interface IDocEntityAdapter {
-  headerRelation: string;
-  lineRelation?: string;
+export interface IBaseDocTypes {
+  TgdcDocumentType: [Entity, undefined]; 
+  TgdcUserDocumentType: [Entity, Entity];
+  TgdcInvDocumentType: [Entity, Entity];
+  TgdcInvPriceListType: [Entity, Entity];
 };
+
