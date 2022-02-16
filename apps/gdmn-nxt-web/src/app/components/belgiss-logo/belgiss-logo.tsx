@@ -6,9 +6,8 @@ export interface MainCardProps {}
 
 interface IMainCardProps {
   border?: boolean;
-  boxShadow?: boolean ;
-
-}
+  boxShadow?: boolean;
+};
 
 const BelgissLogo = () => {
   const theme = useTheme();

@@ -116,3 +116,5 @@ export const loadGdDocumentType = async (attachment: Attachment, transaction: Tr
   }
 };
 
+export const relation2entityName = (r: string) => r ? r.replaceAll('$', '_') : '';
+

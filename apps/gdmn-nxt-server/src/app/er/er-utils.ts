@@ -1,7 +1,7 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase, IAttrBase, IEntitySetAttr, IEntityAttr, ICrossAttrAdapter } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { IAtRelation, IGedeminDocType } from "./at-types";
-import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType } from "./at-utils";
+import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, relation2entityName } from "./at-utils";
 //import gdbaseRaw from "./gdbase.json";
 import entitiesRaw from "./entities.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
@@ -218,13 +218,23 @@ const extractNumDef = (s: string | null | undefined) => {
 
   const numDef = /DEFAULT\s+(('(.+)')|(.+))/ig;
   const res = numDef.exec(s);
-  const num = Number(res[3] ?? res[4]);
+  const num = Number(res[3]?.trim() ?? res[4]?.trim());
 
   if (isNaN(num)) {
     return undefined;
   }
 
   return num;
+};
+
+const extractBooleanDef = (s: string | null | undefined) => {
+  if (!s) {
+    return undefined;
+  }
+
+  const booleanDef = /DEFAULT\s+(('(.+)')|(.+))/ig;
+  const res = booleanDef.exec(s);
+  return Boolean(res[3]?.trim() ?? res[4]?.trim());
 };
 
 export const importERModel = async () => {
@@ -347,7 +357,7 @@ export const importERModel = async () => {
 
         if (parent) {
           // make name looks the same way as in the Gedemin
-          const name = parent.name + usrRelation.RELATIONNAME.replaceAll('$', '_');  
+          const name = parent.name + relation2entityName(usrRelation.RELATIONNAME);  
   
           entities[name] = {
             type: 'SIMPLE',
@@ -425,7 +435,7 @@ export const importERModel = async () => {
         GDCLASSNAME, GDSUBTYPE, NUMERATION 
       } = atField;
  
-      let relation, listField, condition;
+      let relation: string, listField: string, condition: string;
 
       if (REFTABLE) {
         relation = REFTABLE;
@@ -491,7 +501,25 @@ export const importERModel = async () => {
             }
           };
         } else {
-          console.warn(`Can't create domain ${FIELDNAME}. No entity for relation ${relation} found.`);
+          console.warn(`
+            Can't create domain ${FIELDNAME}. 
+            No entity for table ${relation} found.
+            If it is a document table check that 
+            it is referenced in GD_DOCUMENTTYPE.
+            INTEGER domain will be created as a substitute.
+          `);
+          domains[FIELDNAME] = {
+            name: FIELDNAME,
+            lName: LNAME,
+            type: 'INTEGER',
+            max: Number.MAX_SAFE_INTEGER,
+            min: 0,
+            visible: VISIBLE ? true : undefined,
+            readonly: READONLY ? true : undefined,
+            adapter: {
+              name: FIELDNAME
+            }
+          };          
         }
       } else {
         const rdbField = rdbFields[FIELDNAME];
@@ -614,6 +642,14 @@ export const importERModel = async () => {
                   default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
                 };
                 break;
+
+              case 23:
+                domain = {
+                  ...domainBase,
+                  type: 'BOOLEAN',
+                  default: extractBooleanDef(rdbField.RDB$DEFAULT_SOURCE) ?? undefined
+                };
+                break;
   
               //TODO: treat text BLOBs as strings?  
               case 261:
@@ -661,13 +697,45 @@ export const importERModel = async () => {
           continue;  
         }
 
-        if (fld.FIELDNAME === 'ID') {
-          entity.attributes.push({
-            type: 'SEQ',
-            name: 'ID'
-          });
+        const createAttr = (entity?: string, crossAdapter?: ICrossAttrAdapter): (IAttrBase | IEntityAttr | IEntitySetAttr) => ({
+          name: fld.FIELDNAME,
+          domain: domain.name,
+          lName: fld.LNAME,
+          entity,
+          readonly: fld.READONLY ? true : undefined,
+          visible: fld.VISIBLE ? true : undefined,
+          semCategory: fld.SEMCATEGORY ?? undefined,
+          adapter: {
+            name: fld.FIELDNAME,
+            ...crossAdapter
+          }
+        });
+
+        if (domain.type === 'ENTITY' || domain.type === 'ENTITY[]') {
+          const refEntityName = fld.GDCLASSNAME 
+            ? (fld.GDCLASSNAME + relation2entityName(fld.GDSUBTYPE))
+            : domain.entityName;
+          const refEntity = entities[refEntityName];
+
+          if (!refEntity) {
+            console.warn(`Ref entity ${refEntityName} for field ${entity.name}.${fld.FIELDNAME} not found`);
+            continue;  
+          }
+
+          if (fld.CROSSTABLE) {
+            entity.attributes.push(createAttr(refEntity.name));
+          } else {
+            entity.attributes.push(createAttr(refEntity.name));
+          }
         } else {
-          
+          if (fld.FIELDNAME === 'ID') {
+            entity.attributes.push({
+              type: 'SEQ',
+              name: 'ID'
+            });
+          } else {
+            entity.attributes.push(createAttr());
+          }
         }
       }
     }
