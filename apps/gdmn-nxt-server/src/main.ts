@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { authResult } from '@gsbelarus/util-api-types';
+import { authResult, IAttrBase, IEntityAttr, IEntitySetAttr, IERModel, isSeqAttr } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
@@ -252,10 +252,33 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
-const erModel = importERModel();
+const erModelFull = importERModel();
+
+// erModel stripped of adapters as they are not needed on the client
+let erModel: IERModel;
 
 router.get('/er-model', async (req, res) => {
-  res.json(await erModel);  
+  if (!erModel) {
+    erModel = {
+      domains: Object.fromEntries(
+        Object.entries((await erModelFull).domains).map( 
+          ([name, { adapter, ...rest }]) => ([name, rest]) 
+        )
+      ),
+      entities: Object.fromEntries(
+        Object.entries((await erModelFull).entities).map( 
+          ([name, { adapter, attributes, ...rest }]) => ([name, { 
+            attributes: [
+              ...attributes.filter( isSeqAttr ),
+              ...(attributes as any[]).filter( attr => !isSeqAttr(attr) ).map( ({ adapter, ...rest }) => rest )
+            ], 
+            ...rest 
+          }]) 
+        )
+      ),
+    };
+  }
+  res.json(erModel);  
 });
 
 app.use('/api/v1', router);

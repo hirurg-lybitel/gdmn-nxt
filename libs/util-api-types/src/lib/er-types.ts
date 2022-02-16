@@ -136,6 +136,10 @@ export interface ISeqAttr {
   name: string;
 };
 
+export function isSeqAttr(attr: Attr): attr is ISeqAttr {
+  return 'type' in attr;
+};
+
 export interface IEntityAttr extends IAttrBase {
   entity: string;
 };
