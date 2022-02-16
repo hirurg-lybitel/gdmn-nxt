@@ -385,6 +385,7 @@
   },
   "TgdcAttrUserDefinedLBRBTree": {
     "type": "SIMPLE",
+    "abstract": true,
     "parent": "TgdcLBRBTree",
     "name": "TgdcAttrUserDefinedLBRBTree",
     "attributes": []
@@ -636,6 +637,7 @@
   },
   "TgdcAttrUserDefinedTree": {
     "type": "SIMPLE",
+    "abstract": true,
     "parent": "TgdcTree",
     "name": "TgdcAttrUserDefinedTree",
     "attributes": []
@@ -1093,6 +1095,7 @@
   },
   "TgdcAttrUserDefined": {
     "type": "SIMPLE",
+    "abstract": true,
     "parent": "TgdcBase",
     "name": "TgdcAttrUserDefined",
     "attributes": []

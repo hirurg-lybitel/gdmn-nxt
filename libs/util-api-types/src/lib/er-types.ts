@@ -109,7 +109,7 @@ export interface IDomains {
 export interface IAttrBase {
   name: string;
   domain: string;
-  required?: boolean;
+  readonly?: boolean;
   semCategory?: string;
 };
 
