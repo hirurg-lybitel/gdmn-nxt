@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import * as cors from 'cors';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { authResult, IAttrBase, IEntityAttr, IEntitySetAttr, IERModel, isSeqAttr } from '@gsbelarus/util-api-types';
+import { authResult, IERModel, isSeqAttr, Attr } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
@@ -259,6 +259,15 @@ let erModel: IERModel;
 
 router.get('/er-model', async (req, res) => {
   if (!erModel) {
+    const stripAdapter = (attr: Attr) => {
+      if (isSeqAttr(attr)) {
+        return attr;
+      } else {
+        const { adapter, ...rest } = attr;
+        return rest;
+      }
+    };
+
     erModel = {
       domains: Object.fromEntries(
         Object.entries((await erModelFull).domains).map( 
@@ -268,11 +277,8 @@ router.get('/er-model', async (req, res) => {
       entities: Object.fromEntries(
         Object.entries((await erModelFull).entities).map( 
           ([name, { adapter, attributes, ...rest }]) => ([name, { 
-            attributes: [
-              ...attributes.filter( isSeqAttr ),
-              ...(attributes as any[]).filter( attr => !isSeqAttr(attr) ).map( ({ adapter, ...rest }) => rest )
-            ], 
-            ...rest 
+            ...rest, 
+            attributes: attributes.map( stripAdapter ), 
           }]) 
         )
       ),
