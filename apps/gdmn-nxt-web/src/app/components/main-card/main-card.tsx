@@ -10,7 +10,9 @@ interface IMainCardProps {
   boxShadows?: boolean;
 };
 
-const MainCard = styled(Card)<IMainCardProps>(({theme, borders=false, boxShadows=false}) => ({
+const MainCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
+})<IMainCardProps>(({theme, borders=false, boxShadows=false}) => ({
   ...(borders ? { border: '1px solid #E0E3E7' } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : {})
 }));
