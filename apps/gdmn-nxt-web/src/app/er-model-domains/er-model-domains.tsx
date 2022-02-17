@@ -1,11 +1,12 @@
 import Alert from '@mui/material/Alert/Alert';
 import Snackbar from '@mui/material/Snackbar/Snackbar';
-import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
-import { useMemo, useState } from 'react';
+import { GridColDef, GridRowId, GridSeparatorIcon } from '@mui/x-data-grid-pro';
+import { createElement, useMemo, useState } from 'react';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
 import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
+import createSvgIcon from '@mui/material/utils/createSvgIcon';
 
 /* eslint-disable-next-line */
 export interface ErModelDomainsProps {}
@@ -25,7 +26,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
     { 
       field: 'name', 
       headerName: 'Наименование', 
-      width: 250
+      width: 200
     },
     { 
       field: 'lName', 
@@ -36,12 +37,53 @@ export function ErModelDomains(props: ErModelDomainsProps) {
       field: 'type', 
       headerName: 'Тип', 
       width: 100,
-      valueGetter: params => data?.domains[params.row.name].type
     },
     { 
-      field: 'entityName', 
-      headerName: 'Сущность', 
-      width: 200
+      field: 'type', 
+      headerName: 'Тип', 
+      width: 80,
+    },
+    { 
+      field: 'required', 
+      headerName: 'Req', 
+      width: 50,
+      valueGetter: ({ row }) => row.required ? '☑' : ''      
+    },
+    { 
+      field: 'readonly', 
+      headerName: 'R/o', 
+      width: 50,
+      valueGetter: ({ row }) => row.readonly ? '☑' : ''      
+    },
+    { 
+      field: '', 
+      headerName: 'Параметры', 
+      flex: 1,
+      valueGetter: ({ row }) => {
+        let s: string = '';
+
+        switch (row.type) {
+          case 'ENTITY':
+          case 'ENTITY[]':
+            s = `${row.entityName}`;
+            break;
+
+          case 'STRING':
+            s = `len: ${row.maxLen}${typeof row.default === 'string' ? ', default: "' + row.default + '"' : ''}`;
+            break;
+
+          case 'INTEGER':
+            case 'DOUBLE':    
+            s = `min: ${row.min}, max: ${row.max}`;
+            break;
+            
+          case 'NUMERIC':
+            s = `scale: ${row.scale}, precision: ${row.precision}, min: ${row.min}, max: ${row.max}`;
+            break;
+        }
+
+        return s + (row.validationSource ? ', validation: ' + row.validationSource : '');
+      }
     }
   ];
   
@@ -58,8 +100,15 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           onSelectionModelChange={setSelectionModel}
           selectionModel={selectionModel} 
           rowHeight={24}         
+          headerHeight={24}       
           components={{
-            Pagination: CustomPagination
+            Pagination: CustomPagination,      
+            ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
+            //ColumnResizeIcon: () => <span>&nbsp;</span>
+            // ColumnResizeIcon: () => 
+            //   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 3">
+            //     <path d="M11 19V5h2v14z"></path>
+            //   </svg>
           }}
         />
       </Grid>

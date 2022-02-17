@@ -69,9 +69,9 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
   '& .MuiDataGrid-columnsContainer': {
     backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : '#1d1d1d',
   },
-  '& .MuiDataGrid-iconSeparator': {
-    display: 'none',
-  },
+  // '& .MuiDataGrid-iconSeparator': {
+  //   display: 'none',
+  // },
   '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
     borderRight: `1px solid ${
       theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'

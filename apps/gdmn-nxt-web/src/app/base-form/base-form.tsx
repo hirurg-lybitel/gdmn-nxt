@@ -40,26 +40,37 @@ let theme = createTheme({
 theme = responsiveFontSizes(theme) as MyTheme;
 
 const Header = styled('header')({
-  flexBasis: '0 0 128px'
+  backgroundColor: theme.palette.grey['200'],
+  borderTopColor: theme.palette.grey['50'], 
+  borderTopStyle: 'solid', 
+  borderTopWidth: 1,
+  borderBottomColor: theme.palette.grey['400'], 
+  borderBottomStyle: 'solid', 
+  borderBottomWidth: 1,
+  fontSize: theme.typography.footer.fontSize,
+  padding: '4px 8px 4px 8px'
 });
 
 const Footer = styled('footer')({
-  flexBasis: '0 0 24px',
   backgroundColor: theme.palette.grey['200'],
   borderTopColor: theme.palette.grey['50'], 
-  borderBottomColor: theme.palette.grey['800'], 
+  borderTopStyle: 'solid', 
+  borderTopWidth: 1,
+  borderBottomColor: theme.palette.grey['400'], 
+  borderBottomStyle: 'solid', 
+  borderBottomWidth: 1,
   fontSize: theme.typography.footer.fontSize,
   padding: '4px 8px 4px 8px'
 });
 
 const Main = styled('main')({
-  minHeight: 'calc(100% - 152px)'
+  minHeight: 'calc(100% - 96px - 24px)'
 });
 
 const Wrapper = styled('section')({
   minHeight: '100vh',
   display: 'grid',
-  gridTemplateRows: 'auto 1fr auto'
+  gridTemplateRows: '96px 1fr 24px'
 });
 
 /* eslint-disable-next-line */
