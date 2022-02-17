@@ -9,13 +9,13 @@ export const systemMenu: IMenuItem = {
       id: 'er-model-domains',
       title: 'Domains',
       type: 'item',
-      url: 'system/er-model-domains'
+      url: '/system/er-model-domains'
     },
     {
       id: 'er-model',
       title: 'Entities',
       type: 'item',
-      url: 'system/er-model'
+      url: '/system/er-model'
     }
   ]
 };

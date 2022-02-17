@@ -53,11 +53,11 @@ const Main = () => {
                   <Route path="customers/orders/list" element={<OrderList />} />
                   <Route path="reports/reconciliation" element={<ReconciliationAct />} />
                   <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
-                  <Route path="system" element={<BaseForm />}>
-                    <Route path="er-model-domains" element={<ErModelDomains />} />
-                    <Route path="er-model" element={<ErModel />} />
-                  </Route>
                   <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
+                </Route>
+                <Route path="/system" element={<BaseForm />}>
+                  <Route path="er-model-domains" element={<ErModelDomains />} />
+                  <Route path="er-model" element={<ErModel />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/employee/dashboard" />} />
               </Routes>
