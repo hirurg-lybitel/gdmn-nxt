@@ -1,7 +1,7 @@
 import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase, IAttrBase, IEntitySetAttr, IEntityAttr, ICrossAttrAdapter } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../db-connection";
 import { IAtRelation, IGedeminDocType } from "./at-types";
-import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, relation2entityName } from "./at-utils";
+import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, adjustRelationName } from "./at-utils";
 //import gdbaseRaw from "./gdbase.json";
 import entitiesRaw from "./entities.json";
 import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
@@ -201,11 +201,21 @@ interface IgdbaseImport {
   children?: IgdbaseImport[];
 };
 
+/**
+ * Returns score of conformity between given entity and a table.
+ * For list table score is 0, and for tables in joins sequence
+ * the score is > 0, and the deeper the table lays in the joins
+ * the higher the score. If the table doesn't belong to the entity
+ * -1 is returned.
+ * @param e 
+ * @param refTable 
+ * @returns 
+ */
 const getEntityScore = (e: Entity, refTable: string) => {
-  const joinScore = e.adapter?.join?.findIndex( j => j.type === 'INNER' && j.name === refTable );
+  const joinScore = e.adapter?.join?.reverse().findIndex( j => j.name === refTable );
 
-  if (joinScore !== undefined) {
-    return joinScore + 1;
+  if (joinScore >= 0) {
+    return 1000 - joinScore;
   }
 
   return e.adapter?.name === refTable ? 0 : -1;
@@ -243,16 +253,16 @@ export const importERModel = async () => {
   try {
     const [
       rdbFields, 
-      rdbRelations, 
-      rdbRelationFields, 
+      //rdbRelations, 
+      //rdbRelationFields, 
       atFields, 
       atRelations, 
       atRelationFields, 
       gdDocumentType
     ] = await Promise.all([
       loadRDBFields(attachment, transaction), 
-      loadRDBRelations(attachment, transaction),
-      loadRDBRelationFields(attachment, transaction),
+      //loadRDBRelations(attachment, transaction),
+      //loadRDBRelationFields(attachment, transaction),
       loadAtFields(attachment, transaction),
       loadAtRelations(attachment, transaction),
       loadAtRelationFields(attachment, transaction),
@@ -347,6 +357,11 @@ export const importERModel = async () => {
     for (const usrRelation of usrRelations) {
       const arf = atRelationFields[usrRelation.RELATIONNAME];
 
+      if (!arf) {
+        console.warn(`Unknown relation ${usrRelation.RELATIONNAME}...`);
+        continue;
+      }
+
       if (arf.find( f => f.FIELDNAME === 'ID')) {
         const parent = arf.find( f => f.FIELDNAME === 'LB') ?
           entities['TgdcAttrUserDefinedLBRBTree']
@@ -357,7 +372,7 @@ export const importERModel = async () => {
 
         if (parent) {
           // make name looks the same way as in the Gedemin
-          const name = parent.name + relation2entityName(usrRelation.RELATIONNAME);  
+          const name = parent.name + adjustRelationName(usrRelation.RELATIONNAME);  
   
           entities[name] = {
             type: 'SIMPLE',
@@ -471,7 +486,7 @@ export const importERModel = async () => {
           else if (found.length) {
             const sorted = found
               .map( e => ({ e, score: getEntityScore(e, relation) }) )
-              .sort( (a, b) => a.score - b.score );
+              .sort( (a, b) => b.score - a.score );
 
             if (sorted[0].score > sorted[1].score) {
               entityName = sorted[0].e.name;
@@ -501,13 +516,9 @@ export const importERModel = async () => {
             }
           };
         } else {
-          console.warn(`
-            Can't create domain ${FIELDNAME}. 
-            No entity for table ${relation} found.
-            If it is a document table check that 
-            it is referenced in GD_DOCUMENTTYPE.
-            INTEGER domain will be created as a substitute.
-          `);
+          console.warn(`Can't create domain ${FIELDNAME}. No entity for table ${relation} found.`,
+            'If it is a document table check that it is referenced in GD_DOCUMENTTYPE.', 
+            'INTEGER domain will be created as a substitute...');
           domains[FIELDNAME] = {
             name: FIELDNAME,
             lName: LNAME,
@@ -672,7 +683,46 @@ export const importERModel = async () => {
       }
     }
 
-    for (const entity of Object.values(entities)) {
+    const entitiesArr = Object.values(entities);
+    const relation2entityNameCache: { [relation: string]: string } = {};
+
+    const relation2entityName = (r: string | null) => {
+      const found = r && relation2entityNameCache[r];
+
+      if (found) {
+        return found;
+      }
+
+      const candidates = entitiesArr
+        .map<[number, string] | undefined>( ({ name, adapter }) => {
+          if (!adapter) {
+            return undefined;
+          }
+
+          if (adapter.name === r) {
+            return [0, name]
+          }
+
+          const idx = adapter.join?.reverse().findIndex( j => j.name === r );
+
+          if (idx >= 0) {
+            return [1000 - idx, name];
+          }
+
+          return undefined;
+        })
+        .filter(Boolean)
+        .sort( (a, b) => b[0] - a[0] );
+
+      if (candidates.length) {
+        //console.log(`${r} ----> ${JSON.stringify(candidates)}`)
+        return relation2entityNameCache[r] = candidates[0][1];        
+      }  
+
+      return undefined;
+    };
+
+    for (const entity of entitiesArr) {
       if (entity.abstract) {
         continue;
       }
@@ -685,7 +735,7 @@ export const importERModel = async () => {
       const arf = atRelationFields[entity.adapter.name];
 
       if (!arf) {
-        console.warn(`No fields definitions for ${entity.adapter.name} found`);
+        console.warn(`No fields definitions for ${entity.adapter.name} found...`);
         continue;
       }      
 
@@ -697,7 +747,7 @@ export const importERModel = async () => {
           continue;  
         }
 
-        const createAttr = (entity?: string, crossAdapter?: ICrossAttrAdapter): (IAttrBase | IEntityAttr | IEntitySetAttr) => ({
+        const createAttr = (entity?: string, crossAdapter?: Omit<ICrossAttrAdapter, 'name'>): (IAttrBase | IEntityAttr | IEntitySetAttr) => ({
           name: fld.FIELDNAME,
           domain: domain.name,
           lName: fld.LNAME,
@@ -711,19 +761,32 @@ export const importERModel = async () => {
           }
         });
 
-        if (domain.type === 'ENTITY' || domain.type === 'ENTITY[]') {
+        if (
+          domain.type === 'ENTITY' 
+          || 
+          domain.type === 'ENTITY[]' 
+          || 
+          fld.GDCLASSNAME
+          ||
+          fld.REF
+        ) {
           const refEntityName = fld.GDCLASSNAME 
-            ? (fld.GDCLASSNAME + relation2entityName(fld.GDSUBTYPE))
-            : domain.entityName;
-          const refEntity = entities[refEntityName];
+            ? (fld.GDCLASSNAME + adjustRelationName(fld.GDSUBTYPE))
+            : domain.type === 'ENTITY' || domain.type === 'ENTITY[]' 
+            ? domain.entityName
+            : relation2entityName(fld.REF);
+          const refEntity = refEntityName && entities[refEntityName];
 
           if (!refEntity) {
-            console.warn(`Ref entity ${refEntityName} for field ${entity.name}.${fld.FIELDNAME} not found`);
+            console.warn(`There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`);
             continue;  
           }
 
           if (fld.CROSSTABLE) {
-            entity.attributes.push(createAttr(refEntity.name));
+            entity.attributes.push(createAttr(refEntity.name, {
+              crossRelation: fld.CROSSTABLE,
+              crossField: fld.CROSSFIELD
+            }));
           } else {
             entity.attributes.push(createAttr(refEntity.name));
           }
