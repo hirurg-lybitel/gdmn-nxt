@@ -1,4 +1,4 @@
-import { Attachment, Transaction } from "node-firebird-driver-native";
+import { Attachment, Transaction, Blob } from "node-firebird-driver-native";
 import { IAtField, IAtFields, IAtRelation, IAtRelationField, IAtRelationFields, IAtRelations, IGedeminDocType } from "./at-types";
 
 export const loadAtFields = async (attachment: Attachment, transaction: Transaction) => {
@@ -24,8 +24,24 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
     FROM
       AT_FIELDS`);
   try {
-    //TODO: преобразовывать нумерацию из блоба!
-    return (await rs.fetchAsObject<IAtField>()).reduce( (p, r) => (p[r.FIELDNAME] = r, p), {} as IAtFields);
+    const res: IAtFields = {};
+    const rows = await rs.fetchAsObject<IAtField>();
+    const decoder = new TextDecoder('windows-1251');   
+
+    for (const r of rows) {
+      if (r.NUMERATION !== null && typeof r.NUMERATION === 'object') {
+        const blob = r.NUMERATION as Blob;
+        const blobStream = await attachment.openBlob(transaction, blob);
+        const buffer = Buffer.alloc(await blobStream.length);
+        await blobStream.read(buffer); 
+        await blobStream.close();     
+        res[r.FIELDNAME] = { ...r, NUMERATION: decoder.decode(buffer) }; 
+      } else {
+        res[r.FIELDNAME] = r; 
+      }
+    }
+
+    return res;
   } finally {
     await rs.close();
   }

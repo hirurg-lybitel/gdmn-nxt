@@ -576,7 +576,8 @@ export const importERModel = async (searchEntityName?: string) => {
           } else if (NUMERATION) {
             domain = {
               ...domainBase,
-              type: 'ENUM'
+              type: 'ENUM',
+              numeration: typeof NUMERATION === 'string' ? NUMERATION : ''
             };
           } else {
             switch (rdbField.RDB$FIELD_TYPE) {

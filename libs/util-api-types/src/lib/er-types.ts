@@ -80,6 +80,7 @@ export interface IBlobDomain extends IDomainBase {
 
 export interface IEnumDomain extends IDomainBase {
   type: 'ENUM';
+  numeration: string;
 };
 
 export interface IEntityDomain extends IDomainBase {

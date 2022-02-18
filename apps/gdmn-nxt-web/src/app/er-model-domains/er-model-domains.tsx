@@ -80,6 +80,10 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           case 'NUMERIC':
             s = `scale: ${row.scale}, precision: ${row.precision}, min: ${row.min}, max: ${row.max}`;
             break;
+
+          case 'ENUM':
+            s = `${row.numeration}`;
+            break;
         }
 
         return s + (row.validationSource ? ', validation: ' + row.validationSource : '');
