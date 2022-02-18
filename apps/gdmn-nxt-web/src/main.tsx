@@ -10,7 +10,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { registerMUI } from './mui-license';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
-import { UserState } from './app/features/user/userSlice';
+import { LoginStage, UserState } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
 import { ReconciliationAct } from './app/pages/Analytics/UserReports/ReconciliationAct';
 import { CustomersList } from './app/pages/Customers/customers-list/customers-list';
@@ -30,12 +30,13 @@ import ReconciliationStatement from './app/reconciliation-statement/reconciliati
 import Deals from './app/pages/Dashboard/deals/deals';
 import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 import { ErModelDomains } from './app/er-model-domains/er-model-domains';
+import BaseForm from './app/base-form/base-form';
 
 registerMUI();
 
 const Main = () => {
   const customization = useSelector( (state: RootState) => state.settings.customization );
-  const { loginStage } = useSelector<RootState, UserState>( state => state.user );
+  const loginStage = useSelector<RootState, LoginStage>( state => state.user.loginStage );
 
   return (
     <BrowserRouter>
@@ -52,9 +53,11 @@ const Main = () => {
                   <Route path="customers/orders/list" element={<OrderList />} />
                   <Route path="reports/reconciliation" element={<ReconciliationAct />} />
                   <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
-                  <Route path="system/er-model-domains" element={<ErModelDomains />} />
-                  <Route path="system/er-model" element={<ErModel />} />
                   <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
+                </Route>
+                <Route path="/system" element={<BaseForm />}>
+                  <Route path="er-model-domains" element={<ErModelDomains />} />
+                  <Route path="er-model" element={<ErModel />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/employee/dashboard" />} />
               </Routes>
