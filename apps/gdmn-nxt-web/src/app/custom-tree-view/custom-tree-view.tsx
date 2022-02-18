@@ -9,7 +9,7 @@ import NestedSets, { CollectionEl } from 'nested-sets-tree';
 import { Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import TreeItem from '@mui/lab/TreeItem';
 import { useCallback, useState } from 'react';
-import MainCard from '../components/main-card/main-card';
+import CustomizedCard from '../components/customized-card/customized-card';
 
 interface CustomizedTreeItemProps extends CustomTreeViewProps {
   node: CollectionEl;
@@ -140,7 +140,7 @@ export function CustomTreeView(props: CustomTreeViewProps) {
   const { onNodeSelect } = props;
 
   return (
-    <MainCard
+    <CustomizedCard
       borders
       boxShadows
       sx={{
@@ -160,7 +160,7 @@ export function CustomTreeView(props: CustomTreeViewProps) {
         .sort( (a, b) => Number(a.LB) - Number(b.LB) )
         .map( (node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
     </TreeView>
-  </MainCard>
+  </CustomizedCard>
   );
 }
 

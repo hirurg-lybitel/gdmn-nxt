@@ -1,20 +1,17 @@
 import { Card } from '@mui/material';
 import { styled } from '@mui/system';
-import './main-card.module.less';
+import './customized-card.module.less';
 
-/* eslint-disable-next-line */
-export interface MainCardProps {}
-
-interface IMainCardProps {
+interface ICustomizedCardProps {
   borders?: boolean;
   boxShadows?: boolean;
 };
 
-const MainCard = styled(Card, {
+const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
-})<IMainCardProps>(({theme, borders=false, boxShadows=false}) => ({
+})<ICustomizedCardProps>(({theme, borders=false, boxShadows=false}) => ({
   ...(borders ? { border: '1px solid #E0E3E7' } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : {})
 }));
 
-export default MainCard;
+export default CustomizedCard;

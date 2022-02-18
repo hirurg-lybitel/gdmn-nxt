@@ -12,7 +12,7 @@ import ReconciliationStatement from "../../../reconciliation-statement/reconcili
 import { useParams } from "react-router-dom";
 import { fetchCustomers } from "../../../features/customer/actions";
 import { RootState } from "../../../store";
-import MainCard from "../../../components/main-card/main-card";
+import CustomizedCard from "../../../components/customized-card/customized-card";
 
 
 const filterOptions = createFilterOptions({
@@ -89,7 +89,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
   return(
     <Box flex="1">
       <Stack direction="column" spacing={2}>
-        <MainCard borders boxShadows>
+        <CustomizedCard borders boxShadows>
           <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
@@ -168,10 +168,10 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
               </Grid>
           </Grid>
           </CardActions>
-        </MainCard>
+        </CustomizedCard>
 
         {generate
-          ? <MainCard borders boxShadows sx={{ p: 1 }} ref={scollToRef}
+          ? <CustomizedCard borders boxShadows sx={{ p: 1 }} ref={scollToRef}
               onChange={()=> console.log('onChange')}
               onScroll={()=> console.log('onChange')}
               onBlur={()=> console.log('onChange')}
@@ -186,7 +186,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                 dateBegin={inputParams?.dateBegin}
                 dateEnd={inputParams?.dateEnd}
               />
-            </MainCard>
+            </CustomizedCard>
           : null}
       </Stack>
     </Box>

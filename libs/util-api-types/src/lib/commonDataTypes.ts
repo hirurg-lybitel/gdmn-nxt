@@ -91,3 +91,13 @@ export interface IContactWithLabels extends IContactWithID {
 export interface IResultError {
   errorMessage: string
 }
+
+
+export interface ICustomerContract {
+  USR$NUMBER: string;
+  USR$NAME: string;
+  USR$DATEBEGIN: Date;
+  USR$DATEEND: Date;
+};
+
+export type ICustomerContractWithID = ICustomerContract & IWithID;

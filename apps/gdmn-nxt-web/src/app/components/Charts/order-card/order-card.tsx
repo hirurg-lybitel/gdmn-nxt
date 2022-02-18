@@ -1,5 +1,5 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
-import MainCard from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import './order-card.module.less';
@@ -49,7 +49,7 @@ export function OrderCard(props: OrderCardProps) {
   const classes = useStyles();
 
   return (
-    <MainCard
+    <CustomizedCard
       borders
       boxShadows
       className={classes.card}
@@ -62,7 +62,7 @@ export function OrderCard(props: OrderCardProps) {
       <Avatar className={classes.avatar}>
         <ShoppingBagOutlinedIcon fontSize="inherit"  />
       </Avatar>
-    </MainCard>
+    </CustomizedCard>
   );
 }
 

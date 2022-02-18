@@ -1,6 +1,6 @@
 import './kanban-card.module.less';
 import { useState } from 'react';
-import MainCard from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import { Stack, Typography, useTheme } from '@mui/material';
 import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
@@ -43,7 +43,7 @@ export function KanbanCard(props: KanbanCardProps) {
 
   return (
     <div>
-      <MainCard
+      <CustomizedCard
         borders
         key={card.id}
         style={{
@@ -66,7 +66,7 @@ export function KanbanCard(props: KanbanCardProps) {
           <Typography variant="caption" noWrap>{card.customer}</Typography>
           <Typography>{(Math.round((card.amount || 0) * 100)/100).toFixed(2)} Br</Typography>
         </Stack>
-      </MainCard>
+      </CustomizedCard>
       {editCard &&
         <KanbanEditCard
           deal={card}

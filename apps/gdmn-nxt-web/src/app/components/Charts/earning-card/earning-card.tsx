@@ -1,6 +1,6 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import MainCard from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import './earning-card.module.less';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
@@ -49,7 +49,7 @@ export function EarningCard(props: EarningCardProps) {
 
 
   return (
-    <MainCard
+    <CustomizedCard
       borders={true}
       boxShadows
       className={classes.card}
@@ -66,7 +66,7 @@ export function EarningCard(props: EarningCardProps) {
         <MonetizationOnOutlinedIcon fontSize="inherit"/>
       </Avatar>
       <Typography className={classes.title}>Общая Выручка</Typography>
-    </MainCard>
+    </CustomizedCard>
   );
 }
 

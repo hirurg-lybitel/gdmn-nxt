@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 
 
-describe('MainCard', () => {
+describe('CustomizedCard', () => {
   it('should render successfully', () => {
-    //const { baseElement } = render(<MainCard />);
+    //const { baseElement } = render(<CustomizedCard />);
     expect(true).toBeTruthy();
   });
 });

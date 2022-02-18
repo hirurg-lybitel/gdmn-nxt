@@ -1,6 +1,6 @@
 import './kanban-column.module.less';
 import { useState } from 'react';
-import MainCard from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, Input, IconButton, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -139,7 +139,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
     <Box
       style={{ display: 'flex'}}
     >
-      <MainCard
+      <CustomizedCard
         borders
         style={{
           minWidth: '230px',
@@ -195,7 +195,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         <CardActions>
           <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
         </CardActions>
-      </MainCard>
+      </CustomizedCard>
       {upsertCard &&
         <KanbanEditCard
           currentStage={item}

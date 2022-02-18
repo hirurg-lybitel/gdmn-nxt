@@ -31,6 +31,7 @@ import Deals from './app/pages/Dashboard/deals/deals';
 import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
+import CustomerDetails from './app/pages/Customers/customer-details/customer-details';
 
 registerMUI();
 
@@ -49,7 +50,10 @@ const Main = () => {
                 <Route path="/employee" element={<MainLayout />}>
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="dashboard/deals" element={<Deals />} />
-                  <Route path="customers/list" element={<CustomersList />} />
+                  <Route path="customers">
+                    <Route path="list" element={<CustomersList />} />
+                    <Route path="list/details/:id" element={<CustomerDetails />} />
+                  </Route>
                   <Route path="customers/orders/list" element={<OrderList />} />
                   <Route path="reports/reconciliation" element={<ReconciliationAct />} />
                   <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />

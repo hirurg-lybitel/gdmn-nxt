@@ -1,7 +1,7 @@
 import './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
-import MainCard from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import { Stack, Typography, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 
@@ -63,7 +63,7 @@ export function ChartDonut(props: ChartDonutProps) {
 
 
   return (
-    <MainCard
+    <CustomizedCard
       borders
       boxShadows
       style={{
@@ -79,7 +79,7 @@ export function ChartDonut(props: ChartDonutProps) {
         />
       </Stack>
 
-    </MainCard>
+    </CustomizedCard>
   );
 }
 
