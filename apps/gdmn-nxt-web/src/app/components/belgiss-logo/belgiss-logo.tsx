@@ -1,14 +1,6 @@
 import { useTheme } from '@mui/material';
 import './belgiss-logo.module.less';
 
-/* eslint-disable-next-line */
-export interface MainCardProps {}
-
-interface IMainCardProps {
-  border?: boolean;
-  boxShadow?: boolean;
-};
-
 const BelgissLogo = () => {
   const theme = useTheme();
   const color = '#ffffff'

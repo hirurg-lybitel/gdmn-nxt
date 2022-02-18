@@ -8,19 +8,20 @@ import {
   GridFilterInputValueProps,
   GridFilterModel,
   GridFilterOperator,
-  GridOverlay} from '@mui/x-data-grid-pro';
+  GridOverlay,
+  GridRowHeightParams} from '@mui/x-data-grid-pro';
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
-import React, { useEffect, useState } from 'react';
-import { Box, Card, List, ListItemButton, Snackbar, Container, Grid, LinearProgress } from '@mui/material';
+import React, { CSSProperties, ForwardedRef, forwardRef, SyntheticEvent, useEffect, useRef, useState } from 'react';
+import { Box, Card, List, ListItemButton, Snackbar, Container, Grid, LinearProgress, IconButton, Typography, Dialog, DialogContentText, DialogTitle, Slide } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { DateRange } from '@mui/lab/DateRangePicker/RangeTypes';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SummarizeIcon from '@mui/icons-material/Summarize';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import PreviewIcon from '@mui/icons-material/Preview';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
@@ -38,9 +39,11 @@ import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/system';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
-import { ReconciliationAct } from '../pages/Analytics/UserReports/ReconciliationAct';
+import CustomizedCard from '../components/customized-card/customized-card';
+import { Link, useNavigate } from 'react-router-dom';
+import CustomersFilter from './customers-filter/customers-filter';
 
-const labelStyle: React.CSSProperties = {
+const labelStyle: CSSProperties = {
   display: 'inline-block',
   fontSize: '0.625rem',
   fontWeight: 'bold',
@@ -62,13 +65,12 @@ export function Customers(props: CustomersProps) {
 
   //const { data, isFetching, refetch } = useGetAllContactsQuery();
 
-  const [reconciliationParamsOpen, setReconciliationParamsOpen] = useState(false);
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
-  const [paramsDates, setParamsDates] = useState<DateRange<Date | null>>([null, null]);
   const [openEditForm, setOpenEditForm] = useState(false);
+  const [openFilters, setOpenFilters] = useState(false);
   const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
   const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
   const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
@@ -139,11 +141,11 @@ export function Customers(props: CustomersProps) {
   ];
 
   const columns: GridColDef[] = [
-    { field: 'NAME', headerName: 'Наименование', width: 350 },
-    { field: 'PHONE', headerName: 'Телефон', width: 250 },
+    { field: 'NAME', headerName: 'Наименование', flex: 1 },
+    { field: 'PHONE', headerName: 'Телефон', width: 150 },
     { field: 'labels',
       headerName: 'Метки',
-      flex: 1,
+      width: 500,
       filterOperators: labelsOnlyOperators,
       renderCell: (params) => {
 
@@ -152,68 +154,70 @@ export function Customers(props: CustomersProps) {
         if (!labels.length) {
           return;
         }
-
         return (
-          <Stack
-            direction="column"
-          >
-            <List
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                padding: 0,
-                margin: 1,
-                width: 'fit-content'
-                }}
-            >
-              {labels
-                .slice(0, labels.length > 3 ? Math.trunc(labels.length/2) : 3)
-                .map(label => {
-                  return (
-                    <ListItemButton
-                      key={label.ID}
-                      onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'is' }]})}
-                      style={labelStyle}
-                    >
-                    {groups?.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
-                    </ListItemButton>
-                  )
-              })}
-            </List>
-            {labels.length > 3 ?
-              <List
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  padding: 0,
-                  margin: 1,
-                  width: 'fit-content'
-                  }}
-              >
-                {labels
-                  .slice(Math.trunc(labels.length/2))
-                  .map(label => {
-                    return (
-                      <ListItemButton
-                        key={label.ID}
-                        onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: label.LABEL, operatorValue: 'is' }]})}
-                        style={labelStyle}
-                      >
-                        {groups?.find(hierarchy => hierarchy.ID === label.LABEL)?.NAME}
-                      </ListItemButton>
-                    )
-                  })
-                }
-
-              </List>
-              : null}
-
-
-
+          <Stack direction="column">
+            {labels.map((label, index) => {
+              if (index % 3 === 0) {
+                return(
+                  <List
+                    key={label.ID + index*10}
+                    style={{
+                      flexDirection: 'row',
+                      padding: '4px',
+                      width: 'fit-content',
+                    }}
+                  >
+                    {labels.slice(index, index + 3).map((subLabel, index) => {
+                      return(
+                        <ListItemButton
+                          key={subLabel.ID}
+                          onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: subLabel.LABEL, operatorValue: 'is' }]})}
+                          style={labelStyle}
+                        >
+                          {groups?.find(hierarchy => hierarchy.ID === subLabel.LABEL)?.NAME}
+                       </ListItemButton>
+                      )
+                    })}
+                  </List>
+                )
+              }
+              return null;
+            })}
           </Stack>
         );
       }
     },
+    {
+      field: 'Actions',
+      headerName: 'Действия',
+      align: 'center',
+      renderCell: (params) => {
+
+        const navigate = useNavigate();
+
+        const customerId = Number(params.id);
+
+        const handleCustomerEdit = () => {
+          setCurrentOrganization(customerId)
+          setOpenEditForm(true);
+        }
+
+        const detailsComponent = {
+          component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`details/${customerId}`} target="_self" />)
+        }
+
+        return (
+          <Box>
+            <IconButton {...detailsComponent} disabled={customersLoading} >
+              <VisibilityIcon fontSize="small" color="primary" />
+            </IconButton>
+            <IconButton onClick={handleCustomerEdit} disabled={customersLoading} >
+              <EditOutlinedIcon fontSize="small" color="primary" />
+            </IconButton>
+          </Box>
+        );
+      }
+    }
   ];
 
 
@@ -335,6 +339,10 @@ export function Customers(props: CustomersProps) {
     dispatch(deleteCustomer(currentOrganization));
   };
 
+  const handleFilter = () => {
+    setOpenFilters(!openFilters)
+  };
+
 
   const contactGroupHandlers = {
     handleAdd: async () => {
@@ -366,10 +374,13 @@ export function Customers(props: CustomersProps) {
 
   };
 
+  const containerRef = useRef(null);
+
+
   return (
-    <Stack direction="column">
-      <Stack direction="row">
-        <Box style={{ height: '800px'}}>
+    <Stack flex={1} display="flex" direction="column" spacing={2} style={{overflow: 'hidden' }}>
+      <Stack direction="row" flex={1} >
+        <Stack direction="column" flex="1" padding={2}>
           <Box sx={{ mb: 1 }}>
             <Button onClick={contactGroupHandlers.handleAdd} disabled={groupIsFetching} startIcon={<AddIcon/>}>Добавить</Button>
           </Box>
@@ -388,52 +399,84 @@ export function Customers(props: CustomersProps) {
               onCancel={contactGroupHandlers.handleCancel}
             />
             : null}
-        </Box>
-        {/* <div style={{ width: '100%', height: '800px'}}>         */}
-        <Stack direction="column"  style={{ width: '100%'}}>
+        </Stack>
+        <Stack direction="column"  style={{ width: '100%'}} padding={2}>
           <Box sx={{ mb: 1 }}>
             <Stack direction="row">
+              <Box flex={1}>
               <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
               <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
-              <Button onClick={handleOrganiztionEditClick} disabled={customersLoading} startIcon={<EditIcon />}>Редактировать</Button>
               <Button
                 component="a"
-                href={`reports/reconciliation/${currentOrganization}`}
+                href={`employee/reports/reconciliation/${currentOrganization}`}
                 disabled={customersLoading}
                 startIcon={<SummarizeIcon />}
               >Акт сверки</Button>
+              </Box>
+              <Box>
+                <Button onClick={handleFilter} disabled={customersLoading} startIcon={<FilterAltIcon />}>
+                  Фильтр
+                </Button>
+              </Box>
             </Stack>
           </Box>
-          <Card style={{  height: '800px',
-            boxShadow: '0px 4px 20px rgb(170 180 190 / 30%)'
-//            boxShadow: `${(theme.shadows as Array<any>)[2]}`
-          }}>
-          <DataGridPro
-            localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-            rows={
-              allCustomers
-                .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
-                .map((customer) => ({
-                  ...customer,
-                  labels: labelsContact?.queries.labels.filter(label => label.CONTACT === customer.ID) || []
-                  })
-                ) ?? []}
-            columns={columns}
-            pagination
-            disableMultipleSelection
-            loading={customersLoading}
-            getRowId={row => row.ID}
-            onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
-            components={{
-              Toolbar: GridToolbar,
-              LoadingOverlay: CustomLoadingOverlay,
-              NoRowsOverlay: CustomNoRowsOverlay
-            }}
-            filterModel={filterModel}
-            onFilterModelChange={(model, detail) => setFilterModel(model)}
-          />
-          </Card>
+          <Stack direction="row" flex={1} display="flex" spacing={openFilters ? 3 : 0} >
+            <CustomizedCard
+              borders
+              boxShadows
+              style={{
+                flex: 1,
+              }}
+            >
+            <DataGridPro
+              style={{
+                border: 'none',
+
+              }}
+              localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+              rows={
+                allCustomers
+                  .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
+                  .map((customer) => ({
+                    ...customer,
+                    labels: labelsContact?.queries.labels.filter(label => label.CONTACT === customer.ID) || []
+                    })
+                  ) ?? []}
+              columns={columns}
+              pagination
+              disableMultipleSelection
+              loading={customersLoading}
+              getRowId={row => row.ID}
+              onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
+              components={{
+                Toolbar: GridToolbar,
+                LoadingOverlay: CustomLoadingOverlay,
+                NoRowsOverlay: CustomNoRowsOverlay
+              }}
+              filterModel={filterModel}
+              onFilterModelChange={(model, detail) => setFilterModel(model)}
+              pinnedColumns={{left: [customersLoading ? '' : 'NAME']}}
+              getRowHeight={(params) => {
+                const customer: IContactWithLabels = params.model as IContactWithLabels;
+
+                const lables: ILabelsContact[] | [] = customer.labels || [];
+                if (lables?.length) {
+                  return 50 * Math.ceil(lables.length/3)
+                }
+
+                return 50;
+              }}
+            />
+            </CustomizedCard>
+            <Box display="flex">
+              <Slide direction="left" in={openFilters} >
+                <Box width={openFilters ? 'auto' : 0} display="flex">
+                  <CustomersFilter open={openFilters} />
+                </Box>
+              </Slide>
+            </Box>
           </Stack>
+        </Stack>
         {/* </div> */}
       </Stack>
       {openEditForm ?

@@ -202,9 +202,7 @@ export const MainLayout = () => {
         onToogle={handleDrawerToggle}
       />
       <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
-        <Box flex={1}>
-          <Outlet />
-        </Box>
+        <Outlet />
       </Main>
     </Box>
   )

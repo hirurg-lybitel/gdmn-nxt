@@ -12,7 +12,9 @@ import { getContacts, updateContact, addContact, deleteContact, getContactHierar
 import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 import contactGroups from './app/contactGrops';
-import { disposeConnection } from './app/db-connection';
+import departments from './app/departments';
+import customerContracts from './app/customerContracts';
+import { disposeConnection } from './app/utils/db-connection';
 import { importERModel } from './app/er/er-utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -157,7 +159,7 @@ app.use(middlewares);
 app.get('/test', (req, res) => {
   if (req.isAuthenticated()) {
     return res.send(`Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
-  } else {    
+  } else {
     return res.send(`Not authenticated!`);
   }
 });
@@ -198,7 +200,7 @@ app.route('/user/forgot-password')
 app.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy( err => { if (err) console.error(err); } );
-  } 
+  }
   res.sendStatus(200);
 });
 
@@ -222,7 +224,7 @@ router.use(
 router.get('/test', (req, res) => {
   if (req.isAuthenticated()) {
     return res.send(`from router: Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
-  } else {    
+  } else {
     return res.send(`from router: Not authenticated!`);
   }
 });
@@ -239,10 +241,25 @@ router.get('/contacts/labels', getLabelsContact);
 router.post('/contacts/labels', addLabelsContact);
 router.delete('/contacts/labels/:contactId', deleteLabelsContact);
 
+/**Contact groups */
 router.get('/contactgroups', contactGroups.get);
 router.post('/contactgroups', contactGroups.add);
 router.put('/contactgroups/:id', contactGroups.update);
 router.delete('/contactgroups/:id', contactGroups.remove);
+
+/** Departments */
+router.get('/departments', departments.get);
+router.get('/departments/:id', departments.get);
+router.post('/departments', departments.upsert);
+router.put('/departments/:id', departments.upsert);
+router.delete('/departments/:id', departments.remove);
+
+/** Customer contacts */
+router.get('/customercontracts', customerContracts.get);
+router.get('/customercontracts/:id', customerContracts.get);
+router.post('/customercontracts', customerContracts.upsert);
+router.put('/customercontracts/:id', customerContracts.upsert);
+router.delete('/customercontracts/:id', customerContracts.remove);
 
 router.get('/accounts', getAccounts);
 router.get('/accounts/email/:email', getAccounts);
@@ -270,22 +287,22 @@ router.get('/er-model', async (req, res) => {
 
     erModel = {
       domains: Object.fromEntries(
-        Object.entries((await erModelFull).domains).map( 
-          ([name, { adapter, ...rest }]) => ([name, rest]) 
+        Object.entries((await erModelFull).domains).map(
+          ([name, { adapter, ...rest }]) => ([name, rest])
         )
       ),
       entities: Object.fromEntries(
-        Object.entries((await erModelFull).entities).map( 
-          ([name, { adapter, attributes, ...rest }]) => ([name, { 
-            ...rest, 
-            attributes: attributes.map( stripAdapter ), 
-          }]) 
+        Object.entries((await erModelFull).entities).map(
+          ([name, { adapter, attributes, ...rest }]) => ([name, {
+            ...rest,
+            attributes: attributes.map( stripAdapter ),
+          }])
         )
       ),
     };
   }
 
-  res.json(erModel);  
+  res.json(erModel);
 });
 
 app.use('/api/v1', router);
@@ -296,7 +313,7 @@ const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
- 
+
 process
   .on('exit', code => {
     disposeConnection();

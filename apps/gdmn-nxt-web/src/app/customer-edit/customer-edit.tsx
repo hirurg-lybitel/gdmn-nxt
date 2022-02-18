@@ -11,7 +11,8 @@ import {
   IconButton,
   Stack,
   TextField,
-  Box
+  Box,
+  Slide
  } from '@mui/material';
  import {
   Theme
@@ -21,7 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
-import { useState } from 'react';
+import { forwardRef, ReactElement, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -29,11 +30,23 @@ import { hierarchySelectors } from '../features/customer/customerSlice';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../features/contact/contactGroupApi';
+import { TransitionProps } from '@mui/material/transitions';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
-    minWidth: '50%',
+    position: 'absolute',
+    right: 0,
+    margin: 0,
+    height: '100%',
+    maxHeight: '100%',
+    width: '30vw',
+    maxWidth: '100vw',
+    minWidth: '300px',
+    // //width: '30%',
+    // //minWidth: '30%',
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0
   },
   dialogAction: {
     paddingRight: '3%',
@@ -48,6 +61,15 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: '120px',
   },
 }));
+
+const Transition = forwardRef(function Transition(
+  props: TransitionProps & {
+    children: ReactElement<any, any>;
+  },
+  ref: React.Ref<unknown>,
+) {
+  return <Slide direction="left" ref={ref} {...props} />;
+});
 
 export interface CustomerEditProps {
   open: boolean;
@@ -110,7 +132,11 @@ export function CustomerEdit(props: CustomerEditProps) {
   };
 
   return (
-    <Dialog classes={{ paper: classes.dialog}} open={open}>
+    <Dialog
+      open={open}
+      classes={{ paper: classes.dialog}}
+      TransitionComponent={Transition}
+    >
       <DialogTitle>
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
       </DialogTitle>
@@ -258,7 +284,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        title="Подтвердите действие"
+        title="Удаление клиента"
         text="Вы уверены, что хотите продолжить?"
         onConfirm={formik.handleSubmit}
       />

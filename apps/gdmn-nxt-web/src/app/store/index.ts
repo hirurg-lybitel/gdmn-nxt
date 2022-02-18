@@ -11,6 +11,8 @@ import { errorMiddleware } from '../features/error-slice/errorMiddleware';
 import errorReducer from '../features/error-slice/error-slice';
 import settingsReducer from './settingsSlice';
 import { erModelApi } from '../features/er-model/erModelApi';
+import { departmentsApi } from '../features/departments/departmentsApi';
+import { customerContractsApi } from '../features/customer-contracts/customerContractsApi';
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +27,9 @@ export const store = configureStore({
     [contactGroupApi.reducerPath]: contactGroupApi.reducer,
     [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
     [erModelApi.reducerPath]: erModelApi.reducer,
+    [departmentsApi.reducerPath]: departmentsApi.reducer,
+    [customerContractsApi.reducerPath]: customerContractsApi.reducer
+
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false})
     .concat(contactApi.middleware)
@@ -33,6 +38,8 @@ export const store = configureStore({
     .concat(contactGroupApi.middleware)
     .concat(reconciliationStatementApi.middleware)
     .concat(erModelApi.middleware)
+    .concat(departmentsApi.middleware)
+    .concat(customerContractsApi.middleware)
     .concat(errorMiddleware),
 });
 

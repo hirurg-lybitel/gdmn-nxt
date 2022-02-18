@@ -1,9 +1,9 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
+import CustomizedCard from '../../customized-card/customized-card';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import './order-card.module.less';
 import { makeStyles } from '@mui/styles';
-import { CardWithBorderShadow } from '../../main-card/main-card';
 
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
@@ -49,7 +49,11 @@ export function OrderCard(props: OrderCardProps) {
   const classes = useStyles();
 
   return (
-    <CardWithBorderShadow className={classes.card}>
+    <CustomizedCard
+      borders
+      boxShadows
+      className={classes.card}
+    >
       <Stack direction="row">
         <Typography className={classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
         <KeyboardDoubleArrowDownIcon fontSize="large" color="error" />
@@ -58,7 +62,7 @@ export function OrderCard(props: OrderCardProps) {
       <Avatar className={classes.avatar}>
         <ShoppingBagOutlinedIcon fontSize="inherit"  />
       </Avatar>
-    </CardWithBorderShadow>
+    </CustomizedCard>
   );
 }
 

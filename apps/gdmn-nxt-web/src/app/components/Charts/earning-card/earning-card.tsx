@@ -1,6 +1,6 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { CardWithBorderShadow } from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import './earning-card.module.less';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
@@ -47,24 +47,26 @@ function getFormattedNumber(value: number){
 export function EarningCard(props: EarningCardProps) {
   const classes = useStyles();
 
+
   return (
-    <CardWithBorderShadow
+    <CustomizedCard
+      borders={true}
+      boxShadows
       className={classes.card}
       style= {{
         flex: 1,
       }}
     >
       <Stack direction="row">
-        <Typography className={classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
+        <Typography className={ classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
         <KeyboardDoubleArrowUpIcon fontSize="large" color="success" />
       </Stack>
 
       <Avatar className={classes.avatar}>
-        <MonetizationOnOutlinedIcon fontSize="inherit"  />
+        <MonetizationOnOutlinedIcon fontSize="inherit"/>
       </Avatar>
       <Typography className={classes.title}>Общая Выручка</Typography>
-
-    </CardWithBorderShadow>
+    </CustomizedCard>
   );
 }
 

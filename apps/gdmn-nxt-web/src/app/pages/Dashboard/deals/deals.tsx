@@ -1,5 +1,8 @@
 import './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { toggleMenu } from '../../../store/settingsSlice';
 
 export interface IColumn {
   id: number,
@@ -110,6 +113,13 @@ export const columns: IColumn[] = [
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(toggleMenu(false));
+  }, []);
+
+
   return (
     <KanbanBoard
       columns={columns}

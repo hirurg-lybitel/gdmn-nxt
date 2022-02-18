@@ -2,7 +2,7 @@ import { IAccount, IAccountWithID, IDataSchema, IRequestResult, IWithID } from "
 import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
 import { sendEmail } from "./mail";
 
 export const upsertAccount: RequestHandler = async (req, res) => {

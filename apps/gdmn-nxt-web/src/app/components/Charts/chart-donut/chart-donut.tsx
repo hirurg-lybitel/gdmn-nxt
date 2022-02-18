@@ -1,9 +1,9 @@
 import './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
+import CustomizedCard from '../../customized-card/customized-card';
 import { Stack, Typography, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { CardWithBorderShadow } from '../../main-card/main-card';
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
@@ -63,7 +63,9 @@ export function ChartDonut(props: ChartDonutProps) {
 
 
   return (
-    <CardWithBorderShadow
+    <CustomizedCard
+      borders
+      boxShadows
       style={{
         flex: 1
       }}
@@ -77,7 +79,7 @@ export function ChartDonut(props: ChartDonutProps) {
         />
       </Stack>
 
-    </CardWithBorderShadow>
+    </CustomizedCard>
   );
 }
 

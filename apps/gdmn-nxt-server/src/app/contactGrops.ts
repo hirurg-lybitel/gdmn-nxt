@@ -1,7 +1,7 @@
 import { IDataSchema, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { ResultSet } from "node-firebird-driver-native";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
 import { resultError } from "./responseMessages";
 
 const get: RequestHandler = async (req, res)  => {

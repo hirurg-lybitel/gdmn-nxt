@@ -1,6 +1,6 @@
 import { ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./db-connection";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
 
 export const getLabelsContact: RequestHandler = async (req, res) => {
 

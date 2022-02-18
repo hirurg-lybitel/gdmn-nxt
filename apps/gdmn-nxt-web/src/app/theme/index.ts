@@ -18,9 +18,9 @@ export const theme = (customization: ICustomization) => {
     backgroundColor: colors.grey[100],
     backgroundDefault: colors.blue[300],
     textColor: colors.grey[900],
-    secondaryColor: colors.grey[50],
-    headColor: colors.grey[50],
-    paper: colors.grey[50],
+    secondaryColor: colors.common.white,
+    headColor: colors.common.white,
+    paper: colors.common.white,
     customization
   }
 
@@ -33,7 +33,7 @@ export const theme = (customization: ICustomization) => {
       mode: themeOption.customization.mode,
       background: {
         paper: themeOption.paper,
-        default: themeOption.backgroundDefault
+        default: colors.common.white
       },
       primary: {
         main: themeOption.backgroundDefault,
@@ -66,6 +66,7 @@ export const theme = (customization: ICustomization) => {
   themes.typography = { ...themes.typography, ...themeTypography(themeOptions) };
   themes.components = componentStyleOverrides(themeOptions);
   themes.shadows[1] = '0px 4px 20px rgba(170, 180, 190, 0.3)';
+
 
   return themes;
 };

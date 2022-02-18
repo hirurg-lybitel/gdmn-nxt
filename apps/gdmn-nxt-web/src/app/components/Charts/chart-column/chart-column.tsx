@@ -1,9 +1,11 @@
 import './chart-column.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
-import { CardWithBorderShadow } from '../../main-card/main-card';
+import CustomizedCard from '../../customized-card/customized-card';
 import { Stack, Typography, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
+
+
 
 /* eslint-disable-next-line */
 export interface ChartColumnProps {}
@@ -87,7 +89,9 @@ export function ChartColumn(props: ChartColumnProps) {
 
 
   return (
-    <CardWithBorderShadow
+    <CustomizedCard
+      borders
+      boxShadows
       style={{
         flex: 1
       }}
@@ -100,7 +104,8 @@ export function ChartColumn(props: ChartColumnProps) {
           type="bar"
         />
       </Stack>
-    </CardWithBorderShadow>
+    </CustomizedCard>
+
   );
 }
 

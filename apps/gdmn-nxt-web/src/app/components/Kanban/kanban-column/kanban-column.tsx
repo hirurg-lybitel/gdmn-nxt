@@ -1,5 +1,6 @@
 import './kanban-column.module.less';
 import { useState } from 'react';
+import CustomizedCard from '../../customized-card/customized-card';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, Input, IconButton, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -10,7 +11,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { CardWithBorder } from '../../main-card/main-card';
+
 
 export interface KanbanColumnProps {
   provided: DraggableProvided;
@@ -138,7 +139,8 @@ export function KanbanColumn(props: KanbanColumnProps) {
     <Box
       style={{ display: 'flex'}}
     >
-      <CardWithBorder
+      <CustomizedCard
+        borders
         style={{
           minWidth: '230px',
           maxWidth: '400px',
@@ -167,13 +169,9 @@ export function KanbanColumn(props: KanbanColumnProps) {
             paddingLeft: 0,
             paddingRight: 0,
             maxHeight: 'calc(100vh - 240px)',
-            //maxHeight: 'calc(100vh - 260px)',
-            //maxHeight: '800px',
             ...(dropSnapshot.isDraggingOver
               ? {
                 backgroundColor: '#deebff',
-                //opacity: 0.7,
-                //border: `solid ${theme.menu?.backgroundColor}`
               }
               : {
               })
@@ -197,7 +195,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         <CardActions>
           <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
         </CardActions>
-      </CardWithBorder>
+      </CustomizedCard>
       {upsertCard &&
         <KanbanEditCard
           currentStage={item}

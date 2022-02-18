@@ -30,6 +30,7 @@ const Transition = forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
+  console.log('Transition', props);
   return <Slide direction="left" ref={ref} {...props} />;
 });
 

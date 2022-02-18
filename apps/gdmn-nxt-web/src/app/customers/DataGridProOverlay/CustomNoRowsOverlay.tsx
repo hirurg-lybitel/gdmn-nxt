@@ -2,7 +2,7 @@ import { styled } from '@mui/material/styles';
 import { GridOverlay } from '@mui/x-data-grid-pro';
 import { ThemeOptions } from "@mui/material/styles";
 import { useTheme, Theme } from "@mui/system";
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 const StyledGridOverlay = styled(GridOverlay)(({ theme }) => ({
   flexDirection: 'column',
@@ -69,7 +69,7 @@ export default function CustomNoRowsOverlay() {
           </g>
         </g>
       </svg>
-      <Box sx={{ mt: 1 }}>Нет данных</Box>
+      <Box sx={{ mt: 1 }}><Typography variant="body1" color={'Background'}>Нет данных</Typography></Box>
     </StyledGridOverlay>
   );
 }
