@@ -18,6 +18,18 @@ We import er model of the existing Gedemin database in following order:
 
 */
 
+const adjustValidation = (s: string | null) => {
+  if (s) {
+    const exp = /CHECK\s*\(\s*(.+)\s*\)/ig;
+    const res = exp.exec(s);
+    if (res) {
+      return res[1];
+    }
+  } 
+
+  return undefined;
+};
+
 const str2cond = (s: string): (Expression | undefined) => {
 
   const extractOperand = (s: string): (Operand | Expression) => {
@@ -555,7 +567,7 @@ export const importERModel = async (searchEntityName?: string) => {
             visible: VISIBLE ? true : undefined,
             readonly: READONLY ? true : undefined,
             required: rdbField.RDB$NULL_FLAG ? true : undefined,
-            validationSource: rdbField.RDB$VALIDATION_SOURCE ?? undefined,
+            validationSource: adjustValidation(rdbField.RDB$VALIDATION_SOURCE),
             adapter: {
               name: rdbField.RDB$FIELD_NAME
             }
@@ -605,8 +617,8 @@ export const importERModel = async (searchEntityName?: string) => {
                 domain = {
                   ...domainBase,
                   type: 'DOUBLE',
-                  max: 1.79E+38,
-                  min: -1.79E+38,
+                  max: Number.MAX_VALUE,
+                  min: Number.MIN_VALUE,
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
                 break;
@@ -652,8 +664,8 @@ export const importERModel = async (searchEntityName?: string) => {
                 domain = {
                   ...domainBase,
                   type: 'DOUBLE',
-                  max: 3.40E+308,
-                  min: -3.40E+308,
+                  max: Number.MAX_VALUE,
+                  min: Number.MIN_VALUE,
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
                 break;

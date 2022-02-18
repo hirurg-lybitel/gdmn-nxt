@@ -50,43 +50,46 @@ export function ErModelDomains(props: ErModelDomainsProps) {
       valueGetter: ({ row }) => row.required ? '☑' : ''      
     },
     { 
-      field: 'readonly', 
-      headerName: 'R/o', 
-      width: 50,
-      valueGetter: ({ row }) => row.readonly ? '☑' : ''      
-    },
-    { 
       field: '', 
       headerName: 'Параметры', 
       flex: 1,
       valueGetter: ({ row }) => {
-        let s: string = '';
+        const s: string[] = [];
 
         switch (row.type) {
           case 'ENTITY':
           case 'ENTITY[]':
-            s = `${row.entityName}`;
+            s.push(`Entity: ${row.entityName}`);
             break;
 
           case 'STRING':
-            s = `len: ${row.maxLen}${typeof row.default === 'string' ? ', default: "' + row.default + '"' : ''}`;
+            s.push(`len: ${row.maxLen}${typeof row.default === 'string' ? ', default: "' + row.default + '"' : ''}`);
             break;
 
           case 'INTEGER':
-            case 'DOUBLE':    
-            s = `min: ${row.min}, max: ${row.max}`;
+          case 'DOUBLE':    
+            s.push(`min: ${row.min}, max: ${row.max}`);
             break;
             
           case 'NUMERIC':
-            s = `scale: ${row.scale}, precision: ${row.precision}, min: ${row.min}, max: ${row.max}`;
+            s.push(`precision: ${row.precision}, scale: ${-row.scale}, min: ${row.min}, max: ${row.max}`);
             break;
 
           case 'ENUM':
-            s = `${row.numeration}`;
+            s.push(`${row.numeration}`);
             break;
         }
 
-        return s + (row.validationSource ? ', validation: ' + row.validationSource : '');
+        row.validationSource && s.push('validation: ' + row.validationSource);
+
+        if (row.default !== undefined) {
+          if (typeof row.default === 'string') {
+            s.push(`default: "${row.default}"`); 
+          } else {
+            s.push('default: ' + row.default);
+          }
+        }
+        return s.join(', ');
       }
     }
   ];
@@ -108,11 +111,6 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           components={{
             Pagination: CustomPagination,      
             ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
-            //ColumnResizeIcon: () => <span>&nbsp;</span>
-            // ColumnResizeIcon: () => 
-            //   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 3">
-            //     <path d="M11 19V5h2v14z"></path>
-            //   </svg>
           }}
         />
       </Grid>
