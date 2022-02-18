@@ -1,5 +1,5 @@
 import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase, IAttrBase, IEntitySetAttr, IEntityAttr, ICrossAttrAdapter } from "@gsbelarus/util-api-types";
-import { getReadTransaction, releaseReadTransaction } from "../db-connection";
+import { getReadTransaction, releaseReadTransaction } from "../utils/db-connection";
 import { IAtRelation, IGedeminDocType } from "./at-types";
 import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, adjustRelationName } from "./at-utils";
 //import gdbaseRaw from "./gdbase.json";
@@ -73,7 +73,7 @@ const str2cond = (s: string): (Expression | undefined) => {
   // z.field_name = <QUOTED STRING>
   const expEqValue = /z\.(\w+)\s*=\s*((-{0,1}\d+)|'(.*)')/ig;
   res = expEqValue.exec(s);
-  
+
   if (res) {
     return {
       operator: 'EQ',
@@ -88,13 +88,13 @@ const str2cond = (s: string): (Expression | undefined) => {
       }
     };
   }
-  
+
   // expressions with IN, NOT IN operators
   // tested set is defined as constants list
   // or result of a query
   const expInValue = /z\.(\w+)\s+(IN|NOT\s+IN)\s*\(\s*(.+)\s*\)/ig;
   res = expInValue.exec(s);
-  
+
   if (res) {
     if (res[3].slice(0, 7).toUpperCase() === 'SELECT ') {
       return {
@@ -112,13 +112,13 @@ const str2cond = (s: string): (Expression | undefined) => {
     } else {
       const arr = res[3].split(',').map( i => i.trim() );
       let values;
-  
+
       if (arr[0].charAt(0) === "'") {
         values = arr.map( i => i.slice(1, i.length - 1) );
       } else {
         values = arr.map( i => Number(i) );
       };
-  
+
       return {
         operator: res[2].toUpperCase() === 'IN' ? 'IN' : 'NOT IN',
         left: {
@@ -147,7 +147,7 @@ const str2cond = (s: string): (Expression | undefined) => {
 
   const expLikeValue = /z\.(\w+)\s+LIKE\s+'(.+)'/ig;
   res = expLikeValue.exec(s);
-  
+
   if (res) {
     return {
       operator: 'LIKE',
@@ -166,7 +166,7 @@ const str2cond = (s: string): (Expression | undefined) => {
   // expressions IS NULL, IS NOT NULL
   const expIsNULL = /z\.(.+)\s+((IS\s+NOT)|(IS))\s+NULL/ig;
   res = expIsNULL.exec(s);
-  
+
   if (res) {
     if (res[3]) {
       return {
@@ -207,9 +207,9 @@ interface IgdbaseImport {
  * the score is > 0, and the deeper the table lays in the joins
  * the higher the score. If the table doesn't belong to the entity
  * -1 is returned.
- * @param e 
- * @param refTable 
- * @returns 
+ * @param e
+ * @param refTable
+ * @returns
  */
 const getEntityScore = (e: Entity, refTable: string) => {
   const joinScore = e.adapter?.join?.reverse().findIndex( j => j.name === refTable );
@@ -247,20 +247,20 @@ const extractBooleanDef = (s: string | null | undefined) => {
   return Boolean(res[3]?.trim() ?? res[4]?.trim());
 };
 
-export const importERModel = async () => {
+export const importERModel = async (searchEntityName?: string) => {
   const t = new Date().getTime();
   const { attachment, transaction } = await getReadTransaction('rdb');
   try {
     const [
-      rdbFields, 
-      //rdbRelations, 
-      //rdbRelationFields, 
-      atFields, 
-      atRelations, 
-      atRelationFields, 
+      rdbFields,
+      //rdbRelations,
+      //rdbRelationFields,
+      atFields,
+      atRelations,
+      atRelationFields,
       gdDocumentType
     ] = await Promise.all([
-      loadRDBFields(attachment, transaction), 
+      loadRDBFields(attachment, transaction),
       //loadRDBRelations(attachment, transaction),
       //loadRDBRelationFields(attachment, transaction),
       loadAtFields(attachment, transaction),
@@ -269,8 +269,13 @@ export const importERModel = async () => {
       loadGdDocumentType(attachment, transaction),
     ]);
 
-    const entities: IEntities = entitiesRaw as IEntities;
-    
+    let entities: IEntities;
+    if (searchEntityName) {
+      entities = {[searchEntityName]: entitiesRaw[searchEntityName]} as IEntities;
+    } else{
+      entities = entitiesRaw as IEntities;
+    }
+
     /*
     The code below is for importing standard Gedemin classes
     from the predefined json file. This format was used in
@@ -286,9 +291,9 @@ export const importERModel = async () => {
 
       let adapter: IEntityAdapter;
 
-      if (g.listTable) {        
+      if (g.listTable) {
         adapter = {
-          name: g.listTable.name, 
+          name: g.listTable.name,
           alias: 'z'
         };
 
@@ -316,7 +321,7 @@ export const importERModel = async () => {
             adapter.join.push({
               type: 'LEFT',
               name: 'GD_COMPANYCODE',
-              alias: 'cc'  
+              alias: 'cc'
             });
           }
         } else {
@@ -367,13 +372,13 @@ export const importERModel = async () => {
           entities['TgdcAttrUserDefinedLBRBTree']
           : arf.find( f => f.FIELDNAME === 'PARENT') ?
           entities['TgdcAttrUserDefinedTree']
-          : 
+          :
           entities['TgdcAttrUserDefined'];
 
         if (parent) {
           // make name looks the same way as in the Gedemin
-          const name = parent.name + adjustRelationName(usrRelation.RELATIONNAME);  
-  
+          const name = parent.name + adjustRelationName(usrRelation.RELATIONNAME);
+
           entities[name] = {
             type: 'SIMPLE',
             parent: parent.name,
@@ -384,28 +389,32 @@ export const importERModel = async () => {
               name: usrRelation.RELATIONNAME,
               alias: 'z'
             }
-          };  
-        }  
+          };
+        }
       }
     }
 
     const dtMap = {
       TgdcDocumentType: [entities['TgdcDocument'], undefined],
-      TgdcUserDocumentType: [entities['TgdcUserDocument'], entities['TgdcUserDocumentLine']], 
+      TgdcUserDocumentType: [entities['TgdcUserDocument'], entities['TgdcUserDocumentLine']],
       TgdcInvDocumentType: [entities['TgdcInvDocument'], entities['TgdcInvDocumentLine']],
       TgdcInvPriceListType: [entities['TgdcInvPriceList'], entities['TgdcInvPriceListLine']]
     };
 
     const createDocEntity = (parentEntities: [Entity, Entity | undefined], documentType: IGedeminDocType) => {
       const hr = atRelations[documentType.HEADERRELNAME];
-      
+
+      if (!parentEntities[0] && !parentEntities[1]) {
+        return;
+      }
+
       if (!hr) {
         console.warn(`Unknown document relation ${documentType.HEADERRELNAME}`);
         return;
       }
-      
+
       const crEnt = (parent: string, r: IAtRelation) => {
-        const name = parent + documentType.RUID;  
+        const name = parent + documentType.RUID;
         entities[name] = {
           type: 'DOCUMENT',
           parent,
@@ -422,7 +431,7 @@ export const importERModel = async () => {
               alias: 'z1'
             }]
           }
-        };  
+        };
       };
 
       crEnt(parentEntities[0].name, hr);
@@ -434,22 +443,24 @@ export const importERModel = async () => {
       }
     };
 
+
+
     for (const documentType of gdDocumentType) {
-      if (documentType.DOCUMENTTYPE === 'D' && documentType.HEADERRELNAME) {       
+      if (documentType.DOCUMENTTYPE === 'D' && documentType.HEADERRELNAME) {
         createDocEntity(dtMap[documentType.CLASSNAME || 'TgdcDocumentType'], documentType);
       }
     };
 
     const domains: IDomains = {};
-       
+
     for (const atField of Object.values(atFields)) {
-      const { 
+      const {
         FIELDNAME, LNAME, READONLY, VISIBLE,
-        REFTABLE, REFLISTFIELD, REFCONDITION, 
+        REFTABLE, REFLISTFIELD, REFCONDITION,
         SETTABLE, SETLISTFIELD, SETCONDITION,
-        GDCLASSNAME, GDSUBTYPE, NUMERATION 
+        GDCLASSNAME, GDSUBTYPE, NUMERATION
       } = atField;
- 
+
       let relation: string, listField: string, condition: string;
 
       if (REFTABLE) {
@@ -464,14 +475,14 @@ export const importERModel = async () => {
 
       if (relation) {
         let entityName;
-        
+
         if (GDCLASSNAME) {
           const fullGdcClassName = `${GDCLASSNAME}${GDSUBTYPE ? ('\\' + GDSUBTYPE) : ''}`;
           entityName = entities[fullGdcClassName]?.name;
-        } 
+        }
 
         if (!entityName) {
-          const found = Object.values(entities).filter( e => 
+          const found = Object.values(entities).filter( e =>
             // can't restrict on INNER joins only because of presence
             // of references to GD_COMPANYCODE relation
             // which is weak relation for TgdcCompany class
@@ -482,7 +493,7 @@ export const importERModel = async () => {
 
           if (found.length === 1) {
             entityName = found[0].name;
-          } 
+          }
           else if (found.length) {
             const sorted = found
               .map( e => ({ e, score: getEntityScore(e, relation) }) )
@@ -496,10 +507,10 @@ export const importERModel = async () => {
                 .filter( t => t.score === sorted[0].score )
                 .sort( (a, b) => getEntityDepth(b.e) - getEntityDepth(a.e) );
               entityName = top[0].e.name;
-            } 
+            }
           }
         }
-        
+
         if (entityName) {
           domains[FIELDNAME] = {
             name: FIELDNAME,
@@ -517,7 +528,7 @@ export const importERModel = async () => {
           };
         } else {
           console.warn(`Can't create domain ${FIELDNAME}. No entity for table ${relation} found.`,
-            'If it is a document table check that it is referenced in GD_DOCUMENTTYPE.', 
+            'If it is a document table check that it is referenced in GD_DOCUMENTTYPE.',
             'INTEGER domain will be created as a substitute...');
           domains[FIELDNAME] = {
             name: FIELDNAME,
@@ -530,7 +541,7 @@ export const importERModel = async () => {
             adapter: {
               name: FIELDNAME
             }
-          };          
+          };
         }
       } else {
         const rdbField = rdbFields[FIELDNAME];
@@ -578,7 +589,7 @@ export const importERModel = async () => {
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
                 break;
-  
+
               case 7:
                 domain = {
                   ...domainBase,
@@ -588,7 +599,7 @@ export const importERModel = async () => {
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
                 break;
-  
+
               case 10:
                 domain = {
                   ...domainBase,
@@ -598,7 +609,7 @@ export const importERModel = async () => {
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
                 break;
-  
+
               case 12:
                 domain = {
                   ...domainBase,
@@ -606,7 +617,7 @@ export const importERModel = async () => {
                   default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
                 };
                 break;
-  
+
               case 13:
                 domain = {
                   ...domainBase,
@@ -614,9 +625,9 @@ export const importERModel = async () => {
                   default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
                 };
                 break;
-  
+
               case 14:
-              case 37:  
+              case 37:
                 domain = {
                   ...domainBase,
                   type: 'STRING',
@@ -625,7 +636,7 @@ export const importERModel = async () => {
                   default: rdbField.RDB$DEFAULT_SOURCE ?? undefined
                 };
                 break;
-  
+
               case 16:
                 domain = {
                   ...domainBase,
@@ -634,8 +645,8 @@ export const importERModel = async () => {
                   min: Number.MIN_SAFE_INTEGER,
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
-                break;  
-  
+                break;
+
               case 27:
                 domain = {
                   ...domainBase,
@@ -645,7 +656,7 @@ export const importERModel = async () => {
                   default: extractNumDef(rdbField.RDB$DEFAULT_SOURCE)
                 };
                 break;
-  
+
               case 35:
                 domain = {
                   ...domainBase,
@@ -661,8 +672,8 @@ export const importERModel = async () => {
                   default: extractBooleanDef(rdbField.RDB$DEFAULT_SOURCE) ?? undefined
                 };
                 break;
-  
-              //TODO: treat text BLOBs as strings?  
+
+              //TODO: treat text BLOBs as strings?
               case 261:
                 domain = {
                   ...domainBase,
@@ -671,7 +682,7 @@ export const importERModel = async () => {
                 };
                 break;
 
-              default:  
+              default:
                 console.warn(`Unknown field type ${rdbField.RDB$FIELD_TYPE} for domain ${FIELDNAME}`);
             }
           }
@@ -716,8 +727,8 @@ export const importERModel = async () => {
 
       if (candidates.length) {
         //console.log(`${r} ----> ${JSON.stringify(candidates)}`)
-        return relation2entityNameCache[r] = candidates[0][1];        
-      }  
+        return relation2entityNameCache[r] = candidates[0][1];
+      }
 
       return undefined;
     };
@@ -737,14 +748,14 @@ export const importERModel = async () => {
       if (!arf) {
         console.warn(`No fields definitions for ${entity.adapter.name} found...`);
         continue;
-      }      
+      }
 
       for (const fld of arf) {
         const domain = domains[fld.FIELDSOURCE];
 
         if (!domain) {
           console.warn(`Domain ${fld.FIELDSOURCE} has not been found for the field ${entity.adapter.name}.${fld.FIELDNAME}`);
-          continue;  
+          continue;
         }
 
         const createAttr = (entity?: string, crossAdapter?: Omit<ICrossAttrAdapter, 'name'>): (IAttrBase | IEntityAttr | IEntitySetAttr) => ({
@@ -762,24 +773,24 @@ export const importERModel = async () => {
         });
 
         if (
-          domain.type === 'ENTITY' 
-          || 
-          domain.type === 'ENTITY[]' 
-          || 
+          domain.type === 'ENTITY'
+          ||
+          domain.type === 'ENTITY[]'
+          ||
           fld.GDCLASSNAME
           ||
           fld.REF
         ) {
-          const refEntityName = fld.GDCLASSNAME 
+          const refEntityName = fld.GDCLASSNAME
             ? (fld.GDCLASSNAME + adjustRelationName(fld.GDSUBTYPE))
-            : domain.type === 'ENTITY' || domain.type === 'ENTITY[]' 
+            : domain.type === 'ENTITY' || domain.type === 'ENTITY[]'
             ? domain.entityName
             : relation2entityName(fld.REF);
           const refEntity = refEntityName && entities[refEntityName];
 
           if (!refEntity) {
             console.warn(`There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`);
-            continue;  
+            continue;
           }
 
           if (fld.CROSSTABLE) {
@@ -803,9 +814,9 @@ export const importERModel = async () => {
       }
     }
 
-    const erModel: IERModel = { 
+    const erModel: IERModel = {
       domains,
-      entities 
+      entities
     };
 
     console.log(`
@@ -819,5 +830,5 @@ export const importERModel = async () => {
     return erModel;
   } finally {
     releaseReadTransaction('rdb');
-  }  
+  }
 };
