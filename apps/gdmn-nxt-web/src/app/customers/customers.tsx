@@ -78,6 +78,9 @@ export function Customers(props: CustomersProps) {
   const [searchName, setSearchName] = useState("");
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
 
+  /** Затычка для минимизации рендеров DataGrid при resize */
+  const [displayDataGrid, setDisplayDataGrid] = useState(true);
+
 
   const allCustomers = useSelector(customersSelectors.selectAll);
   const { error: customersError , loading: customersLoading } = useSelector((state: RootState) => state.customers);
@@ -351,6 +354,10 @@ export function Customers(props: CustomersProps) {
 
   const filterHandlers = {
     handleFilter: async () => {
+      if (displayDataGrid) {
+        setDisplayDataGrid(false);
+      };
+
       setOpenFilters(!openFilters)
     },
     handleRequestSearch: async (value: string) => {
@@ -414,6 +421,7 @@ export function Customers(props: CustomersProps) {
   // };
 
 
+
   return (
     <Stack flex={1} display="flex" direction="column" spacing={2} style={{overflow: 'hidden' }}>
       <Stack direction="row" flex={1} >
@@ -463,7 +471,7 @@ export function Customers(props: CustomersProps) {
                 />
               </Box>
               <Box display="flex" justifyContent="center">
-                <Button onClick={filterHandlers.handleFilter} disabled={customersLoading} startIcon={<FilterAltIcon />}>
+                <Button onClick={filterHandlers.handleFilter} disabled={customersLoading || !displayDataGrid} startIcon={<FilterAltIcon />}>
                   Фильтр
                 </Button>
               </Box>
@@ -485,9 +493,11 @@ export function Customers(props: CustomersProps) {
                     }),
               }}
             >
+              <div onTransitionEnd={() => console.log('onTransitionEnd5')}></div>
             <DataGridPro
               style={{
-                border: 'none'
+                border: 'none',
+                display: `${displayDataGrid ? 'flex' : 'none'}`,
               }}
               localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
               rows={
@@ -527,6 +537,7 @@ export function Customers(props: CustomersProps) {
             />
             </CustomizedCard>
             <Box
+               onTransitionEnd={() => setDisplayDataGrid(true)}
               display="flex"
               style={{
                 ...(matchDownLg
