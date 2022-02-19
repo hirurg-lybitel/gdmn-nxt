@@ -96,7 +96,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
   
   return (
     <Grid container height="100%" columnSpacing={2}>
-      <Grid item xs={9}>
+      <Grid item xs={12}>
         <StyledDataGrid
           rows={rows}
           columns={columns}
@@ -114,6 +114,8 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           }}
         />
       </Grid>
+      {
+        /*
       <Grid item xs={3}>
         {
           data && selectionModel.length ?
@@ -126,6 +128,8 @@ export function ErModelDomains(props: ErModelDomainsProps) {
             undefined  
         }
       </Grid>
+      */
+      }
       {
         errorMessage &&
         <Grid item xs={12}>
