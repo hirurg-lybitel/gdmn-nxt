@@ -86,7 +86,15 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
     color:
       theme.palette.mode === 'light' ? 'rgba(0,0,0,.85)' : 'rgba(255,255,255,0.65)',
   },
+  '& .MuiDataGrid-footerContainer': {
+    minHeight: 32,
+    borderTop: `1px solid ${
+      theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
+    }`,  },
   '& .MuiPaginationItem-root': {
+    height: 16,
+    width: 16,
+    fontSize: 12,
     borderRadius: 0,
   },
   ...customCheckbox(theme),

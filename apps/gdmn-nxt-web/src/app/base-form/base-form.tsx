@@ -8,13 +8,17 @@ import './base-form.module.less';
 
 type MyThemeOptions = ThemeOptions & {
   typography: {
-    footer: TypographyStyleOptions;
+    smallUI: TypographyStyleOptions;
+    mediumUI: TypographyStyleOptions;
+    selectedUI: TypographyStyleOptions;
   }
 };
 
 type MyTheme = Theme & {
   typography: {
-    footer: TypographyStyle;
+    smallUI: TypographyStyle;
+    mediumUI: TypographyStyle;
+    selectedUI: TypographyStyle;
   }
 };
 
@@ -32,16 +36,29 @@ let theme = createTheme({
       '"Segoe UI Emoji"',
       '"Segoe UI Symbol"',
     ].join(','),
-    footer: {
-      fontSize: 12
+    smallUI: {
+      fontSize: 12,
+    },
+    mediumUI: {
+      fontSize: 13,
+    },
+    selectedUI: {
+      fontWeight: 'bold'
     },
     fontSize: 12,
     htmlFontSize: 10    
   },
 } as MyThemeOptions) as MyTheme;
+
 theme = responsiveFontSizes(theme) as MyTheme;
 
+//console.log(theme);
+
 const Header = styled('header')({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  padding: '4px 8px 8px 8px',
   backgroundColor: theme.palette.grey['200'],
   borderTopColor: theme.palette.grey['50'], 
   borderTopStyle: 'solid', 
@@ -49,34 +66,30 @@ const Header = styled('header')({
   borderBottomColor: theme.palette.grey['400'], 
   borderBottomStyle: 'solid', 
   borderBottomWidth: 1,
-  fontSize: theme.typography.footer.fontSize,
-  padding: '4px 8px 8px 8px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between'
+  fontSize: theme.typography.smallUI.fontSize,
 });
 
 const TopLine = styled('div')({
-  width: '100%',
-  height: 30,
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'space-between',
+  height: 30,
+  width: '100%',
 });
 
 const SearchBox = () => 
   <Box
     sx={{ 
-      backgroundColor: theme.palette.grey['50'],
-      p: '2px 2px', 
       display: 'flex', 
       alignItems: 'center', 
+      height: 26,
       width: 400,
+      p: '2px 2px', 
+      backgroundColor: theme.palette.grey['50'],
       borderColor: theme.palette.grey['400'], 
       borderWidth: 1,
       borderStyle: 'solid',
       borderRadius: 1,
-      height: 24
     }}
     >
     <IconButton size='small' aria-label="search">
@@ -86,44 +99,95 @@ const SearchBox = () =>
       sx={{ 
         ml: 1, 
         flex: 1,
-        fontSize: theme.typography.footer.fontSize 
+        fontSize: theme.typography.smallUI.fontSize 
       }}
       placeholder="Enter search text..."
-      inputProps={{ 'aria-label': 'search google maps' }}
     />
   </Box>
 
+const Menubar = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+  gap: '16px',
+  width: '100%',
+  marginTop: 4,
+  height: 20,
+  fontSize: theme.typography.mediumUI.fontSize
+});
+
+const MenubarItem = styled('div')({
+
+});
+
 const Toolbar = styled('div')({
+  width: '100%',
+  marginTop: 4,
+  height: 64,
   backgroundColor: theme.palette.grey['100'],
   borderColor: theme.palette.grey['400'], 
   borderStyle: 'solid', 
   borderWidth: 1,
   borderRadius: 5,
-  marginTop: 4,
-  width: '100%',
-  height: 64
 });
 
 const Footer = styled('footer')({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  minHeight: 48,
+  padding: 0,
   backgroundColor: theme.palette.grey['200'],
-  borderTopColor: theme.palette.grey['50'], 
+  borderTopColor: theme.palette.grey['400'], 
   borderTopStyle: 'solid', 
   borderTopWidth: 1,
   borderBottomColor: theme.palette.grey['400'], 
   borderBottomStyle: 'solid', 
   borderBottomWidth: 1,
-  fontSize: theme.typography.footer.fontSize,
-  padding: '4px 8px 4px 8px'
+  fontSize: theme.typography.smallUI.fontSize,
+});
+
+const FooterTabs = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+  paddingLeft: 48
+});
+
+const FooterTab = styled('div')({
+  position: 'relative',
+  top: -1,
+  height: 24,
+  minWidth: 64,
+  padding: '0px 8px 0px 8px',
+  backgroundColor: theme.palette.grey['50'],
+  borderTopWidth: 'none',
+  borderRightColor: theme.palette.grey['400'], 
+  borderRightStyle: 'solid', 
+  borderRightWidth: 1,
+  borderBottomColor: theme.palette.primary.main, 
+  borderBottomStyle: 'solid', 
+  borderBottomWidth: 3,
+  borderLeftColor: theme.palette.grey['400'], 
+  borderLeftStyle: 'solid', 
+  borderLeftWidth: 1,
+  fontSize: theme.typography.mediumUI.fontSize,
+  fontWeight: theme.typography.selectedUI.fontWeight,
+  color: theme.palette.primary.main
+});
+
+const FooterBottom = styled('div')({
+  padding: '2px 8px 2px 8px',
 });
 
 const Main = styled('main')({
-  minHeight: 'calc(100% - 100px - 24px)'
+  minHeight: 'calc(100% - 124px - 48px)'
 });
 
 const Wrapper = styled('section')({
-  minHeight: '100vh',
   display: 'grid',
-  gridTemplateRows: '100px 1fr 24px'
+  gridTemplateRows: '124px 1fr 48px',
+  minHeight: '100vh',
 });
 
 /* eslint-disable-next-line */
@@ -136,7 +200,7 @@ export function BaseForm(props: BaseFormProps) {
         <Header>
           <TopLine>
             <div>
-              top1
+              Параметры системы
             </div>
             <SearchBox />
             <Box
@@ -150,16 +214,21 @@ export function BaseForm(props: BaseFormProps) {
             >
               <span>Чак Норрис</span>
               <Avatar sx={{ 
-                backgroundColor: 'green', 
-                width: 22, 
-                height: 22,
-                fontSize: theme.typography.footer.fontSize,
+                backgroundColor: 'primary.dark', 
+                width: 24, 
+                height: 24,
+                fontSize: theme.typography.smallUI.fontSize,
                 fontWeight: 100 
               }}>
                 ЧН
               </Avatar>
             </Box>
           </TopLine>
+          <Menubar>
+            <MenubarItem>Главная</MenubarItem>
+            <MenubarItem>Редактирование</MenubarItem>
+            <MenubarItem>Справка</MenubarItem>
+          </Menubar>
           <Toolbar>
             
           </Toolbar>
@@ -168,7 +237,14 @@ export function BaseForm(props: BaseFormProps) {
           <Outlet />
         </Main>
         <Footer>
-          footer
+          <FooterTabs>
+            <FooterTab>
+              Domains
+            </FooterTab>
+          </FooterTabs>
+          <FooterBottom>
+            Gdmn-nxt -- next big thing...
+          </FooterBottom>
         </Footer>
       </Wrapper>
     </ThemeProvider>
