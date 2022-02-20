@@ -182,7 +182,8 @@ const FooterBottom = styled('div')({
 });
 
 const Main = styled('main')({
-  minHeight: 'calc(100% - 132px - 48px)'
+  minHeight: 'calc(100vh - 132px - 48px)',
+  maxHeight: 'calc(100vh - 132px - 48px)'
 });
 
 const Wrapper = styled('section')({

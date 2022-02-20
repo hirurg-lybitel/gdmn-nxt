@@ -32,8 +32,21 @@ export function ErModel(props: ErModelProps) {
     isFetching ?
       <CircularIndeterminate open={true} />
     :
-      <Grid container spacing={2}>
-        <Grid item xs={4}>
+      <Grid 
+        container 
+        height="100%" 
+        direction="row" 
+        alignItems="stretch" 
+        columnSpacing={2}
+      >
+        <Grid 
+          item 
+          xs={4}
+          sx={{
+            overflowY: 'auto',
+            maxHeight: '100%',
+          }}
+      >
           <TreeView
             aria-label="er-model"
             defaultExpanded={['TgdcBase']}
