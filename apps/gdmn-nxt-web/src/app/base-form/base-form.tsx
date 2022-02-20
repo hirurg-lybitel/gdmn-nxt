@@ -43,7 +43,7 @@ let theme = createTheme({
       fontSize: 13,
     },
     selectedUI: {
-      fontWeight: 'bold'
+      fontWeight: 600
     },
     fontSize: 12,
     htmlFontSize: 10    
@@ -112,18 +112,19 @@ const Menubar = styled('div')({
   gap: '16px',
   width: '100%',
   marginTop: 4,
-  height: 20,
+  height: 22,
   fontSize: theme.typography.mediumUI.fontSize
 });
 
-const MenubarItem = styled('div')({
-
-});
+const MenubarItem = styled('div')( (props: { active?: boolean }) => ({
+  fontWeight: props.active ? '500' : 'normal',
+  borderBottom: props.active ? `2px solid ${theme.palette.primary.main}` : 'none'
+}));
 
 const Toolbar = styled('div')({
   width: '100%',
   marginTop: 4,
-  height: 64,
+  height: 72,
   backgroundColor: theme.palette.grey['100'],
   borderColor: theme.palette.grey['400'], 
   borderStyle: 'solid', 
@@ -151,7 +152,7 @@ const FooterTabs = styled('div')({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'flex-start',
-  paddingLeft: 48
+  paddingLeft: 24
 });
 
 const FooterTab = styled('div')({
@@ -181,12 +182,12 @@ const FooterBottom = styled('div')({
 });
 
 const Main = styled('main')({
-  minHeight: 'calc(100% - 124px - 48px)'
+  minHeight: 'calc(100% - 132px - 48px)'
 });
 
 const Wrapper = styled('section')({
   display: 'grid',
-  gridTemplateRows: '124px 1fr 48px',
+  gridTemplateRows: '132px 1fr 48px',
   minHeight: '100vh',
 });
 
@@ -225,7 +226,7 @@ export function BaseForm(props: BaseFormProps) {
             </Box>
           </TopLine>
           <Menubar>
-            <MenubarItem>Главная</MenubarItem>
+            <MenubarItem active>Главная</MenubarItem>
             <MenubarItem>Редактирование</MenubarItem>
             <MenubarItem>Справка</MenubarItem>
           </Menubar>

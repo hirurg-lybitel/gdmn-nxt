@@ -7,13 +7,6 @@ import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
 import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
-import { darken, lighten } from '@mui/material/styles';
-
-const getBackgroundColor = (color: string, mode: string) =>
-  mode === 'dark' ? darken(color, 0.8) : lighten(color, 0.8);
-
-const getHoverBackgroundColor = (color: string, mode: string) =>
-  mode === 'dark' ? darken(color, 0.5) : lighten(color, 0.5);
 
 /* eslint-disable-next-line */
 export interface ErModelDomainsProps {}
@@ -108,26 +101,16 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           rows={rows}
           columns={columns}
           pagination
-          disableMultipleSelection
           loading={isFetching}
           getRowId={row => row.name}
           onSelectionModelChange={setSelectionModel}
           selectionModel={selectionModel} 
           rowHeight={24}         
-          headerHeight={24}       
+          headerHeight={24}      
+          editMode='row' 
           components={{
             Pagination: CustomPagination,      
             ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
-          }}
-          sx={{
-            '& .MuiDataGrid-row:nth-child(odd)': {
-              bgcolor: (theme) =>
-                getBackgroundColor(theme.palette.primary.light, theme.palette.mode),
-              '&:hover': {
-                bgcolor: (theme) =>
-                  getHoverBackgroundColor(theme.palette.primary.light, theme.palette.mode),
-              },                
-            },
           }}
         />
       </Grid>

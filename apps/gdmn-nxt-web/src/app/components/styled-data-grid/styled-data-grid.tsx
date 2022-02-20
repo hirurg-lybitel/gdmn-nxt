@@ -3,6 +3,16 @@ import { DataGridPro, gridPageCountSelector, gridPageSelector, useGridApiContext
 import { Theme, styled } from '@mui/material/styles';
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
+import { darken, lighten } from '@mui/material/styles';
+
+const getBackgroundColor = (color: string, mode: string) =>
+  mode === 'dark' ? darken(color, 0.8) : lighten(color, 0.8);
+
+const getSelectedBackgroundColor = (color: string, mode: string) =>
+  mode === 'dark' ? darken(color, 0.6) : lighten(color, 0.6);
+
+const getHoverBackgroundColor = (color: string, mode: string) =>
+  mode === 'dark' ? darken(color, 0.4) : lighten(color, 0.4);
 
 function customCheckbox(theme: Theme) {
   return {
@@ -72,6 +82,9 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
   // '& .MuiDataGrid-iconSeparator': {
   //   display: 'none',
   // },
+  '& .MuiDataGrid-columnHeaderTitle': {
+    fontWeight: 600
+  },
   '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
     borderRight: `1px solid ${
       theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
@@ -81,6 +94,21 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
     borderBottom: `1px solid ${
       theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
     }`,
+  },
+  '& .MuiDataGrid-row:nth-of-type(2n)': {
+    backgroundColor: getBackgroundColor(theme.palette.primary.light, theme.palette.mode),
+  },
+  '& .MuiDataGrid-row:nth-of-type(2n):hover': {
+    backgroundColor: getBackgroundColor(theme.palette.primary.light, theme.palette.mode),
+  },
+  '& .MuiDataGrid-row.Mui-selected': {
+    backgroundColor: getSelectedBackgroundColor(theme.palette.primary.light, theme.palette.mode),
+  },
+  '& .MuiDataGrid-row.Mui-selected:hover': {
+    backgroundColor: getSelectedBackgroundColor(theme.palette.primary.light, theme.palette.mode),
+  },
+  '& .MuiDataGrid-row:hover': {
+    backgroundColor: 'inherit',
   },
   '& .MuiDataGrid-cell': {
     color:
