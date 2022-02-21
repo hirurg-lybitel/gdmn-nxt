@@ -3,13 +3,12 @@ import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import './er-model.module.less';
-import TreeView from '@mui/lab/TreeView/TreeView';
-import TreeItem from '@mui/lab/TreeItem';
 import { createElement, useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid/Grid';
 import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
-import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
+import { StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
+import { StyledTreeItem, StyledTreeView } from '../components/styled-tree-view/styled-tree-view';
 
 /* eslint-disable-next-line */
 export interface ErModelProps {};
@@ -46,9 +45,9 @@ export function ErModel(props: ErModelProps) {
     .filter( e => e.parent === parent )
     .map(
       e => 
-        <TreeItem key={e.name} nodeId={e.name} label={e.name}>
+        <StyledTreeItem key={e.name} nodeId={e.name} label={e.name}>
           {recurse(e.name)}
-        </TreeItem>
+        </StyledTreeItem>
     );
 
   const treeItems = useMemo(recurse, [data]);  
@@ -72,12 +71,12 @@ export function ErModel(props: ErModelProps) {
             maxHeight: '100%',
           }}
       >
-          <TreeView
+          <StyledTreeView
             aria-label="er-model"
             defaultExpanded={['TgdcBase']}
-            defaultCollapseIcon={<ArrowDropDownIcon />}
-            defaultExpandIcon={<ArrowRightIcon />}
-            defaultEndIcon={<div style={{ width: 24 }} />}
+            defaultCollapseIcon={'🞃'}
+            defaultExpandIcon={'🞂'}
+            defaultEndIcon={<div style={{ width: 14 }} />}
             onNodeSelect={ (_evt: any, ids: any) => {
               if (ids) {
                 setSelectedEntity(ids);
@@ -85,7 +84,7 @@ export function ErModel(props: ErModelProps) {
             }}
           >
             {treeItems}
-          </TreeView>  
+          </StyledTreeView>  
         </Grid>
         <Grid item xs={9}>
           <StyledDataGrid
