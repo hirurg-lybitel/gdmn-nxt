@@ -39,6 +39,11 @@ export function ErModel(props: ErModelProps) {
       headerName: 'Лок. наименование', 
       width: 250
     },
+    { 
+      field: 'domain', 
+      headerName: 'Домен', 
+      width: 250
+    },
   ];
 
   const recurse = (parent?: string) => data && Object.values(data.entities)

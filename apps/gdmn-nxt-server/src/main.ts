@@ -16,7 +16,8 @@ import departments from './app/departments';
 import customerContracts from './app/customerContracts';
 import { disposeConnection } from './app/utils/db-connection';
 import { importERModel } from './app/er/er-utils';
-
+import { graphqlHTTP } from 'express-graphql';
+import { buildSchema } from 'graphql';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
 
@@ -308,6 +309,29 @@ router.get('/er-model', async (req, res) => {
 app.use('/api/v1', router);
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
+
+// Construct a schema, using GraphQL schema language
+var schema = buildSchema(`
+  type Query {
+    hello: String
+  }
+`);
+
+// The root provides a resolver function for each API endpoint
+var root = {
+  hello: () => {
+    return 'Hello world!';
+  },
+};
+
+const appGraphQL = express();
+appGraphQL.use('/graphql', graphqlHTTP({
+  schema: schema,
+  rootValue: root,
+  graphiql: true,
+}));
+appGraphQL.listen(4201, () => console.log(`GraphQL listening on 4201...`));
+
 
 const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
