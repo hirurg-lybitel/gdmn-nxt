@@ -9,12 +9,13 @@ import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
 import { StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
 import { StyledTreeItem, StyledTreeView } from '../components/styled-tree-view/styled-tree-view';
+import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
 
 /* eslint-disable-next-line */
 export interface ErModelProps {};
 
 export function ErModel(props: ErModelProps) {
-
+  useViewForms('Entities');
   const { data, isFetching } = useGetErModelQuery();
   const [selectedEntity, setSelectedEntity] = useState('');
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);

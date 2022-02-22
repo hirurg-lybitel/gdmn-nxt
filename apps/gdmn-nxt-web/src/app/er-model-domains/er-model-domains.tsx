@@ -7,12 +7,13 @@ import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
 import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
+import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
 
 /* eslint-disable-next-line */
 export interface ErModelDomainsProps {}
 
 export function ErModelDomains(props: ErModelDomainsProps) {
-
+  useViewForms('Domains');
   const { data, isFetching, refetch, error } = useGetErModelQuery();
   const errorMessage = !error ? 
     undefined

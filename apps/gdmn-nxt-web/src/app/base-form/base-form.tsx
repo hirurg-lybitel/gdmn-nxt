@@ -1,10 +1,12 @@
-import { Avatar, Box, createTheme, IconButton, InputBase, Paper, responsiveFontSizes, TextField } from '@mui/material';
+import { Avatar, Box, createTheme, IconButton, InputBase, responsiveFontSizes } from '@mui/material';
 import { Theme, ThemeOptions } from '@mui/material/styles/createTheme';
 import { TypographyStyle, TypographyStyleOptions } from '@mui/material/styles/createTypography';
 import { styled, ThemeProvider } from '@mui/styles';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import './base-form.module.less';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 type MyThemeOptions = ThemeOptions & {
   typography: {
@@ -67,6 +69,11 @@ const Header = styled('header')({
   borderBottomStyle: 'solid', 
   borderBottomWidth: 1,
   fontSize: theme.typography.smallUI.fontSize,
+  '& a': {
+    textDecoration: 'none',
+    outline: 'none',
+    color: 'inherit'
+  }
 });
 
 const TopLine = styled('div')({
@@ -75,6 +82,13 @@ const TopLine = styled('div')({
   justifyContent: 'space-between',
   height: 30,
   width: '100%',
+});
+
+const TopLeftLinks = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+  gap: 12
 });
 
 const SearchBox = () => 
@@ -152,30 +166,40 @@ const FooterTabs = styled('div')({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'flex-start',
-  paddingLeft: 24
+  paddingLeft: 24,
+  gap: 4,
+  '& a': {
+    textDecoration: 'none',
+    outline: 'none'
+  }
 });
 
-const FooterTab = styled('div')({
+const FooterTab = styled('div')( ({ active }: { active?: boolean }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'center',
   position: 'relative',
   top: -1,
   height: 24,
-  minWidth: 64,
+  minWidth: 80,
   padding: '0px 8px 0px 8px',
   backgroundColor: theme.palette.grey['50'],
-  borderTopWidth: 'none',
+  borderTopWidth: active ? 0 : 1,
+  borderTopColor: theme.palette.grey['400'], 
+  borderTopStyle: 'solid', 
   borderRightColor: theme.palette.grey['400'], 
   borderRightStyle: 'solid', 
   borderRightWidth: 1,
-  borderBottomColor: theme.palette.primary.main, 
+  borderBottomColor: active ? theme.palette.primary.main : theme.palette.grey['400'], 
   borderBottomStyle: 'solid', 
-  borderBottomWidth: 3,
+  borderBottomWidth: active ? 3 : 1,
   borderLeftColor: theme.palette.grey['400'], 
   borderLeftStyle: 'solid', 
   borderLeftWidth: 1,
   fontSize: theme.typography.mediumUI.fontSize,
-  fontWeight: theme.typography.selectedUI.fontWeight,
-  color: theme.palette.primary.main
-});
+  fontWeight: active ? theme.typography.selectedUI.fontWeight : 'normal',
+  color: active ? theme.palette.primary.main : theme.palette.grey['800'],  
+}));
 
 const FooterBottom = styled('div')({
   padding: '2px 8px 2px 8px',
@@ -196,14 +220,18 @@ const Wrapper = styled('section')({
 export interface BaseFormProps {};
 
 export function BaseForm(props: BaseFormProps) {
+  const { viewForms } = useSelector( (state: RootState) => state.viewForms );
+  const { pathname } = useLocation();
+
   return (
     <ThemeProvider theme={theme}>
       <Wrapper>
         <Header>
           <TopLine>
-            <div>
-              Параметры системы
-            </div>
+            <TopLeftLinks>             
+              <Link to="/system/er-model-domains">Domains</Link>
+              <Link to="/system/er-model">Entities</Link>
+            </TopLeftLinks>
             <SearchBox />
             <Box
               sx = {{
@@ -240,9 +268,17 @@ export function BaseForm(props: BaseFormProps) {
         </Main>
         <Footer>
           <FooterTabs>
-            <FooterTab>
-              Domains
-            </FooterTab>
+            {
+              viewForms.map( vf => 
+                <Link to={vf.pathname}>
+                  <FooterTab active={vf.pathname === pathname}>
+                    <div>
+                      {vf.name}
+                    </div>
+                  </FooterTab>
+                </Link>
+              )
+            }
           </FooterTabs>
           <FooterBottom>
             Gdmn-nxt -- next big thing...

@@ -25,7 +25,9 @@ export const StyledTreeView = styled(TreeView)(({ theme }) => ({
 
 export const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
   '& .MuiTreeItem-label': {
-    fontSize: 14
+    fontSize: 14,
+    fontWeight: 400,
+    fontFamily: 'inherit'
   },
   [`& .${treeItemClasses.iconContainer}`]: {
     '& .close': {
