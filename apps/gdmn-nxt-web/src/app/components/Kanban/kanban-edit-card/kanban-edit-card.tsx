@@ -1,13 +1,32 @@
 import './kanban-edit-card.module.less';
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, Slide, Stack, TextField } from '@mui/material';
+import {
+  Autocomplete,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  InputAdornment,
+  Slide,
+  Stack,
+  TextField,
+  createFilterOptions
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { forwardRef, ReactElement, useState } from 'react';
+import { forwardRef, ReactElement, useState, useEffect } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
-import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog'
+import { IDeal, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { fetchCustomers } from '../../../features/customer/actions';
+import { customersSelectors } from '../../../features/customer/customerSlice';
+import { IContactWithLabels } from "@gsbelarus/util-api-types";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -30,21 +49,26 @@ const Transition = forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
-  console.log('Transition', props);
   return <Slide direction="left" ref={ref} {...props} />;
+});
+
+const filterOptions = createFilterOptions({
+  matchFrom: 'any',
+  limit: 500,
+  stringify: (option: IContactWithLabels) => option.NAME,
 });
 
 
 export interface KanbanEditCardProps {
-  currentStage?: IColumn;
-  deal?: ICard;
-  stages: IColumn[];
-  onSubmit: (arg1: ICard, arg2: boolean) => void;
+  currentStage?: IKanbanColumn;
+  card?: IKanbanCard;
+  stages: IKanbanColumn[];
+  onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: () => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
-  const { currentStage, deal, stages } = props;
+  const { currentStage, card, stages } = props;
   const { onSubmit, onCancelClick } = props;
 
   //console.log('deal', deal, (Math.round(deal!.amount || 0 * 100)).toFixed(2));
@@ -53,6 +77,18 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const dispatch = useDispatch();
+  const allCustomers = useSelector(customersSelectors.selectAll);
+  const { loading: customersLoading } = useSelector((state: RootState) => state.customers);
+
+
+  console.log('card', card );
+
+
+  useEffect(() => {
+    dispatch(fetchCustomers());
+  }, [])
 
   const handleDeleteClick = () => {
     setDeleting(true);
@@ -66,24 +102,27 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   };
 
 
-  const initValue: ICard = {
-    id: deal?.id || 0,
-    title: deal?.title || '',
-    status: deal?.status || currentStage?.id || -1,
-    amount: deal?.amount || undefined,
-    customer: deal?.customer || '',
+  const initValue: IKanbanCard & IDeal = {
+    ID: card?.ID || 0,
+    USR$MASTERKEY: card?.USR$MASTERKEY || currentStage?.ID || -1,
+    USR$INDEX: card?.USR$INDEX || currentStage?.CARDS.length || 0,
+    USR$NAME: card?.DEAL?.USR$NAME || '',
+    USR$DEALKEY: card?.USR$DEALKEY || -1,
+    USR$AMOUNT: card?.DEAL?.USR$AMOUNT || 0,
+    USR$CONTACTKEY: card?.DEAL?.CONTACT?.ID || -1,
+    DEAL: card?.DEAL || undefined
   }
 
-  const formik = useFormik<ICard>({
+  const formik = useFormik<IKanbanCard & IDeal>({
     enableReinitialize: true,
     initialValues: {
-      ...deal,
+      ...card,
       ...initValue
     },
     validationSchema: yup.object().shape({
-      title: yup.string().required('').max(20, 'Слишком длинное наименование'),
-      status: yup.string().required(''),
-      customer: yup.string().required(''),
+      USR$NAME: yup.string().required('').max(20, 'Слишком длинное наименование'),
+      USR$MASTERKEY: yup.string().required(''),
+      USR$CONTACTKEY: yup.string().required(''),
     }),
     onSubmit: (values) => {
       setConfirmOpen(false);
@@ -101,7 +140,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       }}
     >
       <DialogTitle>
-         {deal?.id ? `Редактирование ${deal?.title}` : 'Создание сделки'}
+         {card?.ID ? `Редактирование ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
@@ -112,13 +151,49 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     type="text"
                     required
                     autoFocus
-                    name="title"
+                    name="USR$NAME"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
-                    value={formik.values.title}
-                    helperText={formik.errors.title}
+                    value={formik.values.USR$NAME}
+                    helperText={formik.errors.USR$NAME}
                   />
-                <TextField
+                  <Autocomplete
+                    options={allCustomers || []}
+                    getOptionLabel={option => option.NAME}
+                    filterOptions={filterOptions}
+                    value={allCustomers?.filter(el => el.ID === formik.values.DEAL?.CONTACT?.ID)[0] || null}
+                    loading={customersLoading}
+                    loadingText="Загрузка данных..."
+                    onChange={(e, value) => {
+                      formik.setFieldValue(
+                        "USR$CONTACTKEY",
+                        value ? value.ID : initValue.USR$CONTACTKEY
+                      );
+                    }}
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.ID}>
+                          {option.NAME}
+                        </li>
+                      );
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        key={params.id}
+                        label="Клиент"
+                        type="text"
+                        name="USR$CONTACTKEY"
+                        required
+                        onBlur={formik.handleBlur}
+                        onChange={formik.handleChange}
+                        value={formik.values.USR$CONTACTKEY}
+                        helperText={formik.errors.USR$CONTACTKEY}
+                        placeholder="Выберите клиента"
+                      />
+                    )}
+                  />
+                {/* <TextField
                     label="Клиент"
                     type="text"
                     required
@@ -127,21 +202,21 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     onChange={formik.handleChange}
                     value={formik.values.customer}
                     helperText={formik.errors.customer}
-                  />
+                  /> */}
                   <Autocomplete
-                    options={stages?.filter(stage => stage.id !== formik.values.status) || []}
-                    getOptionLabel={option => option.title}
-                    value={stages?.filter(el => el.id === formik.values.status)[0] || null}
+                    options={stages?.filter(stage => stage.ID !== formik.values.USR$MASTERKEY) || []}
+                    getOptionLabel={option => option.USR$NAME}
+                    value={stages?.filter(el => el.ID === formik.values.USR$MASTERKEY)[0] || null}
                     onChange={(e, value) => {
                       formik.setFieldValue(
-                        "status",
-                        value ? value.id : initValue.status
+                        "USR$MASTERKEY",
+                        value ? value.ID : initValue.USR$MASTERKEY
                       );
                     }}
                     renderOption={(props, option) => {
                       return (
-                        <li {...props} key={option.id}>
-                          {option.title}
+                        <li {...props} key={option.ID}>
+                          {option.USR$NAME}
                         </li>
                       );
                     }}
@@ -151,28 +226,27 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         key={params.id}
                         label="Стадия"
                         type="text"
-                        name="status"
+                        name="USR$MASTERKEY"
                         required
                         onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
-                        value={formik.values.status}
-                        helperText={formik.errors.status}
+                        value={formik.values.USR$MASTERKEY}
+                        helperText={formik.errors.USR$MASTERKEY}
                         placeholder="Выберите стадию"
                       />
                     )}
                   />
                 <TextField
                     label="Сумма"
-
                     type="number"
                     InputProps={{
                       startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
                     }}
-                    name="amount"
+                    name="USR$AMOUNT"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
-                    value={formik.values.amount}
-                    helperText={formik.errors.amount}
+                    value={formik.values.USR$AMOUNT}
+                    helperText={formik.errors.USR$AMOUNT}
                   />
               </Stack>
             </Form>

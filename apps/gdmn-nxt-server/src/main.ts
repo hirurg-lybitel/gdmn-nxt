@@ -13,9 +13,12 @@ import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/l
 import contactGroups from './app/contactGrops';
 import departments from './app/departments';
 import customerContracts from './app/customerContracts';
+import dealsRouter from './app/routes/dealsRouter';
+import kanbanRouter from './app/routes/kanbanRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { importERModel } from './app/er/er-utils';
 import { ApolloServer, gql } from 'apollo-server';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
 
@@ -259,6 +262,12 @@ router.get('/customercontracts/:id', customerContracts.get);
 router.post('/customercontracts', customerContracts.upsert);
 router.put('/customercontracts/:id', customerContracts.upsert);
 router.delete('/customercontracts/:id', customerContracts.remove);
+
+/** Deals */
+router.use(dealsRouter);
+
+/** Kanban */
+router.use(kanbanRouter);
 
 router.get('/accounts', getAccounts);
 router.get('/accounts/email/:email', getAccounts);

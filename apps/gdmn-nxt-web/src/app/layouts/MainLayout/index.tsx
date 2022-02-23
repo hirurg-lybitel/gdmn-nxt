@@ -1,8 +1,8 @@
-import { AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, SvgIconTypeMap, Toolbar } from '@mui/material';
+import { Alert, AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
-import { useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
@@ -12,6 +12,7 @@ import { toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import BelgissLogo from '../../components/belgiss-logo/belgiss-logo';
+import { clearError } from '../../features/error-slice/error-slice';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -130,11 +131,29 @@ export const MainLayout = () => {
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [anchorMenuEl, setAnchorMenuEl] = useState(null);
 
+  const { errorMessage } = useSelector((state: RootState) => state.error);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
+
+  useEffect(() => {
+    if (errorMessage) {
+      setOpenSnackBar(true);
+    }
+  }, [errorMessage])
+
 
   const handleDrawerToggle = () => {
     dispatch(toggleMenu(!menuOpened));
-  }
+  };
+
+  const handleSnackBarClose = (event: SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    };
+    dispatch(clearError());
+    setOpenSnackBar(false);
+  };
 
   const profileMenuItems: MenuItem[] = [
     {
@@ -204,6 +223,9 @@ export const MainLayout = () => {
       <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
         <Outlet />
       </Main>
+      <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
+        <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{errorMessage}</Alert>
+      </Snackbar>
     </Box>
   )
 };

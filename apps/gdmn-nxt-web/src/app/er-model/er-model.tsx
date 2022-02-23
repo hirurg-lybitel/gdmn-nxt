@@ -1,4 +1,4 @@
-import { CircularIndeterminate } from '../circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '../components/circular-indeterminate/circular-indeterminate';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
@@ -19,9 +19,9 @@ export function ErModel(props: ErModelProps) {
   const { data, isFetching } = useGetErModelQuery();
   const [selectedEntity, setSelectedEntity] = useState('');
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
-  const rows = useMemo( 
-    () => data?.entities[selectedEntity]?.attributes ?? [], 
-  [data, selectedEntity]);  
+  const rows = useMemo(
+    () => data?.entities[selectedEntity]?.attributes ?? [],
+  [data, selectedEntity]);
 
   useEffect( () => {
     if (selectionModel.length) {
@@ -30,19 +30,19 @@ export function ErModel(props: ErModelProps) {
   }, [selectedEntity])
 
   const columns: GridColDef[] = [
-    { 
-      field: 'name', 
-      headerName: 'Наименование', 
+    {
+      field: 'name',
+      headerName: 'Наименование',
       width: 200
     },
-    { 
-      field: 'lName', 
-      headerName: 'Лок. наименование', 
+    {
+      field: 'lName',
+      headerName: 'Лок. наименование',
       width: 250
     },
-    { 
-      field: 'domain', 
-      headerName: 'Домен', 
+    {
+      field: 'domain',
+      headerName: 'Домен',
       width: 250
     },
   ];
@@ -50,27 +50,27 @@ export function ErModel(props: ErModelProps) {
   const recurse = (parent?: string) => data && Object.values(data.entities)
     .filter( e => e.parent === parent )
     .map(
-      e => 
+      e =>
         <StyledTreeItem key={e.name} nodeId={e.name} label={e.name}>
           {recurse(e.name)}
         </StyledTreeItem>
     );
 
-  const treeItems = useMemo(recurse, [data]);  
-  
+  const treeItems = useMemo(recurse, [data]);
+
   return (
     isFetching ?
       <CircularIndeterminate open={true} />
     :
-      <Grid 
-        container 
-        height="100%" 
-        direction="row" 
-        alignItems="stretch" 
+      <Grid
+        container
+        height="100%"
+        direction="row"
+        alignItems="stretch"
         columnSpacing={0}
       >
-        <Grid 
-          item 
+        <Grid
+          item
           xs={3}
           sx={{
             overflowY: 'auto',
@@ -90,7 +90,7 @@ export function ErModel(props: ErModelProps) {
             }}
           >
             {treeItems}
-          </StyledTreeView>  
+          </StyledTreeView>
         </Grid>
         <Grid item xs={9}>
           <StyledDataGrid
@@ -99,10 +99,10 @@ export function ErModel(props: ErModelProps) {
             loading={isFetching}
             getRowId={row => row.name}
             onSelectionModelChange={setSelectionModel}
-            selectionModel={selectionModel} 
-            rowHeight={24}         
-            headerHeight={24}      
-            editMode='row' 
+            selectionModel={selectionModel}
+            rowHeight={24}
+            headerHeight={24}
+            editMode='row'
             components={{
               ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
             }}

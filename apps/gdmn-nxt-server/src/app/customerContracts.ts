@@ -113,6 +113,9 @@ const upsert: RequestHandler = async (req, res) => {
     })
 
     if (isInsertMode) {
+      paramsValues.splice(actualFields.indexOf('ID'), 1);
+      actualFields.splice(actualFields.indexOf('ID'), 1);
+
       const requiredFields = {
         ID: ID,
         USR$BG_ACTING: 1

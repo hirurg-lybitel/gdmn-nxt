@@ -1,10 +1,10 @@
-import { IContactWithID, IDataSchema, IEntities, IRequestResult } from "@gsbelarus/util-api-types";
+import { IEntities, IKanbanColumn, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { ResultSet } from "node-firebird-driver-native";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
-import { resultError } from "./responseMessages";
-import { genId } from "./utils/genId";
-import { importERModel } from "./er/er-utils";
+import { importERModel } from "../er/er-utils";
+import { resultError } from "../responseMessages";
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "../utils/db-connection";
+import { genId } from "../utils/genId";
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -14,11 +14,11 @@ const get: RequestHandler = async (req, res) => {
   try {
     const _schema = { };
 
-    const erModelFull = importERModel('TgdcDepartment');
-    const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
+    //const erModelFull = (await importERModel('TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS')).entities;
+    //const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
 
-    const allFields = [...new Set(entites['TgdcDepartment'].attributes.map(attr => attr.name))];
-    const returnFieldsNames = allFields.join(',');
+    // const allFields = [...new Set(entites['TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS'].attributes.map(attr => attr.name))];
+    // const returnFieldsNames = allFields.join(',');
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
@@ -34,19 +34,12 @@ const get: RequestHandler = async (req, res) => {
 
     const queries = [
       {
-        name: 'departments',
+        name: 'columns',
         query: `
           SELECT
-            ${returnFieldsNames}
+            *
           FROM
-            GD_CONTACT con
-          WHERE
-            con.CONTACTTYPE = 4 AND
-            con.USR$ISOTDEL = 1 AND
-            COALESCE(con.DISABLED, 0) = 0
-            ${id ? ' and ID = ?' : ''}
-          ORDER BY
-            NAME`,
+          AT_RELATIONS `,
         params: id ? [id] : undefined,
       },
     ];
@@ -65,7 +58,7 @@ const get: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   }finally {
     await releaseReadTransaction(req.sessionID);
-  }
+  };
 };
 
 const upsert: RequestHandler = async (req, res) => {
@@ -83,11 +76,12 @@ const upsert: RequestHandler = async (req, res) => {
       ID = await genId(attachment, transaction);
     }
 
-    const erModelFull = importERModel('TgdcDepartment');
-    const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
+    // const erModelFull = importERModel('TgdcDepartment');
+    // const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
 
-    const allFields = [...new Set(entites['TgdcDepartment'].attributes.map(attr => attr.name))];
+    // const allFields = [...new Set(entites['TgdcDepartment'].attributes.map(attr => attr.name))];
 
+    const allFields = ['ID', 'USR$NAME', 'USR$INDEX']
     const actualFields = allFields.filter( field => typeof req.body[field] !== 'undefined' );
 
     const paramsValues = actualFields.map(field => {
@@ -99,10 +93,7 @@ const upsert: RequestHandler = async (req, res) => {
       actualFields.splice(actualFields.indexOf('ID'), 1);
 
       const requiredFields = {
-        ID: ID,
-        CONTACTTYPE: 4,
-        USR$ISOTDEL: 1,
-        PARENT: null
+        ID: ID
       }
 
       for (const [key, value] of Object.entries(requiredFields)) {
@@ -117,9 +108,8 @@ const upsert: RequestHandler = async (req, res) => {
     const paramsString = actualFields.map( _ => '?' ).join(',');
     const returnFieldsNames = allFields.join(',');
 
-
     const sql = `
-      UPDATE OR INSERT INTO GD_CONTACT (${actualFieldsNames})
+      UPDATE OR INSERT INTO USR$CRM_KANBAN_COLUMNS (${actualFieldsNames})
       VALUES (${paramsString})
       MATCHING (ID)
       RETURNING ${returnFieldsNames}`;
@@ -128,9 +118,9 @@ const upsert: RequestHandler = async (req, res) => {
     const row = await attachment.executeSingleton(transaction, sql, paramsValues);
     await transaction.commit();
 
-    const result: IRequestResult<{ departments: IContactWithID[] }> = {
+    const result: IRequestResult<{ columns: IKanbanColumn[] }> = {
       queries: {
-        departments: [Object.fromEntries(allFields.map((field, idx) => ([field, row[idx]]))) as IContactWithID]
+        columns: [Object.fromEntries(allFields.map((field, idx) => ([field, row[idx]]))) as IKanbanColumn]
       },
       _schema: undefined
     };
@@ -158,12 +148,14 @@ const remove: RequestHandler = async(req, res) => {
       )
       RETURNS(SUCCESS BOOLEAN)
       AS
+        DECLARE VARIABLE COLUMN_ID INTEGER;
       BEGIN
         SUCCESS = FALSE;
-        FOR SELECT ID FROM GD_CONTACT WHERE ID = :ID AS CURSOR curCONTACT
+        FOR SELECT ID FROM USR$CRM_KANBAN_COLUMNS WHERE ID = :ID INTO :COLUMN_ID AS CURSOR curCONTACT
         DO
         BEGIN
-          DELETE FROM GD_CONTACT WHERE CURRENT OF curCONTACT;
+          DELETE FROM USR$CRM_KANBAN_CARDS WHERE USR$MASTERKEY = :COLUMN_ID;
+          DELETE FROM USR$CRM_KANBAN_COLUMNS WHERE CURRENT OF curCONTACT;
 
           SUCCESS = TRUE;
         END
@@ -173,7 +165,7 @@ const remove: RequestHandler = async(req, res) => {
       [ id ]
     );
 
-    const data: {SUCCESS: boolean}[] = await result.fetchAsObject();
+    const data: { SUCCESS: boolean }[] = await result.fetchAsObject();
     await result.close()
     await transaction.commit();
 
@@ -190,4 +182,4 @@ const remove: RequestHandler = async(req, res) => {
 
 };
 
-export default {get, upsert, remove};
+export default { get, upsert, remove };
