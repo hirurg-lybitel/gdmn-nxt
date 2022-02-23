@@ -1,18 +1,19 @@
 import Alert from '@mui/material/Alert/Alert';
 import Snackbar from '@mui/material/Snackbar/Snackbar';
-import { GridColDef, GridRowId, GridSeparatorIcon } from '@mui/x-data-grid-pro';
+import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
 import { createElement, useMemo, useState } from 'react';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
 import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
+import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
 
 /* eslint-disable-next-line */
 export interface ErModelDomainsProps {}
 
 export function ErModelDomains(props: ErModelDomainsProps) {
-
+  useViewForms('Domains');
   const { data, isFetching, refetch, error } = useGetErModelQuery();
   const errorMessage = !error ? 
     undefined
@@ -96,24 +97,26 @@ export function ErModelDomains(props: ErModelDomainsProps) {
   
   return (
     <Grid container height="100%" columnSpacing={2}>
-      <Grid item xs={9}>
+      <Grid item xs={12}>
         <StyledDataGrid
           rows={rows}
           columns={columns}
           pagination
-          disableMultipleSelection
           loading={isFetching}
           getRowId={row => row.name}
           onSelectionModelChange={setSelectionModel}
           selectionModel={selectionModel} 
           rowHeight={24}         
-          headerHeight={24}       
+          headerHeight={24}      
+          editMode='row' 
           components={{
             Pagination: CustomPagination,      
             ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
           }}
         />
       </Grid>
+      {
+        /*
       <Grid item xs={3}>
         {
           data && selectionModel.length ?
@@ -126,6 +129,8 @@ export function ErModelDomains(props: ErModelDomainsProps) {
             undefined  
         }
       </Grid>
+      */
+      }
       {
         errorMessage &&
         <Grid item xs={12}>

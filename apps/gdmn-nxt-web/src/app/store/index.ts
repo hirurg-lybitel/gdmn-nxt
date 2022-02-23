@@ -10,12 +10,14 @@ import { contactGroupApi } from '../features/contact/contactGroupApi';
 import { errorMiddleware } from '../features/error-slice/errorMiddleware';
 import errorReducer from '../features/error-slice/error-slice';
 import settingsReducer from './settingsSlice';
+import viewFormsReducer from '../features/view-forms-slice/viewFormsSlice';
 import { erModelApi } from '../features/er-model/erModelApi';
 import { departmentsApi } from '../features/departments/departmentsApi';
 import { customerContractsApi } from '../features/customer-contracts/customerContractsApi';
 
 export const store = configureStore({
   reducer: {
+    viewForms: viewFormsReducer,
     settings: settingsReducer,
     error: errorReducer,
     user: userReducer,

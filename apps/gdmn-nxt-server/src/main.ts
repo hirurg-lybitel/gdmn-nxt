@@ -2,7 +2,6 @@ import express from 'express';
 import session from 'express-session';
 import passport  from 'passport';
 import * as dotenv from 'dotenv';
-import * as cors from 'cors';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
 import { authResult, IERModel, isSeqAttr, Attr } from '@gsbelarus/util-api-types';
@@ -16,7 +15,7 @@ import departments from './app/departments';
 import customerContracts from './app/customerContracts';
 import { disposeConnection } from './app/utils/db-connection';
 import { importERModel } from './app/er/er-utils';
-
+import { ApolloServer, gql } from 'apollo-server';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
 
@@ -313,6 +312,51 @@ const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
+
+const typeDefs = gql`
+  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+
+  # This "Book" type defines the queryable fields for every book in our data source.
+  type Book {
+    title: String
+    author: String
+  }
+
+  # The "Query" type is special: it lists all of the available queries that
+  # clients can execute, along with the return type for each. In this
+  # case, the "books" query returns an array of zero or more Books (defined above).
+  type Query {
+    books: [Book]
+  }
+`;
+
+const books = [
+  {
+    title: 'The Awakening',
+    author: 'Kate Chopin',
+  },
+  {
+    title: 'City of Glass',
+    author: 'Paul Auster',
+  },
+];
+
+// Resolvers define the technique for fetching the types defined in the
+// schema. This resolver retrieves books from the "books" array above.
+const resolvers = {
+  Query: {
+    books: () => books,
+  },
+};
+
+// The ApolloServer constructor requires two parameters: your schema
+// definition and your set of resolvers.
+const apolloServer = new ApolloServer({ typeDefs, resolvers });
+
+// The `listen` method launches a web server.
+apolloServer.listen(4201).then(({ url }) => {
+  console.log(`🚀  Server ready at ${url}`);
+});
 
 process
   .on('exit', code => {

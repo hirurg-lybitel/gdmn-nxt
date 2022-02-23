@@ -746,6 +746,9 @@ export const importERModel = async (searchEntityName?: string) => {
       return undefined;
     };
 
+    // don't want see the same warning multiple times
+    let prevWarning = '';
+
     for (const entity of entitiesArr) {
       if (entity.abstract) {
         continue;
@@ -802,7 +805,10 @@ export const importERModel = async (searchEntityName?: string) => {
           const refEntity = refEntityName && entities[refEntityName];
 
           if (!refEntity) {
-            console.warn(`There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`);
+            const warning = `There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`;
+            if (warning !== prevWarning) {
+              console.warn(prevWarning = warning);
+            }
             continue;
           }
 
