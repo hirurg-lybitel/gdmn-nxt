@@ -2,18 +2,18 @@ import './kanban-card.module.less';
 import { useState } from 'react';
 import CustomizedCard from '../../customized-card/customized-card';
 import { Stack, Typography, useTheme } from '@mui/material';
-import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
+import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 
 
 /* eslint-disable-next-line */
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
-  card: ICard;
-  columns: IColumn[];
-  onEdit: (card: ICard) => void;
-  onDelete: (card: ICard) => void;
+  card: IKanbanCard;
+  columns: IKanbanColumn[];
+  onEdit: (card: IKanbanCard) => void;
+  onDelete: (card: IKanbanCard) => void;
 }
 
 
@@ -26,8 +26,8 @@ export function KanbanCard(props: KanbanCardProps) {
   const [editCard, setEditCard] = useState(false);
 
   const cardHandlers = {
-    handleSubmit: async (card: ICard, deleting: boolean) => {
-      if (card.id <= 0) return;
+    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
+      if (card.ID <= 0) return;
 
       if (deleting) {
         onDelete(card);
@@ -45,7 +45,7 @@ export function KanbanCard(props: KanbanCardProps) {
     <div>
       <CustomizedCard
         borders
-        key={card.id}
+        key={card.ID}
         style={{
           width: '100%',
           textOverflow: "ellipsis",
@@ -62,15 +62,15 @@ export function KanbanCard(props: KanbanCardProps) {
         onDoubleClick={() => setEditCard(true)}
       >
         <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{card.title}</Typography>
-          <Typography variant="caption" noWrap>{card.customer}</Typography>
-          <Typography>{(Math.round((card.amount || 0) * 100)/100).toFixed(2)} Br</Typography>
+          <Typography variant="h2">{card.USR$INDEX} {card.DEAL?.USR$NAME}</Typography>
+          <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+          <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100)/100).toFixed(2)} Br</Typography>
         </Stack>
       </CustomizedCard>
       {editCard &&
         <KanbanEditCard
-          deal={card}
-          currentStage={columns.find(column => column.id === card.status)}
+          card={card}
+          currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
           stages={columns}
           onSubmit={cardHandlers.handleSubmit}
           onCancelClick={cardHandlers.handleCancel}

@@ -3,16 +3,17 @@ import { Box, CircularProgress } from '@mui/material';
 
 export interface CircularIndeterminateProps {
   open: boolean;
+  size?: number;
 }
 
 export function CircularIndeterminate(props: CircularIndeterminateProps) {
-  const { open } = props;
+  const { open, size } = props;
 
   if (!open) return null;
 
   return (
-    <Box sx={{ display: 'flex', justifyContent:'center' }}>
-      <CircularProgress />
+    <Box sx={{ flex: 1 , display: 'flex', justifyContent:'center', alignItems: 'center' }}>
+      <CircularProgress size={size} />
     </Box>
   );
 }

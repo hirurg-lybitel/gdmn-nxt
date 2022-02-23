@@ -5,24 +5,24 @@ import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typo
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICard, IColumn } from '../../../pages/Dashboard/deals/deals';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } from 'react-beautiful-dnd';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 
 
 export interface KanbanColumnProps {
   provided: DraggableProvided;
   dragSnapshot: DraggableStateSnapshot;
   dropSnapshot: DroppableStateSnapshot;
-  columns: IColumn[];
+  columns: IKanbanColumn[];
   children: JSX.Element[];
-  item: IColumn;
-  onEdit: (newColumn: IColumn) => void;
-  onDelete: (column: IColumn) => void;
-  onAddCard: (card: ICard) => void;
+  item: IKanbanColumn;
+  onEdit: (newColumn: IKanbanColumn) => void;
+  onDelete: (column: IKanbanColumn) => void;
+  onAddCard: (card: IKanbanCard) => void;
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
@@ -37,14 +37,14 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
 
   const cardHandlers = {
-    handleSubmit: async (card: ICard, deleting: boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
       console.log('handleSubmitCard', card, deleting);
 
       if (deleting) {
         return;
       };
 
-      if (card.id > 0) {
+      if (card.ID > 0) {
         return;
       };
 
@@ -57,7 +57,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   const [editTitleHidden, setEditTitleHidden] = useState(true);
   const [editTitleText, setEditTitleText] = useState(false);
-  const [titleText, setTitleText] = useState(item.title);
+  const [titleText, setTitleText] = useState(item.USR$NAME);
 
   const header = () => {
     const handleTitleOnMouseEnter = () => {
@@ -72,21 +72,21 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
     const handleTitleKeyPress = (event: any) => {
       if (event.keyCode === 13 ) {
-        onEdit({...item, title: titleText});
+        onEdit({...item, USR$NAME: titleText});
         setEditTitleText(false);
         return;
       }
 
       if (event.keyCode === 27 ) {
-        setTitleText(item.title);
+        setTitleText(item.USR$NAME);
         setEditTitleText(false);
         return;
       }
     };
 
     const onBlur = (e: any) => {
-      //editTitleText && setEditTitleText(false);
-      console.log('onBlur', e, item);
+      setTitleText(item.USR$NAME);
+      setEditTitleText(false);
     };
 
     return(
@@ -97,29 +97,34 @@ export function KanbanColumn(props: KanbanColumnProps) {
         onKeyPress={handleTitleKeyPress}
         onKeyDown={handleTitleKeyPress}
         onBlur={(e) => onBlur(e)}
-        position="relative"
+        maxWidth="200px"
       >
-        {editTitleText
-          ? <Input
-              value={titleText}
-              onChange={(e) => setTitleText(e.target.value)}
+        <Box
+          style={{
+            flex: 1,
+            padding: 3,
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+          }}
+        >
+          {editTitleText
+            ? <Input
+                value={titleText}
+                onChange={(e) => setTitleText(e.target.value)}
 
-              autoFocus
-            />
-          : <Typography
-              variant="h4"
-              align="center"
-              flex={1}
-              style={{
-                opacity: `${editTitleHidden ? 1 : 0.3}`
-              }}
-            > {item.title}</Typography>
-          }
+                autoFocus
+              />
+            : <Typography
+                variant="h4"
+                noWrap
+                style={{
+                  opacity: `${editTitleHidden ? 1 : 0.3}`,
+                }}
+              > {item.USR$NAME}</Typography>
+            }
+        </Box>
         <div
           style={{
-            position: 'absolute',
-            right: 0,
-            height: '100%',
             display: `${editTitleHidden ? 'none' : 'inline'}`
           }}
         >
@@ -206,7 +211,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        title={"Удаление группы: " + item.title}
+        title={"Удаление группы: " + item.USR$NAME}
         text="Вы уверены, что хотите продолжить?"
         onConfirm={() => onDelete(item)}
       />

@@ -497,7 +497,7 @@ export function Customers(props: CustomersProps) {
             <DataGridPro
               style={{
                 border: 'none',
-                display: `${displayDataGrid ? 'flex' : 'none'}`,
+                display: `${displayDataGrid ? 'flex' : 'none'}`
               }}
               localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
               rows={

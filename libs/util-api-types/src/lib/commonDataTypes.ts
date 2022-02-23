@@ -101,3 +101,23 @@ export interface ICustomerContract {
 };
 
 export type ICustomerContractWithID = ICustomerContract & IWithID;
+
+export interface IDeal extends IWithID {
+  USR$NAME: string;
+  USR$AMOUNT?: number;
+  USR$CONTACTKEY: number;
+  CONTACT?: IContactWithID;
+}
+
+export interface IKanbanCard extends IWithID {
+  USR$INDEX: number;
+  USR$MASTERKEY: number;
+  USR$DEALKEY?: number;
+  DEAL?: IDeal;
+};
+
+export interface IKanbanColumn extends IWithID {
+  USR$INDEX: number;
+  USR$NAME: string;
+  CARDS: IKanbanCard[];
+};
