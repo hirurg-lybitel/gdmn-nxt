@@ -277,9 +277,10 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
+/** Full ERModel with SQL adapters */
 const erModelFull = importERModel();
 
-// erModel stripped of adapters as they are not needed on the client
+/** erModel stripped of adapters as they are not needed on the client */ 
 let erModel: IERModel;
 
 router.get('/er-model', async (req, res) => {

@@ -22,8 +22,8 @@ export const loadRDBFields = async (attachment: Attachment, transaction: Transac
       rdb$fields
   `);
   try {
-    const res = await rs.fetchAsObject<IRDBField>();
-    return res.reduce( (p, r) => (p[r.RDB$FIELD_NAME] = r, p), {} as IRDBFields);
+    return (await rs.fetchAsObject<IRDBField>())
+      .reduce( (p, r) => (p[r.RDB$FIELD_NAME] = r, p), {} as IRDBFields);
   } finally {
     await rs.close();
   }

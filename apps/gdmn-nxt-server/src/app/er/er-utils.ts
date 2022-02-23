@@ -4,7 +4,7 @@ import { IAtRelation, IGedeminDocType } from "./at-types";
 import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, adjustRelationName } from "./at-utils";
 //import gdbaseRaw from "./gdbase.json";
 import entitiesRaw from "./entities.json";
-import { loadRDBFields, loadRDBRelationFields, loadRDBRelations } from "./rdb-utils";
+import { loadRDBFields } from "./rdb-utils";
 
 /*
 
@@ -153,7 +153,10 @@ const str2cond = (s: string): (Expression | undefined) => {
   if (res) {
     return {
       operator: 'EXISTS',
-      query: res[1]
+      right: {
+        type: 'QUERY',
+        query: res[1]
+      }
     };
   }
 
@@ -265,16 +268,12 @@ export const importERModel = async (searchEntityName?: string) => {
   try {
     const [
       rdbFields,
-      //rdbRelations,
-      //rdbRelationFields,
       atFields,
       atRelations,
       atRelationFields,
       gdDocumentType
     ] = await Promise.all([
       loadRDBFields(attachment, transaction),
-      //loadRDBRelations(attachment, transaction),
-      //loadRDBRelationFields(attachment, transaction),
       loadAtFields(attachment, transaction),
       loadAtRelations(attachment, transaction),
       loadAtRelationFields(attachment, transaction),
@@ -778,7 +777,7 @@ export const importERModel = async (searchEntityName?: string) => {
           name: fld.FIELDNAME,
           domain: domain.name,
           lName: fld.LNAME,
-          entity,
+          entityName: entity,
           readonly: fld.READONLY ? true : undefined,
           visible: fld.VISIBLE ? true : undefined,
           semCategory: fld.SEMCATEGORY ?? undefined,

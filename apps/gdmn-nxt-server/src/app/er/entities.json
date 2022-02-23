@@ -340,7 +340,10 @@
       ],
       "condition": {
         "operator": "EXISTS",
-        "query": "SELECT * FROM gd_ourcompany our WHERE our.companykey = z.id"
+        "right": {
+          "type": "QUERY",
+          "query": "SELECT * FROM gd_ourcompany our WHERE our.companykey = z.id"
+        }
       }
     }
   },

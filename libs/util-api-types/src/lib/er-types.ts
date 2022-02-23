@@ -142,10 +142,13 @@ export function isSeqAttr(attr: Attr): attr is ISeqAttr {
 };
 
 export interface IEntityAttr extends IAttrBase {
-  entity: string;
+  type: 'ENTITY';
+  entityName: string;
 };
 
-export interface IEntitySetAttr extends IEntityAttr {
+export interface IEntitySetAttr extends IAttrBase {
+  type: 'ENTITY[]';
+  entityName: string;
   adapter?: ICrossAttrAdapter;
 };
 
@@ -239,7 +242,7 @@ export interface IExpressionIsNotNull {
 
 export interface IExpressionExists {
   operator: 'EXISTS';
-  query: string;
+  right: IOperandQuery;
 };
 
 export interface IExpressionAnd {
@@ -264,6 +267,22 @@ export type Expression = Operand
   | IExpressionExists 
   | IExpressionPlus 
   | IExpressionAnd;
+
+export interface IQueryAttr {
+  alias: string;
+  attrName: string | '*';
+  as?: string;
+};  
+
+export interface IQueryEntity {
+  entityName: string;
+  as: string;
+};
+
+export interface IERModelQuery {
+  select: IQueryAttr[];
+  from: IQueryEntity; 
+};
 
 export interface IEntityAdapter {
   name: string;
