@@ -75,3 +75,10 @@ export interface IGedeminDocType {
   HEADERRELNAME: string;  
   LINERELNAME: string | null;  
 };
+
+export interface IAtModel {
+  atFields: IAtFields;
+  atRelations: IAtRelations;
+  atRelationFields: IAtRelationFields;
+  gdDocumentType: IGedeminDocType[];
+};

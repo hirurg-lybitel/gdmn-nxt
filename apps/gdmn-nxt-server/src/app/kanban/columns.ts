@@ -1,7 +1,7 @@
 import { IEntities, IKanbanColumn, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { ResultSet } from "node-firebird-driver-native";
-import { importERModel } from "../er/er-utils";
+import { importModels } from "../er/er-utils";
 import { resultError } from "../responseMessages";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "../utils/db-connection";
 import { genId } from "../utils/genId";

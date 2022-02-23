@@ -4,7 +4,8 @@ import { ResultSet } from "node-firebird-driver-native";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
 import { resultError } from "./responseMessages";
 import { genId } from "./utils/genId";
-import { importERModel } from "./er/er-utils";
+import { importModels } from "./er/er-utils";
+import { importedModels } from "./models";
 
 const eintityName = 'TgdcAttrUserDefinedUSR_BG_CONTRACTJOB'
 
@@ -24,10 +25,9 @@ const get: RequestHandler = async (req, res) => {
         }
       }
     };
-    const erModelFull = importERModel(eintityName);
-    const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
 
-    const allFields = [...new Set(entites[eintityName].attributes.map(attr => attr.name))];
+    const { erModel } = await importedModels;
+    const allFields = [...new Set(erModel.entities[eintityName].attributes.map(attr => attr.name))];
     const returnFieldsNames = allFields.join(',');
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
@@ -101,13 +101,9 @@ const upsert: RequestHandler = async (req, res) => {
       ID = await genId(attachment, transaction);
     }
 
-    const erModelFull = importERModel(eintityName);
-    const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
-
-    const allFields = [...new Set(entites[eintityName].attributes.map(attr => attr.name))];
-
+    const { erModel } = await importedModels;
+    const allFields = [...new Set(erModel.entities[eintityName].attributes.map(attr => attr.name))];
     const actualFields = allFields.filter( field => typeof req.body[field] !== 'undefined' );
-
     const paramsValues = actualFields.map(field => {
       return req.body[field];
     })

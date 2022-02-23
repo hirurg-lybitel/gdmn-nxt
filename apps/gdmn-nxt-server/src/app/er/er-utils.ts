@@ -1,4 +1,4 @@
-import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase, IAttrBase, IEntitySetAttr, IEntityAttr, ICrossAttrAdapter } from "@gsbelarus/util-api-types";
+import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase, Attr, IAttrBase, IEntitySetAttr, IEntityAttr, ICrossAttrAdapter, isSeqAttr } from "@gsbelarus/util-api-types";
 import { getReadTransaction, releaseReadTransaction } from "../utils/db-connection";
 import { IAtRelation, IGedeminDocType } from "./at-types";
 import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, adjustRelationName } from "./at-utils";
@@ -262,7 +262,7 @@ const extractBooleanDef = (s: string | null | undefined) => {
   return Boolean(res[3]?.trim() ?? res[4]?.trim());
 };
 
-export const importERModel = async (searchEntityName?: string) => {
+export const importModels = async () => {
   const t = new Date().getTime();
   const { attachment, transaction } = await getReadTransaction('rdb');
   try {
@@ -280,12 +280,7 @@ export const importERModel = async (searchEntityName?: string) => {
       loadGdDocumentType(attachment, transaction),
     ]);
 
-    let entities: IEntities;
-    if (searchEntityName) {
-      entities = {[searchEntityName]: entitiesRaw[searchEntityName]} as IEntities;
-    } else{
-      entities = entitiesRaw as IEntities;
-    }
+    const entities = entitiesRaw as IEntities;
 
     /*
     The code below is for importing standard Gedemin classes
@@ -845,7 +840,45 @@ export const importERModel = async (searchEntityName?: string) => {
       attributes: ${Object.values(entities).flatMap( e => e.attributes ).length}
     `);
 
-    return erModel;
+    const stripAdapter = (attr: Attr) => {
+      if (isSeqAttr(attr)) {
+        return attr;
+      } else {
+        const { adapter, ...rest } = attr;
+        return rest;
+      }
+    };
+
+    const erModelNoAdapters = {
+      domains: Object.fromEntries(
+        Object.entries(erModel.domains).map(
+          ([name, { adapter, ...rest }]) => ([name, rest])
+        )
+      ),
+      entities: Object.fromEntries(
+        Object.entries(erModel.entities).map(
+          ([name, { adapter, attributes, ...rest }]) => ([name, {
+            ...rest,
+            attributes: attributes.map( stripAdapter ),
+          }])
+        )
+      ),
+    };
+
+    return {
+      rdbModel: {
+        rdbFields
+      },
+      atModel: {
+        atFields,
+        atRelations,
+        atRelationFields,
+        gdDocumentType
+      },
+      erModel,
+      /** erModel stripped of adapters as they are not needed on the client */ 
+      erModelNoAdapters
+    };
   } finally {
     releaseReadTransaction('rdb');
   }

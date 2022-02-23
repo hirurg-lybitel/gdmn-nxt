@@ -4,7 +4,7 @@ import passport  from 'passport';
 import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { authResult, IERModel, isSeqAttr, Attr } from '@gsbelarus/util-api-types';
+import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { getReconciliationStatement } from './app/reconciliationStatement';
 import { getContacts, updateContact, addContact, deleteContact, getContactHierarchy } from './app/contacts';
@@ -16,8 +16,8 @@ import customerContracts from './app/customerContracts';
 import dealsRouter from './app/routes/dealsRouter';
 import kanbanRouter from './app/routes/kanbanRouter';
 import { disposeConnection } from './app/utils/db-connection';
-import { importERModel } from './app/er/er-utils';
 import { ApolloServer, gql } from 'apollo-server';
+import { importedModels } from './app/models';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -277,41 +277,9 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
-/** Full ERModel with SQL adapters */
-const erModelFull = importERModel();
-
-/** erModel stripped of adapters as they are not needed on the client */ 
-let erModel: IERModel;
-
 router.get('/er-model', async (req, res) => {
-  if (!erModel) {
-    const stripAdapter = (attr: Attr) => {
-      if (isSeqAttr(attr)) {
-        return attr;
-      } else {
-        const { adapter, ...rest } = attr;
-        return rest;
-      }
-    };
-
-    erModel = {
-      domains: Object.fromEntries(
-        Object.entries((await erModelFull).domains).map(
-          ([name, { adapter, ...rest }]) => ([name, rest])
-        )
-      ),
-      entities: Object.fromEntries(
-        Object.entries((await erModelFull).entities).map(
-          ([name, { adapter, attributes, ...rest }]) => ([name, {
-            ...rest,
-            attributes: attributes.map( stripAdapter ),
-          }])
-        )
-      ),
-    };
-  }
-
-  res.json(erModel);
+  const { erModelNoAdapters } = await importedModels;
+  res.json(erModelNoAdapters);
 });
 
 app.use('/api/v1', router);

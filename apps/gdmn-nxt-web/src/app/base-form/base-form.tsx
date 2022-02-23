@@ -133,7 +133,7 @@ const Menubar = styled('div')({
   fontSize: theme.typography.mediumUI.fontSize
 });
 
-const MenubarItem = styled('div')( (props: { active?: boolean }) => ({
+const MenubarItem = styled('div')( (props: { active?: 1 }) => ({
   fontWeight: props.active ? '500' : 'normal',
   borderBottom: props.active ? `2px solid ${theme.palette.primary.main}` : 'none'
 }));
@@ -177,7 +177,7 @@ const FooterTabs = styled('div')({
   }
 });
 
-const FooterTab = styled('div')( ({ active }: { active?: boolean }) => ({
+const FooterTab = styled('div')( ({ highlighted }: { highlighted?: 1 }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'center',
@@ -187,21 +187,21 @@ const FooterTab = styled('div')( ({ active }: { active?: boolean }) => ({
   minWidth: 80,
   padding: '0px 8px 0px 8px',
   backgroundColor: theme.palette.grey['50'],
-  borderTopWidth: active ? 0 : 1,
+  borderTopWidth: highlighted ? 0 : 1,
   borderTopColor: theme.palette.grey['400'], 
   borderTopStyle: 'solid', 
   borderRightColor: theme.palette.grey['400'], 
   borderRightStyle: 'solid', 
   borderRightWidth: 1,
-  borderBottomColor: active ? theme.palette.primary.main : theme.palette.grey['400'], 
+  borderBottomColor: highlighted ? theme.palette.primary.main : theme.palette.grey['400'], 
   borderBottomStyle: 'solid', 
-  borderBottomWidth: active ? 3 : 1,
+  borderBottomWidth: highlighted ? 3 : 1,
   borderLeftColor: theme.palette.grey['400'], 
   borderLeftStyle: 'solid', 
   borderLeftWidth: 1,
   fontSize: theme.typography.mediumUI.fontSize,
-  fontWeight: active ? theme.typography.selectedUI.fontWeight : 'normal',
-  color: active ? theme.palette.primary.main : theme.palette.grey['800'],  
+  fontWeight: highlighted ? theme.typography.selectedUI.fontWeight : 'normal',
+  color: highlighted ? theme.palette.primary.main : theme.palette.grey['800'],  
 }));
 
 const FooterBottom = styled('div')({
@@ -258,7 +258,7 @@ export function BaseForm(props: BaseFormProps) {
             </Box>
           </TopLine>
           <Menubar>
-            <MenubarItem active>Главная</MenubarItem>
+            <MenubarItem active={1}>Главная</MenubarItem>
             <MenubarItem>Редактирование</MenubarItem>
             <MenubarItem>Справка</MenubarItem>
           </Menubar>
@@ -273,8 +273,8 @@ export function BaseForm(props: BaseFormProps) {
           <FooterTabs>
             {
               viewForms.map( vf => 
-                <Link to={vf.pathname}>
-                  <FooterTab active={vf.pathname === pathname}>
+                <Link key={vf.pathname} to={vf.pathname}>
+                  <FooterTab highlighted={vf.pathname === pathname ? 1 : undefined}>
                     <div>
                       {vf.name}
                     </div>

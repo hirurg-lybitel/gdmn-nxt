@@ -64,11 +64,13 @@ export const execQuery = async (q: IERModelQuery, erModel: IERModel) => {
 
   const fromStrings: string[] = [`${fromEntity.adapter.name} ${fromEntity.adapter.alias}`];
 
-  fromEntity.adapter.join?.forEach( j => {
-    let s = `${j.type} JOIN ${j.name} ${j.alias}`;
-    if (j.condition) {
-      s += ` ON ${expression2str(j.condition)}`;
-    }
-    fromStrings.push(s);
-  });
+  if (fromEntity.adapter.join) {
+    fromEntity.adapter.join?.forEach( j => {
+      let s = `${j.type} JOIN ${j.name} ${j.alias}`;
+      if (j.condition) {
+        s += ` ON ${expression2str(j.condition)}`;
+      }
+      fromStrings.push(s);
+    });
+  }
 };
