@@ -163,10 +163,50 @@ export function Customers(props: CustomersProps) {
     },
     InputComponent: CurrentLabelFilter,
     InputComponentProps: { type: 'number' },
-};
+  };
+
+  const containContracts: GridFilterOperator = {
+    label: 'Содержит',
+    value: 'includes',
+    getApplyFilterFn: (filterItem: GridFilterItem) => {
+      if (
+        !filterItem.columnField ||
+        !filterItem.value ||
+        !filterItem.operatorValue
+      ) {
+        return null;
+      }
+
+      if (!filterItem?.value.length) return (params: any): boolean => true;
+
+      return (params: any): boolean => {
+        return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.ID === contract.ID));
+      };
+    }
+  };
+
+  const containDepartments: GridFilterOperator = {
+    label: 'Содержит',
+    value: 'includes',
+    getApplyFilterFn: (filterItem: GridFilterItem) => {
+      if (
+        !filterItem.columnField ||
+        !filterItem.value ||
+        !filterItem.operatorValue
+      ) {
+        return null;
+      }
+
+      if (!filterItem?.value.length) return (params: any): boolean => true;
+
+      return (params: any): boolean => {
+        return params.row.DEPARTMENTS?.find((department: any) => filterItem.value.find((el: any) => el.ID === department.ID));
+      };
+    }
+  };
 
   const columns: GridColDef[] = [
-    { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 250 },
+    { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
     { field: 'FOLDERNAME', headerName: 'Папка', width: 150 },
     { field: 'PHONE', headerName: 'Телефон', width: 150 },
     { field: 'labels',
@@ -245,7 +285,9 @@ export function Customers(props: CustomersProps) {
           </Box>
         );
       }
-    }
+    },
+    { field: 'CONTRACTS', headerName: 'Заказы', filterOperators: [containContracts] },
+    { field: 'DEPARTMENTS', headerName: 'Отделы', filterOperators: [containDepartments] },
   ];
 
 
@@ -284,10 +326,10 @@ export function Customers(props: CustomersProps) {
     tree.loadTree(arr, {createIndexes: true});
   }
 
-  useEffect(() => {
-    dispatch(fetchHierarchy());
+  // useEffect(() => {
+  //   dispatch(fetchHierarchy());
 
-  }, [allCustomers]);
+  // }, [allCustomers]);
 
   /** Close snackbar manually */
   const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
@@ -345,7 +387,7 @@ export function Customers(props: CustomersProps) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
       return;
-    }
+    };
 
     dispatch(deleteCustomer(currentOrganization));
   };
@@ -358,7 +400,7 @@ export function Customers(props: CustomersProps) {
         setDisplayDataGrid(false);
       };
 
-      setOpenFilters(!openFilters)
+      setOpenFilters(!openFilters);
     },
     handleRequestSearch: async (value: string) => {
       setSearchName(value);
@@ -371,9 +413,10 @@ export function Customers(props: CustomersProps) {
     },
     handleFilteringData: async (newValue: IFilteringData) => {
       const filterModels: any[] = [];
+
       for (const [key, arr] of Object.entries(newValue)) {
         filterModels.push({ id: 2, columnField: key, value: arr, operatorValue: 'includes' });
-      }
+      };
 
       setFilterModel({items: filterModels})
       setFilteringData(newValue);
@@ -511,6 +554,10 @@ export function Customers(props: CustomersProps) {
                   )
                   ?? undefined}
               columns={columns}
+              columnVisibilityModel={{
+                CONTRACTS: false,
+                DEPARTMENTS: false
+              }}
               pagination
               disableMultipleSelection
               loading={customersLoading}
