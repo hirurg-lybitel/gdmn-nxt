@@ -20,14 +20,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      const data = await rs.fetchAsObject();
-      await rs.close();
-      return [name, data];
-    };
-
-    const getParams: any = (withKeys: boolean) => {
+    const getParams: any = (withKeys = false) => {
       const arr: Array<string | { [key: string]: string}> = [];
       req.params.taxId ?
         withKeys ? arr.push({ taxId: req.params.taxId}) : arr.push( req.params.taxId)
@@ -39,76 +32,69 @@ export const getContacts: RequestHandler = async (req, res) => {
       return (arr?.length > 0 ? arr : undefined);
     };
 
+    const execQuery = async (query: string) => {
+      const rs = await attachment.executeQuery(transaction, query, getParams());
+      const data = await rs.fetchAsObject();
+      await rs.close();
+      return data as any;
+    };
+
     const queries = [
-      {
-        name: 'contracts',
-        query: `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER`
-      },
-      {
-        name: 'folders',
-        query: `SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0`
-      },
-      {
-        name: 'contacts',
-        query: `
-          SELECT
-            c.id,
-            c.name,
-            c.phone,
-            c.email,
-            c.parent
-          FROM
-            gd_contact c
-            ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
-            ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
-          WHERE
-            c.contacttype IN (2,3,5)`,
-        params: getParams(false)
-      },
+      `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER`,
+      `SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0`,
+      `SELECT
+         c.id,
+         c.name,
+         c.phone,
+         c.email,
+         c.parent
+       FROM
+         gd_contact c
+         ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
+         ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
+       WHERE
+         c.contacttype IN (2,3,5)`,
     ];
 
     const t = new Date().getTime();
 
-    const rs = Object.fromEntries(await Promise.all(queries.map( execQuery )));
+    const [rawContracts, rawFolders, rawContacts] = await Promise.all(queries.map( execQuery ));
 
     interface IMapOfArrays {
       [customerId: string]: number[];
     };
 
-    const contracts: IMapOfArrays = rs.contracts.reduce( (p, c) => {
-      if (p[c.USR$CUSTOMERKEY]) {
-        if (!p[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
-          p[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
+    const contracts: IMapOfArrays = {};
+    const departments: IMapOfArrays = {};
+
+    rawContracts.forEach( c => {
+      if (contracts[c.USR$CUSTOMERKEY]) {
+        if (!contracts[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
+          contracts[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
         }
       } else {
-        p[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
+        contracts[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
       }
 
-      return p;
-    }, {}); 
-
-    const departments: IMapOfArrays = rs.contracts.reduce( (p, c) => {
-      if (p[c.USR$CUSTOMERKEY]) {
-        if (!p[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
-          p[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
+      if (departments[c.USR$CUSTOMERKEY]) {
+        if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
+          departments[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
         }
       } else {
-        p[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
+        departments[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
       }
-
-      return p;
-    }, {}); 
+    }); 
 
     interface IFolders {
       [id: string]: string;
     };
 
-    const folders: IFolders = rs.folders.reduce( (p, f) => {
+    const folders: IFolders = rawFolders.reduce( (p, f) => {
       p[f.ID] = f.NAME;
       return p;
     }, {}); 
 
-    const withContractsAndDepartments = rs.contacts.map( c => {
+    const contacts = rawContacts.map( c => {
       const DEPARTMENTS = departments[c.ID] ?? null;
       const CONTRACTS = contracts[c.ID] ?? null;
       return {
@@ -122,7 +108,7 @@ export const getContacts: RequestHandler = async (req, res) => {
     });
 
     const result: IRequestResult = {
-      queries: { contacts: withContractsAndDepartments },
+      queries: { contacts },
       _params: getParams(true),
       _schema
     };
