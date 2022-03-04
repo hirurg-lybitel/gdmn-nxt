@@ -45,19 +45,20 @@ export const getContacts: RequestHandler = async (req, res) => {
         query: `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER`
       },
       {
+        name: 'folders',
+        query: `SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0`
+      },
+      {
         name: 'contacts',
         query: `
           SELECT
             c.id,
-            COALESCE(c.name, '<не указано>') as name,
+            c.name,
             c.phone,
             c.email,
-            p.id as parent,
-            p.name as folderName,
-            null as labels
+            c.parent
           FROM
             gd_contact c
-            JOIN gd_contact p ON p.id = c.parent
             ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
             ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
           WHERE
@@ -70,15 +71,11 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const rs = Object.fromEntries(await Promise.all(queries.map( execQuery )));
 
-    interface IContracts {
+    interface IMapOfArrays {
       [customerId: string]: number[];
     };
 
-    interface IDepartments {
-      [customerId: string]: number[];
-    };
-
-    const contracts: IContracts = rs.contracts.reduce( (p, c) => {
+    const contracts: IMapOfArrays = rs.contracts.reduce( (p, c) => {
       if (p[c.USR$CUSTOMERKEY]) {
         if (!p[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
           p[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
@@ -90,7 +87,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       return p;
     }, {}); 
 
-    const departments: IDepartments = rs.contracts.reduce( (p, c) => {
+    const departments: IMapOfArrays = rs.contracts.reduce( (p, c) => {
       if (p[c.USR$CUSTOMERKEY]) {
         if (!p[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
           p[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
@@ -102,13 +99,25 @@ export const getContacts: RequestHandler = async (req, res) => {
       return p;
     }, {}); 
 
+    interface IFolders {
+      [id: string]: string;
+    };
+
+    const folders: IFolders = rs.folders.reduce( (p, f) => {
+      p[f.ID] = f.NAME;
+      return p;
+    }, {}); 
+
     const withContractsAndDepartments = rs.contacts.map( c => {
       const DEPARTMENTS = departments[c.ID] ?? null;
       const CONTRACTS = contracts[c.ID] ?? null;
       return {
         ...c,
+        NAME: c.NAME || '<не указано>',
         DEPARTMENTS,
-        CONTRACTS
+        CONTRACTS,
+        LABELS: null,
+        FOLDERNAME: folders[c.PARENT]
       };
     });
 
