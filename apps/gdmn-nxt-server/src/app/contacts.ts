@@ -22,46 +22,9 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
-      try {
-        const data = await rs.fetchAsObject();
-        const sch = _schema[name];
-
-        if (sch) {
-          for (const rec of data) {
-            for (const fld of Object.keys(rec)) {
-              if (sch[fld] && sch[fld].type === 'array') {
-                if (rec[fld] instanceof Blob) {
-                  const blobStream = await attachment.openBlob(transaction, rec[fld] as Blob)
-
-                  if (blobStream.isValid) {
-                    const buffer = Buffer.alloc(await blobStream.length);
-
-                    const len = await blobStream.length;
-                    const arr: Array<any> = [];
-
-                    for (let index = 0; index < len; ) {
-                      const l = await blobStream.read(buffer);
-                      index += l;
-                      if (l > 1) {
-                        arr.push({
-                          ID: Number(buffer.toString('utf8', 0, 9))
-                        });
-                      }
-                    };
-
-                    blobStream.close();
-                    rec[fld] = arr;
-                  }
-                }
-              };
-            };
-          };
-        };
-
-        return [name, data];
-      } finally {
-        await rs.close();
-      }
+      const data = await rs.fetchAsObject();
+      await rs.close();
+      return [name, data];
     };
 
     const getParams: any = (withKeys: boolean) => {
@@ -78,38 +41,79 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const queries = [
       {
+        name: 'contracts',
+        query: `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER`
+      },
+      {
         name: 'contacts',
         query: `
           SELECT
             c.id,
-            IIF(COALESCE(c.name, '') = '', '<не указано>', c.name)  name,
+            COALESCE(c.name, '<не указано>') as name,
             c.phone,
             c.email,
             p.id as parent,
             p.name as folderName,
-            null as labels,
-            LIST(cust.USR$JOBKEY) CONTRACTS,
-            LIST(cust.USR$DEPOTKEY) DEPARTMENTS
+            null as labels
           FROM
             gd_contact c
             JOIN gd_contact p ON p.id = c.parent
-            LEFT JOIN (SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY
-              FROM USR$CRM_CUSTOMER) cust ON cust.USR$CUSTOMERKEY = c.ID
             ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
             ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
           WHERE
-            c.contacttype IN (2,3,5)
-          GROUP BY 1,2,3,4,5,6`,
+            c.contacttype IN (2,3,5)`,
         params: getParams(false)
       },
     ];
 
     const t = new Date().getTime();
 
+    const rs = Object.fromEntries(await Promise.all(queries.map( execQuery )));
+
+    interface IContracts {
+      [customerId: string]: number[];
+    };
+
+    interface IDepartments {
+      [customerId: string]: number[];
+    };
+
+    const contracts: IContracts = rs.contracts.reduce( (p, c) => {
+      if (p[c.USR$CUSTOMERKEY]) {
+        if (!p[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
+          p[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
+        }
+      } else {
+        p[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
+      }
+
+      return p;
+    }, {}); 
+
+    const departments: IDepartments = rs.contracts.reduce( (p, c) => {
+      if (p[c.USR$CUSTOMERKEY]) {
+        if (!p[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
+          p[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
+        }
+      } else {
+        p[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
+      }
+
+      return p;
+    }, {}); 
+
+    const withContractsAndDepartments = rs.contacts.map( c => {
+      const DEPARTMENTS = departments[c.ID] ?? null;
+      const CONTRACTS = contracts[c.ID] ?? null;
+      return {
+        ...c,
+        DEPARTMENTS,
+        CONTRACTS
+      };
+    });
+
     const result: IRequestResult = {
-      queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
-      },
+      queries: { contacts: withContractsAndDepartments },
       _params: getParams(true),
       _schema
     };
