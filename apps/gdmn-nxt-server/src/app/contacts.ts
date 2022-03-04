@@ -60,50 +60,37 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const [rawContracts, rawFolders, rawContacts] = await Promise.all(queries.map( execQuery ));
 
-    interface IMapOfArrays {
-      [customerId: string]: number[];
-    };
-
-    const contracts: IMapOfArrays = {};
-    const departments: IMapOfArrays = {};
+    const contracts = new Map<number, Set<number>>();
+    const departments = new Map<number, Set<number>>();
 
     rawContracts.forEach( c => {
-      if (contracts[c.USR$CUSTOMERKEY]) {
-        if (!contracts[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
-          contracts[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
-        }
+      if (contracts.has(c.USR$CUSTOMERKEY)) {
+        contracts.get(c.USR$CUSTOMERKEY).add(c.USR$JOBKEY);
       } else {
-        contracts[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
+        contracts.set(c.USR$CUSTOMERKEY, new Set([c.USR$JOBKEY]));
       }
 
-      if (departments[c.USR$CUSTOMERKEY]) {
-        if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
-          departments[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
-        }
+      if (departments.has(c.USR$CUSTOMERKEY)) {
+        departments.get(c.USR$CUSTOMERKEY).add(c.USR$DEPOTKEY);
       } else {
-        departments[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
+        departments.set(c.USR$CUSTOMERKEY, new Set([c.USR$DEPOTKEY]));
       }
     }); 
 
-    interface IFolders {
-      [id: string]: string;
-    };
+    const folders = new Map<number, string>();
 
-    const folders: IFolders = rawFolders.reduce( (p, f) => {
-      p[f.ID] = f.NAME;
-      return p;
-    }, {}); 
+    rawFolders.forEach( f => folders.set(f.ID, f.NAME) ); 
 
     const contacts = rawContacts.map( c => {
-      const DEPARTMENTS = departments[c.ID] ?? null;
-      const CONTRACTS = contracts[c.ID] ?? null;
+      const DEPARTMENTS = departments.has(c.ID) ? [...departments.get(c.ID)] : null;
+      const CONTRACTS = contracts.has(c.ID) ? [...contracts.get(c.ID)] : null;
       return {
         ...c,
         NAME: c.NAME || '<не указано>',
         DEPARTMENTS,
         CONTRACTS,
         LABELS: null,
-        FOLDERNAME: folders[c.PARENT]
+        FOLDERNAME: folders.get(c.PARENT)
       };
     });
 
