@@ -95,9 +95,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
               limitTags={2}
               disableCloseOnSelect
               options={departments || []}
-              onChange={(e, value) => handleOnChange('departments', value)}
+              onChange={(e, value) => handleOnChange('DEPARTMENTS', value)}
               value={
-                departments?.filter(department => filteringData && (filteringData['departments'])?.find((el: any) => el.ID === department.ID ))
+                departments?.filter(department => filteringData && (filteringData['DEPARTMENTS'])?.find((el: any) => el.ID === department.ID ))
               }
               getOptionLabel={option => option.NAME}
               renderOption={(props, option, { selected }) => (
@@ -126,9 +126,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
               limitTags={2}
               disableCloseOnSelect
               options={customerContracts || []}
-              onChange={(e, value) => handleOnChange('contracts', value)}
+              onChange={(e, value) => handleOnChange('CONTRACTS', value)}
               value={
-                customerContracts?.filter(customerContract => filteringData && (filteringData['contracts'])?.find((el: any) => el.ID === customerContract.ID ))
+                customerContracts?.filter(customerContract => filteringData && (filteringData['CONTRACTS'])?.find((el: any) => el.ID === customerContract.ID ))
               }
               getOptionLabel={option => option.USR$NUMBER}
               renderOption={(props, option, { selected }) => (

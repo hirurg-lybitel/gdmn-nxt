@@ -1,4 +1,4 @@
-export type FieldDataType = 'date' | 'timestamp' | 'curr' | 'boolean';
+export type FieldDataType = 'date' | 'timestamp' | 'curr' | 'boolean' | 'array';
 
 export interface IFieldSchema {
   type: FieldDataType;
@@ -86,6 +86,16 @@ export interface ILabelsContact extends IWithID {
 
 export interface IContactWithLabels extends IContactWithID {
   labels?: ILabelsContact[]
+}
+
+export interface IContractJob extends IContactWithID {
+  USR$NAME?: string;
+};
+
+export interface ICustomer extends IContactWithID {
+  LABELS?: ILabelsContact[];
+  CONTRACTS?: IContractJob[];
+  DEPARTMETNS?: IContactWithID[];
 }
 
 export interface IResultError {

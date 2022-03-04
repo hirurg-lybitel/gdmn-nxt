@@ -1,13 +1,24 @@
-import { ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
-import { RequestHandler } from "express";
+import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
+import e, { RequestHandler } from "express";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
+import { Attachment, Blob, ResultSet, Statement } from "node-firebird-driver-native";
+import { resultError } from "./responseMessages";
 
 export const getContacts: RequestHandler = async (req, res) => {
 
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
-    const _schema = { };
+    const _schema: IDataSchema = {
+      contacts: {
+        CONTRACTS: {
+          type: 'array'
+        },
+        DEPARTMENTS: {
+          type: 'array'
+        }
+      }
+    };
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
@@ -18,12 +29,34 @@ export const getContacts: RequestHandler = async (req, res) => {
         if (sch) {
           for (const rec of data) {
             for (const fld of Object.keys(rec)) {
-              if (sch[fld] && sch[fld].type === 'date') {
-                rec[fld] = (rec[fld] as Date).getTime();
+              if (sch[fld] && sch[fld].type === 'array') {
+                if (rec[fld] instanceof Blob) {
+                  const blobStream = await attachment.openBlob(transaction, rec[fld] as Blob)
+
+                  if (blobStream.isValid) {
+                    const buffer = Buffer.alloc(await blobStream.length);
+
+                    const len = await blobStream.length;
+                    const arr: Array<any> = [];
+
+                    for (let index = 0; index < len; ) {
+                      const l = await blobStream.read(buffer);
+                      index += l;
+                      if (l > 1) {
+                        arr.push({
+                          ID: Number(buffer.toString('utf8', 0, 9))
+                        });
+                      }
+                    };
+
+                    blobStream.close();
+                    rec[fld] = arr;
+                  }
+                }
               };
-            }
-          }
-        }
+            };
+          };
+        };
 
         return [name, data];
       } finally {
@@ -43,7 +76,6 @@ export const getContacts: RequestHandler = async (req, res) => {
       return (arr?.length > 0 ? arr : undefined);
     };
 
-
     const queries = [
       {
         name: 'contacts',
@@ -55,30 +87,40 @@ export const getContacts: RequestHandler = async (req, res) => {
             c.email,
             p.id as parent,
             p.name as folderName,
-            null as labels
+            null as labels,
+            LIST(cust.USR$JOBKEY) CONTRACTS,
+            LIST(cust.USR$DEPOTKEY) DEPARTMENTS
           FROM
             gd_contact c
             JOIN gd_contact p ON p.id = c.parent
+            LEFT JOIN (SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY
+              FROM USR$CRM_CUSTOMER) cust ON cust.USR$CUSTOMERKEY = c.ID
             ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
             ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
           WHERE
-            c.contacttype IN (2,3,5)`,
+            c.contacttype IN (2,3,5)
+          GROUP BY 1,2,3,4,5,6`,
         params: getParams(false)
-        //params: req.params.taxId ? [req.params.taxId] : undefined
       },
     ];
+
+    const t = new Date().getTime();
 
     const result: IRequestResult = {
       queries: {
         ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
       },
       _params: getParams(true),
-      //_params: req.params.taxId ? [{ taxId: req.params.taxId }] : undefined,
       _schema
     };
 
-    return res.json(result);
+    console.log(`Contacts time ${new Date().getTime() - t} ms`);
+
+    return res.status(200).json(result);
+  } catch(error) {
+    return res.status(500).send(resultError(error.message));
   } finally {
+    console.log('end');
     await releaseReadTransaction(req.sessionID);
   }
 };
