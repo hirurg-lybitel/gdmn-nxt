@@ -1,7 +1,6 @@
-import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
-import e, { RequestHandler } from "express";
+import { IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
+import { RequestHandler } from "express";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
-import { Attachment, Blob, ResultSet, Statement } from "node-firebird-driver-native";
 import { resultError } from "./responseMessages";
 
 export const getContacts: RequestHandler = async (req, res) => {
@@ -20,51 +19,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try {
-        const data = await rs.fetchAsObject();
-        const sch = _schema[name];
-
-        if (sch) {
-          for (const rec of data) {
-            for (const fld of Object.keys(rec)) {
-              if (sch[fld] && sch[fld].type === 'array') {
-                if (rec[fld] instanceof Blob) {
-                  const blobStream = await attachment.openBlob(transaction, rec[fld] as Blob)
-
-                  if (blobStream.isValid) {
-                    const buffer = Buffer.alloc(await blobStream.length);
-
-                    const len = await blobStream.length;
-                    const arr: Array<any> = [];
-
-                    for (let index = 0; index < len; ) {
-                      const l = await blobStream.read(buffer);
-                      index += l;
-                      if (l > 1) {
-                        arr.push({
-                          ID: Number(buffer.toString('utf8', 0, 9))
-                        });
-                      }
-                    };
-
-                    blobStream.close();
-                    rec[fld] = arr;
-                  }
-                }
-              };
-            };
-          };
-        };
-
-        return [name, data];
-      } finally {
-        await rs.close();
-      }
-    };
-
-    const getParams: any = (withKeys: boolean) => {
+    const getParams: any = (withKeys = false) => {
       const arr: Array<string | { [key: string]: string}> = [];
       req.params.taxId ?
         withKeys ? arr.push({ taxId: req.params.taxId}) : arr.push( req.params.taxId)
@@ -76,45 +31,75 @@ export const getContacts: RequestHandler = async (req, res) => {
       return (arr?.length > 0 ? arr : undefined);
     };
 
+    const execQuery = async (query: string) => {
+      const rs = await attachment.executeQuery(transaction, query, getParams());
+      const data = await rs.fetchAsObject();
+      await rs.close();
+      return data as any;
+    };
+
     const queries = [
-      {
-        name: 'contacts',
-        query: `
-          SELECT
-            c.id,
-            IIF(COALESCE(c.name, '') = '', '<не указано>', c.name)  name,
-            c.phone,
-            c.email,
-            p.id as parent,
-            p.name as folderName,
-            null as labels,
-            LIST(cust.USR$JOBKEY) CONTRACTS,
-            LIST(cust.USR$DEPOTKEY) DEPARTMENTS
-          FROM
-            gd_contact c
-            JOIN gd_contact p ON p.id = c.parent
-            LEFT JOIN (SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY
-              FROM USR$CRM_CUSTOMER) cust ON cust.USR$CUSTOMERKEY = c.ID
-            ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
-            ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
-          WHERE
-            c.contacttype IN (2,3,5)
-          GROUP BY 1,2,3,4,5,6`,
-        params: getParams(false)
-      },
+      `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER`,
+      `SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0`,
+      `SELECT
+         c.id,
+         c.name,
+         c.phone,
+         c.email,
+         c.parent
+       FROM
+         gd_contact c
+         ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
+         ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
+       WHERE
+         c.contacttype IN (2,3,5)`,
     ];
 
-    const t = new Date().getTime();
+    console.time('Loading contacts...');
+
+    const [rawContracts, rawFolders, rawContacts] = await Promise.all(queries.map( execQuery ));
+
+    const contracts = new Map<number, Set<number>>();
+    const departments = new Map<number, Set<number>>();
+
+    rawContracts.forEach( c => {
+      if (contracts.has(c.USR$CUSTOMERKEY)) {
+        contracts.get(c.USR$CUSTOMERKEY).add(c.USR$JOBKEY);
+      } else {
+        contracts.set(c.USR$CUSTOMERKEY, new Set([c.USR$JOBKEY]));
+      }
+
+      if (departments.has(c.USR$CUSTOMERKEY)) {
+        departments.get(c.USR$CUSTOMERKEY).add(c.USR$DEPOTKEY);
+      } else {
+        departments.set(c.USR$CUSTOMERKEY, new Set([c.USR$DEPOTKEY]));
+      }
+    }); 
+
+    const folders = new Map<number, string>();
+
+    rawFolders.forEach( f => folders.set(f.ID, f.NAME) ); 
+
+    const contacts = rawContacts.map( c => {
+      const DEPARTMENTS = departments.has(c.ID) ? [...departments.get(c.ID)] : null;
+      const CONTRACTS = contracts.has(c.ID) ? [...contracts.get(c.ID)] : null;
+      return {
+        ...c,
+        NAME: c.NAME || '<не указано>',
+        DEPARTMENTS,
+        CONTRACTS,
+        LABELS: null,
+        FOLDERNAME: folders.get(c.PARENT)
+      };
+    });
 
     const result: IRequestResult = {
-      queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
-      },
+      queries: { contacts },
       _params: getParams(true),
       _schema
     };
 
-    console.log(`Contacts time ${new Date().getTime() - t} ms`);
+    console.timeEnd('Loading contacts...');
 
     return res.status(200).json(result);
   } catch(error) {
