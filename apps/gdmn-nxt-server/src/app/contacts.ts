@@ -1,7 +1,6 @@
-import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
-import e, { RequestHandler } from "express";
+import { IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
+import { RequestHandler } from "express";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
-import { Attachment, Blob, ResultSet, Statement } from "node-firebird-driver-native";
 import { resultError } from "./responseMessages";
 
 export const getContacts: RequestHandler = async (req, res) => {
@@ -56,7 +55,7 @@ export const getContacts: RequestHandler = async (req, res) => {
          c.contacttype IN (2,3,5)`,
     ];
 
-    const t = new Date().getTime();
+    console.time('Loading contacts...');
 
     const [rawContracts, rawFolders, rawContacts] = await Promise.all(queries.map( execQuery ));
 
@@ -100,7 +99,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       _schema
     };
 
-    console.log(`Contacts time ${new Date().getTime() - t} ms`);
+    console.timeEnd('Loading contacts...');
 
     return res.status(200).json(result);
   } catch(error) {
