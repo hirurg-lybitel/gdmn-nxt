@@ -2,7 +2,7 @@ import './chart-column.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../customized-card/customized-card';
-import { Stack, Typography, useTheme } from '@mui/material';
+import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 
@@ -12,6 +12,8 @@ export interface ChartColumnProps {}
 
 export function ChartColumn(props: ChartColumnProps) {
   const theme = useTheme();
+
+  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
   const [series21, setSeries21] = useState([25, 33, 52, 44, 60, 47, 38, 47, 60, 30, 64, 79]);
   const [series22, setSeries22] = useState([30, 40, 45, 48, 63, 55, 21, 50, 49, 60, 70, 91]);
@@ -71,8 +73,7 @@ export function ChartColumn(props: ChartColumnProps) {
     dataLabels: {
       enabled: false
     },
-
-  }
+  };
 
   const chartData: ApexCharts.ApexOptions  = {
     series: [
@@ -85,15 +86,14 @@ export function ChartColumn(props: ChartColumnProps) {
         data: series22
       }
     ]
-  }
-
+  };
 
   return (
     <CustomizedCard
       borders
       boxShadows
       style={{
-        flex: 1
+        flex: matchDownXl ? 'none' : 1
       }}
     >
       <Stack direction="column" spacing={3} p={2}>
@@ -107,6 +107,6 @@ export function ChartColumn(props: ChartColumnProps) {
     </CustomizedCard>
 
   );
-}
+};
 
 export default ChartColumn;

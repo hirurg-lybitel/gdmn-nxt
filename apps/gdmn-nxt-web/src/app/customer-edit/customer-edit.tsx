@@ -20,7 +20,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
-import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
+import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import { forwardRef, ReactElement, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -73,8 +73,8 @@ const Transition = forwardRef(function Transition(
 
 export interface CustomerEditProps {
   open: boolean;
-  customer: IContactWithLabels | null;
-  onSubmit: (arg1: IContactWithLabels, arg2: boolean) => void;
+  customer: ICustomer | null;
+  onSubmit: (arg1: ICustomer, arg2: boolean) => void;
   onSaveClick?: () => void;
   onCancelClick: () => void;
   onDeleteClick?: () => void;
@@ -93,16 +93,16 @@ export function CustomerEdit(props: CustomerEditProps) {
 
   const classes = useStyles();
 
-  const initValue: IContactWithLabels = {
+  const initValue: ICustomer = {
     ID: customer?.ID || 0,
     NAME: customer?.NAME || '',
     PHONE: customer?.PHONE || '',
     EMAIL: customer?.EMAIL || '',
     PARENT: customer?.PARENT || undefined,
-    labels: customer?.labels || []
+    LABELS: customer?.LABELS || []
   }
 
-  const formik = useFormik<IContactWithLabels>({
+  const formik = useFormik<ICustomer>({
     enableReinitialize: true,
     initialValues: {
       ...customer,
@@ -214,17 +214,17 @@ export function CustomerEdit(props: CustomerEditProps) {
                 disableCloseOnSelect
                 onChange={(e, value) => {
                   formik.setFieldValue(
-                    "labels",
+                    "LABELS",
                     value
                       ? value.map((el) => {
-                          return {ID: 0, CONTACT: formik.values.ID, LABEL: el.ID} as ILabelsContact
+                          return {ID: 0, USR$CONTACTKEY: formik.values.ID, USR$LABELKEY: el.ID} as ILabelsContact
                         })
-                      : initValue.labels
+                      : initValue.LABELS
                   );
                 }}
                 value={
                   groups
-                    ?.filter(hierarchy => formik.values.labels?.find(label => label.LABEL === hierarchy.ID && label.CONTACT === formik.values.ID))
+                    ?.filter(hierarchy => formik.values.LABELS?.find(label => label.USR$LABELKEY === hierarchy.ID))
                 }
                 options={groups || []}
                 getOptionLabel={opt => opt.NAME}

@@ -12,7 +12,7 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 
 export interface KanbanBoardProps {
   columns: IKanbanColumn[];
-}
+};
 
 export function KanbanBoard(props: KanbanBoardProps) {
   const { columns: inColumns } = props;
@@ -30,7 +30,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [reorderCard] = useReorderCardsMutation();
 
   useEffect(()=>{
-    console.log('inColumns', inColumns);
     setColumns(inColumns);
   }, [inColumns]);
 
@@ -76,11 +75,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
     if (!result.destination) {
       return;
-    }
+    };
 
     if ((result.type === 'board') && (result.destination.index === result.source.index)) {
       return;
-    }
+    };
 
     let newColumns: IKanbanColumn[] = columns;
 
@@ -93,11 +92,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
       newColumns = newColumns.map((el, index) => {
         return {...el, USR$INDEX: index}
-      })
+      });
 
       setColumns(newColumns);
       reorderColumn(newColumns);
-    }
+    };
 
     if (result.type === 'column') {
       /** если перемешаем внутри одной колонки */
@@ -110,20 +109,18 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
         newCards = newCards.map((el, index) => {
           return {...el, USR$INDEX: index}
-        })
+        });
 
         newColumns = columns.map( (column, index) =>
           index === Number(result.source.droppableId) ? {...column, CARDS : newCards } : column
         );
+
         setColumns(newColumns);
         reorderCard(newCards);
 
+
       } else {
         /** перемещаем в другую колонку */
-        // newColumns = [...columns];
-        // const [removedCard] = newColumns[Number(result.source.droppableId)].CARDS.splice(result.source.index, 1);
-        //newColumns[Number(result.destination.droppableId)].CARDS.splice(result.destination.index, 0, removedCard);
-
         const moveCard: IKanbanCard = {
           ...columns[Number(result.source.droppableId)].CARDS[result.source.index],
           USR$MASTERKEY: columns[Number(result.destination.droppableId)].ID,
@@ -131,15 +128,20 @@ export function KanbanBoard(props: KanbanBoardProps) {
         };
 
         newColumns = columns.map((column, index) => {
-          const newCards = [ ...column.CARDS ];
+          const cards = [ ...column.CARDS ];
+          let newCards = [...cards];
           switch (index) {
             case Number(result.source.droppableId):
-              newCards.splice(result.source.index, 1);
+              cards.splice(result.source.index, 1);
+              newCards = cards.map((card, index) => ({...card, USR$INDEX: index}));
+
               reorderCard(newCards);
               break;
 
             case Number(result.destination!.droppableId):
-              newCards.splice(result.destination!.index, 0, moveCard);
+              cards.splice(result.destination!.index, 0, moveCard);
+              newCards = cards.map((card, index) => ({...card, USR$INDEX: index}));
+
               reorderCard(newCards);
               break;
           }

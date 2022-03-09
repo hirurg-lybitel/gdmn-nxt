@@ -62,7 +62,7 @@ export function KanbanCard(props: KanbanCardProps) {
         onDoubleClick={() => setEditCard(true)}
       >
         <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{card.USR$INDEX} {card.DEAL?.USR$NAME}</Typography>
+          <Typography variant="h2">{card.DEAL?.USR$NAME}</Typography>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100)/100).toFixed(2)} Br</Typography>
         </Stack>

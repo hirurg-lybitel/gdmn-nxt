@@ -177,7 +177,6 @@ export const kanbanApi = createApi({
       },
       transformResponse: (response: IKanbanRequestResult) => response.queries?.cards || [],
       invalidatesTags: (result, error) => {
-        console.log('invalidatesTags', result);
         return result
           ? [
               ...result.map(({ USR$MASTERKEY }) => ({ type: 'Column' as const, USR$MASTERKEY  })),

@@ -80,8 +80,8 @@ export interface IContactHierarchy {
   NAME: string
 }
 export interface ILabelsContact extends IWithID {
-  CONTACT: number;
-  LABEL: number;
+  USR$CONTACTKEY: number;
+  USR$LABELKEY: number;
 }
 
 export interface IContactWithLabels extends IContactWithID {

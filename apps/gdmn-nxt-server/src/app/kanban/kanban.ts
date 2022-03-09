@@ -67,7 +67,7 @@ const get: RequestHandler = async (req, res) => {
         );
 
         break;
-    }
+    };
 
     interface ISubItemArray {
       itemName: string;
@@ -107,82 +107,7 @@ const get: RequestHandler = async (req, res) => {
             break;
         };
 
-      //   const foonction = (obj: Type1): Type2 => {
-      //     let res = <Type2>{};
-      //     Object.keys(obj).forEach(key => res[key as keyof Type2] = obj[key as keyof Type1] != 0);  // Do your mapping here
-      //     return res;
-      // }
-
         data.map((el) => {
-
-          // const cards: IKanbanCard[] = itemData.filter((e: any) => {
-
-
-
-          //   let card = <IKanbanCard>{};
-          //   Object.keys(e).forEach(key => {
-          //     //type k = keyof IKanbanCard;
-
-          //     let o = {};
-
-          //     e && Object.assign(o as IKanbanCard, e as IKanbanCard);
-
-          //     //console.log('o', o);
-
-          //     type k3 = { [key in keyof IKanbanCard]: boolean }
-
-          //     Object.keys(o).forEach((key: k3) => {
-
-          //       console.log('card', `${key}:  ${e[key as keyof IKanbanCard]}`)
-          //     })
-
-
-
-
-
-
-          //     let obj: k3;
-
-          //     //const ff = Object.keys(obj);
-
-          //     //console.log('ff');
-
-          //     for (const key in obj) {
-          //       console.log('card', card);
-          //       if (e.hasOwnProperty(key)) {
-          //         card[key] = e[key];
-          //         console.log('card', card);
-          //       }
-          //     }
-          //     // console.log('obj', k3);
-
-          //     // for (const key as k in e) {
-          //     //   if (e.hasOwnProperty(k2)) {
-          //     //     const element = e[key];
-          //     //     card[k2] = e[k2]
-
-          //     //   }
-          //     // }
-
-
-
-
-          //     // if (key typeof k) {
-
-          //     // }
-
-          //     return card[key as keyof IKanbanCard] = e[key]
-          //   } );
-
-          //   //card[key as keyof IKanbanCard] = e[key]
-
-          //   //console.log('card', card);
-
-          //   return e[item.itemDetailField] === el[item.itemMasterField ? item.itemMasterField  : 'ID']
-          // }) as IKanbanCard[];
-
-
-
           return el[item.itemName] = itemData?.filter((e: IKanbanCard) => e[item.itemDetailField] === el[item.itemMasterField ? item.itemMasterField  : 'ID']) as IKanbanCard[]
         });
       }
@@ -223,102 +148,13 @@ const get: RequestHandler = async (req, res) => {
       _schema
     };
 
-    transaction.commit();
-
-
     return res.status(200).json(result);
-
-    // await columnsResult.fetchAsObject();
-    // await cardsResult.fetchAsObject();
-    // await dealsResult.fetchAsObject();
-    // await contactResult.fetchAsObject();
-
-
-    // console.log('columnsResult',await columnsResult.fetchAsObject());
-    // console.log('cardsResult',await cardsResult.fetchAsObject());
-
-    // return res.status(200).send(await columnsResult.fetchAsObject());
-
-    //const erModelFull = (await importERModel('TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS')).entities;
-    //const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
-    //const entites2 = (await erModelFull).entities;
-
-    //console.log('erModelFull', entites);
-
-    //return res.status(200).json(erModelFull);
-
-    // const allFields = [...new Set(entites['TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS'].attributes.map(attr => attr.name))];
-    // const returnFieldsNames = allFields.join(',');
-
-
-
-    // const paramsValues = actualFields.map(field => {
-    //   return req.body[field];
-    // })
-
-    // if (isInsertMode) {
-    //   const requiredFields = {
-    //     ID: ID,
-    //     CONTACTTYPE: 4,
-    //     USR$ISOTDEL: 1,
-    //     PARENT: null
-    //   }
-
-    //   for (const [key, value] of Object.entries(requiredFields)) {
-    //     if (!actualFields.includes(key)) {
-    //       actualFields.push(key);
-    //       paramsValues.push(value)
-    //     }
-    //   }
-    // };
-
-    // //const actualFieldsNames = actualFields.join(',');
-    // const paramsString = actualFields.map( _ => '?' ).join(',');
-    // const returnFieldsNames = allFields.join(',');
-
-    // const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-    //   const rs = await attachment.executeQuery(transaction, query, params);
-    //   try {
-    //     const data = await rs.fetchAsObject();
-    //     const sch = _schema[name];
-
-    //     return [name, data];
-    //   } finally {
-    //     await rs.close();
-    //   }
-    // };
-
-    // const queries = [
-    //   {
-    //     name: 'departments',
-    //     query: `
-    //       SELECT
-    //         *
-    //       FROM
-    //       AT_RELATIONS `,
-    //     params: id ? [id] : undefined,
-    //   },
-    // ];
-
-    // const result: IRequestResult = {
-    //   queries: {
-    //     ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
-    //   },
-    //   _params: id ? [{ id: id }] : undefined,
-    //   _schema
-    // };
-
-    // return res.status(200).json(result);
   } catch(error) {
 
     return res.status(500).send(resultError(error.message));
   }finally {
-    await releaseReadTransaction(req.sessionID);
-  }
-  const myheader = req.get('myheader');
-
-
-  return res.status(200).send('columns' + myheader);
+    await commitTransaction(req.sessionID, transaction);
+  };
 };
 
 const reorderColumns: RequestHandler = async (req, res) => {
@@ -389,7 +225,7 @@ const reorderCards: RequestHandler = async (req, res) => {
 
     if (!cards.length) {
       return res.status(422).send(resultError(`Нет данных`));
-    }
+    };
 
     const allFields = ['ID', 'USR$INDEX']
     const actualFields = allFields.filter( field => typeof cards[0][field] !== 'undefined' );
@@ -420,14 +256,14 @@ const reorderCards: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    await commitTransaction(req.sessionID, transaction)
+    //await commitTransaction(req.sessionID, transaction)
 
     return res.status(200).json(result);
 
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await commitTransaction(req.sessionID, transaction);
   };
 
 };
