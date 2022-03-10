@@ -26,7 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { fetchCustomers } from '../../../features/customer/actions';
 import { customersSelectors } from '../../../features/customer/customerSlice';
-import { IContactWithLabels } from "@gsbelarus/util-api-types";
+import { ICustomer } from "@gsbelarus/util-api-types";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -55,7 +55,7 @@ const Transition = forwardRef(function Transition(
 const filterOptions = createFilterOptions({
   matchFrom: 'any',
   limit: 500,
-  stringify: (option: IContactWithLabels) => option.NAME,
+  stringify: (option: ICustomer) => option.NAME,
 });
 
 
@@ -82,10 +82,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const allCustomers = useSelector(customersSelectors.selectAll);
   const { loading: customersLoading } = useSelector((state: RootState) => state.customers);
 
-
-  console.log('card', card );
-
-
   useEffect(() => {
     dispatch(fetchCustomers());
   }, [])
@@ -108,7 +104,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     USR$INDEX: card?.USR$INDEX || currentStage?.CARDS.length || 0,
     USR$NAME: card?.DEAL?.USR$NAME || '',
     USR$DEALKEY: card?.USR$DEALKEY || -1,
-    USR$AMOUNT: card?.DEAL?.USR$AMOUNT || 0,
+    USR$AMOUNT: card?.DEAL?.USR$AMOUNT || undefined,
     USR$CONTACTKEY: card?.DEAL?.CONTACT?.ID || -1,
     DEAL: card?.DEAL || undefined
   }
@@ -161,7 +157,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     options={allCustomers || []}
                     getOptionLabel={option => option.NAME}
                     filterOptions={filterOptions}
-                    value={allCustomers?.filter(el => el.ID === formik.values.DEAL?.CONTACT?.ID)[0] || null}
+                    value={allCustomers?.find(el => el.ID === formik.values.USR$CONTACTKEY) || null}
                     loading={customersLoading}
                     loadingText="Загрузка данных..."
                     onChange={(e, value) => {
@@ -193,16 +189,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       />
                     )}
                   />
-                {/* <TextField
-                    label="Клиент"
-                    type="text"
-                    required
-                    name="customer"
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    value={formik.values.customer}
-                    helperText={formik.errors.customer}
-                  /> */}
                   <Autocomplete
                     options={stages?.filter(stage => stage.ID !== formik.values.USR$MASTERKEY) || []}
                     getOptionLabel={option => option.USR$NAME}

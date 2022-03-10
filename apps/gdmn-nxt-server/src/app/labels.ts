@@ -79,7 +79,7 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
     const deleteSQL = `DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?`;
 
     await Promise.all(
-      [...new Set(labels.map(el => el.CONTACT))]
+      [...new Set(labels.map(el => el.USR$CONTACTKEY))]
         .map(async label => {
         await attachment.execute(transaction, deleteSQL, [label]);
         })

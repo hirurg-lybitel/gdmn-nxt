@@ -12,7 +12,7 @@ import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useEffect, useState } from 'react';
-import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery } from '@mui/material';
+import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IContactWithLabels, ILabelsContact } from '@gsbelarus/util-api-types';
+import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
 import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
@@ -41,6 +41,31 @@ import { Link, useNavigate } from 'react-router-dom';
 import CustomersFilter, { IFilteringData } from './customers-filter/customers-filter';
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from './DataGridProOverlay/CustomGridToolbarOverlay';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles((theme: Theme) => ({
+  DataGrid: {
+    border: 'none',
+    '& ::-webkit-scrollbar': {
+      width:'10px',
+      height: '10px',
+      backgroundColor: 'transparent',
+      borderRadius: '6px'
+      },
+    '& ::-webkit-scrollbar:hover': {
+      backgroundColor: '#f0f0f0',
+    },
+    '& ::-webkit-scrollbar-thumb': {
+      position: 'absolute',
+      right: 10,
+      borderRadius: '6px',
+      backgroundColor: 'rgba(170, 170, 170, 0.5)',
+    },
+    '& ::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: '#999',
+    },
+  },
+}));
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
@@ -58,9 +83,16 @@ const labelStyle: CSSProperties = {
   height: 'fit-content'
 }
 
+interface IPaginationData {
+  pageNo: number;
+  pageSize: number;
+};
+
 export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
+
+  const classes = useStyles();
 
   //const { data, isFetching, refetch } = useGetAllContactsQuery();
 
@@ -77,6 +109,10 @@ export function Customers(props: CustomersProps) {
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
   const [searchName, setSearchName] = useState("");
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
+  const [paginationData, setPaginationData] = useState<IPaginationData>({
+    pageNo: 0,
+    pageSize: 50
+  })
 
   /** Затычка для минимизации рендеров DataGrid при resize */
   const [displayDataGrid, setDisplayDataGrid] = useState(true);
@@ -86,8 +122,8 @@ export function Customers(props: CustomersProps) {
   const { error: customersError , loading: customersLoading } = useSelector((state: RootState) => state.customers);
   const dispatch = useDispatch();
 
-  const [addLabelsContact, { error: addLabelsError }] = useAddLabelsContactMutation();
-  const [deleteLabelsContact, { error: deleteLabelsError}] = useDeleteLabelsContactMutation();
+  const [addLabelsContact] = useAddLabelsContactMutation();
+  const [deleteLabelsContact] = useDeleteLabelsContactMutation();
 
   const { data: labelsContact, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
 
@@ -136,7 +172,7 @@ export function Customers(props: CustomersProps) {
         }
 
         return (params: any): boolean => {
-          return params.row.labels.find((label: any) => label.LABEL === filterItem.value);
+          return params.row.LABELS?.find((label: any) => label.USR$LABELKEY === filterItem.value);
         };
       },
       InputComponent: CurrentLabelFilter,
@@ -158,11 +194,9 @@ export function Customers(props: CustomersProps) {
       if (!filterItem?.value.length) return (params: any): boolean => true;
 
       return (params: any): boolean => {
-        return params.row.labels.find((label: any) => filterItem.value.find((el: any) => el.ID === label.LABEL));
+        return params.row.LABELS?.find((label: any) => filterItem.value.find((el: any) => el.ID === label.USR$LABELKEY));
       };
-    },
-    InputComponent: CurrentLabelFilter,
-    InputComponentProps: { type: 'number' },
+    }
   };
 
   const containContracts: GridFilterOperator = {
@@ -209,14 +243,15 @@ export function Customers(props: CustomersProps) {
     { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
     { field: 'FOLDERNAME', headerName: 'Папка', width: 150 },
     { field: 'PHONE', headerName: 'Телефон', width: 150 },
-    { field: 'labels',
+    { field: 'LABELS',
       headerName: 'Метки',
       width: 380,
       filterOperators: [isLabel, containLabels],
       renderCell: (params) => {
         const numberLabelsInRow = 2;
 
-        const labels: ILabelsContact[] | undefined = labelsContact?.queries.labels.filter(el => el.CONTACT === params.id);
+        //const labels: ILabelsContact[] | undefined = labelsContact?.queries.labels.filter(el => el.USR$CONTACTKEY === params.id);
+        const labels: ILabelsContact[] = params.row.LABELS;
 
         if (!labels?.length) {
           return;
@@ -238,10 +273,13 @@ export function Customers(props: CustomersProps) {
                       return(
                         <ListItemButton
                           key={subLabel.ID}
-                          onClick={ () => setFilterModel({items: [{ id: 1, columnField: 'labels', value: subLabel.LABEL, operatorValue: 'is' }]})}
+                          onClick={ () => {
+                            setFilterModel({items: [{ id: 1, columnField: 'LABELS', value: subLabel.USR$LABELKEY, operatorValue: 'is' }]});
+                            setFilteringData({'LABELS': [{ID: subLabel.USR$LABELKEY}]});
+                          }}
                           style={labelStyle}
                         >
-                          {groups?.find(hierarchy => hierarchy.ID === subLabel.LABEL)?.NAME}
+                          {groups?.find(hierarchy => hierarchy.ID === subLabel.USR$LABELKEY)?.NAME}
                        </ListItemButton>
                       )
                     })}
@@ -292,24 +330,20 @@ export function Customers(props: CustomersProps) {
 
 
   useEffect(() => {
-    dispatch(fetchCustomers());
-  }, [])
-
-  useEffect(() => {
-    refetchLabels();
-  }, [allCustomers]);
+    dispatch(fetchCustomers({paginationData: paginationData}));
+  }, []);
 
   useEffect(() => {
     if (customersError) {
       setSnackBarMessage(customersError.toString());
       setOpenSnackBar(true);
-    }
+    };
 
     if (errorMessage) {
       setSnackBarMessage(errorMessage);
       setOpenSnackBar(true);
-    }
-  }, [customersError, errorMessage])
+    };
+  }, [customersError, errorMessage]);
 
 
 
@@ -354,7 +388,7 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(false);
   };
 
-  const handleOrganiztionEditSubmit = async (values: IContactWithLabels, deleting: boolean) => {
+  const handleOrganiztionEditSubmit = async (values: ICustomer, deleting: boolean) => {
     setOpenEditForm(false);
 
     if (deleting) {
@@ -368,8 +402,8 @@ export function Customers(props: CustomersProps) {
       return;
     }
 
-    if (values.labels?.length) {
-      addLabelsContact(values.labels);
+    if (values.LABELS?.length) {
+      addLabelsContact(values.LABELS);
     } else {
       deleteLabelsContact(values.ID);
     }
@@ -492,7 +526,7 @@ export function Customers(props: CustomersProps) {
           <Box sx={{ mb: 1 }}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={()=> dispatch(fetchCustomers())} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
+                <Button onClick={()=> dispatch(fetchCustomers({paginationData: paginationData}))} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
                 <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
                 <Button
                   component="a"
@@ -536,55 +570,56 @@ export function Customers(props: CustomersProps) {
                     }),
               }}
             >
-              <div onTransitionEnd={() => console.log('onTransitionEnd5')}></div>
-            <DataGridPro
-              style={{
-                border: 'none',
-                display: `${displayDataGrid ? 'flex' : 'none'}`
-              }}
-              localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-              rows={
-                allCustomers
-                  //.filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
-                  .filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
-                  .map((customer) => ({
-                    ...customer,
-                    labels: labelsContact?.queries.labels.filter(label => label.CONTACT === customer.ID) || undefined
-                    })
-                  )
-                  ?? undefined}
-              columns={columns}
-              columnVisibilityModel={{
-                CONTRACTS: false,
-                DEPARTMENTS: false
-              }}
-              pagination
-              disableMultipleSelection
-              loading={customersLoading}
-              getRowId={row => row.ID}
-              onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
-              components={{
-                Toolbar: CustomGridToolbarOverlay,
-                LoadingOverlay: CustomLoadingOverlay,
-                NoRowsOverlay: CustomNoRowsOverlay
-              }}
-              filterModel={filterModel}
-              onFilterModelChange={(model, detail) => setFilterModel(model)}
-              pinnedColumns={{left: [customersLoading ? '' : 'NAME']}}
-              getRowHeight={(params) => {
-                const customer: IContactWithLabels = params.model as IContactWithLabels;
+              <DataGridPro
+                className={classes.DataGrid}
+                style={{
+                  display: `${displayDataGrid ? 'flex' : 'none'}`,
+                }}
+                localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+                rows={
+                  allCustomers
+                    //.filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
+                    .filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
+                    ?? undefined}
+                columns={columns}
+                columnVisibilityModel={{
+                  CONTRACTS: false,
+                  DEPARTMENTS: false
+                }}
+                pagination
+                disableMultipleSelection
+                loading={customersLoading}
+                getRowId={row => row.ID}
+                onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
+                components={{
+                  Toolbar: CustomGridToolbarOverlay,
+                  LoadingOverlay: CustomLoadingOverlay,
+                  NoRowsOverlay: CustomNoRowsOverlay
+                }}
+                filterModel={filterModel}
+                onFilterModelChange={(model, detail) => setFilterModel(model)}
+                pinnedColumns={{left: [customersLoading ? '' : 'NAME']}}
+                getRowHeight={(params) => {
+                  const customer: ICustomer = params.model as ICustomer;
+                  const labels: ILabelsContact[] | undefined = customer.LABELS;
 
-                const lables: ILabelsContact[] | undefined = customer.labels;
-                if (lables?.length) {
-                  return 50 * Math.ceil(lables.length/3)
-                }
+                  if (labels?.length) {
+                    return 50 * Math.ceil(labels.length/2);
+                  };
 
-                return 50;
-              }}
-            />
+                  return 50;
+                }}
+                pageSize={paginationData.pageSize}
+                onPageChange={(data) => {
+                  setPaginationData(prevState => ({...prevState, pageNo: data}));
+                }}
+                onPageSizeChange={(data) => {
+                  setPaginationData(prevState => ({...prevState, pageSize: data}));
+                }}
+              />
             </CustomizedCard>
             <Box
-               onTransitionEnd={() => setDisplayDataGrid(true)}
+              onTransitionEnd={() => setDisplayDataGrid(true)}
               display="flex"
               style={{
                 ...(matchDownLg
@@ -592,7 +627,7 @@ export function Customers(props: CustomersProps) {
                   :{
                     marginLeft: theme.spacing(3),
                     marginRight: `${openFilters ? '0px' : '-'+ theme.spacing(3)}`,
-                    width: `${openFilters ? '320px' : '0px'}`,
+                    width: `${openFilters ? '300px' : '0px'}`,
                     transition: `${theme.transitions.create(['width', 'margin'], {
                       easing: theme.transitions.easing.easeInOut,
                       duration: theme.transitions.duration.standard,
@@ -616,12 +651,8 @@ export function Customers(props: CustomersProps) {
           open={openEditForm}
           customer={
             allCustomers
-            .filter((element) => element.ID === currentOrganization)
-            .map(({...customer}) => ({
-              ...customer,
-              labels: labelsContact?.queries.labels.filter(label => label.CONTACT === customer.ID) || []
-              })
-            )[0] || null
+            .find(element => element.ID === currentOrganization)
+            || null
           }
           onSubmit={handleOrganiztionEditSubmit}
           onCancelClick={handleOrganiztionEditCancelClick}

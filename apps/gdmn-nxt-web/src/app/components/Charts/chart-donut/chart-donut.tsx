@@ -2,8 +2,10 @@ import './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../customized-card/customized-card';
-import { Stack, Typography, useTheme } from '@mui/material';
+import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
+import { IKanbanCard } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
@@ -11,18 +13,25 @@ export interface ChartDonutProps {}
 export function ChartDonut(props: ChartDonutProps) {
   const theme = useTheme();
 
-  const [series, setSeries] = useState([55, 17, 15, 44, 22, 9]);
+  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
+
+  const { data: stages, isFetching: stagesIsFetching, refetch } = useGetKanbanDealsQuery();
+
+  const series = stages?.map(stage => stage.CARDS.length);
+
+  //const [series, setSeries] = useState([55, 17, 15, 44, 22, 9]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const newSeries = series.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
-      setSeries(newSeries);
+      // const newSeries = series.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
+      // setSeries(newSeries);
+      refetch();
     }, 5000);
     return () => clearTimeout(timer);
   });
 
   const chartOptions: ApexCharts.ApexOptions = {
-    labels: ['Минская', 'Бресткая ', 'Витебская ', 'Гомельская', 'Гродненская', 'Могилевская'],
+    labels: stages?.map(stage => stage.USR$NAME) ?? [],
     chart: {
       toolbar: {
         show: true,
@@ -31,7 +40,7 @@ export function ChartDonut(props: ChartDonutProps) {
     legend: {
       fontSize: '20em',
       fontWeight: 600,
-      position:'left',
+      position: 'left',
       itemMargin: {
         vertical: 10,
       },
@@ -46,41 +55,58 @@ export function ChartDonut(props: ChartDonutProps) {
     },
     grid: {
       padding: {
-
-        bottom: 150
+        bottom: 50
       },
     },
     dataLabels: {
       style: {
         fontSize: '1em',
       }
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              fontSize: '2em'
+            },
+            value: {
+              show: true,
+              fontSize: '1.5em'
+            }
+          }
+        }
+      }
     }
-  }
+  };
 
   const chartData: ApexCharts.ApexOptions  = {
     series: series
-  }
-
+  };
 
   return (
     <CustomizedCard
       borders
       boxShadows
       style={{
-        flex: 1
+        flex: matchDownXl ? 'none' : 1
       }}
     >
-      <Stack direction="column" spacing={3} p={2}>
-        <Typography variant="h1">Продажи по областям</Typography>
-        <Chart
-          type="donut"
-          options={chartOptions}
-          {...chartData}
-        />
-      </Stack>
-
+      {stagesIsFetching
+        ? <></>
+        : <Stack direction="column" spacing={3} p={2}>
+            <Typography variant="h1">Статус сделок</Typography>
+            <Chart
+              type="donut"
+              options={chartOptions}
+              {...chartData}
+            />
+          </Stack>
+      }
     </CustomizedCard>
   );
-}
+};
 
 export default ChartDonut;

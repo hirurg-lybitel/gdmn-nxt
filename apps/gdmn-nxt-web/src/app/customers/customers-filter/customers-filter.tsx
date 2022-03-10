@@ -55,7 +55,7 @@ export interface CustomersFilterProps {
 export function CustomersFilter(props: CustomersFilterProps) {
   const {
     open,
-    width="320px",
+    width="300px",
     onClose,
     filteringData,
     onFilteringDataChange
@@ -86,6 +86,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
+          width: width
         }}
       >
         <CardContent style={{ flex: 1}}>
@@ -153,13 +154,15 @@ export function CustomersFilter(props: CustomersFilterProps) {
               loadingText="Загрузка данных..."
             />
             <Autocomplete
+              //style={{ width: '100px' }}
+              //fullWidth
               multiple
               limitTags={2}
               disableCloseOnSelect
               options={labels || []}
-              onChange={(e, value) => handleOnChange('labels', value)}
+              onChange={(e, value) => handleOnChange('LABELS', value)}
               value={
-                labels?.filter(label => filteringData && (filteringData['labels'])?.find((el: IContactHierarchy) => el.ID === label.ID ))
+                labels?.filter(label => filteringData && (filteringData['LABELS'])?.find((el: IContactHierarchy) => el.ID === label.ID ))
               }
               getOptionLabel={option => option.NAME}
               renderOption={(props, option, { selected }) => (
@@ -191,6 +194,10 @@ export function CustomersFilter(props: CustomersFilterProps) {
       </CustomizedCard>
     )
   };
+
+  // return(
+  //   <div></div>
+  // );
 
   return (
     <Box flex={1} display="flex">

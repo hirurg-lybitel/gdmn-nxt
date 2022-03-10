@@ -8,15 +8,23 @@ const _headers = {
 
 interface IError {
   errorMessage: string
-}
+};
 
 const customerAPI = {
   customers: {
-    async list(): Promise<any> {
+    async list(options?: any): Promise<any> {
       const startTimeM = new Date().getTime();
-      console.log('⏩ request', "GET", `${baseUrlApi}contacts`);
+      const params = [];
 
-      const response = await fetch(`${baseUrlApi}contacts`, {
+      for (const key in options) {
+        for (const [name, value] of Object.entries(options[key])) {
+          params.push(`${name}=${value}`);
+        };
+      };
+
+      console.log('⏩ request', "GET", `${baseUrlApi}contacts?${params.join('&')}`);
+
+      const response = await fetch(`${baseUrlApi}contacts?${params.join('&')}`, {
         method: "GET",
         headers: _headers
       });

@@ -1,9 +1,20 @@
-import { IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
+import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
 import { RequestHandler } from "express";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
 import { resultError } from "./responseMessages";
 
 export const getContacts: RequestHandler = async (req, res) => {
+  const { pageSize, pageNo } = req.query;
+
+  let fromRecord: number = 0;
+  let toRecord: number;
+
+  // if (pageNo && pageSize) {
+  //   fromRecord = Number(pageNo) * Number(pageSize);
+  //   toRecord = fromRecord + Number(pageSize);
+
+  //   if (fromRecord === 0 ) fromRecord = 1;
+  // };
 
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
@@ -39,7 +50,8 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const queries = [
-      `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER`,
+      `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY `,
+      //`SELECT * FROM rdb$database `,
       `SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0`,
       `SELECT
          c.id,
@@ -52,46 +64,97 @@ export const getContacts: RequestHandler = async (req, res) => {
          ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
          ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
        WHERE
-         c.contacttype IN (2,3,5)`,
+         c.contacttype IN (2,3,5)
+       ORDER BY c.ID DESC
+       ${fromRecord > 0 ? `ROWS ${fromRecord} TO ${toRecord}` : ''}`,
+      `SELECT
+         l.ID,
+         l.USR$CONTACTKEY,
+         l.USR$LABELKEY
+       FROM USR$CRM_CONTACT_LABELS l
+       JOIN GD_CONTACT con ON con.ID = l.USR$LABELKEY
+       ORDER BY l.USR$CONTACTKEY`
     ];
 
-    console.time('Loading contacts...');
+    const t = new Date().getTime();
 
-    const [rawContracts, rawFolders, rawContacts] = await Promise.all(queries.map( execQuery ));
+    const [rawContracts, rawFolders, rawContacts, rawLabels] = await Promise.all(queries.map( execQuery ));
 
-    const contracts = new Map<number, Set<number>>();
-    const departments = new Map<number, Set<number>>();
+    console.log(`ExecQuery time ${new Date().getTime() - t} ms`);
+
+    interface IMapOfArrays {
+      [customerId: string]: any[];
+    };
+
+    const contracts: IMapOfArrays = {};
+    const departments: IMapOfArrays = {}
+    const labels: IMapOfArrays = {}
+
+    const tMap = new Date().getTime();
 
     rawContracts.forEach( c => {
-      if (contracts.has(c.USR$CUSTOMERKEY)) {
-        contracts.get(c.USR$CUSTOMERKEY).add(c.USR$JOBKEY);
+      if (contracts[c.USR$CUSTOMERKEY]) {
+        if (!contracts[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
+          contracts[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
+        }
       } else {
-        contracts.set(c.USR$CUSTOMERKEY, new Set([c.USR$JOBKEY]));
-      }
+        contracts[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
+      };
 
-      if (departments.has(c.USR$CUSTOMERKEY)) {
-        departments.get(c.USR$CUSTOMERKEY).add(c.USR$DEPOTKEY);
+      if (departments[c.USR$CUSTOMERKEY]) {
+        if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
+          departments[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
+        }
       } else {
-        departments.set(c.USR$CUSTOMERKEY, new Set([c.USR$DEPOTKEY]));
-      }
-    }); 
+        departments[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
+      };
+    });
 
-    const folders = new Map<number, string>();
+    rawLabels.map( l => {
+      if (labels[l.USR$CONTACTKEY]) {
+        if (!labels[l.USR$CONTACTKEY].includes(l.USR$LABELKEY)) {
+          labels[l.USR$CONTACTKEY].push({ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY });
+        }
+      } else {
+        labels[l.USR$CONTACTKEY] = [{ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY }];
+      };
+    });
 
-    rawFolders.forEach( f => folders.set(f.ID, f.NAME) ); 
+    console.log(`Map time ${new Date().getTime() - tMap} ms`);
 
-    const contacts = rawContacts.map( c => {
-      const DEPARTMENTS = departments.has(c.ID) ? [...departments.get(c.ID)] : null;
-      const CONTRACTS = contracts.has(c.ID) ? [...contracts.get(c.ID)] : null;
+    interface IFolders {
+      [id: string]: string;
+    };
+
+    const folders: IFolders = rawFolders.reduce( (p, f) => {
+      p[f.ID] = f.NAME;
+      return p;
+    }, {});
+
+    const tCon = new Date().getTime();
+
+    const contacts: ICustomer[]  = rawContacts.map( c => {
+      const DEPARTMENTS = departments[c.ID]?.map(d => ({
+        ID: d
+      })) ?? null;
+
+      const CONTRACTS = contracts[c.ID]?.map(c => ({
+        ID: c
+      })) ?? null;
+
+      const LABELS = labels[c.ID]?? null;
+
       return {
         ...c,
         NAME: c.NAME || '<не указано>',
         DEPARTMENTS,
         CONTRACTS,
-        LABELS: null,
-        FOLDERNAME: folders.get(c.PARENT)
+        LABELS,
+        FOLDERNAME: folders[c.PARENT]
       };
     });
+
+    console.log(`Serialize contacts time ${new Date().getTime() - tCon} ms`);
 
     const result: IRequestResult = {
       queries: { contacts },
@@ -99,13 +162,12 @@ export const getContacts: RequestHandler = async (req, res) => {
       _schema
     };
 
-    console.timeEnd('Loading contacts...');
+    console.log(`Contacts time ${new Date().getTime() - t} ms`);
 
     return res.status(200).json(result);
   } catch(error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    console.log('end');
     await releaseReadTransaction(req.sessionID);
   }
 };

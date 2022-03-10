@@ -11,9 +11,8 @@ export interface DashboardProps {}
 export function Dashboard(props: DashboardProps) {
   const theme = useTheme();
 
-
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
   return (
     <Stack direction="column" spacing={3} flex={1}>
@@ -21,7 +20,7 @@ export function Dashboard(props: DashboardProps) {
         <EarningCard />
         <OrderCard />
       </Stack>
-      <Stack direction={matchDownLg ? "column" : "row"} spacing={3} display="flex" height="700px">
+      <Stack direction={matchDownXl ? "column" : "row"} spacing={3} display="flex" height={matchDownXl ? "auto" : "550px"}>
         <ChartColumn />
         <ChartDonut />
       </Stack>

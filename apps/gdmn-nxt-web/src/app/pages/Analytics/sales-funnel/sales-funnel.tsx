@@ -4,45 +4,33 @@ import { useSelector } from 'react-redux';
 import { customersSelectors } from '../../../features/customer/customerSlice';
 import { ResponsiveFunnel } from '@nivo/funnel'
 import CustomizedCard from '../../../components/customized-card/customized-card';
+import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 
 /* eslint-disable-next-line */
 export interface SalesFunnelProps {}
 
 /**Guid for @nivo/funnel https://nivo.rocks/funnel/ */
 export function SalesFunnel(props: SalesFunnelProps) {
-  const funnelData = [
-      {
-        id: "step_sent",
-        value: 66303,
-        label: "Sent"
-      },
-      {
-        id: "step_viewed",
-        value: 55213,
-        label: "Viewed"
-      },
-      {
-        id: "step_clicked",
-        value: 40714,
-        label: "Clicked"
-      },
-      {
-        id: "step_add_to_card",
-        value: 35944,
-        label: "Add To Card"
-      },
-      {
-        id: "step_purchased",
-        value: 28944,
-        label: "Purchased"
-      }
-  ]
+  const { data: stages } = useGetKanbanDealsQuery();
 
+  const funnelData = stages?.map(stage => ({
+    id: stage.ID,
+    label: stage.USR$NAME,
+    value: stage.CARDS.length
+  })) ?? [];
 
   return (
-
     <CustomizedCard borders boxShadows style={{height: '800px', flex: 1 }}>
       <ResponsiveFunnel
+        theme={{
+          //fontSize: 20,
+          labels: {
+            text: {
+              fontSize: '1.5em',
+              fontWeight: 600
+            }
+          }
+        }}
         data={funnelData}
         margin={{ top: 30, right: 20, bottom: 20, left: 20 }}
         valueFormat=">-.4s"
@@ -67,6 +55,6 @@ export function SalesFunnel(props: SalesFunnelProps) {
       />
     </CustomizedCard>
   )
-}
+};
 
 export default SalesFunnel;

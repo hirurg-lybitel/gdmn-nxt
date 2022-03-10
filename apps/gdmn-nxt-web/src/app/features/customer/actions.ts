@@ -1,4 +1,4 @@
-import { IContactWithID, IContactWithLabels } from "@gsbelarus/util-api-types";
+import { IContactWithID, IContactWithLabels, ICustomer } from "@gsbelarus/util-api-types";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import customerAPI from "./customerApi";
@@ -6,17 +6,17 @@ import customerAPI from "./customerApi";
 export interface ValidationErrors {
   errorMessage: string
   field_errors?: Record<string, string>
-}
+};
 
 export const fetchCustomers = createAsyncThunk<
-IContactWithLabels[] | ValidationErrors,
-  void,
+ICustomer[] | ValidationErrors,
+  {[optionName: string]: any} | void,
   {rejectValue:ValidationErrors}
 >(
   "customers/fetchCustomers",
-  async (_, { rejectWithValue}) => {
+  async (options, { rejectWithValue}) => {
     try {
-      const response = await customerAPI.customers.list();
+      const response = await customerAPI.customers.list(options);
 
       return response;
 
@@ -32,7 +32,7 @@ IContactWithLabels[] | ValidationErrors,
 );
 
 export const fetchCustomersByRootID = createAsyncThunk<
-IContactWithLabels[] | ValidationErrors,
+ICustomer[] | ValidationErrors,
   string,
   {rejectValue:ValidationErrors}
 >(
@@ -57,14 +57,14 @@ IContactWithLabels[] | ValidationErrors,
 
 export const updateCustomer = createAsyncThunk<
   any,
-  IContactWithLabels,
+  ICustomer,
   {
     rejectValue: ValidationErrors
     //fulfilledMeta: IContactWithID
   }
   >(
   "customers/updateCustomers",
-  async (customerData: IContactWithLabels, { fulfillWithValue, rejectWithValue }) => {
+  async (customerData: ICustomer, { fulfillWithValue, rejectWithValue }) => {
     try {
       const response = await customerAPI.customers.update(customerData);
 
@@ -89,7 +89,7 @@ export const updateCustomer = createAsyncThunk<
 
 export const addCustomer = createAsyncThunk(
   "customers/addCustomer",
-  async (newCustomer: IContactWithLabels, { fulfillWithValue, rejectWithValue }) => {
+  async (newCustomer: ICustomer, { fulfillWithValue, rejectWithValue }) => {
     try {
       const response = await customerAPI.customers.add(newCustomer);
 
@@ -119,7 +119,7 @@ export const deleteCustomer = createAsyncThunk(
 
 
 export const fetchHierarchy = createAsyncThunk<
-IContactWithLabels[] | ValidationErrors,
+ICustomer[] | ValidationErrors,
   void,
   {rejectValue:ValidationErrors}
 >(
