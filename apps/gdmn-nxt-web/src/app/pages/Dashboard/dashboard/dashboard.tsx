@@ -20,7 +20,7 @@ export function Dashboard(props: DashboardProps) {
         <EarningCard />
         <OrderCard />
       </Stack>
-      <Stack direction={matchDownXl ? "column" : "row"} spacing={3} display="flex" height={matchDownXl ? "auto" : "550px"}>
+      <Stack direction={matchDownXl ? "column" : "row"} spacing={3} display="flex">
         <ChartColumn />
         <ChartDonut />
       </Stack>

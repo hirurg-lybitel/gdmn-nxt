@@ -155,8 +155,8 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
               <Grid item>
                 <Button
                   variant="contained"
-                  //onClick={handleGenerate}
                   onClick={handleGenerate}
+                  disabled={!customerId}
                 >
                   Сформировать
                 </Button>
