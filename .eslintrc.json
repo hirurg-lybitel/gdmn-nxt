@@ -29,6 +29,7 @@
         "@nrwl/nx/enforce-module-boundaries": "off",
         "react/react-in-jsx-scope": "off",
         "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-empty-function": "off",
         "react/jsx-closing-bracket-location": 1,
         "react/jsx-curly-spacing": ["warn", {
           "when": "never",
@@ -61,7 +62,7 @@
         "comma-spacing": "error",
         "key-spacing": "error",
         "no-trailing-spaces": "error",
-        "id-length": "error",
+        "id-length": "warn",
         "camelcase": "error",
         "semi": "error",
         "indent": ["error", 2],
