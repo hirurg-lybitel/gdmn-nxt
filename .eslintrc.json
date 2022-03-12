@@ -23,33 +23,61 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": ["plugin:@nrwl/nx/typescript"],
+      "extends": ["plugin:@nrwl/nx/typescript", "plugin:react/recommended"],
+      "plugins": ["react"],
       "rules": {
+        "@nrwl/nx/enforce-module-boundaries": "off",
+        "react/react-in-jsx-scope": "off",
+        "@typescript-eslint/no-explicit-any": "off",
         "react/jsx-closing-bracket-location": 1,
         "react/jsx-curly-spacing": ["warn", {
           "when": "never",
-          "children": {
-            "when": "always"
-          }
+          "children": true
         }],
-        "react/jsx-boolean-value": ["never"],
+        "react/jsx-boolean-value": 0,
         "react/self-closing-comp": ["error", {
           "component": true
         }],
         "jsx-quotes": 1,
         "quotes": ["error", "single"],
+        "dot-notation": "warn",
+        "eqeqeq": "error",
+        "nonblock-statement-body-position": ["error", "beside"],
+        "brace-style": "error",
+        "spaced-comment": ["error", "always"],
+        "space-before-blocks": "error",
+        "keyword-spacing": "error",
+        "space-infix-ops": "error",
+        "newline-per-chained-call": "error",
+        "no-whitespace-before-property": "error",
+        "padded-blocks": ["error", "never"],
+        "no-multiple-empty-lines": "error",
         "no-multi-spaces": "error",
-        "prettier/prettier": [
-          "error",
-          {
-              "bracketSpacing": true,
-              "printWidth": 140,
-              "trailingComma": "none",
-              "tabWidth": 4,
-              "useTabs": false,
-              "endOfLine": "auto"
-          }
-      ]
+        "no-array-constructor": "error",
+        "space-in-parens": "error",
+        "array-bracket-spacing": "error",
+        "object-curly-spacing": ["error", "always"],
+        "block-spacing": "error",
+        "comma-spacing": "error",
+        "key-spacing": "error",
+        "no-trailing-spaces": "error",
+        "id-length": "error",
+        "camelcase": "error",
+        "semi": "error",
+        "indent": ["error", 2],
+        "react/jsx-first-prop-new-line": [1, "multiline"],
+        "react/jsx-max-props-per-line": ["error", { "when": "multiline", "maximum": 1 }]
+        // "prettier/prettier": [
+        //   "warn",
+        //   {
+        //       // "bracketSpacing": false,
+        //       // "printWidth": 140,
+        //       // "trailingComma": "none",
+        //       "tabWidth": 2,
+        //       "useTabs": false,
+        //       "endOfLine": "auto"
+        //   }
+        // ]
       }
     },
     {
