@@ -12,33 +12,33 @@ export interface SidebarProps {
 
 
 export function Sidebar(props: SidebarProps) {
-  const {open, onToogle, window} = props
+  const { open, onToogle, window } = props;
   const theme = useTheme();
 
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
 
   const drawer = (
     <>
-        {/* <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+      {/* <Box sx={{ display: { xs: 'block', md: 'none' } }}>
             <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                 123
             </Box>
         </Box> */}
-        <BrowserView>
-          <Box
-            style={{
-              paddingLeft: '16px',
-              paddingRight: '16px'
-              }}
-          >
-            <MenuList />
-          </Box>
-        </BrowserView>
-        <MobileView>
-            <Box sx={{ px: 2 }}>
-                <MenuList />
-            </Box>
-        </MobileView>
+      <BrowserView>
+        <Box
+          style={{
+            paddingLeft: '16px',
+            paddingRight: '16px'
+          }}
+        >
+          <MenuList />
+        </Box>
+      </BrowserView>
+      <MobileView>
+        <Box sx={{ px: 2 }}>
+          <MenuList />
+        </Box>
+      </MobileView>
     </>
   );
 
@@ -58,15 +58,15 @@ export function Sidebar(props: SidebarProps) {
         ModalProps={{ keepMounted: true }}
         sx={{
           '& .MuiDrawer-paper': {
-              ...theme.menu,
-              width: theme.drawerWidth,
-              borderRight: 'none',
-              paddingTop: '25px',
-              [theme.breakpoints.up('md')]: {
-                top: '70px'
-              }
+            ...theme.menu,
+            width: theme.drawerWidth,
+            borderRight: 'none',
+            paddingTop: '25px',
+            [theme.breakpoints.up('md')]: {
+              top: '70px'
+            }
           }
-      }}
+        }}
       >
         {drawer}
       </Drawer>

@@ -1,4 +1,4 @@
-import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
+import { Avatar, Stack, Theme, Typography } from '@mui/material';
 import CustomizedCard from '../../customized-card/customized-card';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   card: {
     flex: 1,
     padding: 20,
-    background: `linear-gradient(to right, ${theme.color.lightBlue[800]}, ${theme.color.lightBlue['A700']} 100%, transparent)`,
+    background: `linear-gradient(to right, ${theme.color.lightBlue[800]}, ${theme.color.lightBlue.A700} 100%, transparent)`,
     position: 'relative'
   },
   amount: {
@@ -36,16 +36,15 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-const totalSum = 15488
+const totalSum = 15488;
 
-function getFormattedNumber(value: number){
+function getFormattedNumber(value: number) {
   return value.toLocaleString();
 }
 /* eslint-disable-next-line */
 export interface OrderCardProps {}
 
 export function OrderCard(props: OrderCardProps) {
-  const theme = useTheme();
   const classes = useStyles();
 
   return (
@@ -60,7 +59,7 @@ export function OrderCard(props: OrderCardProps) {
       </Stack>
       <Typography className={classes.title}>Всего Заказано</Typography>
       <Avatar className={classes.avatar}>
-        <ShoppingBagOutlinedIcon fontSize="inherit"  />
+        <ShoppingBagOutlinedIcon fontSize="inherit" />
       </Avatar>
     </CustomizedCard>
   );

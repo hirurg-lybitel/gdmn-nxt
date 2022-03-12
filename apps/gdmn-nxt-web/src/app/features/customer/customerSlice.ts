@@ -1,11 +1,11 @@
-import { IContactHierarchy, IContactWithLabels } from "@gsbelarus/util-api-types";
+import { IContactHierarchy, IContactWithLabels } from '@gsbelarus/util-api-types';
 import {
   createSlice,
   createEntityAdapter,
   PayloadAction
-} from "@reduxjs/toolkit";
-import { RootState } from "../../store";
-import { addCustomer, deleteCustomer, fetchCustomers, fetchCustomersByRootID, fetchHierarchy, updateCustomer, ValidationErrors } from "./actions";
+} from '@reduxjs/toolkit';
+import { RootState } from '../../store';
+import { addCustomer, deleteCustomer, fetchCustomers, fetchCustomersByRootID, fetchHierarchy, updateCustomer, ValidationErrors } from './actions';
 
 interface Customer extends IContactWithLabels {
   error: string | null | undefined;
@@ -16,7 +16,7 @@ const initialState: Customer = {
   error: null,
   loading: false,
   ID: 0,
-  NAME: "",
+  NAME: '',
   labels: []
 };
 
@@ -26,7 +26,7 @@ export const customersAdapter = createEntityAdapter<Customer>({
 });
 
 const customersSlice = createSlice({
-  name: "customers",
+  name: 'customers',
   initialState: customersAdapter.getInitialState(initialState),
   reducers: {
     selectAllCustomers: customersAdapter.setAll,
@@ -34,12 +34,12 @@ const customersSlice = createSlice({
       console.log('selectHierarchy');
     }
   },
-  extraReducers:{
-    [updateCustomer.fulfilled.toString()](state, action ) {
+  extraReducers: {
+    [updateCustomer.fulfilled.toString()](state, action) {
       const { ID, ...changes } = action.payload.queries.contact[0];
       state.loading = false;
 
-      customersAdapter.updateOne(state,  { id: ID, changes } );
+      customersAdapter.updateOne(state, { id: ID, changes });
     },
     [updateCustomer.rejected.toString()](state, action) {
       state.loading = false;
@@ -54,10 +54,9 @@ const customersSlice = createSlice({
       state.error = null;
     },
     [fetchCustomers.fulfilled.toString()](state, action) {
-
       state.loading = false;
       state.error = null;
-      customersAdapter.setAll(state, action.payload.queries.contacts)
+      customersAdapter.setAll(state, action.payload.queries.contacts);
     },
     [fetchCustomers.pending.toString()](state, action) {
       state.loading = true;
@@ -82,13 +81,13 @@ const customersSlice = createSlice({
       state.loading = false;
       state.error = action.payload.errorMessage;
     },
-    [deleteCustomer.fulfilled.toString()](state, action){
+    [deleteCustomer.fulfilled.toString()](state, action) {
       state.loading = false;
       state.error = null;
 
       customersAdapter.removeOne(state, action.payload);
     },
-    [deleteCustomer.rejected.toString()](state, action){
+    [deleteCustomer.rejected.toString()](state, action) {
       console.log('deleteCustomer_rejected', action);
       state.loading = false;
       if (action.payload) {
@@ -97,7 +96,7 @@ const customersSlice = createSlice({
         state.error = action.errorMessage;
       }
     },
-    [deleteCustomer.pending.toString()](state, action){
+    [deleteCustomer.pending.toString()](state, action) {
       state.loading = true;
       state.error = null;
       console.log('deleteCustomer_pending', action);
@@ -105,7 +104,7 @@ const customersSlice = createSlice({
     [fetchCustomersByRootID.fulfilled.toString()](state, action) {
       state.loading = false;
       state.error = null;
-      customersAdapter.setAll(state, action.payload.queries.contacts)
+      customersAdapter.setAll(state, action.payload.queries.contacts);
     },
     [fetchCustomersByRootID.pending.toString()](state, action) {
       state.loading = true;
@@ -126,9 +125,9 @@ const initialStateHierarchy: IHierarchy = {
   error: null,
   loading: false,
   ID: 0,
-  NAME: "",
+  NAME: '',
   LB: 0,
-  RB:0
+  RB: 0
 };
 
 export const hierarchysAdapter = createEntityAdapter<IHierarchy>({
@@ -137,23 +136,23 @@ export const hierarchysAdapter = createEntityAdapter<IHierarchy>({
 });
 
 export const hierarchySlice = createSlice({
-  name: "customerHierarchy",
+  name: 'customerHierarchy',
   initialState: hierarchysAdapter.getInitialState(initialStateHierarchy),
   reducers: {
     selectAllHierarchy: hierarchysAdapter.setAll,
   },
   extraReducers: {
-    [fetchHierarchy.fulfilled.toString()](state, action){
+    [fetchHierarchy.fulfilled.toString()](state, action) {
       state.loading = false;
       state.error = null;
 
-      customersAdapter.setAll(state, action.payload.queries.hierarchy)
+      customersAdapter.setAll(state, action.payload.queries.hierarchy);
     },
-    [fetchHierarchy.pending.toString()](state, action){
+    [fetchHierarchy.pending.toString()](state, action) {
       state.loading = true;
       state.error = null;
     },
-    [fetchHierarchy.rejected.toString()](state, action){
+    [fetchHierarchy.rejected.toString()](state, action) {
       state.loading = false;
       state.error = action.payload.errorMessage;
     }

@@ -29,6 +29,6 @@ const analytics: IMenuItem = {
       icon: <FilterAltIcon color="secondary" />
     }
   ]
-}
+};
 
 export default analytics;

@@ -1,7 +1,5 @@
 import { CircularIndeterminate } from '../components/circular-indeterminate/circular-indeterminate';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import './er-model.module.less';
 import { createElement, useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid/Grid';
@@ -21,13 +19,13 @@ export function ErModel(props: ErModelProps) {
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
   const rows = useMemo(
     () => data?.entities[selectedEntity]?.attributes ?? [],
-  [data, selectedEntity]);
+    [data, selectedEntity]);
 
-  useEffect( () => {
+  useEffect(() => {
     if (selectionModel.length) {
       setSelectionModel([]);
     }
-  }, [selectedEntity])
+  }, [selectedEntity, selectionModel.length]);
 
   const columns: GridColDef[] = [
     {
@@ -48,7 +46,7 @@ export function ErModel(props: ErModelProps) {
   ];
 
   const recurse = (parent?: string) => data && Object.values(data.entities)
-    .filter( e => e.parent === parent )
+    .filter(e => e.parent === parent)
     .map(
       e =>
         <StyledTreeItem key={e.name} nodeId={e.name} label={e.name}>
@@ -56,12 +54,12 @@ export function ErModel(props: ErModelProps) {
         </StyledTreeItem>
     );
 
-  const treeItems = useMemo(recurse, [data]);
+  const treeItems = useMemo(recurse, [data, recurse]);
 
   return (
     isFetching ?
       <CircularIndeterminate open={true} />
-    :
+      :
       <Grid
         container
         height="100%"
@@ -76,14 +74,14 @@ export function ErModel(props: ErModelProps) {
             overflowY: 'auto',
             maxHeight: '100%',
           }}
-      >
+        >
           <StyledTreeView
             aria-label="er-model"
             defaultExpanded={['TgdcBase']}
             defaultCollapseIcon={'🞃'}
             defaultExpandIcon={'🞂'}
             defaultEndIcon={<div style={{ width: 14 }} />}
-            onNodeSelect={ (_evt: any, ids: any) => {
+            onNodeSelect={(_evt: any, ids: any) => {
               if (ids) {
                 setSelectedEntity(ids);
               }
@@ -102,9 +100,9 @@ export function ErModel(props: ErModelProps) {
             selectionModel={selectionModel}
             rowHeight={24}
             headerHeight={24}
-            editMode='row'
+            editMode="row"
             components={{
-              ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
+              ColumnResizeIcon: createSvgIcon(createElement('path', { d: 'M11 24V0h2v24z' }), 'Separator2')
             }}
           />
         </Grid>

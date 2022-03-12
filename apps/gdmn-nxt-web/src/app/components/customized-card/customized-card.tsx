@@ -9,7 +9,7 @@ interface ICustomizedCardProps {
 
 const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
-})<ICustomizedCardProps>(({theme, borders=false, boxShadows=false}) => ({
+})<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false }) => ({
   ...(borders ? { border: '1px solid #E0E3E7' } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : {})
 }));

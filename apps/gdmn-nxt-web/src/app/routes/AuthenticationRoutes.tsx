@@ -1,12 +1,12 @@
-import { Navigate } from "react-router-dom";
-import App from "../app";
-import MinimalLayout from "../layouts/MinimalLayout";
-import NotFound from "../pages/NotFound";
+import { Navigate } from 'react-router-dom';
+import App from '../app';
+import MinimalLayout from '../layouts/MinimalLayout';
+import NotFound from '../pages/NotFound';
 
 function AuthenticationRoutes(isLogged: boolean) {
-  return{
+  return {
     path: '/authentication',
-    element: !isLogged ? <MinimalLayout /> : <Navigate to={`/`} />,
+    element: !isLogged ? <MinimalLayout /> : <Navigate to={'/'} />,
     children: [
       {
         path: '/authentication',
@@ -14,7 +14,7 @@ function AuthenticationRoutes(isLogged: boolean) {
       },
       { path: '404', element: <NotFound /> },
     ]
-  }
+  };
 };
 
 export default AuthenticationRoutes;

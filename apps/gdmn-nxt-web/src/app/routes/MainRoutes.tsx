@@ -1,17 +1,17 @@
-import { Navigate } from "react-router-dom";
-import ErModel from "../er-model/er-model";
-import { MainLayout } from "../layouts/MainLayout";
-import CustomersList from "../pages/Customers/customers-list/customers-list";
-import OrderList from "../pages/Customers/order-list/order-list";
-import Dashboard from "../pages/Dashboard/dashboard/dashboard";
-import { ReconciliationAct } from "../pages/Analytics/UserReports/ReconciliationAct";
-import NotFound from "../pages/NotFound";
+import { Navigate } from 'react-router-dom';
+import ErModel from '../er-model/er-model';
+import { MainLayout } from '../layouts/MainLayout';
+import CustomersList from '../pages/Customers/customers-list/customers-list';
+import OrderList from '../pages/Customers/order-list/order-list';
+import Dashboard from '../pages/Dashboard/dashboard/dashboard';
+import { ReconciliationAct } from '../pages/Analytics/UserReports/ReconciliationAct';
+import NotFound from '../pages/NotFound';
 
 
 function MainRoutes(isLogged: boolean) {
   return {
     path: '/',
-    element: isLogged ? <MainLayout /> : <Navigate to={`/authentication/login`} />,
+    element: isLogged ? <MainLayout /> : <Navigate to={'/authentication/login'} />,
     children: [
       {
         path: 'dashboard',
@@ -42,7 +42,7 @@ function MainRoutes(isLogged: boolean) {
         element: <NotFound />
       },
     ]
-  }
+  };
 };
 
 export default MainRoutes;

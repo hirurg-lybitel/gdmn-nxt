@@ -7,7 +7,7 @@ export const erModelApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getErModel: builder.query<IERModel, void>({
-      query: () => `er-model`
+      query: () => 'er-model'
     }),
   }),
 });

@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   InputAdornment,
   Slide,
@@ -20,13 +19,13 @@ import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog'
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { IDeal, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { fetchCustomers } from '../../../features/customer/actions';
 import { customersSelectors } from '../../../features/customer/customerSlice';
-import { ICustomer } from "@gsbelarus/util-api-types";
+import { ICustomer } from '@gsbelarus/util-api-types';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -71,7 +70,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const { currentStage, card, stages } = props;
   const { onSubmit, onCancelClick } = props;
 
-  //console.log('deal', deal, (Math.round(deal!.amount || 0 * 100)).toFixed(2));
+  // console.log('deal', deal, (Math.round(deal!.amount || 0 * 100)).toFixed(2));
 
   const classes = useStyles();
 
@@ -84,7 +83,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   useEffect(() => {
     dispatch(fetchCustomers());
-  }, [])
+  }, [dispatch]);
 
   const handleDeleteClick = () => {
     setDeleting(true);
@@ -107,7 +106,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     USR$AMOUNT: card?.DEAL?.USR$AMOUNT || undefined,
     USR$CONTACTKEY: card?.DEAL?.CONTACT?.ID || -1,
     DEAL: card?.DEAL || undefined
-  }
+  };
 
   const formik = useFormik<IKanbanCard & IDeal>({
     enableReinitialize: true,
@@ -116,7 +115,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      USR$NAME: yup.string().required('').max(20, 'Слишком длинное наименование'),
+      USR$NAME: yup.string().required('')
+        .max(20, 'Слишком длинное наименование'),
       USR$MASTERKEY: yup.string().required(''),
       USR$CONTACTKEY: yup.string().required(''),
     }),
@@ -128,7 +128,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   return (
     <Dialog
-      //open={open}
+      // open={open}
       open={true}
       TransitionComponent={Transition}
       classes={{
@@ -136,121 +136,121 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       }}
     >
       <DialogTitle>
-         {card?.ID ? `Редактирование ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
+        {card?.ID ? `Редактирование ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
-            <Form id="mainForm" onSubmit={formik.handleSubmit}>
-              <Stack spacing={3}>
-                <TextField
-                    label="Наименование"
+          <Form id="mainForm" onSubmit={formik.handleSubmit}>
+            <Stack spacing={3}>
+              <TextField
+                label="Наименование"
+                type="text"
+                required
+                autoFocus
+                name="USR$NAME"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.USR$NAME}
+                helperText={formik.errors.USR$NAME}
+              />
+              <Autocomplete
+                options={allCustomers || []}
+                getOptionLabel={option => option.NAME}
+                filterOptions={filterOptions}
+                value={allCustomers?.find(el => el.ID === formik.values.USR$CONTACTKEY) || null}
+                loading={customersLoading}
+                loadingText="Загрузка данных..."
+                onChange={(e, value) => {
+                  formik.setFieldValue(
+                    'USR$CONTACTKEY',
+                    value ? value.ID : initValue.USR$CONTACTKEY
+                  );
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.ID}>
+                      {option.NAME}
+                    </li>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    key={params.id}
+                    label="Клиент"
                     type="text"
+                    name="USR$CONTACTKEY"
                     required
-                    autoFocus
-                    name="USR$NAME"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
-                    value={formik.values.USR$NAME}
-                    helperText={formik.errors.USR$NAME}
+                    value={formik.values.USR$CONTACTKEY}
+                    helperText={formik.errors.USR$CONTACTKEY}
+                    placeholder="Выберите клиента"
                   />
-                  <Autocomplete
-                    options={allCustomers || []}
-                    getOptionLabel={option => option.NAME}
-                    filterOptions={filterOptions}
-                    value={allCustomers?.find(el => el.ID === formik.values.USR$CONTACTKEY) || null}
-                    loading={customersLoading}
-                    loadingText="Загрузка данных..."
-                    onChange={(e, value) => {
-                      formik.setFieldValue(
-                        "USR$CONTACTKEY",
-                        value ? value.ID : initValue.USR$CONTACTKEY
-                      );
-                    }}
-                    renderOption={(props, option) => {
-                      return (
-                        <li {...props} key={option.ID}>
-                          {option.NAME}
-                        </li>
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        key={params.id}
-                        label="Клиент"
-                        type="text"
-                        name="USR$CONTACTKEY"
-                        required
-                        onBlur={formik.handleBlur}
-                        onChange={formik.handleChange}
-                        value={formik.values.USR$CONTACTKEY}
-                        helperText={formik.errors.USR$CONTACTKEY}
-                        placeholder="Выберите клиента"
-                      />
-                    )}
-                  />
-                  <Autocomplete
-                    options={stages?.filter(stage => stage.ID !== formik.values.USR$MASTERKEY) || []}
-                    getOptionLabel={option => option.USR$NAME}
-                    value={stages?.filter(el => el.ID === formik.values.USR$MASTERKEY)[0] || null}
-                    onChange={(e, value) => {
-                      formik.setFieldValue(
-                        "USR$MASTERKEY",
-                        value ? value.ID : initValue.USR$MASTERKEY
-                      );
-                    }}
-                    renderOption={(props, option) => {
-                      return (
-                        <li {...props} key={option.ID}>
-                          {option.USR$NAME}
-                        </li>
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        key={params.id}
-                        label="Стадия"
-                        type="text"
-                        name="USR$MASTERKEY"
-                        required
-                        onBlur={formik.handleBlur}
-                        onChange={formik.handleChange}
-                        value={formik.values.USR$MASTERKEY}
-                        helperText={formik.errors.USR$MASTERKEY}
-                        placeholder="Выберите стадию"
-                      />
-                    )}
-                  />
-                <TextField
-                    label="Сумма"
-                    type="number"
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
-                    }}
-                    name="USR$AMOUNT"
+                )}
+              />
+              <Autocomplete
+                options={stages?.filter(stage => stage.ID !== formik.values.USR$MASTERKEY) || []}
+                getOptionLabel={option => option.USR$NAME}
+                value={stages?.filter(el => el.ID === formik.values.USR$MASTERKEY)[0] || null}
+                onChange={(e, value) => {
+                  formik.setFieldValue(
+                    'USR$MASTERKEY',
+                    value ? value.ID : initValue.USR$MASTERKEY
+                  );
+                }}
+                renderOption={(props, option) => {
+                  return (
+                    <li {...props} key={option.ID}>
+                      {option.USR$NAME}
+                    </li>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    key={params.id}
+                    label="Стадия"
+                    type="text"
+                    name="USR$MASTERKEY"
+                    required
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
-                    value={formik.values.USR$AMOUNT}
-                    helperText={formik.errors.USR$AMOUNT}
+                    value={formik.values.USR$MASTERKEY}
+                    helperText={formik.errors.USR$MASTERKEY}
+                    placeholder="Выберите стадию"
                   />
-              </Stack>
-            </Form>
-          </FormikProvider>
+                )}
+              />
+              <TextField
+                label="Сумма"
+                type="number"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
+                }}
+                name="USR$AMOUNT"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.USR$AMOUNT}
+                helperText={formik.errors.USR$AMOUNT}
+              />
+            </Stack>
+          </Form>
+        </FormikProvider>
       </DialogContent>
       <DialogActions style={{ display: 'flex' }}>
         <IconButton onClick={handleDeleteClick} size="large" >
-            <DeleteIcon />
+          <DeleteIcon />
         </IconButton>
         <Button onClick={handleCancelClick} style={{ marginLeft: 'auto' }}>Отменить</Button>
         <Button
           form="mainForm"
-          //type={!formik.isValid ? "submit" : "button"}
+          // type={!formik.isValid ? "submit" : "button"}
           type="submit"
           variant="contained"
           onClick={() => {
             setDeleting(false);
-            //setConfirmOpen(formik.isValid);
+            // setConfirmOpen(formik.isValid);
           }}
         >Сохранить</Button>
       </DialogActions>

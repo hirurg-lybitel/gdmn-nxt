@@ -1,18 +1,18 @@
-import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import DateRangePicker, { DateRange } from '@mui/lab/DateRangePicker';
-import LocalizationProvider from "@mui/lab/LocalizationProvider";
-import { Autocomplete, Button, Card, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from "@mui/material";
-import { Box, useTheme } from "@mui/system";
-import { createRef, Fragment, useEffect, useRef, useState } from "react";
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { Autocomplete, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
+import { Box } from '@mui/system';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import ruLocale from 'date-fns/locale/ru';
-import { useDispatch, useSelector } from "react-redux";
-import { customersSelectors } from "../../../features/customer/customerSlice";
-import { IContactWithLabels } from "@gsbelarus/util-api-types";
-import ReconciliationStatement from "../../../reconciliation-statement/reconciliation-statement";
-import { useParams } from "react-router-dom";
-import { fetchCustomers } from "../../../features/customer/actions";
-import { RootState } from "../../../store";
-import CustomizedCard from "../../../components/customized-card/customized-card";
+import { useDispatch, useSelector } from 'react-redux';
+import { customersSelectors } from '../../../features/customer/customerSlice';
+import { IContactWithLabels } from '@gsbelarus/util-api-types';
+import ReconciliationStatement from '../../../reconciliation-statement/reconciliation-statement';
+import { useParams } from 'react-router-dom';
+import { fetchCustomers } from '../../../features/customer/actions';
+import { RootState } from '../../../store';
+import CustomizedCard from '../../../components/customized-card/customized-card';
 
 
 const filterOptions = createFilterOptions({
@@ -39,14 +39,12 @@ interface IInitState {
 const initState: IInitState = {
   cutomerId: null,
   dates: [new Date(), new Date()]
-}
+};
 
 export const ReconciliationAct = (props: ReconciliationAct) => {
   const { customerId: id } = useParams();
 
-  const inCustomerId = Number(id)
-
-  const theme = useTheme();
+  const inCustomerId = Number(id);
 
   const [customerId, setCustomerId] = useState(inCustomerId ? inCustomerId : initState.cutomerId);
   const [dates, setDates] = useState<DateRange<Date>>(initState.dates);
@@ -63,7 +61,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
 
   useEffect(() => {
     dispatch(fetchCustomers());
-  }, [])
+  }, [dispatch]);
 
 
   const handleGenerate = () => {
@@ -77,31 +75,31 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
     setGenerate(true);
 
     scollToRef.current?.scrollIntoView();
-  }
+  };
 
   const handelClear = () => {
     setDates(initState.dates);
     setCustomerId(initState.cutomerId);
     setGenerate(false);
-  }
+  };
 
 
-  return(
+  return (
     <Box flex="1">
       <Stack direction="column" spacing={2}>
         <CustomizedCard borders boxShadows>
           <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
-            <Grid container spacing={3} direction={"column"}>
-              <Grid item md={6} sx={{width: '50%'}}>
+            <Grid container spacing={3} direction={'column'}>
+              <Grid item md={6} sx={{ width: '50%' }}>
                 <Autocomplete
                   options={allCustomers}
                   filterOptions={filterOptions}
                   getOptionLabel={option => option.NAME}
                   value={allCustomers.find(customer => customer.ID === customerId) || null}
                   onChange={(e, value) => {
-                    setCustomerId(value?.ID || null)
+                    setCustomerId(value?.ID || null);
                   }}
                   renderOption={(props, option) => {
                     return (
@@ -120,7 +118,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                       required
                       value={customerId}
                     />
-                    )
+                  )
                   }
                   loading={customersLoading}
                   loadingText="Загрузка данных..."
@@ -142,14 +140,14 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                     )}
                   />
                 </LocalizationProvider>
+              </Grid>
             </Grid>
-          </Grid>
           </CardContent>
           <Divider />
           <CardActions>
             <Grid
               container
-              direction={"row-reverse"}
+              direction={'row-reverse'}
               spacing={3}
             >
               <Grid item>
@@ -166,31 +164,35 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                   Очистить
                 </Button>
               </Grid>
-          </Grid>
+            </Grid>
           </CardActions>
         </CustomizedCard>
 
         {generate
-          ? <CustomizedCard borders boxShadows sx={{ p: 1 }} ref={scollToRef}
-              onChange={()=> console.log('onChange')}
-              onScroll={()=> console.log('onChange')}
-              onBlur={()=> console.log('onChange')}
-              onVolumeChange={()=> console.log('onChange')}
-              onDurationChange={()=> console.log('onChange')}
-              onTransitionEnd={()=> console.log('onChange')}
-              onLoad={()=> console.log('onChange')}
-              onTransitionEndCapture={()=> console.log('onChange')}
-            >
-              <ReconciliationStatement
-                custId={Number(inputParams?.cutomerId)}
-                dateBegin={inputParams?.dateBegin}
-                dateEnd={inputParams?.dateEnd}
-              />
-            </CustomizedCard>
+          ? <CustomizedCard
+            borders
+            boxShadows
+            sx={{ p: 1 }}
+            ref={scollToRef}
+            onChange={()=> console.log('onChange')}
+            onScroll={()=> console.log('onChange')}
+            onBlur={()=> console.log('onChange')}
+            onVolumeChange={()=> console.log('onChange')}
+            onDurationChange={()=> console.log('onChange')}
+            onTransitionEnd={()=> console.log('onChange')}
+            onLoad={()=> console.log('onChange')}
+            onTransitionEndCapture={()=> console.log('onChange')}
+          >
+            <ReconciliationStatement
+              custId={Number(inputParams?.cutomerId)}
+              dateBegin={inputParams?.dateBegin}
+              dateEnd={inputParams?.dateEnd}
+            />
+          </CustomizedCard>
           : null}
       </Stack>
     </Box>
-  )
+  );
 };
 
 export default ReconciliationAct;

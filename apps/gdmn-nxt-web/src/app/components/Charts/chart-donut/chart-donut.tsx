@@ -3,9 +3,7 @@ import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../customized-card/customized-card';
 import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { IKanbanCard } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
@@ -15,11 +13,11 @@ export function ChartDonut(props: ChartDonutProps) {
 
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
-  const { data: stages, isFetching: stagesIsFetching, refetch } = useGetKanbanDealsQuery();
+  const { data: stages, isFetching: stagesIsFetching } = useGetKanbanDealsQuery();
 
   const series = stages?.map(stage => stage.CARDS.length);
 
-  //const [series, setSeries] = useState([55, 17, 15, 44, 22, 9]);
+  // const [series, setSeries] = useState([55, 17, 15, 44, 22, 9]);
 
   // useEffect(() => {
   //   const timer = setTimeout(() => {
@@ -83,7 +81,7 @@ export function ChartDonut(props: ChartDonutProps) {
     }
   };
 
-  const chartData: ApexCharts.ApexOptions  = {
+  const chartData: ApexCharts.ApexOptions = {
     series: series
   };
 
@@ -96,17 +94,16 @@ export function ChartDonut(props: ChartDonutProps) {
       }}
     >
       {stagesIsFetching
-        ? <></>
+        ? {} // ???
         : <Stack direction="column" spacing={3} p={2}>
-            <Typography variant="h1">Статус сделок</Typography>
-            <Chart
-              type="donut"
-              height={matchDownXl ? 'auto' : '550px'}
-              options={chartOptions}
-              {...chartData}
-            />
-
-          </Stack>
+          <Typography variant="h1">Статус сделок</Typography>
+          <Chart
+            type="donut"
+            height={matchDownXl ? 'auto' : '550px'}
+            options={chartOptions}
+            {...chartData}
+          />
+        </Stack>
       }
     </CustomizedCard>
   );

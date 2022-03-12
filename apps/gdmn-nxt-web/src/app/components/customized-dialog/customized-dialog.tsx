@@ -1,5 +1,4 @@
 import { Dialog, Slide, Theme } from '@mui/material';
-import { styled } from '@mui/system';
 import { makeStyles } from '@mui/styles';
 import './customized-dialog.module.less';
 import { forwardRef, ReactElement, ReactNode, Ref } from 'react';
@@ -17,7 +16,7 @@ const useStyles = makeStyles<Theme, StyleProps>((theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: ({width}) => width,
+    width: ({ width }) => width,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   },
@@ -36,7 +35,7 @@ const Transition = forwardRef(function Transition(
 /* eslint-disable-next-line */
 export interface CustomizedDialogProps {
   open: boolean;
-  onClose?: (event: {}, reason: "backdropClick" | "escapeKeyDown") => void;
+  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
   children: ReactNode;
   width?: number | string;
 }
@@ -44,14 +43,13 @@ export interface CustomizedDialogProps {
 
 function CustomizedDialog(props: CustomizedDialogProps) {
   const { children, open, onClose } = props;
-  const { width=500 } = props;
+  const { width = 500 } = props;
 
   const styles = {
     width: width
-  }
+  };
 
   const classes = useStyles(styles);
-
 
 
   return (
@@ -65,7 +63,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
     >
       {children}
     </Dialog>
-  )
+  );
 }
 
 

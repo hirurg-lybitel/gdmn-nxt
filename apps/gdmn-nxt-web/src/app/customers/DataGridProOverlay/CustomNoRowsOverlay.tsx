@@ -1,7 +1,5 @@
 import { styled } from '@mui/material/styles';
 import { GridOverlay } from '@mui/x-data-grid-pro';
-import { ThemeOptions } from "@mui/material/styles";
-import { useTheme, Theme } from "@mui/system";
 import { Box, Typography } from '@mui/material';
 
 const StyledGridOverlay = styled(GridOverlay)(({ theme }) => ({
@@ -26,8 +24,6 @@ const StyledGridOverlay = styled(GridOverlay)(({ theme }) => ({
 }));
 
 export default function CustomNoRowsOverlay() {
-  const theme = useTheme();
-
   return (
     <StyledGridOverlay>
       <svg

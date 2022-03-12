@@ -1,4 +1,5 @@
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, Paper, Slide, Stack, TextField, useMediaQuery, useTheme } from '@mui/material';
+/* eslint-disable react/prop-types */
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Stack, TextField, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedCard from '../../components/customized-card/customized-card';
 import CustomizedDialog from '../../components/customized-dialog/customized-dialog';
 import { makeStyles } from '@mui/styles';
@@ -8,9 +9,7 @@ import './customers-filter.module.less';
 import { useGetDepartmentsQuery } from '../../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../../features/customer-contracts/customerContractsApi';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { Dispatch, forwardRef, ReactElement, Ref, SetStateAction, useEffect, useState } from 'react';
-import { TransitionProps } from '@mui/material/transitions';
-import { IContactHierarchy, ILabelsContact } from '@gsbelarus/util-api-types';
+import { IContactHierarchy } from '@gsbelarus/util-api-types';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -47,7 +46,7 @@ export interface IFilteringData {
 export interface CustomersFilterProps {
   open: boolean;
   width?: string;
-  onClose?: (event: {}, reason: "backdropClick" | "escapeKeyDown") => void;
+  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
 }
@@ -55,7 +54,7 @@ export interface CustomersFilterProps {
 export function CustomersFilter(props: CustomersFilterProps) {
   const {
     open,
-    width="300px",
+    width = '300px',
     onClose,
     filteringData,
     onFilteringDataChange
@@ -68,17 +67,17 @@ export function CustomersFilter(props: CustomersFilterProps) {
 
   const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery();
   const { data: customerContracts, isFetching: customerContractsIsFetching } = useGetCustomerContractsQuery();
-  const { data: labels, isFetching: labelsIsFetching} = useGetGroupsQuery();
+  const { data: labels, isFetching: labelsIsFetching } = useGetGroupsQuery();
 
   const handleOnChange = (entity: string, value: any) => {
-    let newObject = Object.assign({}, filteringData);
+    const newObject = Object.assign({}, filteringData);
     delete newObject[entity];
 
-    onFilteringDataChange(Object.assign(newObject, {[entity]: value}));
+    onFilteringDataChange(Object.assign(newObject, { [entity]: value }));
   };
 
-  function Filter(){
-    return(
+  function Filter() {
+    return (
       <CustomizedCard
         borders
         boxShadows={open}
@@ -89,7 +88,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
           width: width
         }}
       >
-        <CardContent style={{ flex: 1}}>
+        <CardContent style={{ flex: 1 }}>
           <Stack spacing={4}>
             <Autocomplete
               multiple
@@ -98,7 +97,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
               options={departments || []}
               onChange={(e, value) => handleOnChange('DEPARTMENTS', value)}
               value={
-                departments?.filter(department => filteringData && (filteringData['DEPARTMENTS'])?.find((el: any) => el.ID === department.ID ))
+                departments?.filter(department => filteringData && (filteringData.DEPARTMENTS)?.find((el: any) => el.ID === department.ID))
               }
               getOptionLabel={option => option.NAME}
               renderOption={(props, option, { selected }) => (
@@ -129,7 +128,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
               options={customerContracts || []}
               onChange={(e, value) => handleOnChange('CONTRACTS', value)}
               value={
-                customerContracts?.filter(customerContract => filteringData && (filteringData['CONTRACTS'])?.find((el: any) => el.ID === customerContract.ID ))
+                customerContracts?.filter(customerContract => filteringData && (filteringData.CONTRACTS)?.find((el: any) => el.ID === customerContract.ID))
               }
               getOptionLabel={option => option.USR$NUMBER}
               renderOption={(props, option, { selected }) => (
@@ -154,15 +153,15 @@ export function CustomersFilter(props: CustomersFilterProps) {
               loadingText="Загрузка данных..."
             />
             <Autocomplete
-              //style={{ width: '100px' }}
-              //fullWidth
+              // style={{ width: '100px' }}
+              // fullWidth
               multiple
               limitTags={2}
               disableCloseOnSelect
               options={labels || []}
               onChange={(e, value) => handleOnChange('LABELS', value)}
               value={
-                labels?.filter(label => filteringData && (filteringData['LABELS'])?.find((el: IContactHierarchy) => el.ID === label.ID ))
+                labels?.filter(label => filteringData && (filteringData.LABELS)?.find((el: IContactHierarchy) => el.ID === label.ID))
               }
               getOptionLabel={option => option.NAME}
               renderOption={(props, option, { selected }) => (
@@ -189,10 +188,10 @@ export function CustomersFilter(props: CustomersFilterProps) {
           </Stack>
         </CardContent>
         <CardActions style={{ padding: theme.spacing(2) }}>
-          <Button variant='contained' fullWidth onClick={() => onFilteringDataChange({})}>Очистить</Button>
+          <Button variant="contained" fullWidth onClick={() => onFilteringDataChange({})}>Очистить</Button>
         </CardActions>
       </CustomizedCard>
-    )
+    );
   };
 
   // return(
@@ -201,15 +200,15 @@ export function CustomersFilter(props: CustomersFilterProps) {
 
   return (
     <Box flex={1} display="flex">
-    {matchDownLg
-      ? <CustomizedDialog
+      {matchDownLg
+        ? <CustomizedDialog
           open={open}
           onClose={onClose}
           width={width}
         >
           <Filter />
         </CustomizedDialog>
-      : <Filter />}
+        : <Filter />}
     </Box>
   );
 }

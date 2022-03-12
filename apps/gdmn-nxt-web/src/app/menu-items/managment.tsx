@@ -27,6 +27,6 @@ const managment: IMenuItem = {
       ]
     }
   ]
-}
+};
 
 export default managment;

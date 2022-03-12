@@ -6,7 +6,7 @@ export interface ICustomization {
 
 const initCustomization: ICustomization = {
   mode: 'light'
-}
+};
 
 export interface ISettingsState {
   menuOpened: boolean;
@@ -25,10 +25,10 @@ export const settingsSlice = createSlice({
     toggleMenu: (state, action: PayloadAction<boolean>) => {
       return (
         { ...state, menuOpened: action.payload }
-      )
+      );
     },
     setStyleMode: (state, action: PayloadAction<'light' | 'dark'>) => {
-      return ({ ...state, customization: { ...state.customization, mode: action.payload}})
+      return ({ ...state, customization: { ...state.customization, mode: action.payload } });
     }
   }
 });

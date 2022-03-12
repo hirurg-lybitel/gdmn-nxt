@@ -3,14 +3,14 @@ import * as ReactDOM from 'react-dom';
 
 import { RootState, store } from './app/store';
 import { Provider, useSelector } from 'react-redux';
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
 import { registerMUI } from './mui-license';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
-import { LoginStage, UserState } from './app/features/user/userSlice';
+import { LoginStage } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
 import { ReconciliationAct } from './app/pages/Analytics/UserReports/ReconciliationAct';
 import { CustomersList } from './app/pages/Customers/customers-list/customers-list';
@@ -36,49 +36,49 @@ import CustomerDetails from './app/pages/Customers/customer-details/customer-det
 registerMUI();
 
 const Main = () => {
-  const customization = useSelector( (state: RootState) => state.settings.customization );
-  const loginStage = useSelector<RootState, LoginStage>( state => state.user.loginStage );
+  const customization = useSelector((state: RootState) => state.settings.customization);
+  const loginStage = useSelector<RootState, LoginStage>(state => state.user.loginStage);
 
   return (
     <BrowserRouter>
       <StrictMode>
         <CssBaseline>
           <ThemeProvider theme={theme(customization)}>
-          {
-            loginStage === 'EMPLOYEE' ?
-              <Routes>
-                <Route path="/employee" element={<MainLayout />}>
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="dashboard/deals" element={<Deals />} />
-                  <Route path="customers">
-                    <Route path="list" element={<CustomersList />} />
-                    <Route path="list/details/:id" element={<CustomerDetails />} />
+            {
+              loginStage === 'EMPLOYEE' ?
+                <Routes>
+                  <Route path="/employee" element={<MainLayout />}>
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="dashboard/deals" element={<Deals />} />
+                    <Route path="customers">
+                      <Route path="list" element={<CustomersList />} />
+                      <Route path="list/details/:id" element={<CustomerDetails />} />
+                    </Route>
+                    <Route path="customers/orders/list" element={<OrderList />} />
+                    <Route path="reports/reconciliation" element={<ReconciliationAct />} />
+                    <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
+                    <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
                   </Route>
-                  <Route path="customers/orders/list" element={<OrderList />} />
-                  <Route path="reports/reconciliation" element={<ReconciliationAct />} />
-                  <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
-                  <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
-                </Route>
-                <Route path="/system" element={<BaseForm />}>
-                  <Route path="er-model-domains" element={<ErModelDomains />} />
-                  <Route path="er-model" element={<ErModel />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/employee/dashboard" />} />
-              </Routes>
-            : loginStage === 'CUSTOMER' ?
-              <Routes>
-                <Route path="/customer" element={<CustomerHomePage />}>
-                  <Route path="standard-order" element={<StandardOrder />} />
-                  <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/customer" />} />
-              </Routes>
-            :
-              <Routes>
-                <Route path="/" element={<App />} />
-                <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-          }
+                  <Route path="/system" element={<BaseForm />}>
+                    <Route path="er-model-domains" element={<ErModelDomains />} />
+                    <Route path="er-model" element={<ErModel />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/employee/dashboard" />} />
+                </Routes>
+                : loginStage === 'CUSTOMER' ?
+                  <Routes>
+                    <Route path="/customer" element={<CustomerHomePage />}>
+                      <Route path="standard-order" element={<StandardOrder />} />
+                      <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
+                    </Route>
+                    <Route path="*" element={<Navigate to="/customer" />} />
+                  </Routes>
+                  :
+                  <Routes>
+                    <Route path="/" element={<App />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                  </Routes>
+            }
           </ThemeProvider>
         </CssBaseline>
       </StrictMode>

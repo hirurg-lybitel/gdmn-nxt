@@ -6,7 +6,6 @@ import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 
-
 /* eslint-disable-next-line */
 export interface ChartColumnProps {}
 
@@ -20,10 +19,10 @@ export function ChartColumn(props: ChartColumnProps) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const newSeries21 = series21.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
+      const newSeries21 = series21.map(el => Math.floor(Math.random() * (10 - 3)) + 3);
       setSeries21(newSeries21);
 
-      const newSeries22 = series22.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
+      const newSeries22 = series22.map(el => Math.floor(Math.random() * (10 - 3)) + 3);
       setSeries22(newSeries22);
     }, 4000);
     return () => clearTimeout(timer);
@@ -41,7 +40,7 @@ export function ChartColumn(props: ChartColumnProps) {
       }
     },
     xaxis: {
-      categories: ['Янв' , 'Фев' , 'Мар' , 'Апр' , 'Май' , 'Июн' , 'Июл' , 'Авг' , 'Сен' , 'Окт' , 'Ноя' , 'Дек']
+      categories: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
     },
     tooltip: {
       theme: 'light'
@@ -53,7 +52,7 @@ export function ChartColumn(props: ChartColumnProps) {
     },
     legend: {
       fontSize: '15px',
-      fontFamily: `'Roboto', sans-serif`,
+      fontFamily: '\'Roboto\', sans-serif',
       offsetY: 5,
 
       labels: {
@@ -68,14 +67,14 @@ export function ChartColumn(props: ChartColumnProps) {
       itemMargin: {
         horizontal: 15,
         vertical: 8
-    }
+      }
     },
     dataLabels: {
       enabled: false
     },
   };
 
-  const chartData: ApexCharts.ApexOptions  = {
+  const chartData: ApexCharts.ApexOptions = {
     series: [
       {
         name: '2021',

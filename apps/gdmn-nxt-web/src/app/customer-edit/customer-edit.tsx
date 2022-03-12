@@ -11,22 +11,18 @@ import {
   IconButton,
   Stack,
   TextField,
-  Box,
   Slide
- } from '@mui/material';
- import {
+} from '@mui/material';
+import {
   Theme
- } from '@mui/material';
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
-import SaveIcon from '@mui/icons-material/Save';
-import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
+import { ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import { forwardRef, ReactElement, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
-import { useSelector } from 'react-redux';
-import { hierarchySelectors } from '../features/customer/customerSlice';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../features/contact/contactGroupApi';
@@ -53,8 +49,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingLeft: '3%',
   },
   helperText: {
-    '& p':{
-      color:'#ec5555',
+    '& p': {
+      color: '#ec5555',
     },
   },
   button: {
@@ -82,12 +78,12 @@ export interface CustomerEditProps {
 
 export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
-  const { onCancelClick, onDeleteClick, onSubmit } = props;
+  const { onCancelClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const allHierarchy = useSelector(hierarchySelectors.selectAll);
+  // const allHierarchy = useSelector(hierarchySelectors.selectAll);
   const { data: groups } = useGetGroupsQuery();
 
 
@@ -100,7 +96,7 @@ export function CustomerEdit(props: CustomerEditProps) {
     EMAIL: customer?.EMAIL || '',
     PARENT: customer?.PARENT || undefined,
     LABELS: customer?.LABELS || []
-  }
+  };
 
   const formik = useFormik<ICustomer>({
     enableReinitialize: true,
@@ -109,12 +105,13 @@ export function CustomerEdit(props: CustomerEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME:  yup.string().required('').max(80, 'Слишком длинное наименование'),
+      NAME: yup.string().required('')
+        .max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string().matches(/@./),
       PARENT: yup.string().required('')
     }),
     onSubmit: (values) => {
-      //console.log('values', values);
+      // console.log('values', values);
       setConfirmOpen(false);
       onSubmit(values, deleting);
     },
@@ -134,7 +131,7 @@ export function CustomerEdit(props: CustomerEditProps) {
   return (
     <Dialog
       open={open}
-      classes={{ paper: classes.dialog}}
+      classes={{ paper: classes.dialog }}
       TransitionComponent={Transition}
     >
       <DialogTitle>
@@ -162,7 +159,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                 value={groups?.filter(el => el.ID === formik.values.PARENT)[0] || null}
                 onChange={(e, value) => {
                   formik.setFieldValue(
-                    "PARENT",
+                    'PARENT',
                     value ? value.ID : initValue.PARENT
                   );
                 }}
@@ -214,11 +211,11 @@ export function CustomerEdit(props: CustomerEditProps) {
                 disableCloseOnSelect
                 onChange={(e, value) => {
                   formik.setFieldValue(
-                    "LABELS",
+                    'LABELS',
                     value
                       ? value.map((el) => {
-                          return {ID: 0, USR$CONTACTKEY: formik.values.ID, USR$LABELKEY: el.ID} as ILabelsContact
-                        })
+                        return { ID: 0, USR$CONTACTKEY: formik.values.ID, USR$LABELKEY: el.ID } as ILabelsContact;
+                      })
                       : initValue.LABELS
                   );
                 }}
@@ -253,7 +250,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       </DialogContent>
       <DialogActions className={classes.dialogAction}>
         <IconButton onClick={handleDeleteClick} size="large">
-            <DeleteIcon />
+          <DeleteIcon />
         </IconButton>
         <Divider orientation="vertical" flexItem />
         <Button
@@ -266,7 +263,7 @@ export function CustomerEdit(props: CustomerEditProps) {
         </Button>
         <Button
           className={classes.button}
-          type={!formik.isValid ? "submit" : "button"}
+          type={!formik.isValid ? 'submit' : 'button'}
 
           form="mainForm"
           onClick={() => {
@@ -274,8 +271,8 @@ export function CustomerEdit(props: CustomerEditProps) {
             setConfirmOpen(formik.isValid);
           }}
           variant="contained"
-          //color="warning"
-          //color="success"
+          // color="warning"
+          // color="success"
           // startIcon={<SaveIcon />}
         >
             OK

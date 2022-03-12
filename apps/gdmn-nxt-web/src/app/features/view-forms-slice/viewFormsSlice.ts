@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface IViewForm {
   name: string;
@@ -11,7 +11,7 @@ interface IViewFormState {
 };
 
 export const viewFormsSlice = createSlice({
-  name: "viewForms",
+  name: 'viewForms',
   initialState: {
     viewForms: []
   } as IViewFormState,
@@ -20,7 +20,7 @@ export const viewFormsSlice = createSlice({
       state.viewForms.push(action.payload);
     },
     removeViewForm: (state, action: PayloadAction<string>) => {
-      const idx = state.viewForms.findIndex( vf => vf.pathname === action.payload );
+      const idx = state.viewForms.findIndex(vf => vf.pathname === action.payload);
       if (idx >= 0) {
         state.viewForms.splice(idx, 1);
       }

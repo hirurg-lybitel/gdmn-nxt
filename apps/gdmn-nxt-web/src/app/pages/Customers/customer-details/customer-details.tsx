@@ -1,10 +1,10 @@
 import CustomizedCard from '../../../components/customized-card/customized-card';
 import './customer-details.module.less';
-import { Box, Button, Stack, Tab, Typography } from '@mui/material';
-import { TabContext, TabList, TabPanel  }  from '@mui/lab';
+import { Box, Button, Stack, Tab } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useState } from 'react';
-import { useNavigate  } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 /* eslint-disable-next-line */
 export interface CustomerDetailsProps {}
@@ -14,13 +14,13 @@ export function CustomerDetails(props: CustomerDetailsProps) {
 
   const handleTabsChange = (e: any, newindex: string) => {
     setTabIndex(newindex);
-  }
+  };
 
   const navigate = useNavigate ();
 
   return (
     <Stack flex={1} spacing={2}>
-      <CustomizedCard borders boxShadows style={{ padding: '8px'}}>
+      <CustomizedCard borders boxShadows style={{ padding: '8px' }}>
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
@@ -29,30 +29,30 @@ export function CustomerDetails(props: CustomerDetailsProps) {
       <CustomizedCard
         borders
       >
-      <Box sx={{}}>
-        <TabContext value={tabIndex}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <TabList onChange={handleTabsChange}>
-              <Tab label="Подробности" value="1" />
-              <Tab label="Акты выполненных работ" value="2" />
-              <Tab label="Выписки по р/с" value="3" />
-            </TabList>
-          </Box>
-          <TabPanel value="1">
-            <div>Item One</div>
-            <div>subitem one</div>
-          </TabPanel>
-          <TabPanel value="2">Item Two</TabPanel>
-          <TabPanel value="3">Item Three</TabPanel>
-        </TabContext>
-      </Box>
+        <Box sx={{}}>
+          <TabContext value={tabIndex}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <TabList onChange={handleTabsChange}>
+                <Tab label="Подробности" value="1" />
+                <Tab label="Акты выполненных работ" value="2" />
+                <Tab label="Выписки по р/с" value="3" />
+              </TabList>
+            </Box>
+            <TabPanel value="1">
+              <div>Item One</div>
+              <div>subitem one</div>
+            </TabPanel>
+            <TabPanel value="2">Item Two</TabPanel>
+            <TabPanel value="3">Item Three</TabPanel>
+          </TabContext>
+        </Box>
       </CustomizedCard>
     </Stack>
   );
 }
 
 
-{/* <Stack direction="column">
+/* <Stack direction="column">
 <CustomizedCard
   borders
   boxShadows
@@ -94,6 +94,6 @@ export function CustomerDetails(props: CustomerDetailsProps) {
     </AccordionDetails>
   </Accordion>
 </CustomizedCard>
-</Stack> */}
+</Stack> */
 export default CustomerDetails;
 

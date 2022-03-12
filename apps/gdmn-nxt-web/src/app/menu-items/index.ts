@@ -1,8 +1,8 @@
-import React from "react";
-import analytics from "./analytics";
-import dashboard from "./dashboard";
-import managment from "./managment";
-import { systemMenu } from "./system";
+import React from 'react';
+import analytics from './analytics';
+import dashboard from './dashboard';
+import managment from './managment';
+import { systemMenu } from './system';
 
 export interface IMenuItem {
   id: string;

@@ -3,7 +3,6 @@ import { MenuItem, PageHeader } from '../page-header/page-header';
 import './customer-home-page.module.less';
 
 export function CustomerHomePage() {
-
   const menuItems: MenuItem[] = [
     {
       type: 'link',

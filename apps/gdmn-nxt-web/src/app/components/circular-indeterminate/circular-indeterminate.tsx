@@ -12,7 +12,7 @@ export function CircularIndeterminate(props: CircularIndeterminateProps) {
   if (!open) return null;
 
   return (
-    <Box sx={{ flex: 1 , display: 'flex', justifyContent:'center', alignItems: 'center' }}>
+    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <CircularProgress size={size} />
     </Box>
   );

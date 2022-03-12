@@ -6,7 +6,7 @@ import {
   Dialog,
   DialogTitle,
   TextField,
-  Box ,
+  Box,
   DialogContent,
   DialogActions,
   Button } from '@mui/material';
@@ -17,7 +17,7 @@ import ruLocale from 'date-fns/locale/ru';
 export interface ReportParamsProps {
   open: boolean;
   dates: DateRange<Date | null>;
-  //onDateChange?: (newValue: DateRange<Date | null>) => void;
+  // onDateChange?: (newValue: DateRange<Date | null>) => void;
   onCancelClick: () => void;
   onSaveClick: (arg: DateRange<Date>) => void;
 }
@@ -57,7 +57,7 @@ export function ReportParams(props: ReportParamsProps) {
           onClick={onCancelClick}
           variant="text"
           color="primary"
-          //size="small"
+          // size="small"
         >
             Отменить
         </Button>
@@ -66,7 +66,7 @@ export function ReportParams(props: ReportParamsProps) {
           onClick={() => onSaveClick(value)}
           variant="contained"
           color="primary"
-          //size="small"
+          // size="small"
         >
             OK
         </Button>

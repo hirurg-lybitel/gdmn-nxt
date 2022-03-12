@@ -1,5 +1,5 @@
 import './notification.module.less';
-import { Avatar, Badge, Box, ButtonBase } from '@mui/material';
+import { Badge, Box, ButtonBase } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
 /* eslint-disable-next-line */

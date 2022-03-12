@@ -28,7 +28,7 @@ export interface KanbanColumnProps {
 export function KanbanColumn(props: KanbanColumnProps) {
   const { provided, dragSnapshot, dropSnapshot } = props;
   const { children, item, columns } = props;
-  const { onEdit, onDelete, onAddCard} = props;
+  const { onEdit, onDelete, onAddCard } = props;
 
   const theme = useTheme();
 
@@ -71,13 +71,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
     };
 
     const handleTitleKeyPress = (event: any) => {
-      if (event.keyCode === 13 ) {
-        onEdit({...item, USR$NAME: titleText});
+      if (event.keyCode === 13) {
+        onEdit({ ...item, USR$NAME: titleText });
         setEditTitleText(false);
         return;
       }
 
-      if (event.keyCode === 27 ) {
+      if (event.keyCode === 27) {
         setTitleText(item.USR$NAME);
         setEditTitleText(false);
         return;
@@ -89,7 +89,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
       setEditTitleText(false);
     };
 
-    return(
+    return (
       <Stack
         direction="row"
         onMouseEnter={handleTitleOnMouseEnter}
@@ -109,19 +109,19 @@ export function KanbanColumn(props: KanbanColumnProps) {
         >
           {editTitleText
             ? <Input
-                value={titleText}
-                onChange={(e) => setTitleText(e.target.value)}
+              value={titleText}
+              onChange={(e) => setTitleText(e.target.value)}
 
-                autoFocus
-              />
+              autoFocus
+            />
             : <Typography
-                variant="h4"
-                noWrap
-                style={{
-                  opacity: `${editTitleHidden ? 1 : 0.3}`,
-                }}
-              > {item.USR$NAME}</Typography>
-            }
+              variant="h4"
+              noWrap
+              style={{
+                opacity: `${editTitleHidden ? 1 : 0.3}`,
+              }}
+            > {item.USR$NAME}</Typography>
+          }
         </Box>
         <div
           style={{
@@ -137,12 +137,12 @@ export function KanbanColumn(props: KanbanColumnProps) {
         </div>
       </Stack>
 
-    )
-  }
+    );
+  };
 
   return (
     <Box
-      style={{ display: 'flex'}}
+      style={{ display: 'flex' }}
     >
       <CustomizedCard
         borders
@@ -160,7 +160,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             }
             : {
             }),
-      }}
+        }}
       >
         <CardHeader
           sx={{ height: 10 }}
@@ -211,7 +211,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        title={"Удаление группы: " + item.USR$NAME}
+        title={'Удаление группы: ' + item.USR$NAME}
         text="Вы уверены, что хотите продолжить?"
         onConfirm={() => onDelete(item)}
       />

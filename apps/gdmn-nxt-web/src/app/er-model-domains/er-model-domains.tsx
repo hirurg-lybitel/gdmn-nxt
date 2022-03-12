@@ -14,78 +14,78 @@ export interface ErModelDomainsProps {}
 
 export function ErModelDomains(props: ErModelDomainsProps) {
   useViewForms('Domains');
-  const { data, isFetching, refetch, error } = useGetErModelQuery();
-  const errorMessage = !error ? 
+  const { data, isFetching, error } = useGetErModelQuery();
+  const errorMessage = !error ?
     undefined
-    : 'message' in error ? error.message 
-    : 'error' in error ? error.error
-    : 'unknown error';
-  const rows = useMemo( () => data ? Object.values(data.domains) : [], [data]);  
+    : 'message' in error ? error.message
+      : 'error' in error ? error.error
+        : 'unknown error';
+  const rows = useMemo(() => data ? Object.values(data.domains) : [], [data]);
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
 
   const columns: GridColDef[] = [
-    { 
-      field: 'name', 
-      headerName: 'Наименование', 
+    {
+      field: 'name',
+      headerName: 'Наименование',
       width: 200
     },
-    { 
-      field: 'lName', 
-      headerName: 'Лок. наименование', 
+    {
+      field: 'lName',
+      headerName: 'Лок. наименование',
       width: 250
     },
-    { 
-      field: 'type', 
-      headerName: 'Тип', 
+    {
+      field: 'type',
+      headerName: 'Тип',
       width: 100,
     },
-    { 
-      field: 'type', 
-      headerName: 'Тип', 
+    {
+      field: 'type',
+      headerName: 'Тип',
       width: 80,
     },
-    { 
-      field: 'required', 
-      headerName: 'Req', 
+    {
+      field: 'required',
+      headerName: 'Req',
       width: 50,
-      valueGetter: ({ row }) => row.required ? '☑' : ''      
+      valueGetter: ({ row }) => row.required ? '☑' : ''
     },
-    { 
-      field: '', 
-      headerName: 'Параметры', 
+    {
+      field: '',
+      headerName: 'Параметры',
       flex: 1,
       valueGetter: ({ row }) => {
         const s: string[] = [];
 
         switch (row.type) {
-          case 'ENTITY':
-          case 'ENTITY[]':
-            s.push(`Entity: ${row.entityName}`);
-            break;
+        case 'ENTITY':
+        case 'ENTITY[]':
+          s.push(`Entity: ${row.entityName}`);
+          break;
 
-          case 'STRING':
-            s.push(`len: ${row.maxLen}${typeof row.default === 'string' ? ', default: "' + row.default + '"' : ''}`);
-            break;
+        case 'STRING':
+          s.push(`len: ${row.maxLen}${typeof row.default === 'string' ? ', default: "' + row.default + '"' : ''}`);
+          break;
 
-          case 'INTEGER':
-          case 'DOUBLE':    
-            s.push(`min: ${row.min}, max: ${row.max}`);
-            break;
-            
-          case 'NUMERIC':
-            s.push(`precision: ${row.precision}, scale: ${-row.scale}, min: ${row.min}, max: ${row.max}`);
-            break;
+        case 'INTEGER':
+        case 'DOUBLE':
+          s.push(`min: ${row.min}, max: ${row.max}`);
+          break;
 
-          case 'ENUM':
-            s.push(`${row.numeration}`);
-            break;
+        case 'NUMERIC':
+          s.push(`precision: ${row.precision}, scale: ${-row.scale}, min: ${row.min}, max: ${row.max}`);
+          break;
+
+        case 'ENUM':
+          s.push(`${row.numeration}`);
+          break;
         }
 
         row.validationSource && s.push('validation: ' + row.validationSource);
 
         if (row.default !== undefined) {
           if (typeof row.default === 'string') {
-            s.push(`default: "${row.default}"`); 
+            s.push(`default: "${row.default}"`);
           } else {
             s.push('default: ' + row.default);
           }
@@ -94,7 +94,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
       }
     }
   ];
-  
+
   return (
     <Grid container height="100%" columnSpacing={2}>
       <Grid item xs={12}>
@@ -105,13 +105,13 @@ export function ErModelDomains(props: ErModelDomainsProps) {
           loading={isFetching}
           getRowId={row => row.name}
           onSelectionModelChange={setSelectionModel}
-          selectionModel={selectionModel} 
-          rowHeight={24}         
-          headerHeight={24}      
-          editMode='row' 
+          selectionModel={selectionModel}
+          rowHeight={24}
+          headerHeight={24}
+          editMode="row"
           components={{
-            Pagination: CustomPagination,      
-            ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
+            Pagination: CustomPagination,
+            ColumnResizeIcon: createSvgIcon(createElement('path', { d: 'M11 24V0h2v24z' }), 'Separator2')
           }}
         />
       </Grid>
@@ -126,7 +126,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
               }
             </pre>
           :
-            undefined  
+            undefined
         }
       </Grid>
       */

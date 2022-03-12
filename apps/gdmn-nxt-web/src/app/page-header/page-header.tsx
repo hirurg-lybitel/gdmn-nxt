@@ -12,14 +12,14 @@ import { Link } from 'react-router-dom';
 
 interface IMenuItem {
   type: 'item';
-  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string; };
   caption: string;
   onClick: () => void;
 };
 
 interface IMenuLink {
   type: 'link';
-  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string; };
   caption: string;
   link: string;
 };
@@ -71,29 +71,29 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
   >
-    {items.map( (i, idx) =>
+    {items.map((i, idx) =>
       i.type === 'divider' ?
         <Divider key={idx} />
-      : i.type === 'item' ?
-        <MenuItem key={idx} onClick={i.onClick}>
-          {i.Icon &&
+        : i.type === 'item' ?
+          <MenuItem key={idx} onClick={i.onClick}>
+            {i.Icon &&
             <ListItemIcon>
               <i.Icon fontSize="small" />
             </ListItemIcon>
-          }
-          {i.caption}
-        </MenuItem>
-      :  
-        <MenuItem key={idx}>
-          {i.Icon &&
-            <ListItemIcon>
-              <i.Icon fontSize="small" />
-            </ListItemIcon>
-          }
-          <Link to={i.link}>
+            }
             {i.caption}
-          </Link>
-        </MenuItem>
+          </MenuItem>
+          :
+          <MenuItem key={idx}>
+            {i.Icon &&
+            <ListItemIcon>
+              <i.Icon fontSize="small" />
+            </ListItemIcon>
+            }
+            <Link to={i.link}>
+              {i.caption}
+            </Link>
+          </MenuItem>
     )}
   </Menu>;
 
@@ -104,7 +104,7 @@ interface IPageHeaderProps {
 
 export function PageHeader({ menuItems, children }: IPageHeaderProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const user = useSelector<RootState, UserState>( state => state.user );
+  const user = useSelector<RootState, UserState>(state => state.user);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [anchorMenuEl, setAnchorMenuEl] = useState(null);
 
@@ -127,7 +127,7 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
   ];
 
   return (
-    <Stack direction='column' width='100%'>
+    <Stack direction="column" width="100%">
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -136,7 +136,7 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
-            onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
+            onClick={(event: any) => setAnchorMenuEl(event.currentTarget)}
           >
             <MenuIcon />
           </IconButton>
@@ -146,7 +146,7 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
           <IconButton
             size="large"
             color="inherit"
-            onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
+            onClick={(event: any) => setAnchorProfileEl(event.currentTarget)}
           >
             <Avatar />
           </IconButton>
@@ -154,12 +154,12 @@ export function PageHeader({ menuItems, children }: IPageHeaderProps) {
       </AppBar>
       <CustomMenu
         anchorEl={anchorProfileEl}
-        handleClose={ () => setAnchorProfileEl(null) }
+        handleClose={() => setAnchorProfileEl(null)}
         items={profileMenuItems}
       />
       <CustomMenu
         anchorEl={anchorMenuEl}
-        handleClose={ () => setAnchorMenuEl(null) }
+        handleClose={() => setAnchorMenuEl(null)}
         items={menuItems}
       />
       {children}

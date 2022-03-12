@@ -18,8 +18,8 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: '3%',
   },
   helperText: {
-    '& p':{
-      color:'#ec5555',
+    '& p': {
+      color: '#ec5555',
     },
   },
   button: {
@@ -35,13 +35,12 @@ export interface IContactGroupEditProps {
 }
 
 export function ContactGroupEditForm(props: IContactGroupEditProps) {
-  const {group, tree} = props;
-  const {onSubmit, onCancel} = props;
+  const { group } = props;
+  const { onSubmit, onCancel } = props;
 
   const classes = useStyles();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { data: groups } = useGetGroupsQuery();
-
 
 
   const initValue: IContactHierarchy = {
@@ -50,7 +49,7 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
     LB: group?.LB || 0,
     RB: group?.RB || 0,
     NAME: group?.NAME || ''
-  }
+  };
 
   const formik = useFormik<IContactHierarchy>({
     enableReinitialize: true,
@@ -59,7 +58,8 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME:  yup.string().required('').max(80, 'Слишком длинное наименование')
+      NAME: yup.string().required('')
+        .max(80, 'Слишком длинное наименование')
     }),
     onSubmit: (values) => {
       setConfirmOpen(false);
@@ -67,9 +67,9 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
     },
   });
 
-  const handleDeleteClick = () => {
-    setConfirmOpen(true);
-  };
+  // const handleDeleteClick = () => {
+  //   setConfirmOpen(true);
+  // };
 
   const handleCancelClick = () => {
     formik.resetForm();
@@ -77,33 +77,33 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
   };
 
   return (
-    <Dialog classes={{ paper: classes.dialog}} open={true}>
+    <Dialog classes={{ paper: classes.dialog }} open={true}>
       <DialogTitle>
         {group ? `Редактирование: ${group.NAME}` : 'Новая папка'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
-        <Form id="mainForm" onSubmit={formik.handleSubmit}>
-          <Stack direction="column" spacing={3}>
-            <TextField
-                  label="Наименование"
-                  className={classes.helperText}
-                  type="text"
-                  required
-                  autoFocus
-                  name="NAME"
-                  onBlur={formik.handleBlur}
-                  onChange={formik.handleChange}
-                  value={formik.values.NAME}
-                  helperText={formik.errors.NAME}
-                />
+          <Form id="mainForm" onSubmit={formik.handleSubmit}>
+            <Stack direction="column" spacing={3}>
+              <TextField
+                label="Наименование"
+                className={classes.helperText}
+                type="text"
+                required
+                autoFocus
+                name="NAME"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.NAME}
+                helperText={formik.errors.NAME}
+              />
               <Autocomplete
                 options={groups?.filter(group => group.ID !== formik.values.ID) || []}
                 getOptionLabel={option => option.NAME}
                 value={groups?.filter(el => el.ID === formik.values.PARENT)[0] || null}
                 onChange={(e, value) => {
                   formik.setFieldValue(
-                    "PARENT",
+                    'PARENT',
                     value ? value.ID : initValue.PARENT
                   );
                 }}
@@ -130,31 +130,31 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
                   />
                 )}
               />
-          </Stack>
+            </Stack>
           </Form>
         </FormikProvider>
       </DialogContent>
       <DialogActions>
         <Button
-            className={classes.button}
-            onClick={handleCancelClick}
-            variant="text"
-            color="primary"
-          >
+          className={classes.button}
+          onClick={handleCancelClick}
+          variant="text"
+          color="primary"
+        >
               Отменить
-          </Button>
-          <Button
-            className={classes.button}
-            type={!formik.isValid ? "submit" : "button"}
-            form="mainForm"
-            onClick={() => {
-              setConfirmOpen(formik.isValid);
-            }}
-            variant="contained"
-            color="success"
-          >
+        </Button>
+        <Button
+          className={classes.button}
+          type={!formik.isValid ? 'submit' : 'button'}
+          form="mainForm"
+          onClick={() => {
+            setConfirmOpen(formik.isValid);
+          }}
+          variant="contained"
+          color="success"
+        >
               OK
-          </Button>
+        </Button>
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}

@@ -22,12 +22,12 @@ export const theme = (customization: ICustomization) => {
     headColor: colors.common.white,
     paper: colors.common.white,
     customization
-  }
+  };
 
   const themeOptions: ThemeOptions = {
     color: colors,
     drawerWidth: 260,
-    headColor: themeOption.headColor ,
+    headColor: themeOption.headColor,
     textColor: themeOption.textColor,
     palette: {
       mode: themeOption.customization.mode,
@@ -46,7 +46,7 @@ export const theme = (customization: ICustomization) => {
         primary: themeOption.textColor
       }
     },
-    menu:{
+    menu: {
       backgroundColor: themeOption.backgroundDefault,
       color: themeOption.headColor
     },
@@ -60,7 +60,7 @@ export const theme = (customization: ICustomization) => {
       marginRight: '20px',
       borderRadius: '12px'
     },
-  }
+  };
 
   const themes = createTheme(themeOptions);
   themes.typography = { ...themes.typography, ...themeTypography(themeOptions) };

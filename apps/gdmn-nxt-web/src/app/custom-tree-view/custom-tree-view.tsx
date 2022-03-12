@@ -16,8 +16,8 @@ interface CustomizedTreeItemProps extends CustomTreeViewProps {
 }
 
 const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
-  const {node, tree, hierarchy} = props;
-  const {onEdit, onDelete} = props;
+  const { node, tree, hierarchy } = props;
+  const { onEdit, onDelete } = props;
 
   const [nodeId, setNodeId] = useState<number>();
 
@@ -48,12 +48,12 @@ const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
   const handleEditClick = () => {
     if (onEdit) onEdit(Number(nodeId));
     onClose();
-  }
+  };
 
   const handleDeleteClick = () => {
     if (onDelete) onDelete(Number(nodeId));
     onClose();
-  }
+  };
 
   return (
     <Box>
@@ -73,7 +73,7 @@ const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
               alignItems: 'center'
             }}
           >
-            <FolderIcon color='primary' />
+            <FolderIcon color="primary" />
             <span
               style={{
                 flex: 1,
@@ -86,8 +86,8 @@ const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
         }
       >
         {Array.isArray(tree.getChilds(node, false).results)
-            ? tree.getChilds(node, false).results.map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node}  />)
-            : null}
+          ? tree.getChilds(node, false).results.map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)
+          : null}
 
       </TreeItem>
       <Menu
@@ -115,7 +115,7 @@ const RecursiveCustomizedTreeItem = (props: CustomizedTreeItemProps) => {
           <Typography variant="inherit">Редактировать</Typography>
         </MenuItem>
         <Divider />
-        <MenuItem key={2}  onClick={handleDeleteClick}>
+        <MenuItem key={2} onClick={handleDeleteClick}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
@@ -149,18 +149,19 @@ export function CustomTreeView(props: CustomTreeViewProps) {
         marginRight: 1,
         flexGrow: 1,
         maxWidth: 400
-      }}>
+      }}
+    >
       <TreeView
         defaultCollapseIcon={<KeyboardArrowDownIcon/>}
         defaultExpandIcon={<KeyboardArrowRightIcon/>}
         onNodeSelect={onNodeSelect}
       >
-      {tree.all
-        .filter( ({ PARENT }) => !PARENT )
-        .sort( (a, b) => Number(a.LB) - Number(b.LB) )
-        .map( (node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
-    </TreeView>
-  </CustomizedCard>
+        {tree.all
+          .filter(({ PARENT }) => !PARENT)
+          .sort((a, b) => Number(a.LB) - Number(b.LB))
+          .map((node) => <RecursiveCustomizedTreeItem key={node.ID} {...props} node={node} />)}
+      </TreeView>
+    </CustomizedCard>
   );
 }
 
