@@ -1,7 +1,7 @@
 import { Box, ButtonBase, IconButton } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
-import Notification from './notification/notification';
+import Notification from './NotificationSection/notification/notification';
 import Profile from './profile/profile';
 import BelgissLogo from '../../../components/belgiss-logo/belgiss-logo';
 
