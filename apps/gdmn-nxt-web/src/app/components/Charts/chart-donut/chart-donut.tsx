@@ -21,14 +21,14 @@ export function ChartDonut(props: ChartDonutProps) {
 
   //const [series, setSeries] = useState([55, 17, 15, 44, 22, 9]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // const newSeries = series.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
-      // setSeries(newSeries);
-      refetch();
-    }, 5000);
-    return () => clearTimeout(timer);
-  });
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     // const newSeries = series.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
+  //     // setSeries(newSeries);
+  //     refetch();
+  //   }, 5000);
+  //   return () => clearTimeout(timer);
+  // });
 
   const chartOptions: ApexCharts.ApexOptions = {
     labels: stages?.map(stage => stage.USR$NAME) ?? [],
@@ -54,6 +54,7 @@ export function ChartDonut(props: ChartDonutProps) {
       },
     },
     grid: {
+      show: true,
       padding: {
         bottom: 50
       },
@@ -100,9 +101,11 @@ export function ChartDonut(props: ChartDonutProps) {
             <Typography variant="h1">Статус сделок</Typography>
             <Chart
               type="donut"
+              height={matchDownXl ? 'auto' : '550px'}
               options={chartOptions}
               {...chartData}
             />
+
           </Stack>
       }
     </CustomizedCard>

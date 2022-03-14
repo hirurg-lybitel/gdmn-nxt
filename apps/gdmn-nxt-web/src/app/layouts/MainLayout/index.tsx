@@ -13,6 +13,9 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import BelgissLogo from '../../components/belgiss-logo/belgiss-logo';
 import { clearError } from '../../features/error-slice/error-slice';
+import Badge from '@mui/material/Badge';
+import MailIcon from '@mui/icons-material/Mail';
+import { Header } from './Header';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -185,7 +188,7 @@ export const MainLayout = () => {
         <Toolbar>
         {/* <ButtonBase disableRipple component={Link} to={config.defaultPath}> */}
         {/* </ButtonBase>           */}
-          <IconButton
+          {/* <IconButton
             size="large"
             edge="start"
             color="inherit"
@@ -199,16 +202,18 @@ export const MainLayout = () => {
           <ButtonBase disableRipple component={Link} to={'/'} >
             <BelgissLogo />
           </ButtonBase>
-          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ flexGrow: 1 }} /> */}
           {/* <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
             Портал БелГИСС
           </Typography> */}
-          <IconButton
+
+          <Header onDrawerToggle={handleDrawerToggle} />
+          {/* <IconButton
             size="large"
             onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
           >
             <Avatar />
-          </IconButton>
+          </IconButton> */}
         </Toolbar>
       </AppBar>
       <CustomMenu
