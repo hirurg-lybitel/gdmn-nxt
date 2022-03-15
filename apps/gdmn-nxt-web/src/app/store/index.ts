@@ -15,6 +15,7 @@ import { erModelApi } from '../features/er-model/erModelApi';
 import { departmentsApi } from '../features/departments/departmentsApi';
 import { customerContractsApi } from '../features/customer-contracts/customerContractsApi';
 import { kanbanApi } from '../features/kanban/kanbanApi';
+import { actCompletionApi } from '../features/act-completion/actCompletionApi';
 
 export const store = configureStore({
   reducer: {
@@ -32,7 +33,8 @@ export const store = configureStore({
     [erModelApi.reducerPath]: erModelApi.reducer,
     [departmentsApi.reducerPath]: departmentsApi.reducer,
     [customerContractsApi.reducerPath]: customerContractsApi.reducer,
-    [kanbanApi.reducerPath]: kanbanApi.reducer
+    [kanbanApi.reducerPath]: kanbanApi.reducer,
+    [actCompletionApi.reducerPath]: actCompletionApi.reducer
 
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
@@ -45,6 +47,7 @@ export const store = configureStore({
     .concat(departmentsApi.middleware)
     .concat(customerContractsApi.middleware)
     .concat(kanbanApi.middleware)
+    .concat(actCompletionApi.middleware)
     .concat(errorMiddleware),
 });
 

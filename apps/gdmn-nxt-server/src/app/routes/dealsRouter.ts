@@ -1,5 +1,5 @@
 import express from 'express';
-import dealsApi from './api/deals'
+import dealsApi from './api/deals';
 
 const router = express.Router();
 

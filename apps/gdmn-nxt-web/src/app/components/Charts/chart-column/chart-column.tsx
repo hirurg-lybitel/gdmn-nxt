@@ -18,15 +18,15 @@ export function ChartColumn(props: ChartColumnProps) {
   const [series22, setSeries22] = useState([30, 40, 45, 48, 63, 55, 21, 50, 49, 60, 70, 91]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const newSeries21 = series21.map(el => Math.floor(Math.random() * (10 - 3)) + 3);
-      setSeries21(newSeries21);
+    // const timer = setTimeout(() => {
+    const newSeries21 = series21.map(el => Math.floor(Math.random() * (10 - 3)) + 3);
+    setSeries21(newSeries21);
 
-      const newSeries22 = series22.map(el => Math.floor(Math.random() * (10 - 3)) + 3);
-      setSeries22(newSeries22);
-    }, 4000);
-    return () => clearTimeout(timer);
-  });
+    const newSeries22 = series22.map(el => Math.floor(Math.random() * (10 - 3)) + 3);
+    setSeries22(newSeries22);
+    // }, 4000);
+    // return () => clearTimeout(timer);
+  }, []);
 
   const chartOptions: ApexCharts.ApexOptions = {
     chart: {
