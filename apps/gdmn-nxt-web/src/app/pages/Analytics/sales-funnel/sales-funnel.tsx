@@ -20,7 +20,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
   return (
     <CustomizedCard borders boxShadows style={{ height: '800px', flex: 1 }}>
       {isFetching
-        ? {} // ???
+        ? <></>
         : <ResponsiveFunnel
           theme={{
             // fontSize: 20,

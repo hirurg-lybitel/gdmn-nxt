@@ -1,12 +1,12 @@
-import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
-import { RequestHandler } from "express";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
-import { resultError } from "./responseMessages";
+import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { RequestHandler } from 'express';
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
+import { resultError } from './responseMessages';
 
 export const getContacts: RequestHandler = async (req, res) => {
   const { pageSize, pageNo } = req.query;
 
-  let fromRecord: number = 0;
+  const fromRecord = 0;
   let toRecord: number;
 
   // if (pageNo && pageSize) {
@@ -32,12 +32,12 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const getParams: any = (withKeys = false) => {
       const arr: Array<string | { [key: string]: string}> = [];
-      req.params.taxId ?
-        withKeys ? arr.push({ taxId: req.params.taxId}) : arr.push( req.params.taxId)
-      : null;
-      req.params.rootId ?
-        withKeys ? arr.push({ rootId: req.params.rootId}) : arr.push( req.params.rootId)
-      : null;
+      req.params.taxId
+        ? withKeys ? arr.push({ taxId: req.params.taxId }) : arr.push(req.params.taxId)
+        : null;
+      req.params.rootId
+        ? withKeys ? arr.push({ rootId: req.params.rootId }) : arr.push(req.params.rootId)
+        : null;
 
       return (arr?.length > 0 ? arr : undefined);
     };
@@ -50,9 +50,8 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const queries = [
-      `SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY `,
-      //`SELECT * FROM rdb$database `,
-      `SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0`,
+      'SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY',
+      'SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0',
       `SELECT
          c.id,
          c.name,
@@ -78,7 +77,7 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const t = new Date().getTime();
 
-    const [rawContracts, rawFolders, rawContacts, rawLabels] = await Promise.all(queries.map( execQuery ));
+    const [rawContracts, rawFolders, rawContacts, rawLabels] = await Promise.all(queries.map(execQuery));
 
     console.log(`ExecQuery time ${new Date().getTime() - t} ms`);
 
@@ -87,12 +86,12 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const contracts: IMapOfArrays = {};
-    const departments: IMapOfArrays = {}
-    const labels: IMapOfArrays = {}
+    const departments: IMapOfArrays = {};
+    const labels: IMapOfArrays = {};
 
     const tMap = new Date().getTime();
 
-    rawContracts.forEach( c => {
+    rawContracts.forEach(c => {
       if (contracts[c.USR$CUSTOMERKEY]) {
         if (!contracts[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
           contracts[c.USR$CUSTOMERKEY].push(c.USR$JOBKEY);
@@ -110,7 +109,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    rawLabels.map( l => {
+    rawLabels.map(l => {
       if (labels[l.USR$CONTACTKEY]) {
         if (!labels[l.USR$CONTACTKEY].includes(l.USR$LABELKEY)) {
           labels[l.USR$CONTACTKEY].push({ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY });
@@ -126,14 +125,14 @@ export const getContacts: RequestHandler = async (req, res) => {
       [id: string]: string;
     };
 
-    const folders: IFolders = rawFolders.reduce( (p, f) => {
+    const folders: IFolders = rawFolders.reduce((p, f) => {
       p[f.ID] = f.NAME;
       return p;
     }, {});
 
     const tCon = new Date().getTime();
 
-    const contacts: ICustomer[]  = rawContacts.map( c => {
+    const contacts: ICustomer[] = rawContacts.map(c => {
       const DEPARTMENTS = departments[c.ID]?.map(d => ({
         ID: d
       })) ?? null;
@@ -142,7 +141,7 @@ export const getContacts: RequestHandler = async (req, res) => {
         ID: c
       })) ?? null;
 
-      const LABELS = labels[c.ID]?? null;
+      const LABELS = labels[c.ID] ?? null;
 
       return {
         ...c,
@@ -165,7 +164,7 @@ export const getContacts: RequestHandler = async (req, res) => {
     console.log(`Contacts time ${new Date().getTime() - t} ms`);
 
     return res.status(200).json(result);
-  } catch(error) {
+  } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseReadTransaction(req.sessionID);
@@ -188,10 +187,10 @@ export const updateContact: RequestHandler = async (req, res) => {
            EMAIL = ?,
            PARENT = ?
          WHERE ID = ?`,
-         [ NAME, PHONE, EMAIL, PARENT, id ]
+        [NAME, PHONE, EMAIL, PARENT, id]
       );
     } catch (error) {
-      return res.status(500).send({ "errorMessage": error.message });
+      return res.status(500).send({ 'errorMessage': error.message });
     }
 
     const resultSet = await attachment.executeQuery(
@@ -215,14 +214,14 @@ export const updateContact: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        contact: [ {
+        contact: [{
           ID: row[0][0],
           PARENT: row[0][1],
           NAME: row[0][2],
           EMAIL: row[0][3],
           PHONE: row[0][4],
           FOLDERNAME: row[0][5]
-        } ]
+        }]
       },
       _schema
     };
@@ -232,16 +231,15 @@ export const updateContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send({ "errorMessage": error });
+    return res.status(500).send({ 'errorMessage': error });
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
 };
 
 export const addContact: RequestHandler = async (req, res) => {
-
   const { NAME, PHONE, EMAIL, PARENT, labels } = req.body;
-  const { attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
     const resultSet = await attachment.executeQuery(
@@ -266,24 +264,20 @@ export const addContact: RequestHandler = async (req, res) => {
         VALUES(3, IIF(:PARENT IS NULL, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :PARENT), :NAME, :PHONE, :EMAIL)
         RETURNING ID, PARENT, NAME, PHONE, EMAIL
         INTO :ret_ID, :ret_PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL;
-
         SELECT NAME FROM GD_CONTACT WHERE ID = :ret_PARENT
         INTO :ret_FOLDERNAME;
-
         IF (ret_ID IS NOT NULL) THEN
           INSERT INTO GD_COMPANY(CONTACTKEY)
           VALUES(:ret_ID);
-
         IF (ret_ID IS NOT NULL) THEN
           INSERT INTO GD_COMPANYCODE(COMPANYKEY)
           VALUES(:ret_ID);
-
         SUSPEND;
       END`,
-      [ NAME, EMAIL, PHONE, PARENT ]
+      [NAME, EMAIL, PHONE, PARENT]
     );
 
-    const _schema = {}
+    const _schema = {};
     const rows = await resultSet.fetch();
 
     await resultSet.close();
@@ -296,15 +290,15 @@ export const addContact: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        contact: [ {
+        contact: [{
           ID: row[0],
           NAME: row[1],
           EMAIL: row[2],
           PHONE: row[3],
           PARENT: row[4],
           FOLDERNAME: row[5],
-          labels: await upsertLabels({ attachment, transaction}, row[0], labels)
-        } ]
+          labels: await upsertLabels({ attachment, transaction }, row[0], labels)
+        }]
       },
       _schema
     };
@@ -313,8 +307,7 @@ export const addContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-      console.log('addContact_error', error.message);
-      return res.status(500).send({ "errorMessage": error.message});
+    return res.status(500).send({ 'errorMessage': error.message });
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   };
@@ -322,7 +315,7 @@ export const addContact: RequestHandler = async (req, res) => {
 
 export const deleteContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
@@ -336,13 +329,13 @@ export const deleteContact: RequestHandler = async (req, res) => {
         DELETE FROM GD_COMPANY WHERE CONTACTKEY = :ID;
         DELETE FROM GD_CONTACT WHERE ID = :ID;
       END`,
-      [ id ]
+      [id]
     );
 
     await transaction.commit();
     return res.status(200).send(id);
   } catch (error) {
-    return res.status(500).send({ "errorMessage": error.message});
+    return res.status(500).send({ 'errorMessage': error.message });
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
@@ -384,7 +377,7 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+        ...Object.fromEntries(await Promise.all(queries.map(q => execQuery(q))))
       },
       _schema
     };
@@ -400,22 +393,22 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
     return;
   };
 
-  const newLabels = labels.map(label => ({...label, CONTACT: contactId}))
+  const newLabels = labels.map(label => ({ ...label, CONTACT: contactId }));
 
-  const {attachment, transaction} = firebirdPropsL;
+  const { attachment, transaction } = firebirdPropsL;
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
-    const deleteSQL = `DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?`;
+    const deleteSQL = 'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?';
 
     await Promise.all(
       [...new Set(newLabels.map(el => el.CONTACT))]
         .map(async label => {
-        await attachment.execute(transaction, deleteSQL, [label]);
+          await attachment.execute(transaction, deleteSQL, [label]);
         })
     );
 
-      const insertSQL = `
+    const insertSQL = `
         EXECUTE BLOCK(
           ID TYPE OF COLUMN USR$CRM_CONTACT_LABELS.ID = ?,
           CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY = ?,
@@ -426,29 +419,25 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
           res_CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY,
           res_LABELKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$LABELKEY
         )
-
         AS
         BEGIN
           DELETE FROM USR$CRM_CONTACT_LABELS WHERE ID = :ID;
-
           INSERT INTO USR$CRM_CONTACT_LABELS(USR$CONTACTKEY, USR$LABELKEY)
           VALUES(:CONTACTKEY, :LABELKEY)
           RETURNING ID, USR$CONTACTKEY, USR$LABELKEY INTO :res_ID, :res_CONTACTKEY, :res_LABELKEY;
-
           SUSPEND;
         END`;
 
-      const records = await Promise.all(newLabels.map(async label => {
-        return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
-      }));
+    const records = await Promise.all(newLabels.map(async label => {
+      return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
+    }));
 
-      return records as ILabelsContact[];
-    } catch (error) {
+    return records as ILabelsContact[];
+  } catch (error) {
+    console.log('catch', error);
 
-      console.log('catch', error);
-
-      return;
+    return;
   } finally {
-    //await closeConnection(client, attachment, transaction);
+    // await closeConnection(client, attachment, transaction);
   };
 };

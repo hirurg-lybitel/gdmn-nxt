@@ -1,6 +1,7 @@
 import {
   DataGridPro,
   GridColDef,
+  GridToolbar,
   ruRU,
   GridFilterItem,
   GridFilterInputValueProps,
@@ -21,20 +22,22 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer } from '../features/customer/actions';
+import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
+import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
 import NestedSets from 'nested-sets-tree';
 import { CollectionEl } from 'nested-sets-tree';
-import { useAddLabelsContactMutation, useDeleteLabelsContactMutation } from '../features/labels/labelsApi';
-import { useGetGroupsQuery } from '../features/contact/contactGroupApi';
+import { useAddLabelsContactMutation, useDeleteLabelsContactMutation, useGetLabelsContactQuery } from '../features/labels/labelsApi';
+import CustomTreeView from '../custom-tree-view/custom-tree-view';
+import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
+import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
 import CustomizedCard from '../components/customized-card/customized-card';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CustomersFilter, { IFilteringData } from './customers-filter/customers-filter';
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from './DataGridProOverlay/CustomGridToolbarOverlay';
@@ -85,7 +88,7 @@ interface IPaginationData {
   pageSize: number;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+/* eslint-disable-next-line */
 export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
@@ -93,16 +96,16 @@ export function Customers(props: CustomersProps) {
 
   // const { data, isFetching, refetch } = useGetAllContactsQuery();
 
-  // const [reconciliationShow, setReconciliationShow] = useState(false);
+  const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openFilters, setOpenFilters] = useState(false);
-  // const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
-  // const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
-  // const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
-  // const [addingGroup, setAddingGroup] = useState(false);
+  const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
+  const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
+  const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
+  const [addingGroup, setAddingGroup] = useState(false);
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
   const [searchName, setSearchName] = useState('');
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
@@ -122,12 +125,12 @@ export function Customers(props: CustomersProps) {
   const [addLabelsContact] = useAddLabelsContactMutation();
   const [deleteLabelsContact] = useDeleteLabelsContactMutation();
 
-  // const { data: labelsContact, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
+  const { data: labelsContact, error: labelError, refetch: refetchLabels } = useGetLabelsContactQuery();
 
-  const { data: groups } = useGetGroupsQuery();
-  // const [addGroup] = useAddGroupMutation();
-  // const [updateGroup] = useUpdateGroupMutation();
-  // const [deleteGroup] = useDeleteGroupMutation();
+  const { data: groups, isFetching: groupIsFetching } = useGetGroupsQuery();
+  const [addGroup] = useAddGroupMutation();
+  const [updateGroup] = useUpdateGroupMutation();
+  const [deleteGroup] = useDeleteGroupMutation();
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
@@ -135,7 +138,7 @@ export function Customers(props: CustomersProps) {
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
 
   function CurrentLabelFilter(props: GridFilterInputValueProps) {
-    const { item } = props;
+    const { item, applyValue, focusElementRef } = props;
 
     return (
       <div
@@ -303,9 +306,9 @@ export function Customers(props: CustomersProps) {
         };
 
         const detailsComponent = {
+          // eslint-disable-next-line react/display-name
           component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`details/${customerId}`} target="_self" />)
         };
-        detailsComponent.component.displayName = 'DetailsComponent';
 
         return (
           <Box>
@@ -326,7 +329,7 @@ export function Customers(props: CustomersProps) {
 
   useEffect(() => {
     dispatch(fetchCustomers({ paginationData: paginationData }));
-  }, [dispatch, paginationData]);
+  }, []);
 
   useEffect(() => {
     if (customersError) {
@@ -339,7 +342,6 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
     };
   }, [customersError, errorMessage]);
-
 
   /** Перевод вложенной структуры с lb rb в бинарное дерево */
   const tree: NestedSets = new NestedSets({
@@ -368,14 +370,14 @@ export function Customers(props: CustomersProps) {
     setOpenSnackBar(false);
   };
 
-  // const handleReconciliationClick = () => {
-  //   if (!currentOrganization) {
-  //     setSnackBarMessage('Не выбрана организация');
-  //     setOpenSnackBar(true);
-  //     return;
-  //   }
-  //   setReconciliationShow(true);
-  // };
+  const handleReconciliationClick = () => {
+    if (!currentOrganization) {
+      setSnackBarMessage('Не выбрана организация');
+      setOpenSnackBar(true);
+      return;
+    }
+    setReconciliationShow(true);
+  };
 
   /** Cancel organization change */
   const handleOrganiztionEditCancelClick = () => {

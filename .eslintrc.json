@@ -32,6 +32,7 @@
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/ban-types": "off",
         "react/jsx-closing-bracket-location": "off",
+        "react/jsx-no-useless-fragment": "off",
         "react/jsx-curly-spacing": ["warn", {
           "when": "never",
           "children": true

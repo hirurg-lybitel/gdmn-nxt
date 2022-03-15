@@ -94,7 +94,7 @@ export function ChartDonut(props: ChartDonutProps) {
       }}
     >
       {stagesIsFetching
-        ? {} // ???
+        ? <></>
         : <Stack direction="column" spacing={3} p={2}>
           <Typography variant="h1">Статус сделок</Typography>
           <Chart

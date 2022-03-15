@@ -1,9 +1,8 @@
-import { IEntities, IRequestResult } from "@gsbelarus/util-api-types";
-import { RequestHandler } from "express";
-import { importModels } from "./er/er-utils";
-import { importedModels } from "./models";
-import { resultError } from "./responseMessages";
-import { getReadTransaction, releaseReadTransaction } from "./utils/db-connection";
+import { IEntities, IRequestResult } from '@gsbelarus/util-api-types';
+import { RequestHandler } from 'express';
+import { importedModels } from './models';
+import { resultError } from './responseMessages';
+import { getReadTransaction, releaseReadTransaction } from './utils/db-connection';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -52,19 +51,18 @@ const get: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+        ...Object.fromEntries(await Promise.all(queries.map(q => execQuery(q))))
       },
       _params: id ? [{ id: id }] : undefined,
       _schema
     };
 
     return res.status(200).json(result);
-  } catch(error) {
-
+  } catch (error) {
     return res.status(500).send(resultError(error.message));
-  }finally {
+  } finally {
     await releaseReadTransaction(req.sessionID);
   }
 };
 
-export default {get};
+export default { get };

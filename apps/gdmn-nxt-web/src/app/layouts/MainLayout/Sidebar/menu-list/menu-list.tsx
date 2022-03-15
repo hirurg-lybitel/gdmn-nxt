@@ -20,7 +20,7 @@ export function MenuList(props: MenuListProps) {
     }
   });
   return (
-    { navItems }
+    <>{navItems}</>
   );
 }
 
