@@ -15,6 +15,7 @@ import departments from './app/departments';
 import customerContracts from './app/customerContracts';
 import dealsRouter from './app/routes/dealsRouter';
 import kanbanRouter from './app/routes/kanbanRouter';
+import actCompletionRouter from './app/routes/actCompletionRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { ApolloServer, gql } from 'apollo-server';
 import { importedModels } from './app/models';
@@ -243,7 +244,7 @@ router.get('/contacts/labels', getLabelsContact);
 router.post('/contacts/labels', addLabelsContact);
 router.delete('/contacts/labels/:contactId', deleteLabelsContact);
 
-/**Contact groups */
+/** Contact groups */
 router.get('/contactgroups', contactGroups.get);
 router.post('/contactgroups', contactGroups.add);
 router.put('/contactgroups/:id', contactGroups.update);
@@ -268,6 +269,8 @@ router.use(dealsRouter);
 
 /** Kanban */
 router.use(kanbanRouter);
+
+router.use(actCompletionRouter);
 
 router.get('/accounts', getAccounts);
 router.get('/accounts/email/:email', getAccounts);

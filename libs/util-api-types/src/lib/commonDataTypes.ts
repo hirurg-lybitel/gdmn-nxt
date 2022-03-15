@@ -131,3 +131,11 @@ export interface IKanbanColumn extends IWithID {
   USR$NAME: string;
   CARDS: IKanbanCard[];
 };
+
+export interface IActCompletion extends IWithID {
+  NUMBER: string;
+  DOCUMENTDATE: Date;
+  DEPT_NAME: string;
+  JOB_NUMBER: string;
+  USR$SUMNCU: number;
+};
