@@ -84,7 +84,7 @@ passport.use(new Strategy({
 
         if (res.result === 'SUCCESS') {
           console.log('valid gedemin user');
-          return done(null, { userName, gedeminUser: true });
+          return done(null, { userName, gedeminUser: true, id: res.userProfile.id });
         } else {
           return done(null, false);
         }

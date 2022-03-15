@@ -235,7 +235,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                 ))}
                 {provided.placeholder}
                 <Box>
-                  <Button onClick={columnHandlers.handleAdd} startIcon={<AddIcon/>}>Группа</Button>
+                  <Button onClick={columnHandlers.handleAdd} startIcon={<AddIcon/>}>Этап</Button>
                 </Box>
               </Stack>
             )}

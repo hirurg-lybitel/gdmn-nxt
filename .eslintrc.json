@@ -30,6 +30,7 @@
         "react/react-in-jsx-scope": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-empty-function": "off",
+        "react/jsx-no-useless-fragment": "off",
         "react/jsx-closing-bracket-location": 1,
         "react/jsx-curly-spacing": ["warn", {
           "when": "never",
@@ -68,17 +69,6 @@
         "indent": ["error", 2],
         "react/jsx-first-prop-new-line": [1, "multiline"],
         "react/jsx-max-props-per-line": ["error", { "when": "multiline", "maximum": 1 }]
-        // "prettier/prettier": [
-        //   "warn",
-        //   {
-        //       // "bracketSpacing": false,
-        //       // "printWidth": 140,
-        //       // "trailingComma": "none",
-        //       "tabWidth": 2,
-        //       "useTabs": false,
-        //       "endOfLine": "auto"
-        //   }
-        // ]
       }
     },
     {

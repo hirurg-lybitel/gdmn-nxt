@@ -6,6 +6,7 @@ import { getReadTransaction, releaseReadTransaction } from "./utils/db-connectio
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
     SELECT
+      u.ID,
       u.passw,
       u.ingroup,
       u.disabled as userDisabled,
@@ -42,6 +43,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
         return {
           result: 'SUCCESS',
           userProfile: {
+            id: data[0]['ID'],
             userName,
             firstname: data[0]['FIRSTNAME'],
             surname: data[0]['SURNAME']
@@ -62,9 +64,10 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
   }
 };
 
-export const getGedeminUser = async (userName: string): Promise<{ userName: string } | undefined> => {
+export const getGedeminUser = async (userName: string): Promise<{ id: number, userName: string } | undefined> => {
   const query = `
     SELECT
+      u.id,
       u.name
     FROM
       gd_user u
@@ -79,8 +82,9 @@ export const getGedeminUser = async (userName: string): Promise<{ userName: stri
 
       if (data.length === 1) {
         return {
+          id: data[0]['ID'],
           userName
-        }
+        };
       } else if (!data.length) {
         return undefined;
       } else {

@@ -54,9 +54,9 @@ const App = () => {
             .then( data => {
               if (data[ 'userName' ]) {
                 if (data['gedeminUser']) {
-                  dispatch(signedInEmployee({ userName: data['userName'] }));
+                  dispatch(signedInEmployee({ userName: data['userName'], id: data['id'] }));
                 } else {
-                  dispatch(signedInCustomer({ userName: data['userName'] }));
+                  dispatch(signedInCustomer({ userName: data['userName'], id: data['id'] }));
                 }
               } else {
                 dispatch(selectMode());
@@ -77,7 +77,7 @@ const App = () => {
               employeeModeSelected={ () => dispatch(signInEmployee()) }
               customerModeSelected={ () => dispatch(signInCustomer()) }
             />
-          : loginStage === 'CUSTOMER' ? <Navigate to="/customer" /> 
+          : loginStage === 'CUSTOMER' ? <Navigate to="/customer" />
           : loginStage === 'EMPLOYEE' ? <Navigate to="/employee/dashboard" />
           : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?

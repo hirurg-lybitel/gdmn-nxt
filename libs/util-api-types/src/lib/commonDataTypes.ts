@@ -82,11 +82,11 @@ export interface IContactHierarchy {
 export interface ILabelsContact extends IWithID {
   USR$CONTACTKEY: number;
   USR$LABELKEY: number;
-}
+};
 
 export interface IContactWithLabels extends IContactWithID {
   labels?: ILabelsContact[]
-}
+};
 
 export interface IContractJob extends IContactWithID {
   USR$NAME?: string;
@@ -96,12 +96,11 @@ export interface ICustomer extends IContactWithID {
   LABELS?: ILabelsContact[];
   CONTRACTS?: IContractJob[];
   DEPARTMETNS?: IContactWithID[];
-}
+};
 
 export interface IResultError {
   errorMessage: string
-}
-
+};
 
 export interface ICustomerContract {
   USR$NUMBER: string;
@@ -130,6 +129,16 @@ export interface IKanbanColumn extends IWithID {
   USR$INDEX: number;
   USR$NAME: string;
   CARDS: IKanbanCard[];
+};
+
+export interface IKanbanHistory extends IWithID {
+  USR$DATE: Date;
+  USR$TYPE: string;
+  USR$DESCRIPTION: string;
+  USR$OLD_VALUE: string;
+  USR$NEW_VALUE: string;
+  USR$USERKEY: number;
+  USERNAME: string;
 };
 
 export interface IActCompletion extends IWithID {
