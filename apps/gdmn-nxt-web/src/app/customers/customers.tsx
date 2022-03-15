@@ -47,11 +47,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   DataGrid: {
     border: 'none',
     '& ::-webkit-scrollbar': {
-      width:'10px',
+      width: '10px',
       height: '10px',
       backgroundColor: 'transparent',
       borderRadius: '6px'
-      },
+    },
     '& ::-webkit-scrollbar:hover': {
       backgroundColor: '#f0f0f0',
     },
@@ -81,20 +81,20 @@ const labelStyle: CSSProperties = {
   margin: '0px 5px',
   width: 'fit-content',
   height: 'fit-content'
-}
+};
 
 interface IPaginationData {
   pageNo: number;
   pageSize: number;
 };
 
+/* eslint-disable-next-line */
 export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
-
   const classes = useStyles();
 
-  //const { data, isFetching, refetch } = useGetAllContactsQuery();
+  // const { data, isFetching, refetch } = useGetAllContactsQuery();
 
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
@@ -107,19 +107,19 @@ export function Customers(props: CustomersProps) {
   const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
   const [addingGroup, setAddingGroup] = useState(false);
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
-  const [searchName, setSearchName] = useState("");
+  const [searchName, setSearchName] = useState('');
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
     pageSize: 50
-  })
+  });
 
   /** Затычка для минимизации рендеров DataGrid при resize */
   const [displayDataGrid, setDisplayDataGrid] = useState(true);
 
 
   const allCustomers = useSelector(customersSelectors.selectAll);
-  const { error: customersError , loading: customersLoading } = useSelector((state: RootState) => state.customers);
+  const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
   const dispatch = useDispatch();
 
   const [addLabelsContact] = useAddLabelsContactMutation();
@@ -156,27 +156,27 @@ export function Customers(props: CustomersProps) {
           {groups?.find(el => el.ID === item.value)?.NAME}
         </div>
       </div>
-    )
+    );
   };
 
   const isLabel: GridFilterOperator = {
-      label: 'Содержит',
-      value: 'is',
-      getApplyFilterFn: (filterItem: GridFilterItem) => {
-        if (
-          !filterItem.columnField ||
+    label: 'Содержит',
+    value: 'is',
+    getApplyFilterFn: (filterItem: GridFilterItem) => {
+      if (
+        !filterItem.columnField ||
           !filterItem.value ||
           !filterItem.operatorValue
-        ) {
-          return null;
-        }
+      ) {
+        return null;
+      }
 
-        return (params: any): boolean => {
-          return params.row.LABELS?.find((label: any) => label.USR$LABELKEY === filterItem.value);
-        };
-      },
-      InputComponent: CurrentLabelFilter,
-      InputComponentProps: { type: 'number' },
+      return (params: any): boolean => {
+        return params.row.LABELS?.find((label: any) => label.USR$LABELKEY === filterItem.value);
+      };
+    },
+    InputComponent: CurrentLabelFilter,
+    InputComponentProps: { type: 'number' },
   };
 
   const containLabels: GridFilterOperator = {
@@ -250,7 +250,7 @@ export function Customers(props: CustomersProps) {
       renderCell: (params) => {
         const numberLabelsInRow = 2;
 
-        //const labels: ILabelsContact[] | undefined = labelsContact?.queries.labels.filter(el => el.USR$CONTACTKEY === params.id);
+        // const labels: ILabelsContact[] | undefined = labelsContact?.queries.labels.filter(el => el.USR$CONTACTKEY === params.id);
         const labels: ILabelsContact[] = params.row.LABELS;
 
         if (!labels?.length) {
@@ -260,9 +260,9 @@ export function Customers(props: CustomersProps) {
           <Stack direction="column">
             {labels.map((label, index) => {
               if (index % numberLabelsInRow === 0) {
-                return(
+                return (
                   <List
-                    key={label.ID + index*10}
+                    key={label.ID + index * 10}
                     style={{
                       flexDirection: 'row',
                       padding: '4px',
@@ -270,21 +270,21 @@ export function Customers(props: CustomersProps) {
                     }}
                   >
                     {labels.slice(index, index + numberLabelsInRow).map((subLabel, index) => {
-                      return(
+                      return (
                         <ListItemButton
                           key={subLabel.ID}
-                          onClick={ () => {
-                            setFilterModel({items: [{ id: 1, columnField: 'LABELS', value: subLabel.USR$LABELKEY, operatorValue: 'is' }]});
-                            setFilteringData({'LABELS': [{ID: subLabel.USR$LABELKEY}]});
+                          onClick={() => {
+                            setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: subLabel.USR$LABELKEY, operatorValue: 'is' }] });
+                            setFilteringData({ 'LABELS': [{ ID: subLabel.USR$LABELKEY }] });
                           }}
                           style={labelStyle}
                         >
                           {groups?.find(hierarchy => hierarchy.ID === subLabel.USR$LABELKEY)?.NAME}
-                       </ListItemButton>
-                      )
+                        </ListItemButton>
+                      );
                     })}
                   </List>
-                )
+                );
               }
               return null;
             })}
@@ -298,19 +298,17 @@ export function Customers(props: CustomersProps) {
       resizable: false,
       align: 'center',
       renderCell: (params) => {
-
-        const navigate = useNavigate();
-
         const customerId = Number(params.id);
 
         const handleCustomerEdit = () => {
-          setCurrentOrganization(customerId)
+          setCurrentOrganization(customerId);
           setOpenEditForm(true);
-        }
+        };
 
         const detailsComponent = {
+          // eslint-disable-next-line react/display-name
           component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`details/${customerId}`} target="_self" />)
-        }
+        };
 
         return (
           <Box>
@@ -330,7 +328,7 @@ export function Customers(props: CustomersProps) {
 
 
   useEffect(() => {
-    dispatch(fetchCustomers({paginationData: paginationData}));
+    dispatch(fetchCustomers({ paginationData: paginationData }));
   }, []);
 
   useEffect(() => {
@@ -345,8 +343,6 @@ export function Customers(props: CustomersProps) {
     };
   }, [customersError, errorMessage]);
 
-
-
   /** Перевод вложенной структуры с lb rb в бинарное дерево */
   const tree: NestedSets = new NestedSets({
     id: 'ID',
@@ -356,8 +352,8 @@ export function Customers(props: CustomersProps) {
   });
 
   if (groups) {
-    const arr: CollectionEl[] = groups.map(({NAME, ...el}) => ({ ...el, PARENT: el.PARENT || 0}) );
-    tree.loadTree(arr, {createIndexes: true});
+    const arr: CollectionEl[] = groups.map(({ NAME, ...el }) => ({ ...el, PARENT: el.PARENT || 0 }));
+    tree.loadTree(arr, { createIndexes: true });
   }
 
   // useEffect(() => {
@@ -427,7 +423,6 @@ export function Customers(props: CustomersProps) {
   };
 
 
-
   const filterHandlers = {
     handleFilter: async () => {
       if (displayDataGrid) {
@@ -439,10 +434,10 @@ export function Customers(props: CustomersProps) {
     handleRequestSearch: async (value: string) => {
       setSearchName(value);
     },
-    handleCancelSearch : async () => {
-      setSearchName("");
+    handleCancelSearch: async () => {
+      setSearchName('');
     },
-    handleChange : async (value: string) => {
+    handleChange: async (value: string) => {
       setSearchName(value);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
@@ -452,13 +447,13 @@ export function Customers(props: CustomersProps) {
         filterModels.push({ id: 2, columnField: key, value: arr, operatorValue: 'includes' });
       };
 
-      setFilterModel({items: filterModels})
+      setFilterModel({ items: filterModels });
       setFilteringData(newValue);
     },
-    handleFilterClose: async (event: any, reason: "backdropClick" | "escapeKeyDown") => {
+    handleFilterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
       if (
-        event.type === "keydown" &&
-        (event.key === "Tab" || event.key === "Shift")
+        event.type === 'keydown' &&
+        (event.key === 'Tab' || event.key === 'Shift')
       ) {
         return;
       }
@@ -498,9 +493,8 @@ export function Customers(props: CustomersProps) {
   // };
 
 
-
   return (
-    <Stack flex={1} display="flex" direction="column" spacing={2} style={{overflow: 'hidden' }}>
+    <Stack flex={1} display="flex" direction="column" spacing={2} style={{ overflow: 'hidden' }}>
       <Stack direction="row" flex={1} >
         {/* <Stack direction="column" flex="1" padding={2}>
           <Box sx={{ mb: 1 }}>
@@ -522,11 +516,11 @@ export function Customers(props: CustomersProps) {
             />
             : null}
         </Stack> */}
-        <Stack direction="column"  style={{ width: '100%' }} padding={2}>
+        <Stack direction="column" style={{ width: '100%' }} padding={2}>
           <Box sx={{ mb: 1 }}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={()=> dispatch(fetchCustomers({paginationData: paginationData}))} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
+                <Button onClick={()=> dispatch(fetchCustomers({ paginationData: paginationData }))} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
                 <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
                 <Button
                   component="a"
@@ -535,8 +529,7 @@ export function Customers(props: CustomersProps) {
                   startIcon={<SummarizeIcon />}
                 >Акт сверки</Button>
               </Box>
-              <Box flex={1}>
-              </Box>
+              <Box flex={1} />
               <Box>
                 <SearchBar
                   disabled={customersLoading}
@@ -544,7 +537,7 @@ export function Customers(props: CustomersProps) {
                   onCancelSearch={filterHandlers.handleCancelSearch}
                   onRequestSearch={filterHandlers.handleRequestSearch}
                   cancelOnEscape
-                  placeholder='Поиск клиента'
+                  placeholder="Поиск клиента"
                 />
               </Box>
               <Box display="flex" justifyContent="center">
@@ -561,13 +554,13 @@ export function Customers(props: CustomersProps) {
               style={{
                 width: '100%',
                 ...(matchDownLg
-                    ? {}
-                    : {
-                      transition: `${theme.transitions.create('width', {
-                        easing: theme.transitions.easing.easeInOut,
-                        duration: theme.transitions.duration.standard,
-                      })}`
-                    }),
+                  ? {}
+                  : {
+                    transition: `${theme.transitions.create('width', {
+                      easing: theme.transitions.easing.easeInOut,
+                      duration: theme.transitions.duration.standard,
+                    })}`
+                  }),
               }}
             >
               <DataGridPro
@@ -578,7 +571,7 @@ export function Customers(props: CustomersProps) {
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 rows={
                   allCustomers
-                    //.filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
+                    // .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
                     .filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
                     ?? undefined}
                 columns={columns}
@@ -590,7 +583,7 @@ export function Customers(props: CustomersProps) {
                 disableMultipleSelection
                 loading={customersLoading}
                 getRowId={row => row.ID}
-                onSelectionModelChange={ ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
+                onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
                 components={{
                   Toolbar: CustomGridToolbarOverlay,
                   LoadingOverlay: CustomLoadingOverlay,
@@ -598,23 +591,23 @@ export function Customers(props: CustomersProps) {
                 }}
                 filterModel={filterModel}
                 onFilterModelChange={(model, detail) => setFilterModel(model)}
-                pinnedColumns={{left: [customersLoading ? '' : 'NAME']}}
+                pinnedColumns={{ left: [customersLoading ? '' : 'NAME'] }}
                 getRowHeight={(params) => {
                   const customer: ICustomer = params.model as ICustomer;
                   const labels: ILabelsContact[] | undefined = customer.LABELS;
 
                   if (labels?.length) {
-                    return 50 * Math.ceil(labels.length/2);
+                    return 50 * Math.ceil(labels.length / 2);
                   };
 
                   return 50;
                 }}
                 pageSize={paginationData.pageSize}
                 onPageChange={(data) => {
-                  setPaginationData(prevState => ({...prevState, pageNo: data}));
+                  setPaginationData(prevState => ({ ...prevState, pageNo: data }));
                 }}
                 onPageSizeChange={(data) => {
-                  setPaginationData(prevState => ({...prevState, pageSize: data}));
+                  setPaginationData(prevState => ({ ...prevState, pageSize: data }));
                 }}
               />
             </CustomizedCard>
@@ -624,9 +617,9 @@ export function Customers(props: CustomersProps) {
               style={{
                 ...(matchDownLg
                   ? {}
-                  :{
+                  : {
                     marginLeft: theme.spacing(3),
-                    marginRight: `${openFilters ? '0px' : '-'+ theme.spacing(3)}`,
+                    marginRight: `${openFilters ? '0px' : '-' + theme.spacing(3)}`,
                     width: `${openFilters ? '300px' : '0px'}`,
                     transition: `${theme.transitions.create(['width', 'margin'], {
                       easing: theme.transitions.easing.easeInOut,
@@ -651,7 +644,7 @@ export function Customers(props: CustomersProps) {
           open={openEditForm}
           customer={
             allCustomers
-            .find(element => element.ID === currentOrganization)
+              .find(element => element.ID === currentOrganization)
             || null
           }
           onSubmit={handleOrganiztionEditSubmit}
@@ -661,7 +654,7 @@ export function Customers(props: CustomersProps) {
         : null
       }
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
-        <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{snackBarMessage}</Alert>
+        <Alert onClose={handleSnackBarClose} variant="filled" severity="error">{snackBarMessage}</Alert>
       </Snackbar>
     </Stack>
   );
