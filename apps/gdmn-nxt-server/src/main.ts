@@ -1,6 +1,7 @@
+/* eslint-disable indent */
 import express from 'express';
 import session from 'express-session';
-import passport  from 'passport';
+import passport from 'passport';
 import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
@@ -12,6 +13,7 @@ import { upsertAccount, getAccounts } from './app/accounts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from './app/labels';
 import contactGroups from './app/contactGrops';
 import departments from './app/departments';
+import bankStatementsRouter from './app/routes/bankStatementsRouter';
 import customerContracts from './app/customerContracts';
 import dealsRouter from './app/routes/dealsRouter';
 import kanbanRouter from './app/routes/kanbanRouter';
@@ -26,6 +28,7 @@ const MemoryStore = require('memorystore')(session);
 dotenv.config({ path: '../..' });
 
 const app = express();
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
 
 app.use(cors({
@@ -58,6 +61,7 @@ interface ICustomerUser extends IBaseUser {
 type IUser = IGedeminUser | ICustomerUser;
 
 function isIGedeminUser(u: IUser): u is IGedeminUser {
+  // eslint-disable-next-line dot-notation
   return !!u['gedeminUser'];
 };
 
@@ -75,7 +79,7 @@ passport.use(new Strategy({
 
     try {
       if (employeeMode) {
-        //TODO: надо возвращать запись пользователя и все остальные проверки делать тут
+        // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
         const res = await checkGedeminUser(userName, password);
 
         if (res.result === 'UNKNOWN_USER') {
@@ -89,7 +93,6 @@ passport.use(new Strategy({
           return done(null, false);
         }
       } else {
-
         const account = await getAccount(req.sessionID, userName);
 
         if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
@@ -103,14 +106,13 @@ passport.use(new Strategy({
           return done(null, false);
         }
       }
-    }
-    catch (err) {
+    } catch (err) {
       done(err);
     }
   }
 ));
 
-passport.serializeUser( (user: IUser, done) => {
+passport.serializeUser((user: IUser, done) => {
   console.log('passport serialize');
   done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`);
 });
@@ -163,7 +165,7 @@ app.get('/test', (req, res) => {
   if (req.isAuthenticated()) {
     return res.send(`Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
   } else {
-    return res.send(`Not authenticated!`);
+    return res.send('Not authenticated!');
   }
 });
 
@@ -202,7 +204,9 @@ app.route('/user/forgot-password')
 
 app.get('/logout', (req, res) => {
   if (req.session) {
-    req.session.destroy( err => { if (err) console.error(err); } );
+    req.session.destroy(err => {
+      if (err) console.error(err);
+    });
   }
   res.sendStatus(200);
 });
@@ -228,7 +232,7 @@ router.get('/test', (req, res) => {
   if (req.isAuthenticated()) {
     return res.send(`from router: Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
   } else {
-    return res.send(`from router: Not authenticated!`);
+    return res.send('from router: Not authenticated!');
   }
 });
 
@@ -263,6 +267,9 @@ router.get('/customercontracts/:id', customerContracts.get);
 router.post('/customercontracts', customerContracts.upsert);
 router.put('/customercontracts/:id', customerContracts.upsert);
 router.delete('/customercontracts/:id', customerContracts.remove);
+
+/** Bank Statements */
+router.use(bankStatementsRouter);
 
 /** Deals */
 router.use(dealsRouter);
@@ -350,9 +357,9 @@ process
   .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
   .on('uncaughtException', console.error);
 
-////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////
 // garbage
-////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////
 
 /*
 app.route('/login')

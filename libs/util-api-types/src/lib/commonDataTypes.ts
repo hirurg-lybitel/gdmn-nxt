@@ -148,3 +148,12 @@ export interface IActCompletion extends IWithID {
   JOB_NUMBER: string;
   USR$SUMNCU: number;
 };
+
+export interface IBankStatement extends IWithID {
+  NUMBER: string;
+  DOCUMENTDATE: Date;
+  DEPT_NAME: string;
+  JOB_NUMBER: string;
+  CSUMNCU: number;
+  COMMENT: string;
+};

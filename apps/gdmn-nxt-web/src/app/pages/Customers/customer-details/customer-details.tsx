@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ActCompletion from '../../../customers/CustomerDetails/act-completion/act-completion';
 import { makeStyles } from '@mui/styles';
+import BankStatement from '../../../customers/CustomerDetails/bank-statement/bank-statement';
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -73,9 +74,11 @@ export function CustomerDetails(props: CustomerDetailsProps) {
               <div>Item One</div>
               <div>subitem one</div>
             </TabPanel>
-            <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>Item Two</TabPanel>
-            <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''} >
+            <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
               <ActCompletion customerId={Number(customerId)} />
+            </TabPanel>
+            <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''} >
+              <BankStatement companyId={Number(customerId)} />
             </TabPanel>
           </TabContext>
         </Stack>
