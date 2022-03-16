@@ -95,17 +95,17 @@ export interface IEntitySetDomain extends IDomainBase {
   adapter?: IEntityDomainAdapter;
 };
 
-export type Domain = IStringDomain 
-  | IIntegerDomain 
-  | IBigIntDomain 
-  | IDoubleDomain 
-  | INumericDomain 
-  | IDateDomain 
-  | ITimeDomain 
-  | ITimeStampDomain 
-  | IBooleanDomain 
-  | IBlobDomain 
-  | IEnumDomain 
+export type Domain = IStringDomain
+  | IIntegerDomain
+  | IBigIntDomain
+  | IDoubleDomain
+  | INumericDomain
+  | IDateDomain
+  | ITimeDomain
+  | ITimeStampDomain
+  | IBooleanDomain
+  | IBlobDomain
+  | IEnumDomain
   | IEntityDomain
   | IEntitySetDomain;
 
@@ -119,7 +119,7 @@ export interface IAttrAdapter {
 
 export interface ICrossAttrAdapter extends IAttrAdapter {
   crossRelation: string;
-  crossField: string; 
+  crossField: string;
 };
 
 export interface IAttrBase {
@@ -258,21 +258,21 @@ export interface IExpressionPlus {
 };
 
 export type Expression = Operand
-  | IExpressionIn 
-  | IExpressionNotIn 
-  | IExpressionEq 
+  | IExpressionIn
+  | IExpressionNotIn
+  | IExpressionEq
   | IExpressionLike
   | IExpressionIsNull
   | IExpressionIsNotNull
-  | IExpressionExists 
-  | IExpressionPlus 
+  | IExpressionExists
+  | IExpressionPlus
   | IExpressionAnd;
 
 export interface IQueryAttr {
   alias: string;
   attrName: string | '*';
   as?: string;
-};  
+};
 
 export interface IQueryEntity {
   entityName: string;
@@ -281,7 +281,7 @@ export interface IQueryEntity {
 
 export interface IERModelQuery {
   select: IQueryAttr[];
-  from: IQueryEntity; 
+  from: IQueryEntity;
 };
 
 export interface IEntityAdapter {
@@ -292,14 +292,14 @@ export interface IEntityAdapter {
 };
 
 export interface IJoinAdapter {
-  type: 'INNER' | 'LEFT'; 
+  type: 'INNER' | 'LEFT';
   name: string;
   alias: string;
   condition?: Expression;
 };
 
 export interface IBaseDocTypes {
-  TgdcDocumentType: [Entity, undefined]; 
+  TgdcDocumentType: [Entity, undefined];
   TgdcUserDocumentType: [Entity, Entity];
   TgdcInvDocumentType: [Entity, Entity];
   TgdcInvPriceListType: [Entity, Entity];

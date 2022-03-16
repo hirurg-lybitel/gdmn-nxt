@@ -4,13 +4,13 @@ import { getReadTransaction, releaseReadTransaction } from './utils/db-connectio
 import { resultError } from './responseMessages';
 
 export const get: RequestHandler = async(req, res) => {
-  const customerId = parseInt(req.params.customerId);
+  const companyId = parseInt(req.params.companyId);
 
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
     const schema: IDataSchema = {
-      actCompletion: {
+      bankStatement: {
         DOCUMENTDATE: {
           type: 'date'
         }
@@ -43,29 +43,29 @@ export const get: RequestHandler = async(req, res) => {
       name: 'bankStatements',
       query: `
           SELECT
-            doc.id,
-            job.USR$NUMBER as job,
-            dep.NAME as dep,
+            doc.ID,
+            job.USR$NUMBER as JOB_NUMBER,
+            dep.NAME as DEPT_NAME,
             doc.NUMBER,
             doc.DOCUMENTDATE,
             l.CSUMNCU,
-            l.COMMENT
+            CAST(CAST(l.COMMENT as blob sub_type text character set utf8) as VARCHAR(8191)) as COMMENT
           FROM
             BN_BANKSTATEMENTLINE l
-            left join gd_document doc on doc.ID = l.ID
-            left join USR$BG_CONTRACTJOB job on job.ID = l.USR$CONTRACTJOBKEY
-            left join gd_contact dep on dep.ID = l.USR$DEPARTMENTKEY
-            ${isNaN(customerId) ? '' : 'WHERE l.COMPANYKEY = ?'}
+            LEFT JOIN gd_document doc on doc.ID = l.ID
+            LEFT JOIN USR$BG_CONTRACTJOB job on job.ID = l.USR$CONTRACTJOBKEY
+            LEFT JOIN gd_contact dep on dep.ID = l.USR$DEPARTMENTKEY
+            ${isNaN(companyId) ? '' : 'WHERE l.COMPANYKEY = ?'}
           ORDER BY
             doc.DOCUMENTDATE DESC`,
-      params: isNaN(customerId) ? undefined : [customerId]
+      params: isNaN(companyId) ? undefined : [companyId]
     };
 
     const bankStatements = await Promise.resolve(execQuery(query));
 
     const result: IRequestResult = {
       queries: { bankStatements },
-      _params: isNaN(customerId) ? undefined : [{ customerId: customerId }],
+      _params: isNaN(companyId) ? undefined : [{ companyId: companyId }],
       _schema: schema
     };
 
