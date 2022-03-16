@@ -39,7 +39,7 @@ let theme = createTheme({
         '"Segoe UI Emoji"',
         '"Segoe UI Symbol"',
       ].join(','),
-      fontSize: 14
+      fontSize: 14  
     },
     smallUI: {
       fontSize: 12,
@@ -51,13 +51,13 @@ let theme = createTheme({
       fontWeight: 600
     },
     fontSize: 12,
-    htmlFontSize: 10
+    htmlFontSize: 10    
   },
 } as MyThemeOptions) as MyTheme;
 
 theme = responsiveFontSizes(theme) as MyTheme;
 
-// console.log(theme);
+//console.log(theme);
 
 const Header = styled('header')({
   display: 'flex',
@@ -65,11 +65,11 @@ const Header = styled('header')({
   justifyContent: 'space-between',
   padding: '4px 8px 8px 8px',
   backgroundColor: theme.palette.grey['200'],
-  borderTopColor: theme.palette.grey['50'],
-  borderTopStyle: 'solid',
+  borderTopColor: theme.palette.grey['50'], 
+  borderTopStyle: 'solid', 
   borderTopWidth: 1,
-  borderBottomColor: theme.palette.grey['400'],
-  borderBottomStyle: 'solid',
+  borderBottomColor: theme.palette.grey['400'], 
+  borderBottomStyle: 'solid', 
   borderBottomWidth: 1,
   fontSize: theme.typography.smallUI.fontSize,
   '& a': {
@@ -94,33 +94,33 @@ const TopLeftLinks = styled('div')({
   gap: 12
 });
 
-const SearchBox = () =>
+const SearchBox = () => 
   <Box
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
+    sx={{ 
+      display: 'flex', 
+      alignItems: 'center', 
       height: 26,
       width: 400,
-      p: '2px 2px',
+      p: '2px 2px', 
       backgroundColor: theme.palette.grey['50'],
-      borderColor: theme.palette.grey['400'],
+      borderColor: theme.palette.grey['400'], 
       borderWidth: 1,
       borderStyle: 'solid',
       borderRadius: 1,
     }}
-  >
-    <IconButton size="small" aria-label="search">
+    >
+    <IconButton size='small' aria-label="search">
       <SearchIcon sx={{ width: 16, height: 16 }} />
     </IconButton>
     <InputBase
-      sx={{
-        ml: 1,
+      sx={{ 
+        ml: 1, 
         flex: 1,
-        fontSize: theme.typography.smallUI.fontSize
+        fontSize: theme.typography.smallUI.fontSize 
       }}
       placeholder="Enter search text..."
     />
-  </Box>;
+  </Box>
 
 const Menubar = styled('div')({
   display: 'flex',
@@ -133,7 +133,7 @@ const Menubar = styled('div')({
   fontSize: theme.typography.mediumUI.fontSize
 });
 
-const MenubarItem = styled('div')((props: { active?: 1 }) => ({
+const MenubarItem = styled('div')( (props: { active?: 1 }) => ({
   fontWeight: props.active ? '500' : 'normal',
   borderBottom: props.active ? `2px solid ${theme.palette.primary.main}` : 'none'
 }));
@@ -143,8 +143,8 @@ const Toolbar = styled('div')({
   marginTop: 4,
   height: 72,
   backgroundColor: theme.palette.grey['100'],
-  borderColor: theme.palette.grey['400'],
-  borderStyle: 'solid',
+  borderColor: theme.palette.grey['400'], 
+  borderStyle: 'solid', 
   borderWidth: 1,
   borderRadius: 5,
 });
@@ -156,11 +156,11 @@ const Footer = styled('footer')({
   minHeight: 48,
   padding: 0,
   backgroundColor: theme.palette.grey['200'],
-  borderTopColor: theme.palette.grey['400'],
-  borderTopStyle: 'solid',
+  borderTopColor: theme.palette.grey['400'], 
+  borderTopStyle: 'solid', 
   borderTopWidth: 1,
-  borderBottomColor: theme.palette.grey['400'],
-  borderBottomStyle: 'solid',
+  borderBottomColor: theme.palette.grey['400'], 
+  borderBottomStyle: 'solid', 
   borderBottomWidth: 1,
   fontSize: theme.typography.smallUI.fontSize,
 });
@@ -177,7 +177,7 @@ const FooterTabs = styled('div')({
   }
 });
 
-const FooterTab = styled('div')(({ highlighted }: { highlighted?: 1 }) => ({
+const FooterTab = styled('div')( ({ highlighted }: { highlighted?: 1 }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'center',
@@ -188,20 +188,20 @@ const FooterTab = styled('div')(({ highlighted }: { highlighted?: 1 }) => ({
   padding: '0px 8px 0px 8px',
   backgroundColor: theme.palette.grey['50'],
   borderTopWidth: highlighted ? 0 : 1,
-  borderTopColor: theme.palette.grey['400'],
-  borderTopStyle: 'solid',
-  borderRightColor: theme.palette.grey['400'],
-  borderRightStyle: 'solid',
+  borderTopColor: theme.palette.grey['400'], 
+  borderTopStyle: 'solid', 
+  borderRightColor: theme.palette.grey['400'], 
+  borderRightStyle: 'solid', 
   borderRightWidth: 1,
-  borderBottomColor: highlighted ? theme.palette.primary.main : theme.palette.grey['400'],
-  borderBottomStyle: 'solid',
+  borderBottomColor: highlighted ? theme.palette.primary.main : theme.palette.grey['400'], 
+  borderBottomStyle: 'solid', 
   borderBottomWidth: highlighted ? 3 : 1,
-  borderLeftColor: theme.palette.grey['400'],
-  borderLeftStyle: 'solid',
+  borderLeftColor: theme.palette.grey['400'], 
+  borderLeftStyle: 'solid', 
   borderLeftWidth: 1,
   fontSize: theme.typography.mediumUI.fontSize,
   fontWeight: highlighted ? theme.typography.selectedUI.fontWeight : 'normal',
-  color: highlighted ? theme.palette.primary.main : theme.palette.grey['800'],
+  color: highlighted ? theme.palette.primary.main : theme.palette.grey['800'],  
 }));
 
 const FooterBottom = styled('div')({
@@ -223,7 +223,7 @@ const Wrapper = styled('section')({
 export interface BaseFormProps {};
 
 export function BaseForm(props: BaseFormProps) {
-  const { viewForms } = useSelector((state: RootState) => state.viewForms);
+  const { viewForms } = useSelector( (state: RootState) => state.viewForms );
   const { pathname } = useLocation();
 
   return (
@@ -231,7 +231,7 @@ export function BaseForm(props: BaseFormProps) {
       <Wrapper>
         <Header>
           <TopLine>
-            <TopLeftLinks>
+            <TopLeftLinks>             
               <Link to="/system/er-model-domains">Domains</Link>
               <Link to="/system/er-model">Entities</Link>
             </TopLeftLinks>
@@ -246,15 +246,13 @@ export function BaseForm(props: BaseFormProps) {
               }}
             >
               <span>Чак Норрис</span>
-              <Avatar
-                sx={{
-                  backgroundColor: 'primary.dark',
-                  width: 24,
-                  height: 24,
-                  fontSize: theme.typography.smallUI.fontSize,
-                  fontWeight: 100
-                }}
-              >
+              <Avatar sx={{ 
+                backgroundColor: 'primary.dark', 
+                width: 24, 
+                height: 24,
+                fontSize: theme.typography.smallUI.fontSize,
+                fontWeight: 100 
+              }}>
                 ЧН
               </Avatar>
             </Box>
@@ -264,7 +262,9 @@ export function BaseForm(props: BaseFormProps) {
             <MenubarItem>Редактирование</MenubarItem>
             <MenubarItem>Справка</MenubarItem>
           </Menubar>
-          <Toolbar />
+          <Toolbar>
+            
+          </Toolbar>
         </Header>
         <Main>
           <Outlet />
@@ -272,7 +272,7 @@ export function BaseForm(props: BaseFormProps) {
         <Footer>
           <FooterTabs>
             {
-              viewForms.map(vf =>
+              viewForms.map( vf => 
                 <Link key={vf.pathname} to={vf.pathname}>
                   <FooterTab highlighted={vf.pathname === pathname ? 1 : undefined}>
                     <div>

@@ -9,15 +9,16 @@ export interface MenuListProps {}
 export function MenuList(props: MenuListProps) {
   const navItems = menuItems.items.map((item) => {
     switch (item.type) {
-    case 'group':
-      return <MenuGroup key={item.id} item={item} />;
-    default:
-      return (
-        <Typography key={item.id} variant="h6" color="error" align="center">
+      case 'group':
+        return <MenuGroup key={item.id} item={item} />;
+      default:
+        return (
+          <Typography key={item.id} variant="h6" color="error" align="center">
               Ошибка отображения
-        </Typography>
+          </Typography>
       );
     }
+
   });
   return (
     <>{navItems}</>

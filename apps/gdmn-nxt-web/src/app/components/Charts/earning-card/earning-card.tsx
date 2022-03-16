@@ -1,4 +1,4 @@
-import { Avatar, Stack, Theme, Typography } from '@mui/material';
+import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import CustomizedCard from '../../customized-card/customized-card';
 import './earning-card.module.less';
@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   card: {
     flex: 1,
     padding: 20,
-    background: `linear-gradient(to right, ${theme.color.cyan[800]}, ${theme.color.cyan.A700} 100%, transparent)`,
+    background: `linear-gradient(to right, ${theme.color.cyan[800]}, ${theme.color.cyan['A700']} 100%, transparent)`,
     position: 'relative'
   },
   amount: {
@@ -36,11 +36,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-const totalSum = 268540.23;
+const totalSum = 268540.23
 /* eslint-disable-next-line */
 export interface EarningCardProps {}
 
-function getFormattedNumber(value: number) {
+function getFormattedNumber(value: number){
   return value.toLocaleString();
 }
 
@@ -58,7 +58,7 @@ export function EarningCard(props: EarningCardProps) {
       }}
     >
       <Stack direction="row">
-        <Typography className={classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
+        <Typography className={ classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
         <KeyboardDoubleArrowUpIcon fontSize="large" color="success" />
       </Stack>
 

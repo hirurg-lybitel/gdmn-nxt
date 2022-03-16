@@ -11,8 +11,8 @@ const getBackgroundColor = (color: string, mode: string) =>
 const getSelectedBackgroundColor = (color: string, mode: string) =>
   mode === 'dark' ? darken(color, 0.6) : lighten(color, 0.6);
 
-// const getHoverBackgroundColor = (color: string, mode: string) =>
-//   mode === 'dark' ? darken(color, 0.4) : lighten(color, 0.4);
+const getHoverBackgroundColor = (color: string, mode: string) =>
+  mode === 'dark' ? darken(color, 0.4) : lighten(color, 0.4);
 
 function customCheckbox(theme: Theme) {
   return {
@@ -118,7 +118,7 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
     minHeight: 32,
     borderTop: `1px solid ${
       theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
-    }`, },
+    }`,  },
   '& .MuiPaginationItem-root': {
     height: 16,
     width: 16,
@@ -140,7 +140,7 @@ export function CustomPagination() {
       shape="rounded"
       page={page + 1}
       count={pageCount}
-      // @ts-expect-error need to explain
+      // @ts-expect-error
       renderItem={(props2) => <PaginationItem {...props2} disableRipple />}
       onChange={(event: React.ChangeEvent<unknown>, value: number) =>
         apiRef.current.setPage(value - 1)

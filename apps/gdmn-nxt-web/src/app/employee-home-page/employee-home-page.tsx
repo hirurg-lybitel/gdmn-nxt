@@ -12,6 +12,7 @@ type Pages = 'CUSTOMERS' | 'ACCOUNTS_TO_APPROVE' | 'ER-MODEL' | 'ER-MODEL-DOMAIN
 export interface EmployeeHomePageProps {}
 
 export function EmployeeHomePage(props: EmployeeHomePageProps) {
+
   const [currPage, setCurrPage] = useState<Pages>('CUSTOMERS');
 
   const menuItems: MenuItem[] = [
@@ -45,12 +46,12 @@ export function EmployeeHomePage(props: EmployeeHomePageProps) {
       {
         currPage === 'CUSTOMERS' ?
           <Customers />
-          : currPage === 'ACCOUNTS_TO_APPROVE' ?
-            <AccountsToApprove />
-            : currPage === 'ER-MODEL' ?
-              <ErModel />
-              :
-              <ErModelDomains />
+        : currPage === 'ACCOUNTS_TO_APPROVE' ?
+          <AccountsToApprove />
+        : currPage === 'ER-MODEL' ?
+          <ErModel />  
+        :
+          <ErModelDomains />  
       }
     </PageHeader>
   );

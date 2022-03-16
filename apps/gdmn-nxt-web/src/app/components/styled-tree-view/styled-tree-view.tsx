@@ -1,4 +1,4 @@
-import TreeItem from '@mui/lab/TreeItem/TreeItem';
+import TreeItem, { TreeItemProps } from '@mui/lab/TreeItem/TreeItem';
 import treeItemClasses from '@mui/lab/TreeItem/treeItemClasses';
 import TreeView from '@mui/lab/TreeView/TreeView';
 import { alpha, styled } from '@mui/material/styles';

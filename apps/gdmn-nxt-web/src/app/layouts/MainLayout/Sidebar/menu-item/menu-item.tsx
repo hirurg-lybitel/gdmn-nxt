@@ -11,12 +11,15 @@ export function MenuItem(props: MenuItemProps) {
   const { item } = props;
 
   const itemIcon = item?.icon;
-  const itemUrl = item?.url;
+
+  const itemHandler = (id: string) => {
+    console.log('itemHandler')
+
+  };
 
   const listComponent = {
-    component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`${itemUrl}`} target="_self" />)
-  };
-  listComponent.component.displayName = 'ListComponent';
+    component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`${item.url}`} target="_self" />)
+  }
 
   return (
     <ListItem
@@ -26,8 +29,8 @@ export function MenuItem(props: MenuItemProps) {
       <ListItemIcon>{itemIcon}</ListItemIcon>
       <ListItemText
         primary={
-          <Typography variant="h4" color="inherit">
-            {item.title}
+          <Typography variant='h4' color="inherit">
+              {item.title}
           </Typography>
         }
       />

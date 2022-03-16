@@ -1,6 +1,7 @@
 import { checkEmailAddress } from '@gsbelarus/util-useful';
-import { Card, CardContent, CardHeader, Grid } from '@mui/material';
+import { Card, CardActions, CardContent, CardHeader, Grid } from '@mui/material';
 import Button from '@mui/material/Button/Button';
+import Stack from '@mui/material/Stack/Stack';
 import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { skipToken } from '@reduxjs/toolkit/dist/query';
@@ -35,6 +36,7 @@ type Step = 'ENTER_TAXID'
   | 'PROFILE_ERROR';
 
 export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) {
+
   const [taxId, setTaxId] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [firstName, setFirstName] = useState<string>('');
@@ -47,7 +49,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   const { data: accountData, isFetching: isFetchingAccount } = useGetAccountByEmailQuery(checkEmailAddress(email) ? { email } : skipToken);
   const [addAccount, { error, isSuccess, isError, isLoading }] = useAddAccountMutation();
 
-  useEffect(() => {
+  useEffect( () => {
     if (step === 'CHECKING_TAXID') {
       if (!isFetchingContact && contactData) {
         if (contactData.queries.contacts.length === 1) {
@@ -61,10 +63,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
     }
   }, [step, contactData, isFetchingContact]);
 
-  const duplAccount = useMemo(() => accountData?.queries.accounts.length ?
-    'Учетная запись с таким адресом электронной почты уже существует!' : undefined, [accountData]);
-
-  useEffect(() => {
+  useEffect( () => {
     if (step === 'SAVING_PROFILE') {
       if (!isFetchingAccount && !isLoading && !duplAccount && contactData?.queries.contacts.length) {
         addAccount({
@@ -78,9 +77,9 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
         });
       }
     }
-  }, [step, isFetchingAccount, accountData, contactData, isLoading, duplAccount, addAccount, firstName, lastName, position, phone, email]);
+  }, [step, isFetchingAccount, accountData, contactData]);
 
-  useEffect(() => {
+  useEffect( () => {
     if (step === 'SAVING_PROFILE') {
       if (isSuccess) {
         setStep('PROFILE_CREATED');
@@ -91,37 +90,39 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
     }
   }, [step, isSuccess, isError, error]);
 
+  const duplAccount = useMemo( () => accountData?.queries.accounts.length ?
+    'Учетная запись с таким адресом электронной почты уже существует!' : undefined, [accountData] );
+
   const accountDataEntered = Boolean(lastName.trim() && firstName.trim() && phone.trim() && position.trim()
     && checkEmailAddress(email) && email === email2 && !duplAccount);
 
-  // eslint-disable-next-line react/display-name
-  const CancelButton = useMemo(() => ({ caption }: { caption?: string }) =>
-    <Typography align="center">Вернуться в<Button onClick={onCancel}>начало</Button></Typography>,
+  const CancelButton = useMemo( () => ({ caption }: { caption?: string }) =>
+    <Typography align="center">Вернуться в<Button onClick={ onCancel }>начало</Button></Typography>,
   [onCancel]);
 
   return (
-    <Card sx={{ width: '30%' }}>
-      {/* <Stack direction="column" spacing={2}> */}
+    <Card sx={{ width: '30%'}}>
+    {/* <Stack direction="column" spacing={2}> */}
 
       {
         step === 'ENTER_TAXID' || step === 'CHECKING_TAXID' ?
           <>
-            <CardHeader title={<Typography variant="h1" align="center" noWrap>Введите УНП предприятия:</Typography>} />
-            <CardContent>
-              <Grid
+          <CardHeader title={<Typography variant="h1" align="center" noWrap>Введите УНП предприятия:</Typography>} />
+          <CardContent>
+            <Grid
                 container
                 direction="column"
                 justifyContent="center"
                 spacing={2}
               >
-                <Grid item xs={12}>
+                <Grid  item xs={12}>
                   <TextField
                     fullWidth
                     label="УНП"
                     value={taxId}
                     disabled={isFetchingContact}
                     autoFocus
-                    onChange={e => setTaxId(e.target.value)}
+                    onChange={ e => setTaxId(e.target.value) }
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -129,7 +130,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
                     fullWidth
                     variant="contained"
                     disabled={isFetchingContact || !isTaxId(taxId)}
-                    onClick = {() => setStep('CHECKING_TAXID')}
+                    onClick = { () => setStep('CHECKING_TAXID') }
                   >
                     Проверить
                   </Button>
@@ -141,11 +142,11 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
             </CardContent>
 
           </>
-          : step === 'INVALID_TAXID' ?
-            <>
-              <CardHeader title={<Typography variant="h1" align="center" >{`Предприятие с УНП ${taxId} не найдено в базе данных!`}</Typography>} />
-              <CardContent>
-                <Grid
+        : step === 'INVALID_TAXID' ?
+          <>
+            <CardHeader title={<Typography variant="h1" align="center" >{`Предприятие с УНП ${taxId} не найдено в базе данных!`}</Typography>} />
+            <CardContent>
+              <Grid
                   container
                   direction="column"
                   justifyContent="center"
@@ -155,7 +156,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
                     <Button
                       fullWidth
                       variant="contained"
-                      onClick = {() => setStep('ENTER_TAXID')}
+                      onClick = { () => setStep('ENTER_TAXID') }
                     >
                       Повторить ввод
                     </Button>
@@ -165,109 +166,107 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
                   </Grid>
                 </Grid>
               </CardContent>
-            </>
-            : step === 'INVALID_DB' ?
-              <>
-                <CardHeader title={<Typography variant="h1" align="center" > {`В базе данных найдено несколько предприятий с УНП ${taxId}! Обратитесь к системному администратору.`}</Typography>} />
-                <CancelButton />
-              </>
-              : step === 'PROFILE_CREATED' ?
-                <>
-                  <CardHeader
-                    title={<Typography variant="h1" align="center" >
+          </>
+        : step === 'INVALID_DB' ?
+          <>
+            <CardHeader title={<Typography variant="h1" align="center" > {`В базе данных найдено несколько предприятий с УНП ${taxId}! Обратитесь к системному администратору.`}</Typography>} />
+            <CancelButton />
+          </>
+        : step === 'PROFILE_CREATED' ?
+          <>
+            <CardHeader title={<Typography variant="h1" align="center" >
               Учетная запись успешно создана.
               После прохождения проверки, вы получите на электронную почту
               письмо с логином и паролем для входа в систему.
-                    </Typography>}
-                  />
-                  <CancelButton caption="Войти в систему" />
-                </>
-                : step === 'PROFILE_ERROR' ?
-                  <>
-                    <CardHeader title={<Typography variant="h1" align="center" >Произошла ошибка при создании учетной записи!</Typography>} />
-                    <CancelButton />
-                  </>
-                  :
-                  <>
-                    <CardHeader title={<Typography variant="h1" align="center" >{`Предприятие ${contactData?.queries.contacts[0].NAME}`}</Typography>} />
-                    <CardContent>
-                      <Grid
-                        container
-                        direction="column"
-                        justifyContent="center"
-                        spacing={2}
+            </Typography>} />
+            <CancelButton caption="Войти в систему" />
+          </>
+        : step === 'PROFILE_ERROR' ?
+          <>
+            <CardHeader title={<Typography variant="h1" align="center" >Произошла ошибка при создании учетной записи!</Typography>} />
+            <CancelButton />
+          </>
+        :
+          <>
+            <CardHeader title={<Typography variant="h1" align="center" >{`Предприятие ${contactData?.queries.contacts[0].NAME}`}</Typography>} />
+            <CardContent>
+              <Grid
+                    container
+                    direction="column"
+                    justifyContent="center"
+                    spacing={2}
+                  >
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Фамилия"
+                        value={lastName}
+                        autoFocus
+                        onChange={ e => setLastName(e.target.value) }
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Имя"
+                        value={firstName}
+                        onChange={ e => setFirstName(e.target.value) }
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Должность"
+                        value={position}
+                        onChange={ e => setPosition(e.target.value) }
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Номер рабочего телефона"
+                        value={phone}
+                        onChange={ e => setPhone(e.target.value) }
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Электронная почта"
+                        value={email}
+                        error={!!duplAccount}
+                        helperText={duplAccount}
+                        onChange={ e => setEmail(e.target.value) }
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Повторите ввод электронной почты"
+                        value={email2}
+                        onChange={ e => setEmail2(e.target.value) }
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        disabled={isFetchingAccount || !accountDataEntered}
+                        onClick = { () => setStep('SAVING_PROFILE') }
                       >
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Фамилия"
-                            value={lastName}
-                            autoFocus
-                            onChange={e => setLastName(e.target.value)}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Имя"
-                            value={firstName}
-                            onChange={e => setFirstName(e.target.value)}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Должность"
-                            value={position}
-                            onChange={e => setPosition(e.target.value)}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Номер рабочего телефона"
-                            value={phone}
-                            onChange={e => setPhone(e.target.value)}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Электронная почта"
-                            value={email}
-                            error={!!duplAccount}
-                            helperText={duplAccount}
-                            onChange={e => setEmail(e.target.value)}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Повторите ввод электронной почты"
-                            value={email2}
-                            onChange={e => setEmail2(e.target.value)}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            disabled={isFetchingAccount || !accountDataEntered}
-                            onClick = {() => setStep('SAVING_PROFILE')}
-                          >
                         Создать учетную запись
-                          </Button>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <CancelButton />
-                        </Grid>
+                      </Button>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <CancelButton />
+                    </Grid>
 
-                      </Grid>
-                    </CardContent>
-                  </>
+              </Grid>
+            </CardContent>
+          </>
       }
     </Card>
     // </Stack>

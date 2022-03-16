@@ -7,17 +7,17 @@ import { Box } from '@mui/material';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
-    .map(l => l.trim())
+    .map( l => l.trim() )
     .filter(Boolean)
-    .filter((_, idx) => idx < 3)
-    .map((l, idx) => idx ? l.substring(0, 1).toUpperCase() : l);
+    .filter( (_, idx) => idx < 3 )
+    .map( (l, idx) => idx ? l.substring(0, 1).toUpperCase() : l );
   return arr.length === 2 ? `${arr[1]}. ${arr[0]}` : `${arr[1]}. ${arr[2]}. ${arr[0]}`;
 };
 
 const skipPatrName = (s: string) => s.split(' ')
-  .map(l => l.trim())
+  .map( l => l.trim() )
   .filter(Boolean)
-  .filter((_, idx) => idx < 2)
+  .filter( (_, idx) => idx < 2 )
   .join(' ');
 
 const formatValue = (rec: any, rs: string, fld: string, schema: any) => {
@@ -62,25 +62,26 @@ export interface ReconciliationStatementProps {
 }
 
 export function ReconciliationStatement({ custId, dateBegin, dateEnd }: ReconciliationStatementProps) {
+
   const { data, isFetching } = useGetReconciliationStatementQuery({
     custId,
     dateBegin: dateBegin ? dateBegin : new Date(2021, (new Date()).getMonth(), 1),
-    dateEnd: dateEnd ? dateEnd : new Date(2021, (new Date()).getMonth() + 1, 1)
+    dateEnd: dateEnd ? dateEnd : new Date(2021, (new Date()).getMonth()+1, 1)
   });
   const params = data?._params?.[0];
   const schema = data?._schema;
 
-  const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo(() => {
-    const giveSum = data?.queries.movement?.reduce((p: number, l: any) => p + (l.GIVESUM ?? 0), 0) ?? 0;
-    const giveSum2 = data?.queries.movement?.reduce((p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0);
-    const saldo = data?.queries.saldo?.[0]?.SALDO ?? 0;
+  const { giveSum, giveSum2, saldo, saldoEnd, customerName, ourName, accountantName, written } = useMemo( () => {
+    const giveSum = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) ?? 0;
+    const giveSum2 = data?.queries.movement?.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0);
+    const saldo = data?.queries.saldo?.[0]?.['SALDO'] ?? 0;
     const saldoEnd = saldo + giveSum2 - giveSum;
     return {
       giveSum,
       giveSum2,
       saldo,
       saldoEnd,
-      customerName: data?.queries.customerAct?.[0]?.CUSTOMER,
+      customerName: data?.queries.customerAct?.[0]?.['CUSTOMER'],
       ourName: data?.queries.firm?.[0]?.NAME ?? '',
       accountantName: data?.queries.firm?.[0]?.ACCOUNT ?? '',
       written: numberToWordsRu.convert(Math.abs(saldoEnd), {
@@ -101,7 +102,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
           fractional: true,
         },
       })
-    };
+    }
   }, [data]);
 
   const fv = (rec: any, rs: string, fld: string) => formatValue(rec, rs, fld, schema);
@@ -119,17 +120,17 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                   </thead>
                   <tbody>
                     {
-                      data?.queries.customerDebt?.map((d: any, idx) =>
+                      data?.queries.customerDebt?.map( (d: any, idx) =>
                         <tr key={idx}>
-                          <td>{d.USR$NUMBER}</td>
-                          <td>{d.SALDO <= 0 ? fv(-d.SALDO, 'customerDebt', 'SALDO') : undefined}</td>
-                          <td>{d.SALDO > 0 ? fv(d, 'customerDebt', 'SALDO') : undefined}</td>
+                          <td>{d['USR$NUMBER']}</td>
+                          <td>{d['SALDO'] <= 0 ? fv(-d['SALDO'], 'customerDebt', 'SALDO') : undefined}</td>
+                          <td>{d['SALDO'] > 0 ? fv(d, 'customerDebt', 'SALDO') : undefined}</td>
                         </tr>
                       )
                     }
                   </tbody>
                   <tfoot>
-                    <tr><th>ИТОГО:</th><th /><th /></tr>
+                    <tr><th>ИТОГО:</th><th></th><th></th></tr>
                     <tr><th colSpan={3}>Долг</th></tr>
                   </tfoot>
                 </table>
@@ -145,7 +146,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                 </colgroup>
                 <thead>
                   <tr>
-                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map(s => <th key={s}>{s}</th>)}
+                    {['Дата акта сверки', 'Сумма долга', 'Исполнитель', 'Описание'].map( s => <th key={s}>{s}</th> )}
                   </tr>
                 </thead>
                 <tbody>
@@ -153,10 +154,10 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                     (r: any, idx) =>
                       <tr key={idx}>
                         <td>{fv(r, 'customerAct', 'DOCUMENTDATE')}</td>
-                        <td>{r.SUMACT}</td>
-                        <td>{skipPatrName(r.EMPLNAME)}</td>
-                        <td>{r.USR$DESCRIPTION}</td>
-                      </tr>)
+                        <td>{r['SUMACT']}</td>
+                        <td>{skipPatrName(r['EMPLNAME'])}</td>
+                        <td>{r['USR$DESCRIPTION']}</td>
+                      </tr> )
                   }
                 </tbody>
               </table>
@@ -189,8 +190,8 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                   </tr>
                 </thead>
                 <tbody>
-                  {[...new Set(data.queries.movement.map((m: any) => m.JOBNUMBER))].map((j: any, idx) => {
-                    const filtered = data.queries.movement.filter((m: any) => m.JOBNUMBER === j);
+                  {[...new Set(data.queries.movement.map( (m: any) => m.JOBNUMBER ))].map( (j: any, idx) => {
+                    const filtered = data.queries.movement.filter( (m: any) => m.JOBNUMBER === j );
 
                     return (
                       <Fragment key={idx}>
@@ -198,7 +199,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                           <td colSpan={6}>{j}</td>
                         </tr>
                         {
-                          filtered.map((l: any, i) =>
+                          filtered.map( (l: any, i) =>
                             <tr key={i}>
                               <td>{l.NUMBER}</td>
                               <td>{l.DOCUMENTDATE}</td>
@@ -211,8 +212,8 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                         }
                         <tr>
                           <td colSpan={4} style={{ textAlign: 'right' }}>{`Итого по ${j}:`}</td>
-                          <td>{filtered.reduce((p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0) || null}</td>
-                          <td>{filtered.reduce((p: number, l: any) => p + (l.GIVESUM ?? 0), 0) || null}</td>
+                          <td>{filtered.reduce( (p: number, l: any) => p + (l.GIVESUM2 ?? 0), 0) || null}</td>
+                          <td>{filtered.reduce( (p: number, l: any) => p + (l.GIVESUM ?? 0), 0) || null}</td>
                         </tr>
                       </Fragment>
                     );
@@ -221,7 +222,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={4}>{'Оборот:'}</td>
+                    <td colSpan={4}>{`Оборот:`}</td>
                     <td>{giveSum2 || null}</td>
                     <td>{giveSum || null}</td>
                   </tr>
@@ -241,7 +242,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                     <p/>
                     ({written})
                   </div>
-                  :
+                :
                   null
               }
               <div className={styles['rs-footer-second']}>
@@ -290,11 +291,11 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
                   </tbody>
                 </table>
               </div>
-              <div className={styles['rs-footer-third']} />
+              <div className={styles['rs-footer-third']}></div>
             </div>
           </div>
-          :
-          <CircularIndeterminate open={isFetching}/>
+        :
+        <CircularIndeterminate open={isFetching}/>
       }
     </Box>
   );

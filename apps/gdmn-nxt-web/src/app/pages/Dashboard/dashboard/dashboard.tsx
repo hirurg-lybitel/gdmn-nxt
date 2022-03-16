@@ -16,11 +16,11 @@ export function Dashboard(props: DashboardProps) {
 
   return (
     <Stack direction="column" spacing={3} flex={1}>
-      <Stack direction={matchDownMd ? 'column' : 'row'} spacing={3} display="flex" height={matchDownMd ? '400px' : '200px'}>
+      <Stack direction={matchDownMd ? "column" : "row"} spacing={3} display="flex" height={matchDownMd ? "400px" : "200px"}>
         <EarningCard />
         <OrderCard />
       </Stack>
-      <Stack direction={matchDownXl ? 'column' : 'row'} spacing={3} display="flex">
+      <Stack direction={matchDownXl ? "column" : "row"} spacing={3} display="flex">
         <ChartColumn />
         <ChartDonut />
       </Stack>

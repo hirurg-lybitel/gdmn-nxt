@@ -39,7 +39,7 @@ export const store = configureStore({
     [bankStatementApi.reducerPath]: bankStatementApi.reducer
 
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false})
     .concat(contactApi.middleware)
     .concat(accountApi.middleware)
     .concat(labelsApi.middleware)

@@ -48,7 +48,7 @@ export function KanbanCard(props: KanbanCardProps) {
         key={card.ID}
         style={{
           width: '100%',
-          textOverflow: 'ellipsis',
+          textOverflow: "ellipsis",
           padding: 5,
           ...(snapshot.isDragging
             ? {
@@ -64,7 +64,7 @@ export function KanbanCard(props: KanbanCardProps) {
         <Stack direction="column" spacing={1}>
           <Typography variant="h2">{card.DEAL?.USR$NAME}</Typography>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
-          <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+          <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100)/100).toFixed(2)} Br</Typography>
         </Stack>
       </CustomizedCard>
       {editCard &&

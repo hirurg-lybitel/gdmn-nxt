@@ -9,13 +9,13 @@ export const logoutUser = createAsyncThunk(
 );
 
 export type LoginStage =
-  'LAUNCHING' // the application is launching
-  | 'QUERY_LOGIN' // we are in the process of querying server for saved session
-  | 'SELECT_MODE' // choose between belgiss employee and customer mode
-  | 'CUSTOMER' //
-  | 'EMPLOYEE' //
-  | 'SIGN_IN_EMPLOYEE' // show sign-in or sign-up screen for an employee
-  | 'SIGN_IN_CUSTOMER' // show sign-in or sign-up screen for a customer
+  'LAUNCHING'                   // the application is launching
+  | 'QUERY_LOGIN'               // we are in the process of querying server for saved session
+  | 'SELECT_MODE'               // choose between belgiss employee and customer mode
+  | 'CUSTOMER'                  //
+  | 'EMPLOYEE'                  //
+  | 'SIGN_IN_EMPLOYEE'          // show sign-in or sign-up screen for an employee
+  | 'SIGN_IN_CUSTOMER'          // show sign-in or sign-up screen for a customer
   | 'CREATE_CUSTOMER_ACCOUNT';
 
 export interface UserState {
@@ -41,8 +41,8 @@ export const userSlice = createSlice({
     signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CUSTOMER', userProfile: action.payload } as UserState)
   },
   extraReducers: (builder) => {
-    builder.addCase(logoutUser.fulfilled, () => ({ loginStage: 'SELECT_MODE' }));
-  },
+    builder.addCase(logoutUser.fulfilled, () => ({ loginStage: 'SELECT_MODE'}) )
+  },  
 });
 
 // Action creators are generated for each case reducer function

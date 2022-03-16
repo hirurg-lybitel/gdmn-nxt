@@ -23,6 +23,6 @@ const dashboard: IMenuItem = {
     }
 
   ]
-};
+}
 
 export default dashboard;

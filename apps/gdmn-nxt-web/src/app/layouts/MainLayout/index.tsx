@@ -1,63 +1,67 @@
-import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
+import { Alert, AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
-import { toggleMenu } from '../../store/settingsSlice';
+import { toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
+import BelgissLogo from '../../components/belgiss-logo/belgiss-logo';
 import { clearError } from '../../features/error-slice/error-slice';
+import Badge from '@mui/material/Badge';
+import MailIcon from '@mui/icons-material/Mail';
 import { Header } from './Header';
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
   ...(menuOpened
-    ? {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen
-      }),
-      marginLeft: 0,
-      width: `calc(100% - ${theme.drawerWidth}px - 20px)`,
-      [theme.breakpoints.down('sm')]: {
-        marginLeft: -(theme.drawerWidth - 20),
-        width: `calc(100% - ${theme.drawerWidth}px)`,
+      ? {
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen
+         }),
+          marginLeft: 0,
+          width: `calc(100% - ${theme.drawerWidth}px - 20px)`,
+          [theme.breakpoints.down('sm')]: {
+            marginLeft: -(theme.drawerWidth - 20),
+            width: `calc(100% - ${theme.drawerWidth}px)`,
+          }
       }
-    }
-    : {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen
-      }),
-      marginLeft: -(theme.drawerWidth - 20),
-      width: `calc(100% - ${theme.drawerWidth}px)`,
-      [theme.breakpoints.up('md')]: {
-        marginLeft: -(theme.drawerWidth - 20),
-        width: `calc(100% - ${theme.drawerWidth}px)`
-      },
-      // [theme.breakpoints.down('md')]: {
-      //     marginLeft: '10px',
-      //     width: `calc(100% - ${theme.drawerWidth}px)`,
-      //     padding: '16px'
-      // },
-      // [theme.breakpoints.down('sm')]: {
-      //     marginLeft: '10px',
-      //     width: `calc(100% - ${theme.drawerWidth}px)`,
-      //     padding: '16px',
-      //     marginRight: '10px'
-      // }
-    })
+      : {
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen
+          }),
+          marginLeft: -(theme.drawerWidth - 20),
+          width: `calc(100% - ${theme.drawerWidth}px)`,
+          [theme.breakpoints.up('md')]: {
+            marginLeft: -(theme.drawerWidth - 20),
+            width: `calc(100% - ${theme.drawerWidth}px)`
+          },
+          // [theme.breakpoints.down('md')]: {
+          //     marginLeft: '10px',
+          //     width: `calc(100% - ${theme.drawerWidth}px)`,
+          //     padding: '16px'
+          // },
+          // [theme.breakpoints.down('sm')]: {
+          //     marginLeft: '10px',
+          //     width: `calc(100% - ${theme.drawerWidth}px)`,
+          //     padding: '16px',
+          //     marginRight: '10px'
+          // }
+      })
 }));
 
 interface IMenuItem {
   type: 'item';
-  Icon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string; };
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
   caption: string;
   onClick: () => void;
 };
@@ -108,10 +112,10 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
   >
-    {items.map((i, idx) =>
+    {items.map( (i, idx) =>
       i.type === 'divider' ?
         <Divider key={idx} />
-        :
+      :
         <MenuItem key={idx} onClick={i.onClick}>
           {i.Icon &&
             <ListItemIcon>
@@ -126,8 +130,9 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
 export const MainLayout = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  const user = useSelector<RootState, UserState>(state => state.user);
+  const user = useSelector<RootState, UserState>( state => state.user );
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
+  const [anchorMenuEl, setAnchorMenuEl] = useState(null);
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
   const [openSnackBar, setOpenSnackBar] = useState(false);
@@ -138,7 +143,7 @@ export const MainLayout = () => {
     if (errorMessage) {
       setOpenSnackBar(true);
     }
-  }, [errorMessage]);
+  }, [errorMessage])
 
 
   const handleDrawerToggle = () => {
@@ -181,8 +186,8 @@ export const MainLayout = () => {
         }}
       >
         <Toolbar>
-          {/* <ButtonBase disableRipple component={Link} to={config.defaultPath}> */}
-          {/* </ButtonBase>           */}
+        {/* <ButtonBase disableRipple component={Link} to={config.defaultPath}> */}
+        {/* </ButtonBase>           */}
           {/* <IconButton
             size="large"
             edge="start"
@@ -213,7 +218,7 @@ export const MainLayout = () => {
       </AppBar>
       <CustomMenu
         anchorEl={anchorProfileEl}
-        handleClose={() => setAnchorProfileEl(null)}
+        handleClose={ () => setAnchorProfileEl(null) }
         items={profileMenuItems}
       />
       <Sidebar
@@ -224,8 +229,8 @@ export const MainLayout = () => {
         <Outlet />
       </Main>
       <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
-        <Alert onClose={handleSnackBarClose} variant="filled" severity="error">{errorMessage}</Alert>
+        <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{errorMessage}</Alert>
       </Snackbar>
     </Box>
-  );
+  )
 };

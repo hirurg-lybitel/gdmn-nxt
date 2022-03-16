@@ -19,7 +19,7 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
   const [updateAccount, { error, isSuccess, isError, isLoading, status }] = useUpdateAccountMutation();
   const accounts = data?.queries.accounts;
 
-  useEffect(() => {
+  useEffect( () => {
     if (!isLoading && status !== QueryStatus.uninitialized) {
       if (isError) {
         setAlert({ message: (error as any).message ?? (error as any).error ?? (error as any).status ?? 'Unknown error', severity: 'error' });
@@ -40,14 +40,14 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
     { field: 'USR$LASTNAME', headerName: 'Фамилия', width: 250 },
     { field: 'USR$POSITION', headerName: 'Должность', width: 250 },
     { field: 'USR$APPROVED', headerName: 'Подтверждение', width: 250,
-      renderCell: ({ value, id }) => <Switch checked={!!value} onChange={() => updateAccount({ ID: gridRowId2Id(id), USR$APPROVED: !value })}/>
+      renderCell: ({ value, id }) => <Switch checked={!!value} onChange={ () => updateAccount({ ID: gridRowId2Id(id), USR$APPROVED: !value }) }/>
     }
   ];
 
   return (
     <Stack direction="column">
       <Stack direction="row">
-        <Button onClick={refetch} disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+        <Button onClick={ refetch } disabled={isFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
       </Stack>
       <div style={{ width: '100%', height: '800px' }}>
         <DataGridPro

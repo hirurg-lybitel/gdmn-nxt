@@ -1,10 +1,10 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router-dom";
 
 function ExceptionRoutes(isLogged: boolean) {
-  return {
+  return{
     path: '*',
-    element: <Navigate to={`${isLogged ? '/404' : '/authentication/404'}`} />,
-  };
+    element: <Navigate to={`${isLogged ? "/404" : "/authentication/404"}`} />,
+  }
 };
 
 export default ExceptionRoutes;

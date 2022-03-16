@@ -14,7 +14,7 @@ export const labelsApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getLabelsContact: builder.query<ILabelsContactRequestResult, number | void>({
-      query: (contactId?) => `contacts/labels${contactId ? `/${contactId}` : ''}`,
+      query: (contactId?) => `contacts/labels${contactId ? `/${contactId}` : ``}`,
       transformResponse: (response: IRequestResult<ILabels>, meta, arg) => {
         // console.log('getLabelsContact_transform', response);
         // console.log('getLabelsContact_meta', meta);
@@ -26,10 +26,10 @@ export const labelsApi = createApi({
 
         return result
           ? [
-            ...result.queries.labels.map(({ ID: id }) => ({ type: 'labelsContact' as const, id })),
-            { type: 'labelsContact', id: 'LIST' }
-          ]
-          : [{ type: 'labelsContact', id: 'LIST' }];
+              ...result.queries.labels.map(({ID: id}) => ({ type: 'labelsContact' as const, id})),
+              { type: 'labelsContact', id: 'LIST' }
+            ]
+          : [{ type: 'labelsContact', id: 'LIST' }]
       },
       async onQueryStarted(
         arg,
@@ -53,7 +53,7 @@ export const labelsApi = createApi({
     }),
     addLabelsContact: builder.mutation<ILabelsContactRequestResult, ILabelsContact[]>({
       query: (labels) => ({
-        url: 'contacts/labels',
+        url: `contacts/labels`,
         method: 'POST',
         body: labels
       }),
@@ -64,7 +64,7 @@ export const labelsApi = createApi({
       invalidatesTags: (result, error, id: any) => {
         console.log('addLabelsContact_invalidatesTags', result, error, id);
 
-        return [{ type: 'labelsContact', id: 'LIST' }];
+        return [{type: 'labelsContact', id: 'LIST'}];
       },
       onQueryStarted(id, { dispatch, getState, extra, requestId, queryFulfilled, getCacheEntry }) {
         console.log('addLabelsContact_onQueryStarted');
@@ -74,11 +74,11 @@ export const labelsApi = createApi({
       }
     }),
     deleteLabelsContact: builder.mutation<{ success: boolean; id: number }, number>({
-      query(contactId) {
+      query(contactId){
         return {
           url: `contacts/labels/${contactId}`,
           method: 'DELETE'
-        };
+        }
       },
       invalidatesTags: ['labelsContact']
 

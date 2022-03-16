@@ -16,7 +16,7 @@ export const accountApi = createApi({
   tagTypes: ['Accounts'],
   endpoints: (builder) => ({
     getAllAccounts: builder.query<IAccountRequestResult, void>({
-      query: () => 'accounts',
+      query: () => `accounts`,
       providesTags: ['Accounts']
     }),
     getAccountByEmail: builder.query<IAccountRequestResult, { email: string }>({
@@ -30,10 +30,10 @@ export const accountApi = createApi({
     addAccount: builder.mutation<IAccountRequestResult, Partial<IAccountWithID>>({
       query(body) {
         return {
-          url: 'account',
+          url: `account`,
           method: 'POST',
           body,
-        };
+        }
       },
       // Invalidates all Post-type queries providing the `LIST` id - after all, depending of the sort order,
       // that newly created post could show up in any lists.
@@ -46,7 +46,7 @@ export const accountApi = createApi({
           url: `account/${ID}`,
           method: 'PUT',
           body,
-        };
+        }
       },
       // Invalidates all queries that subscribe to this Post `id` only.
       // In this case, `getPost` will be re-run. `getPosts` *might*  rerun, if this id was under its results.
@@ -57,7 +57,7 @@ export const accountApi = createApi({
         return {
           url: `account/${ID}`,
           method: 'DELETE',
-        };
+        }
       },
       // Invalidates all queries that subscribe to this Post `id` only.
       invalidatesTags: ['Accounts'],

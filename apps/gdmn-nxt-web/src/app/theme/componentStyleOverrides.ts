@@ -1,4 +1,4 @@
-import { Components, ThemeOptions } from '@mui/material';
+import { Components, ThemeOptions } from "@mui/material";
 
 export default function componentStyleOverrides(theme: ThemeOptions): Components {
   return {
@@ -12,10 +12,10 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
     },
     MuiAvatar: {
       styleOverrides: {
-        root: {
-          color: theme.palette?.background?.default,
-          background: theme.color.grey[200]
-        }
+          root: {
+              color: theme.palette?.background?.default,
+              background: theme.color.grey[200]
+          }
       }
     },
     MuiAutocomplete: {
@@ -29,43 +29,43 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
     },
     MuiPaper: {
       defaultProps: {
-        elevation: 0
+          elevation: 0
       },
       styleOverrides: {
-        root: {
-          backgroundImage: 'none'
-        },
-        rounded: {
-          borderRadius: '12px'
-        },
+          root: {
+              backgroundImage: 'none'
+          },
+          rounded: {
+              borderRadius: '12px'
+          },
       }
     },
     MuiButton: {
       styleOverrides: {
-        root: {
-          // fontWeight: 500,
-          // borderRadius: '4px'
-        }
+          root: {
+              //fontWeight: 500,
+              //borderRadius: '4px'
+          }
       }
     },
     MuiCardHeader: {
       styleOverrides: {
-        root: {
-          color: theme.textColor,
-          padding: '24px'
-        },
-        title: {
-          fontSize: '1.125rem'
-        }
+          root: {
+              color: theme.textColor,
+              padding: '24px'
+          },
+          title: {
+              fontSize: '1.125rem'
+          }
       }
     },
     MuiDialogTitle: {
       styleOverrides: {
-        root: {
-          color: theme.textColor,
-          padding: '24px',
-          fontSize: '1.125rem'
-        }
+          root: {
+              color: theme.textColor,
+              padding: '24px',
+              fontSize: '1.125rem'
+          }
       }
     },
   };

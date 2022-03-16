@@ -14,7 +14,7 @@ export function StandardOrder(props: StandardOrderProps) {
       <Stepper nonLinear activeStep={0}>
         {steps.map((label, index) => (
           <Step key={label} completed={false}>
-            <StepButton color="inherit" onClick={() => {}}>
+            <StepButton color="inherit" onClick={ () => {} }>
               {label}
             </StepButton>
           </Step>
