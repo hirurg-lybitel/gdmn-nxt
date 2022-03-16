@@ -264,18 +264,14 @@ export const addContact: RequestHandler = async (req, res) => {
         VALUES(3, IIF(:PARENT IS NULL, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :PARENT), :NAME, :PHONE, :EMAIL)
         RETURNING ID, PARENT, NAME, PHONE, EMAIL
         INTO :ret_ID, :ret_PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL;
-
         SELECT NAME FROM GD_CONTACT WHERE ID = :ret_PARENT
         INTO :ret_FOLDERNAME;
-
         IF (ret_ID IS NOT NULL) THEN
           INSERT INTO GD_COMPANY(CONTACTKEY)
           VALUES(:ret_ID);
-
         IF (ret_ID IS NOT NULL) THEN
           INSERT INTO GD_COMPANYCODE(COMPANYKEY)
           VALUES(:ret_ID);
-
         SUSPEND;
       END`,
       [NAME, EMAIL, PHONE, PARENT]
@@ -423,15 +419,12 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
           res_CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY,
           res_LABELKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$LABELKEY
         )
-
         AS
         BEGIN
           DELETE FROM USR$CRM_CONTACT_LABELS WHERE ID = :ID;
-
           INSERT INTO USR$CRM_CONTACT_LABELS(USR$CONTACTKEY, USR$LABELKEY)
           VALUES(:CONTACTKEY, :LABELKEY)
           RETURNING ID, USR$CONTACTKEY, USR$LABELKEY INTO :res_ID, :res_CONTACTKEY, :res_LABELKEY;
-
           SUSPEND;
         END`;
 

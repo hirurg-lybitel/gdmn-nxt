@@ -304,4 +304,3 @@ export interface IBaseDocTypes {
   TgdcInvDocumentType: [Entity, Entity];
   TgdcInvPriceListType: [Entity, Entity];
 };
-

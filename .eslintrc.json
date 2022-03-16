@@ -30,7 +30,9 @@
         "react/react-in-jsx-scope": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-empty-function": "off",
-        "react/jsx-closing-bracket-location": 1,
+        "@typescript-eslint/ban-types": "off",
+        "react/jsx-closing-bracket-location": "off",
+        "react/jsx-no-useless-fragment": "off",
         "react/jsx-curly-spacing": ["warn", {
           "when": "never",
           "children": true
@@ -62,7 +64,7 @@
         "comma-spacing": "error",
         "key-spacing": "error",
         "no-trailing-spaces": "error",
-        "id-length": "warn",
+        "id-length": "off",
         "camelcase": "error",
         "semi": "error",
         "indent": ["error", 2],

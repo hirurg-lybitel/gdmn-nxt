@@ -71,7 +71,7 @@ const get: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+        ...Object.fromEntries(await Promise.all(queries.map(q => execQuery(q))))
       },
       _params: id ? [{ id: id }] : undefined,
       _schema

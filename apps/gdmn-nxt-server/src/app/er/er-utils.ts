@@ -7,15 +7,12 @@ import entitiesRaw from "./entities.json";
 import { loadRDBFields } from "./rdb-utils";
 
 /*
-
 We import er model of the existing Gedemin database in following order:
-
 1. Import built-in entities from gdbase.json file.
 2. Import simple entities for USR$ tables from the database.
 3. Import user defined document entities from the database.
 4. Import domains.
 5. Import attributes for entities which has been imported at steps 1-3.
-
 */
 
 const adjustValidation = (s: string | null) => {
@@ -287,41 +284,32 @@ export const importModels = async () => {
     from the predefined json file. This format was used in
     previous GDMN platform. We converted it into current format
     and stored as entities.json.
-
     const relation2class = {} as { [relation: string]: string };
     const gdbase = gdbaseRaw as IgdbaseImport;
-
     const importGdbase = (g: IgdbaseImport, depth = 0, parent?: Entity) => {
       const rdbRelation = g.listTable ? rdbRelations[g.listTable.name] : undefined;
       const atRelation = rdbRelation ? atRelations[rdbRelation.RDB$RELATION_NAME] : undefined;
-
       let adapter: IEntityAdapter;
-
       if (g.listTable) {
         adapter = {
           name: g.listTable.name,
           alias: 'z'
         };
-
         if (parent?.adapter?.join) {
           adapter.join = [...parent.adapter.join];
         }
-
         if (g.distinctRelation) {
           relation2class[g.distinctRelation.name] = g.className;
-
           const j = {
             type: 'INNER',
             name: g.distinctRelation.name,
             alias: `z${depth}`
           } as IJoinAdapter;
-
           if (adapter.join) {
             adapter.join.push(j);
           } else {
             adapter.join = [j];
           }
-
           //ugly hack
           if (g.distinctRelation.name === 'GD_COMPANY') {
             adapter.join.push({
@@ -333,12 +321,10 @@ export const importModels = async () => {
         } else {
           relation2class[g.listTable.name] = g.className;
         }
-
         if (g.restrictCondition) {
           adapter.condition = str2cond(g.restrictCondition);
         }
       };
-
       const e: Entity = {
         type: g.listTable?.name === 'GD_DOCUMENT' ? 'DOCUMENT' : 'SIMPLE',
         parent: parent?.name,
@@ -348,18 +334,14 @@ export const importModels = async () => {
         semCategory: atRelation?.SEMCATEGORY ?? undefined,
         adapter
       };
-
       entities[e.name] = e;
-
       if (g.children) {
         for (const ch of g.children) {
           importGdbase(ch, g.abstract ? 1 : (depth + 1), e);
         }
       }
     };
-
     importGdbase(gdbase);
-
     writeFileSync('c:/temp/entities.json', JSON.stringify(entities, undefined, 2));
     */
 
