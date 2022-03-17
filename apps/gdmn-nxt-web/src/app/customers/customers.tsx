@@ -326,7 +326,6 @@ export function Customers(props: CustomersProps) {
     { field: 'DEPARTMENTS', headerName: 'Отделы', filterOperators: [containDepartments] },
   ];
 
-
   useEffect(() => {
     dispatch(fetchCustomers({ paginationData: paginationData }));
   }, []);
@@ -587,7 +586,8 @@ export function Customers(props: CustomersProps) {
                 components={{
                   Toolbar: CustomGridToolbarOverlay,
                   LoadingOverlay: CustomLoadingOverlay,
-                  NoRowsOverlay: CustomNoRowsOverlay
+                  NoRowsOverlay: CustomNoRowsOverlay,
+                  NoResultsOverlay: CustomNoRowsOverlay
                 }}
                 filterModel={filterModel}
                 onFilterModelChange={(model, detail) => setFilterModel(model)}

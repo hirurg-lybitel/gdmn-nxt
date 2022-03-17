@@ -17,6 +17,7 @@ import { customerContractsApi } from '../features/customer-contracts/customerCon
 import { kanbanApi } from '../features/kanban/kanbanApi';
 import { actCompletionApi } from '../features/act-completion/actCompletionApi';
 import { bankStatementApi } from '../features/bank-statement/bankStatementApi';
+import { chartDataApi } from '../features/charts/chartDataApi';
 
 export const store = configureStore({
   reducer: {
@@ -36,7 +37,8 @@ export const store = configureStore({
     [customerContractsApi.reducerPath]: customerContractsApi.reducer,
     [kanbanApi.reducerPath]: kanbanApi.reducer,
     [actCompletionApi.reducerPath]: actCompletionApi.reducer,
-    [bankStatementApi.reducerPath]: bankStatementApi.reducer
+    [bankStatementApi.reducerPath]: bankStatementApi.reducer,
+    [chartDataApi.reducerPath]: chartDataApi.reducer
 
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false})
@@ -51,6 +53,7 @@ export const store = configureStore({
     .concat(kanbanApi.middleware)
     .concat(actCompletionApi.middleware)
     .concat(bankStatementApi.middleware)
+    .concat(chartDataApi.middleware)
     .concat(errorMiddleware),
 });
 

@@ -6,6 +6,7 @@ import CustomizedCard from '../../../components/customized-card/customized-card'
 import { useGetBankStatementQuery } from '../../../features/bank-statement/bankStatementApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useState } from 'react';
+import CustomNoRowsOverlay from '../../DataGridProOverlay/CustomNoRowsOverlay';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {
@@ -49,7 +50,9 @@ export function BankStatement(props: BankStatementProps) {
     { field: 'JOB_NUMBER', headerName: 'Заказ', flex: 1, minWidth: 100 },
     { field: 'CSUMNCU', headerName: 'Сумма', flex: 1, minWidth: 100,
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toFixed(2) },
-    { field: 'COMMENT', headerName: 'Комментарии', flex: 1, minWidth: 100 }
+    { field: 'COMMENT', headerName: 'Комментарии', flex: 1, minWidth: 500,
+      renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
+    }
   ];
 
   return (
@@ -80,11 +83,16 @@ export function BankStatement(props: BankStatementProps) {
           columns={columns}
           loading={bankStatementIsFetching}
           pagination
+          rowsPerPageOptions={[20]}
           pageSize={20}
+          components={{
+            NoRowsOverlay: CustomNoRowsOverlay
+          }}
+          rowHeight={100}
         />
       </CustomizedCard>
     </Stack>
   );
-}
+};
 
 export default BankStatement;

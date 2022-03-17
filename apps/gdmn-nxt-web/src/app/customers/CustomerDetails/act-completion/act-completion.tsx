@@ -81,6 +81,7 @@ export function ActCompletion(props: ActCompletionProps) {
           columns={columns}
           loading={actCompletionIsFetching}
           pagination
+          rowsPerPageOptions={[20]}
           pageSize={20}
           components={{
             NoRowsOverlay: CustomNoRowsOverlay

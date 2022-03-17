@@ -49,7 +49,7 @@ export const get: RequestHandler = async(req, res) => {
             doc.NUMBER,
             doc.DOCUMENTDATE,
             l.CSUMNCU,
-            CAST(CAST(l.COMMENT as blob sub_type text character set utf8) as VARCHAR(8191)) as COMMENT
+            CAST(l.COMMENT AS VARCHAR(1024)) COMMENT
           FROM
             BN_BANKSTATEMENTLINE l
             LEFT JOIN gd_document doc on doc.ID = l.ID

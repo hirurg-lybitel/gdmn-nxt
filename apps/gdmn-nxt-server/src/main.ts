@@ -18,6 +18,7 @@ import customerContracts from './app/customerContracts';
 import dealsRouter from './app/routes/dealsRouter';
 import kanbanRouter from './app/routes/kanbanRouter';
 import actCompletionRouter from './app/routes/actCompletionRouter';
+import chartsRouter from './app/routes/chartsDataRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { ApolloServer, gql } from 'apollo-server';
 import { importedModels } from './app/models';
@@ -278,6 +279,8 @@ router.use(dealsRouter);
 router.use(kanbanRouter);
 
 router.use(actCompletionRouter);
+
+router.use(chartsRouter);
 
 router.get('/accounts', getAccounts);
 router.get('/accounts/email/:email', getAccounts);

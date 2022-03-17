@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
-import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
 import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import { useAddCardMutation, useAddColumnMutation, useDeleteCardMutation, useDeleteColumnMutation, useReorderCardsMutation, useReorderColumnsMutation, useUpdateCardMutation, useUpdateColumnMutation } from '../../../features/kanban/kanbanApi';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -17,7 +17,7 @@ export interface KanbanBoardProps {
 export function KanbanBoard(props: KanbanBoardProps) {
   const { columns: inColumns } = props;
 
-  const [columns, setColumns] = useState<IKanbanColumn[]>(inColumns)
+  const [columns, setColumns] = useState<IKanbanColumn[]>(inColumns);
 
   const [updateColumn] = useUpdateColumnMutation();
   const [addColumn] = useAddColumnMutation();
@@ -38,7 +38,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
       updateColumn(newColumn);
     },
     handleTitleDelete: async (column: IKanbanColumn) => {
-      deleteColumn(column.ID)
+      deleteColumn(column.ID);
     },
     handleAdd: async () => {
       const newColumn: IKanbanColumn = {
@@ -46,7 +46,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         USR$INDEX: columns.length + 1,
         USR$NAME: 'Новая группа',
         CARDS: []
-      }
+      };
       addColumn(newColumn);
     }
   };
@@ -72,7 +72,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
   };
 
   function onDragEnd(result: DropResult) {
-
     if (!result.destination) {
       return;
     };
@@ -91,7 +90,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
       );
 
       newColumns = newColumns.map((el, index) => {
-        return {...el, USR$INDEX: index}
+        return { ...el, USR$INDEX: index };
       });
 
       setColumns(newColumns);
@@ -108,17 +107,15 @@ export function KanbanBoard(props: KanbanBoardProps) {
         );
 
         newCards = newCards.map((el, index) => {
-          return {...el, USR$INDEX: index}
+          return { ...el, USR$INDEX: index };
         });
 
-        newColumns = columns.map( (column, index) =>
-          index === Number(result.source.droppableId) ? {...column, CARDS : newCards } : column
+        newColumns = columns.map((column, index) =>
+          index === Number(result.source.droppableId) ? { ...column, CARDS: newCards } : column
         );
 
         setColumns(newColumns);
         reorderCard(newCards);
-
-
       } else {
         /** перемещаем в другую колонку */
         const moveCard: IKanbanCard = {
@@ -128,22 +125,22 @@ export function KanbanBoard(props: KanbanBoardProps) {
         };
 
         newColumns = columns.map((column, index) => {
-          const cards = [ ...column.CARDS ];
+          const cards = [...column.CARDS];
           let newCards = [...cards];
           switch (index) {
-            case Number(result.source.droppableId):
-              cards.splice(result.source.index, 1);
-              newCards = cards.map((card, index) => ({...card, USR$INDEX: index}));
+          case Number(result.source.droppableId):
+            cards.splice(result.source.index, 1);
+            newCards = cards.map((card, index) => ({ ...card, USR$INDEX: index }));
 
-              reorderCard(newCards);
-              break;
+            reorderCard(newCards);
+            break;
 
-            case Number(result.destination!.droppableId):
-              cards.splice(result.destination!.index, 0, moveCard);
-              newCards = cards.map((card, index) => ({...card, USR$INDEX: index}));
+          case Number(result.destination!.droppableId):
+            cards.splice(result.destination!.index, 0, moveCard);
+            newCards = cards.map((card, index) => ({ ...card, USR$INDEX: index }));
 
-              reorderCard(newCards);
-              break;
+            reorderCard(newCards);
+            break;
           }
           return { ...column, CARDS: newCards };
         });
@@ -159,19 +156,20 @@ export function KanbanBoard(props: KanbanBoardProps) {
     <PerfectScrollbar
       style={{
         display: 'flex'
-      }}>
+      }}
+    >
       <Box display="flex">
         <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="board" type="board" direction='horizontal'>
+          <Droppable droppableId="board" type="board" direction="horizontal">
             {(provided, snapshot) => (
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  display="flex"
-                  overflow="auto"
-                >
+              <Stack
+                direction="row"
+                spacing={2}
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                display="flex"
+                overflow="auto"
+              >
                 {columns.map((column: IKanbanColumn, index) => (
                   <Draggable key={column.ID} draggableId={column.ID.toString()} index={index}>
                     {(provided, snapshot) => {
@@ -179,7 +177,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                       const dragSnapshot = snapshot;
                       return (
                         <Box
-                          aria-label='box1'
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           display="flex"
@@ -187,7 +184,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                           <Droppable key={index} droppableId={`${index}`} type="column">
                             {(provided, snapshot) => (
                               <Box
-                                style={{display: 'flex'}}
+                                style={{ display: 'flex' }}
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
                               >
@@ -204,7 +201,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                 >
                                   {column.CARDS
                                     .map((card, index) => (
-                                      <Draggable key={card.ID + column.ID*10} draggableId={(card.ID + column.ID*10).toString()} index={index}>
+                                      <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column.ID * 10).toString()} index={index}>
                                         {(provided, snapshot) => (
                                           <Box
                                             ref={provided.innerRef}
@@ -225,12 +222,12 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                       </Draggable>
                                     ))}
                                 </KanbanColumn>
-                              {/* {provided.placeholder} */}
                               </Box>
                             )}
                           </Droppable>
                         </Box>
-                    )}}
+                      );
+                    }}
                   </Draggable>
                 ))}
                 {provided.placeholder}
