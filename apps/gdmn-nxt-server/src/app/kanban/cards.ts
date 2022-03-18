@@ -1,23 +1,23 @@
-import { IDeal, IEntities, IKanbanCard, IKanbanColumn, IRequestResult } from "@gsbelarus/util-api-types";
-import { RequestHandler } from "express";
-import { ResultSet } from "node-firebird-driver-native";
-import { importModels } from "../er/er-utils";
-import { resultError } from "../responseMessages";
-import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "../utils/db-connection";
-import { genId } from "../utils/genId";
+import { IDeal, IEntities, IKanbanCard, IKanbanColumn, IRequestResult } from '@gsbelarus/util-api-types';
+import { RequestHandler } from 'express';
+import { ResultSet } from 'node-firebird-driver-native';
+import { importModels } from '../er/er-utils';
+import { resultError } from '../responseMessages';
+import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
+import { genId } from '../utils/genId';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   const { id } = req.params;
 
-  if (id && isNaN(Number(id))) return res.status(422).send(resultError(`Field ID is not defined or isn't numeric`));
+  if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
 
   try {
     const _schema = { };
 
-    //const erModelFull = (await importERModel('TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS')).entities;
-    //const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
+    // const erModelFull = (await importERModel('TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS')).entities;
+    // const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
 
     // const allFields = [...new Set(entites['TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS'].attributes.map(attr => attr.name))];
     const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY'];
@@ -50,7 +50,7 @@ const get: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+        ...Object.fromEntries(await Promise.all(queries.map(q => execQuery(q))))
       },
       _params: id ? [{ id: id }] : undefined,
       _schema
@@ -59,10 +59,9 @@ const get: RequestHandler = async (req, res) => {
     await commitTransaction(req.sessionID, transaction);
 
     return res.status(200).json(result);
-  } catch(error) {
-
+  } catch (error) {
     return res.status(500).send(resultError(error.message));
-  }finally {
+  } finally {
     await releaseReadTransaction(req.sessionID);
   };
 };
@@ -72,12 +71,12 @@ const upsert: RequestHandler = async (req, res) => {
 
   const { id } = req.params;
 
-  if (id && isNaN(Number(id))) return res.status(422).send(resultError(`Field ID is not defined or isn't numeric`));
+  if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
   try {
     const isInsertMode = id ? false : true;
 
-    let ID: number = Number(id);
+    let ID = Number(id);
     if (isInsertMode) {
       ID = await genId(attachment, transaction);
     };
@@ -89,7 +88,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     let allFields;
     let actualFields;
-    let paramsValues
+    let paramsValues;
     let actualFieldsNames;
     let paramsString;
     let returnFieldsNames;
@@ -97,7 +96,7 @@ const upsert: RequestHandler = async (req, res) => {
     let dealRecord: IDeal;
 
     allFields = ['USR$DEALKEY', 'USR$NAME', 'USR$DISABLED', 'USR$AMOUNT', 'USR$CONTACTKEY'];
-    actualFields = allFields.filter( field => typeof req.body[field] !== 'undefined' );
+    actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     paramsValues = actualFields.map(field => {
       return req.body[field];
@@ -116,13 +115,13 @@ const upsert: RequestHandler = async (req, res) => {
       for (const [key, value] of Object.entries(requiredFields)) {
         if (!actualFields.includes(key)) {
           actualFields.push(key);
-          paramsValues.push(value)
+          paramsValues.push(value);
         };
       };
     };
 
     actualFieldsNames = actualFields.join(',');
-    paramsString = actualFields.map( _ => '?' ).join(',');
+    paramsString = actualFields.map(_ => '?').join(',');
     returnFieldsNames = actualFields.join(',');
 
     sql = `
@@ -138,7 +137,7 @@ const upsert: RequestHandler = async (req, res) => {
     };
 
     allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY'];
-    actualFields = allFields.filter( field => typeof req.body[field] !== 'undefined' );
+    actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     paramsValues = actualFields.map(field => {
       return field === 'USR$DEALKEY' ? dealRecord.ID : req.body[field];
@@ -155,13 +154,13 @@ const upsert: RequestHandler = async (req, res) => {
       for (const [key, value] of Object.entries(requiredFields)) {
         if (!actualFields.includes(key)) {
           actualFields.push(key);
-          paramsValues.push(value)
+          paramsValues.push(value);
         };
       };
     };
 
     actualFieldsNames = actualFields.join(',');
-    paramsString = actualFields.map( _ => '?' ).join(',');
+    paramsString = actualFields.map(_ => '?').join(',');
     returnFieldsNames = allFields.join(',');
 
     sql = `
@@ -181,24 +180,22 @@ const upsert: RequestHandler = async (req, res) => {
 
     await transaction.commit();
 
-    //await commitTransaction(req.sessionID, transaction);
+    // await commitTransaction(req.sessionID, transaction);
 
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
-  }
-
+  };
 };
 
 const remove: RequestHandler = async(req, res) => {
-  const {attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
-  if (isNaN(Number(id))) return res.status(422).send(resultError(`Field ID is not defined or isn't numeric`));
+  if (isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
 
   let result: ResultSet;
   try {
@@ -223,25 +220,23 @@ const remove: RequestHandler = async(req, res) => {
 
         SUSPEND;
       END`,
-      [ id ]
+      [id]
     );
 
     const data: { SUCCESS: boolean, USR$MASTERKEY: number }[] = await result.fetchAsObject();
 
     if (!data[0].SUCCESS) {
-      return res.status(500).send(resultError('Объект не найден'))
-    }
+      return res.status(500).send(resultError('Объект не найден'));
+    };
 
-    await result.close()
+    await result.close();
     await commitTransaction(req.sessionID, transaction);
-    return res.status(200).json({ 'ID': id, 'USR$MASTERKEY':data[0].USR$MASTERKEY });
-
+    return res.status(200).json({ 'ID': id, 'USR$MASTERKEY': data[0].USR$MASTERKEY });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
-  }
-
+  };
 };
 
 export default { get, upsert, remove };

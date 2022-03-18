@@ -10,9 +10,9 @@ import { CircularIndeterminate } from '../../../components/circular-indeterminat
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const { data: columns, isFetching: columnsIsFetching } = useGetKanbanDealsQuery();
+  const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery();
 
   useEffect(() => {
     dispatch(toggleMenu(false));
@@ -29,7 +29,7 @@ export function Deals(props: DealsProps) {
           zIndex: 999
         }}
       >
-        <CircularIndeterminate open={columnsIsFetching} size={100} />
+        <CircularIndeterminate open={isLoading} size={100} />
       </div>
     </>
   );

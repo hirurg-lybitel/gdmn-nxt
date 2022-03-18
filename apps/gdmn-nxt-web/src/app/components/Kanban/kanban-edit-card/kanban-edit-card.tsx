@@ -34,6 +34,8 @@ import { ICustomer } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../customized-card/customized-card';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import KanbanHistory from '../kanban-history/kanban-history';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import 'react-perfect-scrollbar/dist/css/styles.css';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -185,6 +187,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     'USR$CONTACTKEY',
                     value ? value.ID : initValue.USR$CONTACTKEY
                   );
+                  formik.setFieldValue(
+                    'CONTACT',
+                    value ? { ID: value.ID, NAME: value.NAME } : null
+                  );
                 }}
                 renderOption={(props, option) => {
                   return (
@@ -270,10 +276,16 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </Typography>
                     <Typography className={classes.accordionCaption}>история изменений</Typography>
                   </AccordionSummary>
-                  <AccordionDetails>
-                    {card?.ID
-                      ? <KanbanHistory cardId={card.ID} />
-                      : <></>}
+                  <AccordionDetails
+                    style={{
+                      height: '40vh',
+                    }}
+                  >
+                    <PerfectScrollbar>
+                      {card?.ID
+                        ? <KanbanHistory cardId={card.ID} />
+                        : <></>}
+                    </PerfectScrollbar>
                     {/* <Typography>
                       Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat.
                       Aliquam eget maximus est, id dignissim quam.

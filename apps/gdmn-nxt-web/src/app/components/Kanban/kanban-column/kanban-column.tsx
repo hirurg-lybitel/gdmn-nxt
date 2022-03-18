@@ -38,8 +38,6 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
-      console.log('handleSubmitCard', card, deleting);
-
       if (deleting) {
         return;
       };
