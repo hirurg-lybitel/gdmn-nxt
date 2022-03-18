@@ -43,11 +43,13 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async (query: string) => {
-      const rs = await attachment.executeQuery(transaction, query, getParams());
+      console.log('query', query);
+      const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
       await rs.close();
       return data as any;
     };
+
 
     const queries = [
       'SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY',
@@ -60,8 +62,8 @@ export const getContacts: RequestHandler = async (req, res) => {
          c.parent
        FROM
          gd_contact c
-         ${req.params.taxId ? 'JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = ?' : ''}
-         ${req.params.rootId ? 'JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ?' : ''}
+         ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
+         ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
        WHERE
          c.contacttype IN (2,3,5)
        ORDER BY c.ID DESC
