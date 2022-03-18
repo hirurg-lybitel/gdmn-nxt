@@ -6,6 +6,7 @@ import CustomizedCard from '../../../components/customized-card/customized-card'
 import { useGetActCompletionQuery } from '../../../features/act-completion/actCompletionApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useState } from 'react';
+import CustomNoRowsOverlay from '../../DataGridProOverlay/CustomNoRowsOverlay';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {
@@ -80,18 +81,14 @@ export function ActCompletion(props: ActCompletionProps) {
           columns={columns}
           loading={actCompletionIsFetching}
           pagination
+          rowsPerPageOptions={[20]}
           pageSize={20}
+          components={{
+            NoRowsOverlay: CustomNoRowsOverlay
+          }}
         />
       </CustomizedCard>
     </Stack>
-    // <List>
-    //   {actCompletion?.map(act =>
-    //     <ListItem key={act.ID}>
-    //       <Box>
-    //         {act.JOB_NUMBER}
-    //       </Box>
-    //     </ListItem>)}
-    // </List>
   );
 }
 

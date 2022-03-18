@@ -18,6 +18,7 @@ import customerContracts from './app/customerContracts';
 import dealsRouter from './app/routes/dealsRouter';
 import kanbanRouter from './app/routes/kanbanRouter';
 import actCompletionRouter from './app/routes/actCompletionRouter';
+import chartsRouter from './app/routes/chartsDataRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { ApolloServer, gql } from 'apollo-server';
 import { importedModels } from './app/models';
@@ -88,7 +89,7 @@ passport.use(new Strategy({
 
         if (res.result === 'SUCCESS') {
           console.log('valid gedemin user');
-          return done(null, { userName, gedeminUser: true });
+          return done(null, { userName, gedeminUser: true, id: res.userProfile.id });
         } else {
           return done(null, false);
         }
@@ -278,6 +279,8 @@ router.use(dealsRouter);
 router.use(kanbanRouter);
 
 router.use(actCompletionRouter);
+
+router.use(chartsRouter);
 
 router.get('/accounts', getAccounts);
 router.get('/accounts/email/:email', getAccounts);
