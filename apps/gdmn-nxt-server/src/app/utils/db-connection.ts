@@ -57,7 +57,7 @@ const cleanupInterval = setInterval(
     } finally {
       semaphore.release();
     }
-  }, 
+  },
   minTimeOfLife
 );
 
@@ -69,7 +69,7 @@ export const getDBSession = async (sessionId: string) => {
   await semaphore.acquire();
   try {
     let session = sessions[sessionId];
-  
+
     if (!session?.attachment.isValid) {
       const attachment = await client.connect(`${host}/${port}:${db}`, { username, password });
       session = {
@@ -77,7 +77,7 @@ export const getDBSession = async (sessionId: string) => {
         touched: new Date().getTime(),
         attachment
       };
-      sessions[sessionId] = session;   
+      sessions[sessionId] = session;
     } else {
       session.lock += 1;
     }
@@ -91,15 +91,15 @@ export const releaseDBSession = async (sessionId: string) => {
   await semaphore.acquire();
   try {
     const session = sessions[sessionId];
-  
+
     if (!session?.attachment.isValid) {
       throw new Error(`Invalid attachment in session ${sessionId}`);
     }
-    
-    if (session.lock < 1) {   
+
+    if (session.lock < 1) {
       throw new Error(`Invalid lock value ${session.lock} in session ${sessionId}`);
     }
-  
+
     session.lock -= 1;
     session.touched = new Date().getTime();
   } finally {
@@ -118,14 +118,14 @@ export const getReadTransaction = async (sessionId: string) => {
   await semaphore.acquire();
   try {
     let dbSession = sessions[sessionId];
-  
+
     if (!dbSession?.attachment.isValid) {
       const attachment = await client.connect(`${host}/${port}:${db}`, { username, password });
-      const readTransaction = await attachment.startTransaction({ 
-        isolation: TransactionIsolation.READ_COMMITTED, 
-        readCommittedMode: 'RECORD_VERSION', 
+      const readTransaction = await attachment.startTransaction({
+        isolation: TransactionIsolation.READ_COMMITTED,
+        readCommittedMode: 'RECORD_VERSION',
         waitMode: 'NO_WAIT',
-        accessMode: 'READ_ONLY' 
+        accessMode: 'READ_ONLY'
       });
       dbSession = {
         lock: 1,
@@ -133,23 +133,23 @@ export const getReadTransaction = async (sessionId: string) => {
         attachment,
         readTransaction
       };
-      sessions[sessionId] = dbSession;   
+      sessions[sessionId] = dbSession;
     } else {
       dbSession.lock += 1;
 
       if (!dbSession.readTransaction?.isValid) {
-        dbSession.readTransaction = await dbSession.attachment.startTransaction({ 
-          isolation: TransactionIsolation.READ_COMMITTED, 
-          readCommittedMode: 'RECORD_VERSION', 
+        dbSession.readTransaction = await dbSession.attachment.startTransaction({
+          isolation: TransactionIsolation.READ_COMMITTED,
+          readCommittedMode: 'RECORD_VERSION',
           waitMode: 'NO_WAIT',
-          accessMode: 'READ_ONLY' 
-        });        
+          accessMode: 'READ_ONLY'
+        });
       }
     }
     return { attachment: dbSession.attachment, transaction: dbSession.readTransaction };
   } finally {
     semaphore.release();
-  } 
+  }
 };
 
 export const releaseReadTransaction = async (sessionId: string) => {
@@ -174,10 +174,10 @@ export const releaseReadTransaction = async (sessionId: string) => {
 
 export const startTransaction = async (sessionId: string) => {
   const attachment = await getAttachment(sessionId);
-  const transaction = await attachment.startTransaction({ 
-    isolation: TransactionIsolation.READ_COMMITTED, 
-    readCommittedMode: 'RECORD_VERSION', 
-    waitMode: 'NO_WAIT' 
+  const transaction = await attachment.startTransaction({
+    isolation: TransactionIsolation.READ_COMMITTED,
+    readCommittedMode: 'RECORD_VERSION',
+    waitMode: 'NO_WAIT'
   });
   return { attachment, transaction };
 };
@@ -213,4 +213,4 @@ export const disposeConnection = async () => {
   } finally {
     semaphore.release();
   }
-}; 
+};

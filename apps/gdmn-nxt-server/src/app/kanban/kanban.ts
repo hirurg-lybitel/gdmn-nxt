@@ -1,32 +1,30 @@
-import { IEntities, IKanbanCard, IKanbanColumn, IRequestResult } from "@gsbelarus/util-api-types";
-import { RequestHandler } from "express";
-import { ResultSet } from "node-firebird-driver-native";
-import { importModels } from "../er/er-utils";
-import { resultError } from "../responseMessages";
-import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "../utils/db-connection";
+import { IEntities, IKanbanCard, IKanbanColumn, IRequestResult } from '@gsbelarus/util-api-types';
+import { RequestHandler } from 'express';
+import { ResultSet } from 'node-firebird-driver-native';
+import { importModels } from '../er/er-utils';
+import { resultError } from '../responseMessages';
+import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
 
 const get: RequestHandler = async (req, res) => {
   const { mode } = req.params;
 
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
-  // await new Promise((res) => setTimeout(res, 5000));
+  // let cardsData = '';
+  // switch (mode) {
+  // case 'deals':
+  //   cardsData = `
+  //     JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY`;
+  //   break;
 
-  let cardsData = '';
-  switch (mode) {
-    case 'deals':
-      cardsData = `
-      JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY`
-      break;
-
-    default:
-      break;
-  }
+  // default:
+  //   break;
+  // }
 
   try {
     const _schema = { };
 
-    let allFields = ['ID', 'EDITIONDATE', 'USR$INDEX', 'USR$NAME'];
+    // let allFields = ['ID', 'EDITIONDATE', 'USR$INDEX', 'USR$NAME'];
     let actualFields = ['ID', 'USR$INDEX', 'USR$NAME'];
     let actualFieldsNames = actualFields.join(',');
 
@@ -40,10 +38,10 @@ const get: RequestHandler = async (req, res) => {
 
     let cardsResultSet;
     switch (mode) {
-      case 'deals':
-        cardsResultSet = await attachment.executeQuery(
-          transaction,
-          `SELECT
+    case 'deals':
+      cardsResultSet = await attachment.executeQuery(
+        transaction,
+        `SELECT
             card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
             card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED, deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
             con.ID con_ID, con.NAME con_NAME
@@ -51,22 +49,22 @@ const get: RequestHandler = async (req, res) => {
           JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
           JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
           ORDER BY card.USR$MASTERKEY, USR$INDEX`
-        );
+      );
 
-        break;
+      break;
 
-      default:
-        actualFields = ['ID', 'USR$MASTERKEY', 'USR$INDEX', 'USR$DEALKEY'];
-        actualFieldsNames = actualFields.join(',');
+    default:
+      actualFields = ['ID', 'USR$MASTERKEY', 'USR$INDEX', 'USR$DEALKEY'];
+      actualFieldsNames = actualFields.join(',');
 
-        cardsResultSet = await attachment.executeQuery(
-          transaction,
-          `SELECT ${actualFieldsNames}
+      cardsResultSet = await attachment.executeQuery(
+        transaction,
+        `SELECT ${actualFieldsNames}
           FROM USR$CRM_KANBAN_CARDS card
           ORDER BY USR$INDEX`
-        );
+      );
 
-        break;
+      break;
     };
 
     interface ISubItemArray {
@@ -81,13 +79,12 @@ const get: RequestHandler = async (req, res) => {
       const data = await resultSet.fetchAsObject();
 
       if (itemArray) {
-      for (const item of itemArray) {
-        const itemData = await Promise.all(await execQuery(item.itemResultSet));
+        for (const item of itemArray) {
+          const itemData = await Promise.all(await execQuery(item.itemResultSet));
 
-        let itemData2: any[];
-        switch (mode) {
+          switch (mode) {
           case 'deals':
-            itemData.map((el: IKanbanCard)  => {
+            itemData.map((el: IKanbanCard) => {
               el.DEAL = {
                 ID: el['DEAL_ID'],
                 USR$NAME: el['DEAL_USR$NAME'],
@@ -97,7 +94,7 @@ const get: RequestHandler = async (req, res) => {
                   ID: el['CON_ID'],
                   NAME: el['CON_NAME']
                 },
-              }
+              };
               return el;
             });
 
@@ -105,13 +102,13 @@ const get: RequestHandler = async (req, res) => {
 
           default:
             break;
-        };
+          };
 
-        data.map((el) => {
-          return el[item.itemName] = itemData?.filter((e: IKanbanCard) => e[item.itemDetailField] === el[item.itemMasterField ? item.itemMasterField  : 'ID']) as IKanbanCard[]
-        });
+          data.map((el) => {
+            return el[item.itemName] = itemData?.filter((e: IKanbanCard) => e[item.itemDetailField] === el[item.itemMasterField ? item.itemMasterField : 'ID']) as IKanbanCard[];
+          });
+        }
       }
-    }
 
       resultSet.close();
       return data;
@@ -143,17 +140,16 @@ const get: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        columns: await Promise.all(await execQuery(columnsResultSet, itemArray)) //await columnsResultSet.fetchAsObject()
+        columns: await Promise.all(await execQuery(columnsResultSet, itemArray))
       },
       _schema
     };
 
     return res.status(200).json(result);
-  } catch(error) {
-
+  } catch (error) {
     return res.status(500).send(resultError(error.message));
-  }finally {
-    await commitTransaction(req.sessionID, transaction);
+  } finally {
+    await releaseReadTransaction(req.sessionID);
   };
 };
 
@@ -169,13 +165,13 @@ const reorderColumns: RequestHandler = async (req, res) => {
     const columns: IKanbanColumn[] = req.body;
 
     if (!columns.length) {
-      return res.status(422).send(resultError(`Нет данных`));
+      return res.status(422).send(resultError('Нет данных'));
     }
 
-    const allFields = ['ID', 'USR$INDEX']
-    const actualFields = allFields.filter( field => typeof columns[0][field] !== 'undefined' );
+    const allFields = ['ID', 'USR$INDEX'];
+    const actualFields = allFields.filter(field => typeof columns[0][field] !== 'undefined');
     const actualFieldsNames = actualFields.join(',');
-    const paramsString = actualFields.map( _ => '?' ).join(',');
+    const paramsString = actualFields.map(_ => '?').join(',');
     const returnFieldsNames = allFields.join(',');
 
     const sql = `
@@ -201,10 +197,9 @@ const reorderColumns: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    await commitTransaction(req.sessionID, transaction)
+    await commitTransaction(req.sessionID, transaction);
 
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
@@ -224,13 +219,13 @@ const reorderCards: RequestHandler = async (req, res) => {
     const cards: IKanbanCard[] = req.body;
 
     if (!cards.length) {
-      return res.status(422).send(resultError(`Нет данных`));
+      return res.status(422).send(resultError('Нет данных'));
     };
 
-    const allFields = ['ID', 'USR$INDEX']
-    const actualFields = allFields.filter( field => typeof cards[0][field] !== 'undefined' );
+    const allFields = ['ID', 'USR$INDEX'];
+    const actualFields = allFields.filter(field => typeof cards[0][field] !== 'undefined');
     const actualFieldsNames = actualFields.join(',');
-    const paramsString = actualFields.map( _ => '?' ).join(',');
+    const paramsString = actualFields.map(_ => '?').join(',');
     const returnFieldsNames = allFields.join(',');
 
     const sql = `
@@ -256,16 +251,12 @@ const reorderCards: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    //await commitTransaction(req.sessionID, transaction)
-
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await commitTransaction(req.sessionID, transaction);
   };
-
 };
 
 export default { get, reorderColumns, reorderCards };

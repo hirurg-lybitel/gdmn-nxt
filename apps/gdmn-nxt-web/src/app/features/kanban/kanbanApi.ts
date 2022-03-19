@@ -201,7 +201,17 @@ export const kanbanApi = createApi({
         console.info('⏩ request', 'GET', `${baseUrlApi}kanban/history/${cardId}`);
       },
       transformResponse: (response: IKanbanHistoryRequestResult) => {
-        return response.queries?.history.map(his => ({ ...his, USR$DATE: new Date(his.USR$DATE) })) || [];
+        return response.queries?.history.map(his => ({ ...his, USR$DATE: new Date(his.USR$DATE || 0) })) || [];
+      },
+    }),
+    addHistory: builder.mutation<IKanbanHistory[], IKanbanHistory>({
+      query: (body) => ({
+        url: 'kanban/history',
+        method: 'POST',
+        body
+      }),
+      onQueryStarted(cardId) {
+        console.info('⏩ request', 'POST', `${baseUrlApi}kanban/history`);
       },
     })
   })
@@ -217,5 +227,6 @@ export const {
   useUpdateCardMutation,
   useDeleteCardMutation,
   useReorderCardsMutation,
-  useGetHistoryQuery
+  useGetHistoryQuery,
+  useAddHistoryMutation
 } = kanbanApi;

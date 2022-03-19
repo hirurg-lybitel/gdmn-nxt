@@ -185,7 +185,7 @@ app.route('/user/signin')
 
       return res.json(authResult(
         'SUCCESS',
-        `You are logged in as ${userName}.`
+        `Вы вошли как ${userName}.`
       ));
     },
   );

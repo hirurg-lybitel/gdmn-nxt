@@ -66,13 +66,14 @@ export interface IKanbanColumn extends IWithID {
 };
 
 export interface IKanbanHistory extends IWithID {
-  USR$DATE: Date;
+  USR$DATE?: Date;
   USR$TYPE: string;
   USR$DESCRIPTION: string;
   USR$OLD_VALUE: string;
   USR$NEW_VALUE: string;
   USR$USERKEY: number;
-  USERNAME: string;
+  USR$CARDKEY: number,
+  USERNAME?: string;
 };
 
 export interface IActCompletion extends IWithID {

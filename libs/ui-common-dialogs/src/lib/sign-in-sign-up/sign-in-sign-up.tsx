@@ -58,7 +58,7 @@ type Action = { type: 'SET_USERNAME', userName: string }
 function reducer(state: State, action: Action): State {
   if (state.waiting && action.type !== 'SET_AUTHRESULT') {
     throw new Error(`Invalid action ${action.type} received.`);
-  }
+  };
 
   switch (action.type) {
     case 'SET_USERNAME':
@@ -83,7 +83,6 @@ function reducer(state: State, action: Action): State {
 };
 
 export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator }: SignInSignUpProps) {
-
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
   const waitAndDispatch = ( fn: () => Promise<IAuthResult> ) => () => {
@@ -127,7 +126,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           New user
         </Typography>
         <TextField
-          label="User name"
+          label="Пользователь"
           value={userName}
           disabled={waiting}
           autoFocus
@@ -177,10 +176,10 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
       <Stack direction="column" spacing={2}>
         {topDecorator?.(stage)}
         <Typography variant="h1">
-          Sign in the system
+          Войти в систему
         </Typography>
         <TextField
-          label="User name"
+          label="Пользователь"
           value={userName}
           error={authResult?.result === 'UNKNOWN_USER'}
           helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
@@ -189,7 +188,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
         />
         <TextField
-          label="Password"
+          label="Пароль"
           type="password"
           value={password}
           error={authResult?.result === 'INVALID_PASSWORD'}
@@ -205,13 +204,13 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
             if(r.result == 'SUCCESS'){location.reload()}
           } ) }
         >
-          Login
+          Вход
         </Button>
         {
           newPassword
           &&
           <Button variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
-            Forgot password?
+            Забыли пароль?
           </Button>
         }
         {

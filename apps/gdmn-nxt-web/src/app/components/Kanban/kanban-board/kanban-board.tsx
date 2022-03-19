@@ -1,14 +1,17 @@
 import './kanban-board.module.less';
 import { Box, Button, Stack } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
 import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
-import { useAddCardMutation, useAddColumnMutation, useDeleteCardMutation, useDeleteColumnMutation, useReorderCardsMutation, useReorderColumnsMutation, useUpdateCardMutation, useUpdateColumnMutation } from '../../../features/kanban/kanbanApi';
+import { useAddCardMutation, useAddColumnMutation, useAddHistoryMutation, useDeleteCardMutation, useDeleteColumnMutation, useReorderCardsMutation, useReorderColumnsMutation, useUpdateCardMutation, useUpdateColumnMutation } from '../../../features/kanban/kanbanApi';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import { RootState } from '../../../store';
+import { UserState } from '../../../features/user/userSlice';
+import { useSelector } from 'react-redux';
 
 export interface KanbanBoardProps {
   columns: IKanbanColumn[];
@@ -24,14 +27,109 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [deleteColumn] = useDeleteColumnMutation();
   const [reorderColumn] = useReorderColumnsMutation();
 
-  const [addCard] = useAddCardMutation();
-  const [updateCard] = useUpdateCardMutation();
+  const [addCard, { isSuccess: addCardSuccess, data: addedCard }] = useAddCardMutation();
+  const [updateCard, { isSuccess: updateCardSuccess }] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
   const [reorderCard] = useReorderCardsMutation();
+
+  const [addHistory] = useAddHistoryMutation();
+
+  interface IChanges {
+    id: number;
+    fieldName: string,
+    oldValue: string | number | undefined;
+    newValue: string | number | undefined;
+  };
+  const changes = useRef<IChanges[]>([]);
+
+  const user = useSelector<RootState, UserState>(state => state.user);
 
   useEffect(()=>{
     setColumns(inColumns);
   }, [inColumns]);
+
+  useEffect(()=>{
+    if ((updateCardSuccess) && changes.current.length > 0) {
+      console.log('updateCardSuccess', updateCardSuccess);
+      console.log('addCardSuccess', addCardSuccess);
+      console.log('changes', changes);
+
+      changes.current.forEach(item =>
+        addHistory({
+          ID: -1,
+          USR$CARDKEY: item.id,
+          USR$TYPE: '2',
+          USR$DESCRIPTION: item.fieldName,
+          USR$OLD_VALUE: item.oldValue?.toString() || '',
+          USR$NEW_VALUE: item.newValue?.toString() || '',
+          USR$USERKEY: user.userProfile?.id || -1
+        })
+      );
+
+      changes.current = [];
+    };
+  }, [updateCardSuccess]);
+
+  useEffect(() => {
+    if (addCardSuccess && addedCard) {
+      console.log('addedCard', addedCard);
+      console.log('changes', changes);
+
+      changes.current.forEach(item =>
+        addHistory({
+          ID: -1,
+          USR$CARDKEY: addedCard[0].ID,
+          USR$TYPE: '1',
+          USR$DESCRIPTION: item.fieldName,
+          USR$OLD_VALUE: item.oldValue?.toString() || '',
+          USR$NEW_VALUE: item.newValue?.toString() || '',
+          USR$USERKEY: user.userProfile?.id || -1
+        })
+      );
+
+      changes.current = [];
+    };
+  }, [addCardSuccess, addedCard]);
+
+  const compareCards = (newCard: any, oldCard: IKanbanCard) => {
+    const changesArr: IChanges[] = [];
+
+    if ((newCard['USR$AMOUNT'] || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
+      changesArr.push({
+        id: newCard.ID,
+        fieldName: 'Сумма',
+        oldValue: Number(oldCard.DEAL?.USR$AMOUNT) || 0,
+        newValue: newCard['USR$AMOUNT'] || 0
+      });
+    }
+    if (newCard['USR$CONTACTKEY'] !== oldCard.DEAL?.CONTACT?.ID) {
+      console.log('newCard', newCard);
+      changesArr.push({
+        id: newCard.ID,
+        fieldName: 'Клиент',
+        oldValue: oldCard.DEAL?.CONTACT?.NAME,
+        newValue: newCard['CONTACT']?.NAME
+      });
+    };
+    if (newCard['USR$NAME'] !== oldCard.DEAL?.USR$NAME) {
+      changesArr.push({
+        id: newCard.ID,
+        fieldName: 'Наименование',
+        oldValue: oldCard.DEAL?.USR$NAME,
+        newValue: newCard['USR$NAME']
+      });
+    };
+    if (newCard['USR$MASTERKEY'] !== oldCard.USR$MASTERKEY) {
+      changesArr.push({
+        id: newCard.ID,
+        fieldName: 'Этап',
+        oldValue: columns.find(column => column.ID === oldCard.USR$MASTERKEY)?.USR$NAME || '',
+        newValue: columns.find(column => column.ID === newCard['USR$MASTERKEY'])?.USR$NAME || ''
+      });
+    };
+
+    return changesArr;
+  };
 
   const columnHandlers = {
     handleTitleEdit: async (newColumn: IKanbanColumn) => {
@@ -54,11 +152,32 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const cardHandlers = {
     handleEditCard: async (newCard: IKanbanCard) => {
       updateCard(newCard);
+
+      let oldCard: IKanbanCard = newCard;
+      columns.every(column => {
+        const value = column.CARDS.find(card => card.ID === newCard.ID);
+
+        if (value) {
+          oldCard = value;
+          return false;
+        };
+
+        return true;
+      });
+
+      changes.current = compareCards(newCard, oldCard);
     },
     handleDeleteCard: async (deletinCard: IKanbanCard) => {
       deleteCard(deletinCard.ID);
     },
     handleAddCard: async (newCard: IKanbanCard) => {
+      changes.current.push({
+        id: -1,
+        fieldName: 'Сделка',
+        oldValue: '',
+        newValue: (newCard as any)['USR$NAME'] || ''
+      });
+
       addCard(newCard);
     }
   };
@@ -146,6 +265,13 @@ export function KanbanBoard(props: KanbanBoardProps) {
         });
 
         setColumns(newColumns);
+        changes.current.push({
+          id: moveCard.ID,
+          fieldName: 'Этап',
+          oldValue: columns[Number(result.source.droppableId)].USR$NAME || '',
+          newValue: columns[Number(result.destination.droppableId)].USR$NAME || ''
+        });
+
         updateCard(moveCard);
       }
     }
@@ -238,16 +364,8 @@ export function KanbanBoard(props: KanbanBoardProps) {
             )}
           </Droppable>
         </DragDropContext>
-        {/* <div style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%'
-        }}>
-          <CircularIndeterminate open={isLoading} size={100} />
-        </div> */}
       </Box>
     </PerfectScrollbar>
-
   );
 }
 

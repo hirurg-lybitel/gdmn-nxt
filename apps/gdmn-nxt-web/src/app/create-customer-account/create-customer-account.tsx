@@ -101,7 +101,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   [onCancel]);
 
   return (
-    <Card sx={{ width: '30%'}}>
+    <Card>
     {/* <Stack direction="column" spacing={2}> */}
 
       {
