@@ -10,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+    "@babel/runtime": "^7.17.8",
     "@emotion/react": "11.8.2",
     "@emotion/styled": "11.8.1",
     "@fontsource/roboto": "^4.5.1",
@@ -23,7 +24,6 @@
     "@nivo/funnel": "^0.79.1",
     "@reduxjs/toolkit": "1.8.0",
     "apexcharts": "^3.33.1",
-    "apollo-server": "^3.6.3",
     "axios": "^0.24.0",
     "clsx": "^1.1.1",
     "cookie-parser": "^1.4.6",
