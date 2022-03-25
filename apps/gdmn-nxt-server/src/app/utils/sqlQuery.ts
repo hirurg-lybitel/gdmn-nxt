@@ -89,7 +89,7 @@ export class sqlQuery {
               paramNames.push(paramName);
             };
           } else {
-            if ((/[\s]/).test(char)) {
+            if ((/[\s,\\)]/).test(char)) {
               paramNames.push(paramName);
               paramName = '';
               curState = states.default;
@@ -124,9 +124,16 @@ export class sqlQuery {
       return findParam.value;
     });
 
-    const resultSet = await this.attachment.executeQuery(this.transaction, processedSQL.join(''), processedParams);
+    const statement = await this.attachment.prepare(this.transaction, processedSQL.join(''));
+    let result;
+    if (statement.hasResultSet) {
+      const resultSet = await statement.executeQuery(this.transaction, processedParams);
+      result = await resultSet.fetchAsObject();
+    } else {
+      result = await statement.executeSingletonAsObject(this.transaction, processedParams);
+    };
 
-    return await resultSet.fetchAsObject();
+    return result;
   };
 
   clear() {
