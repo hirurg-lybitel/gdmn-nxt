@@ -67,20 +67,9 @@
         "id-length": "off",
         "camelcase": "error",
         "semi": "error",
-        "indent": ["error", 2],
+        "indent": ["error", 2, { "SwitchCase": 1 }],
         "react/jsx-first-prop-new-line": [1, "multiline"],
         "react/jsx-max-props-per-line": ["error", { "when": "multiline", "maximum": 1 }]
-        // "prettier/prettier": [
-        //   "warn",
-        //   {
-        //       // "bracketSpacing": false,
-        //       // "printWidth": 140,
-        //       // "trailingComma": "none",
-        //       "tabWidth": 2,
-        //       "useTabs": false,
-        //       "endOfLine": "auto"
-        //   }
-        // ]
       }
     },
     {

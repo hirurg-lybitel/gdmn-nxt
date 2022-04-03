@@ -1,7 +1,8 @@
-import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDataSchema, IRequestResult, ITableSchema } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { resultError } from '../responseMessages';
 import { getReadTransaction, releaseReadTransaction } from '../utils/db-connection';
+import { sqlQuery } from '../utils/sqlQuery';
 
 const getSumByPeriod: RequestHandler = async(req, res) => {
   // sumbyperiod/?departmentId=147016912&dateBegin=1577912400000&dateEnd=1643662800000
@@ -32,26 +33,40 @@ const getSumByPeriod: RequestHandler = async(req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try {
-        const data = await rs.fetchAsObject();
-        const sch = schema[name];
+    // const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    //   const rs = await attachment.executeQuery(transaction, query, params);
+    //   try {
+    //     const data = await rs.fetchAsObject();
+    //     const sch = schema[name];
 
-        if (sch) {
-          for (const rec of data) {
-            for (const fld of Object.keys(rec)) {
-              if ((sch[fld]?.type === 'date' || sch[fld]?.type === 'timestamp') && rec[fld] !== null) {
-                rec[fld] = (rec[fld] as Date).getTime();
-              }
+    //     if (sch) {
+    //       for (const rec of data) {
+    //         for (const fld of Object.keys(rec)) {
+    //           if ((sch[fld]?.type === 'date' || sch[fld]?.type === 'timestamp') && rec[fld] !== null) {
+    //             rec[fld] = (rec[fld] as Date).getTime();
+    //           }
+    //         }
+    //       }
+    //     };
+
+    //     return data;
+    //   } finally {
+    //     await rs.close();
+    //   }
+    // };
+
+    const applySchema = (schema: ITableSchema, data: object[]) => {
+      if (schema) {
+        for (const rec of data) {
+          for (const fld of Object.keys(rec)) {
+            if ((schema[fld]?.type === 'date' || schema[fld]?.type === 'timestamp') && rec[fld] !== null) {
+              rec[fld] = (rec[fld] as Date).getTime();
             }
           }
-        };
+        }
+      };
 
-        return data;
-      } finally {
-        await rs.close();
-      }
+      return data;
     };
 
     const getParams: any = (withKeys = false) => {
@@ -69,25 +84,43 @@ const getSumByPeriod: RequestHandler = async(req, res) => {
       return (arr?.length > 0 ? arr : undefined);
     };
 
-    const query = {
-      name: 'sumByperiod',
-      query: `
-        SELECT
-          CAST(c.USR$DOCDATE AS DATE) AS ONDATE,
-          SUM(c.USR$SUMNCU) AMOUNT
-        FROM
-          USR$CRM_CUSTOMER c
-          JOIN gd_document doc on doc.ID = c.USR$ID
-          JOIN gd_contact dep on dep.ID = c.USR$DEPOTKEY
-        WHERE
-          c.USR$DOCDATE BETWEEN ? AND ?
-          ${departmentId ? 'AND dep.ID = ?' : ''}
-        GROUP BY CAST(c.USR$DOCDATE AS DATE)
-        ORDER BY 1`,
-      params: getParams(false)
-    };
+    // const query = {
+    //   name: 'sumByperiod',
+    //   query: `
+    //     SELECT
+    //       CAST(c.USR$DOCDATE AS DATE) AS ONDATE,
+    //       SUM(c.USR$SUMNCU) AMOUNT
+    //     FROM
+    //       USR$CRM_CUSTOMER c
+    //       JOIN gd_document doc on doc.ID = c.USR$ID
+    //       JOIN gd_contact dep on dep.ID = c.USR$DEPOTKEY
+    //     WHERE
+    //       c.USR$DOCDATE BETWEEN ? AND ?
+    //       ${departmentId ? 'AND dep.ID = ?' : ''}
+    //     GROUP BY CAST(c.USR$DOCDATE AS DATE)
+    //     ORDER BY 1`,
+    //   params: getParams(false)
+    // };
 
-    const sumByperiod = await Promise.resolve(execQuery(query));
+
+    const namedSQL = new sqlQuery(attachment, transaction);
+    namedSQL.SQLtext = `
+      SELECT
+        CAST(c.USR$DOCDATE AS DATE) AS ONDATE,
+        SUM(c.USR$SUMNCU) AMOUNT
+      FROM
+        USR$CRM_CUSTOMER c
+        JOIN gd_document doc on doc.ID = c.USR$ID
+        JOIN gd_contact dep on dep.ID = c.USR$DEPOTKEY
+      WHERE
+        c.USR$DOCDATE BETWEEN :DateBegin AND :DateEnd
+      GROUP BY CAST(c.USR$DOCDATE AS DATE)
+      ORDER BY 1`;
+    namedSQL.setParamByName('DateBegin').value = dateBegin;
+    namedSQL.setParamByName('DateEnd').value = dateEnd;
+
+    const sumByperiod = await namedSQL.execute();
+    applySchema(schema['sumByperiod'], sumByperiod);
 
     const result: IRequestResult = {
       queries: { sumByperiod },

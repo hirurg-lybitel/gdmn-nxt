@@ -19,6 +19,7 @@ import dealsRouter from './app/routes/dealsRouter';
 import kanbanRouter from './app/routes/kanbanRouter';
 import actCompletionRouter from './app/routes/actCompletionRouter';
 import chartsRouter from './app/routes/chartsDataRouter';
+import contactsRouter from './app/routes/contactsRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { importedModels } from './app/models';
 
@@ -236,17 +237,20 @@ router.get('/test', (req, res) => {
   }
 });
 
-router.get('/contacts', getContacts);
-router.get('/contacts/taxId/:taxId', getContacts);
-router.get('/contacts/rootId/:rootId', getContacts);
-router.put('/contacts/:id', updateContact);
-router.post('/contacts', addContact);
-router.delete('/contacts/:id', deleteContact);
-router.get('/contacts/hierarchy', getContactHierarchy);
-router.get('/contacts/labels/:contactId', getLabelsContact);
-router.get('/contacts/labels', getLabelsContact);
-router.post('/contacts/labels', addLabelsContact);
-router.delete('/contacts/labels/:contactId', deleteLabelsContact);
+// router.get('/contacts', getContacts);
+// router.get('/contacts/taxId/:taxId', getContacts);
+// router.get('/contacts/rootId/:rootId', getContacts);
+// router.put('/contacts/:id', updateContact);
+// router.post('/contacts', addContact);
+// router.delete('/contacts/:id', deleteContact);
+// router.get('/contacts/hierarchy', getContactHierarchy);
+// router.get('/contacts/labels/:contactId', getLabelsContact);
+// router.get('/contacts/labels', getLabelsContact);
+// router.post('/contacts/labels', addLabelsContact);
+// router.delete('/contacts/labels/:contactId', deleteLabelsContact);
+
+/** Contacts */
+router.use(contactsRouter);
 
 /** Contact groups */
 router.get('/contactgroups', contactGroups.get);
@@ -261,7 +265,7 @@ router.post('/departments', departments.upsert);
 router.put('/departments/:id', departments.upsert);
 router.delete('/departments/:id', departments.remove);
 
-/** Customer contacts */
+/** Customer contracts */
 router.get('/customercontracts', customerContracts.get);
 router.get('/customercontracts/:id', customerContracts.get);
 router.post('/customercontracts', customerContracts.upsert);
