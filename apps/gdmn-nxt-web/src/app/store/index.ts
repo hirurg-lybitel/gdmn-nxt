@@ -41,7 +41,7 @@ export const store = configureStore({
     [chartDataApi.reducerPath]: chartDataApi.reducer
 
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false})
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
     .concat(accountApi.middleware)
     .concat(labelsApi.middleware)

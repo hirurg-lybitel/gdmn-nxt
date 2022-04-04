@@ -20,7 +20,7 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import CustomerEdit from '../customer-edit/customer-edit';
+import CustomerEdit from '../components/Customers/customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
@@ -254,8 +254,9 @@ export function Customers(props: CustomersProps) {
         const labels: ILabelsContact[] = params.row.LABELS;
 
         if (!labels?.length) {
-          return;
-        }
+          return <></>;
+        };
+
         return (
           <Stack direction="column">
             {labels.map((label, index) => {

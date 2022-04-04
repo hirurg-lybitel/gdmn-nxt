@@ -1,9 +1,8 @@
-import { ILabelsContact, IRequestResult } from "@gsbelarus/util-api-types";
-import { RequestHandler } from "express";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
+import { ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { RequestHandler } from 'express';
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
 
 export const getLabelsContact: RequestHandler = async (req, res) => {
-
   //  console.log('getLabelsContact', req.params.contactId ? req.params.contactId : 666);
 
   // return res.status(500).send({ "errorMessage": "test"});
@@ -27,9 +26,9 @@ export const getLabelsContact: RequestHandler = async (req, res) => {
 
     const getParams: any = (withKeys: boolean) => {
       const arr: Array<string | { [key: string]: string}> = [];
-      req.params.contactId ?
-        withKeys ? arr.push({ contactId: req.params.contactId}) : arr.push( req.params.contactId)
-      : null;
+      req.params.contactId
+        ? withKeys ? arr.push({ contactId: req.params.contactId }) : arr.push(req.params.contactId)
+        : null;
 
       return (arr?.length > 0 ? arr : undefined);
     };
@@ -41,8 +40,8 @@ export const getLabelsContact: RequestHandler = async (req, res) => {
         query: `
           SELECT
             l.ID,
-            l.USR$CONTACTKEY AS CONTACT,
-            l.USR$LABELKEY AS LABEL
+            l.USR$CONTACTKEY,
+            l.USR$LABELKEY
           FROM USR$CRM_CONTACT_LABELS l
           JOIN GD_CONTACT con ON con.ID = l.USR$LABELKEY
           ${req.params.contactId ? ' WHERE l.USR$CONTACTKEY = ?' : ''}`,
@@ -52,7 +51,7 @@ export const getLabelsContact: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+        ...Object.fromEntries(await Promise.all(queries.map(q => execQuery(q))))
       },
       _params: getParams(true),
       _schema
@@ -60,7 +59,7 @@ export const getLabelsContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send({ "errorMessage": error.message});
+    return res.status(500).send({ 'errorMessage': error.message });
   } finally {
     await releaseReadTransaction(req.sessionID);
   }
@@ -70,22 +69,22 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
   const labels: ILabelsContact[] = req.body;
 
   if (labels.length === 0) {
-    return res.status(400).send({"errorMessage": "Пустой набор входящих данных"});
+    return res.status(400).send({ 'errorMessage': 'Пустой набор входящих данных' });
   }
-  const { attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
-    const deleteSQL = `DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?`;
+    const deleteSQL = 'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?';
 
     await Promise.all(
       [...new Set(labels.map(el => el.USR$CONTACTKEY))]
         .map(async label => {
-        await attachment.execute(transaction, deleteSQL, [label]);
+          await attachment.execute(transaction, deleteSQL, [label]);
         })
     );
 
-      const insertSQL = `
+    const insertSQL = `
         EXECUTE BLOCK(
           ID TYPE OF COLUMN USR$CRM_CONTACT_LABELS.ID = ?,
           CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY = ?,
@@ -108,25 +107,25 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
           SUSPEND;
         END`;
 
-      const unresolvedPromises = labels.map(async label => {
-        return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
-      });
+    const unresolvedPromises = labels.map(async label => {
+      return (await attachment.executeSingletonAsObject(transaction, insertSQL, Object.values(label)));
+    });
 
-      const records = await Promise.all(unresolvedPromises);
+    const records = await Promise.all(unresolvedPromises);
 
-      await transaction.commit();
+    await transaction.commit();
 
-      const _schema = { };
-      const result: IRequestResult = {
-        queries: {
-          "labels": records
-        },
-        _schema
-      };
+    const _schema = { };
+    const result: IRequestResult = {
+      queries: {
+        'labels': records
+      },
+      _schema
+    };
 
-      return res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
-      return res.status(500).send({ "errorMessage": error.message});
+    return res.status(500).send({ 'errorMessage': error.message });
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   };
@@ -134,21 +133,20 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
 
 export const deleteLabelsContact: RequestHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
       transaction,
-      `DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?`,
-      [ contactId ]
+      'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?',
+      [contactId]
     );
 
     await transaction.commit();
 
     return res.status(204).send();
-
   } catch (error) {
-    return res.status(500).send({ "errorMessage": error.message });
+    return res.status(500).send({ 'errorMessage': error.message });
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
