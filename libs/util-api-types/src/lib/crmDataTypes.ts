@@ -97,3 +97,15 @@ export interface IChartSumByperiod {
   ONDATE: Date;
   AMOUNT: number;
 };
+
+export interface IPhone extends IWithID {
+  USR$CONTACTKEY?: number;
+  USR$PHONENUMBER: string;
+}
+export interface IContactPerson extends IContactWithID {
+  USR$BG_OTDEL?: IContactWithID;
+  PHONES?: IPhone[];
+  RANK?: string;
+  USR$LETTER_OF_AUTHORITY?: string;
+  WCOMPANYKEY?: number;
+};

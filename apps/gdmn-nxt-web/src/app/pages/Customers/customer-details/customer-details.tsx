@@ -71,8 +71,7 @@ export function CustomerDetails(props: CustomerDetailsProps) {
             </Box>
             <Divider />
             <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''} >
-              <div>Item One</div>
-              <div>subitem one</div>
+              <div>Информация о клиенте</div>
             </TabPanel>
             <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
               <ActCompletion customerId={Number(customerId)} />

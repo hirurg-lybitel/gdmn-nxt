@@ -43,7 +43,6 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async (query: string) => {
-      console.log('query', query);
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
       await rs.close();
@@ -65,7 +64,7 @@ export const getContacts: RequestHandler = async (req, res) => {
          ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
          ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
        WHERE
-         c.contacttype IN (2,3,5)
+         c.contacttype IN (3,5)
        ORDER BY c.ID DESC
        ${fromRecord > 0 ? `ROWS ${fromRecord} TO ${toRecord}` : ''}`,
       `SELECT
@@ -114,10 +113,10 @@ export const getContacts: RequestHandler = async (req, res) => {
     rawLabels.map(l => {
       if (labels[l.USR$CONTACTKEY]) {
         if (!labels[l.USR$CONTACTKEY].includes(l.USR$LABELKEY)) {
-          labels[l.USR$CONTACTKEY].push({ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY });
+          labels[l.USR$CONTACTKEY].push({ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY, USR$CONTACTKEY: l.USR$CONTACTKEY });
         }
       } else {
-        labels[l.USR$CONTACTKEY] = [{ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY }];
+        labels[l.USR$CONTACTKEY] = [{ ID: l.ID, USR$LABELKEY: l.USR$LABELKEY, USR$CONTACTKEY: l.USR$CONTACTKEY }];
       };
     });
 
