@@ -2,10 +2,9 @@ import './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../customized-card/customized-card';
-import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { IKanbanCard } from '@gsbelarus/util-api-types';
+import ChartSkeleton from '../chart-skeleton/chart-skeleton';
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
@@ -15,20 +14,9 @@ export function ChartDonut(props: ChartDonutProps) {
 
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
-  const { data: stages, isFetching: stagesIsFetching, refetch } = useGetKanbanDealsQuery();
+  const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery();
 
   const series = stages?.map(stage => stage.CARDS.length);
-
-  //const [series, setSeries] = useState([55, 17, 15, 44, 22, 9]);
-
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     // const newSeries = series.map(el => Math.floor(Math.random() * (10 - 3)) + 3)
-  //     // setSeries(newSeries);
-  //     refetch();
-  //   }, 5000);
-  //   return () => clearTimeout(timer);
-  // });
 
   const chartOptions: ApexCharts.ApexOptions = {
     labels: stages?.map(stage => stage.USR$NAME) ?? [],
@@ -83,7 +71,7 @@ export function ChartDonut(props: ChartDonutProps) {
     }
   };
 
-  const chartData: ApexCharts.ApexOptions  = {
+  const chartData: ApexCharts.ApexOptions = {
     series: series
   };
 
@@ -92,21 +80,23 @@ export function ChartDonut(props: ChartDonutProps) {
       borders
       boxShadows
       style={{
-        flex: matchDownXl ? 'none' : 1
+        flex: 1,
+        display: 'flex'
       }}
     >
-      {stagesIsFetching
-        ? <></>
-        : <Stack direction="column" spacing={3} p={2}>
-            <Typography variant="h1">Статус сделок</Typography>
-            <Chart
-              type="donut"
-              height={matchDownXl ? 'auto' : '550px'}
-              options={chartOptions}
-              {...chartData}
-            />
-
-          </Stack>
+      {stagesIsLoading
+        ? <Box p={2} flex={1} display="flex">
+          <ChartSkeleton />
+        </Box>
+        : <Stack direction="column" spacing={3} p={2} flex={1}>
+          <Typography variant="h1">Статус сделок</Typography>
+          <Chart
+            type="donut"
+            height={matchDownXl ? 'auto' : '550px'}
+            options={chartOptions}
+            {...chartData}
+          />
+        </Stack>
       }
     </CustomizedCard>
   );

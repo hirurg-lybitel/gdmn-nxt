@@ -217,11 +217,11 @@ export function ChartColumn(props: ChartColumnProps) {
       borders
       boxShadows
       style={{
-        flex: matchDownXl ? 'none' : 1,
+        flex: 1,
         display: 'flex'
       }}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex">
         {analyticsDataIsLoading
           ? <ChartSkeleton />
           : <>
