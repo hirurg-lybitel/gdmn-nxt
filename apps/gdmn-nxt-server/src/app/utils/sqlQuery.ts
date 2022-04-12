@@ -44,7 +44,7 @@ export class sqlQuery {
     return findParam;
   };
 
-  async execute() {
+  async execute(): Promise<any> {
     if (!this.SQLtext) {
       throw new Error('Empty query');
     };
@@ -125,15 +125,20 @@ export class sqlQuery {
     });
 
     const statement = await this.attachment.prepare(this.transaction, processedSQL.join(''));
-    let result;
-    if (statement.hasResultSet) {
-      const resultSet = await statement.executeQuery(this.transaction, processedParams);
-      result = await resultSet.fetchAsObject();
-    } else {
-      result = await statement.executeSingletonAsObject(this.transaction, processedParams);
-    };
-
-    return result;
+    try {
+      if (statement.hasResultSet) {
+        const resultSet = await statement.executeQuery(this.transaction, processedParams);
+        try {
+          return await resultSet.fetchAsObject();
+        } finally {
+          await resultSet.close();
+        }
+      } else {
+        return await statement.executeSingletonAsObject(this.transaction, processedParams);
+      };
+    } finally {
+      await statement.dispose();
+    }
   };
 
   clear() {
