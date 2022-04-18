@@ -2,7 +2,7 @@ import { IAccount, IAccountWithID, IDataSchema, IRequestResult, IWithID } from "
 import { genPassword } from "@gsbelarus/util-helpers";
 import { genRandomPassword } from "@gsbelarus/util-useful";
 import { RequestHandler } from "express";
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
+import { acquireReadTransaction, releaseTransaction, startTransaction } from "./utils/db-connection";
 import { sendEmail } from "./mail";
 
 export const upsertAccount: RequestHandler = async (req, res) => {
@@ -149,7 +149,7 @@ export const upsertAccount: RequestHandler = async (req, res) => {
 };
 
 export const getAccounts: RequestHandler = async (req, res) => {
-  const { attachment, transaction} = await getReadTransaction(req.sessionID);
+  const { releaseReadTransaction, executeQuery } = await acquireReadTransaction(req.sessionID);
 
   try {
     const _schema: IDataSchema = {
@@ -164,7 +164,7 @@ export const getAccounts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
+      const rs = await executeQuery(query, params);
       try {
         const data = await rs.fetchAsObject();
         const sch = _schema[name];
@@ -227,6 +227,6 @@ export const getAccounts: RequestHandler = async (req, res) => {
 
     return res.json(result);
   } finally {
-    await releaseReadTransaction(req.sessionID);
+    await releaseReadTransaction();
   }
 };
