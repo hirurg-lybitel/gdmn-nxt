@@ -216,7 +216,32 @@ export const startTransaction = async (sessionId: string) => {
     readCommittedMode: 'RECORD_VERSION',
     waitMode: 'NO_WAIT'
   });
-  return { attachment, transaction };
+
+  let released = false;
+
+  const releaseTransaction = async (commit = true) => {
+    if (released) {
+      throw new Error('Transaction has been released already');
+    }
+
+    if (transaction.isValid) {
+      if (commit) {
+        await transaction.commit();
+      } else {
+        await transaction.rollback();
+      }
+    }
+
+    await releaseAttachment(sessionId);
+    released = true;
+  };
+
+  return {
+    attachment,
+    transaction,
+    releaseTransaction,
+    ...wrapForNamedParams(attachment, transaction)
+  };
 };
 
 export const releaseTransaction = async (sessionId: string, transaction: Transaction) => {
