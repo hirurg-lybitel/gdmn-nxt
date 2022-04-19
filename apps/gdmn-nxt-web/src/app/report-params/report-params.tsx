@@ -40,8 +40,8 @@ export function ReportParams(props: ReportParamsProps) {
             startText="Начало периода"
             endText="Конец периода"
             value={value}
-            onChange={(newValue) => setValue(newValue)}
-            renderInput={(startProps, endProps) => (
+            onChange={setValue}
+            renderInput={(startProps: object, endProps: object) => (
               <React.Fragment>
                 <TextField {...startProps} />
                 <Box sx={{ mx: 2 }}/>
