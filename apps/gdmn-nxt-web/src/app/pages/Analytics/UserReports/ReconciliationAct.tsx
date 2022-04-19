@@ -132,8 +132,8 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                     startText="Начало периода"
                     endText="Конец периода"
                     value={dates}
-                    onChange={(newValue) => setDates(newValue)}
-                    renderInput={(startProps, endProps) => (
+                    onChange={setDates}
+                    renderInput={(startProps: any, endProps: any) => (
                       <Fragment>
                         <TextField {...startProps} />
                         <Box sx={{ mx: 2 }}/>
