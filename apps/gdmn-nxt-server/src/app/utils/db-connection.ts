@@ -1,3 +1,4 @@
+import { wrapForNamedParams } from '@gsbelarus/util-helpers';
 import { Semaphore } from '@gsbelarus/util-useful';
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation } from 'node-firebird-driver-native';
 import { config } from "./db-config";
@@ -172,6 +173,42 @@ export const releaseReadTransaction = async (sessionId: string) => {
   }
 };
 
+export const acquireReadTransaction = async (sessionId: string) => {
+  const { attachment, transaction } = await getReadTransaction(sessionId);
+
+  let released = false;
+
+  const releaseReadTransaction = async () => {
+    if (released) {
+      throw new Error(`multiple call of releaseTransaction`);
+    }
+
+    await semaphore.acquire();
+    try {
+      const dbSession = sessions[sessionId];
+
+      if (!dbSession?.readTransaction?.isValid) {
+        throw new Error(`No active read transaction in session ${sessionId}`);
+      }
+
+      if (dbSession?.lock < 1) {
+        throw new Error(`Db session ${sessionId} is not locked`);
+      }
+
+      released = true;
+      dbSession.lock -= 1;
+      dbSession.touched = new Date().getTime();
+    } finally {
+      semaphore.release();
+    }
+  };
+
+  return {
+    releaseReadTransaction,
+    ...wrapForNamedParams(attachment, transaction)
+  };
+};
+
 export const startTransaction = async (sessionId: string) => {
   const attachment = await getAttachment(sessionId);
   const transaction = await attachment.startTransaction({
@@ -179,7 +216,32 @@ export const startTransaction = async (sessionId: string) => {
     readCommittedMode: 'RECORD_VERSION',
     waitMode: 'NO_WAIT'
   });
-  return { attachment, transaction };
+
+  let released = false;
+
+  const releaseTransaction = async (commit = true) => {
+    if (released) {
+      throw new Error('Transaction has been released already');
+    }
+
+    if (transaction.isValid) {
+      if (commit) {
+        await transaction.commit();
+      } else {
+        await transaction.rollback();
+      }
+    }
+
+    await releaseAttachment(sessionId);
+    released = true;
+  };
+
+  return {
+    attachment,
+    transaction,
+    releaseTransaction,
+    ...wrapForNamedParams(attachment, transaction)
+  };
 };
 
 export const releaseTransaction = async (sessionId: string, transaction: Transaction) => {

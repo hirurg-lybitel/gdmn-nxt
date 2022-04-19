@@ -2,34 +2,23 @@ import { IPhone, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { importedModels } from '../models';
 import { resultError } from '../responseMessages';
-import { commitTransaction, getReadTransaction, releaseReadTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
 import { genId } from '../utils/genId';
 import { sqlQuery } from '../utils/sqlQuery';
 
 const getByCutomerId: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
-
+  const customerId = parseInt(req.params.customerId);
+  const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(req.sessionID);
   try {
-    const customerId = parseInt(req.params.customerId);
-
-    const sql = new sqlQuery(attachment, transaction);
-    sql.SQLtext = `
+    let sqlResult = await fetchAsObject(`
       SELECT ID FROM GD_CONTACT
-      WHERE UPPER(NAME) = 'КОНТАКТЫ' AND PARENT = :CompanyId`;
-    sql.setParamByName('CompanyId').value = customerId;
-
-    let sqlResult = await sql.execute();
-
+      WHERE UPPER(NAME) = 'КОНТАКТЫ' AND PARENT = :customerId`, { customerId });
     const contactFolderId = sqlResult.length ? sqlResult[0]['ID'] : -1;
-
-    sql.clear();
-    sql.SQLtext = `
+    sqlResult = await fetchAsObject(`
       SELECT dep.ID, dep.NAME
       FROM GD_CONTACT con
       JOIN GD_CONTACT dep ON dep.ID = con.USR$BG_OTDEL
-      WHERE con.PARENT = :FolderId`;
-    sql.setParamByName('FolderId').value = contactFolderId;
-    sqlResult = await sql.execute();
+      WHERE con.PARENT = :contactFolderId`, { contactFolderId });
 
     interface IMapOfObjects {
       [key: string]: any;
@@ -42,12 +31,9 @@ const getByCutomerId: RequestHandler = async (req, res) => {
       };
     });
 
-    sql.clear();
-    sql.SQLtext = `
+    sqlResult = await fetchAsObject(`
       SELECT USR$CONTACTKEY, ID, USR$PHONENUMBER
-      FROM USR$CRM_PHONES`;
-
-    sqlResult = await sql.execute();
+      FROM USR$CRM_PHONES`);
 
     interface IMapOfArray {
       [key: string]: any[];
@@ -62,21 +48,14 @@ const getByCutomerId: RequestHandler = async (req, res) => {
       };
     });
 
-    // const { erModelNoAdapters } = await importedModels;
-    // const allFields = erModelNoAdapters.entities['TgdcContact'].attributes.map(attr => attr.name);
-    // const actualFieldsNames = allFields.join(',');
-
-    sql.clear();
-    sql.SQLtext = `
+    sqlResult = await fetchAsObject(`
       SELECT
         ID, PARENT, NAME, EMAIL, p.RANK, CAST(c.NOTE AS VARCHAR(1024)) AS NOTE,
         ADDRESS, USR$BG_OTDEL AS USR$BG_OTDEL, p.USR$LETTER_OF_AUTHORITY, p.WCOMPANYKEY
       FROM GD_CONTACT c
       JOIN GD_PEOPLE p ON p.CONTACTKEY = c.ID
-      WHERE PARENT = :FolderId
-      ORDER BY ID DESC`;
-    sql.setParamByName('FolderId').value = contactFolderId;
-    sqlResult = await sql.execute();
+      WHERE PARENT = :contactFolderId
+      ORDER BY ID DESC`, { contactFolderId });
 
     sqlResult.forEach(res => {
       res['USR$BG_OTDEL'] = departments[res['USR$BG_OTDEL']];
@@ -93,16 +72,14 @@ const getByCutomerId: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseReadTransaction(req.sessionID);
+    await releaseReadTransaction();
   };
 };
 
 const get: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
-
   try {
-    const id = parseInt(req.params.id);
-
     const sql = new sqlQuery(attachment, transaction);
     sql.SQLtext = `
       SELECT dep.ID, dep.NAME
@@ -370,26 +347,20 @@ const upsert: RequestHandler = async (req, res) => {
 };
 
 const remove: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
-
   const id = parseInt(req.params.id);
 
-  if (isNaN(id)) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));;
+  if (isNaN(id)) {
+    return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
+  }
 
+  const { attachment, transaction, releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
   try {
     const { erModelNoAdapters } = await importedModels;
-    const allFields = erModelNoAdapters.entities['TgdcContact'].attributes.map(attr => attr.name);
-    const returnFieldsNames = allFields.join(',');
-
-    const sql = new sqlQuery(attachment, transaction);
-    sql.SQLtext = `
+    const returnFieldsNames = erModelNoAdapters.entities['TgdcContact'].attributes.map( attr => attr.name ).join(',');
+    const sqlResult = await executeSingletonAsObject(`
       DELETE FROM GD_CONTACT
-      WHERE ID = :ID
-      RETURNING ${returnFieldsNames}`;
-
-    sql.setParamByName('ID').value = id;
-
-    const sqlResult = await sql.execute();
+      WHERE ID = :id
+      RETURNING ${returnFieldsNames}`, { id });
 
     if (!sqlResult['ID']) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -405,7 +376,7 @@ const remove: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await commitTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   };
 };
 
