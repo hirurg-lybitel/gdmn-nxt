@@ -8,12 +8,16 @@
       "targets": {
         "build": {
           "executor": "@nrwl/node:webpack",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/apps/gdmn-nxt-server",
             "main": "apps/gdmn-nxt-server/src/main.ts",
             "tsConfig": "apps/gdmn-nxt-server/tsconfig.app.json",
-            "assets": ["apps/gdmn-nxt-server/src/assets"]
+            "assets": [
+              "apps/gdmn-nxt-server/src/assets"
+            ]
           },
           "configurations": {
             "production": {
@@ -37,14 +41,20 @@
         },
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["apps/gdmn-nxt-server/**/*.ts"]
+            "lintFilePatterns": [
+              "apps/gdmn-nxt-server/**/*.ts"
+            ]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/gdmn-nxt-server"],
+          "outputs": [
+            "coverage/apps/gdmn-nxt-server"
+          ],
           "options": {
             "jestConfig": "apps/gdmn-nxt-server/jest.config.js",
             "passWithNoTests": true
@@ -60,7 +70,9 @@
       "targets": {
         "build": {
           "executor": "@nrwl/web:webpack",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/apps/gdmn-nxt-web",
             "index": "apps/gdmn-nxt-web/src/index.html",
@@ -72,7 +84,9 @@
               "apps/gdmn-nxt-web/src/favicon.ico",
               "apps/gdmn-nxt-web/src/assets"
             ],
-            "styles": ["apps/gdmn-nxt-web/src/styles.less"],
+            "styles": [
+              "apps/gdmn-nxt-web/src/styles.less"
+            ],
             "scripts": [],
             "webpackConfig": "@nrwl/react/plugins/webpack"
           },
@@ -117,14 +131,20 @@
         },
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["apps/gdmn-nxt-web/**/*.{ts,tsx,js,jsx}"]
+            "lintFilePatterns": [
+              "apps/gdmn-nxt-web/**/*.{ts,tsx,js,jsx}"
+            ]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/gdmn-nxt-web"],
+          "outputs": [
+            "coverage/apps/gdmn-nxt-web"
+          ],
           "options": {
             "jestConfig": "apps/gdmn-nxt-web/jest.config.js",
             "passWithNoTests": true
@@ -153,14 +173,20 @@
         },
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["apps/gdmn-nxt-web-e2e/**/*.{js,ts}"]
+            "lintFilePatterns": [
+              "apps/gdmn-nxt-web-e2e/**/*.{js,ts}"
+            ]
           }
         }
       },
       "tags": [],
-      "implicitDependencies": ["gdmn-nxt-web"]
+      "implicitDependencies": [
+        "gdmn-nxt-web"
+      ]
     },
     "ui-common-dialogs": {
       "root": "libs/ui-common-dialogs",
@@ -170,13 +196,17 @@
       "targets": {
         "build": {
           "executor": "@nrwl/web:rollup",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/libs/ui-common-dialogs",
             "tsConfig": "libs/ui-common-dialogs/tsconfig.lib.json",
             "project": "libs/ui-common-dialogs/package.json",
             "entryFile": "libs/ui-common-dialogs/src/index.ts",
-            "external": ["react/jsx-runtime"],
+            "external": [
+              "react/jsx-runtime"
+            ],
             "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
             "assets": [
               {
@@ -189,14 +219,20 @@
         },
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["libs/ui-common-dialogs/**/*.{ts,tsx,js,jsx}"]
+            "lintFilePatterns": [
+              "libs/ui-common-dialogs/**/*.{ts,tsx,js,jsx}"
+            ]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/ui-common-dialogs"],
+          "outputs": [
+            "coverage/libs/ui-common-dialogs"
+          ],
           "options": {
             "jestConfig": "libs/ui-common-dialogs/jest.config.js",
             "passWithNoTests": true
@@ -211,14 +247,20 @@
       "targets": {
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["libs/util-api-types/**/*.ts"]
+            "lintFilePatterns": [
+              "libs/util-api-types/**/*.ts"
+            ]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/util-api-types"],
+          "outputs": [
+            "coverage/libs/util-api-types"
+          ],
           "options": {
             "jestConfig": "libs/util-api-types/jest.config.js",
             "passWithNoTests": true
@@ -226,13 +268,17 @@
         },
         "build": {
           "executor": "@nrwl/js:tsc",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/libs/util-api-types",
             "tsConfig": "libs/util-api-types/tsconfig.lib.json",
             "packageJson": "libs/util-api-types/package.json",
             "main": "libs/util-api-types/src/index.ts",
-            "assets": ["libs/util-api-types/*.md"]
+            "assets": [
+              "libs/util-api-types/*.md"
+            ]
           }
         }
       },
@@ -245,14 +291,20 @@
       "targets": {
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["libs/util-helpers/**/*.ts"]
+            "lintFilePatterns": [
+              "libs/util-helpers/**/*.ts"
+            ]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/util-helpers"],
+          "outputs": [
+            "coverage/libs/util-helpers"
+          ],
           "options": {
             "jestConfig": "libs/util-helpers/jest.config.js",
             "passWithNoTests": true
@@ -260,13 +312,17 @@
         },
         "build": {
           "executor": "@nrwl/js:tsc",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/libs/util-helpers",
             "tsConfig": "libs/util-helpers/tsconfig.lib.json",
             "packageJson": "libs/util-helpers/package.json",
             "main": "libs/util-helpers/src/index.ts",
-            "assets": ["libs/util-helpers/*.md"]
+            "assets": [
+              "libs/util-helpers/*.md"
+            ]
           }
         }
       },
@@ -279,14 +335,20 @@
       "targets": {
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
+          "outputs": [
+            "{options.outputFile}"
+          ],
           "options": {
-            "lintFilePatterns": ["libs/util-useful/**/*.ts"]
+            "lintFilePatterns": [
+              "libs/util-useful/**/*.ts"
+            ]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/util-useful"],
+          "outputs": [
+            "coverage/libs/util-useful"
+          ],
           "options": {
             "jestConfig": "libs/util-useful/jest.config.js",
             "passWithNoTests": true
@@ -294,13 +356,17 @@
         },
         "build": {
           "executor": "@nrwl/js:tsc",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/libs/util-useful",
             "tsConfig": "libs/util-useful/tsconfig.lib.json",
             "packageJson": "libs/util-useful/package.json",
             "main": "libs/util-useful/src/index.ts",
-            "assets": ["libs/util-useful/*.md"]
+            "assets": [
+              "libs/util-useful/*.md"
+            ]
           }
         }
       },
