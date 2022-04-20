@@ -16,6 +16,12 @@ export const systemMenu: IMenuItem = {
       title: 'Entities',
       type: 'item',
       url: '/system/er-model'
+    },
+    {
+      id: 'nlp-main',
+      title: 'NLP',
+      type: 'item',
+      url: '/system/nlp-main'
     }
   ]
 };

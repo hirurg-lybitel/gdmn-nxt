@@ -1,6 +1,4 @@
 import { IAccount, IAuthResult, IWithID } from "@gsbelarus/util-api-types";
-import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction } from 'node-firebird-driver-native';
-import { config } from "./utils/db-config";
 import { getReadTransaction, releaseReadTransaction } from "./utils/db-connection";
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {

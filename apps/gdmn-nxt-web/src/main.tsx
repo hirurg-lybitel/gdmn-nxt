@@ -32,6 +32,7 @@ import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
 import CustomerDetails from './app/pages/Customers/customer-details/customer-details';
+import NlpMain from './app/nlp-main/nlp-main';
 
 registerMUI();
 
@@ -62,6 +63,7 @@ const Main = () => {
                   <Route path="/system" element={<BaseForm />}>
                     <Route path="er-model-domains" element={<ErModelDomains />} />
                     <Route path="er-model" element={<ErModel />} />
+                    <Route path="nlp-main" element={<NlpMain />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/employee/dashboard" />} />
                 </Routes>
