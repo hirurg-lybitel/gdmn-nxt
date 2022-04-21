@@ -11,7 +11,7 @@ export function NlpMain(props: NlpMainProps) {
 
   return (
     <Grid container height="100%" columnSpacing={2}>
-      <Grid item xs={12}>
+      <Grid item xs={2}>
         <ChatView />
       </Grid>
     </Grid>
