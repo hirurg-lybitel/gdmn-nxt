@@ -24,10 +24,21 @@
 .NLPItems {
   grid-column: 1;
   grid-row: 1;
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.NLPItemsFlex {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  position: relative;
+  position: absolute;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
 }
 
 .NLPItem {
