@@ -19,26 +19,21 @@ export function Sidebar(props: SidebarProps) {
 
   const drawer = (
     <>
-        {/* <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-            <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
-                123
-            </Box>
-        </Box> */}
-        <BrowserView>
-          <Box
-            style={{
-              paddingLeft: '16px',
-              paddingRight: '16px'
-              }}
-          >
-            <MenuList />
-          </Box>
-        </BrowserView>
-        <MobileView>
-            <Box sx={{ px: 2 }}>
-                <MenuList />
-            </Box>
-        </MobileView>
+      <BrowserView>
+        <Box
+          style={{
+            paddingLeft: '16px',
+            paddingRight: '16px'
+          }}
+        >
+          <MenuList />
+        </Box>
+      </BrowserView>
+      <MobileView>
+        <Box sx={{ px: 2 }}>
+          <MenuList />
+        </Box>
+      </MobileView>
     </>
   );
 

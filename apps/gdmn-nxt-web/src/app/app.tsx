@@ -11,6 +11,7 @@ import { Button, Divider, Typography, Stack } from '@mui/material';
 import { SelectMode } from './select-mode/select-mode';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, Routes } from 'react-router-dom';
+import { CircularIndeterminate } from './components/circular-indeterminate/circular-indeterminate';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -71,7 +72,12 @@ const App = () => {
     <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto',  height: '100vh', maxWidth: "440px" }}>
       {
         loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
-          <h1>Loading...</h1>
+          <Stack spacing={2}>
+            <CircularIndeterminate open={true} size={100} />
+            <Typography variant="overline" color="gray" align="center">
+              подключение
+            </Typography>
+          </Stack>
           : loginStage === 'SELECT_MODE' ?
             <SelectMode
               employeeModeSelected={ () => dispatch(signInEmployee()) }
