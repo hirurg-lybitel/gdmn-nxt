@@ -99,8 +99,6 @@ export function ChatView(props: ChatViewProps) {
   useEffect( () => {
     if (!recalc) return;
 
-    console.log(sf, st, showFrom, showTo, shownItems.current[0]?.offsetTop, shownItems.current[0]?.offsetHeight);
-
     if (shownItems.current.length) {
       if (shownItems.current[0].offsetTop > topGap) {
         if (shownItems.current.length < nlpDialog.length && sf > 0) {
@@ -299,7 +297,6 @@ export function ChatView(props: ChatViewProps) {
   }, [nlpDialog, showFrom, showTo, prevClientY, prevFrac]);
 
   const onInputText = useCallback( (text: string) => {
-    console.log('set text', text);
     setState( state => ({
       ...state,
       showFrom: -1,
@@ -327,7 +324,6 @@ export function ChatView(props: ChatViewProps) {
                       key={i.id}
                       className={`${styles['NLPItem']} ${i.who === 'me' ? styles['NLPItemRight'] : styles['NLPItemLeft']}`}
                       ref={elem => elem && shownItems.current.push(elem)}
-                      onClick={ () => setState( state => ({ ...state, nlpDialog: nlpDialog.filter( f => f.id !== i.id ) }) )}
                     >
                     {
                       i.who === 'me' ?
