@@ -75,7 +75,8 @@ export function ChatView(props: ChatViewProps) {
   const [state, setState] = useState(defState);
   const [nlpDialog, setNLPDialog] = useState<NLPDialog>([]);
 
-  const shownItems = useRef<HTMLDivElement[]>([]);
+  const shownItems = useRef(0);
+  const topShownItem = useRef<HTMLDivElement | null>(null);
   const scrollThumb = useRef<HTMLDivElement | null>(null);
 
   const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK } = state;
@@ -86,14 +87,15 @@ export function ChatView(props: ChatViewProps) {
   const thumbHeight = nlpDialog.length ? `${Math.trunc(((st - sf + 1) / nlpDialog.length) * 100).toString()}%` : '100%';
   const thumbTop = nlpDialog.length ? `${Math.trunc((sf / nlpDialog.length) * 100).toString()}%` : '100%';
 
-  shownItems.current = [];
+  shownItems.current = 0;
+  topShownItem.current = null;
 
   useEffect( () => {
     if (!recalc) return;
 
-    if (shownItems.current.length) {
-      if (shownItems.current[0].offsetTop > topGap) {
-        if (shownItems.current.length < nlpDialog.length && sf > 0) {
+    if (shownItems.current) {
+      if (topShownItem.current!.offsetTop > topGap) {
+        if (shownItems.current < nlpDialog.length && sf > 0) {
           setState( state => ({
             ...state,
             showFrom: sf - 1,
@@ -107,14 +109,14 @@ export function ChatView(props: ChatViewProps) {
             recalc: false
           }));
         }
-      } else if (shownItems.current[0].offsetTop + shownItems.current[0].offsetHeight < 0 && sf < st) {
+      } else if (topShownItem.current!.offsetTop + topShownItem.current!.offsetHeight < 0 && sf < st) {
         setState(state => ({
           ...state,
           showFrom: sf + 1,
           showTo: st,
           recalc: true
         }));
-      } else if (shownItems.current[0].offsetTop < 0 && !partialOK && !showFrom && showFrom < showTo) {
+      } else if (topShownItem.current!.offsetTop < 0 && !partialOK && !showFrom && showFrom < showTo) {
         setState( state => ({
           ...state,
           showFrom: sf,
@@ -303,6 +305,16 @@ export function ChatView(props: ChatViewProps) {
     ]) )
   }, []);
 
+  const shownItemRefFunc = useCallback( (elem: HTMLDivElement | null) => {
+    if (elem) {
+      shownItems.current = shownItems.current + 1;
+
+      if (!topShownItem.current) {
+        topShownItem.current = elem;
+      }
+    }
+  }, []);
+
   return (
     <Fragment>
       <div className={styles['NLPDialog']}>
@@ -315,7 +327,7 @@ export function ChatView(props: ChatViewProps) {
                     <div
                       key={i.id}
                       className={`${styles['NLPItem']} ${i.who === 'me' ? styles['NLPItemRight'] : styles['NLPItemLeft']}`}
-                      ref={elem => elem && shownItems.current.push(elem)}
+                      ref={shownItemRefFunc}
                     >
                     {
                       i.who === 'me' ?
