@@ -7,7 +7,7 @@ export default function CustomLoadingOverlay() {
   return (
     <GridOverlay style={{ backgroundColor: `${theme.palette.background.paper}` }}>
       <div style={{ position: 'absolute', top: 0, width: '100%' }}>
-        <LinearProgress sx={{ height: 10 }} />
+        <LinearProgress sx={{ height: 5 }} />
       </div>
     </GridOverlay>
   );
