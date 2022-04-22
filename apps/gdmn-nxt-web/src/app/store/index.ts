@@ -4,6 +4,7 @@ import { accountApi } from '../features/account/accountApi';
 import { contactApi } from '../features/contact/contactApi';
 import { reconciliationStatementApi } from '../features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from '../features/user/userSlice';
+import nlpReducer from '../features/nlp/nlpSlice';
 import { customersReducer, hierarchyReducer } from '../features/customer/customerSlice';
 import { labelsApi } from '../features/labels/labelsApi';
 import { contactGroupApi } from '../features/contact/contactGroupApi';
@@ -25,6 +26,7 @@ export const store = configureStore({
     settings: settingsReducer,
     error: errorReducer,
     user: userReducer,
+    nlp: nlpReducer,
     customers: customersReducer,
     customersHierarchy: hierarchyReducer,
     [contactApi.reducerPath]: contactApi.reducer,
@@ -39,7 +41,6 @@ export const store = configureStore({
     [actCompletionApi.reducerPath]: actCompletionApi.reducer,
     [bankStatementApi.reducerPath]: bankStatementApi.reducer,
     [chartDataApi.reducerPath]: chartDataApi.reducer
-
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)

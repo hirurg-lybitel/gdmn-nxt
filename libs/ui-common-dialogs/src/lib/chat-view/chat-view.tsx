@@ -5,7 +5,7 @@ import styles from './chat-view.module.less';
 /* eslint-disable-next-line */
 export interface ChatViewProps {
   nlpDialog: NLPDialog;
-  setNLPDialog: React.Dispatch<React.SetStateAction<NLPDialog>>;
+  setNLPDialog: (nlpDialog: NLPDialog) => void;
 };
 
 interface IChatInputProps {
@@ -298,11 +298,11 @@ export function ChatView({ nlpDialog, setNLPDialog }: ChatViewProps) {
       partialOK: true,
       recalc: true
     }));
-    setNLPDialog( nlpDialog => ([
+    setNLPDialog([
       ...nlpDialog,
       { id: crypto.randomUUID(), who: 'me', text },
       { id: crypto.randomUUID(), who: 'it', text: new Date().toISOString() }
-    ]))
+    ])
   }, [nlpDialog]);
 
   return (
