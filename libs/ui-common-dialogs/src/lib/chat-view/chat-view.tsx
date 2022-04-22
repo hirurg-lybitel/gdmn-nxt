@@ -1,3 +1,4 @@
+import { NLPDialog } from '@gsbelarus/util-api-types';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import styles from './chat-view.module.less';
 
@@ -47,14 +48,6 @@ const ChatInput = ({ onInputText }: IChatInputProps) => {
 
 const topGap = 24;
 const scrollTimerDelay = 4000;
-
-interface INLPDialogItem {
-  id: string;
-  who: string;
-  text: string;
-};
-
-type NLPDialog = INLPDialogItem[];
 
 interface IChatViewState {
   showFrom: number;
