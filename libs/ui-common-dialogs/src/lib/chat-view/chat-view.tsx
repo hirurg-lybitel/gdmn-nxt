@@ -314,43 +314,44 @@ export function ChatView(props: ChatViewProps) {
   return (
     <Fragment>
       <div className={styles['NLPDialog']}>
-        <div className={styles['NLPItems']} onWheel={onWheel}>
-          {nlpDialog.map(
-              (i, idx) =>
-                idx >= sf &&
-                idx <= st && (
-                  <div
-                    key={i.id}
-                    className={`${styles['NLPItem']} ${i.who === 'me' ? styles['NLPItemRight'] : styles['NLPItemLeft']}`}
-                    ref={elem => elem && shownItems.current.push(elem)}
-                    onClick={ () => setState( state => ({ ...state, nlpDialog: nlpDialog.filter( f => f.id !== i.id ) }) )}
-                  >
-                  {
-                    i.who === 'me' ?
-                      <>
-                        <span className={`${styles['Message']} ${styles['MessageRight']}`}>{i.text}</span>
-                        <span className={styles['Circle']}>{i.who}</span>
-                      </>
-                    :
-                      <>
-                        <span className={styles['Circle']}>{i.who}</span>
-                        <span className={`${styles['Message']} ${styles['MessageLeft']}`}>{i.text}</span>
-                      </>
-                  }
-                  </div>
-                )
-            )}
-          <div
-            className={styles[state.scrollVisible ? 'NLPScrollBarVisible' : 'NLPScrollBar']}
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerMove={onPointerMove}
-          >
+        <div className={styles['NLPItems']}>
+          <div className={styles['NLPItemsFlex']} onWheel={onWheel}>
+            {nlpDialog.map(
+                (i, idx) =>
+                  idx >= sf &&
+                  idx <= st && (
+                    <div
+                      key={i.id}
+                      className={`${styles['NLPItem']} ${i.who === 'me' ? styles['NLPItemRight'] : styles['NLPItemLeft']}`}
+                      ref={elem => elem && shownItems.current.push(elem)}
+                    >
+                    {
+                      i.who === 'me' ?
+                        <>
+                          <span className={`${styles['Message']} ${styles['MessageRight']}`}>{i.text}</span>
+                          <span className={styles['Circle']}>{i.who}</span>
+                        </>
+                      :
+                        <>
+                          <span className={styles['Circle']}>{i.who}</span>
+                          <span className={`${styles['Message']} ${styles['MessageLeft']}`}>{i.text}</span>
+                        </>
+                    }
+                    </div>
+                  )
+              )}
             <div
-              className={styles['NLPScrollBarThumb']}
-              style={{ height: thumbHeight, top: thumbTop }}
-              ref={scrollThumb}
-            />
+              className={styles[state.scrollVisible ? 'NLPScrollBarVisible' : 'NLPScrollBar']}
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              onPointerMove={onPointerMove}
+            >
+              <div
+                className={styles['NLPScrollBarThumb']}
+                style={{ height: thumbHeight, top: thumbTop }}
+                ref={scrollThumb}
+              />
+            </div>
           </div>
         </div>
         <ChatInput onInputText={onInputText} />
