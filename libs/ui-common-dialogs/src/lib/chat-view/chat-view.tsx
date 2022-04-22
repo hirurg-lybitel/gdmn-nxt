@@ -3,7 +3,10 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import styles from './chat-view.module.less';
 
 /* eslint-disable-next-line */
-export interface ChatViewProps {}
+export interface ChatViewProps {
+  nlpDialog: NLPDialog;
+  setNLPDialog: React.Dispatch<React.SetStateAction<NLPDialog>>;
+};
 
 interface IChatInputProps {
   onInputText: (text: string) => void;
@@ -58,7 +61,6 @@ interface IChatViewState {
   scrollTimer: any;
   prevClientY?: number;
   prevFrac: number;
-  nlpDialog: NLPDialog;
 };
 
 const defState: IChatViewState = {
@@ -69,17 +71,16 @@ const defState: IChatViewState = {
   scrollVisible: false,
   scrollTimer: undefined,
   prevClientY: -1,
-  prevFrac: 0,
-  nlpDialog: []
+  prevFrac: 0
 };
 
-export function ChatView(props: ChatViewProps) {
+export function ChatView({ nlpDialog, setNLPDialog }: ChatViewProps) {
   const [state, setState] = useState(defState);
 
   const shownItems = useRef<HTMLDivElement[]>([]);
   const scrollThumb = useRef<HTMLDivElement | null>(null);
 
-  const { nlpDialog, showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK } = state;
+  const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK } = state;
 
   const sf = (showFrom === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showFrom;
   const st = (showTo === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showTo;
@@ -295,13 +296,13 @@ export function ChatView(props: ChatViewProps) {
       showFrom: -1,
       showTo: -1,
       partialOK: true,
-      recalc: true,
-      nlpDialog: [
-        ...state.nlpDialog,
-        { id: crypto.randomUUID(), who: 'me', text },
-        { id: crypto.randomUUID(), who: 'it', text: new Date().toISOString() }
-      ]
+      recalc: true
     }));
+    setNLPDialog( nlpDialog => ([
+      ...nlpDialog,
+      { id: crypto.randomUUID(), who: 'me', text },
+      { id: crypto.randomUUID(), who: 'it', text: new Date().toISOString() }
+    ]))
   }, [nlpDialog]);
 
   return (
