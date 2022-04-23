@@ -4,6 +4,7 @@ import Grid from '@mui/material/Grid/Grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { setNLPDialog } from '../features/nlp/nlpSlice';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
+import NLPQuery from '../nlpquery/nlpquery';
 import { RootState } from '../store';
 import styles from './nlp-main.module.less';
 
@@ -20,6 +21,9 @@ export function NlpMain(props: NlpMainProps) {
     <Grid container height="100%" columnSpacing={2}>
       <Grid item xs={2}>
         <ChatView nlpDialog={nlpDialog} setNLPDialog={ nlpDialog => dispatch(setNLPDialog(nlpDialog)) } />
+      </Grid>
+      <Grid item xs={10}>
+         <NLPQuery />
       </Grid>
     </Grid>
   );
