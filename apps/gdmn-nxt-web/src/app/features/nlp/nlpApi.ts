@@ -1,19 +1,5 @@
+import { INLPQuery, INLPResult } from "@gsbelarus/util-api-types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
-
-interface INLPResult {
-  version: '1.0';
-  engine: string;
-  models: string[];
-  detectedLanguage: string;
-  tokens: string[];
-};
-
-interface INLPQuery {
-  version: '1.0';
-  session: string;
-  language?: string;
-  text: string;
-};
 
 export const nlpQueryApi = createApi({
   reducerPath: 'nlpQuery',

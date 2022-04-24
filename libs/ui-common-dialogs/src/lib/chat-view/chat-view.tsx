@@ -1,11 +1,13 @@
-import { NLPDialog } from '@gsbelarus/util-api-types';
+import { Language, NLPDialog } from '@gsbelarus/util-api-types';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import styles from './chat-view.module.less';
 
 /* eslint-disable-next-line */
 export interface ChatViewProps {
+  currLang: Language;
   nlpDialog: NLPDialog;
   setNLPDialog: (nlpDialog: NLPDialog) => void;
+  push: (who: string, text: string) => void;
 };
 
 interface IChatInputProps {
@@ -74,7 +76,7 @@ const defState: IChatViewState = {
   prevFrac: 0
 };
 
-export function ChatView({ nlpDialog, setNLPDialog }: ChatViewProps) {
+export function ChatView({ currLang, nlpDialog, push }: ChatViewProps) {
   const [state, setState] = useState(defState);
 
   const shownItems = useRef<HTMLDivElement[]>([]);
@@ -298,11 +300,7 @@ export function ChatView({ nlpDialog, setNLPDialog }: ChatViewProps) {
       partialOK: true,
       recalc: true
     }));
-    setNLPDialog([
-      ...nlpDialog,
-      { id: crypto.randomUUID(), who: 'me', text },
-      { id: crypto.randomUUID(), who: 'it', text: new Date().toISOString() }
-    ])
+    push('me', text);
   }, [nlpDialog]);
 
   return (
