@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid/Grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { NLPState, setNLPDialog, push } from '../features/nlp/nlpSlice';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
-import NLPQuery from '../nlpquery/nlpquery';
+import { NLPQuery } from '../nlpquery/nlpquery';
 import { RootState } from '../store';
 
 /* eslint-disable-next-line */

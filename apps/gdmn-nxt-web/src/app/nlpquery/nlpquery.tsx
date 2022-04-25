@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { useParseTextQuery } from '../features/nlp/nlpApi';
 import { NLPState } from '../features/nlp/nlpSlice';
+import { NLPSentenceTree } from '../nlpsentence-tree/nlpsentence-tree';
 import { RootState } from '../store';
 import styles from './nlpquery.module.less';
 
@@ -29,6 +30,9 @@ export function NLPQuery(props: NLPQueryProps) {
 
   return (
     <div className={styles['container']}>
+      {
+        data?.sents[0] && <NLPSentenceTree nlpSentence={data?.sents[0]} />
+      }
       <pre className={styles['pre']}>
         {
           isFetching ?
@@ -39,6 +43,4 @@ export function NLPQuery(props: NLPQueryProps) {
       </pre>
     </div>
   );
-}
-
-export default NLPQuery;
+};

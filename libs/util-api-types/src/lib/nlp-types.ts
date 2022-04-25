@@ -44,7 +44,10 @@ export interface INLPToken {
 };
 
 export interface INLPSentence {
-  detectedLanguage: string;
+  detectedLanguage: {
+    language: string;
+    score: number;
+  };
   text: string;
   tokens: INLPToken[];
 };
