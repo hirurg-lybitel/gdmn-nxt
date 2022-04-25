@@ -1,3 +1,4 @@
+import { Language } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { useParseTextQuery } from '../features/nlp/nlpApi';
 import { NLPState } from '../features/nlp/nlpSlice';
@@ -12,11 +13,13 @@ export function NLPQuery(props: NLPQueryProps) {
   const { currLang, nlpDialog } = useSelector<RootState, NLPState>( state => state.nlp );
 
   let text = '';
+  let language: Language = 'en';
   let command;
 
   for (let i = nlpDialog.length - 1; !text && i >= 0; i--) {
     if (nlpDialog[i].who === 'me') {
       text = nlpDialog[i].text;
+      language = nlpDialog[i].language;
       command = nlpDialog[i].command;
     }
   }
@@ -24,7 +27,7 @@ export function NLPQuery(props: NLPQueryProps) {
   const { data, error, isFetching } = useParseTextQuery({
     version: '1.0',
     session: '123',
-    language: currLang,
+    language,
     text
   }, { skip: !text || !!command })
 

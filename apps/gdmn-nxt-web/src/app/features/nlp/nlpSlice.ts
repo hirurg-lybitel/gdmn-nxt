@@ -14,7 +14,7 @@ export interface NLPState {
 
 const initialState: NLPState = {
   currLang: 'en',
-  nlpDialog: [nlpDialogItem('it', getLangMessage('en'))]
+  nlpDialog: [nlpDialogItem('it', 'en', getLangMessage('en'))]
 };
 
 export const nlpSlice = createSlice({
@@ -40,8 +40,8 @@ export const nlpSlice = createSlice({
           currLang: newLang,
           nlpDialog: [
             ...state.nlpDialog,
-            nlpDialogItem(who, t, '/lang'),
-            nlpDialogItem('it', getLangMessage(newLang))
+            nlpDialogItem(who, newLang, t, '/lang'),
+            nlpDialogItem('it', newLang, getLangMessage(newLang))
           ]
         }
       } else {
@@ -49,7 +49,7 @@ export const nlpSlice = createSlice({
           ...state,
           nlpDialog: [
             ...state.nlpDialog,
-            nlpDialogItem(who, t)
+            nlpDialogItem(who, newLang, t)
           ]
         }
       }
