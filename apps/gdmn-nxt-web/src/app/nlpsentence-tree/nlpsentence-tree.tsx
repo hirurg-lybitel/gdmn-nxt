@@ -27,12 +27,34 @@ const Rect = ({ x, y, width, height, text, className }: IRectProps) => {
 };
 
 interface IEdgeProps {
+  label: string;
   points: Array<{ x: number; y: number }>;
 };
 
-const Edge = ({ points }: IEdgeProps) => {
-  const d = points.reduce((prev, p, idx) => prev + (idx ? 'L ' : 'M ') + p.x + ' ' + p.y + ' ', '');
-  return <path d={d} markerStart="url(#arrow2)" />;
+const Edge = ({ label, points }: IEdgeProps) => {
+  const first = points[0];
+  const last = points[points.length - 1];
+  const d = `M ${first.x} ${first.y} L ${last.x} ${last.y - 2}`;
+  const width = label.length * 8 + 4;
+  const height = 18;
+  const xc = first.x <= last.x
+    ? Math.floor((last.x - first.x) / 2) + first.x
+    : Math.floor((first.x - last.x) / 2) + last.x;
+  const yc = first.y <= last.y
+    ? Math.floor((last.y - first.y) / 2) + first.y
+    : Math.floor((first.y - last.y) / 2) + last.y;
+  const x = xc - Math.floor(width / 2);
+  const y = yc - Math.floor(height / 2);
+  return (
+    <>
+      <path d={d} markerEnd="url(#arrow)" />
+      <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerDep"]} />
+      <rect x={x + 1} y={y + 1} rx={4} ry={4} width={width - 2} height={height - 2} className={styles["dep"]} />
+      <text x={xc} y={yc + 4} textAnchor="middle" className={styles["dep"]}>
+        {label}
+      </text>
+    </>
+  );
 };
 
 /* eslint-disable-next-line */
@@ -55,7 +77,7 @@ export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
 
   const recurs = (token?: INLPToken) => {
     if (token) {
-      const label = token.token;
+      const label = `${token.pos}:${token.token}`;
       g.setNode(token.id.toString(), {
         label,
         width: label.length * 9 + 8,
@@ -65,7 +87,7 @@ export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
       nlpSentence.tokens
         .filter( t => t.head?.id === token.id )
         .forEach( t => {
-          g.setEdge(token.id.toString(), t.id.toString());
+          g.setEdge(token.id.toString(), t.id.toString(), { label: t.dep });
           recurs(t);
         });
     }
@@ -73,7 +95,7 @@ export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
 
   recurs(nlpSentence.tokens.find( t => t.dep === 'ROOT' ));
 
-  g.graph().ranksep = 36;
+  g.graph().ranksep = 40;
   g.graph().marginx = 2;
   g.graph().marginy = 2;
   layout(g);
@@ -89,7 +111,7 @@ export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
     );
   };
 
-  const makeEdge = (e: DagreEdge, idx: number) => <Edge key={idx} points={g.edge(e).points} />;
+  const makeEdge = (e: DagreEdge, idx: number) => <Edge key={idx} points={g.edge(e).points} label={g.edge(e).label} />;
 
   return (
     <div className={styles["CommandAndGraph"]}>
@@ -112,7 +134,7 @@ export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
               markerHeight="6"
               orient="auto"
             >
-              <path d="M 0 0 L 10 5 L 0 10 Z" style={{ strokeWidth: '1' }} />
+              <path d="M 0 0 L 10 5 L 0 10 Z" style={{ strokeWidth: '1', fill: 'darkgray' }} />
             </marker>
             <marker
               id="arrow2"

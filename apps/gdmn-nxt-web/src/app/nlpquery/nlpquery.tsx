@@ -1,4 +1,6 @@
 import { Language } from '@gsbelarus/util-api-types';
+import Grid from '@mui/material/Grid/Grid';
+import Stack from '@mui/material/Stack/Stack';
 import { useSelector } from 'react-redux';
 import { useParseTextQuery } from '../features/nlp/nlpApi';
 import { NLPState } from '../features/nlp/nlpSlice';
@@ -32,18 +34,34 @@ export function NLPQuery(props: NLPQueryProps) {
   }, { skip: !text || !!command })
 
   return (
-    <div className={styles['container']}>
-      {
-        data?.sents[0] && <NLPSentenceTree nlpSentence={data?.sents[0]} />
-      }
-      <pre className={styles['pre']}>
+    <Grid container height="100%" columnSpacing={2}>
+      <Grid item xs={12}>
+        <Stack direction="row" gap={1}>
+          {data?.sents[0]?.tokens.map(
+            t =>
+              <span className={styles['word']}>
+                {t.token}
+              </span>
+          )}
+        </Stack>
+      </Grid>
+      <Grid item xs={8}>
         {
-          isFetching ?
-            'Fetching...'
-          :
-          JSON.stringify(data ?? error, undefined, 2)
+          data?.sents[0] && <NLPSentenceTree nlpSentence={data?.sents[0]} />
         }
-      </pre>
-    </div>
+      </Grid>
+      <Grid item xs={4}>
+        <div className={styles['container']}>
+          <pre className={styles['pre']}>
+            {
+              isFetching ?
+                'Fetching...'
+              :
+              JSON.stringify(data ?? error, undefined, 2)
+            }
+          </pre>
+        </div>
+      </Grid>
+    </Grid>
   );
 };
