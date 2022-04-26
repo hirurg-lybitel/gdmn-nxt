@@ -7,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import './base-form.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import menuItems from '../menu-items';
 
 type MyThemeOptions = ThemeOptions & {
   typography: {
@@ -233,9 +234,10 @@ export function BaseForm(props: BaseFormProps) {
         <Header>
           <TopLine>
             <TopLeftLinks>
-              <Link to="/system/er-model-domains">Domains</Link>
-              <Link to="/system/er-model">Entities</Link>
-              <Link to="/system/nlp-main">NLP</Link>
+              {menuItems.items
+                .find(it => it.id === 'system')?.children
+                ?.map(item => <Link key={item.id} to={item.url || ''}>{item.title}</Link>
+                )}
             </TopLeftLinks>
             <SearchBox />
             <Box

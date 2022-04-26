@@ -22,6 +22,12 @@ export const systemMenu: IMenuItem = {
       title: 'NLP',
       type: 'item',
       url: '/system/nlp-main'
+    },
+    {
+      id: 'sql-eitor',
+      title: 'SQL editor',
+      type: 'item',
+      url: '/system/sql-editor'
     }
   ]
 };

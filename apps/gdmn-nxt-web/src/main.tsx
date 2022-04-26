@@ -33,6 +33,7 @@ import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
 import CustomerDetails from './app/pages/Customers/customer-details/customer-details';
 import NlpMain from './app/nlp-main/nlp-main';
+import SqlEditor from './app/components/System/sql-editor/sql-editor';
 
 registerMUI();
 
@@ -64,6 +65,7 @@ const Main = () => {
                     <Route path="er-model-domains" element={<ErModelDomains />} />
                     <Route path="er-model" element={<ErModel />} />
                     <Route path="nlp-main" element={<NlpMain />} />
+                    <Route path="sql-editor" element={<SqlEditor />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/employee/dashboard" />} />
                 </Routes>
