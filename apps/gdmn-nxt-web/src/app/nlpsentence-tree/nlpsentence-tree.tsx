@@ -9,17 +9,18 @@ interface IRectProps {
   readonly width: number;
   readonly height: number;
   readonly className: string;
+  readonly onClick?: () => void;
 };
 
-const Rect = ({ x, y, width, height, text, className }: IRectProps) => {
+const Rect = ({ x, y, width, height, text, className, onClick }: IRectProps) => {
   const cx = x + width / 2;
   const cy = y + height / 2;
 
   return (
     <g>
-      <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerRect"]} />
-      <rect x={x + 1} y={y + 1} rx={4} ry={4} width={width - 2} height={height - 2} className={styles[className]} />
-      <text x={cx} y={cy + 4} textAnchor="middle">
+      <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerRect"]} onClick={onClick} />
+      <rect x={x + 1} y={y + 1} rx={4} ry={4} width={width - 2} height={height - 2} className={styles[className]} onClick={onClick} />
+      <text x={cx} y={cy + 4} textAnchor="middle" onClick={onClick}>
         {text}
       </text>
     </g>
@@ -60,9 +61,10 @@ const Edge = ({ label, points }: IEdgeProps) => {
 /* eslint-disable-next-line */
 export interface NLPSentenceTreeProps {
   nlpSentence: INLPSentence;
+  onClick?: (id: string) => void;
 }
 
-export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
+export function NLPSentenceTree({ nlpSentence, onClick }: NLPSentenceTreeProps) {
 
   // Create a new directed graph
   const g = new graphlib.Graph();
@@ -107,7 +109,16 @@ export function NLPSentenceTree({ nlpSentence }: NLPSentenceTreeProps) {
     const x = nd.x - nd.width / 2;
     const y = nd.y - nd.height / 2;
     return (
-      <Rect key={idx} x={x} y={y} width={nd.width} height={nd.height} text={nd.label} className={nd.className} />
+      <Rect
+        key={idx}
+        x={x}
+        y={y}
+        width={nd.width}
+        height={nd.height}
+        text={nd.label}
+        className={nd.className}
+        onClick={ () => { onClick && onClick(n) } }
+      />
     );
   };
 
