@@ -13,7 +13,7 @@ export interface NlpMainProps {}
 export function NlpMain(props: NlpMainProps) {
   useViewForms('NlpMain');
 
-  const { currLang, nlpDialog } = useSelector<RootState, NLPState>( state => state.nlp );
+  const { nlpDialog } = useSelector<RootState, NLPState>( state => state.nlp );
   const dispatch = useDispatch();
 
   return (
@@ -22,7 +22,6 @@ export function NlpMain(props: NlpMainProps) {
       <Grid container columnSpacing={2} wrap="nowrap" style={{ height: 'calc(100% - 80px)' }}>
         <Grid item xs={2} sx={{ borderRight: '1px solid silver', minWidth: 200 }}>
           <ChatView
-            currLang={currLang}
             nlpDialog={nlpDialog}
             setNLPDialog={ nlpDialog => dispatch(setNLPDialog(nlpDialog)) }
             push={ (who: string, text: string) => dispatch(push({ who, text })) }
