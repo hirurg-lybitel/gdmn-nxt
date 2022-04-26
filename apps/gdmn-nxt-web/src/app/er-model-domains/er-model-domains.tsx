@@ -8,6 +8,7 @@ import Grid from '@mui/material/Grid/Grid';
 import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
+import { MainToolbar } from '../main-toolbar/main-toolbar';
 
 /* eslint-disable-next-line */
 export interface ErModelDomainsProps {}
@@ -15,44 +16,44 @@ export interface ErModelDomainsProps {}
 export function ErModelDomains(props: ErModelDomainsProps) {
   useViewForms('Domains');
   const { data, isFetching, refetch, error } = useGetErModelQuery();
-  const errorMessage = !error ? 
+  const errorMessage = !error ?
     undefined
-    : 'message' in error ? error.message 
+    : 'message' in error ? error.message
     : 'error' in error ? error.error
     : 'unknown error';
-  const rows = useMemo( () => data ? Object.values(data.domains) : [], [data]);  
+  const rows = useMemo( () => data ? Object.values(data.domains) : [], [data]);
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
 
   const columns: GridColDef[] = [
-    { 
-      field: 'name', 
-      headerName: 'Наименование', 
+    {
+      field: 'name',
+      headerName: 'Наименование',
       width: 200
     },
-    { 
-      field: 'lName', 
-      headerName: 'Лок. наименование', 
+    {
+      field: 'lName',
+      headerName: 'Лок. наименование',
       width: 250
     },
-    { 
-      field: 'type', 
-      headerName: 'Тип', 
+    {
+      field: 'type',
+      headerName: 'Тип',
       width: 100,
     },
-    { 
-      field: 'type', 
-      headerName: 'Тип', 
+    {
+      field: 'type',
+      headerName: 'Тип',
       width: 80,
     },
-    { 
-      field: 'required', 
-      headerName: 'Req', 
+    {
+      field: 'required',
+      headerName: 'Req',
       width: 50,
-      valueGetter: ({ row }) => row.required ? '☑' : ''      
+      valueGetter: ({ row }) => row.required ? '☑' : ''
     },
-    { 
-      field: '', 
-      headerName: 'Параметры', 
+    {
+      field: '',
+      headerName: 'Параметры',
       flex: 1,
       valueGetter: ({ row }) => {
         const s: string[] = [];
@@ -68,10 +69,10 @@ export function ErModelDomains(props: ErModelDomainsProps) {
             break;
 
           case 'INTEGER':
-          case 'DOUBLE':    
+          case 'DOUBLE':
             s.push(`min: ${row.min}, max: ${row.max}`);
             break;
-            
+
           case 'NUMERIC':
             s.push(`precision: ${row.precision}, scale: ${-row.scale}, min: ${row.min}, max: ${row.max}`);
             break;
@@ -85,7 +86,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
 
         if (row.default !== undefined) {
           if (typeof row.default === 'string') {
-            s.push(`default: "${row.default}"`); 
+            s.push(`default: "${row.default}"`);
           } else {
             s.push('default: ' + row.default);
           }
@@ -94,52 +95,39 @@ export function ErModelDomains(props: ErModelDomainsProps) {
       }
     }
   ];
-  
+
   return (
-    <Grid container height="100%" columnSpacing={2}>
-      <Grid item xs={12}>
-        <StyledDataGrid
-          rows={rows}
-          columns={columns}
-          pagination
-          loading={isFetching}
-          getRowId={row => row.name}
-          onSelectionModelChange={setSelectionModel}
-          selectionModel={selectionModel} 
-          rowHeight={24}         
-          headerHeight={24}      
-          editMode='row' 
-          components={{
-            Pagination: CustomPagination,      
-            ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
-          }}
-        />
-      </Grid>
-      {
-        /*
-      <Grid item xs={3}>
+    <>
+      <MainToolbar />
+      <Grid container height="calc(100% - 80px)" columnSpacing={2}>
+        <Grid item xs={12}>
+          <StyledDataGrid
+            rows={rows}
+            columns={columns}
+            pagination
+            loading={isFetching}
+            getRowId={row => row.name}
+            onSelectionModelChange={setSelectionModel}
+            selectionModel={selectionModel}
+            rowHeight={24}
+            headerHeight={24}
+            editMode='row'
+            components={{
+              Pagination: CustomPagination,
+              ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
+            }}
+          />
+        </Grid>
         {
-          data && selectionModel.length ?
-            <pre>
-              {
-                JSON.stringify(data.domains[selectionModel[0]], undefined, 2)
-              }
-            </pre>
-          :
-            undefined  
+          errorMessage &&
+          <Grid item xs={12}>
+            <Snackbar open autoHideDuration={5000}>
+              <Alert variant="filled" severity="error">{errorMessage}</Alert>
+            </Snackbar>
+          </Grid>
         }
       </Grid>
-      */
-      }
-      {
-        errorMessage &&
-        <Grid item xs={12}>
-          <Snackbar open autoHideDuration={5000}>
-            <Alert variant="filled" severity="error">{errorMessage}</Alert>
-          </Snackbar>
-        </Grid>
-      }
-    </Grid>
+    </>
   );
 }
 

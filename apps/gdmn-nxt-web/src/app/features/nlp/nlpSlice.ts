@@ -1,20 +1,13 @@
-import { Language, NLPDialog, nlpDialogItem } from "@gsbelarus/util-api-types";
+import { NLPDialog, nlpDialogItem } from "@gsbelarus/util-api-types";
+import { detectLanguage } from "@gsbelarus/util-useful";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const getLangMessage = (currLang: Language) => currLang === 'en'
-  ? 'Current language set to english. Change it with /lang:ru or /lang:be commands.'
-  : currLang === 'ru'
-  ? 'Установлен текущий язык: русский. Изменить язык можно командами: /lang:en или /lang:be'
-  : 'Бягучая мова: беларуская. Змяніць мову магчыма камандамі: /lang:en альбо /lang:ru';
-
 export interface NLPState {
-  currLang: Language;
   nlpDialog: NLPDialog;
 };
 
 const initialState: NLPState = {
-  currLang: 'en',
-  nlpDialog: [nlpDialogItem('it', 'en', getLangMessage('en'))]
+  nlpDialog: []
 };
 
 export const nlpSlice = createSlice({
@@ -24,34 +17,14 @@ export const nlpSlice = createSlice({
     push: (state, action: PayloadAction<{ who: string; text: string }>) => {
       const { who, text } = action.payload;
       const t = text.trim();
-      const cmd = t.slice(0, 8).toLowerCase();
+      const l = detectLanguage(t);
 
-      const newLang: Language = cmd === '/lang:ru'
-        ? 'ru'
-        : cmd === '/lang:en'
-        ? 'en'
-        : cmd === '/lang:be'
-        ? 'be'
-        : state.currLang;
-
-      if (newLang !== state.currLang) {
-        return {
-          ...state,
-          currLang: newLang,
-          nlpDialog: [
-            ...state.nlpDialog,
-            nlpDialogItem(who, newLang, t, '/lang'),
-            nlpDialogItem('it', newLang, getLangMessage(newLang))
-          ]
-        }
-      } else {
-        return {
-          ...state,
-          nlpDialog: [
-            ...state.nlpDialog,
-            nlpDialogItem(who, newLang, t)
-          ]
-        }
+      return {
+        ...state,
+        nlpDialog: [
+          ...state.nlpDialog,
+          nlpDialogItem(who, l, t)
+        ]
       }
     },
     setNLPDialog: (state, action: PayloadAction<NLPDialog>) => ({

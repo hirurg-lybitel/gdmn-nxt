@@ -1,78 +1,21 @@
-import { Avatar, Box, createTheme, IconButton, InputBase, responsiveFontSizes } from '@mui/material';
-import { Theme, ThemeOptions } from '@mui/material/styles/createTheme';
-import { TypographyStyle, TypographyStyleOptions } from '@mui/material/styles/createTypography';
+import { Avatar, Box, IconButton, InputBase } from '@mui/material';
 import { styled, ThemeProvider } from '@mui/styles';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import './base-form.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import menuItems from '../menu-items';
-
-type MyThemeOptions = ThemeOptions & {
-  typography: {
-    smallUI: TypographyStyleOptions;
-    mediumUI: TypographyStyleOptions;
-    selectedUI: TypographyStyleOptions;
-  }
-};
-
-type MyTheme = Theme & {
-  typography: {
-    smallUI: TypographyStyle;
-    mediumUI: TypographyStyle;
-    selectedUI: TypographyStyle;
-  }
-};
-
-let theme = createTheme({
-  typography: {
-    body1: {
-      fontFamily: [
-        '-apple-system',
-        'BlinkMacSystemFont',
-        '"Segoe UI"',
-        'Roboto',
-        '"Helvetica Neue"',
-        'Arial',
-        'sans-serif',
-        '"Apple Color Emoji"',
-        '"Segoe UI Emoji"',
-        '"Segoe UI Symbol"',
-      ].join(','),
-      fontSize: 14
-    },
-    smallUI: {
-      fontSize: 12,
-    },
-    mediumUI: {
-      fontSize: 13,
-    },
-    selectedUI: {
-      fontWeight: 600
-    },
-    fontSize: 12,
-    htmlFontSize: 10
-  },
-} as MyThemeOptions) as MyTheme;
-
-theme = responsiveFontSizes(theme) as MyTheme;
-
-//console.log(theme);
+import { gdmnTheme } from '../theme/gdmn-theme';
 
 const Header = styled('header')({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
   padding: '4px 8px 8px 8px',
-  backgroundColor: theme.palette.grey['200'],
-  borderTopColor: theme.palette.grey['50'],
+  backgroundColor: gdmnTheme.palette.grey['200'],
+  borderTopColor: gdmnTheme.palette.grey['50'],
   borderTopStyle: 'solid',
   borderTopWidth: 1,
-  borderBottomColor: theme.palette.grey['400'],
-  borderBottomStyle: 'solid',
-  borderBottomWidth: 1,
-  fontSize: theme.typography.smallUI.fontSize,
   '& a': {
     textDecoration: 'none',
     outline: 'none',
@@ -103,8 +46,8 @@ const SearchBox = () =>
       height: 26,
       width: 400,
       p: '2px 2px',
-      backgroundColor: theme.palette.grey['50'],
-      borderColor: theme.palette.grey['400'],
+      backgroundColor: gdmnTheme.palette.grey['50'],
+      borderColor: gdmnTheme.palette.grey['400'],
       borderWidth: 1,
       borderStyle: 'solid',
       borderRadius: 1,
@@ -117,7 +60,7 @@ const SearchBox = () =>
       sx={{
         ml: 1,
         flex: 1,
-        fontSize: theme.typography.smallUI.fontSize
+        fontSize: gdmnTheme.typography.smallUI.fontSize
       }}
       placeholder="Enter search text..."
     />
@@ -131,24 +74,13 @@ const Menubar = styled('div')({
   width: '100%',
   marginTop: 4,
   height: 22,
-  fontSize: theme.typography.mediumUI.fontSize
+  fontSize: gdmnTheme.typography.mediumUI.fontSize
 });
 
 const MenubarItem = styled('div')( (props: { active?: 1 }) => ({
   fontWeight: props.active ? '500' : 'normal',
-  borderBottom: props.active ? `2px solid ${theme.palette.primary.main}` : 'none'
+  borderBottom: props.active ? `2px solid ${gdmnTheme.palette.primary.main}` : 'none'
 }));
-
-const Toolbar = styled('div')({
-  width: '100%',
-  marginTop: 4,
-  height: 72,
-  backgroundColor: theme.palette.grey['100'],
-  borderColor: theme.palette.grey['400'],
-  borderStyle: 'solid',
-  borderWidth: 1,
-  borderRadius: 5,
-});
 
 const Footer = styled('footer')({
   display: 'flex',
@@ -156,14 +88,14 @@ const Footer = styled('footer')({
   justifyContent: 'space-between',
   minHeight: 48,
   padding: 0,
-  backgroundColor: theme.palette.grey['200'],
-  borderTopColor: theme.palette.grey['400'],
+  backgroundColor: gdmnTheme.palette.grey['200'],
+  borderTopColor: gdmnTheme.palette.grey['400'],
   borderTopStyle: 'solid',
   borderTopWidth: 1,
-  borderBottomColor: theme.palette.grey['400'],
+  borderBottomColor: gdmnTheme.palette.grey['400'],
   borderBottomStyle: 'solid',
   borderBottomWidth: 1,
-  fontSize: theme.typography.smallUI.fontSize,
+  fontSize: gdmnTheme.typography.smallUI.fontSize,
 });
 
 const FooterTabs = styled('div')({
@@ -187,22 +119,22 @@ const FooterTab = styled('div')( ({ highlighted }: { highlighted?: 1 }) => ({
   height: 24,
   minWidth: 80,
   padding: '0px 8px 0px 8px',
-  backgroundColor: theme.palette.grey['50'],
+  backgroundColor: gdmnTheme.palette.grey['50'],
   borderTopWidth: highlighted ? 0 : 1,
-  borderTopColor: theme.palette.grey['400'],
+  borderTopColor: gdmnTheme.palette.grey['400'],
   borderTopStyle: 'solid',
-  borderRightColor: theme.palette.grey['400'],
+  borderRightColor: gdmnTheme.palette.grey['400'],
   borderRightStyle: 'solid',
   borderRightWidth: 1,
-  borderBottomColor: highlighted ? theme.palette.primary.main : theme.palette.grey['400'],
+  borderBottomColor: highlighted ? gdmnTheme.palette.primary.main : gdmnTheme.palette.grey['400'],
   borderBottomStyle: 'solid',
   borderBottomWidth: highlighted ? 3 : 1,
-  borderLeftColor: theme.palette.grey['400'],
+  borderLeftColor: gdmnTheme.palette.grey['400'],
   borderLeftStyle: 'solid',
   borderLeftWidth: 1,
-  fontSize: theme.typography.mediumUI.fontSize,
-  fontWeight: highlighted ? theme.typography.selectedUI.fontWeight : 'normal',
-  color: highlighted ? theme.palette.primary.main : theme.palette.grey['800'],
+  fontSize: gdmnTheme.typography.mediumUI.fontSize,
+  fontWeight: highlighted ? gdmnTheme.typography.selectedUI.fontWeight : 'normal',
+  color: highlighted ? gdmnTheme.palette.primary.main : gdmnTheme.palette.grey['800'],
 }));
 
 const FooterBottom = styled('div')({
@@ -210,15 +142,16 @@ const FooterBottom = styled('div')({
 });
 
 const Main = styled('main')({
-  minHeight: 'calc(100vh - 132px - 48px)',
-  maxHeight: 'calc(100vh - 132px - 48px)',
+  height: '100%',
+  minHeight: 'calc(100vh - 62px - 48px)',
+  maxHeight: 'calc(100vh - 62px - 48px)',
 });
 
 const Wrapper = styled('section')({
   display: 'grid',
-  gridTemplateRows: '132px 1fr 48px',
+  gridTemplateRows: '62px 1fr 48px',
   minHeight: '100vh',
-  fontSize: theme.typography.mediumUI.fontSize,
+  fontSize: gdmnTheme.typography.mediumUI.fontSize,
 });
 
 /* eslint-disable-next-line */
@@ -229,15 +162,14 @@ export function BaseForm(props: BaseFormProps) {
   const { pathname } = useLocation();
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={gdmnTheme}>
       <Wrapper>
         <Header>
           <TopLine>
             <TopLeftLinks>
-              {menuItems.items
-                .find(it => it.id === 'system')?.children
-                ?.map(item => <Link key={item.id} to={item.url || ''}>{item.title}</Link>
-                )}
+              <Link to="/system/er-model-domains">Domains</Link>
+              <Link to="/system/er-model">Entities</Link>
+              <Link to="/system/nlp-main">NLP</Link>
             </TopLeftLinks>
             <SearchBox />
             <Box
@@ -254,7 +186,7 @@ export function BaseForm(props: BaseFormProps) {
                 backgroundColor: 'primary.dark',
                 width: 24,
                 height: 24,
-                fontSize: theme.typography.smallUI.fontSize,
+                fontSize: gdmnTheme.typography.smallUI.fontSize,
                 fontWeight: 100
               }}>
                 ЧН
@@ -266,9 +198,6 @@ export function BaseForm(props: BaseFormProps) {
             <MenubarItem>Редактирование</MenubarItem>
             <MenubarItem>Справка</MenubarItem>
           </Menubar>
-          <Toolbar>
-
-          </Toolbar>
         </Header>
         <Main>
           <Outlet />

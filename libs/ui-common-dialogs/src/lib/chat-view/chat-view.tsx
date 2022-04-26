@@ -4,7 +4,6 @@ import styles from './chat-view.module.less';
 
 /* eslint-disable-next-line */
 export interface ChatViewProps {
-  currLang: Language;
   nlpDialog: NLPDialog;
   setNLPDialog: (nlpDialog: NLPDialog) => void;
   push: (who: string, text: string) => void;
