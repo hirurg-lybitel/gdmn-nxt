@@ -52,29 +52,14 @@ export function NLPQuery(props: NLPQueryProps) {
   return (
     <Grid container height="100%" columnSpacing={2}>
       <Grid item xs={8}>
-        <Stack width="100%" direction="row" flexWrap="wrap" gap={1}>
+        <Stack width="100%" direction="row" flexWrap="wrap" gap={1} paddingTop={1}>
           {data?.sents[0]?.tokens.map(
             t =>
-              <span key={t.id} className={styles['word']}>
+              <span key={t.id} className={styles[t === token ? 'selected' : 'word']} onClick={ () => setToken(t) }>
                 {t.token}
               </span>
           )}
         </Stack>
-
-
-        {/* "token": "Литву",
-          "lemma": "литва",
-          "pos": "PROPN",
-          "tag": "PROPN",
-          "shape": "Xxxxx",
-          "is_alpha": true,
-          "is_stop": false,
-          "dep": "obl",
-          "morph": {
-            "Animacy": "Inan",
-            "Case": "Acc",
-            "Gender": "Fem",
-            "Number": "Sing" */}
 
         <table className={styles['table']}>
           <tbody>
@@ -114,6 +99,7 @@ export function NLPQuery(props: NLPQueryProps) {
           &&
           <NLPSentenceTree
             nlpSentence={data.sents[0]}
+            selectedToken={token}
             onClick={ id => setToken(data?.sents[0].tokens.find( t => t.id.toString() === id )) }
           />
         }

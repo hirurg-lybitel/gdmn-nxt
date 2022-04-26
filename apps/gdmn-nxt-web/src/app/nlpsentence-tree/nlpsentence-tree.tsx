@@ -8,18 +8,19 @@ interface IRectProps {
   readonly y: number;
   readonly width: number;
   readonly height: number;
+  readonly border: number;
   readonly className: string;
   readonly onClick?: () => void;
 };
 
-const Rect = ({ x, y, width, height, text, className, onClick }: IRectProps) => {
+const Rect = ({ x, y, width, height, text, border, className, onClick }: IRectProps) => {
   const cx = x + width / 2;
   const cy = y + height / 2;
 
   return (
     <g>
       <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerRect"]} onClick={onClick} />
-      <rect x={x + 1} y={y + 1} rx={4} ry={4} width={width - 2} height={height - 2} className={styles[className]} onClick={onClick} />
+      <rect x={x + border} y={y + border} rx={4} ry={4} width={width - border * 2} height={height - border * 2} className={styles[className]} onClick={onClick} />
       <text x={cx} y={cy + 4} textAnchor="middle" onClick={onClick}>
         {text}
       </text>
@@ -61,10 +62,11 @@ const Edge = ({ label, points }: IEdgeProps) => {
 /* eslint-disable-next-line */
 export interface NLPSentenceTreeProps {
   nlpSentence: INLPSentence;
+  selectedToken?: INLPToken;
   onClick?: (id: string) => void;
 }
 
-export function NLPSentenceTree({ nlpSentence, onClick }: NLPSentenceTreeProps) {
+export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSentenceTreeProps) {
 
   // Create a new directed graph
   const g = new graphlib.Graph();
@@ -84,12 +86,14 @@ export function NLPSentenceTree({ nlpSentence, onClick }: NLPSentenceTreeProps) 
         label,
         width: label.length * 9 + 8,
         height: 26,
-        className: 'word'
+        className: token.id === selectedToken?.id ? 'selected' : 'word'
       });
       nlpSentence.tokens
         .filter( t => t.head?.id === token.id )
         .forEach( t => {
-          g.setEdge(token.id.toString(), t.id.toString(), { label: t.dep });
+          g.setEdge(token.id.toString(), t.id.toString(), {
+            label: t.dep
+          });
           recurs(t);
         });
     }
@@ -116,6 +120,7 @@ export function NLPSentenceTree({ nlpSentence, onClick }: NLPSentenceTreeProps) 
         width={nd.width}
         height={nd.height}
         text={nd.label}
+        border={1}
         className={nd.className}
         onClick={ () => { onClick && onClick(n) } }
       />

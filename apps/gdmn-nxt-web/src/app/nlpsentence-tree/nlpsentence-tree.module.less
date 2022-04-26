@@ -12,28 +12,31 @@
   padding-top: 16px;
 }
 
-.CommandAndGraph svg rect.outerRect {
+.CommandAndGraph svg rect {
   stroke: none;
+}
+
+.CommandAndGraph svg rect.outerRect {
   fill: gray;
 }
 
 .CommandAndGraph svg rect.outerDep {
-  stroke: none;
   fill: indianred;
 }
 
 .CommandAndGraph svg rect.phrase {
-  stroke: none;
   fill: white;
 }
 
 .CommandAndGraph svg rect.word {
-  stroke: none;
-  fill: aquamarine;
+  fill: PaleTurquoise;
+}
+
+.CommandAndGraph svg rect.selected {
+  fill: MediumTurquoise;
 }
 
 .CommandAndGraph svg rect.dep {
-  stroke: none;
   fill: lightsalmon;
 }
 
@@ -51,6 +54,7 @@
   fill: none;
   stroke: black;
   stroke-width: 1px;
+  stroke-dasharray: 1px;
 }
 
 .CommandAndGraph svg marker#arrow path {
