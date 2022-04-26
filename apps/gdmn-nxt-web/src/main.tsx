@@ -32,7 +32,7 @@ import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
 import CustomerDetails from './app/pages/Customers/customer-details/customer-details';
-import NlpMain from './app/nlp-main/nlp-main';
+import { NlpMain } from './app/nlp-main/nlp-main';
 
 registerMUI();
 

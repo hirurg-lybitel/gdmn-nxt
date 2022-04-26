@@ -6,7 +6,6 @@ import './base-form.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { gdmnTheme } from '../theme/gdmn-theme';
-import { MainToolbar } from '../main-toolbar/main-toolbar';
 
 const Header = styled('header')({
   display: 'flex',
@@ -17,10 +16,6 @@ const Header = styled('header')({
   borderTopColor: gdmnTheme.palette.grey['50'],
   borderTopStyle: 'solid',
   borderTopWidth: 1,
-  borderBottomColor: gdmnTheme.palette.grey['400'],
-  borderBottomStyle: 'solid',
-  borderBottomWidth: 1,
-  fontSize: gdmnTheme.typography.smallUI.fontSize,
   '& a': {
     textDecoration: 'none',
     outline: 'none',
@@ -147,13 +142,14 @@ const FooterBottom = styled('div')({
 });
 
 const Main = styled('main')({
-  minHeight: 'calc(100vh - 132px - 48px)',
-  maxHeight: 'calc(100vh - 132px - 48px)',
+  height: '100%',
+  minHeight: 'calc(100vh - 62px - 48px)',
+  maxHeight: 'calc(100vh - 62px - 48px)',
 });
 
 const Wrapper = styled('section')({
   display: 'grid',
-  gridTemplateRows: '132px 1fr 48px',
+  gridTemplateRows: '62px 1fr 48px',
   minHeight: '100vh',
   fontSize: gdmnTheme.typography.mediumUI.fontSize,
 });
@@ -202,9 +198,6 @@ export function BaseForm(props: BaseFormProps) {
             <MenubarItem>Редактирование</MenubarItem>
             <MenubarItem>Справка</MenubarItem>
           </Menubar>
-          <MainToolbar>
-
-          </MainToolbar>
         </Header>
         <Main>
           <Outlet />

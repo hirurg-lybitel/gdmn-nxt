@@ -1,4 +1,3 @@
-import { styled } from '@mui/styles';
 import { gdmnTheme } from '../theme/gdmn-theme';
 import styles from './main-toolbar.module.less';
 
@@ -6,15 +5,27 @@ import styles from './main-toolbar.module.less';
 export interface MainToolbarProps {}
 
 export function MainToolbar(props: MainToolbarProps) {
-  const Toolbar = styled('div')({
-    width: '100%',
-    marginTop: 4,
-    height: 72,
-    backgroundColor: gdmnTheme.palette.grey['100'],
-    borderColor: gdmnTheme.palette.grey['400'],
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderRadius: 5,
-  });
-  return <Toolbar />;
+  return (
+    <div style={{
+      width: '100%',
+      backgroundColor: gdmnTheme.palette.grey['200'],
+      paddingLeft: 8,
+      paddingRight: 8,
+      paddingBottom: 6,
+      borderBottomWidth: 1,
+      borderBottomStyle: 'solid',
+      borderBottomColor: gdmnTheme.palette.grey['400'],
+    }}>
+      <div style={{
+        width: '100%',
+        height: 74,
+        backgroundColor: gdmnTheme.palette.grey['100'],
+        borderColor: gdmnTheme.palette.grey['400'],
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderRadius: 5,
+      }}>
+      </div>
+    </div>
+  );
 };
