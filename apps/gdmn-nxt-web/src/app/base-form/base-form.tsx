@@ -6,6 +6,7 @@ import './base-form.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { gdmnTheme } from '../theme/gdmn-theme';
+import { MainToolbar } from '../main-toolbar/main-toolbar';
 
 const Header = styled('header')({
   display: 'flex',
@@ -85,17 +86,6 @@ const MenubarItem = styled('div')( (props: { active?: 1 }) => ({
   fontWeight: props.active ? '500' : 'normal',
   borderBottom: props.active ? `2px solid ${gdmnTheme.palette.primary.main}` : 'none'
 }));
-
-const Toolbar = styled('div')({
-  width: '100%',
-  marginTop: 4,
-  height: 72,
-  backgroundColor: gdmnTheme.palette.grey['100'],
-  borderColor: gdmnTheme.palette.grey['400'],
-  borderStyle: 'solid',
-  borderWidth: 1,
-  borderRadius: 5,
-});
 
 const Footer = styled('footer')({
   display: 'flex',
@@ -212,9 +202,9 @@ export function BaseForm(props: BaseFormProps) {
             <MenubarItem>Редактирование</MenubarItem>
             <MenubarItem>Справка</MenubarItem>
           </Menubar>
-          <Toolbar>
+          <MainToolbar>
 
-          </Toolbar>
+          </MainToolbar>
         </Header>
         <Main>
           <Outlet />
