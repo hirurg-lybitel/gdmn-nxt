@@ -210,13 +210,14 @@ const FooterBottom = styled('div')({
 
 const Main = styled('main')({
   minHeight: 'calc(100vh - 132px - 48px)',
-  maxHeight: 'calc(100vh - 132px - 48px)'
+  maxHeight: 'calc(100vh - 132px - 48px)',
 });
 
 const Wrapper = styled('section')({
   display: 'grid',
   gridTemplateRows: '132px 1fr 48px',
   minHeight: '100vh',
+  fontSize: theme.typography.mediumUI.fontSize,
 });
 
 /* eslint-disable-next-line */
