@@ -68,6 +68,8 @@ export interface NLPSentenceTreeProps {
 
 export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSentenceTreeProps) {
 
+  const selectedId = selectedToken?.id.toString();
+
   // Create a new directed graph
   const g = new graphlib.Graph();
 
@@ -120,7 +122,7 @@ export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSent
         width={nd.width}
         height={nd.height}
         text={nd.label}
-        border={1}
+        border={selectedId === n ? 2 : 1}
         className={nd.className}
         onClick={ () => { onClick && onClick(n) } }
       />

@@ -16,8 +16,8 @@ export function NlpMain(props: NlpMainProps) {
   const dispatch = useDispatch();
 
   return (
-    <Grid container height="100%" columnSpacing={2}>
-      <Grid item xs={2}>
+    <Grid container height="100%" columnSpacing={2} wrap="nowrap">
+      <Grid item xs={2} sx={{ borderRight: '1px solid silver', minWidth: 200 }}>
         <ChatView
           currLang={currLang}
           nlpDialog={nlpDialog}
