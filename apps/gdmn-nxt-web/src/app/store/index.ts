@@ -4,6 +4,7 @@ import { accountApi } from '../features/account/accountApi';
 import { contactApi } from '../features/contact/contactApi';
 import { reconciliationStatementApi } from '../features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from '../features/user/userSlice';
+import nlpReducer from '../features/nlp/nlpSlice';
 import { customersReducer, hierarchyReducer } from '../features/customer/customerSlice';
 import { labelsApi } from '../features/labels/labelsApi';
 import { contactGroupApi } from '../features/contact/contactGroupApi';
@@ -18,6 +19,7 @@ import { kanbanApi } from '../features/kanban/kanbanApi';
 import { actCompletionApi } from '../features/act-completion/actCompletionApi';
 import { bankStatementApi } from '../features/bank-statement/bankStatementApi';
 import { chartDataApi } from '../features/charts/chartDataApi';
+import { nlpQueryApi } from '../features/nlp/nlpApi';
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +27,7 @@ export const store = configureStore({
     settings: settingsReducer,
     error: errorReducer,
     user: userReducer,
+    nlp: nlpReducer,
     customers: customersReducer,
     customersHierarchy: hierarchyReducer,
     [contactApi.reducerPath]: contactApi.reducer,
@@ -38,8 +41,8 @@ export const store = configureStore({
     [kanbanApi.reducerPath]: kanbanApi.reducer,
     [actCompletionApi.reducerPath]: actCompletionApi.reducer,
     [bankStatementApi.reducerPath]: bankStatementApi.reducer,
-    [chartDataApi.reducerPath]: chartDataApi.reducer
-
+    [chartDataApi.reducerPath]: chartDataApi.reducer,
+    [nlpQueryApi.reducerPath]: nlpQueryApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -54,6 +57,7 @@ export const store = configureStore({
     .concat(actCompletionApi.middleware)
     .concat(bankStatementApi.middleware)
     .concat(chartDataApi.middleware)
+    .concat(nlpQueryApi.middleware)
     .concat(errorMiddleware),
 });
 

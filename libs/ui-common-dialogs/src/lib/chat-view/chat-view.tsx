@@ -1,16 +1,27 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { Language, NLPDialog } from '@gsbelarus/util-api-types';
+import { forwardRef, Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import styles from './chat-view.module.less';
 
 /* eslint-disable-next-line */
-export interface ChatViewProps {}
+export interface ChatViewProps {
+  currLang: Language;
+  nlpDialog: NLPDialog;
+  setNLPDialog: (nlpDialog: NLPDialog) => void;
+  push: (who: string, text: string) => void;
+};
 
 interface IChatInputProps {
   onInputText: (text: string) => void;
 };
 
-const ChatInput = ({ onInputText }: IChatInputProps) => {
+const ChatInput = forwardRef(({ onInputText }: IChatInputProps, ref) => {
   const [text, setText] = useState('');
   const [prevText, setPrevText] = useState('');
+  const ta = useRef<HTMLTextAreaElement | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    setTextAndFocus: (text: string) => { setText(text); ta.current?.focus(); }
+  }));
 
   const onInputPressEnter = useCallback( (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const trimText = text.trim();
@@ -41,20 +52,13 @@ const ChatInput = ({ onInputText }: IChatInputProps) => {
       onKeyPress={onInputPressEnter}
       onKeyDown={onInputArrowUp}
       onChange={onInputChange}
+      ref={ta}
     />
   );
-}
+});
 
 const topGap = 24;
 const scrollTimerDelay = 4000;
-
-interface INLPDialogItem {
-  id: string;
-  who: string;
-  text: string;
-};
-
-type NLPDialog = INLPDialogItem[];
 
 interface IChatViewState {
   showFrom: number;
@@ -65,7 +69,6 @@ interface IChatViewState {
   scrollTimer: any;
   prevClientY?: number;
   prevFrac: number;
-  nlpDialog: NLPDialog;
 };
 
 const defState: IChatViewState = {
@@ -76,17 +79,17 @@ const defState: IChatViewState = {
   scrollVisible: false,
   scrollTimer: undefined,
   prevClientY: -1,
-  prevFrac: 0,
-  nlpDialog: []
+  prevFrac: 0
 };
 
-export function ChatView(props: ChatViewProps) {
+export function ChatView({ nlpDialog, push }: ChatViewProps) {
   const [state, setState] = useState(defState);
 
   const shownItems = useRef<HTMLDivElement[]>([]);
   const scrollThumb = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef();
 
-  const { nlpDialog, showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK } = state;
+  const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK } = state;
 
   const sf = (showFrom === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showFrom;
   const st = (showTo === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showTo;
@@ -302,13 +305,9 @@ export function ChatView(props: ChatViewProps) {
       showFrom: -1,
       showTo: -1,
       partialOK: true,
-      recalc: true,
-      nlpDialog: [
-        ...state.nlpDialog,
-        { id: crypto.randomUUID(), who: 'me', text },
-        { id: crypto.randomUUID(), who: 'it', text: new Date().toISOString() }
-      ]
+      recalc: true
     }));
+    push('me', text);
   }, [nlpDialog]);
 
   return (
@@ -324,6 +323,11 @@ export function ChatView(props: ChatViewProps) {
                       key={i.id}
                       className={`${styles['NLPItem']} ${i.who === 'me' ? styles['NLPItemRight'] : styles['NLPItemLeft']}`}
                       ref={elem => elem && shownItems.current.push(elem)}
+                      onClick={ () => {
+                        if (inputRef.current) {
+                          (inputRef.current as any).setTextAndFocus(i.text);
+                        }
+                      } }
                     >
                     {
                       i.who === 'me' ?
@@ -354,7 +358,7 @@ export function ChatView(props: ChatViewProps) {
             </div>
           </div>
         </div>
-        <ChatInput onInputText={onInputText} />
+        <ChatInput onInputText={onInputText} ref={inputRef} />
       </div>
       <svg height="0" width="0">
         <defs>
