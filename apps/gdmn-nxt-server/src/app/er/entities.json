@@ -16,6 +16,7 @@
     "type": "SIMPLE",
     "parent": "TgdcCustomFunction",
     "name": "TgdcFunction",
+    "lName": "Скрипт-функция",
     "attributes": [],
     "adapter": {
       "name": "GD_FUNCTION",
@@ -50,6 +51,7 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcAcctBase",
+    "lName": "Бухгалтерский план счетов",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -61,6 +63,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBase",
     "name": "TgdcAcctChart",
+    "lName": "План счетов",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCOUNT",
@@ -71,6 +74,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBase",
     "name": "TgdcAcctFolder",
+    "lName": "Раздел плана счетов",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCOUNT",
@@ -93,6 +97,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBase",
     "name": "TgdcAcctAccount",
+    "lName": "Счет",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCOUNT",
@@ -118,6 +123,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctAccount",
     "name": "TgdcAcctSubAccount",
+    "lName": "Субсчет",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCOUNT",
@@ -140,6 +146,7 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcBaseContact",
+    "lName": "Адресная книга",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -151,6 +158,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseContact",
     "name": "TgdcFolder",
+    "lName": "Папка",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -173,6 +181,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseContact",
     "name": "TgdcGroup",
+    "lName": "Группа",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -195,6 +204,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseContact",
     "name": "TgdcContact",
+    "lName": "Физическое лицо",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -224,6 +234,7 @@
     "type": "SIMPLE",
     "parent": "TgdcContact",
     "name": "TgdcEmployee",
+    "lName": "Сотрудник предприятия",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -258,6 +269,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseContact",
     "name": "TgdcDepartment",
+    "lName": "Подразделение",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -280,7 +292,9 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseContact",
     "name": "TgdcCompany",
+    "lName": "Организация",
     "attributes": [],
+    "semCategory": "organization,company",
     "adapter": {
       "name": "GD_CONTACT",
       "alias": "z",
@@ -317,6 +331,7 @@
     "type": "SIMPLE",
     "parent": "TgdcCompany",
     "name": "TgdcOurCompany",
+    "lName": "Рабочая организация",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -351,6 +366,7 @@
     "type": "SIMPLE",
     "parent": "TgdcCompany",
     "name": "TgdcBank",
+    "lName": "Банк",
     "attributes": [],
     "adapter": {
       "name": "GD_CONTACT",
@@ -388,15 +404,16 @@
   },
   "TgdcAttrUserDefinedLBRBTree": {
     "type": "SIMPLE",
-    "abstract": true,
     "parent": "TgdcLBRBTree",
     "name": "TgdcAttrUserDefinedLBRBTree",
+    "lName": "Таблица пользователя (интервальное дерево)",
     "attributes": []
   },
   "TgdcBaseFile": {
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcBaseFile",
+    "lName": "Файл (базовый класс)",
     "attributes": [],
     "adapter": {
       "name": "GD_FILE",
@@ -407,6 +424,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseFile",
     "name": "TgdcFile",
+    "lName": "Файл",
     "attributes": [],
     "adapter": {
       "name": "GD_FILE",
@@ -429,6 +447,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseFile",
     "name": "TgdcFileFolder",
+    "lName": "Папка",
     "attributes": [],
     "adapter": {
       "name": "GD_FILE",
@@ -462,6 +481,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseAcctTransaction",
     "name": "TgdcAcctTransaction",
+    "lName": "Типовая операция",
     "attributes": [],
     "adapter": {
       "name": "AC_TRANSACTION",
@@ -484,6 +504,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseAcctTransaction",
     "name": "TgdcAutoTransaction",
+    "lName": "Автоматическая операция",
     "attributes": [],
     "adapter": {
       "name": "AC_TRANSACTION",
@@ -506,6 +527,7 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcReportGroup",
+    "lName": "Папка отчетов",
     "attributes": [],
     "adapter": {
       "name": "RP_REPORTGROUP",
@@ -516,6 +538,7 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcMacrosGroup",
+    "lName": "Папка макросов",
     "attributes": [],
     "adapter": {
       "name": "EVT_MACROSGROUP",
@@ -526,6 +549,7 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcGoodGroup",
+    "lName": "Товарная группа",
     "attributes": [],
     "adapter": {
       "name": "GD_GOODGROUP",
@@ -547,6 +571,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseDocumentType",
     "name": "TgdcDocumentType",
+    "lName": "Тип документа",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -570,6 +595,7 @@
     "type": "SIMPLE",
     "parent": "TgdcDocumentType",
     "name": "TgdcInvDocumentType",
+    "lName": "Тип складского документа",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENTTYPE",
@@ -580,6 +606,7 @@
     "type": "SIMPLE",
     "parent": "TgdcDocumentType",
     "name": "TgdcInvPriceListType",
+    "lName": "Прайс-лист",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENTTYPE",
@@ -590,6 +617,7 @@
     "type": "SIMPLE",
     "parent": "TgdcDocumentType",
     "name": "TgdcUserDocumentType",
+    "lName": "Тип пользовательского документа",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENTTYPE",
@@ -600,6 +628,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseDocumentType",
     "name": "TgdcDocumentBranch",
+    "lName": "Папка",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENTTYPE",
@@ -622,7 +651,9 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcPlace",
+    "lName": "Административно-территориальная единица",
     "attributes": [],
+    "semCategory": "place",
     "adapter": {
       "name": "GD_PLACE",
       "alias": "z"
@@ -632,6 +663,7 @@
     "type": "SIMPLE",
     "parent": "TgdcLBRBTree",
     "name": "TgdcMessageBox",
+    "lName": "Почтовый ящик",
     "attributes": [],
     "adapter": {
       "name": "MSG_BOX",
@@ -640,9 +672,9 @@
   },
   "TgdcAttrUserDefinedTree": {
     "type": "SIMPLE",
-    "abstract": true,
     "parent": "TgdcTree",
     "name": "TgdcAttrUserDefinedTree",
+    "lName": "Таблица пользователя (простое дерево)",
     "attributes": []
   },
   "TgdcStorage": {
@@ -716,6 +748,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcTree",
     "name": "TgdcDocument",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -726,6 +759,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcAcctDocument",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -736,6 +770,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcTaxResult",
+    "lName": "Позиция",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -753,6 +788,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcTaxDesignDate",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -770,6 +806,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcBaseBank",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -780,6 +817,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcBaseBank",
     "name": "TgdcBankCatalogue",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -797,6 +835,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcBaseBank",
     "name": "TgdcBankStatement",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -814,6 +853,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcInvBaseDocument",
+    "lName": "Документ",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -825,6 +865,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcInvBaseDocument",
     "name": "TgdcInvDocument",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -835,6 +876,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcInvBaseDocument",
     "name": "TgdcInvDocumentLine",
+    "lName": "Позиция",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -845,6 +887,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcInvBasePriceList",
+    "lName": "Документ",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -856,6 +899,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcInvBasePriceList",
     "name": "TgdcInvPriceList",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -873,6 +917,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcInvBasePriceList",
     "name": "TgdcInvPriceListLine",
+    "lName": "Позиция",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -890,6 +935,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcUserBaseDocument",
+    "lName": "Документ",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -931,6 +977,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcUserBaseDocument",
     "name": "TgdcUserDocument",
+    "lName": "Документ",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -971,6 +1018,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcUserBaseDocument",
     "name": "TgdcUserDocumentLine",
+    "lName": "Позиция",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -1004,6 +1052,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcDocument",
     "name": "TgdcBaseLine",
+    "lName": "Позиция",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -1015,6 +1064,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcBaseLine",
     "name": "TgdcBankCatalogueLine",
+    "lName": "Позиция",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -1032,6 +1082,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcBaseLine",
     "name": "TgdcBaseStatementLine",
+    "lName": "Позиция",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -1043,6 +1094,7 @@
     "type": "DOCUMENT",
     "parent": "TgdcBaseStatementLine",
     "name": "TgdcBankStatementLine",
+    "lName": "Позиция",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENT",
@@ -1090,6 +1142,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcAccount",
+    "lName": "Расчетный счет",
     "attributes": [],
     "adapter": {
       "name": "GD_COMPANYACCOUNT",
@@ -1098,9 +1151,9 @@
   },
   "TgdcAttrUserDefined": {
     "type": "SIMPLE",
-    "abstract": true,
     "parent": "TgdcBase",
     "name": "TgdcAttrUserDefined",
+    "lName": "Таблица пользователя",
     "attributes": []
   },
   "TgdcRplDatabase2": {
@@ -1117,6 +1170,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcWgPosition",
+    "lName": "Должность",
     "attributes": [],
     "adapter": {
       "name": "WG_POSITION",
@@ -1127,6 +1181,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcLink",
+    "lName": "Прикрепление",
     "attributes": [],
     "adapter": {
       "name": "GD_LINK",
@@ -1137,6 +1192,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcEvent",
+    "lName": "Событие",
     "attributes": [],
     "adapter": {
       "name": "EVT_OBJECTEVENT",
@@ -1207,6 +1263,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcCurr",
+    "lName": "Валюта",
     "attributes": [],
     "adapter": {
       "name": "GD_CURR",
@@ -1217,6 +1274,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcCurrRate",
+    "lName": "Курс валюты",
     "attributes": [],
     "adapter": {
       "name": "GD_CURRRATE",
@@ -1308,6 +1366,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseAcctTransactionEntry",
     "name": "TgdcAcctTransactionEntry",
+    "lName": "Типовая проводка",
     "attributes": [],
     "adapter": {
       "name": "AC_TRRECORD",
@@ -1318,6 +1377,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseAcctTransactionEntry",
     "name": "TgdcAutoTrRecord",
+    "lName": "Автоматическая проводка",
     "attributes": [],
     "adapter": {
       "name": "AC_TRRECORD",
@@ -1338,6 +1398,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcTaxName",
+    "lName": "Бухгалтерский отчет",
     "attributes": [],
     "adapter": {
       "name": "GD_TAXNAME",
@@ -1348,6 +1409,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcReport",
+    "lName": "Отчет",
     "attributes": [],
     "adapter": {
       "name": "RP_REPORTLIST",
@@ -1358,6 +1420,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcInvDocumentTypeOptions",
+    "lName": "Параметры типа складского документа",
     "attributes": [],
     "adapter": {
       "name": "GD_DOCUMENTTYPE_OPTION",
@@ -1375,6 +1438,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcField",
+    "lName": "Домен",
     "attributes": [],
     "adapter": {
       "name": "AT_FIELDS",
@@ -1385,6 +1449,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcRelation",
+    "lName": "Отношение",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -1396,6 +1461,7 @@
     "type": "SIMPLE",
     "parent": "TgdcRelation",
     "name": "TgdcBaseTable",
+    "lName": "Таблица",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -1418,6 +1484,7 @@
     "type": "SIMPLE",
     "parent": "TgdcTable",
     "name": "TgdcSimpleTable",
+    "lName": "Таблица с идентификатором и служебными полями",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1428,6 +1495,7 @@
     "type": "SIMPLE",
     "parent": "TgdcTable",
     "name": "TgdcPrimeTable",
+    "lName": "Таблица с идентификатором",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1438,6 +1506,7 @@
     "type": "SIMPLE",
     "parent": "TgdcTable",
     "name": "TgdcTableToTable",
+    "lName": "Таблица, связанная 1-к-1",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1448,6 +1517,7 @@
     "type": "SIMPLE",
     "parent": "TgdcTableToTable",
     "name": "TgdcInheritedTable",
+    "lName": "Наследованная таблица",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1458,6 +1528,7 @@
     "type": "SIMPLE",
     "parent": "TgdcTable",
     "name": "TgdcTreeTable",
+    "lName": "Простое дерево",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1468,6 +1539,7 @@
     "type": "SIMPLE",
     "parent": "TgdcTable",
     "name": "TgdcLBRBTreeTable",
+    "lName": "Интервальное дерево",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1478,6 +1550,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseTable",
     "name": "TgdcUnknownTable",
+    "lName": "Таблица",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1858,6 +1931,7 @@
     "type": "SIMPLE",
     "parent": "TgdcRelation",
     "name": "TgdcView",
+    "lName": "Представление",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATIONS",
@@ -1868,6 +1942,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcRelationField",
+    "lName": "Поле",
     "attributes": [],
     "adapter": {
       "name": "AT_RELATION_FIELDS",
@@ -1898,6 +1973,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcStoredProc",
+    "lName": "Процедура",
     "attributes": [],
     "adapter": {
       "name": "AT_PROCEDURES",
@@ -1908,6 +1984,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcException",
+    "lName": "Исключение",
     "attributes": [],
     "adapter": {
       "name": "AT_EXCEPTIONS",
@@ -1918,6 +1995,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcIndex",
+    "lName": "Индекс",
     "attributes": [],
     "adapter": {
       "name": "AT_INDICES",
@@ -1938,6 +2016,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseTrigger",
     "name": "TgdcTrigger",
+    "lName": "Триггер",
     "attributes": [],
     "adapter": {
       "name": "AT_TRIGGERS",
@@ -1948,6 +2027,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseTrigger",
     "name": "TgdcDBTrigger",
+    "lName": "Триггер БД",
     "attributes": [],
     "adapter": {
       "name": "AT_TRIGGERS",
@@ -1958,6 +2038,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcGenerator",
+    "lName": "Генератор",
     "attributes": [],
     "adapter": {
       "name": "AT_GENERATORS",
@@ -1968,6 +2049,7 @@
     "type": "SIMPLE",
     "parent": "TgdcMetaBase",
     "name": "TgdcCheckConstraint",
+    "lName": "Ограничение",
     "attributes": [],
     "adapter": {
       "name": "AT_CHECK_CONSTRAINTS",
@@ -1978,6 +2060,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcComponentFilter",
+    "lName": "Фильтр",
     "attributes": [],
     "adapter": {
       "name": "FLT_COMPONENTFILTER",
@@ -1998,6 +2081,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcCompanyAccountType",
+    "lName": "Тип банковского счета",
     "attributes": [],
     "adapter": {
       "name": "GD_COMPACCTYPE",
@@ -2008,6 +2092,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcSetting",
+    "lName": "Настройка",
     "attributes": [],
     "adapter": {
       "name": "AT_SETTING",
@@ -2018,6 +2103,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcSettingPos",
+    "lName": "Позиция настройки",
     "attributes": [],
     "adapter": {
       "name": "AT_SETTINGPOS",
@@ -2028,6 +2114,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcSettingStorage",
+    "lName": "Позиция настройки хранилища",
     "attributes": [],
     "adapter": {
       "name": "AT_SETTING_STORAGE",
@@ -2038,6 +2125,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcMacros",
+    "lName": "Макрос",
     "attributes": [],
     "adapter": {
       "name": "EVT_MACROSLIST",
@@ -2048,6 +2136,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcTemplate",
+    "lName": "Шаблон отчета",
     "attributes": [],
     "adapter": {
       "name": "RP_REPORTTEMPLATE",
@@ -2058,6 +2147,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcTNVD",
+    "lName": "Код ТНВД",
     "attributes": [],
     "adapter": {
       "name": "GD_TNVD",
@@ -2068,6 +2158,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcGoodBarCode",
+    "lName": "Штрих код товара",
     "attributes": [],
     "adapter": {
       "name": "GD_GOODBARCODE",
@@ -2078,6 +2169,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcGood",
+    "lName": "ТМЦ",
     "attributes": [],
     "adapter": {
       "name": "GD_GOOD",
@@ -2098,6 +2190,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcValue",
+    "lName": "Единица измерения",
     "attributes": [],
     "adapter": {
       "name": "GD_VALUE",
@@ -2108,6 +2201,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcTax",
+    "lName": "Налог",
     "attributes": [],
     "adapter": {
       "name": "GD_TAX",
@@ -2118,6 +2212,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcMetal",
+    "lName": "Драгоценный металл",
     "attributes": [],
     "adapter": {
       "name": "GD_PRECIOUSEMETAL",
@@ -2150,6 +2245,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBaseConfig",
     "name": "TgdcAcctAccConfig",
+    "lName": "Конфигурация карты счета",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCT_CONFIG",
@@ -2160,6 +2256,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBaseConfig",
     "name": "TgdcAcctLedgerConfig",
+    "lName": "Конфигурация журнал-ордера",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCT_CONFIG",
@@ -2170,6 +2267,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBaseConfig",
     "name": "TgdcAcctCicrilationListConfig",
+    "lName": "Конфигурация оборотной ведомости",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCT_CONFIG",
@@ -2180,6 +2278,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBaseConfig",
     "name": "TgdcAcctGeneralLedgerConfig",
+    "lName": "Конфигурация главной книги",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCT_CONFIG",
@@ -2190,6 +2289,7 @@
     "type": "SIMPLE",
     "parent": "TgdcAcctBaseConfig",
     "name": "TgdcAcctAccReviewConfig",
+    "lName": "Конфигурация анализа счета",
     "attributes": [],
     "adapter": {
       "name": "AC_ACCT_CONFIG",
@@ -2210,6 +2310,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcInvBaseRemains",
+    "lName": "Остатки ТМЦ",
     "abstract": true,
     "attributes": [],
     "adapter": {
@@ -2221,6 +2322,7 @@
     "type": "SIMPLE",
     "parent": "TgdcInvBaseRemains",
     "name": "TgdcInvRemains",
+    "lName": "Остатки ТМЦ",
     "attributes": [],
     "adapter": {
       "name": "INV_MOVEMENT",
@@ -2231,6 +2333,7 @@
     "type": "SIMPLE",
     "parent": "TgdcInvRemains",
     "name": "TgdcInvGoodRemains",
+    "lName": "Остатки ТМЦ",
     "attributes": [],
     "adapter": {
       "name": "INV_MOVEMENT",
@@ -2271,6 +2374,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcJournal",
+    "lName": "Журнал событий",
     "attributes": [],
     "adapter": {
       "name": "GD_JOURNAL",
@@ -2291,6 +2395,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcBugBase",
+    "lName": "Памылка",
     "attributes": [],
     "adapter": {
       "name": "BUG_BUGBASE",
@@ -2321,6 +2426,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcHoliday",
+    "lName": "Государственный праздник праздник",
     "attributes": [],
     "adapter": {
       "name": "WG_HOLIDAY",
@@ -2331,6 +2437,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcTableCalendar",
+    "lName": "График рабочего времени",
     "attributes": [],
     "adapter": {
       "name": "WG_TBLCAL",
@@ -2341,6 +2448,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcTableCalendarDay",
+    "lName": "День графика рабочего времени",
     "attributes": [],
     "adapter": {
       "name": "WG_TBLCALDAY",
@@ -2362,6 +2470,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseMessage",
     "name": "TgdcPhoneCall",
+    "lName": "Телефонный звонок",
     "attributes": [],
     "adapter": {
       "name": "MSG_MESSAGE",
@@ -2372,6 +2481,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcAttachment",
+    "lName": "Прикрепление",
     "attributes": [],
     "adapter": {
       "name": "MSG_ATTACHMENT",
@@ -2382,6 +2492,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcFKManager",
+    "lName": "Внешний ключ",
     "attributes": [],
     "adapter": {
       "name": "GD_REF_CONSTRAINTS",
@@ -2412,6 +2523,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBase",
     "name": "TgdcSMTP",
+    "lName": "Почтовый ящик",
     "attributes": [],
     "adapter": {
       "name": "GD_SMTP",

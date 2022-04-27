@@ -50,7 +50,7 @@ export function ErModel(props: ErModelProps) {
     .filter( e => e.parent === parent )
     .map(
       e =>
-        <StyledTreeItem key={e.name} nodeId={e.name} label={e.name}>
+        <StyledTreeItem key={e.name} nodeId={e.name} label={`${e.name}${e.lName ? ' - ' + e.lName : ''}`}>
           {recurse(e.name)}
         </StyledTreeItem>
     );
