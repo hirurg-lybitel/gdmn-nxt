@@ -6,14 +6,16 @@ type GdmnThemeOptions = ThemeOptions & {
   typography: {
     smallUI: TypographyStyleOptions;
     mediumUI: TypographyStyleOptions;
+    largeUI: TypographyStyleOptions;
     selectedUI: TypographyStyleOptions;
   }
 };
 
-type GdmnTheme = Theme & {
+export type GdmnTheme = Theme & {
   typography: {
     smallUI: TypographyStyle;
     mediumUI: TypographyStyle;
+    largeUI: TypographyStyle;
     selectedUI: TypographyStyle;
   }
 };
@@ -40,6 +42,9 @@ export const gdmnTheme = responsiveFontSizes(createTheme({
     },
     mediumUI: {
       fontSize: 13,
+    },
+    largeUI: {
+      fontSize: 14,
     },
     selectedUI: {
       fontWeight: 600

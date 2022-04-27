@@ -38,11 +38,6 @@ export function ErModelDomains(props: ErModelDomainsProps) {
     {
       field: 'type',
       headerName: 'Тип',
-      width: 100,
-    },
-    {
-      field: 'type',
-      headerName: 'Тип',
       width: 80,
     },
     {

@@ -2,6 +2,7 @@ import TreeItem, { TreeItemProps } from '@mui/lab/TreeItem/TreeItem';
 import treeItemClasses from '@mui/lab/TreeItem/treeItemClasses';
 import TreeView from '@mui/lab/TreeView/TreeView';
 import { alpha, styled } from '@mui/material/styles';
+import { gdmnTheme } from '../../theme/gdmn-theme';
 import './styled-tree-view.module.less';
 
 export const StyledTreeView = styled(TreeView)(({ theme }) => ({
@@ -23,24 +24,22 @@ export const StyledTreeView = styled(TreeView)(({ theme }) => ({
   letterSpacing: 'normal',
 }));
 
-export const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
+export const StyledTreeItem = styled(TreeItem)({
   '& .MuiTreeItem-label': {
-    fontSize: 14,
-    fontWeight: 400,
+    fontSize: gdmnTheme.typography.largeUI.fontSize,
     fontFamily: 'inherit'
   },
   [`& .${treeItemClasses.iconContainer}`]: {
     '& .close': {
       opacity: 0.3,
     },
-    color: theme.palette.grey['600'],
-    fontSize: 14,
+    color: gdmnTheme.palette.grey['600'],
     width: 12,
   },
   [`& .${treeItemClasses.group}`]: {
     marginLeft: 13,
     paddingLeft: 4,
-    borderLeft: `1px dotted ${alpha(theme.palette.text.primary, 0.4)}`,
+    borderLeft: `1px dotted ${alpha(gdmnTheme.palette.text.primary, 0.4)}`,
   },
-}));
+});
 
