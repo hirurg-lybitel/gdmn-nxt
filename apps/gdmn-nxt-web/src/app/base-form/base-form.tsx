@@ -6,6 +6,7 @@ import './base-form.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { GdmnTheme, gdmnTheme } from '../theme/gdmn-theme';
+import menuItems from '../menu-items';
 
 const Header = styled('header')({
   display: 'flex',
@@ -158,7 +159,7 @@ const Wrapper = styled('section')({
 export interface BaseFormProps {};
 
 export function BaseForm(props: BaseFormProps) {
-  const { viewForms } = useSelector( (state: RootState) => state.viewForms );
+  const { viewForms } = useSelector((state: RootState) => state.viewForms);
   const { pathname } = useLocation();
 
   return (
@@ -167,9 +168,10 @@ export function BaseForm(props: BaseFormProps) {
         <Header>
           <TopLine>
             <TopLeftLinks>
-              <Link to="/system/er-model-domains">Domains</Link>
-              <Link to="/system/er-model">Entities</Link>
-              <Link to="/system/nlp-main">NLP</Link>
+              {menuItems.items
+                .find(it => it.id === 'system')?.children
+                ?.map(item => <Link key={item.id} to={item.url || ''}>{item.title}</Link>
+                )}
             </TopLeftLinks>
             <SearchBox />
             <Box

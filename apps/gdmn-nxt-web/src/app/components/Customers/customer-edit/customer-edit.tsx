@@ -122,7 +122,6 @@ export function CustomerEdit(props: CustomerEditProps) {
       PARENT: yup.string().required('')
     }),
     onSubmit: (values) => {
-      console.log('customer_onSubmit');
       setConfirmOpen(false);
       onSubmit(values, deleting);
     },

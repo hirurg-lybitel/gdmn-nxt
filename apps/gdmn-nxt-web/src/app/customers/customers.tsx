@@ -75,7 +75,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     '& .MuiDataGrid-columnHeader': {
       fontSize: '1rem'
-
     }
     // '& .MuiDataGrid-cell': {
     //   padding: 30
