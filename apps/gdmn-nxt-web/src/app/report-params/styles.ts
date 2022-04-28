@@ -1,14 +1,15 @@
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from '@mui/styles';
 
 export const useStyles = makeStyles((theme) => ({
-    dialogAction: {
-      paddingLeft: '5%',
-      paddingRight: '5%',
-      //marginRight: '3%',
-    },
-    button: {
+  dialog: {
+    width: '30vw',
+  },
+  dialogAction: {
+    paddingLeft: '5%',
+    paddingRight: '5%',
+  },
+  button: {
 
-      width: '120px',
-    },
-  }),
-);
+    width: '120px',
+  },
+}));

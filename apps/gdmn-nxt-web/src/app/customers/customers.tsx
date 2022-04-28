@@ -64,6 +64,21 @@ const useStyles = makeStyles((theme: Theme) => ({
     '& ::-webkit-scrollbar-thumb:hover': {
       backgroundColor: '#999',
     },
+    '&.MuiDataGrid-root .MuiDataGrid-cell:focus, .MuiDataGrid-columnHeader:focus': {
+      outline: 'none',
+    },
+    '& .MuiDataGrid-iconSeparator': {
+      display: 'none',
+    },
+    '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
+      padding: '24px',
+    },
+    '& .MuiDataGrid-columnHeader': {
+      fontSize: '1rem'
+    }
+    // '& .MuiDataGrid-cell': {
+    //   padding: 30
+    // },
   },
 }));
 
@@ -241,8 +256,8 @@ export function Customers(props: CustomersProps) {
 
   const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
-    { field: 'FOLDERNAME', headerName: 'Папка', width: 150 },
-    { field: 'PHONE', headerName: 'Телефон', width: 150 },
+    // { field: 'FOLDERNAME', headerName: 'Папка', width: 200 },
+    { field: 'PHONE', headerName: 'Телефон', width: 200 },
     { field: 'LABELS',
       headerName: 'Метки',
       width: 380,
@@ -296,7 +311,8 @@ export function Customers(props: CustomersProps) {
     {
       field: 'Actions',
       headerName: 'Действия',
-      resizable: false,
+      width: 150,
+      headerAlign: 'center',
       align: 'center',
       renderCell: (params) => {
         const customerId = Number(params.id);
@@ -541,9 +557,15 @@ export function Customers(props: CustomersProps) {
                 />
               </Box>
               <Box display="flex" justifyContent="center">
-                <Button onClick={filterHandlers.handleFilter} disabled={customersLoading || !displayDataGrid} startIcon={<FilterAltIcon />}>
+                {/* <Button onClick={filterHandlers.handleFilter} disabled={customersLoading || !displayDataGrid} startIcon={<FilterAltIcon />}>
                   Фильтр
-                </Button>
+                </Button> */}
+                <IconButton
+                  onClick={filterHandlers.handleFilter}
+                  disabled={customersLoading || !displayDataGrid}
+                >
+                  <FilterAltIcon color="primary" />
+                </IconButton>
               </Box>
             </Stack>
           </Box>
@@ -585,23 +607,23 @@ export function Customers(props: CustomersProps) {
                 getRowId={row => row.ID}
                 onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
                 components={{
-                  Toolbar: CustomGridToolbarOverlay,
+                  // Toolbar: CustomGridToolbarOverlay,
                   LoadingOverlay: CustomLoadingOverlay,
                   NoRowsOverlay: CustomNoRowsOverlay,
                   NoResultsOverlay: CustomNoRowsOverlay
                 }}
                 filterModel={filterModel}
                 onFilterModelChange={(model, detail) => setFilterModel(model)}
-                pinnedColumns={{ left: [customersLoading ? '' : 'NAME'] }}
+                // pinnedColumns={{ left: [customersLoading ? '' : 'NAME'] }}
                 getRowHeight={(params) => {
                   const customer: ICustomer = params.model as ICustomer;
                   const labels: ILabelsContact[] | undefined = customer.LABELS;
 
-                  if (labels?.length) {
-                    return 50 * Math.ceil(labels.length / 2);
+                  if (labels?.length && labels.length > 4) {
+                    return 40 * Math.ceil(labels.length / 2);
                   };
 
-                  return 50;
+                  return 80;
                 }}
                 pageSize={paginationData.pageSize}
                 onPageChange={(data) => {
@@ -610,6 +632,10 @@ export function Customers(props: CustomersProps) {
                 onPageSizeChange={(data) => {
                   setPaginationData(prevState => ({ ...prevState, pageSize: data }));
                 }}
+                headerHeight={70}
+                disableColumnResize
+                disableColumnReorder
+
               />
             </CustomizedCard>
             <Box

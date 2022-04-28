@@ -159,7 +159,7 @@ export function PersonEdit(props: PersonEditProps) {
       hideBackdrop
     >
       <DialogTitle>
-        {person ? `Редактирование: ${person.NAME}` : 'Добавление контакта'}
+        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление контакта'}
       </DialogTitle>
       <DialogContent
         dividers

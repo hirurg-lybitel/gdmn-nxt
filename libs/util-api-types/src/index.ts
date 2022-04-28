@@ -5,3 +5,5 @@ export * from './lib/commonDataTypes';
 export * from './lib/crmDataTypes';
 export * from './lib/er-types';
 export * from './lib/nlp-types';
+export * from './lib/systemDataTypes';
+

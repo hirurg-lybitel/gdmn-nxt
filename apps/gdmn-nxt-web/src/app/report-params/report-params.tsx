@@ -1,72 +1,97 @@
 import './report-params.module.less';
-import DateRangePicker, { DateRange } from '@mui/lab/DateRangePicker';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import {
   Dialog,
   DialogTitle,
   TextField,
-  Box ,
   DialogContent,
   DialogActions,
-  Button } from '@mui/material';
-import React from 'react';
+  Button,
+  Slide,
+  Stack} from '@mui/material';
+import { forwardRef, ReactElement, Ref } from 'react';
 import { useStyles } from './styles';
-import ruLocale from 'date-fns/locale/ru';
+import { TransitionProps } from '@mui/material/transitions';
+import { Form, FormikProvider, useFormik } from 'formik';
+
+
+const Transition = forwardRef(function Transition(
+  props: TransitionProps & {
+    children: ReactElement<any, any>;
+  },
+  ref: Ref<unknown>,
+) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
+
 
 export interface ReportParamsProps {
   open: boolean;
-  dates: DateRange<Date | null>;
-  //onDateChange?: (newValue: DateRange<Date | null>) => void;
+  params: {[key: string]: any}
   onCancelClick: () => void;
-  onSaveClick: (arg: DateRange<Date>) => void;
+  onSubmit: (values: any) => void;
 }
 
 export function ReportParams(props: ReportParamsProps) {
   const { open } = props;
-  const { onSaveClick, onCancelClick } = props;
-  const { dates } = props;
-
-  const [value, setValue] = React.useState<DateRange<Date>>(dates[0] && dates[1] ? dates : [new Date(), new Date()]);
+  const { onCancelClick, onSubmit } = props;
+  const { params } = props;
 
   const classes = useStyles();
 
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      ...params,
+    },
+    onSubmit: (values) => {
+      onSubmit(values);
+    },
+  });
+
   return (
-    <Dialog open={open}>
+    <Dialog
+      open={open}
+      TransitionComponent={Transition}
+      classes={{ paper: classes.dialog }}
+    >
       <DialogTitle>Введите параметры</DialogTitle>
       <DialogContent dividers>
-        <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
-          <DateRangePicker
-            startText="Начало периода"
-            endText="Конец периода"
-            value={value}
-            onChange={setValue}
-            renderInput={(startProps: object, endProps: object) => (
-              <React.Fragment>
-                <TextField {...startProps} />
-                <Box sx={{ mx: 2 }}/>
-                <TextField {...endProps} />
-              </React.Fragment>
-            )}
-          />
-        </LocalizationProvider>
+        <FormikProvider value={formik}>
+          <Form id="mainForm" onSubmit={formik.handleSubmit}>
+            <Stack direction="column" spacing={3}>
+              {Object.keys(params).map((param, index) =>
+                <TextField
+                  key={index}
+                  fullWidth
+                  label={param.toUpperCase()}
+                  type="text"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  name={param}
+                  value={formik.values[param]}
+                />
+              )}
+            </Stack>
+          </Form>
+        </FormikProvider>
       </DialogContent>
       <DialogActions className={classes.dialogAction} >
         <Button
           className={classes.button}
           onClick={onCancelClick}
+          form="mainForm"
+          type="reset"
           variant="text"
           color="primary"
-          //size="small"
         >
             Отменить
         </Button>
         <Button
           className={classes.button}
-          onClick={() => onSaveClick(value)}
           variant="contained"
           color="primary"
-          //size="small"
+          form="mainForm"
+          type="submit"
         >
             OK
         </Button>

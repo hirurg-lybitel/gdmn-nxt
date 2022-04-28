@@ -20,6 +20,7 @@ import { actCompletionApi } from '../features/act-completion/actCompletionApi';
 import { bankStatementApi } from '../features/bank-statement/bankStatementApi';
 import { chartDataApi } from '../features/charts/chartDataApi';
 import { nlpQueryApi } from '../features/nlp/nlpApi';
+import { sqlEditorApi } from '../features/sql-editor/sqlEditorApi';
 
 export const store = configureStore({
   reducer: {
@@ -42,7 +43,8 @@ export const store = configureStore({
     [actCompletionApi.reducerPath]: actCompletionApi.reducer,
     [bankStatementApi.reducerPath]: bankStatementApi.reducer,
     [chartDataApi.reducerPath]: chartDataApi.reducer,
-    [nlpQueryApi.reducerPath]: nlpQueryApi.reducer
+    [nlpQueryApi.reducerPath]: nlpQueryApi.reducer,
+    [sqlEditorApi.reducerPath]: sqlEditorApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -58,6 +60,7 @@ export const store = configureStore({
     .concat(bankStatementApi.middleware)
     .concat(chartDataApi.middleware)
     .concat(nlpQueryApi.middleware)
+    .concat(sqlEditorApi.middleware)
     .concat(errorMiddleware),
 });
 
