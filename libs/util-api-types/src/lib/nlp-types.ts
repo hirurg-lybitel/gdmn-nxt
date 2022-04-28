@@ -39,10 +39,23 @@ export interface INLPToken {
   tag: string;
   shape: string;
   is_alpha: boolean;
+  is_digit: boolean;
+  is_currency: boolean;
+  is_bracket: boolean;
   is_stop: boolean;
   dep: string;
   head?: INLPTokenHead;
   morph: IMorph;
+  start: number;
+  ent_type?: string;
+};
+
+export interface INLPEnt {
+  ent: string;
+  lemma: string;
+  label: string;
+  start_char: number;
+  end_char: number;
 };
 
 export interface INLPSentence {
@@ -60,6 +73,7 @@ export interface INLPResult {
   models: string[];
   text: string;
   sents: INLPSentence[];
+  ents: INLPEnt[];
 };
 
 export interface INLPQuery {

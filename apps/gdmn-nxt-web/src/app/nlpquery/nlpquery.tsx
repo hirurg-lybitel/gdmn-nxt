@@ -36,17 +36,22 @@ export function NLPQuery(props: NLPQueryProps) {
   }, { skip: !text || !!command });
 
   useEffect( () => {
-    if (!token && data?.sents[0]?.tokens[0]) {
+    if (isFetching) {
+      if (token) {
+        setToken(undefined);
+      }
+    }
+    else if (!token && data?.sents[0]?.tokens[0]) {
       setToken(data?.sents[0]?.tokens[0])
     }
-  }, [data]);
+  }, [data, isFetching]);
 
   const getMorphRow = (token?: INLPToken) => {
     const c: ([string, string] | null)[] = token?.morph ? Object.entries(token.morph) : [];
     while (c.length < 8) {
       c.push(null);
     }
-    return c.map( m => m ? <td><span>{m[0]}{':'}</span>{m[1]}</td> : <td>&nbsp;</td> );
+    return c.map( (m, idx) => m ? <td key={m[0]}><span>{m[0]}{':'}</span>{m[1]}</td> : <td key={idx}>&nbsp;</td> );
   };
 
   return (
@@ -65,6 +70,12 @@ export function NLPQuery(props: NLPQueryProps) {
           <tbody>
             <tr>
               <td>
+                <span>Id:</span>{token?.id}
+              </td>
+              <td>
+                <span>Start:</span>{token?.start}
+              </td>
+              <td>
                 <span>Token:</span>{token?.token}
               </td>
               <td>
@@ -77,16 +88,34 @@ export function NLPQuery(props: NLPQueryProps) {
                 <span>Tag:</span>{token?.tag}
               </td>
               <td>
-                <span>Dep:</span>{token?.dep}
+                <span>Shape:</span>{token?.shape}
               </td>
               <td>
-                <span>Shape:</span>{token?.shape}
+                <span>Dep:</span>{token?.dep}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span>Ent:</span>{token?.ent_type}
               </td>
               <td>
                 <span>Stop:</span>{token?.is_stop ? '☑' : '☐'}
               </td>
               <td>
                 <span>Alpha:</span>{token?.is_alpha ? '☑' : '☐'}
+              </td>
+              <td>
+                <span>Digit:</span>{token?.is_digit ? '☑' : '☐'}
+              </td>
+              <td>
+                <span>Currency:</span>{token?.is_currency ? '☑' : '☐'}
+              </td>
+              <td>
+                <span>Bracket:</span>{token?.is_bracket ? '☑' : '☐'}
+              </td>
+              <td>
+              </td>
+              <td>
               </td>
             </tr>
             <tr>

@@ -22,7 +22,7 @@ const adjustValidation = (s: string | null) => {
     if (res) {
       return res[1];
     }
-  } 
+  }
 
   return undefined;
 };
@@ -371,6 +371,7 @@ export const importModels = async () => {
             type: 'SIMPLE',
             parent: parent.name,
             name,
+            lName: usrRelation.LNAME ?? usrRelation.LSHORTNAME,
             attributes: [],
             semCategory: usrRelation.SEMCATEGORY ?? undefined,
             adapter: {
@@ -858,7 +859,7 @@ export const importModels = async () => {
         gdDocumentType
       },
       erModel,
-      /** erModel stripped of adapters as they are not needed on the client */ 
+      /** erModel stripped of adapters as they are not needed on the client */
       erModelNoAdapters
     };
   } finally {

@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import './base-form.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { gdmnTheme } from '../theme/gdmn-theme';
+import { GdmnTheme, gdmnTheme } from '../theme/gdmn-theme';
 
 const Header = styled('header')({
   display: 'flex',
@@ -66,7 +66,7 @@ const SearchBox = () =>
     />
   </Box>
 
-const Menubar = styled('div')({
+const Menubar = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'flex-start',
@@ -74,15 +74,15 @@ const Menubar = styled('div')({
   width: '100%',
   marginTop: 4,
   height: 22,
-  fontSize: gdmnTheme.typography.mediumUI.fontSize
-});
+  fontSize: (theme as GdmnTheme).typography.mediumUI.fontSize
+}));
 
 const MenubarItem = styled('div')( (props: { active?: 1 }) => ({
   fontWeight: props.active ? '500' : 'normal',
   borderBottom: props.active ? `2px solid ${gdmnTheme.palette.primary.main}` : 'none'
 }));
 
-const Footer = styled('footer')({
+const Footer = styled('footer')(({ theme }) =>({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
@@ -95,8 +95,8 @@ const Footer = styled('footer')({
   borderBottomColor: gdmnTheme.palette.grey['400'],
   borderBottomStyle: 'solid',
   borderBottomWidth: 1,
-  fontSize: gdmnTheme.typography.smallUI.fontSize,
-});
+  fontSize: (theme as GdmnTheme).typography.smallUI.fontSize,
+}));
 
 const FooterTabs = styled('div')({
   display: 'flex',
