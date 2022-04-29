@@ -81,7 +81,7 @@ export function SqlEditor(props: SqlEditorProps) {
   const inputRef = useRef<HTMLInputElement>();
 
   const handleRunClick = () => {
-    const script = inputRef?.current?.value || '';
+    const script = inputRef?.current?.value ?? '';
     setScript(script);
 
     if (!script) {
@@ -91,12 +91,8 @@ export function SqlEditor(props: SqlEditorProps) {
     const p = parseParams(script);
 
     if (p.paramNames?.length) {
-      const newParams: {[key: string]: any} = {};
-      p.paramNames.forEach(param => newParams[param] = '');
-
-      setParams(Object.keys(newParams).reduce((obj, key) => ({ ...obj, [key]: params[key] || newParams[key] }), {}));
+      setParams({ ...Object.fromEntries( p.paramNames.map( param => ([param, '']) ) ), ...params });
       setReportParamsOpen(true);
-
       return;
     };
 
@@ -109,8 +105,8 @@ export function SqlEditor(props: SqlEditorProps) {
   };
 
   const reportParamsHandlers = {
-    handleCancel: async () => setReportParamsOpen(false),
-    handleSubmit: async(values: any) => {
+    handleCancel: () => setReportParamsOpen(false),
+    handleSubmit: (values: any) => {
       setParams(values);
       setReportParamsOpen(false);
 
@@ -143,6 +139,9 @@ export function SqlEditor(props: SqlEditorProps) {
       minWidth: f.length * (f.length > 10 ? 15 : 35),
     }));
 
+    //FIXME: если запрос будет такой, что вернет
+    //несколько записей для одного и того же ID
+    //грид перестанет работать
     const handleGetRowId = (row: any) => {
       if (row['ID']) {
         return row.ID;
@@ -275,6 +274,5 @@ export function SqlEditor(props: SqlEditorProps) {
 
     </Stack>
   );
-}
+};
 
-export default SqlEditor;
