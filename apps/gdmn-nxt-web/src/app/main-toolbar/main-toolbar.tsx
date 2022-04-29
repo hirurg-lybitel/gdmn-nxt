@@ -2,9 +2,11 @@ import { gdmnTheme } from '../theme/gdmn-theme';
 import styles from './main-toolbar.module.less';
 
 /* eslint-disable-next-line */
-export interface MainToolbarProps {}
+export interface MainToolbarProps {
+  children?: React.ReactNode;
+};
 
-export function MainToolbar(props: MainToolbarProps) {
+export function MainToolbar({ children }: MainToolbarProps) {
   return (
     <div style={{
       width: '100%',
@@ -25,6 +27,7 @@ export function MainToolbar(props: MainToolbarProps) {
         borderWidth: 1,
         borderRadius: 5,
       }}>
+        {children}
       </div>
     </div>
   );

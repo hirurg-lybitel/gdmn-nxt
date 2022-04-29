@@ -113,5 +113,3 @@ export function ErModel(props: ErModelProps) {
       </>
   );
 };
-
-export default ErModel;

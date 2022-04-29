@@ -124,6 +124,4 @@ export function ErModelDomains(props: ErModelDomainsProps) {
       </Grid>
     </>
   );
-}
-
-export default ErModelDomains;
+};

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import AccountsToApprove from '../accounts-to-approve/accounts-to-approve';
 import Customers from '../customers/customers';
-import ErModelDomains from '../er-model-domains/er-model-domains';
-import ErModel from '../er-model/er-model';
+import { ErModelDomains } from '../er-model-domains/er-model-domains';
+import { ErModel } from '../er-model/er-model';
 import { MenuItem, PageHeader } from '../page-header/page-header';
 import './employee-home-page.module.less';
 
@@ -49,9 +49,9 @@ export function EmployeeHomePage(props: EmployeeHomePageProps) {
         : currPage === 'ACCOUNTS_TO_APPROVE' ?
           <AccountsToApprove />
         : currPage === 'ER-MODEL' ?
-          <ErModel />  
+          <ErModel />
         :
-          <ErModelDomains />  
+          <ErModelDomains />
       }
     </PageHeader>
   );

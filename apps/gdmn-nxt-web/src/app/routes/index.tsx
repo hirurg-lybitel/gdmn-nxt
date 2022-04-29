@@ -1,7 +1,7 @@
 import { useRoutes } from "react-router-dom";
 import AuthenticationRoutes from "./AuthenticationRoutes";
 import ExceptionRoutes from "./ExceptionRoutes";
-import MainRoutes from "./MainRoutes";
+import { MainRoutes } from "./MainRoutes";
 interface IRoutesProps {
   isLogged: boolean;
 };

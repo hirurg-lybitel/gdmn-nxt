@@ -27,7 +27,14 @@ export const sqlEditorApi = createApi({
         method: 'POST',
         body
       }),
-      transformResponse: (response: IResultRequestResult) => response.queries.result || [],
+      transformResponse: (response: IResultRequestResult) => {
+        const res = response.queries.result ?? [];
+        if (res.length && !('id' in res[0])) {
+          return res.map( (row, id) => ({ ...row, id }) );
+        } else {
+          return res;
+        }
+      },
     })
   })
 });

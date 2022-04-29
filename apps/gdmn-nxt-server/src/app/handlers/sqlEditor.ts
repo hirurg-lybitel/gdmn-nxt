@@ -67,7 +67,7 @@ const getHistory: RequestHandler = async(req, res) => {
 const executeScript: RequestHandler = async(req, res) => {
   const { script, params } = req.body;
 
-  console.log('body', req.body);
+  //console.log('body', req.body);
 
   if (!script) {
     return res.status(422).send(resultError('Отсутсвтует код для выполнения'));
@@ -78,7 +78,7 @@ const executeScript: RequestHandler = async(req, res) => {
   try {
     const rows = await fetchAsObject(script, params);
 
-    console.log('rows', rows);
+    //console.log('rows', rows);
 
     const result: IRequestResult = {
       queries: { result: rows },

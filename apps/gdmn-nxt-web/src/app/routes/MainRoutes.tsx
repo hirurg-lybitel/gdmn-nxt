@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import ErModel from "../er-model/er-model";
+import { ErModel } from "../er-model/er-model";
 import { MainLayout } from "../layouts/MainLayout";
 import CustomersList from "../pages/Customers/customers-list/customers-list";
 import OrderList from "../pages/Customers/order-list/order-list";
@@ -7,8 +7,7 @@ import Dashboard from "../pages/Dashboard/dashboard/dashboard";
 import { ReconciliationAct } from "../pages/Analytics/UserReports/ReconciliationAct";
 import NotFound from "../pages/NotFound";
 
-
-function MainRoutes(isLogged: boolean) {
+export function MainRoutes(isLogged: boolean) {
   return {
     path: '/',
     element: isLogged ? <MainLayout /> : <Navigate to={`/authentication/login`} />,
@@ -45,4 +44,3 @@ function MainRoutes(isLogged: boolean) {
   }
 };
 
-export default MainRoutes;
