@@ -1,4 +1,4 @@
-import { Language, NLPDialog } from '@gsbelarus/util-api-types';
+import { NLPDialog } from '@gsbelarus/util-api-types';
 import { forwardRef, Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import styles from './chat-view.module.less';
 
