@@ -1,4 +1,4 @@
-import { createTheme, responsiveFontSizes } from '@mui/material';
+import { createTheme } from '@mui/material';
 import { Theme, ThemeOptions } from '@mui/material/styles/createTheme';
 import { TypographyStyle, TypographyStyleOptions } from '@mui/material/styles/createTypography';
 
@@ -20,7 +20,7 @@ export type GdmnTheme = Theme & {
   }
 };
 
-export const gdmnTheme = responsiveFontSizes(createTheme({
+export const gdmnTheme = createTheme({
   typography: {
     body1: {
       fontFamily: [
@@ -52,4 +52,4 @@ export const gdmnTheme = responsiveFontSizes(createTheme({
     fontSize: 12,
     htmlFontSize: 10
   },
-} as GdmnThemeOptions)) as GdmnTheme;
+} as GdmnThemeOptions) as GdmnTheme;
