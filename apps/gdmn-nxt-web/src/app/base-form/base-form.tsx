@@ -1,12 +1,14 @@
-import { Avatar, Box, IconButton, InputBase } from '@mui/material';
+import { Alert, Avatar, Box, IconButton, InputBase, Snackbar } from '@mui/material';
 import { styled, ThemeProvider } from '@mui/styles';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import './base-form.module.less';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { GdmnTheme, gdmnTheme } from '../theme/gdmn-theme';
 import menuItems from '../menu-items';
+import { useCallback } from 'react';
+import { clearError } from '../features/error-slice/error-slice';
 
 const Header = styled('header')({
   display: 'flex',
@@ -159,8 +161,12 @@ const Wrapper = styled('section')({
 export interface BaseFormProps {};
 
 export function BaseForm(props: BaseFormProps) {
-  const { viewForms } = useSelector((state: RootState) => state.viewForms);
+  const { viewForms } = useSelector( (state: RootState) => state.viewForms );
   const { pathname } = useLocation();
+  const errorMessage = useSelector<RootState, string>( state => state.error.errorMessage );
+  const dispatch = useDispatch();
+
+  const onCloseAlert = useCallback( () => dispatch(clearError()), []);
 
   return (
     <ThemeProvider theme={gdmnTheme}>
@@ -218,6 +224,12 @@ export function BaseForm(props: BaseFormProps) {
               )
             }
           </FooterTabs>
+          {
+            errorMessage &&
+            <Snackbar open autoHideDuration={5000} onClose={onCloseAlert}>
+              <Alert variant="filled" severity="error">{errorMessage}</Alert>
+            </Snackbar>
+          }
           <FooterBottom>
             Gdmn-nxt -- next big thing...
           </FooterBottom>

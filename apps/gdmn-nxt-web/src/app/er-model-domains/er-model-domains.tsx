@@ -1,12 +1,11 @@
 import Alert from '@mui/material/Alert/Alert';
 import Snackbar from '@mui/material/Snackbar/Snackbar';
 import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
-import { createElement, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
-import { CustomPagination, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
-import createSvgIcon from '@mui/material/utils/createSvgIcon';
+import { gridComponents, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
 import { MainToolbar } from '../main-toolbar/main-toolbar';
 
@@ -107,10 +106,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
             rowHeight={24}
             headerHeight={24}
             editMode='row'
-            components={{
-              Pagination: CustomPagination,
-              ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
-            }}
+            components={gridComponents}
           />
         </Grid>
         {
