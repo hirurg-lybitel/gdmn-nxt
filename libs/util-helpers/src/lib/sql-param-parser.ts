@@ -25,7 +25,7 @@ export interface IParseResult {
   paramNames?: string[];
 };
 
-export const parseParams = (sqlStmt: string): IParseResult => {
+const _parseParams = (sqlStmt: string): IParseResult => {
 	let i = 0;
 	let state: State = 'DEFAULT';
 	let quoteChar = '';
@@ -119,4 +119,22 @@ export const parseParams = (sqlStmt: string): IParseResult => {
 		{
 			sqlStmt
 	  };
+};
+
+export const parseParams = (sqlStmt: string): IParseResult => {
+  const re = /EXECUTE\s+BLOCK\s*\((.*)+\)/i;
+  const match = re.exec(sqlStmt);
+
+  if (match) {
+    const temp = _parseParams(match[0]);
+
+    if (temp.paramNames) {
+      return {
+        sqlStmt: sqlStmt.slice(0, match.index) + temp.sqlStmt + sqlStmt.slice(match.index + match[0].length),
+        paramNames: temp.paramNames
+      }
+    }
+  }
+
+  return _parseParams(sqlStmt);
 };

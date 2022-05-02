@@ -28,5 +28,37 @@ describe('Parameters parser tests', () => {
 		p = parseParams('SELECT :name FROM some_table WHERE id > :start_id AND id < :end_id');
 		expect(p.paramNames).toEqual(['name', 'start_id', 'end_id']);
 		expect(p.sqlStmt).toEqual('SELECT ? FROM some_table WHERE id > ? AND id < ?');
+
+		p = parseParams(`
+      EXECUTE BLOCK (ID INTEGER = :ID)
+      RETURNS(
+        NAME TYPE OF COLUMN GD_CONTACT.NAME
+      )
+      AS
+      BEGIN
+        FOR SELECT NAME
+        FROM GD_CONTACT
+        WHERE ID != :ID
+        ROWS 10
+        INTO :NAME
+        DO
+          SUSPEND;
+      END`);
+		expect(p.paramNames).toEqual(['ID']);
+		expect(p.sqlStmt).toEqual(`
+      EXECUTE BLOCK (ID INTEGER = ?)
+      RETURNS(
+        NAME TYPE OF COLUMN GD_CONTACT.NAME
+      )
+      AS
+      BEGIN
+        FOR SELECT NAME
+        FROM GD_CONTACT
+        WHERE ID != :ID
+        ROWS 10
+        INTO :NAME
+        DO
+          SUSPEND;
+      END`);
 	});
 });
