@@ -60,5 +60,9 @@ describe('Parameters parser tests', () => {
         DO
           SUSPEND;
       END`);
+
+		p = parseParams(`EXECUTE BLOCK(ID INTEGER=:ID,ID2 INTEGER=:ID,LB INTEGER=:LB) AS BEGIN SUSPEND;END`);
+		expect(p.paramNames).toEqual(['ID', 'ID', 'LB']);
+		expect(p.sqlStmt).toEqual(`EXECUTE BLOCK(ID INTEGER=?,ID2 INTEGER=?,LB INTEGER=?) AS BEGIN SUSPEND;END`);
 	});
 });

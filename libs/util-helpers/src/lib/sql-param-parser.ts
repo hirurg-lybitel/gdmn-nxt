@@ -122,7 +122,7 @@ const _parseParams = (sqlStmt: string): IParseResult => {
 };
 
 export const parseParams = (sqlStmt: string): IParseResult => {
-  const re = /EXECUTE\s+BLOCK\s*\((.*)+\)/i;
+  const re = /EXECUTE\s+BLOCK\s*\(.+\)/i;
   const match = re.exec(sqlStmt);
 
   if (match) {
