@@ -1,278 +1,223 @@
-import { Box, Button, Divider, Stack, Tab, TextField, Tooltip, Typography } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import CustomizedCard from '../../customized-card/customized-card';
-import styles from './sql-editor.module.less';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useRef, useState } from 'react';
+import { Box, Grid, Stack } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useExecuteScriptMutation, useGetHistoryQuery } from '../../../features/sql-editor/sqlEditorApi';
-import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
-import { makeStyles, withStyles } from '@mui/styles';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
 import { parseParams } from './sql-param-parser';
-import ReportParams from '../../../report-params/report-params';
+import { MainToolbar, TBButton } from '../../../main-toolbar/main-toolbar';
+import { gridComponents, StyledDataGrid } from '../../styled-data-grid/styled-data-grid';
+import { useViewForms } from '../../../features/view-forms-slice/viewFormsHook';
+import styles from './sql-editor.module.less';
+import command_run_large from './command-run-large.png';
+import command_history_large from './command-history-large.png';
+import command_undo_large from './command-undo-large.png';
 
-const useStyles = makeStyles(() => ({
-  dataGrid: {
-    border: 'none',
-    '& ::-webkit-scrollbar': {
-      width: '10px',
-      height: '10px',
-      backgroundColor: 'transparent',
-      borderRadius: '6px'
-    },
-    '& ::-webkit-scrollbar:hover': {
-      backgroundColor: '#f0f0f0',
-    },
-    '& ::-webkit-scrollbar-thumb': {
-      position: 'absolute',
-      right: 10,
-      borderRadius: '6px',
-      backgroundColor: 'rgba(170, 170, 170, 0.5)',
-    },
-    '& ::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: '#999',
-    },
-    '&.MuiDataGrid-root .MuiDataGrid-cell:focus, .MuiDataGrid-columnHeader:focus': {
-      outline: 'none',
-    },
-    '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
-      padding: '24px',
-    },
-    '& .MuiDataGrid-columnHeader': {
-      fontSize: '1rem',
-    },
-    '& .MuiDataGrid-cell:hover': {
-      cursor: 'pointer'
-    }
-  },
-  tabList: {
-    backgroundColor: '#eeeeee'
-  },
-  tabPanel: {
+interface IHistoryProps {
+  onSelectScript: (script: string) => void;
+};
+
+const historyColumns: GridColDef[] = [
+  {
+    field: 'SQL_TEXT',
+    headerName: 'Текст скрипта',
     flex: 1,
-    padding: 0
+    sortable: false,
   },
-  dataGridCard: {
-    flex: 1,
-    display: 'flex',
-    borderColor: '#bdbdbd'
+  {
+    field: 'EDITIONDATE',
+    headerName: 'Дата',
+    width: 200,
+    valueGetter: ({ value }) => value && (new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString())
   },
-}));
+];
+
+const History = ({ onSelectScript }: IHistoryProps) => {
+  const { data, isFetching } = useGetHistoryQuery();
+  const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
+
+  return (
+    <StyledDataGrid
+      rows={data ?? []}
+      columns={historyColumns}
+      rowHeight={24}
+      headerHeight={24}
+      getRowId={row => row.ID}
+      onRowClick={ params => onSelectScript(params.row['SQL_TEXT']) }
+      loading={isFetching}
+      disableColumnResize
+      disableColumnSelector
+      disableMultipleSelection
+      pagination
+      onSelectionModelChange={setSelectionModel}
+      selectionModel={selectionModel}
+      components={gridComponents}
+    />
+  );
+};
 
 /* eslint-disable-next-line */
 export interface SqlEditorProps {}
 
 export function SqlEditor(props: SqlEditorProps) {
-  const classes = useStyles();
-  const [tabIndex, setTabIndex] = useState('1');
+  type Tab = 'DATA' | 'HISTORY';
+  type Param = [string, string];
 
-  const handleTabsChange = (e: any, newindex: string) => {
-    setTabIndex(newindex);
-  };
+  useViewForms('SQL Editor');
+  const [executeScript, { isLoading, data }] = useExecuteScriptMutation();
+  const [currentTab, setCurrentTab] = useState<Tab>('DATA');
+  const [script, setScript] = useState('SELECT FIRST 100 * FROM gd_contact WHERE id=:id');
+  const [params, setParams] = useState<Param[] | undefined>();
+  const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
+  const [prevScript, setPrevScript] = useState('');
 
-  const [executeScript, { isLoading: resultLoading, data: result, isError: resultIsError }] = useExecuteScriptMutation();
-  const { errorMessage } = useSelector((state: RootState) => state.error);
-
-  const [script, setScript] = useState('');
-  const [params, setParams] = useState<{[key: string]: any}>({});
-  const [reportParamsOpen, setReportParamsOpen] = useState(false);
-
-  const inputRef = useRef<HTMLInputElement>();
-
-  const handleRunClick = () => {
-    const script = inputRef?.current?.value ?? '';
-    setScript(script);
-
+  const handleRunClick = useCallback( () => {
     if (!script) {
-      return;
-    };
-
-    const p = parseParams(script);
-
-    if (p.paramNames?.length) {
-      setParams({ ...Object.fromEntries( p.paramNames.map( param => ([param, '']) ) ), ...params });
-      setReportParamsOpen(true);
       return;
     };
 
     executeScript({
       script,
-      params
+      params: params && Object.fromEntries(params)
     });
 
-    setTabIndex('1');
-  };
-
-  const reportParamsHandlers = {
-    handleCancel: () => setReportParamsOpen(false),
-    handleSubmit: (values: any) => {
-      setParams(values);
-      setReportParamsOpen(false);
-
-      executeScript({
-        script,
-        params: values
-      });
-
-      setTabIndex('1');
+    if (currentTab !== 'DATA') {
+      setCurrentTab('DATA');
     }
-  };
+  }, [script, params, currentTab]);
 
+  const handleHistoryClick = useCallback( () => {
+    if (currentTab === 'DATA') {
+      setPrevScript(script);
+    }
+    setCurrentTab(currentTab === 'HISTORY' ? 'DATA' : 'HISTORY');
+  }, [script, currentTab]);
 
-  const Result = () => {
-    if (resultIsError) return <Error message={errorMessage} />;
+  const handleUndoClick = useCallback( () => {
+    setScript(prevScript);
+    setPrevScript('');
+  }, [prevScript]);
 
-    if (!resultLoading) {
-      if (!result) return <></>;
-      if (!result.length) return <Error message={'Нет данных'} />;
-    };
+  useEffect( () => {
+    const { paramNames } = parseParams(script);
 
-    let fields: any[] = [];
-    if (result?.length) {
-      fields = Object.keys(result[0]);
-    };
+    if (!paramNames) {
+      if (params) {
+        setParams(undefined);
+      }
+      return;
+    }
 
-    const columns: GridColDef[] = fields.map(f => ({
+    const newParams: Param[] = [];
+
+    for (const name of paramNames) {
+      if (!newParams.find( ([n]) => n === name )) {
+        const p = params?.find( ([n]) => n === name );
+        if (!p) {
+          newParams.push([name, ''])
+        } else {
+          newParams.push(p);
+        }
+      }
+    }
+
+    const sorted = newParams.sort( (a, b) => a[0].localeCompare(b[0]) );
+
+    if (JSON.stringify(sorted) !== JSON.stringify(params)) {
+      setParams(sorted);
+    }
+  }, [script, params]);
+
+  const columns: GridColDef[] = useMemo( () => {
+    const fields = data?.length ? Object.keys(data[0]) : [];
+    return fields.map(f => ({
       field: f,
       headerName: f,
       minWidth: f.length * (f.length > 10 ? 15 : 35),
     }));
-
-    //FIXME: если запрос будет такой, что вернет
-    //несколько записей для одного и того же ID
-    //грид перестанет работать
-    const handleGetRowId = (row: any) => {
-      if (row['ID']) {
-        return row.ID;
-      };
-      for (const key in row) {
-        if (row[key]) {
-          return row[key];
-        };
-      };
-    };
-
-    return (
-      <DataGridPro
-        localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-        className={classes.dataGrid}
-        columns={columns}
-        rows={result || []}
-        getRowId={handleGetRowId}
-        loading={resultLoading}
-      />
-    );
-  };
-
-  const History = () => {
-    const { data, isFetching } = useGetHistoryQuery();
-
-    const StyledToolTip = withStyles({
-      tooltip: {
-        maxWidth: '70%',
-      }
-    })(Tooltip);
-
-    const columns: GridColDef[] = [
-      { field: 'SQL_TEXT', headerName: 'Текст скрипта', flex: 1, sortable: false,
-        renderCell: ({ value }) => (
-          <StyledToolTip title={value}>
-            <div>{value}</div>
-          </StyledToolTip>
-        )
-      },
-      { field: 'EDITIONDATE', headerName: 'Дата', width: 200,
-        valueGetter: ({ value }) => value && (new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString())
-      },
-    ];
-
-    return (
-      <DataGridPro
-        localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-        className={classes.dataGrid}
-        columns={columns}
-        rows={data || []}
-        getRowId={row => row.ID}
-        loading={isFetching}
-        editMode="row"
-        disableColumnResize
-        onRowDoubleClick={(params) => {
-          (document.getElementById('script') as HTMLInputElement).value = params.row['SQL_TEXT'];
-
-          setScript(params.row['SQL_TEXT']);
-          setTabIndex('1');
-        }}
-        disableColumnSelector
-      />
-    );
-  };
-
-  const Error = (props: any) => {
-    const { message } = props;
-    return (
-      <Box p={3}>
-        <Typography>{message}</Typography>
-      </Box>
-    );
-  };
+  }, [data]);
 
   return (
-    <Stack
-      p={1}
-      spacing={3}
-      height="100%"
-      display="flex"
-    >
-      <TextField
-        id="script"
-        multiline
-        rows={10}
-        placeholder="Input sql code here"
-        variant="outlined"
-        inputRef={inputRef}
-      />
-      <Box>
-        <Button
-          variant="contained"
-          endIcon={<SendIcon />}
+    <>
+      <MainToolbar>
+        <TBButton
+          type="LARGE"
+          imgSrc={command_run_large}
+          caption="Выполнить"
+          disabled={isLoading || !script}
           onClick={handleRunClick}
-        >
-          Run
-        </Button>
-      </Box>
-      <CustomizedCard
-        borders
-        className={classes.dataGridCard}
-      >
-        <Stack
-          direction="column"
-          flex={1}
-          display="flex"
-        >
-          <TabContext value={tabIndex}>
-            <TabList onChange={handleTabsChange} className={classes.tabList}>
-              <Tab label="Результат" value="1" />
-              <Tab label="История" value="2" />
-            </TabList>
-            <Divider />
-            <TabPanel value="1" className={classes.tabPanel}>
-              <ReportParams
-                open={reportParamsOpen}
-                params={params}
-                onCancelClick={reportParamsHandlers.handleCancel}
-                onSubmit={reportParamsHandlers.handleSubmit}
-              />
-              <Result />
-            </TabPanel>
-            <TabPanel value="2" className={classes.tabPanel}>
-              <History />
-            </TabPanel>
-          </TabContext>
-        </Stack>
-      </CustomizedCard>
-
-    </Stack>
+        />
+        <TBButton
+          type="LARGE"
+          imgSrc={command_history_large}
+          caption="История"
+          disabled={isLoading}
+          selected={currentTab === 'HISTORY'}
+          onClick={handleHistoryClick}
+        />
+        <TBButton
+          type="LARGE"
+          imgSrc={command_undo_large}
+          caption="Вернуть"
+          disabled={isLoading || !prevScript}
+          onClick={handleUndoClick}
+        />
+      </MainToolbar>
+      <Grid container height="calc(100% - 80px)" columnSpacing={0}>
+        <Grid item xs={3} sx={{ borderRight: '1px solid silver' }}>
+          <Stack height="100%">
+            <textarea
+              className={styles['input']}
+              spellCheck={false}
+              value={script}
+              onChange={ e => setScript(e.target.value) }
+            />
+            {
+              params
+              &&
+              <Box sx={{ borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
+                <table className={styles['params']}>
+                  <thead>
+                    <tr><th>Параметр</th><th>Значение</th></tr>
+                  </thead>
+                  <tbody>
+                    {params.map(
+                      ([name, value], idx) =>
+                        <tr key={name}>
+                          <td>{name}</td>
+                          <td>
+                            <input type="text" value={value} onChange={ e => {
+                              const newParams = [...params];
+                              newParams[idx] = [name, e.target?.value ?? ''];
+                              setParams(newParams);
+                            } } />
+                          </td>
+                        </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Box>
+            }
+          </Stack>
+        </Grid>
+        <Grid item xs={9}>
+          {
+            currentTab === 'DATA'
+              ? data &&
+                <StyledDataGrid
+                  rows={data}
+                  columns={columns}
+                  pagination
+                  loading={isLoading}
+                  onSelectionModelChange={setSelectionModel}
+                  selectionModel={selectionModel}
+                  rowHeight={24}
+                  headerHeight={24}
+                  components={gridComponents}
+                />
+              : <History onSelectScript={setScript} />
+          }
+        </Grid>
+      </Grid>
+    </>
   );
 };
 

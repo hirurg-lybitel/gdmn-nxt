@@ -4,7 +4,7 @@ import './er-model.module.less';
 import { createElement, useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid/Grid';
 import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
-import { StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
+import { gridComponents, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
 import createSvgIcon from '@mui/material/utils/createSvgIcon';
 import { StyledTreeItem, StyledTreeView } from '../components/styled-tree-view/styled-tree-view';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
@@ -104,9 +104,7 @@ export function ErModel(props: ErModelProps) {
               rowHeight={24}
               headerHeight={24}
               editMode='row'
-              components={{
-                ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
-              }}
+              components={gridComponents}
             />
           </Grid>
         </Grid>

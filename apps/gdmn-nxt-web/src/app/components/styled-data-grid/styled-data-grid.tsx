@@ -4,6 +4,13 @@ import { Theme, styled } from '@mui/material/styles';
 import Pagination from '@mui/material/Pagination';
 import PaginationItem from '@mui/material/PaginationItem';
 import { darken, lighten } from '@mui/material/styles';
+import { createSvgIcon } from '@mui/material';
+import { createElement } from 'react';
+
+export const gridComponents = {
+  Pagination: CustomPagination,
+  ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
+};
 
 const getBackgroundColor = (color: string, mode: string) =>
   mode === 'dark' ? darken(color, 0.8) : lighten(color, 0.8);

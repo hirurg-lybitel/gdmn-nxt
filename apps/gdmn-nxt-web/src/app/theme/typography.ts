@@ -48,6 +48,5 @@ export default function typography(theme: ThemeOptions) {
       fontWeight: 400,
       color: theme.textColor,
     },
-
   };
 };
