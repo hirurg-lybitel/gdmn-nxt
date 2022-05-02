@@ -96,9 +96,11 @@ export function MainToolbar({ children }: MainToolbarProps) {
           tableLayout: 'fixed',
           width: 'auto'
         }}>
-          <tr>
-            {children}
-          </tr>
+          <tbody>
+            <tr>
+              {children}
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>

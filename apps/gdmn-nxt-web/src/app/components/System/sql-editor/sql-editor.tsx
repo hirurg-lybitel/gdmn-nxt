@@ -1,9 +1,8 @@
-import { Grid } from '@mui/material';
-import { useState } from 'react';
+import { Box, Grid, Stack } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useExecuteScriptMutation, useGetHistoryQuery } from '../../../features/sql-editor/sqlEditorApi';
 import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
 import { parseParams } from './sql-param-parser';
-import ReportParams from '../../../report-params/report-params';
 import { MainToolbar, TBButton } from '../../../main-toolbar/main-toolbar';
 import { gridComponents, StyledDataGrid } from '../../styled-data-grid/styled-data-grid';
 import { useViewForms } from '../../../features/view-forms-slice/viewFormsHook';
@@ -16,150 +15,188 @@ interface IHistoryProps {
   onSelectScript: (script: string) => void;
 };
 
+const historyColumns: GridColDef[] = [
+  {
+    field: 'SQL_TEXT',
+    headerName: 'Текст скрипта',
+    flex: 1,
+    sortable: false,
+  },
+  {
+    field: 'EDITIONDATE',
+    headerName: 'Дата',
+    width: 200,
+    valueGetter: ({ value }) => value && (new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString())
+  },
+];
+
 const History = ({ onSelectScript }: IHistoryProps) => {
   const { data, isFetching } = useGetHistoryQuery();
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
 
-  const columns: GridColDef[] = [
-    {
-      field: 'SQL_TEXT',
-      headerName: 'Текст скрипта',
-      flex: 1,
-      sortable: false,
-    },
-    {
-      field: 'EDITIONDATE',
-      headerName: 'Дата',
-      width: 200,
-      valueGetter: ({ value }) => value && (new Date(value).toLocaleDateString() + ' ' + new Date(value).toLocaleTimeString())
-    },
-  ];
-
   return (
     <StyledDataGrid
-      getRowId={row => row.ID}
-      disableColumnResize
-      onRowClick={ (params) => onSelectScript(params.row['SQL_TEXT']) }
-      disableColumnSelector
       rows={data ?? []}
-      columns={columns}
-      pagination
-      loading={isFetching}
-      onSelectionModelChange={setSelectionModel}
-      selectionModel={selectionModel}
+      columns={historyColumns}
       rowHeight={24}
       headerHeight={24}
-      editMode='row'
+      getRowId={row => row.ID}
+      onRowClick={ params => onSelectScript(params.row['SQL_TEXT']) }
+      loading={isFetching}
+      disableColumnResize
+      disableColumnSelector
       disableMultipleSelection
+      pagination
+      onSelectionModelChange={setSelectionModel}
+      selectionModel={selectionModel}
       components={gridComponents}
     />
   );
 };
 
-type Tab = 'DATA' | 'HISTORY';
-
 /* eslint-disable-next-line */
 export interface SqlEditorProps {}
 
 export function SqlEditor(props: SqlEditorProps) {
+  type Tab = 'DATA' | 'HISTORY';
+  type Param = [string, string];
+
   useViewForms('SQL Editor');
-  const [currentTab, setCurrentTab] = useState<Tab>('DATA');
   const [executeScript, { isLoading, data }] = useExecuteScriptMutation();
-  const [script, setScript] = useState('');
-  const [params, setParams] = useState<{[key: string]: any}>({});
-  const [reportParamsOpen, setReportParamsOpen] = useState(false);
+  const [currentTab, setCurrentTab] = useState<Tab>('DATA');
+  const [script, setScript] = useState('SELECT FIRST 100 * FROM gd_contact WHERE id=:id');
+  const [params, setParams] = useState<Param[] | undefined>();
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
   const [prevScript, setPrevScript] = useState('');
 
-  const handleRunClick = () => {
+  const handleRunClick = useCallback( () => {
     if (!script) {
-      return;
-    };
-
-    const { paramNames } = parseParams(script);
-
-    if (paramNames?.length) {
-      setParams({ ...Object.fromEntries( paramNames.map( param => ([param, '']) ) ), ...params });
-      setReportParamsOpen(true);
       return;
     };
 
     executeScript({
       script,
-      params
+      params: params && Object.fromEntries(params)
     });
 
     if (currentTab !== 'DATA') {
       setCurrentTab('DATA');
     }
-  };
+  }, [script, params, currentTab]);
 
-  const reportParamsHandlers = {
-    handleCancel: () => setReportParamsOpen(false),
-    handleSubmit: (values: any) => {
-      setParams(values);
-      setReportParamsOpen(false);
+  const handleHistoryClick = useCallback( () => {
+    if (currentTab === 'DATA') {
+      setPrevScript(script);
+    }
+    setCurrentTab(currentTab === 'HISTORY' ? 'DATA' : 'HISTORY');
+  }, [script, currentTab]);
 
-      executeScript({
-        script,
-        params: values
-      });
+  const handleUndoClick = useCallback( () => {
+    setScript(prevScript);
+    setPrevScript('');
+  }, [prevScript]);
 
-      if (currentTab !== 'DATA') {
-        setCurrentTab('DATA');
+  useEffect( () => {
+    const { paramNames } = parseParams(script);
+
+    if (!paramNames) {
+      if (params) {
+        setParams(undefined);
+      }
+      return;
+    }
+
+    const newParams: Param[] = [];
+
+    for (const name of paramNames) {
+      if (!newParams.find( ([n]) => n === name )) {
+        const p = params?.find( ([n]) => n === name );
+        if (!p) {
+          newParams.push([name, ''])
+        } else {
+          newParams.push(p);
+        }
       }
     }
-  };
 
-  const fields = data?.length ? Object.keys(data[0]) : [];
-  const columns: GridColDef[] = fields.map(f => ({
-    field: f,
-    headerName: f,
-    minWidth: f.length * (f.length > 10 ? 15 : 35),
-  }));
+    const sorted = newParams.sort( (a, b) => a[0].localeCompare(b[0]) );
+
+    if (JSON.stringify(sorted) !== JSON.stringify(params)) {
+      setParams(sorted);
+    }
+  }, [script, params]);
+
+  const columns: GridColDef[] = useMemo( () => {
+    const fields = data?.length ? Object.keys(data[0]) : [];
+    return fields.map(f => ({
+      field: f,
+      headerName: f,
+      minWidth: f.length * (f.length > 10 ? 15 : 35),
+    }));
+  }, [data]);
 
   return (
     <>
-      <ReportParams
-        open={reportParamsOpen}
-        params={params}
-        onCancelClick={reportParamsHandlers.handleCancel}
-        onSubmit={reportParamsHandlers.handleSubmit}
-      />
       <MainToolbar>
         <TBButton
           type="LARGE"
           imgSrc={command_run_large}
-          caption="Execute"
-          disabled={isLoading}
+          caption="Выполнить"
+          disabled={isLoading || !script}
           onClick={handleRunClick}
         />
         <TBButton
           type="LARGE"
           imgSrc={command_history_large}
-          caption="History"
+          caption="История"
           disabled={isLoading}
           selected={currentTab === 'HISTORY'}
-          onClick={ () => setCurrentTab(currentTab === 'HISTORY' ? 'DATA' : 'HISTORY') }
+          onClick={handleHistoryClick}
         />
         <TBButton
           type="LARGE"
           imgSrc={command_undo_large}
-          caption="Prev"
+          caption="Вернуть"
           disabled={isLoading || !prevScript}
-          onClick={ () => { setScript(prevScript); setPrevScript(''); } }
+          onClick={handleUndoClick}
         />
       </MainToolbar>
-      <Grid container height="calc(100% - 80px)" columnSpacing={2}>
-        <Grid item xs={3}>
-          <textarea
-            className={styles['input']}
-            spellCheck={false}
-            rows={10}
-            placeholder="SELECT FIRST 100 * FROM gd_contact WHERE 1=1"
-            value={script}
-            onChange={ e => setScript(e.target.value) }
-          />
+      <Grid container height="calc(100% - 80px)" columnSpacing={0}>
+        <Grid item xs={3} sx={{ borderRight: '1px solid silver' }}>
+          <Stack height="100%">
+            <textarea
+              className={styles['input']}
+              spellCheck={false}
+              value={script}
+              onChange={ e => setScript(e.target.value) }
+            />
+            {
+              params
+              &&
+              <Box sx={{ borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
+                <table className={styles['params']}>
+                  <thead>
+                    <tr><th>Параметр</th><th>Значение</th></tr>
+                  </thead>
+                  <tbody>
+                    {params.map(
+                      ([name, value], idx) =>
+                        <tr key={name}>
+                          <td>{name}</td>
+                          <td>
+                            <input type="text" value={value} onChange={ e => {
+                              const newParams = [...params];
+                              newParams[idx] = [name, e.target?.value ?? ''];
+                              setParams(newParams);
+                            } } />
+                          </td>
+                        </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Box>
+            }
+          </Stack>
         </Grid>
         <Grid item xs={9}>
           {
@@ -174,7 +211,6 @@ export function SqlEditor(props: SqlEditorProps) {
                   selectionModel={selectionModel}
                   rowHeight={24}
                   headerHeight={24}
-                  editMode='row'
                   components={gridComponents}
                 />
               : <History onSelectScript={setScript} />
