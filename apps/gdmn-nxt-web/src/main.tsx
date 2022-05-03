@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useRef } from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { RootState, store } from './app/store';
@@ -8,7 +8,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
 import { registerMUI } from './mui-license';
-import { ThemeProvider } from '@mui/material/styles';
+import { Theme, ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
 import { LoginStage, UserState } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
@@ -40,12 +40,17 @@ registerMUI();
 const Main = () => {
   const customization = useSelector( (state: RootState) => state.settings.customization );
   const loginStage = useSelector<RootState, LoginStage>( state => state.user.loginStage );
+  const savedTheme = useRef<Theme>(theme(customization));
+
+  useEffect( () => {
+    savedTheme.current = theme(customization);
+  }, [customization]);
 
   return (
     <BrowserRouter>
       <StrictMode>
         <CssBaseline>
-          <ThemeProvider theme={theme(customization)}>
+          <ThemeProvider theme={savedTheme.current}>
             {
               loginStage === 'EMPLOYEE' ?
                 <Routes>
