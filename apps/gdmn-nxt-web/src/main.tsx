@@ -10,7 +10,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { registerMUI } from './mui-license';
 import { Theme, ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
-import { LoginStage, UserState } from './app/features/user/userSlice';
+import { LoginStage } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
 import { ReconciliationAct } from './app/pages/Analytics/UserReports/ReconciliationAct';
 import { CustomersList } from './app/pages/Customers/customers-list/customers-list';
