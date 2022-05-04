@@ -24,18 +24,18 @@ export const StyledTreeView = styled(TreeView)(({ theme }) => ({
   letterSpacing: 'normal',
 }));
 
-export const StyledTreeItem = styled(TreeItem)({
+export const StyledTreeItem = styled(TreeItem)(() => ({
   [`& .${treeItemClasses.selected}`]: {
-    fontSize: gdmnTheme.typography.largeUI.fontSize,
+    fontSize: gdmnTheme.typography.mediumUI.fontSize,
     backgroundColor: gdmnTheme.palette.primary.main
   },
   [`& .${treeItemClasses.content}`]: {
-    fontSize: gdmnTheme.typography.largeUI.fontSize,
+    fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit',
     whiteSpace: 'nowrap'
   },
   [`& .${treeItemClasses.label}`]: {
-    fontSize: gdmnTheme.typography.largeUI.fontSize,
+    fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit',
   },
   [`& .${treeItemClasses.iconContainer}`]: {
@@ -44,7 +44,7 @@ export const StyledTreeItem = styled(TreeItem)({
     },
     color: gdmnTheme.palette.grey['600'],
     width: 12,
-    fontSize: gdmnTheme.typography.largeUI.fontSize,
+    fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit'
   },
   [`& .${treeItemClasses.group}`]: {
@@ -52,5 +52,5 @@ export const StyledTreeItem = styled(TreeItem)({
     paddingLeft: 4,
     borderLeft: `1px dotted ${alpha(gdmnTheme.palette.text.primary, 0.4)}`,
   },
-});
+}));
 

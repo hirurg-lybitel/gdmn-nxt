@@ -12,57 +12,58 @@ interface ITBButtonProps {
 };
 
 export const TBButton = ({ type, imgSrc, caption, disabled, selected, onClick }: ITBButtonProps) => {
-  if (type === 'SMALL') {
-    return (
-      <Box
-        onClick={onClick}
-        sx={{
-          display: 'table-cell',
-          cursor: 'default',
-          fontFamily: gdmnTheme.typography.body1.fontFamily,
-          fontSize: gdmnTheme.typography.smallUI.fontSize,
-          filter: disabled ? 'grayscale(100%) opacity(50%)' : 'none',
-          border: selected ? '1px solid gray' : '1px solid transparent',
-          backgroundColor: selected ? 'silver' : 'none',
-          borderRadius: selected ? '4px' : 'none',
-          padding: '4px'
-        }}
-      >
-        <img src={imgSrc} style={{ verticalAlign: 'sub', marginRight: 4 }} />
-        <span>{caption}</span>
-      </Box>
-    )
-  } else {
-    return (
-      <Box
-        onClick={onClick}
-        sx={{
-          display: 'table-cell',
-          cursor: 'default',
-          fontFamily: gdmnTheme.typography.body1.fontFamily,
-          fontSize: gdmnTheme.typography.smallUI.fontSize,
-          filter: disabled ? 'grayscale(100%) opacity(50%)' : 'none',
-          border: selected ? '1px solid gray' : '1px solid transparent',
-          backgroundColor: selected ? 'silver' : 'none',
-          borderRadius: selected ? '4px' : 'none',
-          padding: '4px'
-        }}
-      >
-        <Stack
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
-          sx={{
-            cursor: 'default',
-            flexBasis: 0,
-            flexGrow: 1,
-            }}>
-          <img src={imgSrc} />
-          <div>{caption}</div>
-        </Stack>
-      </Box>
-    )
-  }
+  return (
+    <td>
+      {
+        type === 'SMALL' ?
+          <Box
+            onClick={onClick}
+            sx={{
+              display: 'table-cell',
+              cursor: 'default',
+              fontFamily: gdmnTheme.typography.body1.fontFamily,
+              fontSize: gdmnTheme.typography.smallUI.fontSize,
+              filter: disabled ? 'grayscale(100%) opacity(50%)' : 'none',
+              border: selected ? '1px solid gray' : '1px solid transparent',
+              backgroundColor: selected ? 'silver' : 'none',
+              borderRadius: selected ? '4px' : 'none',
+              padding: '4px'
+            }}
+          >
+            <img src={imgSrc} style={{ verticalAlign: 'sub', marginRight: 4 }} />
+            <span>{caption}</span>
+          </Box>
+        :
+          <Box
+            onClick={onClick}
+            sx={{
+              display: 'table-cell',
+              cursor: 'default',
+              fontFamily: gdmnTheme.typography.body1.fontFamily,
+              fontSize: gdmnTheme.typography.smallUI.fontSize,
+              filter: disabled ? 'grayscale(100%) opacity(50%)' : 'none',
+              border: selected ? '1px solid gray' : '1px solid transparent',
+              backgroundColor: selected ? 'silver' : 'none',
+              borderRadius: selected ? '4px' : 'none',
+              padding: '4px'
+            }}
+          >
+            <Stack
+              direction="column"
+              justifyContent="center"
+              alignItems="center"
+              sx={{
+                cursor: 'default',
+                flexBasis: 0,
+                flexGrow: 1,
+                }}>
+              <img src={imgSrc} />
+              <div>{caption}</div>
+            </Stack>
+          </Box>
+      }
+    </td>
+  )
 };
 
 /* eslint-disable-next-line */

@@ -1,20 +1,16 @@
-import { Alert, AppBar, Avatar, Box, ButtonBase, CssBaseline, Divider, IconButton, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
-import { Link, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
 import { toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import BelgissLogo from '../../components/belgiss-logo/belgiss-logo';
 import { clearError } from '../../features/error-slice/error-slice';
-import Badge from '@mui/material/Badge';
-import MailIcon from '@mui/icons-material/Mail';
 import { Header } from './Header';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
@@ -69,6 +65,7 @@ interface IMenuItem {
 interface IMenuDivider {
   type: 'divider'
 };
+
 export type MenuItem = IMenuItem | IMenuDivider;
 
 interface ICustomMenuProps {
@@ -132,7 +129,6 @@ export const MainLayout = () => {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>( state => state.user );
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
-  const [anchorMenuEl, setAnchorMenuEl] = useState(null);
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
   const [openSnackBar, setOpenSnackBar] = useState(false);

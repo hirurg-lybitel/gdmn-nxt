@@ -1,8 +1,6 @@
-import { useTheme } from '@mui/material';
 import './belgiss-logo.module.less';
 
 const BelgissLogo = () => {
-  const theme = useTheme();
   const color = '#ffffff'
   return (
     <svg id="Слой_1" data-name="Слой 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 628.02 309.64" width="100" height="50">
