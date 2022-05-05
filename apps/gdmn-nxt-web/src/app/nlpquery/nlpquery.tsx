@@ -2,9 +2,9 @@ import { INLPToken, Language } from '@gsbelarus/util-api-types';
 import Grid from '@mui/material/Grid/Grid';
 import Stack from '@mui/material/Stack/Stack';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParseTextQuery } from '../features/nlp/nlpApi';
-import { NLPState } from '../features/nlp/nlpSlice';
+import { NLPState, pushNLPDialogItem } from '../features/nlp/nlpSlice';
 import { NLPSentenceTree } from '../nlpsentence-tree/nlpsentence-tree';
 import { RootState } from '../store';
 import styles from './nlpquery.module.less';
@@ -14,6 +14,7 @@ export interface NLPQueryProps {}
 
 export function NLPQuery(props: NLPQueryProps) {
   const { nlpDialog } = useSelector<RootState, NLPState>( state => state.nlp );
+  const dispatch = useDispatch();
   const [token, setToken] = useState<INLPToken | undefined>();
 
   let text = '';
@@ -45,6 +46,13 @@ export function NLPQuery(props: NLPQueryProps) {
       setToken(data?.sents[0]?.tokens[0])
     }
   }, [data, isFetching]);
+
+  useEffect( () => {
+    const text = (error as any)?.error;
+    if (typeof text === 'string') {
+      dispatch(pushNLPDialogItem({ who: 'it', text }));
+    }
+  }, [error]);
 
   const getMorphRow = (token?: INLPToken) => {
     const c: ([string, string] | null)[] = token?.morph ? Object.entries(token.morph) : [];
@@ -82,21 +90,25 @@ export function NLPQuery(props: NLPQueryProps) {
                 <span>Lemma:</span>{token?.lemma}
               </td>
               <td>
-                <span>POS:</span>{token?.pos}
-              </td>
-              <td>
                 <span>Tag:</span>{token?.tag}
               </td>
               <td>
                 <span>Shape:</span>{token?.shape}
               </td>
               <td>
-                <span>Dep:</span>{token?.dep}
+              </td>
+              <td>
               </td>
             </tr>
             <tr>
               <td>
+                <span>Dep:</span>{token?.dep}
+              </td>
+              <td>
                 <span>Ent:</span>{token?.ent_type}
+              </td>
+              <td>
+                <span>POS:</span>{token?.pos}
               </td>
               <td>
                 <span>Stop:</span>{token?.is_stop ? '☑' : '☐'}
@@ -112,10 +124,6 @@ export function NLPQuery(props: NLPQueryProps) {
               </td>
               <td>
                 <span>Bracket:</span>{token?.is_bracket ? '☑' : '☐'}
-              </td>
-              <td>
-              </td>
-              <td>
               </td>
             </tr>
             <tr>

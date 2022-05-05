@@ -14,7 +14,7 @@ export const nlpSlice = createSlice({
   name: 'nlp',
   initialState,
   reducers: {
-    push: (state, action: PayloadAction<{ who: string; text: string }>) => {
+    pushNLPDialogItem: (state, action: PayloadAction<{ who: string; text: string }>) => {
       const { who, text } = action.payload;
       const t = text.trim();
       const l = detectLanguage(t);
@@ -29,13 +29,12 @@ export const nlpSlice = createSlice({
     },
     setNLPDialog: (state, action: PayloadAction<NLPDialog>) => ({
       ...state,
-      nlpDialog:
-      action.payload
+      nlpDialog: action.payload
     })
   }
 });
 
 // Action creators are generated for each case reducer function
-export const { setNLPDialog, push } = nlpSlice.actions;
+export const { setNLPDialog, pushNLPDialogItem } = nlpSlice.actions;
 
 export default nlpSlice.reducer;

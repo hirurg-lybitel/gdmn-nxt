@@ -68,9 +68,10 @@ interface IChatViewState {
   scrollTimer: any;
   prevClientY?: number;
   prevFrac: number;
+  prevNLPDialog: NLPDialog;
 };
 
-const defState: IChatViewState = {
+const defState: Omit<IChatViewState, 'prevNLPDialog'> = {
   showFrom: -1,
   showTo: -1,
   partialOK: true,
@@ -78,76 +79,93 @@ const defState: IChatViewState = {
   scrollVisible: false,
   scrollTimer: undefined,
   prevClientY: -1,
-  prevFrac: 0
+  prevFrac: 0,
 };
 
 export function ChatView({ nlpDialog, push }: ChatViewProps) {
-  const [state, setState] = useState(defState);
+  const [state, setState] = useState<IChatViewState>({ ...defState, prevNLPDialog: nlpDialog });
 
   const shownItems = useRef<HTMLDivElement[]>([]);
   const scrollThumb = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef();
 
-  const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK } = state;
-
-  const sf = (showFrom === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showFrom;
-  const st = (showTo === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showTo;
-
-  const thumbHeight = nlpDialog.length ? `${Math.trunc(((st - sf + 1) / nlpDialog.length) * 100).toString()}%` : '100%';
-  const thumbTop = nlpDialog.length ? `${Math.trunc((sf / nlpDialog.length) * 100).toString()}%` : '100%';
+  const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK, prevNLPDialog } = state;
 
   shownItems.current = [];
 
   useEffect( () => {
-    if (!recalc) return;
+    if (recalc || nlpDialog !== prevNLPDialog) {
+      let sf = showFrom;
+      let st = showTo;
 
-    if (shownItems.current.length) {
-      if (shownItems.current[0].offsetTop > topGap) {
-        if (shownItems.current.length < nlpDialog.length && sf > 0) {
+      if (showFrom === -1 || showTo === -1) {
+        sf = (showFrom === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showFrom;
+        st = (showTo === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showTo;
+      } else if (nlpDialog.length > prevNLPDialog.length) {
+        if (st !== prevNLPDialog.length - 1) {
+          sf = nlpDialog.length - 1;
+        }
+        st = nlpDialog.length - 1;
+      } else if (nlpDialog.length < prevNLPDialog.length) {
+        sf = nlpDialog.length - 1;
+        st = nlpDialog.length - 1;
+      }
+
+      if (shownItems.current.length) {
+        if (shownItems.current[0].offsetTop > topGap) {
+          if (shownItems.current.length < nlpDialog.length && sf > 0) {
+            setState( state => ({
+              ...state,
+              showFrom: sf - 1,
+              showTo: st,
+              recalc: true,
+              prevNLPDialog: nlpDialog
+            }));
+          } else {
+            setState( state => ({
+              ...state,
+              showFrom: sf,
+              showTo: st,
+              recalc: false,
+              prevNLPDialog: nlpDialog
+            }));
+          }
+        } else if (shownItems.current[0].offsetTop + shownItems.current[0].offsetHeight < 0 && sf < st) {
+          setState(state => ({
+            ...state,
+            showFrom: sf + 1,
+            showTo: st,
+            recalc: true,
+            prevNLPDialog: nlpDialog
+          }));
+        } else if (shownItems.current[0].offsetTop < 0 && !partialOK && !showFrom && showFrom < showTo) {
           setState( state => ({
             ...state,
-            showFrom: sf - 1,
-            showTo: st
+            showFrom: sf,
+            showTo: st - 1,
+            recalc: false,
+            prevNLPDialog: nlpDialog
           }));
         } else {
           setState( state => ({
             ...state,
             showFrom: sf,
             showTo: st,
-            recalc: false
+            recalc: false,
+            prevNLPDialog: nlpDialog
           }));
         }
-      } else if (shownItems.current[0].offsetTop + shownItems.current[0].offsetHeight < 0 && sf < st) {
-        setState(state => ({
-          ...state,
-          showFrom: sf + 1,
-          showTo: st,
-          recalc: true
-        }));
-      } else if (shownItems.current[0].offsetTop < 0 && !partialOK && !showFrom && showFrom < showTo) {
-        setState( state => ({
-          ...state,
-          showFrom: sf,
-          showTo: st - 1,
-          recalc: false
-        }));
       } else {
         setState( state => ({
           ...state,
-          showFrom: sf,
-          showTo: st,
-          recalc: false
+          showFrom: 0,
+          showTo: 0,
+          recalc: false,
+          prevNLPDialog: nlpDialog
         }));
       }
-    } else {
-      setState( state => ({
-        ...state,
-        showFrom: 0,
-        showTo: 0,
-        recalc: false
-      }));
     }
-  }, [nlpDialog, recalc, partialOK, showFrom, showTo]);
+  }, [nlpDialog, prevNLPDialog, recalc, partialOK, showFrom, showTo]);
 
   const onWheel = useCallback( (e: React.WheelEvent<HTMLDivElement>) => {
     const delayedScrollHide = () => ({
@@ -308,6 +326,12 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
     }));
     push('me', text);
   }, [nlpDialog]);
+
+  const sf = (showFrom === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showFrom;
+  const st = (showTo === -1 && nlpDialog.length) ? nlpDialog.length - 1 : showTo;
+
+  const thumbHeight = nlpDialog.length ? `${Math.trunc(((st - sf + 1) / nlpDialog.length) * 100).toString()}%` : '100%';
+  const thumbTop = nlpDialog.length ? `${Math.trunc((sf / nlpDialog.length) * 100).toString()}%` : '100%';
 
   return (
     <Fragment>

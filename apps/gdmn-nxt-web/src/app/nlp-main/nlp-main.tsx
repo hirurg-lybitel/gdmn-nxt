@@ -1,7 +1,7 @@
 import { ChatView } from '@gsbelarus/ui-common-dialogs';
 import Grid from '@mui/material/Grid/Grid';
 import { useDispatch, useSelector } from 'react-redux';
-import { NLPState, setNLPDialog, push } from '../features/nlp/nlpSlice';
+import { setNLPDialog, pushNLPDialogItem } from '../features/nlp/nlpSlice';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
 import { MainToolbar } from '../main-toolbar/main-toolbar';
 import { NLPQuery } from '../nlpquery/nlpquery';
@@ -13,7 +13,7 @@ export interface NlpMainProps {}
 export function NlpMain(props: NlpMainProps) {
   useViewForms('NlpMain');
 
-  const { nlpDialog } = useSelector<RootState, NLPState>( state => state.nlp );
+  const nlpDialog = useSelector( (state: RootState) => state.nlp.nlpDialog );
   const dispatch = useDispatch();
 
   return (
@@ -24,7 +24,7 @@ export function NlpMain(props: NlpMainProps) {
           <ChatView
             nlpDialog={nlpDialog}
             setNLPDialog={ nlpDialog => dispatch(setNLPDialog(nlpDialog)) }
-            push={ (who: string, text: string) => dispatch(push({ who, text })) }
+            push={ (who: string, text: string) => dispatch(pushNLPDialogItem({ who, text })) }
           />
         </Grid>
         <Grid item xs={10}>

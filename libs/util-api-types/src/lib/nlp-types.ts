@@ -58,6 +58,13 @@ export interface INLPEnt {
   end_char: number;
 };
 
+export type IntentLabel = 'show' | 'insert' | 'update' | 'delete';
+
+export interface IIntent {
+  label: IntentLabel;
+  score: number;
+};
+
 export interface INLPSentence {
   detectedLanguage: {
     language: string;
@@ -65,6 +72,7 @@ export interface INLPSentence {
   };
   text: string;
   tokens: INLPToken[];
+  intent: IIntent[];
 };
 
 export interface INLPResult {
