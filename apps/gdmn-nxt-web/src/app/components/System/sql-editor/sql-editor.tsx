@@ -10,6 +10,8 @@ import styles from './sql-editor.module.less';
 import command_run_large from './command-run-large.png';
 import command_history_large from './command-history-large.png';
 import command_undo_large from './command-undo-large.png';
+import { styled } from '@mui/system';
+import { StyledSplit, StyledSplitPane } from '../../styled-split/styled-split';
 
 interface IHistoryProps {
   onSelectScript: (script: string) => void;
@@ -96,7 +98,7 @@ export function SqlEditor(props: SqlEditorProps) {
     setPrevScript('');
   }, [prevScript]);
 
-  useEffect( () => {
+  useEffect(() => {
     const { paramNames } = parseParams(script);
 
     if (!paramNames) {
@@ -135,6 +137,19 @@ export function SqlEditor(props: SqlEditorProps) {
     }));
   }, [data]);
 
+  // return (
+  //   <>
+  //     <StyledSplit>
+  //       <div>test 1</div>
+  //       <div>test 2</div>
+  //       <StyledSplitPane>
+  //         <div>test 4</div>
+  //       </StyledSplitPane>
+
+  //     </StyledSplit>
+  //   </>
+  // );
+
   return (
     <>
       <MainToolbar>
@@ -161,62 +176,68 @@ export function SqlEditor(props: SqlEditorProps) {
           onClick={handleUndoClick}
         />
       </MainToolbar>
-      <Grid container height="calc(100% - 80px)" columnSpacing={0}>
-        <Grid item xs={3} sx={{ borderRight: '1px solid silver' }}>
-          <Stack height="100%">
-            <textarea
-              className={styles['input']}
-              spellCheck={false}
-              value={script}
-              onChange={ e => setScript(e.target.value) }
-            />
+      <Box
+        style={{
+          height: 'calc(100% - 80px)'
+        }}
+      >
+        <StyledSplit>
+          <StyledSplitPane preferredSize="25%" minSize={400}>
+            <Stack height="100%" sx={{ borderRight: '1px solid silver' }}>
+              <textarea
+                className={styles['input']}
+                spellCheck={false}
+                value={script}
+                onChange={e => setScript(e.target.value)}
+              />
+              {
+                params
+                &&
+                <Box sx={{ borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
+                  <table className={styles['params']}>
+                    <thead>
+                      <tr><th>Параметр</th><th>Значение</th></tr>
+                    </thead>
+                    <tbody>
+                      {params.map(
+                        ([name, value], idx) =>
+                          <tr key={name}>
+                            <td>{name}</td>
+                            <td>
+                              <input type="text" value={value} onChange={ e => {
+                                const newParams = [...params];
+                                newParams[idx] = [name, e.target?.value ?? ''];
+                                setParams(newParams);
+                              } } />
+                            </td>
+                          </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+              }
+            </Stack>
+          </StyledSplitPane>
+          <StyledSplitPane >
             {
-              params
-              &&
-              <Box sx={{ borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
-                <table className={styles['params']}>
-                  <thead>
-                    <tr><th>Параметр</th><th>Значение</th></tr>
-                  </thead>
-                  <tbody>
-                    {params.map(
-                      ([name, value], idx) =>
-                        <tr key={name}>
-                          <td>{name}</td>
-                          <td>
-                            <input type="text" value={value} onChange={ e => {
-                              const newParams = [...params];
-                              newParams[idx] = [name, e.target?.value ?? ''];
-                              setParams(newParams);
-                            } } />
-                          </td>
-                        </tr>
-                    )}
-                  </tbody>
-                </table>
-              </Box>
+              currentTab === 'DATA'
+                ? data &&
+                  <StyledDataGrid
+                    rows={data}
+                    columns={columns}
+                    pagination
+                    loading={isLoading}
+                    onSelectionModelChange={setSelectionModel}
+                    selectionModel={selectionModel}
+                    rowHeight={24}
+                    headerHeight={24}
+                    components={gridComponents}
+                  />
+                : <History onSelectScript={setScript} />
             }
-          </Stack>
-        </Grid>
-        <Grid item xs={9}>
-          {
-            currentTab === 'DATA'
-              ? data &&
-                <StyledDataGrid
-                  rows={data}
-                  columns={columns}
-                  pagination
-                  loading={isLoading}
-                  onSelectionModelChange={setSelectionModel}
-                  selectionModel={selectionModel}
-                  rowHeight={24}
-                  headerHeight={24}
-                  components={gridComponents}
-                />
-              : <History onSelectScript={setScript} />
-          }
-        </Grid>
-      </Grid>
+          </StyledSplitPane>
+        </StyledSplit>
+      </Box>
     </>
   );
 };
