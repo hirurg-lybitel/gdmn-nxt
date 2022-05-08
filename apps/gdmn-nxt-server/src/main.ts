@@ -38,7 +38,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const Api = {
+const api_root = {
   v1: '/api/v1',
   v2: '/api/v2'
 };
@@ -298,7 +298,7 @@ router.get('/er-model', async (req, res) => {
   res.json(erModelNoAdapters);
 });
 
-app.use('/api/v1', router);
+app.use(api_root.v1, router);
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 

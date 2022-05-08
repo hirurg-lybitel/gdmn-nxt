@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid/Grid';
 import Stack from '@mui/material/Stack/Stack';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import { useParseTextQuery } from '../features/nlp/nlpApi';
 import { NLPState, pushNLPDialogItem } from '../features/nlp/nlpSlice';
 import { NLPSentenceTree } from '../nlpsentence-tree/nlpsentence-tree';
@@ -29,12 +30,14 @@ export function NLPQuery(props: NLPQueryProps) {
     }
   }
 
+  const { data: erModel } = useGetErModelQuery();
   const { data, error, isFetching } = useParseTextQuery({
     version: '1.0',
     session: '123',
+    fullDbName: erModel?.fullDbName ?? '',
     language,
     text
-  }, { skip: !text || !!command });
+  }, { skip: !text || !!command || !erModel });
 
   useEffect( () => {
     if (isFetching) {

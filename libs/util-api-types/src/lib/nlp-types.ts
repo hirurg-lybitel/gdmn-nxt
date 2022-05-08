@@ -87,6 +87,7 @@ export interface INLPResult {
 export interface INLPQuery {
   version: '1.0';
   session: string;
+  fullDbName: string;
   language?: Language;
   text: string;
 };
