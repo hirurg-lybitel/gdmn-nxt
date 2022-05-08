@@ -12,4 +12,4 @@ export const erModelApi = createApi({
   }),
 });
 
-export const { useGetErModelQuery } = erModelApi;
+export const { useGetErModelQuery, useLazyGetErModelQuery } = erModelApi;

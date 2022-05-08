@@ -261,7 +261,7 @@ const extractBooleanDef = (s: string | null | undefined) => {
 
 export const importModels = async () => {
   const t = new Date().getTime();
-  const { attachment, transaction } = await getReadTransaction('rdb');
+  const { attachment, transaction, fullDbName } = await getReadTransaction('rdb');
   try {
     const [
       rdbFields,
@@ -811,6 +811,7 @@ export const importModels = async () => {
     }
 
     const erModel: IERModel = {
+      fullDbName,
       domains,
       entities
     };
@@ -832,7 +833,8 @@ export const importModels = async () => {
       }
     };
 
-    const erModelNoAdapters = {
+    const erModelNoAdapters: IERModel = {
+      ...erModel,
       domains: Object.fromEntries(
         Object.entries(erModel.domains).map(
           ([name, { adapter, ...rest }]) => ([name, rest])

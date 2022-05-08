@@ -8,6 +8,8 @@ const { host, port, db, username, password } = config;
 let client: Client;
 
 interface IDBSession {
+  /** Full name of the database, including host and port number. */
+  fullDbName: string;
   lock: number;
   touched: number;
   attachment: Attachment;
@@ -72,8 +74,10 @@ export const getDBSession = async (sessionId: string) => {
     let session = sessions[sessionId];
 
     if (!session?.attachment.isValid) {
-      const attachment = await client.connect(`${host}/${port}:${db}`, { username, password });
+      const fullDbName = `${host}/${port}:${db}`;
+      const attachment = await client.connect(fullDbName, { username, password });
       session = {
+        fullDbName,
         lock: 1,
         touched: new Date().getTime(),
         attachment
@@ -121,7 +125,8 @@ export const getReadTransaction = async (sessionId: string) => {
     let dbSession = sessions[sessionId];
 
     if (!dbSession?.attachment.isValid) {
-      const attachment = await client.connect(`${host}/${port}:${db}`, { username, password });
+      const fullDbName = `${host}/${port}:${db}`;
+      const attachment = await client.connect(fullDbName, { username, password });
       const readTransaction = await attachment.startTransaction({
         isolation: TransactionIsolation.READ_COMMITTED,
         readCommittedMode: 'RECORD_VERSION',
@@ -129,6 +134,7 @@ export const getReadTransaction = async (sessionId: string) => {
         accessMode: 'READ_ONLY'
       });
       dbSession = {
+        fullDbName,
         lock: 1,
         touched: new Date().getTime(),
         attachment,
@@ -147,7 +153,11 @@ export const getReadTransaction = async (sessionId: string) => {
         });
       }
     }
-    return { attachment: dbSession.attachment, transaction: dbSession.readTransaction };
+    return {
+      attachment: dbSession.attachment,
+      transaction: dbSession.readTransaction,
+      fullDbName: dbSession.fullDbName
+    };
   } finally {
     semaphore.release();
   }

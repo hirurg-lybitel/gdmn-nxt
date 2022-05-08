@@ -9,6 +9,7 @@ import { GdmnTheme, gdmnTheme } from '../theme/gdmn-theme';
 import menuItems from '../menu-items';
 import { useCallback } from 'react';
 import { clearError } from '../features/error-slice/error-slice';
+import { useGetErModelQuery } from '../features/er-model/erModelApi';
 
 const Header = styled('header')({
   display: 'flex',
@@ -162,6 +163,7 @@ export interface BaseFormProps {};
 
 export function BaseForm(props: BaseFormProps) {
   const { viewForms } = useSelector( (state: RootState) => state.viewForms );
+  const { data: erModel } = useGetErModelQuery();
   const { pathname } = useLocation();
   const errorMessage = useSelector<RootState, string>( state => state.error.errorMessage );
   const dispatch = useDispatch();
@@ -231,7 +233,7 @@ export function BaseForm(props: BaseFormProps) {
             </Snackbar>
           }
           <FooterBottom>
-            Gdmn-nxt -- next big thing...
+            {'erModel: ' + (erModel ? erModel.fullDbName : 'not loaded...')}
           </FooterBottom>
         </Footer>
       </Wrapper>
