@@ -4,6 +4,7 @@ import styles from './nlpsentence-tree.module.less';
 
 interface IRectProps {
   readonly text: string;
+  readonly explain: string | null;
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -13,12 +14,13 @@ interface IRectProps {
   readonly onClick?: () => void;
 };
 
-const Rect = ({ x, y, width, height, text, border, className, onClick }: IRectProps) => {
+const Rect = ({ x, y, width, height, text, explain, border, className, onClick }: IRectProps) => {
   const cx = x + width / 2;
   const cy = y + height / 2;
 
   return (
     <g>
+      <title>{explain}</title>
       <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerRect"]} onClick={onClick} />
       <rect x={x + border} y={y + border} rx={4} ry={4} width={width - border * 2} height={height - border * 2} className={styles[className]} onClick={onClick} />
       <text x={cx} y={cy + 4} textAnchor="middle" onClick={onClick}>
@@ -30,10 +32,11 @@ const Rect = ({ x, y, width, height, text, border, className, onClick }: IRectPr
 
 interface IEdgeProps {
   label: string;
+  explain: string | null;
   points: Array<{ x: number; y: number }>;
 };
 
-const Edge = ({ label, points }: IEdgeProps) => {
+const Edge = ({ label, explain, points }: IEdgeProps) => {
   const first = points[0];
   const last = points[points.length - 1];
   const d = `M ${first.x} ${first.y} L ${last.x} ${last.y - 2}`;
@@ -50,11 +53,14 @@ const Edge = ({ label, points }: IEdgeProps) => {
   return (
     <>
       <path d={d} markerEnd="url(#arrow)" />
-      <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerDep"]} />
-      <rect x={x + 1} y={y + 1} rx={4} ry={4} width={width - 2} height={height - 2} className={styles["dep"]} />
-      <text x={xc} y={yc + 4} textAnchor="middle" className={styles["dep"]}>
-        {label}
-      </text>
+      <a href={`https://universaldependencies.org/u/dep/all.html`} target="_blank">
+        <title>{explain}</title>
+        <rect x={x} y={y} rx={4} ry={4} width={width} height={height} className={styles["outerDep"]} />
+        <rect x={x + 1} y={y + 1} rx={4} ry={4} width={width - 2} height={height - 2} className={styles["dep"]} />
+        <text x={xc} y={yc + 4} textAnchor="middle" className={styles["dep"]}>
+          {label}
+        </text>
+      </a>
     </>
   );
 };
@@ -86,6 +92,7 @@ export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSent
       const label = `${token.pos}:${token.token}`;
       g.setNode(token.id.toString(), {
         label,
+        explain: token.pos_explain,
         width: label.length * 9 + 8,
         height: 26,
         className: token.id === selectedToken?.id ? 'selected' : 'word'
@@ -94,7 +101,8 @@ export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSent
         .filter( t => t.head?.id === token.id )
         .forEach( t => {
           g.setEdge(token.id.toString(), t.id.toString(), {
-            label: t.dep
+            label: t.dep,
+            explain: t.dep_explain
           });
           recurs(t);
         });
@@ -122,6 +130,7 @@ export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSent
         width={nd.width}
         height={nd.height}
         text={nd.label}
+        explain={nd.explain}
         border={selectedId === n ? 2 : 1}
         className={nd.className}
         onClick={ () => { onClick && onClick(n) } }
@@ -129,7 +138,13 @@ export function NLPSentenceTree({ nlpSentence, selectedToken, onClick }: NLPSent
     );
   };
 
-  const makeEdge = (e: DagreEdge, idx: number) => <Edge key={idx} points={g.edge(e).points} label={g.edge(e).label} />;
+  const makeEdge = (e: DagreEdge, idx: number) =>
+    <Edge
+      key={idx}
+      points={g.edge(e).points}
+      label={g.edge(e).label}
+      explain={g.edge(e).explain}
+    />;
 
   return (
     <div className={styles["CommandAndGraph"]}>

@@ -36,6 +36,7 @@ export interface INLPToken {
   token: string;
   lemma: string;
   pos: string;
+  pos_explain: string;
   tag: string;
   shape: string;
   is_alpha: boolean;
@@ -44,6 +45,7 @@ export interface INLPToken {
   is_bracket: boolean;
   is_stop: boolean;
   dep: string;
+  dep_explain: string;
   head?: INLPTokenHead;
   morph: IMorph;
   start: number;

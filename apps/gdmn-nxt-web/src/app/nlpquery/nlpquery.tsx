@@ -66,83 +66,92 @@ export function NLPQuery(props: NLPQueryProps) {
   };
 
   return (
-    <Grid container height="100%" columnSpacing={2}>
+    <Grid container height="100%" columnSpacing={0}>
       <Grid item xs={8}>
-        <Stack width="100%" direction="row" flexWrap="wrap" gap={1} paddingTop={1}>
-          {data?.sents[0]?.tokens.map(
-            t =>
-              <span key={t.id} className={styles[t === token ? 'selected' : 'word']} onClick={ () => setToken(t) }>
-                {t.token}
-              </span>
-          )}
-        </Stack>
+        <div className={styles['middle_container']}>
+          <div className={styles['tree_head']}>
+            <Stack width="100%" direction="row" flexWrap="wrap" gap={1} paddingTop={1}>
+              {data?.sents?.flatMap (
+                sent => sent.tokens.map( t =>
+                  <span key={t.id} className={styles[t === token ? 'selected' : 'word']} onClick={ () => setToken(t) }>
+                    {t.token}
+                  </span>
+                )
+              )}
+            </Stack>
 
-        <table className={styles['table']}>
-          <tbody>
-            <tr>
-              <td>
-                <span>Id:</span>{token?.id}
-              </td>
-              <td>
-                <span>Start:</span>{token?.start}
-              </td>
-              <td>
-                <span>Token:</span>{token?.token}
-              </td>
-              <td>
-                <span>Lemma:</span>{token?.lemma}
-              </td>
-              <td>
-                <span>Tag:</span>{token?.tag}
-              </td>
-              <td>
-                <span>Shape:</span>{token?.shape}
-              </td>
-              <td>
-              </td>
-              <td>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span>Dep:</span>{token?.dep}
-              </td>
-              <td>
-                <span>Ent:</span>{token?.ent_type}
-              </td>
-              <td>
-                <span>POS:</span>{token?.pos}
-              </td>
-              <td>
-                <span>Stop:</span>{token?.is_stop ? '☑' : '☐'}
-              </td>
-              <td>
-                <span>Alpha:</span>{token?.is_alpha ? '☑' : '☐'}
-              </td>
-              <td>
-                <span>Digit:</span>{token?.is_digit ? '☑' : '☐'}
-              </td>
-              <td>
-                <span>Currency:</span>{token?.is_currency ? '☑' : '☐'}
-              </td>
-              <td>
-                <span>Bracket:</span>{token?.is_bracket ? '☑' : '☐'}
-              </td>
-            </tr>
-            <tr>
-              {getMorphRow(token)}
-            </tr>
-          </tbody>
-        </table>
-        {
-          data?.sents[0]
-          &&
-          <NLPSentenceTree
-            nlpSentence={data.sents[0]}
-            selectedToken={token}
-            onClick={ id => setToken(data?.sents[0].tokens.find( t => t.id.toString() === id )) }
-          />
-        }
+            <table className={styles['table']}>
+              <tbody>
+                <tr>
+                  <td>
+                    <span>Id:</span>{token?.id}
+                  </td>
+                  <td>
+                    <span>Start:</span>{token?.start}
+                  </td>
+                  <td>
+                    <span>Token:</span>{token?.token}
+                  </td>
+                  <td>
+                    <span>Lemma:</span>{token?.lemma}
+                  </td>
+                  <td>
+                    <span>Tag:</span>{token?.tag}
+                  </td>
+                  <td>
+                    <span>Shape:</span>{token?.shape}
+                  </td>
+                  <td>
+                  </td>
+                  <td>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span>Dep:</span>{token?.dep}
+                  </td>
+                  <td>
+                    <span>Ent:</span>{token?.ent_type}
+                  </td>
+                  <td>
+                    <span>POS:</span>{token?.pos}
+                  </td>
+                  <td>
+                    <span>Stop:</span>{token?.is_stop ? '☑' : '☐'}
+                  </td>
+                  <td>
+                    <span>Alpha:</span>{token?.is_alpha ? '☑' : '☐'}
+                  </td>
+                  <td>
+                    <span>Digit:</span>{token?.is_digit ? '☑' : '☐'}
+                  </td>
+                  <td>
+                    <span>Currency:</span>{token?.is_currency ? '☑' : '☐'}
+                  </td>
+                  <td>
+                    <span>Bracket:</span>{token?.is_bracket ? '☑' : '☐'}
+                  </td>
+                </tr>
+                <tr>
+                  {getMorphRow(token)}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className={styles['tree_stack']}>
+            {
+              data?.sents.map(
+                sent =>
+                  <NLPSentenceTree
+                    key={sent.text}
+                    nlpSentence={sent}
+                    selectedToken={token}
+                    onClick={ id => setToken(sent.tokens.find( t => t.id.toString() === id )) }
+                  />
+              )
+            }
+          </div>
+        </div>
       </Grid>
       <Grid item xs={4}>
         <div className={styles['container']}>
