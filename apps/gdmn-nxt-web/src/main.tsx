@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 
 import { RootState, store } from './app/store';
 import { Provider, useSelector } from 'react-redux';
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
@@ -34,15 +34,16 @@ import BaseForm from './app/base-form/base-form';
 import CustomerDetails from './app/pages/Customers/customer-details/customer-details';
 import { NlpMain } from './app/nlp-main/nlp-main';
 import { SqlEditor } from './app/components/System/sql-editor/sql-editor';
+import CustomersMap from './app/customers/customers-map/customers-map';
 
 registerMUI();
 
 const Main = () => {
-  const customization = useSelector( (state: RootState) => state.settings.customization );
-  const loginStage = useSelector<RootState, LoginStage>( state => state.user.loginStage );
+  const customization = useSelector((state: RootState) => state.settings.customization);
+  const loginStage = useSelector<RootState, LoginStage>(state => state.user.loginStage);
   const savedTheme = useRef<Theme>(theme(customization));
 
-  useEffect( () => {
+  useEffect(() => {
     savedTheme.current = theme(customization);
   }, [customization]);
 
@@ -57,6 +58,7 @@ const Main = () => {
                   <Route path="/employee" element={<MainLayout />}>
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="dashboard/deals" element={<Deals />} />
+                    <Route path="dashboard/map" element={<CustomersMap />} />
                     <Route path="customers">
                       <Route path="list" element={<CustomersList />} />
                       <Route path="list/details/:id" element={<CustomerDetails />} />
