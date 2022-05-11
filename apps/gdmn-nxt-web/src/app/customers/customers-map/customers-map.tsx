@@ -1,31 +1,27 @@
 import styles from './customers-map.module.less';
 import { Stack, Typography } from '@mui/material';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { MarkerCluster } from './marker-cluster';
+import { useState } from 'react';
+import { MarkerContainer } from './marker-container';
 
 import 'leaflet/dist/leaflet.css';
 
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
 import { customers } from './exampleCustomers';
 
-
 const defaultCenter = { lat: 53.902891, lng: 27.561102 };
-
-const defaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [30, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [-5, -40]
-});
 
 /* eslint-disable-next-line */
 export interface CustomersMapProps {}
 
 export function CustomersMap(props: CustomersMapProps) {
+  const [selectedId, setSelectedId] = useState(-1);
+
+  const handleMarkerClick = (id: number) => {
+    setSelectedId(selectedId === id ? -1 : id);
+  };
+
   return (
     <div className={styles['container']}>
       <MapContainer
@@ -42,14 +38,20 @@ export function CustomersMap(props: CustomersMapProps) {
         <MarkerCluster>
           {customers.map(customer => {
             return (
-              <Marker key={customer.id} position={[customer.coordinates.lat, customer.coordinates.lng]} icon={defaultIcon}>
+              <MarkerContainer
+                key={customer.id}
+                id={customer.id}
+                position={[customer.coordinates.lat, customer.coordinates.lng]}
+                selected={selectedId === customer.id}
+                onMarkerClick={handleMarkerClick}
+              >
                 <Popup closeButton={false}>
                   <Stack spacing={1}>
                     <Typography variant="h4">{customer.name}</Typography>
                     <Typography variant="caption">{customer.address}</Typography>
                   </Stack>
                 </Popup>
-              </Marker>
+              </MarkerContainer>
             );
           })}
         </MarkerCluster>
