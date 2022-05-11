@@ -14,7 +14,7 @@ export interface IMenuItem {
 }
 
 const menuItems = {
-  items: [dashboard, managment, analytics, systemMenu]
+  items: [dashboard, managment, analytics].concat(process.env.NODE_ENV === 'development' ? systemMenu : [])
 };
 
 export default menuItems;
