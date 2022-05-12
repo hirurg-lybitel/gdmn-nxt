@@ -12,7 +12,7 @@
     "pm2:stop": "pm2 stop gdmn-nxt-server",
     "pm2:mon": "pm2 monitor gdmn-nxt-server",
     "pm2:stat": "pm2 status gdmn-nxt-server",
-    "init": "yarn && yarn build && pm2 start dist/apps/gdmn-nxt-server/main.js --watch --name gdmn-nxt-server"
+    "init": "yarn && yarn build && yarn pm2"
   },
   "private": true,
   "dependencies": {
@@ -26,6 +26,8 @@
     "@mui/material": "^5.2.7",
     "@mui/styles": "^5.2.3",
     "@mui/x-data-grid-pro": "^5.2.1",
+    "@mui/x-date-pickers": "^5.0.0-alpha.2",
+    "@mui/x-date-pickers-pro": "^5.0.0-alpha.2",
     "@nivo/core": "^0.79.0",
     "@nivo/funnel": "^0.79.1",
     "@react-leaflet/core": "^2.0.0",
