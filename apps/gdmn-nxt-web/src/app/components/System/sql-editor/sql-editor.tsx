@@ -10,7 +10,6 @@ import styles from './sql-editor.module.less';
 import command_run_large from './command-run-large.png';
 import command_history_large from './command-history-large.png';
 import command_undo_large from './command-undo-large.png';
-import { styled } from '@mui/system';
 import { StyledSplit, StyledSplitPane } from '../../styled-split/styled-split';
 
 interface IHistoryProps {
@@ -136,19 +135,6 @@ export function SqlEditor(props: SqlEditorProps) {
       minWidth: f.length * (f.length > 10 ? 15 : 35),
     }));
   }, [data]);
-
-  // return (
-  //   <>
-  //     <StyledSplit>
-  //       <div>test 1</div>
-  //       <div>test 2</div>
-  //       <StyledSplitPane>
-  //         <div>test 4</div>
-  //       </StyledSplitPane>
-
-  //     </StyledSplit>
-  //   </>
-  // );
 
   return (
     <>

@@ -3,10 +3,16 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "prod": "node dist/apps/gdmn-nxt-server/main.js",
     "start": "yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
-    "build": "yarn nx run-many --target=build --all --parallel",
+    "build": "cross-env NODE_ENV=production yarn nx run-many --target=build --all --parallel",
     "test": "yarn nx run-many --target=test --all --parallel",
-    "all": "yarn nx run-many --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web"
+    "all": "yarn nx run-many --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
+    "pm2": "pm2 start dist/apps/gdmn-nxt-server/main.js --watch --name gdmn-nxt-server",
+    "pm2:stop": "pm2 stop gdmn-nxt-server",
+    "pm2:mon": "pm2 monitor gdmn-nxt-server",
+    "pm2:stat": "pm2 status gdmn-nxt-server",
+    "init": "yarn && yarn build && pm2 start dist/apps/gdmn-nxt-server/main.js --watch --name gdmn-nxt-server"
   },
   "private": true,
   "dependencies": {
@@ -97,6 +103,7 @@
     "@typescript-eslint/eslint-plugin": "5.18.0",
     "@typescript-eslint/parser": "5.18.0",
     "babel-jest": "27.2.3",
+    "cross-env": "^7.0.3",
     "cypress": "^8.3.0",
     "eslint": "8.12.0",
     "eslint-config-prettier": "8.1.0",
@@ -106,6 +113,7 @@
     "eslint-plugin-react-hooks": "4.4.0",
     "jest": "27.2.3",
     "nx": "13.10.3",
+    "pm2": "^5.2.0",
     "prettier": "2.5.1",
     "react-test-renderer": "17.0.2",
     "ts-jest": "27.0.5",

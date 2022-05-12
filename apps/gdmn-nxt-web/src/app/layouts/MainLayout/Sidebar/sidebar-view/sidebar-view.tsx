@@ -2,6 +2,9 @@ import { BrowserView, MobileView } from 'react-device-detect';
 import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import './sidebar-view.module.less';
 import MenuList from '../menu-list/menu-list';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import { makeStyles } from '@mui/styles';
+import 'react-perfect-scrollbar/dist/css/styles.css';
 
 /* eslint-disable-next-line */
 export interface SidebarProps {
@@ -10,24 +13,40 @@ export interface SidebarProps {
   window?: any;
 }
 
+const useStyles = makeStyles(() => ({
+  scroll: {
+    paddingLeft: '16px',
+    paddingRight: '16px',
+    '& .ps__rail-y': {
+      borderRadius: '12px',
+      opacity: 0.5
+    },
+    '& .ps__thumb-y ': {
+      backgroundColor: 'white',
+    },
+  },
+}));
+
 
 export function Sidebar(props: SidebarProps) {
-  const {open, onToogle, window} = props
+  const { open, onToogle, window } = props;
   const theme = useTheme();
+
+  const classes = useStyles();
 
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
 
   const drawer = (
     <>
       <BrowserView>
-        <Box
+        <PerfectScrollbar
+          className={classes.scroll}
           style={{
-            paddingLeft: '16px',
-            paddingRight: '16px'
+            height: matchDownMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
           }}
         >
           <MenuList />
-        </Box>
+        </PerfectScrollbar>
       </BrowserView>
       <MobileView>
         <Box sx={{ px: 2 }}>
@@ -53,19 +72,18 @@ export function Sidebar(props: SidebarProps) {
         ModalProps={{ keepMounted: true }}
         sx={{
           '& .MuiDrawer-paper': {
-              ...theme.menu,
-              width: theme.drawerWidth,
-              borderRight: 'none',
-              paddingTop: '25px',
-              [theme.breakpoints.up('md')]: {
-                top: '70px'
-              }
+            ...theme.menu,
+            width: theme.drawerWidth,
+            borderRight: 'none',
+            paddingTop: '25px',
+            [theme.breakpoints.up('md')]: {
+              top: '70px'
+            }
           }
-      }}
+        }}
       >
         {drawer}
       </Drawer>
-
     </Box>
 
   );

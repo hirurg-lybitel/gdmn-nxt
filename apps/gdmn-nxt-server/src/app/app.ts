@@ -1,5 +1,5 @@
-import { IAccount, IAuthResult, IWithID } from "@gsbelarus/util-api-types";
-import { getReadTransaction, releaseReadTransaction } from "./utils/db-connection";
+import { IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
+import { getReadTransaction, releaseReadTransaction } from './utils/db-connection';
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
@@ -52,7 +52,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
           result: 'UNKNOWN_USER'
         };
       } else {
-        throw new Error('Data corrupted.')
+        throw new Error('Data corrupted.');
       }
     } finally {
       await rs.close();
@@ -86,7 +86,7 @@ export const getGedeminUser = async (userName: string): Promise<{ id: number, us
       } else if (!data.length) {
         return undefined;
       } else {
-        throw new Error('Data corrupted.')
+        throw new Error('Data corrupted.');
       }
     } finally {
       await rs.close();
@@ -106,7 +106,7 @@ export const getAccount = async (sessionId: string, email: string): Promise<(IAc
       usr$crm_account acc
     WHERE UPPER(acc.usr$email) = ?
   `;
-  const { attachment, transaction} = await getReadTransaction(sessionId);
+  const { attachment, transaction } = await getReadTransaction(sessionId);
 
   try {
     const rs = await attachment.executeQuery(transaction, query, [email.toLocaleUpperCase()]);
@@ -118,7 +118,7 @@ export const getAccount = async (sessionId: string, email: string): Promise<(IAc
       } else if (!data.length) {
         return undefined;
       } else {
-        throw new Error('More than one account with the same email.')
+        throw new Error('More than one account with the same email.');
       }
     } finally {
       await rs.close();

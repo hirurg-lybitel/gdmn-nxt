@@ -26,19 +26,23 @@ import { importedModels } from './app/models';
 const MemoryStore = require('memorystore')(session);
 
 dotenv.config({ path: '../..' });
-
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
 
+
 app.use(cors({
   credentials: true,
-  origin: 'http://localhost:4200'
+  origin: `http://localhost:${process.env.NODE_ENV === 'development' ? '4200' : '80'}` // 'http://localhost:80'
 }));
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path');
+app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const api_root = {
+const apiRoot = {
   v1: '/api/v1',
   v2: '/api/v2'
 };
@@ -236,18 +240,6 @@ router.get('/test', (req, res) => {
   }
 });
 
-// router.get('/contacts', getContacts);
-// router.get('/contacts/taxId/:taxId', getContacts);
-// router.get('/contacts/rootId/:rootId', getContacts);
-// router.put('/contacts/:id', updateContact);
-// router.post('/contacts', addContact);
-// router.delete('/contacts/:id', deleteContact);
-// router.get('/contacts/hierarchy', getContactHierarchy);
-// router.get('/contacts/labels/:contactId', getLabelsContact);
-// router.get('/contacts/labels', getLabelsContact);
-// router.post('/contacts/labels', addLabelsContact);
-// router.delete('/contacts/labels/:contactId', deleteLabelsContact);
-
 /** Contacts */
 router.use(contactsRouter);
 
@@ -298,7 +290,11 @@ router.get('/er-model', async (req, res) => {
   res.json(erModelNoAdapters);
 });
 
-app.use(api_root.v1, router);
+app.use(apiRoot.v1, router);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
+});
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
