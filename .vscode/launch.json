@@ -8,6 +8,18 @@
             "type": "node",
             "request": "attach",
             "name": "debug gdmn-nxt-server",
+        },
+        {
+          "type": "pwa-node",
+          "request": "launch",
+          "name": "Launch Program",
+          "skipFiles": [
+            "<node_internals>/**"
+          ],
+          "program": "${workspaceFolder}\\dist\\apps\\gdmn-nxt-server\\main.js",
+          "outFiles": [
+            "${workspaceFolder}/dist/apps/gdmn-nxt-server/**/*.js"
+          ]
         }
     ]
 }

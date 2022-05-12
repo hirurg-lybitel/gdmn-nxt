@@ -1,7 +1,7 @@
 import { wrapForNamedParams } from '@gsbelarus/util-helpers';
 import { Semaphore } from '@gsbelarus/util-useful';
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation } from 'node-firebird-driver-native';
-import { config } from "./db-config";
+import { config } from './db-config';
 
 const { host, port, db, username, password } = config;
 
@@ -23,7 +23,7 @@ interface IDBSessions {
 const sessions: IDBSessions = {};
 const semaphore = new Semaphore('dbSessions');
 
-//TODO: время жизни сессии вынести с настройки
+// TODO: время жизни сессии вынести с настройки
 /** Minimal time of life of open unused attachment */
 const minTimeOfLife = 1 * 60 * 1000;
 
@@ -190,7 +190,7 @@ export const acquireReadTransaction = async (sessionId: string) => {
 
   const releaseReadTransaction = async () => {
     if (released) {
-      throw new Error(`multiple call of releaseTransaction`);
+      throw new Error('multiple call of releaseTransaction');
     }
 
     await semaphore.acquire();

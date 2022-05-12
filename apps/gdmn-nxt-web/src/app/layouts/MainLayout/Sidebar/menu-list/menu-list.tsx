@@ -3,6 +3,7 @@ import menuItems from '../../../../menu-items';
 import MenuGroup from '../menu-group/menu-group';
 import './menu-list.module.less';
 
+
 /* eslint-disable-next-line */
 export interface MenuListProps {}
 
@@ -16,9 +17,8 @@ export function MenuList(props: MenuListProps) {
           <Typography key={item.id} variant="h6" color="error" align="center">
               Ошибка отображения
           </Typography>
-      );
+        );
     }
-
   });
   return (
     <>{navItems}</>

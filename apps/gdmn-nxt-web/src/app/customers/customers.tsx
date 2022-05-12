@@ -538,12 +538,12 @@ export function Customers(props: CustomersProps) {
               <Box display="flex" justifyContent="center">
                 <Button onClick={()=> dispatch(fetchCustomers({ paginationData: paginationData }))} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
                 <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
-                <Button
+                {/* <Button
                   component="a"
                   href={`employee/reports/reconciliation/${currentOrganization}`}
                   disabled={customersLoading}
                   startIcon={<SummarizeIcon />}
-                >Акт сверки</Button>
+                >Акт сверки</Button> */}
               </Box>
               <Box flex={1} />
               <Box>
