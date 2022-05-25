@@ -18,41 +18,41 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
   ...(menuOpened
-      ? {
-          transition: theme.transitions.create('margin', {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.enteringScreen
-         }),
-          marginLeft: 0,
-          width: `calc(100% - ${theme.drawerWidth}px - 20px)`,
-          [theme.breakpoints.down('sm')]: {
-            marginLeft: -(theme.drawerWidth - 20),
-            width: `calc(100% - ${theme.drawerWidth}px)`,
-          }
+    ? {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen
+      }),
+      marginLeft: 0,
+      width: `calc(100% - ${theme.drawerWidth}px - 20px)`,
+      [theme.breakpoints.down('sm')]: {
+        marginLeft: -(theme.drawerWidth - 20),
+        width: `calc(100% - ${theme.drawerWidth}px)`,
       }
-      : {
-          transition: theme.transitions.create('margin', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen
-          }),
-          marginLeft: -(theme.drawerWidth - 20),
-          width: `calc(100% - ${theme.drawerWidth}px)`,
-          [theme.breakpoints.up('md')]: {
-            marginLeft: -(theme.drawerWidth - 20),
-            width: `calc(100% - ${theme.drawerWidth}px)`
-          },
-          // [theme.breakpoints.down('md')]: {
-          //     marginLeft: '10px',
-          //     width: `calc(100% - ${theme.drawerWidth}px)`,
-          //     padding: '16px'
-          // },
-          // [theme.breakpoints.down('sm')]: {
-          //     marginLeft: '10px',
-          //     width: `calc(100% - ${theme.drawerWidth}px)`,
-          //     padding: '16px',
-          //     marginRight: '10px'
-          // }
-      })
+    }
+    : {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen
+      }),
+      marginLeft: -(theme.drawerWidth - 20),
+      width: `calc(100% - ${theme.drawerWidth}px)`,
+      [theme.breakpoints.up('md')]: {
+        marginLeft: -(theme.drawerWidth - 20),
+        width: `calc(100% - ${theme.drawerWidth}px)`
+      },
+      // [theme.breakpoints.down('md')]: {
+      //     marginLeft: '10px',
+      //     width: `calc(100% - ${theme.drawerWidth}px)`,
+      //     padding: '16px'
+      // },
+      // [theme.breakpoints.down('sm')]: {
+      //     marginLeft: '10px',
+      //     width: `calc(100% - ${theme.drawerWidth}px)`,
+      //     padding: '16px',
+      //     marginRight: '10px'
+      // }
+    })
 }));
 
 interface IMenuItem {
@@ -109,11 +109,10 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
   >
-    {items.map( (i, idx) =>
-      i.type === 'divider' ?
-        <Divider key={idx} />
-      :
-        <MenuItem key={idx} onClick={i.onClick}>
+    {items.map((i, idx) =>
+      i.type === 'divider'
+        ? <Divider key={idx} />
+        : <MenuItem key={idx} onClick={i.onClick}>
           {i.Icon &&
             <ListItemIcon>
               <i.Icon fontSize="small" />
@@ -139,7 +138,7 @@ export const MainLayout = () => {
     if (errorMessage) {
       setOpenSnackBar(true);
     }
-  }, [errorMessage])
+  }, [errorMessage]);
 
 
   const handleDrawerToggle = () => {
@@ -228,5 +227,5 @@ export const MainLayout = () => {
         <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{errorMessage}</Alert>
       </Snackbar>
     </Box>
-  )
+  );
 };
