@@ -50,6 +50,11 @@ export interface INLPToken {
   morph: IMorph;
   start: number;
   ent_type?: string;
+  entities?: {
+    entity: string;
+    lName: string;
+    score: number;
+  }[]
 };
 
 export interface INLPEnt {

@@ -292,7 +292,7 @@
     "type": "SIMPLE",
     "parent": "TgdcBaseContact",
     "name": "TgdcCompany",
-    "lName": "Организация",
+    "lName": "Организация, компания, предприятие, фирма, юридическое лицо",
     "attributes": [],
     "semCategory": "organization,company",
     "adapter": {
