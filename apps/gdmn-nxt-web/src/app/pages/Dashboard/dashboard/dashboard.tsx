@@ -1,4 +1,4 @@
-import { Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Grid } from '@mui/material';
 import ChartColumn from '../../../components/Charts/chart-column/chart-column';
 import ChartDonut from '../../../components/Charts/chart-donut/chart-donut';
 import EarningCard from '../../../components/Charts/earning-card/earning-card';
@@ -9,22 +9,29 @@ import './dashboard.module.less';
 export interface DashboardProps {}
 
 export function Dashboard(props: DashboardProps) {
-  const theme = useTheme();
-
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
-
   return (
-    <Stack direction="column" spacing={3} flex={1}>
-      <Stack direction={matchDownMd ? 'column' : 'row'} spacing={3} display="flex" height={matchDownMd ? '400px' : '200px'}>
-        <EarningCard />
-        <OrderCard />
-      </Stack>
-      <Stack direction={matchDownXl ? 'column' : 'row'} spacing={3} display="flex" flex={1}>
-        <ChartColumn />
-        <ChartDonut />
-      </Stack>
-    </Stack>
+    <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Grid container spacing={3}>
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            <EarningCard />
+          </Grid>
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            <OrderCard />
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <Grid container spacing={3}>
+          <Grid item lg={6} md={12} xs={12}>
+            <ChartColumn />
+          </Grid>
+          <Grid item lg={6} md={12} xs={12}>
+            <ChartDonut />
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
 

@@ -302,9 +302,11 @@ router.get('/er-model/make-sql', async (_, res) => {
 
 app.use(apiRoot.v1, router);
 
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
-});
+if (process.env.NODE_ENV !== 'development') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
+  });
+};
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 

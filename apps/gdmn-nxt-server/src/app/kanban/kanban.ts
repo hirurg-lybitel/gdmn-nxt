@@ -219,7 +219,8 @@ const reorderCards: RequestHandler = async (req, res) => {
     const cards: IKanbanCard[] = req.body;
 
     if (!cards.length) {
-      return res.status(422).send(resultError('Нет данных'));
+      // return res.status(422).send(resultError('Нет данных'));
+      return res.status(204).send([]);
     };
 
     const allFields = ['ID', 'USR$INDEX'];

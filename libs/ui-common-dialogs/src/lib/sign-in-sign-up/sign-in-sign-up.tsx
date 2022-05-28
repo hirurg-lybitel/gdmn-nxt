@@ -85,13 +85,29 @@ function reducer(state: State, action: Action): State {
 export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator }: SignInSignUpProps) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
-  const waitAndDispatch = ( fn: () => Promise<IAuthResult> ) => () => {
+  const waitAndDispatch = (fn: () => Promise<IAuthResult>) => () => {
     dispatch({ type: 'SET_WAITING' });
-    fn().then( r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }) );
+    fn().then(r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }));
+  };
+
+  const doSignIn = () => {
+    checkCredentials(userName, password).then(r => {
+      dispatch({ type: 'SET_AUTHRESULT', authResult: r });
+      if (r.result === 'SUCCESS') {
+        location.reload();
+      }
+    });
+  };
+
+  const keyPress = (e: any) => {
+    if (e.keyCode === 13) {
+      doSignIn();
+    }
   };
 
   const result =
-    stage === 'FORGOT_PASSWORD' ?
+    stage === 'FORGOT_PASSWORD'
+      ?
       <Stack direction="column" spacing={2}>
         {topDecorator?.(stage)}
         <TextField
@@ -101,7 +117,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
           autoFocus
-          onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
+          onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value })}
         />
         <Button
           variant="contained"
@@ -113,132 +129,134 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         <Button
           variant="outlined"
           disabled={waiting}
-          onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }
+          onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}
         >
           Return to sign in
         </Button>
         {bottomDecorator?.(stage)}
       </Stack>
-    : stage === 'SIGNUP' ?
-      <Stack direction="column" spacing={2}>
-        {topDecorator?.(stage)}
-        <Typography variant="h1">
+      :
+      stage === 'SIGNUP'
+        ?
+        <Stack direction="column" spacing={2}>
+          {topDecorator?.(stage)}
+          <Typography variant="h1">
           New user
-        </Typography>
-        <TextField
-          label="Пользователь"
-          value={userName}
-          disabled={waiting}
-          autoFocus
-          error={authResult?.result === 'DUPLICATE_USER_NAME'}
-          helperText={authResult?.result === 'DUPLICATE_USER_NAME' ? authResult?.message : undefined}
-          onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
-        />
-        <TextField
-          label="Email"
-          value={email}
-          disabled={waiting}
-          error={(email > '' && !checkEmailAddress(email)) || authResult?.result === 'DUPLICATE_EMAIL'}
-          helperText={authResult?.result === 'DUPLICATE_EMAIL' ? authResult?.message : undefined}
-          onChange={ e => dispatch({ type: 'SET_EMAIL', email: e.target.value }) }
-        />
-        <TextField
-          label="Retype email"
-          value={email2}
-          disabled={waiting}
-          error={email2 > '' && email2 !== email}
-          onChange={ e => dispatch({ type: 'SET_EMAIL2', email2: e.target.value }) }
-        />
-        <MathCaptcha
-          disabled={waiting}
-          onEnter={ captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed }) }
-        />
-        {
-          waiting ?
-            <Box sx={{ padding: 2, border: 1, borderColor: 'grey.50', borderRadius: 1 }}>
-              <LinearProgress />
-            </Box>
-          :
-            <Button
-              variant="contained"
-              disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 ||  !captchaPassed || !!authResult}
-              onClick={ createUser && waitAndDispatch( () => createUser(userName, email) ) }
-            >
+          </Typography>
+          <TextField
+            label="Пользователь"
+            value={userName}
+            disabled={waiting}
+            autoFocus
+            error={authResult?.result === 'DUPLICATE_USER_NAME'}
+            helperText={authResult?.result === 'DUPLICATE_USER_NAME' ? authResult?.message : undefined}
+            onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
+          />
+          <TextField
+            label="Email"
+            value={email}
+            disabled={waiting}
+            error={(email > '' && !checkEmailAddress(email)) || authResult?.result === 'DUPLICATE_EMAIL'}
+            helperText={authResult?.result === 'DUPLICATE_EMAIL' ? authResult?.message : undefined}
+            onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value })}
+          />
+          <TextField
+            label="Retype email"
+            value={email2}
+            disabled={waiting}
+            error={email2 > '' && email2 !== email}
+            onChange={e => dispatch({ type: 'SET_EMAIL2', email2: e.target.value })}
+          />
+          <MathCaptcha
+            disabled={waiting}
+            onEnter={captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed })}
+          />
+          {
+            waiting ?
+              <Box sx={{ padding: 2, border: 1, borderColor: 'grey.50', borderRadius: 1 }}>
+                <LinearProgress />
+              </Box>
+              :
+              <Button
+                variant="contained"
+                disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 || !captchaPassed || !!authResult}
+                onClick={createUser && waitAndDispatch(() => createUser(userName, email))}
+              >
               Sign up
-            </Button>
-        }
-        <Typography>
-          Already have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) }>Sign in</Button>
-        </Typography>
-        {bottomDecorator?.(stage)}
-      </Stack>
-    :
-      <Stack direction="column" spacing={2}>
-        {topDecorator?.(stage)}
-        <Typography variant="h1">
+              </Button>
+          }
+          <Typography>
+          Already have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}>Sign in</Button>
+          </Typography>
+          {bottomDecorator?.(stage)}
+        </Stack>
+        :
+        <Stack direction="column" spacing={2}>
+          {topDecorator?.(stage)}
+          <Typography variant="h1">
           Войти в систему
-        </Typography>
-        <TextField
-          label="Пользователь"
-          value={userName}
-          error={authResult?.result === 'UNKNOWN_USER'}
-          helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-          disabled={waiting}
-          autoFocus
-          onChange={ e => dispatch({ type: 'SET_USERNAME', userName: e.target.value }) }
-        />
-        <TextField
-          label="Пароль"
-          type="password"
-          value={password}
-          error={authResult?.result === 'INVALID_PASSWORD'}
-          helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
-          disabled={waiting}
-          onChange={ e => dispatch({ type: 'SET_PASSWORD', password: e.target.value }) }
-        />
-        <Button
-          variant="contained"
-          disabled={waiting || !userName || !password || !!authResult}
-          onClick={ () => checkCredentials(userName, password).then( r => {
-            dispatch({ type: 'SET_AUTHRESULT', authResult: r });
-            if(r.result == 'SUCCESS'){location.reload()}
-          } ) }
-        >
+          </Typography>
+          <TextField
+            label="Пользователь"
+            value={userName}
+            error={authResult?.result === 'UNKNOWN_USER'}
+            helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+            disabled={waiting}
+            autoFocus
+            onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
+            onKeyDown={keyPress}
+          />
+          <TextField
+            label="Пароль"
+            type="password"
+            value={password}
+            error={authResult?.result === 'INVALID_PASSWORD'}
+            helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
+            disabled={waiting}
+            onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
+            onKeyDown={keyPress}
+          />
+          <Button
+            variant="contained"
+            disabled={waiting || !userName || !password || !!authResult}
+            onClick={doSignIn}
+          >
           Вход
-        </Button>
-        {
-          newPassword
+          </Button>
+          {
+            newPassword
           &&
-          <Button variant="outlined" disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' }) }>
+          <Button variant="outlined" disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}>
             Забыли пароль?
           </Button>
-        }
-        {
-          createUser
+          }
+          {
+            createUser
           &&
           <Typography>
-            Don't have an account? <Button disabled={waiting} onClick={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' }) }>Sign up</Button>
+            Don't have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
           </Typography>
-        }
-        {bottomDecorator?.(stage)}
-      </Stack>
-      return (
-      <>
-        {result}
-        <Dialog onClose={ () => dispatch({ type: 'CLEAR_AUTHRESULT' }) } open={authResult?.result === 'ERROR'}>
-          <Alert severity="error">{authResult?.message}</Alert>
-        </Dialog>
-        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_USER_CREATED'}>
-          <Alert severity="success">{authResult?.message}</Alert>
-        </Dialog>
-        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS_PASSWORD_CHANGED'}>
-          <Alert severity="success">{authResult?.message}</Alert>
-        </Dialog>
-        <Dialog onClose={ () => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' }) } open={authResult?.result === 'SUCCESS'}>
-          <Alert severity="success">{authResult?.message}</Alert>
-        </Dialog>
-      </>
-    );
+          }
+          {bottomDecorator?.(stage)}
+        </Stack>;
+
+  return (
+    <>
+      {result}
+      <Dialog onClose={() => dispatch({ type: 'CLEAR_AUTHRESULT' })} open={authResult?.result === 'ERROR'}>
+        <Alert severity="error">{authResult?.message}</Alert>
+      </Dialog>
+      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS_USER_CREATED'}>
+        <Alert severity="success">{authResult?.message}</Alert>
+      </Dialog>
+      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS_PASSWORD_CHANGED'}>
+        <Alert severity="success">{authResult?.message}</Alert>
+      </Dialog>
+      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS'}>
+        <Alert severity="success">{authResult?.message}</Alert>
+      </Dialog>
+    </>
+  );
 };
 
 export default SignInSignUp;

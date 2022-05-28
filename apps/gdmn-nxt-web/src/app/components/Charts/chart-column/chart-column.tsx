@@ -49,12 +49,10 @@ export interface ChartColumnProps {}
 
 export function ChartColumn(props: ChartColumnProps) {
   const theme = useTheme();
-
-  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
-
   const [periodType, setPeriodType] = useState<IPeriodType | undefined>(periods[0]);
   const [activeYears, setActiveYears] = useState<number[]>(years.slice(years.length - 2));
   const [department, setDepartment] = useState<IContactWithID | null>();
+
 
   interface IAnalyticsDataParams {
     departmentId?: number,
@@ -191,7 +189,6 @@ export function ChartColumn(props: ChartColumnProps) {
 
       labels: {
         colors: theme.color.grey[500],
-
       },
       markers: {
         width: 16,

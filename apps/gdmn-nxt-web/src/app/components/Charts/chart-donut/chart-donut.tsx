@@ -84,20 +84,19 @@ export function ChartDonut(props: ChartDonutProps) {
         display: 'flex'
       }}
     >
-      {stagesIsLoading
-        ? <Box p={2} flex={1} display="flex">
-          <ChartSkeleton />
-        </Box>
-        : <Stack direction="column" spacing={3} p={2} flex={1}>
-          <Typography variant="h1">Статус сделок</Typography>
-          <Chart
-            type="donut"
-            height={matchDownXl ? 'auto' : '550px'}
-            options={chartOptions}
-            {...chartData}
-          />
-        </Stack>
-      }
+      <Stack direction="column" spacing={3} p={2} flex={1}>
+        {stagesIsLoading
+          ? <ChartSkeleton />
+          : <>
+            <Typography variant="h1">Статус сделок</Typography>
+            <Chart
+              type="donut"
+              options={chartOptions}
+              {...chartData}
+            />
+          </>}
+      </Stack>
+
     </CustomizedCard>
   );
 };
