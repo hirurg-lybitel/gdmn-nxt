@@ -37,6 +37,8 @@ type Step = 'ENTER_TAXID'
 
 export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) {
 
+  console.log('CreateCustomerAccount');
+
   const [taxId, setTaxId] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [firstName, setFirstName] = useState<string>('');
@@ -80,6 +82,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   }, [step, isFetchingAccount, accountData, contactData]);
 
   useEffect( () => {
+    console.log('useEffect');
     if (step === 'SAVING_PROFILE') {
       if (isSuccess) {
         setStep('PROFILE_CREATED');
@@ -99,6 +102,10 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   const CancelButton = useMemo( () => ({ caption }: { caption?: string }) =>
     <Typography align="center">Вернуться в<Button onClick={ onCancel }>начало</Button></Typography>,
   [onCancel]);
+
+
+  console.log(isFetchingAccount);
+  console.log(accountDataEntered);
 
   return (
     <Card>

@@ -29,18 +29,19 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: '60px',
     height: '60px',
     fontSize: '2.5rem',
-    position: 'absolute',
+    // position: 'absolute',
     bottom: 0,
-    marginBottom: 20,
+    marginTop: 20,
     cursor: 'pointer'
   }
 }));
 
-const totalSum = 15488
+const totalSum = 15488;
 
-function getFormattedNumber(value: number){
+function getFormattedNumber(value: number) {
   return value.toLocaleString();
-}
+};
+
 /* eslint-disable-next-line */
 export interface OrderCardProps {}
 
@@ -54,14 +55,17 @@ export function OrderCard(props: OrderCardProps) {
       boxShadows
       className={classes.card}
     >
-      <Stack direction="row">
-        <Typography className={classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
-        <KeyboardDoubleArrowDownIcon fontSize="large" color="error" />
+      <Stack direction="column">
+        <Stack direction="row">
+          <Typography className={classes.amount}>Br {getFormattedNumber(totalSum)}</Typography>
+          <KeyboardDoubleArrowDownIcon fontSize="large" color="error" />
+        </Stack>
+        <Typography className={classes.title}>Всего Заказано</Typography>
+
+        <Avatar className={classes.avatar}>
+          <ShoppingBagOutlinedIcon fontSize="inherit" />
+        </Avatar>
       </Stack>
-      <Typography className={classes.title}>Всего Заказано</Typography>
-      <Avatar className={classes.avatar}>
-        <ShoppingBagOutlinedIcon fontSize="inherit"  />
-      </Avatar>
     </CustomizedCard>
   );
 }
