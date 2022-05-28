@@ -1,3 +1,5 @@
+import { IERModelQuery } from "./er-types";
+
 export type Language = 'en' | 'be' | 'ru';
 
 export interface INLPDialogItem {
@@ -89,6 +91,7 @@ export interface INLPResult {
   text: string;
   sents: INLPSentence[];
   ents: INLPEnt[];
+  erModelQuery?: IERModelQuery;
 };
 
 export interface INLPQuery {

@@ -273,17 +273,18 @@ export type Expression = Operand
   | IExpressionAnd;
 
 export interface IQueryAttr {
-  alias: string;
+  entityAlias: string;
   attrName: string | '*';
   as?: string;
 };
 
 export interface IQueryEntity {
   entityName: string;
-  as: string;
+  as? : string;
 };
 
 export interface IERModelQuery {
+  erModelName?: string;
   select: IQueryAttr[];
   from: IQueryEntity;
 };

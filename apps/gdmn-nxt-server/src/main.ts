@@ -285,9 +285,19 @@ router.put('/account/:ID', upsertAccount);
 
 router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
-router.get('/er-model', async (req, res) => {
+router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;
   res.json(erModelNoAdapters);
+});
+
+router.get('/er-model/with-adapters', async (_, res) => {
+  const { erModel } = await importedModels;
+  res.json(erModel);
+});
+
+router.get('/er-model/make-sql', async (_, res) => {
+  const { erModel } = await importedModels;
+  res.json(erModel);
 });
 
 app.use(apiRoot.v1, router);
