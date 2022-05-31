@@ -44,6 +44,14 @@ export function ErModel(props: ErModelProps) {
       headerName: 'Домен',
       width: 250
     },
+    {
+      field: 'required',
+      headerName: 'Req',
+      width: 50,
+      valueGetter: ({ row }) => typeof row.required === 'boolean'
+        ? (row.required ? '☑' : '')
+        : (data?.domains[row.domain]?.required ? '☑' : '')
+    },
   ];
 
   const recurse = (parent?: string) => data && Object.values(data.entities)

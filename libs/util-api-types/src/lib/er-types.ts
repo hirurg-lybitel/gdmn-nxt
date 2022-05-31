@@ -114,6 +114,7 @@ export interface IDomains {
 };
 
 export interface IAttrAdapter {
+  relation?: string;
   name: string;
 };
 
@@ -126,6 +127,8 @@ export interface IAttrBase {
   name: string;
   domain: string;
   lName: string;
+  /** required на уровне атрибута перекрывает required на уровне домена */
+  required?: boolean;
   readonly?: boolean;
   visible?: boolean;
   semCategory?: string;

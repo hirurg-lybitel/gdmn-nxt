@@ -76,6 +76,7 @@ export const execQuery = async (q: IERModelQuery, erModel: IERModel) => {
 };
 
 export const makeSQL = async (q: IERModelQuery, erModel: IERModel) => {
+  /*
   const fromEntity = erModel.entities[q.from.entityName];
 
   if (!fromEntity) {
@@ -89,4 +90,26 @@ export const makeSQL = async (q: IERModelQuery, erModel: IERModel) => {
       error: `No adapter for entity ${q.from.entityName}`
     }
   }
+
+  const selectStrings: string[] = [];
+  const fromStrings: string[] = [`${fromEntity.adapter.name} ${fromEntity.adapter.alias}`];
+
+  if (fromEntity.adapter.join) {
+    fromEntity.adapter.join.forEach( j => {
+      let s = `${j.type} JOIN ${j.name} ${j.alias}`;
+      if (j.condition) {
+        s += ` ON ${expression2str(j.condition)}`;
+      }
+      fromStrings.push(s);
+    });
+  }
+
+  q.select.forEach( s => {
+    if (s.attrName === '*') {
+      selectStrings.push(`${s.entityAlias}.*`);
+    } else {
+      selectStrings.push(`${s.entityAlias}.${s.attrName}`);
+    }
+  });
+  */
 }

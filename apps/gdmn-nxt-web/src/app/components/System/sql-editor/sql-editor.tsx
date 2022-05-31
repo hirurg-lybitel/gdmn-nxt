@@ -1,5 +1,5 @@
-import { Box, Grid, Stack } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, Stack } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import { useExecuteScriptMutation, useGetHistoryQuery } from '../../../features/sql-editor/sqlEditorApi';
 import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
 import { parseParams } from './sql-param-parser';
@@ -11,6 +11,7 @@ import command_run_large from './command-run-large.png';
 import command_history_large from './command-history-large.png';
 import command_undo_large from './command-undo-large.png';
 import { StyledSplit, StyledSplitPane } from '../../styled-split/styled-split';
+import { DGrid } from './dgrid';
 
 interface IHistoryProps {
   onSelectScript: (script: string) => void;
@@ -127,15 +128,6 @@ export function SqlEditor(props: SqlEditorProps) {
     }
   }, [script, params]);
 
-  const columns: GridColDef[] = useMemo( () => {
-    const fields = data?.length ? Object.keys(data[0]) : [];
-    return fields.map(f => ({
-      field: f,
-      headerName: f,
-      minWidth: f.length * (f.length > 10 ? 15 : 35),
-    }));
-  }, [data]);
-
   return (
     <>
       <MainToolbar>
@@ -208,16 +200,11 @@ export function SqlEditor(props: SqlEditorProps) {
             {
               currentTab === 'DATA'
                 ? data &&
-                  <StyledDataGrid
+                  <DGrid
                     rows={data}
-                    columns={columns}
-                    pagination
-                    loading={isLoading}
-                    onSelectionModelChange={setSelectionModel}
+                    isLoading={isLoading}
+                    setSelectionModel={setSelectionModel}
                     selectionModel={selectionModel}
-                    rowHeight={24}
-                    headerHeight={24}
-                    components={gridComponents}
                   />
                 : <History onSelectScript={setScript} />
             }

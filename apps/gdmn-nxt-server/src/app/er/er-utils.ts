@@ -1,10 +1,13 @@
 import { Expression, Entity, IEntities, IERModel, Operand, IDomains, Domain, IDomainBase, Attr, IAttrBase, IEntitySetAttr, IEntityAttr, ICrossAttrAdapter, isSeqAttr } from "@gsbelarus/util-api-types";
+import { writeFile } from "fs/promises";
 import { getReadTransaction, releaseReadTransaction } from "../utils/db-connection";
 import { IAtRelation, IGedeminDocType } from "./at-types";
 import { loadAtFields, loadAtRelationFields, loadAtRelations, loadGdDocumentType, adjustRelationName } from "./at-utils";
 //import gdbaseRaw from "./gdbase.json";
 import entitiesRaw from "./entities.json";
 import { loadRDBFields } from "./rdb-utils";
+import { tmpdir } from "os";
+import { join } from "path";
 
 /*
 We import er model of the existing Gedemin database in following order:
@@ -736,75 +739,86 @@ export const importModels = async () => {
         continue;
       }
 
-      const arf = atRelationFields[entity.adapter.name];
+      const entityRelations = [[entity.adapter.name, '']];
 
-      if (!arf) {
-        console.warn(`No fields definitions for ${entity.adapter.name} found...`);
-        continue;
+      if (entity.adapter.join) {
+        entityRelations.push(...entity.adapter.join.map(j => ([j.name, j.type])));
       }
 
-      for (const fld of arf) {
-        const domain = domains[fld.FIELDSOURCE];
+      for (const [relation, joinType] of entityRelations) {
+        const arf = atRelationFields[relation];
 
-        if (!domain) {
-          console.warn(`Domain ${fld.FIELDSOURCE} has not been found for the field ${entity.adapter.name}.${fld.FIELDNAME}`);
+        if (!arf) {
+          console.warn(`No fields definitions for ${entity.adapter.name} found...`);
           continue;
         }
 
-        const createAttr = (entity?: string, crossAdapter?: Omit<ICrossAttrAdapter, 'name'>): (IAttrBase | IEntityAttr | IEntitySetAttr) => ({
-          name: fld.FIELDNAME,
-          domain: domain.name,
-          lName: fld.LNAME,
-          entityName: entity,
-          readonly: fld.READONLY ? true : undefined,
-          visible: fld.VISIBLE ? true : undefined,
-          semCategory: fld.SEMCATEGORY ?? undefined,
-          adapter: {
-            name: fld.FIELDNAME,
-            ...crossAdapter
-          }
-        });
+        for (const fld of arf) {
+          const domain = domains[fld.FIELDSOURCE];
 
-        if (
-          domain.type === 'ENTITY'
-          ||
-          domain.type === 'ENTITY[]'
-          ||
-          fld.GDCLASSNAME
-          ||
-          fld.REF
-        ) {
-          const refEntityName = fld.GDCLASSNAME
-            ? (fld.GDCLASSNAME + adjustRelationName(fld.GDSUBTYPE))
-            : domain.type === 'ENTITY' || domain.type === 'ENTITY[]'
-            ? domain.entityName
-            : relation2entityName(fld.REF);
-          const refEntity = refEntityName && entities[refEntityName];
-
-          if (!refEntity) {
-            const warning = `There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`;
-            if (warning !== prevWarning) {
-              console.warn(prevWarning = warning);
-            }
+          if (!domain) {
+            console.warn(`Domain ${fld.FIELDSOURCE} has not been found for the field ${entity.adapter.name}.${fld.FIELDNAME}`);
             continue;
           }
 
-          if (fld.CROSSTABLE) {
-            entity.attributes.push(createAttr(refEntity.name, {
-              crossRelation: fld.CROSSTABLE,
-              crossField: fld.CROSSFIELD
-            }));
+          const createAttr = (entity?: string, crossAdapter?: Omit<ICrossAttrAdapter, 'name'>): (IAttrBase | IEntityAttr | IEntitySetAttr) => ({
+            name: fld.FIELDNAME,
+            domain: domain.name,
+            lName: fld.LNAME,
+            entityName: entity,
+            /* weak relationship */
+            required: joinType === 'LEFT' ? false : undefined,
+            readonly: fld.READONLY ? true : undefined,
+            visible: fld.VISIBLE ? true : undefined,
+            semCategory: fld.SEMCATEGORY ?? undefined,
+            adapter: {
+              relation: joinType ? relation : undefined,
+              name: fld.FIELDNAME,
+              ...crossAdapter
+            }
+          });
+
+          if (
+            domain.type === 'ENTITY'
+            ||
+            domain.type === 'ENTITY[]'
+            ||
+            fld.GDCLASSNAME
+            ||
+            fld.REF
+          ) {
+            const refEntityName = fld.GDCLASSNAME
+              ? (fld.GDCLASSNAME + adjustRelationName(fld.GDSUBTYPE))
+              : domain.type === 'ENTITY' || domain.type === 'ENTITY[]'
+              ? domain.entityName
+              : relation2entityName(fld.REF);
+            const refEntity = refEntityName && entities[refEntityName];
+
+            if (!refEntity) {
+              const warning = `There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`;
+              if (warning !== prevWarning) {
+                console.warn(prevWarning = warning);
+              }
+              continue;
+            }
+
+            if (fld.CROSSTABLE) {
+              entity.attributes.push(createAttr(refEntity.name, {
+                crossRelation: fld.CROSSTABLE,
+                crossField: fld.CROSSFIELD
+              }));
+            } else {
+              entity.attributes.push(createAttr(refEntity.name));
+            }
           } else {
-            entity.attributes.push(createAttr(refEntity.name));
-          }
-        } else {
-          if (fld.FIELDNAME === 'ID') {
-            entity.attributes.push({
-              type: 'SEQ',
-              name: 'ID'
-            });
-          } else {
-            entity.attributes.push(createAttr());
+            if (fld.FIELDNAME === 'ID') {
+              entity.attributes.push({
+                type: 'SEQ',
+                name: 'ID'
+              });
+            } else {
+              entity.attributes.push(createAttr());
+            }
           }
         }
       }
@@ -816,9 +830,11 @@ export const importModels = async () => {
       entities
     };
 
+    const dumpErModel = JSON.stringify(erModel, undefined, 2);
+
     console.log(`
       ERModel imported in ${new Date().getTime() - t} ms
-      size of erModel: ${(new TextEncoder().encode(JSON.stringify(erModel, undefined, 2))).length} bytes
+      size of erModel: ${(new TextEncoder().encode(dumpErModel)).length} bytes
       domains: ${Object.keys(domains).length}
       entities: ${Object.keys(entities).length}
       attributes: ${Object.values(entities).flatMap( e => e.attributes ).length}
@@ -849,6 +865,11 @@ export const importModels = async () => {
         )
       ),
     };
+
+    const dumpFileName = join(tmpdir(),'erModel.json');
+    writeFile(dumpFileName, dumpErModel, { encoding: 'utf8' })
+      .then( () => console.log(`ERModel dumped to ${dumpFileName}...`) )
+      .catch( e => console.error(e) );
 
     return {
       rdbModel: {
