@@ -50,7 +50,7 @@ export function ActCompletion(props: ActCompletionProps) {
     { field: 'DEPT_NAME', headerName: 'Отдел', flex: 1, minWidth: 100 },
     { field: 'JOB_NUMBER', headerName: 'Заказ', flex: 1, minWidth: 100 },
     { field: 'USR$SUMNCU', headerName: 'Сумма', flex: 1, minWidth: 100,
-      renderCell: ({ value }) => (Math.round(value * 100) / 100).toFixed(2) },
+      renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
   ];
 
   return (

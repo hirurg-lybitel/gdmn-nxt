@@ -1,4 +1,4 @@
-import { IBaseContact, IRequestResult, IWithID, IContactWithID, IContactPerson } from '@gsbelarus/util-api-types';
+import { IBaseContact, IRequestResult, IWithID, IContactWithID, IContactPerson, IEmployee } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -13,6 +13,12 @@ export interface IPersons {
 };
 
 export type IContactPersonsRequestResult = IRequestResult<IPersons>;
+
+export interface IEmployees {
+  employees: IEmployee[];
+};
+
+export type IEmployeesRequestResult = IRequestResult<IEmployees>;
 
 export const contactApi = createApi({
   reducerPath: 'contact',
@@ -92,6 +98,16 @@ export const contactApi = createApi({
           : error
             ? [{ type: 'Persons', id: 'ERROR' }]
             : [{ type: 'Persons', id: 'LIST' }]
+    }),
+    getEmployees: builder.query<IEmployee[], number | void>({
+      query: (id) => ({
+        url: `contacts/employees${id ? `/${id}` : ''}`,
+        method: 'GET'
+      }),
+      transformResponse: (response: IEmployeesRequestResult) => response.queries?.employees || [],
+      onQueryStarted(id) {
+        console.info('⏩ request', 'GET', `${baseUrlApi}contacts/employees${id ? `/${id}` : ''}`);
+      },
     })
   }),
 });
@@ -102,5 +118,6 @@ export const {
   useGetContactPersonsQuery,
   useAddContactPersonMutation,
   useUpdateContactPersonMutation,
-  useDeleteContactPersonMutation
+  useDeleteContactPersonMutation,
+  useGetEmployeesQuery
 } = contactApi;

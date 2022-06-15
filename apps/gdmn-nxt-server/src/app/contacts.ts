@@ -215,7 +215,7 @@ export const updateContact: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        contact: [{
+        contacts: [{
           ID: row[0][0],
           PARENT: row[0][1],
           NAME: row[0][2],
@@ -291,7 +291,7 @@ export const addContact: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        contact: [{
+        contacts: [{
           ID: row[0],
           NAME: row[1],
           EMAIL: row[2],

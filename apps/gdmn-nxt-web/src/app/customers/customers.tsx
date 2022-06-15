@@ -22,7 +22,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../components/Customers/customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
+import { addCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
 import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
@@ -42,6 +42,8 @@ import CustomersFilter, { IFilteringData } from './customers-filter/customers-fi
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from './DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
+import { useGetCustomersQuery, useUpdateCustomerMutation } from '../features/customer/customerApi_new';
+import { saveFilterData, saveFilterModel } from '../store/filtersSlice';
 
 const useStyles = makeStyles((theme: Theme) => ({
   DataGrid: {
@@ -126,15 +128,20 @@ export function Customers(props: CustomersProps) {
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 50
+    pageSize: 20
   });
 
   /** Затычка для минимизации рендеров DataGrid при resize */
   const [displayDataGrid, setDisplayDataGrid] = useState(true);
 
-
-  const allCustomers = useSelector(customersSelectors.selectAll);
+  // const allCustomers = useSelector(customersSelectors.selectAll);
   const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
+
+  const { data: customers, isFetching: customerFetching } = useGetCustomersQuery();
+  const [updateCustomer] = useUpdateCustomerMutation();
+
+  // console.log('data', customerFetching, customers);
+
   const dispatch = useDispatch();
 
   const [addLabelsContact] = useAddLabelsContactMutation();
@@ -292,6 +299,7 @@ export function Customers(props: CustomersProps) {
                           onClick={() => {
                             setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: subLabel.USR$LABELKEY, operatorValue: 'is' }] });
                             setFilteringData({ 'LABELS': [{ ID: subLabel.USR$LABELKEY }] });
+                            // dispatch(setFilterData({ 'customers': { 'LABELS': [{ ID: subLabel.USR$LABELKEY }] } }));
                           }}
                           style={labelStyle}
                         >
@@ -324,15 +332,22 @@ export function Customers(props: CustomersProps) {
 
         const detailsComponent = {
           // eslint-disable-next-line react/display-name
-          component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`details/${customerId}`} target="_self" />)
+          component: forwardRef((props, ref: ForwardedRef<any>) =>
+            <Link
+              ref={ref}
+              {...props}
+              to={`details/${customerId}`}
+              target="_self"
+              onClick={SaveFilters}
+            />)
         };
 
         return (
           <Box>
-            <IconButton {...detailsComponent} disabled={customersLoading} >
+            <IconButton {...detailsComponent} disabled={customerFetching} >
               <VisibilityIcon fontSize="small" color="primary" />
             </IconButton>
-            <IconButton onClick={handleCustomerEdit} disabled={customersLoading} >
+            <IconButton onClick={handleCustomerEdit} disabled={customerFetching} >
               <EditOutlinedIcon fontSize="small" color="primary" />
             </IconButton>
           </Box>
@@ -343,8 +358,15 @@ export function Customers(props: CustomersProps) {
     { field: 'DEPARTMENTS', headerName: 'Отделы', filterOperators: [containDepartments] },
   ];
 
+  const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+
   useEffect(() => {
-    dispatch(fetchCustomers({ paginationData: paginationData }));
+    setFilterModel(filtersStorage.filterModels['customers']);
+    setFilteringData(filtersStorage.filterData['customers']);
+    // console.log('123', Object.keys(filtersStorage.filterData['customers'] || {}));
+    if (Object.keys(filtersStorage.filterData['customers'] || {}).length > 0) {
+      setOpenFilters(true);
+    };
   }, []);
 
   useEffect(() => {
@@ -372,11 +394,6 @@ export function Customers(props: CustomersProps) {
     tree.loadTree(arr, { createIndexes: true });
   }
 
-  // useEffect(() => {
-  //   dispatch(fetchHierarchy());
-
-  // }, [allCustomers]);
-
   /** Close snackbar manually */
   const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -384,6 +401,11 @@ export function Customers(props: CustomersProps) {
     };
     dispatch(clearError());
     setOpenSnackBar(false);
+  };
+
+  const SaveFilters = () => {
+    dispatch(saveFilterData({ 'customers': filteringData }));
+    dispatch(saveFilterModel({ 'customers': filterModel }));
   };
 
   const handleReconciliationClick = () => {
@@ -419,7 +441,8 @@ export function Customers(props: CustomersProps) {
     } else {
       deleteLabelsContact(values.ID);
     }
-    dispatch(updateCustomer(values));
+    updateCustomer(values);
+    // dispatch(updateCustomer(values));
   };
 
 
@@ -536,8 +559,8 @@ export function Customers(props: CustomersProps) {
           <Box sx={{ mb: 1 }}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={()=> dispatch(fetchCustomers({ paginationData: paginationData }))} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
-                <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+                <Button onClick={()=> dispatch(fetchCustomers({ paginationData: paginationData }))} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+                <Button onClick={handleAddOrganization} disabled={customerFetching} startIcon={<AddIcon/>}>Добавить</Button>
                 {/* <Button
                   component="a"
                   href={`employee/reports/reconciliation/${currentOrganization}`}
@@ -548,7 +571,7 @@ export function Customers(props: CustomersProps) {
               <Box flex={1} />
               <Box>
                 <SearchBar
-                  disabled={customersLoading}
+                  disabled={customerFetching}
                   // onChange={filterHandlers.handleChange}
                   onCancelSearch={filterHandlers.handleCancelSearch}
                   onRequestSearch={filterHandlers.handleRequestSearch}
@@ -562,7 +585,7 @@ export function Customers(props: CustomersProps) {
                 </Button> */}
                 <IconButton
                   onClick={filterHandlers.handleFilter}
-                  disabled={customersLoading || !displayDataGrid}
+                  disabled={customerFetching || !displayDataGrid}
                 >
                   <FilterAltIcon color="primary" />
                 </IconButton>
@@ -592,10 +615,10 @@ export function Customers(props: CustomersProps) {
                 }}
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 rows={
-                  allCustomers
+                  customers
                     // .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
-                    .filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
-                    ?? undefined}
+                    ?.filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
+                    ?? []}
                 columns={columns}
                 columnVisibilityModel={{
                   CONTRACTS: false,
@@ -603,7 +626,7 @@ export function Customers(props: CustomersProps) {
                 }}
                 pagination
                 disableMultipleSelection
-                loading={customersLoading}
+                loading={customerFetching}
                 getRowId={row => row.ID}
                 onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
                 components={{
@@ -670,8 +693,8 @@ export function Customers(props: CustomersProps) {
         <CustomerEdit
           open={openEditForm}
           customer={
-            allCustomers
-              .find(element => element.ID === currentOrganization)
+            customers
+              ?.find(element => element.ID === currentOrganization)
             || null
           }
           onSubmit={handleOrganiztionEditSubmit}
