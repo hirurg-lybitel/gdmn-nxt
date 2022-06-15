@@ -45,7 +45,6 @@ import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import ruLocale from 'date-fns/locale/ru';
 import { ChatView } from '@gsbelarus/ui-common-dialogs';
-import FormikDatePicker from '../../formik-date-picker/formik-date-picker';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
