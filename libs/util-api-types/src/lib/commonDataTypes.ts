@@ -84,3 +84,5 @@ export interface IContactHierarchy {
 export interface IResultError {
   errorMessage: string
 };
+
+export type IEmployee = IContactWithID;

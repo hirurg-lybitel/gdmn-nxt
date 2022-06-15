@@ -46,11 +46,18 @@ export interface ICustomerContract {
 export type ICustomerContractWithID = ICustomerContract & IWithID;
 
 export interface IDeal extends IWithID {
-  USR$NAME: string;
+  USR$NAME?: string;
   USR$AMOUNT?: number;
-  USR$CONTACTKEY: number;
   CONTACT?: IContactWithID;
-}
+  PERFORMER?: IContactWithID;
+  CREATOR?: IContactWithID;
+  USR$SOURCE?: string;
+  USR$DEADLINE?: Date;
+  USR$CONTACTKEY?: number;
+  USR$DISABLED?: boolean;
+  USR$DONE?: boolean;
+  USR$READYTOWORK?: boolean;
+};
 
 export interface IKanbanCard extends IWithID {
   USR$INDEX: number;

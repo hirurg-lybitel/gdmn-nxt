@@ -2,6 +2,7 @@ import express from 'express';
 import { addContact, deleteContact, getContactHierarchy, getContacts, updateContact } from '../../contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../labels';
 import contactPersons from '../../handlers/contactPersons';
+import contactEmployees from '../../handlers/contactEmployees';
 
 const router = express.Router();
 
@@ -22,5 +23,8 @@ router.get('/persons/:id', contactPersons.get);
 router.post('/persons', contactPersons.upsert);
 router.put('/persons/:id', contactPersons.upsert);
 router.delete('/persons/:id', contactPersons.remove);
+
+router.get('/employees/:id', contactEmployees.get);
+router.get('/employees', contactEmployees.get);
 
 export default router;

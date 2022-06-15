@@ -28,43 +28,57 @@ const get: RequestHandler = async (req, res) => {
     let actualFields = ['ID', 'USR$INDEX', 'USR$NAME'];
     let actualFieldsNames = actualFields.join(',');
 
+    // TODO: сделать выбор выбор разных шаблонов
     const columnsResultSet = await attachment.executeQuery(
       transaction,
-      `SELECT ${actualFieldsNames}
-      FROM USR$CRM_KANBAN_COLUMNS
-      ORDER BY USR$INDEX`
+      `SELECT col.ID, col.USR$INDEX, col.USR$NAME
+      FROM USR$CRM_KANBAN_TEMPLATE temp
+        JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
+        JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
+      ORDER BY col.USR$INDEX`
     );
 
 
     let cardsResultSet;
     switch (mode) {
-    case 'deals':
-      cardsResultSet = await attachment.executeQuery(
-        transaction,
-        `SELECT
+      case 'deals':
+        cardsResultSet = await attachment.executeQuery(
+          transaction,
+          `SELECT
             card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
-            card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED, deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
-            con.ID con_ID, con.NAME con_NAME
+            card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED,
+            deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
+            con.ID con_ID, con.NAME con_NAME,
+            performer.ID AS PERFORMER_ID,
+            performer.NAME AS PERFORMER_NAME,
+            creator.ID AS CREATOR_ID,
+            creator.NAME AS CREATOR_NAME,
+            deal.USR$SOURCE,
+            deal.USR$DEADLINE,
+            deal.USR$DONE,
+            deal.USR$READYTOWORK
           FROM USR$CRM_KANBAN_CARDS card
-          JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
-          JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
+            JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+            JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
+            LEFT JOIN GD_CONTACT performer ON performer.ID = deal.USR$PERFORMER
+            LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
           ORDER BY card.USR$MASTERKEY, USR$INDEX`
-      );
+        );
 
-      break;
+        break;
 
-    default:
-      actualFields = ['ID', 'USR$MASTERKEY', 'USR$INDEX', 'USR$DEALKEY'];
-      actualFieldsNames = actualFields.join(',');
+      default:
+        actualFields = ['ID', 'USR$MASTERKEY', 'USR$INDEX', 'USR$DEALKEY'];
+        actualFieldsNames = actualFields.join(',');
 
-      cardsResultSet = await attachment.executeQuery(
-        transaction,
-        `SELECT ${actualFieldsNames}
+        cardsResultSet = await attachment.executeQuery(
+          transaction,
+          `SELECT ${actualFieldsNames}
           FROM USR$CRM_KANBAN_CARDS card
           ORDER BY USR$INDEX`
-      );
+        );
 
-      break;
+        break;
     };
 
     interface ISubItemArray {
@@ -83,32 +97,44 @@ const get: RequestHandler = async (req, res) => {
           const itemData = await Promise.all(await execQuery(item.itemResultSet));
 
           switch (mode) {
-          case 'deals':
-            itemData.map((el: IKanbanCard) => {
-              el.DEAL = {
-                ID: el['DEAL_ID'],
-                USR$NAME: el['DEAL_USR$NAME'],
-                USR$CONTACTKEY: el['DEAL_$CONTACTKEY'],
-                USR$AMOUNT: el['DEAL_USR$AMOUNT'],
-                CONTACT: {
-                  ID: el['CON_ID'],
-                  NAME: el['CON_NAME']
-                },
-              };
-              return el;
-            });
+            case 'deals':
+              itemData.map((el: IKanbanCard) => {
+                el.DEAL = {
+                  ID: el['DEAL_ID'],
+                  USR$NAME: el['DEAL_USR$NAME'],
+                  USR$CONTACTKEY: el['DEAL_$CONTACTKEY'],
+                  USR$AMOUNT: el['DEAL_USR$AMOUNT'],
+                  USR$DEADLINE: el['USR$DEADLINE'],
+                  USR$SOURCE: el['USR$SOURCE'],
+                  CONTACT: {
+                    ID: el['CON_ID'],
+                    NAME: el['CON_NAME']
+                  },
+                  CREATOR: {
+                    ID: el['CREATOR_ID'],
+                    NAME: el['CREATOR_NAME']
+                  },
+                  PERFORMER: {
+                    ID: el['PERFORMER_ID'],
+                    NAME: el['PERFORMER_NAME']
+                  },
+                  USR$DONE: el['USR$DONE'] === 1,
+                  USR$READYTOWORK: el['USR$READYTOWORK'] === 1,
+                };
+                return el;
+              });
 
-            break;
+              break;
 
-          default:
-            break;
+            default:
+              break;
           };
 
           data.map((el) => {
             return el[item.itemName] = itemData?.filter((e: IKanbanCard) => e[item.itemDetailField] === el[item.itemMasterField ? item.itemMasterField : 'ID']) as IKanbanCard[];
           });
         }
-      }
+      };
 
       resultSet.close();
       return data;

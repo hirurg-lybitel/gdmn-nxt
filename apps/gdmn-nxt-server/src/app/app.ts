@@ -62,11 +62,12 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
   }
 };
 
-export const getGedeminUser = async (userName: string): Promise<{ id: number, userName: string } | undefined> => {
+export const getGedeminUser = async (userName: string): Promise<{ id: number, userName: string, contactkey: number } | undefined> => {
   const query = `
     SELECT
       u.id,
-      u.name
+      u.name,
+      u.contactkey
     FROM
       gd_user u
     WHERE UPPER(u.name) = ?
@@ -81,7 +82,8 @@ export const getGedeminUser = async (userName: string): Promise<{ id: number, us
       if (data.length === 1) {
         return {
           id: data[0]['ID'],
-          userName
+          userName,
+          contactkey: data[0]['CONTACTKEY']
         };
       } else if (!data.length) {
         return undefined;
