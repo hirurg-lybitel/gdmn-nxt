@@ -22,7 +22,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../components/Customers/customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
+import { fetchCustomers, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
 import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
@@ -42,7 +42,7 @@ import CustomersFilter, { IFilteringData } from './customers-filter/customers-fi
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from './DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
-import { useGetCustomersQuery, useUpdateCustomerMutation } from '../features/customer/customerApi_new';
+import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation } from '../features/customer/customerApi_new';
 import { saveFilterData, saveFilterModel } from '../store/filtersSlice';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -77,10 +77,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     '& .MuiDataGrid-columnHeader': {
       fontSize: '1rem'
-    }
-    // '& .MuiDataGrid-cell': {
-    //   padding: 30
-    // },
+    },
   },
 }));
 
@@ -100,10 +97,10 @@ const labelStyle: CSSProperties = {
   height: 'fit-content'
 };
 
-interface IPaginationData {
-  pageNo: number;
-  pageSize: number;
-};
+// interface IPaginationData {
+//   pageNo: number;
+//   pageSize: number;
+// };
 
 /* eslint-disable-next-line */
 export interface CustomersProps {}
@@ -137,8 +134,10 @@ export function Customers(props: CustomersProps) {
   // const allCustomers = useSelector(customersSelectors.selectAll);
   const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
 
-  const { data: customers, isFetching: customerFetching } = useGetCustomersQuery();
+  const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery();
   const [updateCustomer] = useUpdateCustomerMutation();
+  const [addCustomer] = useAddCustomerMutation();
+  const [deleteCustomer] = useDeleteCustomerMutation();
 
   // console.log('data', customerFetching, customers);
 
@@ -425,14 +424,17 @@ export function Customers(props: CustomersProps) {
   const handleOrganiztionEditSubmit = async (values: ICustomer, deleting: boolean) => {
     setOpenEditForm(false);
 
+    console.log(deleting, values.ID);
+
     if (deleting) {
       deleteLabelsContact(values.ID);
-      dispatch(deleteCustomer(values.ID));
+      deleteCustomer(values.ID);
       return;
-    }
+    };
 
     if (!values.ID) {
-      dispatch(addCustomer(values));
+      // dispatch(addCustomer(values));
+      addCustomer(values);
       return;
     }
 
@@ -452,13 +454,15 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleOrganizationDeleteOnClick = () => {
+    console.log('deleteClick', currentOrganization);
+
     if (!currentOrganization) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
       return;
     };
 
-    dispatch(deleteCustomer(currentOrganization));
+    deleteCustomer(currentOrganization);
   };
 
 
@@ -500,38 +504,6 @@ export function Customers(props: CustomersProps) {
     }
   };
 
-
-  // const contactGroupHandlers = {
-  //   handleAdd: async () => {
-  //     setAddingGroup(true);
-  //     setOpenContactGroupEditForm(true);
-  //   },
-  //   handleCancel: async () => setOpenContactGroupEditForm(false),
-  //   onSubmit: async (value: IContactWithLabels) => {
-  //     setOpenContactGroupEditForm(false);
-
-  //     if (!value.ID) {
-  //       addGroup(value);
-  //       return;
-  //     }
-
-  //     updateGroup(value);
-  //   },
-  //   handleEdit: async (nodeId: number) => {
-  //     setAddingGroup(false);
-  //     setEditingTreeNodeId(nodeId);
-  //     setOpenContactGroupEditForm(true);
-  //   },
-  //   handleDelete: async(nodeId: number) => {
-  //     /** если удаляем текущую папку */
-  //     if (treeNodeId === nodeId) setTreeNodeId(null);
-
-  //     deleteGroup(nodeId);
-  //   }
-
-  // };
-
-
   return (
     <Stack flex={1} display="flex" direction="column" spacing={2} style={{ overflow: 'hidden' }}>
       <Stack direction="row" flex={1} >
@@ -559,7 +531,7 @@ export function Customers(props: CustomersProps) {
           <Box sx={{ mb: 1 }}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={()=> dispatch(fetchCustomers({ paginationData: paginationData }))} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+                <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
                 <Button onClick={handleAddOrganization} disabled={customerFetching} startIcon={<AddIcon/>}>Добавить</Button>
                 {/* <Button
                   component="a"
@@ -616,7 +588,6 @@ export function Customers(props: CustomersProps) {
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 rows={
                   customers
-                    // .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
                     ?.filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
                     ?? []}
                 columns={columns}
@@ -648,6 +619,7 @@ export function Customers(props: CustomersProps) {
 
                   return 80;
                 }}
+                rowsPerPageOptions={[20, 50, 100]}
                 pageSize={paginationData.pageSize}
                 onPageChange={(data) => {
                   setPaginationData(prevState => ({ ...prevState, pageNo: data }));

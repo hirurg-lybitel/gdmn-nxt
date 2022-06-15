@@ -47,9 +47,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: '30vw',
-    maxWidth: '100vw',
-    minWidth: '300px',
+    width: 500,
+    minWidth: '30vw',
+    maxWidth: '100%',
     // //width: '30%',
     // //minWidth: '30%',
     borderTopRightRadius: 0,
@@ -122,6 +122,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       PARENT: yup.string().required('')
     }),
     onSubmit: (values) => {
+      console.log('onSubmit', values, deleting);
       setConfirmOpen(false);
       onSubmit(values, deleting);
     },
@@ -262,9 +263,17 @@ export function CustomerEdit(props: CustomerEditProps) {
           <CustomerEdit open={open2} customer={customer} onSubmit={onSubmit} onCancelClick={() => setOpen2(false)} />
           <CustomizedCard
             borders
+            style={{
+              borderColor: 'lightgrey',
+            }}
           >
             <Accordion disableGutters>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                style={{
+                  height: 56,
+                }}
+              >
                 <Typography sx={{ width: '33%', flexShrink: 0 }}>
                   Контакты
                 </Typography>
@@ -283,11 +292,20 @@ export function CustomerEdit(props: CustomerEditProps) {
           </CustomizedCard>
         </Stack>
       </DialogContent>
-      <DialogActions className={classes.dialogAction}>
+      <DialogActions>
         <IconButton onClick={handleDeleteClick} size="large">
           <DeleteIcon />
         </IconButton>
-        <Divider orientation="vertical" flexItem />
+        {/* <Button
+          className={classes.button}
+          variant="text"
+          color="error"
+          onClick={handleDeleteClick}
+          startIcon={<DeleteIcon fontSize="medium"  />}
+        >
+          Удалить
+        </Button> */}
+        <Box flex={1}/>
         <Button
           className={classes.button}
           onClick={handleCancelClick}
@@ -299,18 +317,14 @@ export function CustomerEdit(props: CustomerEditProps) {
         <Button
           className={classes.button}
           type={!formik.isValid ? 'submit' : 'button'}
-
           form="mainForm"
           onClick={() => {
             setDeleting(false);
             setConfirmOpen(formik.isValid);
           }}
           variant="contained"
-          // color="warning"
-          // color="success"
-          // startIcon={<SaveIcon />}
         >
-            OK
+            Сохранить
         </Button>
       </DialogActions>
       <ConfirmDialog

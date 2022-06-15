@@ -67,7 +67,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   accordionCaption: {
     color: theme.color.grey['500']
-  }
+  },
+  button: {
+    width: '120px',
+  },
 }));
 
 
@@ -532,9 +535,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         <IconButton onClick={handleDeleteClick} size="large" >
           <DeleteIcon />
         </IconButton>
+        <Box flex={1} />
         {/* <Button variant="outlined" color="error" onClick={handleDeleteClick}>Удалить</Button> */}
-        <Button onClick={handleCancelClick} style={{ marginLeft: 'auto' }}>Отменить</Button>
         <Button
+          className={classes.button}
+          onClick={handleCancelClick}
+        >Отменить</Button>
+        <Button
+          className={classes.button}
           form="mainForm"
           type="submit"
           variant="contained"
