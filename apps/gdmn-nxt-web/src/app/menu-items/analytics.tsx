@@ -22,7 +22,7 @@ const analytics: IMenuItem = {
       ]
     },
     {
-      id: 'salesFunnel',
+      id: 'salesfunnel',
       title: 'Продажи',
       type: 'item',
       url: 'analytics/salesfunnel',

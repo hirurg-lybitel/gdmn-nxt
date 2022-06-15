@@ -9,7 +9,7 @@ const dashboard: IMenuItem = {
   type: 'group',
   children: [
     {
-      id: 'overview',
+      id: 'dashboard',
       title: 'Обзор',
       type: 'item',
       url: 'dashboard',

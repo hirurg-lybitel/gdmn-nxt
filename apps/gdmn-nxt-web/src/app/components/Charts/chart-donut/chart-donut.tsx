@@ -16,7 +16,7 @@ export function ChartDonut(props: ChartDonutProps) {
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery();
 
-  const series = stages?.map(stage => stage.CARDS.length);
+  const series = stages?.map(stage => stage.CARDS.length || 0) || [];
 
   const chartOptions: ApexCharts.ApexOptions = {
     labels: stages?.map(stage => stage.USR$NAME) ?? [],

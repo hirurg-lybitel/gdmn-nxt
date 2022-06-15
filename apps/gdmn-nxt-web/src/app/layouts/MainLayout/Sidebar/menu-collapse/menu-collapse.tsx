@@ -53,7 +53,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
   });
 
   const menuIcon = menu.icon;
-
+  
   return (
     <>
       <ListItemButton

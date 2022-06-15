@@ -10,7 +10,7 @@
     "importHelpers": true,
     "target": "ES2021",
     "module": "ESNext",
-    "lib": ["ES2021", "ES2021.String", "DOM"],
+    "lib": ["ES2021", "ES2021.String", "DOM", "ES2022.Array"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "resolveJsonModule": true,
