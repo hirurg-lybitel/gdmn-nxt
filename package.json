@@ -104,7 +104,7 @@
     "@types/react-leaflet-markercluster": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "5.18.0",
     "@typescript-eslint/parser": "5.18.0",
-    "babel-jest": "27.2.3",
+    "babel-jest": "^27.2.3",
     "cross-env": "^7.0.3",
     "cypress": "^8.3.0",
     "eslint": "8.12.0",
