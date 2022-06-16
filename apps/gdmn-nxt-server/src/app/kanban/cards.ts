@@ -243,18 +243,18 @@ const remove: RequestHandler = async(req, res) => {
       `EXECUTE BLOCK(
         ID INTEGER = ?
       )
-      RETURNS(SUCCESS BOOLEAN, USR$MASTERKEY INTEGER)
+      RETURNS(SUCCESS SMALLINT, USR$MASTERKEY INTEGER)
       AS
         DECLARE VARIABLE DEAL_ID INTEGER;
       BEGIN
-        SUCCESS = FALSE;
+        SUCCESS = 0;
         FOR SELECT USR$DEALKEY, USR$MASTERKEY FROM USR$CRM_KANBAN_CARDS WHERE ID = :ID INTO :DEAL_ID, :USR$MASTERKEY AS CURSOR curCARD
         DO
         BEGIN
           DELETE FROM USR$CRM_KANBAN_CARDS WHERE CURRENT OF curCARD;
           DELETE FROM USR$CRM_DEALS deal WHERE deal.ID = :DEAL_ID;
 
-          SUCCESS = TRUE;
+          SUCCESS = 1;
         END
 
         SUSPEND;
@@ -262,9 +262,9 @@ const remove: RequestHandler = async(req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: boolean, USR$MASTERKEY: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number, USR$MASTERKEY: number }[] = await result.fetchAsObject();
 
-    if (!data[0].SUCCESS) {
+    if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
     };
 

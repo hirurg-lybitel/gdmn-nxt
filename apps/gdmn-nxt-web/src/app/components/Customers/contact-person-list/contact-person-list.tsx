@@ -150,7 +150,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
         <IconButton color="primary" size="large" onClick={refetch}>
           <RefreshIcon />
         </IconButton>
-        <IconButton color="primary" onClick={handleAddPerson}>
+        <IconButton color="primary" onClick={handleAddPerson} disabled={customerId <= 0}>
           <AddCircleRoundedIcon />
         </IconButton>
       </Stack>

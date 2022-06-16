@@ -57,7 +57,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: 500,
+    width: '25vw',
+    minWidth: 300,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   },

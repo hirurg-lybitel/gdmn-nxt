@@ -59,8 +59,8 @@ const get: RequestHandler = async (req, res)  => {
 
 const add: RequestHandler = async(req, res) => {
 
-  const {NAME} = req.body;
-  let {PARENT = null} = req.body;
+  const { NAME } = req.body;
+  let { PARENT = null } = req.body;
 
   if (!NAME) {
     return res.status(422).send(resultError('Отсутсвует наименование'))
@@ -68,7 +68,7 @@ const add: RequestHandler = async(req, res) => {
 
   if (PARENT === 0) PARENT = null;
 
-  const { attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
 
@@ -136,8 +136,8 @@ const add: RequestHandler = async(req, res) => {
 const update: RequestHandler = async(req, res) => {
 
   const { id } = req.params;
-  const {NAME} = req.body;
-  let {PARENT = null} = req.body;
+  const { NAME } = req.body;
+  let { PARENT = null } = req.body;
 
   if (!NAME) {
     return res.status(422).send(resultError('Отсутсвует наименование'))
@@ -200,7 +200,7 @@ const update: RequestHandler = async(req, res) => {
       queries: {
         ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
       },
-      _params: [{id: id, body: req.body}],
+      _params: [{ id: id, body: req.body }],
       _schema
     };
 
@@ -218,25 +218,25 @@ const update: RequestHandler = async(req, res) => {
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const {attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
-      result = await attachment.executeQuery(
+    result = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
         ID INTEGER = ?
       )
-      RETURNS(SUCCESS BOOLEAN)
+      RETURNS(SUCCESS SMALLINT)
       AS
       BEGIN
-        SUCCESS = FALSE;
+        SUCCESS = 0;
         FOR SELECT ID FROM GD_CONTACT WHERE ID = :ID AS CURSOR curCONTACT
         DO
         BEGIN
           DELETE FROM GD_CONTACT WHERE CURRENT OF curCONTACT;
 
-          SUCCESS = TRUE;
+          SUCCESS = 1;
         END
 
         SUSPEND;
@@ -244,15 +244,15 @@ const remove: RequestHandler = async(req, res) => {
       [ id ]
     );
 
-    const data: {SUCCESS: boolean}[] = await result.fetchAsObject();
-    await result.close()
+    const data: {SUCCESS: number}[] = await result.fetchAsObject();
+    await result.close();
     await transaction.commit();
 
-    if (!data[0].SUCCESS) {
-      return res.status(500).send(resultError('Объект не найден'))
+    if (data[0].SUCCESS !== 1) {
+      return res.status(500).send(resultError('Объект не найден'));
     }
 
-    return res.status(200).json({'id': id});
+    return res.status(200).json({ 'id': id });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
@@ -260,4 +260,4 @@ const remove: RequestHandler = async(req, res) => {
   }
 };
 
-export default {get, add, update, remove};
+export default { get, add, update, remove };

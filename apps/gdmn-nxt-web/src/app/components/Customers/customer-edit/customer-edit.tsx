@@ -47,11 +47,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: 500,
-    minWidth: '30vw',
+    width: '25vw',
+    minWidth: 300,
     maxWidth: '100%',
-    // //width: '30%',
-    // //minWidth: '30%',
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   },
@@ -94,7 +92,6 @@ export function CustomerEdit(props: CustomerEditProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const allHierarchy = useSelector(hierarchySelectors.selectAll);
   const { data: groups } = useGetGroupsQuery();
 
   const [open2, setOpen2] = useState(false);
@@ -122,7 +119,6 @@ export function CustomerEdit(props: CustomerEditProps) {
       PARENT: yup.string().required('')
     }),
     onSubmit: (values) => {
-      console.log('onSubmit', values, deleting);
       setConfirmOpen(false);
       onSubmit(values, deleting);
     },

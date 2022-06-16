@@ -79,7 +79,6 @@ const get: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch(error) {
-
     return res.status(500).send(resultError(error.message));
   }finally {
     await releaseReadTransaction(req.sessionID);
@@ -148,13 +147,11 @@ const upsert: RequestHandler = async (req, res) => {
     };
 
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
-
 };
 
 const remove: RequestHandler = async(req, res) => {
@@ -163,21 +160,21 @@ const remove: RequestHandler = async(req, res) => {
 
   let result: ResultSet;
   try {
-      result = await attachment.executeQuery(
+    result = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
         ID INTEGER = ?
       )
-      RETURNS(SUCCESS BOOLEAN)
+      RETURNS(SUCCESS SMALLINT)
       AS
       BEGIN
-        SUCCESS = FALSE;
+        SUCCESS = 0;
         FOR SELECT ID FROM USR$BG_CONTRACTJOB WHERE ID = :ID AS CURSOR curCONTACT
         DO
         BEGIN
           DELETE FROM USR$BG_CONTRACTJOB WHERE CURRENT OF curCONTACT;
 
-          SUCCESS = TRUE;
+          SUCCESS = 1;
         END
 
         SUSPEND;
@@ -185,21 +182,20 @@ const remove: RequestHandler = async(req, res) => {
       [ id ]
     );
 
-    const data: {SUCCESS: boolean}[] = await result.fetchAsObject();
-    await result.close()
+    const data: {SUCCESS: number}[] = await result.fetchAsObject();
+    await result.close();
     await transaction.commit();
 
-    if (!data[0].SUCCESS) {
-      return res.status(500).send(resultError('Объект не найден'))
+    if (data[0].SUCCESS !== 1) {
+      return res.status(500).send(resultError('Объект не найден'));
     }
 
-    return res.status(200).json({'id': id});
+    return res.status(200).json({ 'id': id });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
-
 };
 
-export default {get, upsert, remove};
+export default { get, upsert, remove };

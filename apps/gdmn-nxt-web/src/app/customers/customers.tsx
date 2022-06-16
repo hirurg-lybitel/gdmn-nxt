@@ -271,7 +271,6 @@ export function Customers(props: CustomersProps) {
       renderCell: (params) => {
         const numberLabelsInRow = 2;
 
-        // const labels: ILabelsContact[] | undefined = labelsContact?.queries.labels.filter(el => el.USR$CONTACTKEY === params.id);
         const labels: ILabelsContact[] = params.row.LABELS;
 
         if (!labels?.length) {
@@ -423,8 +422,6 @@ export function Customers(props: CustomersProps) {
 
   const handleOrganiztionEditSubmit = async (values: ICustomer, deleting: boolean) => {
     setOpenEditForm(false);
-
-    console.log(deleting, values.ID);
 
     if (deleting) {
       deleteLabelsContact(values.ID);

@@ -390,8 +390,8 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
 };
 
 const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabelsContact[]): Promise<ILabelsContact[]> => {
-  if (labels.length === 0) {
-    return;
+  if (!labels || labels?.length === 0) {
+    return [];
   };
 
   const newLabels = labels.map(label => ({ ...label, CONTACT: contactId }));
