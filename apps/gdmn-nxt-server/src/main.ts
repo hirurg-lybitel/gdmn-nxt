@@ -21,6 +21,7 @@ import contactsRouter from './app/routes/contactsRouter';
 import systemRouter from './app/routes/systemRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { importedModels } from './app/models';
+import contractsListRouter from './app/routes/contractsListRouter';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -263,6 +264,8 @@ router.post('/customercontracts', customerContracts.upsert);
 router.put('/customercontracts/:id', customerContracts.upsert);
 router.delete('/customercontracts/:id', customerContracts.remove);
 
+/** Contracts list */
+router.use(contractsListRouter);
 /** Bank Statements */
 router.use(bankStatementsRouter);
 

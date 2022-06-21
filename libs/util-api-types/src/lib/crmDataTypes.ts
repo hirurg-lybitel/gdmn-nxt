@@ -64,6 +64,7 @@ export interface IKanbanCard extends IWithID {
   USR$MASTERKEY: number;
   USR$DEALKEY?: number;
   DEAL?: IDeal;
+  TASKS?: IKanbanTask[];
 };
 
 export interface IKanbanColumn extends IWithID {
@@ -81,6 +82,13 @@ export interface IKanbanHistory extends IWithID {
   USR$USERKEY: number;
   USR$CARDKEY: number,
   USERNAME?: string;
+};
+
+export interface IKanbanTask extends IWithID {
+  USR$NAME: string;
+  USR$DEADLINE?: Date;
+  USR$ACTIVE: boolean;
+  PERFORMER: IContactWithID;
 };
 
 export interface IActCompletion extends IWithID {
@@ -115,4 +123,17 @@ export interface IContactPerson extends IContactWithID {
   RANK?: string;
   USR$LETTER_OF_AUTHORITY?: string;
   WCOMPANYKEY?: number;
+};
+
+export interface IContactsList extends IWithID {
+  NUMBER: string;
+  DOCUMENTDATE: Date;
+  DEPT_NAME: string;
+  JOB_NUMBER: string;
+  SUMNCU: number;
+  SUMCURNCU: number;
+  ISACTIVE: boolean;
+  ISBUDGET: boolean;
+  DATEBEGIN: Date;
+  DATEEND: Date;
 };
