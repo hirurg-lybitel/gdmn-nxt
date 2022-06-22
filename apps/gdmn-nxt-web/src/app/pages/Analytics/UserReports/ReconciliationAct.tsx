@@ -17,7 +17,7 @@ import CustomizedCard from '../../../components/customized-card/customized-card'
 
 const filterOptions = createFilterOptions({
   matchFrom: 'any',
-  limit: 500,
+  limit: 50,
   stringify: (option: IContactWithLabels) => option.NAME,
 });
 
