@@ -13,6 +13,7 @@ import KeyboardBackspaceRoundedIcon from '@mui/icons-material/KeyboardBackspaceR
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -92,6 +93,7 @@ export function CustomerDetails(props: CustomerDetailsProps) {
                 {/* <Tab label="Подробности" value="1" /> */}
                 <Tab label="Акты выполненных работ" value="2" />
                 <Tab label="Выписки по р/с" value="3" />
+                <Tab label="Договоры" value="4" />
               </TabList>
             </Box>
             <Divider />
@@ -103,6 +105,9 @@ export function CustomerDetails(props: CustomerDetailsProps) {
             </TabPanel>
             <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''} >
               <BankStatement companyId={Number(customerId)} />
+            </TabPanel>
+            <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''} >
+              <ContractsList companyId={Number(customerId)} />
             </TabPanel>
           </TabContext>
         </Stack>
