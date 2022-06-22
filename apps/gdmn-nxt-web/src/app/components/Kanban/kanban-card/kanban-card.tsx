@@ -1,11 +1,12 @@
 import './kanban-card.module.less';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import CustomizedCard from '../../customized-card/customized-card';
-import { IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 
 
 /* eslint-disable-next-line */
@@ -63,6 +64,53 @@ export function KanbanCard(props: KanbanCardProps) {
     }
   };
 
+  const TaskStatus = useMemo(() => {
+    const tasks = card.TASKS;
+    if (!tasks || !tasks?.length) return <></>;
+
+    const allTasks = tasks?.length;
+    const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
+
+    return (
+      closedTasks
+        ? <Stack direction="row" alignItems="center"spacing={0.5}>
+          <Box sx={{ position: 'relative', display: 'flex' }}>
+            <CircularProgress
+              variant="determinate"
+              size={15}
+              thickness={7}
+              value={100}
+              sx={{
+                color: (theme) =>
+                  theme.palette.grey[200],
+              }}
+            />
+            <CircularProgress
+              variant="determinate"
+              size={15}
+              thickness={7}
+              value={closedTasks / allTasks * 100}
+              sx={{
+                position: 'absolute',
+                left: 0,
+              }}
+            />
+          </Box>
+          <Typography variant="caption">
+            {`${closedTasks} из ${allTasks} задач`}
+          </Typography>
+        </Stack>
+        : <Stack direction="row" alignItems="center" spacing={0.5}>
+          <FactCheckOutlinedIcon color="action" fontSize="small" />
+          <Typography variant="caption">
+            {`${allTasks} задач`}
+          </Typography>
+        </Stack>
+    );
+  },
+  [card]);
+
+
   return (
     <div>
       <CustomizedCard
@@ -103,6 +151,7 @@ export function KanbanCard(props: KanbanCardProps) {
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+          {TaskStatus}
         </Stack>
       </CustomizedCard>
       <KanbanEditCard

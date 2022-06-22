@@ -96,7 +96,6 @@ export function KanbanHistory(props: KanbanHistoryProps) {
         })}
       </Timeline>
     </Box>
-    // {data?.map(el => <div key={el.ID}>{el.USR$DESCRIPTION}</div>)}
   );
 }
 

@@ -1,10 +1,11 @@
-import { IContactWithID, IKanbanCard, IKanbanColumn, IKanbanHistory, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactWithID, IKanbanCard, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
 interface IKanban{
   columns: IKanbanColumn[];
   cards: IKanbanCard[];
+  tasks: IKanbanTask[];
 };
 
 type IKanbanRequestResult = IRequestResult<IKanban>;
@@ -17,7 +18,7 @@ type IKanbanHistoryRequestResult = IRequestResult<IHistory>;
 
 export const kanbanApi = createApi({
   reducerPath: 'kanban',
-  tagTypes: ['Kanban', 'Column', 'Card'],
+  tagTypes: ['Kanban', 'Column', 'Card', 'Task'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getKanbanDeals: builder.query<IKanbanColumn[], void>({
@@ -213,7 +214,73 @@ export const kanbanApi = createApi({
       onQueryStarted(cardId) {
         console.info('⏩ request', 'POST', `${baseUrlApi}kanban/history`);
       },
-    })
+    }),
+    getTasks: builder.query<IKanbanTask[], number>({
+      query: (cardId) => `kanban/tasks/${cardId}`,
+      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks || [],
+      providesTags: (result, error) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'Task' as const, ID })),
+            { type: 'Task', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'Task', id: 'ERROR' }]
+            : [{ type: 'Task', id: 'LIST' }]
+    }),
+    addTask: builder.mutation<IKanbanTask[], Partial<IKanbanTask>>({
+      query: (body) => ({
+        url: 'kanban/tasks',
+        method: 'POST',
+        body
+      }),
+      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks || [],
+      invalidatesTags: (result, error) => {
+        return [{ type: 'Task', id: 'LIST' }];
+      }
+    }),
+    updateTask: builder.mutation<IKanbanTask[], Partial<IKanbanTask>>({
+      query (body) {
+        const { ID: id } = body;
+        return {
+          url: `kanban/tasks/${id}`,
+          method: 'PUT',
+          body
+        };
+      },
+      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks || [],
+      invalidatesTags: (result, error) => {
+        return result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'Task' as const, ID })),
+            { type: 'Task', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'Task', id: 'ERROR' }]
+            : [{ type: 'Task', id: 'LIST' }];
+      },
+    }),
+    deleteTask: builder.mutation<{ID: number}, number>({
+      query(id) {
+        return {
+          url: `kanban/tasks/${id}`,
+          method: 'DELETE'
+        };
+      },
+      invalidatesTags: (result, error) => {
+        const id = result?.ID;
+
+        return result
+          ? [
+            { type: 'Task' as const, id },
+            { type: 'Task', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'Task', id: 'LIST' }]
+            : [{ type: 'Task', id: 'ERROR' }];
+      }
+
+    }),
   })
 });
 
@@ -228,5 +295,9 @@ export const {
   useDeleteCardMutation,
   useReorderCardsMutation,
   useGetHistoryQuery,
-  useAddHistoryMutation
+  useAddHistoryMutation,
+  useGetTasksQuery,
+  useAddTaskMutation,
+  useUpdateTaskMutation,
+  useDeleteTaskMutation
 } = kanbanApi;

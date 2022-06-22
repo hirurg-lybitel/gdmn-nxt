@@ -87,8 +87,12 @@ export interface IKanbanHistory extends IWithID {
 export interface IKanbanTask extends IWithID {
   USR$NAME: string;
   USR$DEADLINE?: Date;
-  USR$ACTIVE: boolean;
-  PERFORMER: IContactWithID;
+  PERFORMER?: IContactWithID;
+  CREATOR: IContactWithID;
+  USR$DATECLOSE?: Date;
+  USR$CREATIONDATE?: Date;
+  USR$CARDKEY: number;
+  USR$CLOSED: boolean;
 };
 
 export interface IActCompletion extends IWithID {

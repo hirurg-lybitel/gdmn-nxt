@@ -358,7 +358,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   onAddCard={cardHandlers.handleAddCard}
                                 >
                                   {column.CARDS
-                                    .map((card, index) => (
+                                    ?.map((card, index) => (
                                       <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column.ID * 10).toString()} index={index}>
                                         {(provided, snapshot) => (
                                           <Box

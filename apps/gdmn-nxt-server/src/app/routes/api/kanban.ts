@@ -3,6 +3,7 @@ import cards from '../../kanban/cards';
 import columns from '../../kanban/columns';
 import kanban from '../../kanban/kanban';
 import history from '../../kanban/history';
+import tasks from '../../kanban/task';
 
 
 const router = express.Router();
@@ -24,5 +25,11 @@ router.delete('/cards/:id', cards.remove);
 router.get('/history', history.get);
 router.get('/history/:cardId', history.get);
 router.post('/history', history.add);
+
+router.get('/tasks', tasks.get);
+router.get('/tasks/:cardId', tasks.get);
+router.post('/tasks', tasks.upsert);
+router.put('/tasks/:id', tasks.upsert);
+router.delete('/tasks/:id', tasks.remove);
 
 export default router;
