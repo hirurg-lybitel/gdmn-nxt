@@ -34,6 +34,7 @@ export interface ICustomer extends IContactWithID {
   LABELS?: ILabelsContact[];
   CONTRACTS?: IContractJob[];
   DEPARTMETNS?: IContactWithID[];
+  TAXID?: string;
 };
 
 export interface ICustomerContract {

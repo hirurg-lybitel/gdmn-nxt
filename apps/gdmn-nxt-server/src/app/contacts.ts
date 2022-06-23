@@ -58,9 +58,11 @@ export const getContacts: RequestHandler = async (req, res) => {
          c.name,
          c.phone,
          c.email,
-         c.parent
+         c.parent,
+         comp.taxid
        FROM
          gd_contact c
+         join gd_companycode comp on comp.COMPANYKEY = c.id
          ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
          ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
        WHERE
@@ -80,7 +82,7 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const [rawContracts, rawFolders, rawContacts, rawLabels] = await Promise.all(queries.map(execQuery));
 
-    console.log(`ExecQuery time ${new Date().getTime() - t} ms`);
+    // console.log(`ExecQuery time ${new Date().getTime() - t} ms`);
 
     interface IMapOfArrays {
       [customerId: string]: any[];
@@ -154,7 +156,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    console.log(`Serialize contacts time ${new Date().getTime() - tCon} ms`);
+    // console.log(`Serialize contacts time ${new Date().getTime() - tCon} ms`);
 
     const result: IRequestResult = {
       queries: { contacts },

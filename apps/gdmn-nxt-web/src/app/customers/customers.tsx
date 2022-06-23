@@ -477,9 +477,6 @@ export function Customers(props: CustomersProps) {
     handleCancelSearch: async () => {
       setSearchName('');
     },
-    handleChange: async (value: string) => {
-      setSearchName(value);
-    },
     handleFilteringData: async (newValue: IFilteringData) => {
       const filterModels: any[] = [];
 
@@ -585,7 +582,10 @@ export function Customers(props: CustomersProps) {
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 rows={
                   customers
-                    ?.filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
+                    ?.filter(customer =>
+                        customer.NAME.toUpperCase().includes(searchName.toUpperCase()) ||
+                        customer.TAXID?.toUpperCase().includes(searchName.toUpperCase())
+                    )
                     ?? []}
                 columns={columns}
                 columnVisibilityModel={{
