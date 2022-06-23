@@ -13,6 +13,7 @@ import { useParams } from 'react-router-dom';
 import { fetchCustomers } from '../../../features/customer/actions';
 import { RootState } from '../../../store';
 import CustomizedCard from '../../../components/customized-card/customized-card';
+import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 
 
 const filterOptions = createFilterOptions({
@@ -54,8 +55,9 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<IInputParams>();
 
-  const allCustomers = useSelector(customersSelectors.selectAll);
-  const { loading: customersLoading } = useSelector((state: RootState) => state.customers);
+  const { data: customers, isFetching: customerFetching } = useGetCustomersQuery();
+  // const allCustomers = useSelector(customersSelectors.selectAll);
+  // const { loading: customersLoading } = useSelector((state: RootState) => state.customers);
 
   const scollToRef = useRef<HTMLInputElement>(null);
 
@@ -96,10 +98,10 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
             <Grid container spacing={3} direction={'column'}>
               <Grid item md={6} sx={{ width: '50%' }}>
                 <Autocomplete
-                  options={allCustomers}
+                  options={customers || []}
                   filterOptions={filterOptions}
                   getOptionLabel={option => option.NAME}
-                  value={allCustomers.find(customer => customer.ID === customerId) || null}
+                  value={customers?.find(customer => customer.ID === customerId) || null}
                   onChange={(e, value) => {
                     setCustomerId(value?.ID || null);
                   }}
@@ -122,7 +124,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                     />
                   )
                   }
-                  loading={customersLoading}
+                  loading={customerFetching}
                   loadingText="Загрузка данных..."
                 />
               </Grid>

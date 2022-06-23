@@ -18,6 +18,12 @@ const analytics: IMenuItem = {
           title: 'Акт сверки',
           url: 'reports/reconciliation',
           type: 'item',
+        },
+        {
+          id: 'remainbyinvoices',
+          title: 'Остатки по р/с',
+          url: 'reports/remainbyinvoices',
+          type: 'item',
         }
       ]
     },

@@ -22,6 +22,7 @@ import systemRouter from './app/routes/systemRouter';
 import { disposeConnection } from './app/utils/db-connection';
 import { importedModels } from './app/models';
 import contractsListRouter from './app/routes/contractsListRouter';
+import reportsRouter from './app/routes/reportsRouter';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -286,7 +287,9 @@ router.get('/account/:id', getAccounts);
 router.post('/account', upsertAccount);
 router.put('/account/:ID', upsertAccount);
 
-router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
+router.use(reportsRouter);
+
+// router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;
