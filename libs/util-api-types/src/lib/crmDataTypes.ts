@@ -142,3 +142,8 @@ export interface IContactsList extends IWithID {
   DATEBEGIN: Date;
   DATEEND: Date;
 };
+
+export interface IWorkType extends IWithID {
+  USR$NAME?: string;
+  USR$CONTRACTJOBKEY: number;
+};

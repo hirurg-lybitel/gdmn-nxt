@@ -23,6 +23,7 @@ import { disposeConnection } from './app/utils/db-connection';
 import { importedModels } from './app/models';
 import contractsListRouter from './app/routes/contractsListRouter';
 import reportsRouter from './app/routes/reportsRouter';
+import workTypes from './app/handlers/workTypes';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -264,6 +265,8 @@ router.get('/customercontracts/:id', customerContracts.get);
 router.post('/customercontracts', customerContracts.upsert);
 router.put('/customercontracts/:id', customerContracts.upsert);
 router.delete('/customercontracts/:id', customerContracts.remove);
+
+router.get('/worktypes', workTypes.get);
 
 /** Contracts list */
 router.use(contractsListRouter);

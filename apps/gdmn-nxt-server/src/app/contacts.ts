@@ -122,7 +122,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    console.log(`Map time ${new Date().getTime() - tMap} ms`);
+    // console.log(`Map time ${new Date().getTime() - tMap} ms`);
 
     interface IFolders {
       [id: string]: string;

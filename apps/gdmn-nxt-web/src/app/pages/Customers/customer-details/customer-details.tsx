@@ -2,14 +2,11 @@ import CustomizedCard from '../../../components/customized-card/customized-card'
 import './customer-details.module.less';
 import { Box, Breadcrumbs, Button, Divider, Link, Stack, Tab, Typography } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ActCompletion from '../../../customers/CustomerDetails/act-completion/act-completion';
 import { makeStyles } from '@mui/styles';
 import BankStatement from '../../../customers/CustomerDetails/bank-statement/bank-statement';
-import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
-import KeyboardBackspaceRoundedIcon from '@mui/icons-material/KeyboardBackspaceRounded';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
@@ -44,7 +41,7 @@ export function CustomerDetails(props: CustomerDetailsProps) {
 
   const { id: customerId } = useParams();
 
-  const { data: customers, isFetching: customerFetching, isLoading: customerLoading } = useGetCustomersQuery();
+  const { data: customers } = useGetCustomersQuery();
 
 
   const handleTabsChange = (event: any, newindex: string) => {

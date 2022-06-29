@@ -25,6 +25,7 @@ import { customerApi } from '../features/customer/customerApi_new';
 import filtersReducer from './filtersSlice';
 import { contractsListApi } from '../features/contracts-list/contractsListApi';
 import { remainsInvoicesApi } from '../features/remains-by-invoices/remainsInvoicesApi';
+import { workTypesApi } from '../features/work-types/workTypesApi';
 
 
 export const store = configureStore({
@@ -53,7 +54,8 @@ export const store = configureStore({
     [sqlEditorApi.reducerPath]: sqlEditorApi.reducer,
     [customerApi.reducerPath]: customerApi.reducer,
     [contractsListApi.reducerPath]: contractsListApi.reducer,
-    [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer
+    [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
+    [workTypesApi.reducerPath]: workTypesApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -73,6 +75,7 @@ export const store = configureStore({
     .concat(customerApi.middleware)
     .concat(contractsListApi.middleware)
     .concat(remainsInvoicesApi.middleware)
+    .concat(workTypesApi.middleware)
     .concat(errorMiddleware),
 });
 

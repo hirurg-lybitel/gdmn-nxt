@@ -235,7 +235,13 @@ export function Customers(props: CustomersProps) {
       if (!filterItem?.value.length) return (params: any): boolean => true;
 
       return (params: any): boolean => {
-        return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.ID === contract.ID));
+        if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false) {
+          return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.ID === contract.ID));
+        } else {
+          return filterItem.value.every((value: any) => {
+            return params.row.CONTRACTS?.find((el: any) => el.ID === value.ID);
+          });
+        }
       };
     }
   };
@@ -255,14 +261,48 @@ export function Customers(props: CustomersProps) {
       if (!filterItem?.value.length) return (params: any): boolean => true;
 
       return (params: any): boolean => {
-        return params.row.DEPARTMENTS?.find((department: any) => filterItem.value.find((el: any) => el.ID === department.ID));
+        if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false) {
+          return params.row.DEPARTMENTS?.find((department: any) => filterItem.value.find((el: any) => el.ID === department.ID));
+        } else {
+          return filterItem.value.every((value: any) => {
+            return params.row.DEPARTMENTS?.find((el: any) => el.ID === value.ID);
+          });
+        }
+      };
+    }
+  };
+
+  const containWorkTypes: GridFilterOperator = {
+    label: 'Содержит',
+    value: 'includes',
+    getApplyFilterFn: (filterItem: GridFilterItem) => {
+      if (
+        !filterItem.columnField ||
+        !filterItem.value ||
+        !filterItem.operatorValue
+      ) {
+        return null;
+      }
+
+      if (!filterItem?.value.length) return (params: any): boolean => true;
+
+      // console.log('containWorkTypes', filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false);
+
+      return (params: any): boolean => {
+        if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false) {
+          return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) =>el.USR$CONTRACTJOBKEY === contract.ID));
+        } else {
+          return filterItem.value.every((value: any) => {
+            return params.row.CONTRACTS?.find((el: any) => el.ID === value.USR$CONTRACTJOBKEY);
+          });
+        }
+        // return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.USR$CONTRACTJOBKEY === contract.ID));
       };
     }
   };
 
   const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
-    // { field: 'FOLDERNAME', headerName: 'Папка', width: 200 },
     { field: 'PHONE', headerName: 'Телефон', width: 200 },
     { field: 'LABELS',
       headerName: 'Метки',
@@ -354,6 +394,7 @@ export function Customers(props: CustomersProps) {
     },
     { field: 'CONTRACTS', headerName: 'Заказы', filterOperators: [containContracts] },
     { field: 'DEPARTMENTS', headerName: 'Отделы', filterOperators: [containDepartments] },
+    { field: 'WORKTYPES', headerName: '', filterOperators: [containWorkTypes] },
   ];
 
   const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
@@ -451,7 +492,7 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleOrganizationDeleteOnClick = () => {
-    console.log('deleteClick', currentOrganization);
+    // console.log('deleteClick', currentOrganization);
 
     if (!currentOrganization) {
       setSnackBarMessage('Не выбрана организация');
@@ -486,6 +527,8 @@ export function Customers(props: CustomersProps) {
 
       setFilterModel({ items: filterModels });
       setFilteringData(newValue);
+
+      // console.log('handleFilteringData', newValue, filterModels);
     },
     handleFilterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
       if (
@@ -583,7 +626,7 @@ export function Customers(props: CustomersProps) {
                 rows={
                   customers
                     ?.filter(customer =>
-                        customer.NAME.toUpperCase().includes(searchName.toUpperCase()) ||
+                      customer.NAME.toUpperCase().includes(searchName.toUpperCase()) ||
                         customer.TAXID?.toUpperCase().includes(searchName.toUpperCase())
                     )
                     ?? []}
