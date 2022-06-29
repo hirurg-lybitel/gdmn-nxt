@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
     height: '100%',
     maxHeight: '100%',
     width: '25vw',
-    minWidth: 400,
+    minWidth: 500,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   },

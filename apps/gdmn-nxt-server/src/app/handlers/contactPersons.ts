@@ -157,7 +157,7 @@ const upsert: RequestHandler = async (req, res) => {
 
   const { id } = req.params;
 
-  if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));;
+  if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
   try {
     const isInsertMode = id ? false : true;

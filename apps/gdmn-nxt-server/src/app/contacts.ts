@@ -2,6 +2,7 @@ import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelar
 import { RequestHandler } from 'express';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
 import { resultError } from './responseMessages';
+import { genId } from './utils/genId';
 
 export const getContacts: RequestHandler = async (req, res) => {
   const { pageSize, pageNo } = req.query;
@@ -59,7 +60,8 @@ export const getContacts: RequestHandler = async (req, res) => {
          c.phone,
          c.email,
          c.parent,
-         comp.taxid
+         comp.taxid,
+         c.address
        FROM
          gd_contact c
          join gd_companycode comp on comp.COMPANYKEY = c.id
@@ -176,7 +178,7 @@ export const getContacts: RequestHandler = async (req, res) => {
 
 export const updateContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { NAME, PHONE, EMAIL, PARENT } = req.body;
+  const { NAME, PHONE, EMAIL, PARENT, ADDRESS } = req.body;
   const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
@@ -188,9 +190,10 @@ export const updateContact: RequestHandler = async (req, res) => {
            NAME = ?,
            PHONE = ?,
            EMAIL = ?,
-           PARENT = ?
+           PARENT = ?,
+           ADDRESS = ?
          WHERE ID = ?`,
-        [NAME, PHONE, EMAIL, PARENT, id]
+        [NAME, PHONE, EMAIL, PARENT, ADDRESS, id]
       );
     } catch (error) {
       return res.status(500).send({ 'errorMessage': error.message });
@@ -204,7 +207,8 @@ export const updateContact: RequestHandler = async (req, res) => {
          con.NAME,
          con.EMAIL,
          con.PHONE,
-         par.NAME
+         par.NAME,
+         con.ADDRESS
        FROM GD_CONTACT con
        JOIN GD_CONTACT par ON par.ID = con.PARENT
        WHERE con.ID = ?`,
@@ -223,7 +227,8 @@ export const updateContact: RequestHandler = async (req, res) => {
           NAME: row[0][2],
           EMAIL: row[0][3],
           PHONE: row[0][4],
-          FOLDERNAME: row[0][5]
+          FOLDERNAME: row[0][5],
+          ADDRESS: row[0][6]
         }]
       },
       _schema
@@ -241,7 +246,7 @@ export const updateContact: RequestHandler = async (req, res) => {
 };
 
 export const addContact: RequestHandler = async (req, res) => {
-  const { NAME, PHONE, EMAIL, PARENT, labels } = req.body;
+  const { NAME, PHONE, EMAIL, PARENT, ADDRESS, TAXID, labels } = req.body;
   const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
@@ -251,7 +256,8 @@ export const addContact: RequestHandler = async (req, res) => {
         NAME  TYPE OF COLUMN GD_CONTACT.NAME = ?,
         EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL = ?,
         PHONE TYPE OF COLUMN GD_CONTACT.PHONE = ?,
-        PARENT TYPE OF COLUMN GD_CONTACT.PARENT = ?
+        PARENT TYPE OF COLUMN GD_CONTACT.PARENT = ?,
+        TAXID TYPE OF COLUMN GD_COMPANYCODE.TAXID = ?
       )
       RETURNS(
         ret_ID    INTEGER,
@@ -259,25 +265,29 @@ export const addContact: RequestHandler = async (req, res) => {
         ret_EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL,
         ret_PHONE TYPE OF COLUMN GD_CONTACT.PHONE,
         ret_PARENT TYPE OF COLUMN GD_CONTACT.PARENT,
-        ret_FOLDERNAME TYPE OF COLUMN GD_CONTACT.NAME
+        ret_FOLDERNAME TYPE OF COLUMN GD_CONTACT.NAME,
+        ret_ADDRESS TYPE OF COLUMN GD_CONTACT.ADDRESS,
+        ret_TAXID TYPE OF COLUMN GD_COMPANYCODE.TAXID
       )
       AS
       BEGIN
-        INSERT INTO GD_CONTACT(CONTACTTYPE, PARENT, NAME, PHONE, EMAIL)
-        VALUES(3, IIF(:PARENT IS NULL, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :PARENT), :NAME, :PHONE, :EMAIL)
-        RETURNING ID, PARENT, NAME, PHONE, EMAIL
-        INTO :ret_ID, :ret_PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL;
+        INSERT INTO GD_CONTACT(CONTACTTYPE, PARENT, NAME, PHONE, EMAIL, ADDRESS)
+        VALUES(3, IIF(:PARENT IS NULL, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :PARENT), :NAME, :PHONE, :EMAIL, :ADDRESS)
+        RETURNING ID, PARENT, NAME, PHONE, EMAIL, ADDRESS
+        INTO :ret_ID, :ret_PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL, :ret_ADDRESS;
         SELECT NAME FROM GD_CONTACT WHERE ID = :ret_PARENT
         INTO :ret_FOLDERNAME;
         IF (ret_ID IS NOT NULL) THEN
           INSERT INTO GD_COMPANY(CONTACTKEY)
           VALUES(:ret_ID);
         IF (ret_ID IS NOT NULL) THEN
-          INSERT INTO GD_COMPANYCODE(COMPANYKEY)
-          VALUES(:ret_ID);
+          INSERT INTO GD_COMPANYCODE(COMPANYKEY, TAXID)
+          VALUES(:ret_ID, :TAXID)
+          RETURNING TAXID
+          INTO :ret_TAXID;
         SUSPEND;
       END`,
-      [NAME, EMAIL, PHONE, PARENT]
+      [NAME, EMAIL, PHONE, PARENT, ADDRESS, TAXID]
     );
 
     const _schema = {};
@@ -300,6 +310,8 @@ export const addContact: RequestHandler = async (req, res) => {
           PHONE: row[3],
           PARENT: row[4],
           FOLDERNAME: row[5],
+          ADDRESS: row[6],
+          TAXID: row[7],
           labels: await upsertLabels({ attachment, transaction }, row[0], labels)
         }]
       },
@@ -310,7 +322,100 @@ export const addContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error.message });
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(req.sessionID, transaction);
+  };
+};
+
+export const upsertContact: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+
+  if (id && !parseInt(id)) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
+
+  const { NAME, PHONE, EMAIL, PARENT, ADDRESS, TAXID, labels } = req.body;
+  const { attachment, transaction } = await startTransaction(req.sessionID);
+
+  try {
+    let ID = parseInt(id);
+    if (!ID) {
+      ID = await genId(attachment, transaction);
+    };
+
+    const resultSet = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID  TYPE OF COLUMN GD_CONTACT.ID = ?,
+        NAME  TYPE OF COLUMN GD_CONTACT.NAME = ?,
+        EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL = ?,
+        PHONE TYPE OF COLUMN GD_CONTACT.PHONE = ?,
+        PARENT TYPE OF COLUMN GD_CONTACT.PARENT = ?,
+        ADDRESS TYPE OF COLUMN GD_CONTACT.ADDRESS = ?,
+        TAXID TYPE OF COLUMN GD_COMPANYCODE.TAXID = ?
+      )
+      RETURNS(
+        ret_ID    INTEGER,
+        ret_NAME  TYPE OF COLUMN GD_CONTACT.NAME,
+        ret_EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL,
+        ret_PHONE TYPE OF COLUMN GD_CONTACT.PHONE,
+        ret_PARENT TYPE OF COLUMN GD_CONTACT.PARENT,
+        ret_FOLDERNAME TYPE OF COLUMN GD_CONTACT.NAME,
+        ret_ADDRESS TYPE OF COLUMN GD_CONTACT.ADDRESS,
+        ret_TAXID TYPE OF COLUMN GD_COMPANYCODE.TAXID
+      )
+      AS
+      BEGIN
+        UPDATE OR INSERT INTO GD_CONTACT(ID, CONTACTTYPE, PARENT, NAME, PHONE, EMAIL, ADDRESS)
+        VALUES(:ID, 3, IIF(:PARENT IS NULL, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :PARENT), :NAME, :PHONE, :EMAIL, :ADDRESS)
+        MATCHING(ID)
+        RETURNING ID, PARENT, NAME, PHONE, EMAIL, ADDRESS
+        INTO :ret_ID, :ret_PARENT, :ret_NAME, :ret_PHONE, :ret_EMAIL, :ret_ADDRESS;
+        SELECT NAME FROM GD_CONTACT WHERE ID = :ret_PARENT
+        INTO :ret_FOLDERNAME;
+        IF (ret_ID IS NOT NULL) THEN
+          UPDATE OR INSERT INTO GD_COMPANY(CONTACTKEY)
+          VALUES(:ret_ID)
+          MATCHING(CONTACTKEY);
+        IF (ret_ID IS NOT NULL) THEN
+          UPDATE OR INSERT INTO GD_COMPANYCODE(COMPANYKEY, TAXID)
+          VALUES(:ret_ID, :TAXID)
+          MATCHING(COMPANYKEY)
+          RETURNING TAXID
+          INTO :ret_TAXID;
+        SUSPEND;
+      END`,
+      [ID, NAME, EMAIL, PHONE, PARENT, ADDRESS, TAXID]
+    );
+
+    const _schema = {};
+    const rows = await resultSet.fetch();
+
+    await resultSet.close();
+
+    const row = rows[0];
+
+    const result: IRequestResult = {
+      queries: {
+        contacts: [{
+          ID: row[0],
+          NAME: row[1],
+          EMAIL: row[2],
+          PHONE: row[3],
+          PARENT: row[4],
+          FOLDERNAME: row[5],
+          ADDRESS: row[6],
+          TAXID: row[7],
+          labels: await upsertLabels({ attachment, transaction }, row[0], labels)
+        }]
+      },
+      _schema
+    };
+
+    await transaction.commit();
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   };

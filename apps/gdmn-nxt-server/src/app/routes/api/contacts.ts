@@ -1,5 +1,5 @@
 import express from 'express';
-import { addContact, deleteContact, getContactHierarchy, getContacts, updateContact } from '../../contacts';
+import { addContact, deleteContact, getContactHierarchy, getContacts, updateContact, upsertContact } from '../../contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../labels';
 import contactPersons from '../../handlers/contactPersons';
 import contactEmployees from '../../handlers/contactEmployees';
@@ -9,8 +9,11 @@ const router = express.Router();
 router.get('/', getContacts);
 router.get('/taxId/:taxId', getContacts);
 router.get('/rootId/:rootId', getContacts);
-router.put('/:id', updateContact);
-router.post('/', addContact);
+// router.put('/:id', updateContact);
+// router.post('/', addContact);
+router.put('/:id', upsertContact);
+router.post('/', upsertContact);
+
 router.delete('/:id', deleteContact);
 router.get('/hierarchy', getContactHierarchy);
 router.get('/labels/:contactId', getLabelsContact);

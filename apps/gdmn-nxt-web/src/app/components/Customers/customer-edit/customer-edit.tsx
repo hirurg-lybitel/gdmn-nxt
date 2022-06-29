@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: '100%',
     maxHeight: '100%',
     width: '25vw',
-    minWidth: 400,
+    minWidth: 500,
     maxWidth: '100%',
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
@@ -87,7 +87,7 @@ export interface CustomerEditProps {
 
 export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
-  const { onCancelClick, onDeleteClick, onSubmit } = props;
+  const { onCancelClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -104,7 +104,9 @@ export function CustomerEdit(props: CustomerEditProps) {
     PHONE: customer?.PHONE || '',
     EMAIL: customer?.EMAIL || '',
     PARENT: customer?.PARENT || undefined,
-    LABELS: customer?.LABELS || []
+    LABELS: customer?.LABELS || [],
+    ADDRESS: customer?.ADDRESS || '',
+    TAXID: customer?.TAXID || ''
   };
 
   const formik = useFormik<ICustomer>({
@@ -251,6 +253,27 @@ export function CustomerEdit(props: CustomerEditProps) {
                       placeholder="Выберите метки"
                     />
                   )}
+                />
+                <TextField
+                  label="Адрес"
+                  className={classes.helperText}
+                  type="text"
+                  name="ADDRESS"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.ADDRESS}
+                  helperText={formik.errors.ADDRESS}
+                  placeholder="Введите адрес"
+                />
+                <TextField
+                  label="УНП"
+                  className={classes.helperText}
+                  type="text"
+                  name="TAXID"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.TAXID}
+                  helperText={formik.errors.TAXID}
                 />
               </Stack>
             </Form>
