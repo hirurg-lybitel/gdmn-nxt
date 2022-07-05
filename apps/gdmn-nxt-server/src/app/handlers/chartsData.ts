@@ -114,10 +114,14 @@ const getSumByPeriod: RequestHandler = async(req, res) => {
         JOIN gd_contact dep on dep.ID = c.USR$DEPOTKEY
       WHERE
         c.USR$DOCDATE BETWEEN :DateBegin AND :DateEnd
+        ${departmentId ? 'AND dep.ID = :DepID' : ''}
       GROUP BY CAST(c.USR$DOCDATE AS DATE)
       ORDER BY 1`;
     namedSQL.setParamByName('DateBegin').value = dateBegin;
     namedSQL.setParamByName('DateEnd').value = dateEnd;
+    if (departmentId) {
+      namedSQL.setParamByName('DepID').value = departmentId;
+    };
 
     const sumByperiod = await namedSQL.execute();
     applySchema(schema['sumByperiod'], sumByperiod);

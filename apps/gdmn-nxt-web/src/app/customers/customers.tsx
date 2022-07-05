@@ -22,7 +22,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../components/Customers/customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { addCustomer, updateCustomer, fetchCustomers, deleteCustomer, fetchHierarchy } from '../features/customer/actions';
+import { fetchCustomers, fetchHierarchy } from '../features/customer/actions';
 import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
 import { IContactWithLabels, ICustomer, ILabelsContact } from '@gsbelarus/util-api-types';
@@ -42,6 +42,8 @@ import CustomersFilter, { IFilteringData } from './customers-filter/customers-fi
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from './DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
+import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation } from '../features/customer/customerApi_new';
+import { saveFilterData, saveFilterModel } from '../store/filtersSlice';
 
 const useStyles = makeStyles((theme: Theme) => ({
   DataGrid: {
@@ -75,10 +77,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     '& .MuiDataGrid-columnHeader': {
       fontSize: '1rem'
-    }
-    // '& .MuiDataGrid-cell': {
-    //   padding: 30
-    // },
+    },
   },
 }));
 
@@ -98,10 +97,10 @@ const labelStyle: CSSProperties = {
   height: 'fit-content'
 };
 
-interface IPaginationData {
-  pageNo: number;
-  pageSize: number;
-};
+// interface IPaginationData {
+//   pageNo: number;
+//   pageSize: number;
+// };
 
 /* eslint-disable-next-line */
 export interface CustomersProps {}
@@ -126,15 +125,22 @@ export function Customers(props: CustomersProps) {
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 50
+    pageSize: 20
   });
 
   /** Затычка для минимизации рендеров DataGrid при resize */
   const [displayDataGrid, setDisplayDataGrid] = useState(true);
 
-
-  const allCustomers = useSelector(customersSelectors.selectAll);
+  // const allCustomers = useSelector(customersSelectors.selectAll);
   const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
+
+  const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery();
+  const [updateCustomer] = useUpdateCustomerMutation();
+  const [addCustomer] = useAddCustomerMutation();
+  const [deleteCustomer] = useDeleteCustomerMutation();
+
+  // console.log('data', customerFetching, customers);
+
   const dispatch = useDispatch();
 
   const [addLabelsContact] = useAddLabelsContactMutation();
@@ -229,7 +235,13 @@ export function Customers(props: CustomersProps) {
       if (!filterItem?.value.length) return (params: any): boolean => true;
 
       return (params: any): boolean => {
-        return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.ID === contract.ID));
+        if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false) {
+          return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.ID === contract.ID));
+        } else {
+          return filterItem.value.every((value: any) => {
+            return params.row.CONTRACTS?.find((el: any) => el.ID === value.ID);
+          });
+        }
       };
     }
   };
@@ -249,14 +261,48 @@ export function Customers(props: CustomersProps) {
       if (!filterItem?.value.length) return (params: any): boolean => true;
 
       return (params: any): boolean => {
-        return params.row.DEPARTMENTS?.find((department: any) => filterItem.value.find((el: any) => el.ID === department.ID));
+        if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false) {
+          return params.row.DEPARTMENTS?.find((department: any) => filterItem.value.find((el: any) => el.ID === department.ID));
+        } else {
+          return filterItem.value.every((value: any) => {
+            return params.row.DEPARTMENTS?.find((el: any) => el.ID === value.ID);
+          });
+        }
+      };
+    }
+  };
+
+  const containWorkTypes: GridFilterOperator = {
+    label: 'Содержит',
+    value: 'includes',
+    getApplyFilterFn: (filterItem: GridFilterItem) => {
+      if (
+        !filterItem.columnField ||
+        !filterItem.value ||
+        !filterItem.operatorValue
+      ) {
+        return null;
+      }
+
+      if (!filterItem?.value.length) return (params: any): boolean => true;
+
+      // console.log('containWorkTypes', filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false);
+
+      return (params: any): boolean => {
+        if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false) {
+          return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) =>el.USR$CONTRACTJOBKEY === contract.ID));
+        } else {
+          return filterItem.value.every((value: any) => {
+            return params.row.CONTRACTS?.find((el: any) => el.ID === value.USR$CONTRACTJOBKEY);
+          });
+        }
+        // return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.USR$CONTRACTJOBKEY === contract.ID));
       };
     }
   };
 
   const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
-    // { field: 'FOLDERNAME', headerName: 'Папка', width: 200 },
     { field: 'PHONE', headerName: 'Телефон', width: 200 },
     { field: 'LABELS',
       headerName: 'Метки',
@@ -265,7 +311,6 @@ export function Customers(props: CustomersProps) {
       renderCell: (params) => {
         const numberLabelsInRow = 2;
 
-        // const labels: ILabelsContact[] | undefined = labelsContact?.queries.labels.filter(el => el.USR$CONTACTKEY === params.id);
         const labels: ILabelsContact[] = params.row.LABELS;
 
         if (!labels?.length) {
@@ -292,6 +337,7 @@ export function Customers(props: CustomersProps) {
                           onClick={() => {
                             setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: subLabel.USR$LABELKEY, operatorValue: 'is' }] });
                             setFilteringData({ 'LABELS': [{ ID: subLabel.USR$LABELKEY }] });
+                            // dispatch(setFilterData({ 'customers': { 'LABELS': [{ ID: subLabel.USR$LABELKEY }] } }));
                           }}
                           style={labelStyle}
                         >
@@ -324,15 +370,22 @@ export function Customers(props: CustomersProps) {
 
         const detailsComponent = {
           // eslint-disable-next-line react/display-name
-          component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`details/${customerId}`} target="_self" />)
+          component: forwardRef((props, ref: ForwardedRef<any>) =>
+            <Link
+              ref={ref}
+              {...props}
+              to={`details/${customerId}`}
+              target="_self"
+              onClick={SaveFilters}
+            />)
         };
 
         return (
           <Box>
-            <IconButton {...detailsComponent} disabled={customersLoading} >
+            <IconButton {...detailsComponent} disabled={customerFetching} >
               <VisibilityIcon fontSize="small" color="primary" />
             </IconButton>
-            <IconButton onClick={handleCustomerEdit} disabled={customersLoading} >
+            <IconButton onClick={handleCustomerEdit} disabled={customerFetching} >
               <EditOutlinedIcon fontSize="small" color="primary" />
             </IconButton>
           </Box>
@@ -341,10 +394,18 @@ export function Customers(props: CustomersProps) {
     },
     { field: 'CONTRACTS', headerName: 'Заказы', filterOperators: [containContracts] },
     { field: 'DEPARTMENTS', headerName: 'Отделы', filterOperators: [containDepartments] },
+    { field: 'WORKTYPES', headerName: '', filterOperators: [containWorkTypes] },
   ];
 
+  const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+
   useEffect(() => {
-    dispatch(fetchCustomers({ paginationData: paginationData }));
+    setFilterModel(filtersStorage.filterModels['customers']);
+    setFilteringData(filtersStorage.filterData['customers']);
+    // console.log('123', Object.keys(filtersStorage.filterData['customers'] || {}));
+    if (Object.keys(filtersStorage.filterData['customers'] || {}).length > 0) {
+      setOpenFilters(true);
+    };
   }, []);
 
   useEffect(() => {
@@ -372,11 +433,6 @@ export function Customers(props: CustomersProps) {
     tree.loadTree(arr, { createIndexes: true });
   }
 
-  // useEffect(() => {
-  //   dispatch(fetchHierarchy());
-
-  // }, [allCustomers]);
-
   /** Close snackbar manually */
   const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -384,6 +440,11 @@ export function Customers(props: CustomersProps) {
     };
     dispatch(clearError());
     setOpenSnackBar(false);
+  };
+
+  const SaveFilters = () => {
+    dispatch(saveFilterData({ 'customers': filteringData }));
+    dispatch(saveFilterModel({ 'customers': filterModel }));
   };
 
   const handleReconciliationClick = () => {
@@ -405,12 +466,13 @@ export function Customers(props: CustomersProps) {
 
     if (deleting) {
       deleteLabelsContact(values.ID);
-      dispatch(deleteCustomer(values.ID));
+      deleteCustomer(values.ID);
       return;
-    }
+    };
 
     if (!values.ID) {
-      dispatch(addCustomer(values));
+      // dispatch(addCustomer(values));
+      addCustomer(values);
       return;
     }
 
@@ -419,7 +481,8 @@ export function Customers(props: CustomersProps) {
     } else {
       deleteLabelsContact(values.ID);
     }
-    dispatch(updateCustomer(values));
+    updateCustomer(values);
+    // dispatch(updateCustomer(values));
   };
 
 
@@ -429,13 +492,15 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleOrganizationDeleteOnClick = () => {
+    // console.log('deleteClick', currentOrganization);
+
     if (!currentOrganization) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
       return;
     };
 
-    dispatch(deleteCustomer(currentOrganization));
+    deleteCustomer(currentOrganization);
   };
 
 
@@ -453,9 +518,6 @@ export function Customers(props: CustomersProps) {
     handleCancelSearch: async () => {
       setSearchName('');
     },
-    handleChange: async (value: string) => {
-      setSearchName(value);
-    },
     handleFilteringData: async (newValue: IFilteringData) => {
       const filterModels: any[] = [];
 
@@ -465,6 +527,8 @@ export function Customers(props: CustomersProps) {
 
       setFilterModel({ items: filterModels });
       setFilteringData(newValue);
+
+      // console.log('handleFilteringData', newValue, filterModels);
     },
     handleFilterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
       if (
@@ -476,38 +540,6 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(false);
     }
   };
-
-
-  // const contactGroupHandlers = {
-  //   handleAdd: async () => {
-  //     setAddingGroup(true);
-  //     setOpenContactGroupEditForm(true);
-  //   },
-  //   handleCancel: async () => setOpenContactGroupEditForm(false),
-  //   onSubmit: async (value: IContactWithLabels) => {
-  //     setOpenContactGroupEditForm(false);
-
-  //     if (!value.ID) {
-  //       addGroup(value);
-  //       return;
-  //     }
-
-  //     updateGroup(value);
-  //   },
-  //   handleEdit: async (nodeId: number) => {
-  //     setAddingGroup(false);
-  //     setEditingTreeNodeId(nodeId);
-  //     setOpenContactGroupEditForm(true);
-  //   },
-  //   handleDelete: async(nodeId: number) => {
-  //     /** если удаляем текущую папку */
-  //     if (treeNodeId === nodeId) setTreeNodeId(null);
-
-  //     deleteGroup(nodeId);
-  //   }
-
-  // };
-
 
   return (
     <Stack flex={1} display="flex" direction="column" spacing={2} style={{ overflow: 'hidden' }}>
@@ -536,8 +568,8 @@ export function Customers(props: CustomersProps) {
           <Box sx={{ mb: 1 }}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={()=> dispatch(fetchCustomers({ paginationData: paginationData }))} disabled={customersLoading} startIcon={<RefreshIcon/>}>Обновить</Button>
-                <Button onClick={handleAddOrganization} disabled={customersLoading} startIcon={<AddIcon/>}>Добавить</Button>
+                <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+                <Button onClick={handleAddOrganization} disabled={customerFetching} startIcon={<AddIcon/>}>Добавить</Button>
                 {/* <Button
                   component="a"
                   href={`employee/reports/reconciliation/${currentOrganization}`}
@@ -548,7 +580,7 @@ export function Customers(props: CustomersProps) {
               <Box flex={1} />
               <Box>
                 <SearchBar
-                  disabled={customersLoading}
+                  disabled={customerFetching}
                   // onChange={filterHandlers.handleChange}
                   onCancelSearch={filterHandlers.handleCancelSearch}
                   onRequestSearch={filterHandlers.handleRequestSearch}
@@ -562,7 +594,7 @@ export function Customers(props: CustomersProps) {
                 </Button> */}
                 <IconButton
                   onClick={filterHandlers.handleFilter}
-                  disabled={customersLoading || !displayDataGrid}
+                  disabled={customerFetching || !displayDataGrid}
                 >
                   <FilterAltIcon color="primary" />
                 </IconButton>
@@ -592,10 +624,12 @@ export function Customers(props: CustomersProps) {
                 }}
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
                 rows={
-                  allCustomers
-                    // .filter(customer => (tree.all.length && treeNodeId) ? tree.getAllChilds(treeNodeId, false).results.map(el => el.ID).includes(Number(customer.PARENT)) : true)
-                    .filter(customer => customer.NAME.toUpperCase().includes(searchName.toUpperCase()))
-                    ?? undefined}
+                  customers
+                    ?.filter(customer =>
+                      customer.NAME.toUpperCase().includes(searchName.toUpperCase()) ||
+                        customer.TAXID?.toUpperCase().includes(searchName.toUpperCase())
+                    )
+                    ?? []}
                 columns={columns}
                 columnVisibilityModel={{
                   CONTRACTS: false,
@@ -603,7 +637,7 @@ export function Customers(props: CustomersProps) {
                 }}
                 pagination
                 disableMultipleSelection
-                loading={customersLoading}
+                loading={customerFetching}
                 getRowId={row => row.ID}
                 onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
                 components={{
@@ -625,6 +659,7 @@ export function Customers(props: CustomersProps) {
 
                   return 80;
                 }}
+                rowsPerPageOptions={[20, 50, 100]}
                 pageSize={paginationData.pageSize}
                 onPageChange={(data) => {
                   setPaginationData(prevState => ({ ...prevState, pageNo: data }));
@@ -670,8 +705,8 @@ export function Customers(props: CustomersProps) {
         <CustomerEdit
           open={openEditForm}
           customer={
-            allCustomers
-              .find(element => element.ID === currentOrganization)
+            customers
+              ?.find(element => element.ID === currentOrganization)
             || null
           }
           onSubmit={handleOrganiztionEditSubmit}

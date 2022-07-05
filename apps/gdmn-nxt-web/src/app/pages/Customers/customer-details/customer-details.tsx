@@ -1,13 +1,16 @@
 import CustomizedCard from '../../../components/customized-card/customized-card';
 import './customer-details.module.less';
-import { Box, Button, Divider, Stack, Tab } from '@mui/material';
+import { Box, Breadcrumbs, Button, Divider, Link, Stack, Tab, Typography } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ActCompletion from '../../../customers/CustomerDetails/act-completion/act-completion';
 import { makeStyles } from '@mui/styles';
 import BankStatement from '../../../customers/CustomerDetails/bank-statement/bank-statement';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import HomeIcon from '@mui/icons-material/Home';
+import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -21,6 +24,10 @@ const useStyles = makeStyles(() => ({
   tabPanel: {
     flex: 1,
     display: 'flex'
+  },
+  link: {
+    display: 'flex',
+    alignItems: 'center'
   }
 }));
 
@@ -30,9 +37,11 @@ export interface CustomerDetailsProps {}
 export function CustomerDetails(props: CustomerDetailsProps) {
   const classes = useStyles();
 
-  const [tabIndex, setTabIndex] = useState('1');
+  const [tabIndex, setTabIndex] = useState('2');
 
   const { id: customerId } = useParams();
+
+  const { data: customers } = useGetCustomersQuery();
 
 
   const handleTabsChange = (event: any, newindex: string) => {
@@ -46,11 +55,25 @@ export function CustomerDetails(props: CustomerDetailsProps) {
       flex={1}
       spacing={2}
     >
-      <CustomizedCard borders boxShadows style={{ padding: '8px' }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
-        >Клиенты</Button>
+      <CustomizedCard borders boxShadows style={{ padding: '18px' }}>
+        <Breadcrumbs separator={<NavigateNextIcon />} >
+          <Link className={classes.link} underline="none" key="1" color="inherit" href="/">
+            <HomeIcon fontSize="small"/>
+          </Link>,
+          <Link
+            className={classes.link}
+            component="button"
+            underline="none"
+            key="2"
+            onClick={() => navigate(-1)}
+            variant="h1"
+          >
+            Клиенты
+          </Link>
+          <Typography key="3" color="text.primary" variant="h1">
+            {customers?.find(el => el.ID === Number(customerId))?.NAME || '<Наменование>'}
+          </Typography>
+        </Breadcrumbs>
       </CustomizedCard>
       <CustomizedCard
         borders
@@ -64,20 +87,24 @@ export function CustomerDetails(props: CustomerDetailsProps) {
           <TabContext value={tabIndex}>
             <Box className={classes.tabsBox}>
               <TabList onChange={handleTabsChange}>
-                <Tab label="Подробности" value="1" />
+                {/* <Tab label="Подробности" value="1" /> */}
                 <Tab label="Акты выполненных работ" value="2" />
                 <Tab label="Выписки по р/с" value="3" />
+                <Tab label="Договоры" value="4" />
               </TabList>
             </Box>
             <Divider />
-            <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''} >
+            {/* <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''} >
               <div>Информация о клиенте</div>
-            </TabPanel>
+            </TabPanel> */}
             <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
               <ActCompletion customerId={Number(customerId)} />
             </TabPanel>
             <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''} >
               <BankStatement companyId={Number(customerId)} />
+            </TabPanel>
+            <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''} >
+              <ContractsList companyId={Number(customerId)} />
             </TabPanel>
           </TabContext>
         </Stack>

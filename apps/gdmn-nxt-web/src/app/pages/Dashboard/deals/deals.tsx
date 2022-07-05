@@ -14,9 +14,9 @@ export function Deals(props: DealsProps) {
 
   const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery();
 
-  useEffect(() => {
-    dispatch(toggleMenu(false));
-  }, []);
+  // useEffect(() => {
+  //   dispatch(toggleMenu(false));
+  // }, []);
 
   return (
     <>

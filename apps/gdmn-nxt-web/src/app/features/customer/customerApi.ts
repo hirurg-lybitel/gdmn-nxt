@@ -22,7 +22,7 @@ const customerAPI = {
         };
       };
 
-      console.log('⏩ request', "GET", `${baseUrlApi}contacts?${params.join('&')}`);
+      console.log('⏩ request', 'GET', `${baseUrlApi}contacts?${params.join('&')}`);
 
       const response = await fetch(`${baseUrlApi}contacts?${params.join('&')}`, {
         method: "GET",

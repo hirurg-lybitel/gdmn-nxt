@@ -3,7 +3,7 @@ import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importModels } from '../er/er-utils';
 import { resultError } from '../responseMessages';
-import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
 import { genId } from '../utils/genId';
 
 const get: RequestHandler = async (req, res) => {
@@ -69,6 +69,8 @@ const get: RequestHandler = async (req, res) => {
 const upsert: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await startTransaction(req.sessionID);
 
+  const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(req.sessionID);
+
   const { id } = req.params;
 
   if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
@@ -94,43 +96,80 @@ const upsert: RequestHandler = async (req, res) => {
     let returnFieldsNames;
     let sql;
     let dealRecord: IDeal;
+    const deal: IDeal = req.body['DEAL'];
 
-    allFields = ['USR$DEALKEY', 'USR$NAME', 'USR$DISABLED', 'USR$AMOUNT', 'USR$CONTACTKEY'];
-    actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
+    // allFields = ['ID', 'USR$NAME', 'USR$DISABLED', 'USR$AMOUNT', 'USR$CONTACTKEY'];
+    // actualFields = allFields.filter(field => typeof req.body['DEAL'][field] !== 'undefined');
 
-    paramsValues = actualFields.map(field => {
-      return req.body[field];
-    });
+    // paramsValues = actualFields.map(field => {
+    //   return req.body[field];
+    // });
 
-    actualFields = actualFields.map(field => field === 'USR$DEALKEY' ? 'ID' : field);
+    // actualFields = actualFields.map(field => field === 'USR$DEALKEY' ? 'ID' : field);
 
-    if (isInsertMode) {
-      paramsValues.splice(actualFields.indexOf('ID'), 1);
-      actualFields.splice(actualFields.indexOf('ID'), 1);
+    // if (isInsertMode) {
+    //   paramsValues.splice(actualFields.indexOf('ID'), 1);
+    //   actualFields.splice(actualFields.indexOf('ID'), 1);
 
-      const requiredFields = {
-        ID: ID
-      };
+    //   const requiredFields = {
+    //     ID: ID
+    //   };
 
-      for (const [key, value] of Object.entries(requiredFields)) {
-        if (!actualFields.includes(key)) {
-          actualFields.push(key);
-          paramsValues.push(value);
-        };
-      };
-    };
+    //   for (const [key, value] of Object.entries(requiredFields)) {
+    //     if (!actualFields.includes(key)) {
+    //       actualFields.push(key);
+    //       paramsValues.push(value);
+    //     };
+    //   };
+    // };
 
-    actualFieldsNames = actualFields.join(',');
-    paramsString = actualFields.map(_ => '?').join(',');
-    returnFieldsNames = actualFields.join(',');
+    // actualFieldsNames = actualFields.join(',');
+    // paramsString = actualFields.map(_ => '?').join(',');
+    // returnFieldsNames = actualFields.join(',');
 
     sql = `
-      UPDATE OR INSERT INTO USR$CRM_DEALS(${actualFieldsNames})
-      VALUES (${paramsString})
+      UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
+        USR$PERFORMER, USR$DEADLINE, USR$SOURCE, USR$READYTOWORK, USR$DONE)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
-      RETURNING ${returnFieldsNames}`;
+      RETURNING ID`;
+
+    paramsValues = [
+      deal.ID > 0 ? deal.ID : ID,
+      deal.USR$NAME || '',
+      deal.USR$DISABLED ? 1 : 0,
+      deal.USR$AMOUNT || 0,
+      deal.CONTACT?.ID || null,
+      deal.CREATOR?.ID || null,
+      deal.PERFORMER?.ID || null,
+      deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
+      deal.USR$SOURCE,
+      deal.USR$READYTOWORK,
+      deal.USR$DONE,
+    ];
 
     dealRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+
+    // sql = `
+    //   EXECUTE PROCEDURE USR$CRM_CREATE_DEAL(
+    //     ${deal.CREATOR.ID || null},
+    //     ${deal.CONTACT.ID || null},
+    //     ${deal.PERFORMER?.ID || null},
+    //     ${new Date(deal.USR$DEADLINE).toLocaleDateString() || null}
+    //   )`;
+
+    sql = `
+      EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?)`;
+
+    paramsValues = [
+      deal.CREATOR?.ID || null,
+      deal.CONTACT?.ID || null,
+      deal.PERFORMER?.ID || null,
+      new Date(deal.USR$DEADLINE)
+    ];
+
+    const rec = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    // const rec = fetchAsObject(sql, [{ 'USERKEY': 159661087 }, { 'CONTACTKEY': 159661087 }]);
 
     if (isInsertMode) {
       ID = await genId(attachment, transaction);
@@ -204,18 +243,18 @@ const remove: RequestHandler = async(req, res) => {
       `EXECUTE BLOCK(
         ID INTEGER = ?
       )
-      RETURNS(SUCCESS BOOLEAN, USR$MASTERKEY INTEGER)
+      RETURNS(SUCCESS SMALLINT, USR$MASTERKEY INTEGER)
       AS
         DECLARE VARIABLE DEAL_ID INTEGER;
       BEGIN
-        SUCCESS = FALSE;
+        SUCCESS = 0;
         FOR SELECT USR$DEALKEY, USR$MASTERKEY FROM USR$CRM_KANBAN_CARDS WHERE ID = :ID INTO :DEAL_ID, :USR$MASTERKEY AS CURSOR curCARD
         DO
         BEGIN
           DELETE FROM USR$CRM_KANBAN_CARDS WHERE CURRENT OF curCARD;
           DELETE FROM USR$CRM_DEALS deal WHERE deal.ID = :DEAL_ID;
 
-          SUCCESS = TRUE;
+          SUCCESS = 1;
         END
 
         SUSPEND;
@@ -223,9 +262,9 @@ const remove: RequestHandler = async(req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: boolean, USR$MASTERKEY: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number, USR$MASTERKEY: number }[] = await result.fetchAsObject();
 
-    if (!data[0].SUCCESS) {
+    if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
     };
 

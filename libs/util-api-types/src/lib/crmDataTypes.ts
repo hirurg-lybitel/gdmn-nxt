@@ -34,6 +34,7 @@ export interface ICustomer extends IContactWithID {
   LABELS?: ILabelsContact[];
   CONTRACTS?: IContractJob[];
   DEPARTMETNS?: IContactWithID[];
+  TAXID?: string;
 };
 
 export interface ICustomerContract {
@@ -46,17 +47,25 @@ export interface ICustomerContract {
 export type ICustomerContractWithID = ICustomerContract & IWithID;
 
 export interface IDeal extends IWithID {
-  USR$NAME: string;
+  USR$NAME?: string;
   USR$AMOUNT?: number;
-  USR$CONTACTKEY: number;
   CONTACT?: IContactWithID;
-}
+  PERFORMER?: IContactWithID;
+  CREATOR?: IContactWithID;
+  USR$SOURCE?: string;
+  USR$DEADLINE?: Date;
+  USR$CONTACTKEY?: number;
+  USR$DISABLED?: boolean;
+  USR$DONE?: boolean;
+  USR$READYTOWORK?: boolean;
+};
 
 export interface IKanbanCard extends IWithID {
   USR$INDEX: number;
   USR$MASTERKEY: number;
   USR$DEALKEY?: number;
   DEAL?: IDeal;
+  TASKS?: IKanbanTask[];
 };
 
 export interface IKanbanColumn extends IWithID {
@@ -74,6 +83,17 @@ export interface IKanbanHistory extends IWithID {
   USR$USERKEY: number;
   USR$CARDKEY: number,
   USERNAME?: string;
+};
+
+export interface IKanbanTask extends IWithID {
+  USR$NAME: string;
+  USR$DEADLINE?: Date;
+  PERFORMER?: IContactWithID;
+  CREATOR: IContactWithID;
+  USR$DATECLOSE?: Date;
+  USR$CREATIONDATE?: Date;
+  USR$CARDKEY: number;
+  USR$CLOSED: boolean;
 };
 
 export interface IActCompletion extends IWithID {
@@ -108,4 +128,22 @@ export interface IContactPerson extends IContactWithID {
   RANK?: string;
   USR$LETTER_OF_AUTHORITY?: string;
   WCOMPANYKEY?: number;
+};
+
+export interface IContactsList extends IWithID {
+  NUMBER: string;
+  DOCUMENTDATE: Date;
+  DEPT_NAME: string;
+  JOB_NUMBER: string;
+  SUMNCU: number;
+  SUMCURNCU: number;
+  ISACTIVE: boolean;
+  ISBUDGET: boolean;
+  DATEBEGIN: Date;
+  DATEEND: Date;
+};
+
+export interface IWorkType extends IWithID {
+  USR$NAME?: string;
+  USR$CONTRACTJOBKEY: number;
 };

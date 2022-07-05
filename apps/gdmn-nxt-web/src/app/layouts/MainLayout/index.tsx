@@ -5,9 +5,9 @@ import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
-import { toggleMenu } from '../../store/settingsSlice'
+import { setActiveMenu, toggleMenu } from '../../store/settingsSlice'
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
@@ -134,6 +134,13 @@ export const MainLayout = () => {
 
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    const menuId: string = location.pathname.split('/').at(-1) || '';
+    dispatch(setActiveMenu(menuId));
+  }, [location]);
+
   useEffect(() => {
     if (errorMessage) {
       setOpenSnackBar(true);
@@ -223,8 +230,24 @@ export const MainLayout = () => {
       <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
         <Outlet />
       </Main>
-      <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
-        <Alert onClose={handleSnackBarClose} variant="filled" severity='error'>{errorMessage}</Alert>
+      <Snackbar
+        open={openSnackBar}
+        autoHideDuration={5000}
+        onClose={handleSnackBarClose}
+        sx={{
+          '& .MuiAlert-icon, .MuiAlert-action': {
+            alignItems: 'center',
+          }
+        }}
+      >
+        <Alert
+          onClose={handleSnackBarClose}
+          variant="filled"
+          severity="error"
+          style={{
+            fontSize: '1.2em'
+          }}
+        >{errorMessage}</Alert>
       </Snackbar>
     </Box>
   );

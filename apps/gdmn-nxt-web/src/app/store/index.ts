@@ -21,11 +21,18 @@ import { bankStatementApi } from '../features/bank-statement/bankStatementApi';
 import { chartDataApi } from '../features/charts/chartDataApi';
 import { nlpQueryApi } from '../features/nlp/nlpApi';
 import { sqlEditorApi } from '../features/sql-editor/sqlEditorApi';
+import { customerApi } from '../features/customer/customerApi_new';
+import filtersReducer from './filtersSlice';
+import { contractsListApi } from '../features/contracts-list/contractsListApi';
+import { remainsInvoicesApi } from '../features/remains-by-invoices/remainsInvoicesApi';
+import { workTypesApi } from '../features/work-types/workTypesApi';
+
 
 export const store = configureStore({
   reducer: {
     viewForms: viewFormsReducer,
     settings: settingsReducer,
+    filtersStorage: filtersReducer,
     error: errorReducer,
     user: userReducer,
     nlp: nlpReducer,
@@ -44,7 +51,11 @@ export const store = configureStore({
     [bankStatementApi.reducerPath]: bankStatementApi.reducer,
     [chartDataApi.reducerPath]: chartDataApi.reducer,
     [nlpQueryApi.reducerPath]: nlpQueryApi.reducer,
-    [sqlEditorApi.reducerPath]: sqlEditorApi.reducer
+    [sqlEditorApi.reducerPath]: sqlEditorApi.reducer,
+    [customerApi.reducerPath]: customerApi.reducer,
+    [contractsListApi.reducerPath]: contractsListApi.reducer,
+    [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
+    [workTypesApi.reducerPath]: workTypesApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -61,6 +72,10 @@ export const store = configureStore({
     .concat(chartDataApi.middleware)
     .concat(nlpQueryApi.middleware)
     .concat(sqlEditorApi.middleware)
+    .concat(customerApi.middleware)
+    .concat(contractsListApi.middleware)
+    .concat(remainsInvoicesApi.middleware)
+    .concat(workTypesApi.middleware)
     .concat(errorMiddleware),
 });
 

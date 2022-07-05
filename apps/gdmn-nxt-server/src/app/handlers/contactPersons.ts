@@ -157,7 +157,7 @@ const upsert: RequestHandler = async (req, res) => {
 
   const { id } = req.params;
 
-  if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));;
+  if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
   try {
     const isInsertMode = id ? false : true;
@@ -181,8 +181,9 @@ const upsert: RequestHandler = async (req, res) => {
       ID = await genId(attachment, transaction);
     };
 
-    const { erModelNoAdapters } = await importedModels;
-    const allFields = erModelNoAdapters.entities['TgdcContact'].attributes.map(attr => attr.name);
+    // const { erModelNoAdapters } = await importedModels;
+    // const allFields = erModelNoAdapters.entities['TgdcContact'].attributes.map(attr => attr.name);
+    const allFields = ['ID', 'NAME', 'EMAIL', 'ADDRESS', 'NOTE', 'USR$BG_OTDEL'];
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     // console.log('body', req.body);
@@ -356,11 +357,13 @@ const remove: RequestHandler = async (req, res) => {
   const { attachment, transaction, releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
   try {
     const { erModelNoAdapters } = await importedModels;
-    const returnFieldsNames = erModelNoAdapters.entities['TgdcContact'].attributes.map( attr => attr.name ).join(',');
-    const sqlResult = await executeSingletonAsObject(`
-      DELETE FROM GD_CONTACT
-      WHERE ID = :id
-      RETURNING ${returnFieldsNames}`, { id });
+    // const returnFieldsNames = erModelNoAdapters.entities['TgdcContact'].attributes.map(attr => attr.name).join(',');
+    const returnFieldsNames = ['ID', 'NAME'];
+    const sqlResult = await attachment.executeSingletonAsObject(
+      transaction,
+      `DELETE FROM GD_CONTACT
+      WHERE ID = ?
+      RETURNING ${returnFieldsNames}`, [id]);
 
     if (!sqlResult['ID']) {
       return res.status(500).send(resultError('Объект не найден'));

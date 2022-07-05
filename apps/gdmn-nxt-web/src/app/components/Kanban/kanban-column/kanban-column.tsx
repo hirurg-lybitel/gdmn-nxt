@@ -28,13 +28,12 @@ export interface KanbanColumnProps {
 export function KanbanColumn(props: KanbanColumnProps) {
   const { provided, dragSnapshot, dropSnapshot } = props;
   const { children, item, columns } = props;
-  const { onEdit, onDelete, onAddCard} = props;
+  const { onEdit, onDelete, onAddCard } = props;
 
   const theme = useTheme();
 
   const [upsertCard, setUpsertCard] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
@@ -87,7 +86,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
       setEditTitleText(false);
     };
 
-    return(
+    return (
       <Stack
         direction="row"
         onMouseEnter={handleTitleOnMouseEnter}
@@ -102,24 +101,24 @@ export function KanbanColumn(props: KanbanColumnProps) {
             flex: 1,
             padding: 3,
             textOverflow: 'ellipsis',
-            overflow: 'hidden',
+            overflow: 'hidden'
           }}
         >
           {editTitleText
             ? <Input
-                value={titleText}
-                onChange={(e) => setTitleText(e.target.value)}
+              value={titleText}
+              onChange={(e) => setTitleText(e.target.value)}
 
-                autoFocus
-              />
+              autoFocus
+            />
             : <Typography
-                variant="h4"
-                noWrap
-                style={{
-                  opacity: `${editTitleHidden ? 1 : 0.3}`,
-                }}
-              > {item.USR$NAME}</Typography>
-            }
+              variant="h4"
+              noWrap
+              style={{
+                opacity: `${editTitleHidden ? 1 : 0.3}`,
+              }}
+            > {item.USR$NAME}</Typography>
+          }
         </Box>
         <div
           style={{
@@ -134,13 +133,12 @@ export function KanbanColumn(props: KanbanColumnProps) {
           </IconButton >
         </div>
       </Stack>
-
-    )
-  }
+    );
+  };
 
   return (
     <Box
-      style={{ display: 'flex'}}
+      style={{ display: 'flex' }}
     >
       <CustomizedCard
         borders
@@ -158,7 +156,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             }
             : {
             }),
-      }}
+        }}
       >
         <CardHeader
           sx={{ height: 10 }}
@@ -196,20 +194,22 @@ export function KanbanColumn(props: KanbanColumnProps) {
           </PerfectScrollbar>
         </CardContent>
         <CardActions>
-          <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
+          {item.USR$INDEX === 0
+            ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
+            : <></>}
         </CardActions>
       </CustomizedCard>
-      {upsertCard &&
-        <KanbanEditCard
-          currentStage={item}
-          stages={columns}
-          onSubmit={cardHandlers.handleSubmit}
-          onCancelClick={cardHandlers.handleCancel}
-        />}
+      <KanbanEditCard
+        open={upsertCard}
+        currentStage={item}
+        stages={columns}
+        onSubmit={cardHandlers.handleSubmit}
+        onCancelClick={cardHandlers.handleCancel}
+      />
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}
-        title={"Удаление группы: " + item.USR$NAME}
+        title={'Удаление группы: ' + item.USR$NAME}
         text="Вы уверены, что хотите продолжить?"
         onConfirm={() => onDelete(item)}
       />

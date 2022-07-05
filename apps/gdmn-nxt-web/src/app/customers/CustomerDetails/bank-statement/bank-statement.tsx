@@ -49,7 +49,7 @@ export function BankStatement(props: BankStatementProps) {
     { field: 'DEPT_NAME', headerName: 'Отдел', flex: 1, minWidth: 100 },
     { field: 'JOB_NUMBER', headerName: 'Заказ', flex: 1, minWidth: 100 },
     { field: 'CSUMNCU', headerName: 'Сумма', flex: 1, minWidth: 100,
-      renderCell: ({ value }) => (Math.round(value * 100) / 100).toFixed(2) },
+      renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
     { field: 'COMMENT', headerName: 'Комментарии', flex: 1, minWidth: 500,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
     }

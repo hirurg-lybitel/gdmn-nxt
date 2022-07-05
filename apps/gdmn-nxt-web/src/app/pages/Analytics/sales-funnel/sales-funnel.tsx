@@ -1,15 +1,13 @@
 import './sales-funnel.module.less';
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { customersSelectors } from '../../../features/customer/customerSlice';
-import { ResponsiveFunnel } from '@nivo/funnel'
+import { ResponsiveFunnel } from '@nivo/funnel';
 import CustomizedCard from '../../../components/customized-card/customized-card';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 
 /* eslint-disable-next-line */
 export interface SalesFunnelProps {}
 
-/**Guid for @nivo/funnel https://nivo.rocks/funnel/ */
+/** Guid for @nivo/funnel https://nivo.rocks/funnel/ */
 export function SalesFunnel(props: SalesFunnelProps) {
   const { data: stages, isFetching } = useGetKanbanDealsQuery();
 
@@ -25,7 +23,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
         ? <></>
         : <ResponsiveFunnel
           theme={{
-            //fontSize: 20,
+            // fontSize: 20,
             labels: {
               text: {
                 fontSize: '1.5em',
@@ -35,7 +33,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
           }}
           data={funnelData}
           margin={{ top: 30, right: 20, bottom: 20, left: 20 }}
-          valueFormat=">-.4s"
+          // valueFormat=">-.4s"
           colors={{ scheme: 'set2' }}
           borderWidth={20}
           labelColor={{

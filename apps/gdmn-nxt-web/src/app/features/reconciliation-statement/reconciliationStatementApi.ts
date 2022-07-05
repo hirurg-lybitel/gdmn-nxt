@@ -7,7 +7,7 @@ export const reconciliationStatementApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getReconciliationStatement: builder.query<IReconciliationStatementRequestResult, { custId: number, dateBegin: Date, dateEnd: Date }>({
-      query: ({ custId, dateBegin, dateEnd }) => `reconciliation-statement/${custId}/${dateBegin.getTime()}-${dateEnd.getTime()}`
+      query: ({ custId, dateBegin, dateEnd }) => `reports/reconciliation-statement/${custId}/${dateBegin.getTime()}-${dateEnd.getTime()}`
     }),
   }),
 });

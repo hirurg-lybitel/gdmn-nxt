@@ -47,11 +47,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: '30vw',
-    maxWidth: '100vw',
-    minWidth: '300px',
-    // //width: '30%',
-    // //minWidth: '30%',
+    width: '25vw',
+    minWidth: 500,
+    maxWidth: '100%',
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   },
@@ -89,12 +87,11 @@ export interface CustomerEditProps {
 
 export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
-  const { onCancelClick, onDeleteClick, onSubmit } = props;
+  const { onCancelClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const allHierarchy = useSelector(hierarchySelectors.selectAll);
   const { data: groups } = useGetGroupsQuery();
 
   const [open2, setOpen2] = useState(false);
@@ -107,7 +104,9 @@ export function CustomerEdit(props: CustomerEditProps) {
     PHONE: customer?.PHONE || '',
     EMAIL: customer?.EMAIL || '',
     PARENT: customer?.PARENT || undefined,
-    LABELS: customer?.LABELS || []
+    LABELS: customer?.LABELS || [],
+    ADDRESS: customer?.ADDRESS || '',
+    TAXID: customer?.TAXID || ''
   };
 
   const formik = useFormik<ICustomer>({
@@ -255,6 +254,27 @@ export function CustomerEdit(props: CustomerEditProps) {
                     />
                   )}
                 />
+                <TextField
+                  label="Адрес"
+                  className={classes.helperText}
+                  type="text"
+                  name="ADDRESS"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.ADDRESS}
+                  helperText={formik.errors.ADDRESS}
+                  placeholder="Введите адрес"
+                />
+                <TextField
+                  label="УНП"
+                  className={classes.helperText}
+                  type="text"
+                  name="TAXID"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.TAXID}
+                  helperText={formik.errors.TAXID}
+                />
               </Stack>
             </Form>
           </FormikProvider>
@@ -262,9 +282,17 @@ export function CustomerEdit(props: CustomerEditProps) {
           <CustomerEdit open={open2} customer={customer} onSubmit={onSubmit} onCancelClick={() => setOpen2(false)} />
           <CustomizedCard
             borders
+            style={{
+              borderColor: 'lightgrey',
+            }}
           >
             <Accordion disableGutters>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                style={{
+                  height: 56,
+                }}
+              >
                 <Typography sx={{ width: '33%', flexShrink: 0 }}>
                   Контакты
                 </Typography>
@@ -283,11 +311,20 @@ export function CustomerEdit(props: CustomerEditProps) {
           </CustomizedCard>
         </Stack>
       </DialogContent>
-      <DialogActions className={classes.dialogAction}>
+      <DialogActions>
         <IconButton onClick={handleDeleteClick} size="large">
           <DeleteIcon />
         </IconButton>
-        <Divider orientation="vertical" flexItem />
+        {/* <Button
+          className={classes.button}
+          variant="text"
+          color="error"
+          onClick={handleDeleteClick}
+          startIcon={<DeleteIcon fontSize="medium"  />}
+        >
+          Удалить
+        </Button> */}
+        <Box flex={1}/>
         <Button
           className={classes.button}
           onClick={handleCancelClick}
@@ -299,18 +336,14 @@ export function CustomerEdit(props: CustomerEditProps) {
         <Button
           className={classes.button}
           type={!formik.isValid ? 'submit' : 'button'}
-
           form="mainForm"
           onClick={() => {
             setDeleting(false);
             setConfirmOpen(formik.isValid);
           }}
           variant="contained"
-          // color="warning"
-          // color="success"
-          // startIcon={<SaveIcon />}
         >
-            OK
+            Сохранить
         </Button>
       </DialogActions>
       <ConfirmDialog

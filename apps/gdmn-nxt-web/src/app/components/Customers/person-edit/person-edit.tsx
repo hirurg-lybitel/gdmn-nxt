@@ -1,5 +1,18 @@
 import { IContactPerson, IPhone } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Slide, Stack, TextField } from '@mui/material';
+import {
+  Autocomplete,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Slide,
+  Stack,
+  TextField,
+  Box
+} from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -25,9 +38,8 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: '30vw',
-    maxWidth: '100vw',
-    minWidth: '300px',
+    width: '25vw',
+    minWidth: 500,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
   },
@@ -292,7 +304,7 @@ export function PersonEdit(props: PersonEditProps) {
         <IconButton onClick={handleDeleteClick} size="large">
           <DeleteIcon />
         </IconButton>
-        <Divider orientation="vertical" flexItem />
+        <Box flex={1} />
         <Button
           className={classes.button}
           onClick={handleCancelClick}

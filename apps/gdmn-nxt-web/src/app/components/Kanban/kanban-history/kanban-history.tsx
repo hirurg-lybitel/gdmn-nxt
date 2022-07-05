@@ -35,7 +35,7 @@ export function KanbanHistory(props: KanbanHistoryProps) {
       >
         {data?.map((el, index) => {
           return (
-            <>
+            <div key={index}>
               {el.USR$DATE?.toDateString() === historyDate.current?.date
                 ? <></>
                 : <TimelineItem>
@@ -91,12 +91,11 @@ export function KanbanHistory(props: KanbanHistoryProps) {
 
                 </TimelineContent>
               </TimelineItem>
-            </>
+            </div>
           );
         })}
       </Timeline>
     </Box>
-    // {data?.map(el => <div key={el.ID}>{el.USR$DESCRIPTION}</div>)}
   );
 }
 

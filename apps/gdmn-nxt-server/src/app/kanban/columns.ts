@@ -54,7 +54,6 @@ const get: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch(error) {
-
     return res.status(500).send(resultError(error.message));
   }finally {
     await releaseReadTransaction(req.sessionID);
@@ -81,12 +80,12 @@ const upsert: RequestHandler = async (req, res) => {
 
     // const allFields = [...new Set(entites['TgdcDepartment'].attributes.map(attr => attr.name))];
 
-    const allFields = ['ID', 'USR$NAME', 'USR$INDEX']
+    const allFields = ['ID', 'USR$NAME', 'USR$INDEX'];
     const actualFields = allFields.filter( field => typeof req.body[field] !== 'undefined' );
 
     const paramsValues = actualFields.map(field => {
       return req.body[field];
-    })
+    });
 
     if (isInsertMode) {
       paramsValues.splice(actualFields.indexOf('ID'), 1);
@@ -94,12 +93,12 @@ const upsert: RequestHandler = async (req, res) => {
 
       const requiredFields = {
         ID: ID
-      }
+      };
 
       for (const [key, value] of Object.entries(requiredFields)) {
         if (!actualFields.includes(key)) {
           actualFields.push(key);
-          paramsValues.push(value)
+          paramsValues.push(value);
         }
       }
     };
@@ -126,60 +125,57 @@ const upsert: RequestHandler = async (req, res) => {
     };
 
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
-
 };
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const {attachment, transaction} = await startTransaction(req.sessionID);
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
-      result = await attachment.executeQuery(
+    result = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
         ID INTEGER = ?
       )
-      RETURNS(SUCCESS BOOLEAN)
+      RETURNS(SUCCESS SMALLINT)
       AS
         DECLARE VARIABLE COLUMN_ID INTEGER;
       BEGIN
-        SUCCESS = FALSE;
+        SUCCESS = 0;
         FOR SELECT ID FROM USR$CRM_KANBAN_COLUMNS WHERE ID = :ID INTO :COLUMN_ID AS CURSOR curCONTACT
         DO
         BEGIN
           DELETE FROM USR$CRM_KANBAN_CARDS WHERE USR$MASTERKEY = :COLUMN_ID;
           DELETE FROM USR$CRM_KANBAN_COLUMNS WHERE CURRENT OF curCONTACT;
 
-          SUCCESS = TRUE;
+          SUCCESS = 1;
         END
 
         SUSPEND;
       END`,
-      [ id ]
+      [id]
     );
 
-    const data: { SUCCESS: boolean }[] = await result.fetchAsObject();
-    await result.close()
+    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    await result.close();
     await transaction.commit();
 
-    if (!data[0].SUCCESS) {
-      return res.status(500).send(resultError('Объект не найден'))
+    if (data[0].SUCCESS !== 1) {
+      return res.status(500).send(resultError('Объект не найден'));
     }
 
-    return res.status(200).json({'id': id});
+    return res.status(200).json({ 'id': id });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(req.sessionID, transaction);
   }
-
 };
 
 export default { get, upsert, remove };

@@ -23,7 +23,7 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const {open, setOpen, onConfirm, text, title} = props;
+  const { open, setOpen, onConfirm, text, title } = props;
 
   const classes = useStyles();
 
@@ -43,7 +43,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         <Button
           className={classes.button}
           type="submit"
-          onClick={ () => {
+          onClick={() => {
             setOpen(false);
             onConfirm({});
           }}

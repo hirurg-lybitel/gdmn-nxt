@@ -79,6 +79,8 @@ export function ContactPersonList(props: ContactPersonListProps) {
     setPersonEdit(true);
   };
 
+  console.log('persons', persons);
+
   const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Имя', flex: 1,
       renderCell: (params) => {
@@ -111,6 +113,9 @@ export function ContactPersonList(props: ContactPersonListProps) {
         );
       }
     },
+    { field: 'USR$BG_OTDEL', headerName: 'Отдел', width: 100,
+      valueGetter: ({ value }) => value.NAME
+    },
     {
       field: 'ACTIONS',
       headerName: '',
@@ -140,7 +145,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
           </Box>
         );
       }
-    },
+    }
   ];
 
   return (
@@ -150,7 +155,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
         <IconButton color="primary" size="large" onClick={refetch}>
           <RefreshIcon />
         </IconButton>
-        <IconButton color="primary" onClick={handleAddPerson}>
+        <IconButton color="primary" onClick={handleAddPerson} disabled={customerId <= 0}>
           <AddCircleRoundedIcon />
         </IconButton>
       </Stack>
