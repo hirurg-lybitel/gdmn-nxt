@@ -129,15 +129,9 @@ export function Customers(props: CustomersProps) {
   const [addCustomer] = useAddCustomerMutation();
   const [deleteCustomer] = useDeleteCustomerMutation();
 
-  // console.log('data', customerFetching, customers);
-
   const dispatch = useDispatch();
-  
+
   const { data: labels } = useGetLabelsQuery();
-  // const { data: groups, isFetching: groupIsFetching } = useGetGroupsQuery();
-  // const [addGroup] = useAddGroupMutation();
-  // const [updateGroup] = useUpdateGroupMutation();
-  // const [deleteGroup] = useDeleteGroupMutation();
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
@@ -322,9 +316,6 @@ export function Customers(props: CustomersProps) {
                   >
                     {labels.slice(index, index + numberLabelsInRow).map((subLabel, index) => {
                       return (
-                        // <ListItem>
-                        //   <LabelMarker label={subLabel} />
-                        // </ListItem>
                         <ListItemButton
                           key={subLabel.ID}
                           onClick={() => {
