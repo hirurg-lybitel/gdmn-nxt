@@ -20,34 +20,26 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Grid,
   Tab,
   useMediaQuery,
   useTheme
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { forwardRef, ReactElement, useState, useEffect, Fragment } from 'react';
+import { forwardRef, ReactElement, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { IDeal, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { fetchCustomers } from '../../../features/customer/actions';
-import { customersSelectors } from '../../../features/customer/customerSlice';
 import { ICustomer } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../customized-card/customized-card';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import KanbanHistory from '../kanban-history/kanban-history';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { DesktopDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import ruLocale from 'date-fns/locale/ru';
-import { ChatView } from '@gsbelarus/ui-common-dialogs';
+import { DesktopDatePicker } from '@mui/x-date-pickers';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
@@ -212,7 +204,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit} style={{ flex: 1, display: 'flex' }}>
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ruLocale}>
                 <Stack spacing={3} flex={1}>
                   <Stepper
                     activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
@@ -487,7 +478,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </TabPanel>
                   </TabContext>
                 </Stack>
-              </LocalizationProvider>
             </Form>
           </FormikProvider>
         </PerfectScrollbar>

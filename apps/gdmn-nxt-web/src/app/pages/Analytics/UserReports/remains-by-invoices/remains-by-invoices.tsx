@@ -1,6 +1,6 @@
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, TextField, Typography } from '@mui/material';
-import { DesktopDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { DesktopDatePicker } from '@mui/x-date-pickers';
 import ruLocale from 'date-fns/locale/ru';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/customized-card/customized-card';
 import styles from './remains-by-invoices.module.less';
@@ -52,15 +52,12 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
         <CardHeader title={<Typography variant="h3">Остатки по расчётным счетам</Typography>} />
         <Divider />
         <CardContent>
-          <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
             <DesktopDatePicker
               label="На дату"
               value={onDate}
               onChange={handleChange}
               renderInput={(params) => <TextField {...params} />}
             />
-
-          </LocalizationProvider>
         </CardContent>
         <Divider />
         <CardActions>
