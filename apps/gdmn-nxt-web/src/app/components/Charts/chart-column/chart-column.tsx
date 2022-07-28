@@ -84,9 +84,9 @@ export function ChartColumn(props: ChartColumnProps) {
   const analyticsDataParams: IAnalyticsDataParams = {
     dateBegin: new Date(activeYears.slice(0, 1)[0], 0, 1).getTime() || 0,
     dateEnd: new Date(activeYears.slice(-1)[0], 11, 31).getTime() || 0,
-    ...(chartFilter['departments']?.length > 0 ? {departments: chartFilter['departments'].map((el: any) => el.ID)} : {}),
-    ...(chartFilter['contracts']?.length > 0 ? {contracts: chartFilter['contracts'].map((el: any) => el.ID)} : {}),
-    ...(chartFilter['workTypes']?.length > 0 ? {workTypes: chartFilter['workTypes'].map((el: any) => el.ID)} : {})
+    ...(chartFilter['departments']?.length > 0 ? { departments: chartFilter['departments'].map((el: any) => el.ID) } : {}),
+    ...(chartFilter['contracts']?.length > 0 ? { contracts: chartFilter['contracts'].map((el: any) => el.ID) } : {}),
+    ...(chartFilter['workTypes']?.length > 0 ? { workTypes: chartFilter['workTypes'].map((el: any) => el.ID) } : {})
   };
 
   const {
@@ -130,7 +130,6 @@ export function ChartColumn(props: ChartColumnProps) {
 
   const initialSeries: IMapOfArrays = {};
 
-  const t = new Date().getTime();
   if (periodType?.id === 1) {
     for (let index = 0; index < 12; index++) {
       initialSeries[index] = 0;
@@ -182,8 +181,6 @@ export function ChartColumn(props: ChartColumnProps) {
     periodType?.id === 1
       ? ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
       : activeYears.map(el => el.toString());
-
-  console.log(`Chart time ${new Date().getTime() - t} ms`);
 
   const chartOptions: ApexCharts.ApexOptions = {
     chart: {
@@ -312,7 +309,6 @@ export function ChartColumn(props: ChartColumnProps) {
                     <Checkbox
                       icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                       checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      // style={{ marginRight: 8 }}
                       checked={selected}
                     />
                     {option.NAME}

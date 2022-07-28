@@ -1,7 +1,6 @@
 import {
   DataGridPro,
   GridColDef,
-  GridToolbar,
   ruRU,
   GridFilterItem,
   GridFilterInputValueProps,
@@ -12,7 +11,7 @@ import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useEffect, useState } from 'react';
-import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, ListItem } from '@mui/material';
+import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -22,15 +21,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CustomerEdit from '../components/Customers/customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCustomers, fetchHierarchy } from '../features/customer/actions';
-import { customersSelectors } from '../features/customer/customerSlice';
 import { RootState } from '../store';
-import { IContactWithLabels, ICustomer, ILabel, ILabelsContact } from '@gsbelarus/util-api-types';
-import NestedSets from 'nested-sets-tree';
-import { CollectionEl } from 'nested-sets-tree';
-import CustomTreeView from '../custom-tree-view/custom-tree-view';
-import ContactGroupEditForm from '../contact-group-edit/contact-group-edit';
-import { useAddGroupMutation, useDeleteGroupMutation, useGetGroupsQuery, useUpdateGroupMutation } from '../features/contact/contactGroupApi';
+import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
@@ -98,18 +90,12 @@ export interface CustomersProps {}
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
 
-  // const { data, isFetching, refetch } = useGetAllContactsQuery();
-
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openFilters, setOpenFilters] = useState(false);
-  const [openContactGroupEditForm, setOpenContactGroupEditForm] = useState(false);
-  const [treeNodeId, setTreeNodeId] = useState<number | null>(null);
-  const [editingTreeNodeId, setEditingTreeNodeId] = useState<number>();
-  const [addingGroup, setAddingGroup] = useState(false);
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
   const [searchName, setSearchName] = useState('');
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
@@ -124,12 +110,21 @@ export function Customers(props: CustomersProps) {
   // const allCustomers = useSelector(customersSelectors.selectAll);
   const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
 
-  const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery();
+  const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery({
+    // pagination: paginationData,
+    // ...(filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {}),
+    // ...(filteringData ? { filter: filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {} } : {})
+    // ...(filteringData ? { filter: filteringData } : {})
+    // filter: filteringData
+  });
   const [updateCustomer] = useUpdateCustomerMutation();
   const [addCustomer] = useAddCustomerMutation();
   const [deleteCustomer] = useDeleteCustomerMutation();
 
   const dispatch = useDispatch();
+
+  // console.log('setFilterModel', filterModel);
+  // console.log('setFilteringData', filteringData);
 
   const { data: labels } = useGetLabelsQuery();
 
@@ -268,8 +263,6 @@ export function Customers(props: CustomersProps) {
 
       if (!filterItem?.value.length) return (params: any): boolean => true;
 
-      // console.log('containWorkTypes', filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false);
-
       return (params: any): boolean => {
         if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false) {
           return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) =>el.USR$CONTRACTJOBKEY === contract.ID));
@@ -278,7 +271,6 @@ export function Customers(props: CustomersProps) {
             return params.row.CONTRACTS?.find((el: any) => el.ID === value.USR$CONTRACTJOBKEY);
           });
         }
-        // return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.USR$CONTRACTJOBKEY === contract.ID));
       };
     }
   };
@@ -298,8 +290,6 @@ export function Customers(props: CustomersProps) {
         if (!labels?.length) {
           return <></>;
         };
-
-        // console.log('labels', labels);
 
         return (
           <Stack direction="column">
@@ -321,7 +311,6 @@ export function Customers(props: CustomersProps) {
                           onClick={() => {
                             setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: subLabel.ID, operatorValue: 'is' }] });
                             setFilteringData({ 'LABELS': [{ ID: subLabel.ID }] });
-                            // dispatch(setFilterData({ 'customers': { 'LABELS': [{ ID: subLabel.USR$LABELKEY }] } }));
                           }}
                           style={labelStyle}
                           sx={{
@@ -392,7 +381,6 @@ export function Customers(props: CustomersProps) {
   useEffect(() => {
     setFilterModel(filtersStorage.filterModels['customers']);
     setFilteringData(filtersStorage.filterData['customers']);
-    // console.log('123', Object.keys(filtersStorage.filterData['customers'] || {}));
     if (Object.keys(filtersStorage.filterData['customers'] || {}).length > 0) {
       setOpenFilters(true);
     };
@@ -455,24 +443,16 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(false);
 
     if (deleting) {
-      // deleteLabelsContact(values.ID);
       deleteCustomer(values.ID);
       return;
     };
 
     if (!values.ID) {
-      // dispatch(addCustomer(values));
       addCustomer(values);
       return;
-    }
+    };
 
-    // if (values.LABELS?.length) {
-    //   addLabelsContact(values.LABELS);
-    // } else {
-    //   deleteLabelsContact(values.ID);
-    // }
     updateCustomer(values);
-    // dispatch(updateCustomer(values));
   };
 
 
@@ -482,8 +462,6 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleOrganizationDeleteOnClick = () => {
-    // console.log('deleteClick', currentOrganization);
-
     if (!currentOrganization) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
@@ -517,8 +495,6 @@ export function Customers(props: CustomersProps) {
 
       setFilterModel({ items: filterModels });
       setFilteringData(newValue);
-
-      // console.log('handleFilteringData', newValue, filterModels);
     },
     handleFilterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
       if (
@@ -559,9 +535,6 @@ export function Customers(props: CustomersProps) {
                 />
               </Box>
               <Box display="flex" justifyContent="center">
-                {/* <Button onClick={filterHandlers.handleFilter} disabled={customersLoading || !displayDataGrid} startIcon={<FilterAltIcon />}>
-                  Фильтр
-                </Button> */}
                 <IconButton
                   onClick={filterHandlers.handleFilter}
                   disabled={customerFetching || !displayDataGrid}
@@ -673,16 +646,16 @@ export function Customers(props: CustomersProps) {
         {/* </div> */}
       </Stack>
       <CustomerEdit
-          open={openEditForm}
-          customer={
-            customers
-              ?.find(element => element.ID === currentOrganization)
+        open={openEditForm}
+        customer={
+          customers
+            ?.find(element => element.ID === currentOrganization)
             || null
-          }
-          onSubmit={handleOrganiztionEditSubmit}
-          onCancelClick={handleOrganiztionEditCancelClick}
-          onDeleteClick={handleOrganizationDeleteOnClick}
-        />
+        }
+        onSubmit={handleOrganiztionEditSubmit}
+        onCancelClick={handleOrganiztionEditCancelClick}
+        onDeleteClick={handleOrganizationDeleteOnClick}
+      />
       {/* {openEditForm ?
         <CustomerEdit
           open={openEditForm}

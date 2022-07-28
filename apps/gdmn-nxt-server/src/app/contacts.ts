@@ -7,15 +7,15 @@ import { genId } from './utils/genId';
 export const getContacts: RequestHandler = async (req, res) => {
   const { pageSize, pageNo } = req.query;
 
-  const fromRecord = 0;
+  let fromRecord = 0;
   let toRecord: number;
 
-  // if (pageNo && pageSize) {
-  //   fromRecord = Number(pageNo) * Number(pageSize);
-  //   toRecord = fromRecord + Number(pageSize);
+  if (pageNo && pageSize) {
+    fromRecord = Number(pageNo) * Number(pageSize);
+    toRecord = fromRecord + Number(pageSize);
 
-  //   if (fromRecord === 0 ) fromRecord = 1;
-  // };
+    if (fromRecord === 0 ) fromRecord = 1;
+  };
 
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
@@ -44,15 +44,21 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async (query: string) => {
+
+      const aTime = new Date().getTime();
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
+      console.log(`fetch time ${new Date().getTime() - aTime} ms`);
       await rs.close();
+
       return data as any;
     };
 
 
     const queries = [
-      'SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY',
+      // 'SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY',
+      'SELECT DISTINCT USR$JOBKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER',
+      'SELECT DISTINCT USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER',
       'SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0',
       `SELECT
          c.id,
@@ -84,7 +90,13 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const t = new Date().getTime();
 
-    const [rawContracts, rawFolders, rawContacts, rawLabels] = await Promise.all(queries.map(execQuery));
+    // const [rawContracts] = await Promise.all(queries.map(execQuery));
+    // const rawFolders = [];
+    // const rawContacts = [];
+    // const rawLabels = [];
+    // const rawDepartment = [];
+    const [rawContracts, rawDepartment, rawFolders, rawContacts, rawLabels] = await Promise.all(queries.map(execQuery));
+
 
     // console.log(`ExecQuery time ${new Date().getTime() - t} ms`);
 
@@ -106,6 +118,18 @@ export const getContacts: RequestHandler = async (req, res) => {
       } else {
         contracts[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
       };
+
+      // if (departments[c.USR$CUSTOMERKEY]) {
+      //   if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
+      //     departments[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
+      //   }
+      // } else {
+      //   departments[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
+      // };
+    });
+
+
+    rawDepartment.forEach(c => {
 
       if (departments[c.USR$CUSTOMERKEY]) {
         if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
