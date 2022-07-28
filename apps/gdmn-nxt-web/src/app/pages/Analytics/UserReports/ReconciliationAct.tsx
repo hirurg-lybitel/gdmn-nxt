@@ -1,6 +1,5 @@
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { DateRangePicker, DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Autocomplete, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
 import { createRef, Fragment, useEffect, useRef, useState } from 'react';
@@ -129,7 +128,6 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                 />
               </Grid>
               <Grid item>
-                <LocalizationProvider dateAdapter={AdapterDateFns} locale={ruLocale}>
                   <DateRangePicker
                     startText="Начало периода"
                     endText="Конец периода"
@@ -143,7 +141,6 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                       </Fragment>
                     )}
                   />
-                </LocalizationProvider>
               </Grid>
             </Grid>
           </CardContent>

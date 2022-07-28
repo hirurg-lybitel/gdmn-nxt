@@ -154,7 +154,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
           <Stack direction="column" p="16px 24px">
             <FormikProvider value={formik}>
               <Form id="taskForm" onSubmit={formik.handleSubmit}>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ruLocale}>
                   <Stack direction="column" spacing={3}>
                     <TextField
                       label="Описание"
@@ -277,7 +276,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     </Stack>
                     <Divider />
                   </Stack>
-                </LocalizationProvider>
               </Form>
             </FormikProvider>
           </Stack>
