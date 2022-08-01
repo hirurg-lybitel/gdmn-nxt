@@ -7,6 +7,7 @@ import ReconciliationStatement from '../../../reconciliation-statement/reconcili
 import { useParams } from 'react-router-dom';
 import CustomizedCard from '../../../components/customized-card/customized-card';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 
 
 const filterOptions = createFilterOptions({
@@ -162,6 +163,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
           </CustomizedCard>
           : null}
       </Stack>
+      <ScrollToTop />
     </Box>
   );
 };
