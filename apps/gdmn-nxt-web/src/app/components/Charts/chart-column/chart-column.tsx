@@ -57,10 +57,10 @@ interface IMapOfChartData {
   [key: string]: IMapOfArrays;
 };
 
-const filterOptions = createFilterOptions({
+const filterOptions = (limit: number = 50, fieldName: string = '') => createFilterOptions({
   matchFrom: 'any',
-  limit: 50,
-  stringify: (option: any) => option['USR$NAME'] || option['NAME'],
+  limit,
+  stringify: (option: any) => option[fieldName],
 });
 
 interface IAnalyticsDataParams {
@@ -251,6 +251,10 @@ export function ChartColumn(props: ChartColumnProps) {
     series
   };
 
+  console.log('customerContracts', customerContracts);
+  console.log('chartFilter', chartFilter['contracts']);
+
+
   return (
     <CustomizedCard
       borders
@@ -298,7 +302,7 @@ export function ChartColumn(props: ChartColumnProps) {
               <Grid item xs={4}>
               <Autocomplete
                 multiple
-                filterOptions={filterOptions}
+                filterOptions={filterOptions(50, 'NAME')}
                 loading={departmentsIsFetching}
                 options={departments || []}
                 onChange={(e, value) => changeChartFilter('departments', value)}
@@ -324,18 +328,13 @@ export function ChartColumn(props: ChartColumnProps) {
               </Grid>
               <Grid item xs={4}>
               <Autocomplete
-
                 multiple
-                //fullWidth
-                // style={{
-                //   width: width || '100%'
-                // }}
-                filterOptions={filterOptions}
+                filterOptions={filterOptions(50, 'USR$NUMBER')}
                 loading={customerContractsIsFetching}
                 options={customerContracts || []}
                 onChange={(e, value) => changeChartFilter('contracts', value)}
                 value={chartFilter['contracts'] || []}
-                getOptionLabel={option => option.USR$NAME}
+                getOptionLabel={option => option.USR$NUMBER}
                 renderOption={(props, option, { selected }) => (
                   <li {...props} key={option.ID}>
                     <Checkbox
@@ -344,7 +343,7 @@ export function ChartColumn(props: ChartColumnProps) {
                       // style={{ marginRight: 8 }}
                       checked={selected}
                     />
-                    {option.USR$NAME}
+                    {option.USR$NUMBER}
                   </li>
                 )}
                 renderInput={(params) => (
@@ -358,7 +357,7 @@ export function ChartColumn(props: ChartColumnProps) {
               <Grid item xs={4}>
               <Autocomplete
                 multiple
-                filterOptions={filterOptions}
+                filterOptions={filterOptions(50, 'USR$NAME')}
                 loading={workTypesIsFetching}
                 options={workTypes || []}
                 onChange={(e, value) => changeChartFilter('workTypes', value)}

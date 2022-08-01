@@ -29,13 +29,10 @@ export const customerApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getCustomers: builder.query<ICustomer[], Partial<IQueryOptions> | void>({
-      // query: (options) => 'contacts',
       query(options) {
-        console.log('options', options);
-        const params = [];
+        const params: string[] = [];
 
         for (const [name, value] of Object.entries(options || {})) {
-          console.log(name, value);
           switch (true) {
             case typeof value === 'object' && value !== null:
               for (const [subName, subKey] of Object.entries(value)) {
@@ -48,12 +45,10 @@ export const customerApi = createApi({
               break;
           }
         };
-
-        console.log('params', params);
         return {
           url: `contacts?${params.join('&')}`,
           method: 'GET',
-        }
+        };
       },
       onQueryStarted() {
         console.info('⏩ request', 'GET', `${baseUrlApi}contacts`);
@@ -83,8 +78,8 @@ export const customerApi = createApi({
         result
           ? [{ type: 'Customers', id: result?.ID }, { type: 'Customers', id: 'LIST' }]
           : error
-              ? [{ type: 'Customers', id: 'ERROR' }]
-              : [{ type: 'Customers', id: 'LIST' }],
+            ? [{ type: 'Customers', id: 'ERROR' }]
+            : [{ type: 'Customers', id: 'LIST' }],
       onQueryStarted() {
         console.info('⏩ request', 'PUT', `${baseUrlApi}contacts`);
       },

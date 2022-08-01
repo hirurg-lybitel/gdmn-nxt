@@ -37,6 +37,8 @@ import { SqlEditor } from './app/components/System/sql-editor/sql-editor';
 import CustomersMap from './app/customers/customers-map/customers-map';
 import RemainsByInvoices from './app/pages/Analytics/UserReports/remains-by-invoices/remains-by-invoices';
 import Labels from './app/pages/Managment/Lables';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 registerMUI();
 
@@ -54,46 +56,48 @@ const Main = () => {
       <StrictMode>
         <CssBaseline>
           <ThemeProvider theme={savedTheme.current}>
-            {
-              loginStage === 'EMPLOYEE' ?
-                <Routes>
-                  <Route path="/employee" element={<MainLayout />}>
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="dashboard/deals" element={<Deals />} />
-                    <Route path="dashboard/map" element={<CustomersMap />} />
-                    <Route path="customers">
-                      <Route path="list" element={<CustomersList />} />
-                      <Route path="list/details/:id" element={<CustomerDetails />} />
-                    </Route>
-                    <Route path="customers/orders/list" element={<OrderList />} />
-                    <Route path="reports/reconciliation" element={<ReconciliationAct />} />
-                    <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
-                    <Route path="reports/remainbyinvoices" element={<RemainsByInvoices />} />
-                    <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
-                    <Route path="labels" element={<Labels />}/>
-                  </Route>
-                  <Route path="/system" element={<BaseForm />}>
-                    <Route path="er-model-domains" element={<ErModelDomains />} />
-                    <Route path="er-model" element={<ErModel />} />
-                    <Route path="nlp-main" element={<NlpMain />} />
-                    <Route path="sql-editor" element={<SqlEditor />} />
-                  </Route>
-                  <Route path="*" element={<Navigate to="/employee/dashboard" />} />
-                </Routes>
-                : loginStage === 'CUSTOMER' ?
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              {
+                loginStage === 'EMPLOYEE' ?
                   <Routes>
-                    <Route path="/customer" element={<CustomerHomePage />}>
-                      <Route path="standard-order" element={<StandardOrder />} />
-                      <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
+                    <Route path="/employee" element={<MainLayout />}>
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="dashboard/deals" element={<Deals />} />
+                      <Route path="dashboard/map" element={<CustomersMap />} />
+                      <Route path="customers">
+                        <Route path="list" element={<CustomersList />} />
+                        <Route path="list/details/:id" element={<CustomerDetails />} />
+                      </Route>
+                      <Route path="customers/orders/list" element={<OrderList />} />
+                      <Route path="reports/reconciliation" element={<ReconciliationAct />} />
+                      <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
+                      <Route path="reports/remainbyinvoices" element={<RemainsByInvoices />} />
+                      <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
+                      <Route path="labels" element={<Labels />}/>
                     </Route>
-                    <Route path="*" element={<Navigate to="/customer" />} />
+                    <Route path="/system" element={<BaseForm />}>
+                      <Route path="er-model-domains" element={<ErModelDomains />} />
+                      <Route path="er-model" element={<ErModel />} />
+                      <Route path="nlp-main" element={<NlpMain />} />
+                      <Route path="sql-editor" element={<SqlEditor />} />
+                    </Route>
+                    <Route path="*" element={<Navigate to="/employee/dashboard" />} />
                   </Routes>
-                  :
-                  <Routes>
-                    <Route path="/" element={<App />} />
-                    <Route path="*" element={<Navigate to="/" />} />
-                  </Routes>
-            }
+                  : loginStage === 'CUSTOMER' ?
+                    <Routes>
+                      <Route path="/customer" element={<CustomerHomePage />}>
+                        <Route path="standard-order" element={<StandardOrder />} />
+                        <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
+                      </Route>
+                      <Route path="*" element={<Navigate to="/customer" />} />
+                    </Routes>
+                    :
+                    <Routes>
+                      <Route path="/" element={<App />} />
+                      <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
+              }
+            </LocalizationProvider>
           </ThemeProvider>
         </CssBaseline>
       </StrictMode>

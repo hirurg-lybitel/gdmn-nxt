@@ -110,13 +110,14 @@ export function Customers(props: CustomersProps) {
   // const allCustomers = useSelector(customersSelectors.selectAll);
   const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
 
-  const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery({
+  const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery();
+  // {
     // pagination: paginationData,
     // ...(filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {}),
     // ...(filteringData ? { filter: filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {} } : {})
     // ...(filteringData ? { filter: filteringData } : {})
     // filter: filteringData
-  });
+  // };
   const [updateCustomer] = useUpdateCustomerMutation();
   const [addCustomer] = useAddCustomerMutation();
   const [deleteCustomer] = useDeleteCustomerMutation();

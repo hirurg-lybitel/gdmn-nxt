@@ -14,7 +14,7 @@ export const getContacts: RequestHandler = async (req, res) => {
     fromRecord = Number(pageNo) * Number(pageSize);
     toRecord = fromRecord + Number(pageSize);
 
-    if (fromRecord === 0 ) fromRecord = 1;
+    if (fromRecord === 0) fromRecord = 1;
   };
 
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -44,7 +44,6 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async (query: string) => {
-
       const aTime = new Date().getTime();
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
@@ -130,7 +129,6 @@ export const getContacts: RequestHandler = async (req, res) => {
 
 
     rawDepartment.forEach(c => {
-
       if (departments[c.USR$CUSTOMERKEY]) {
         if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
           departments[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
