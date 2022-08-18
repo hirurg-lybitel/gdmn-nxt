@@ -251,10 +251,6 @@ export function ChartColumn(props: ChartColumnProps) {
     series
   };
 
-  console.log('customerContracts', customerContracts);
-  console.log('chartFilter', chartFilter['contracts']);
-
-
   return (
     <CustomizedCard
       borders

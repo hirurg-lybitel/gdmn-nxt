@@ -154,3 +154,19 @@ export interface ILabel extends IWithID {
   USR$COLOR?: string;
   USR$DESCRIPTION?: string;
 };
+
+
+export interface IPermissionsAction extends IWithID {
+  NAME: string;
+  ISACTIVE: boolean;
+};
+
+export interface IUserGroup extends IWithID {
+  NAME: string;
+};
+
+export interface IPermissionsView extends IWithID {
+  ACTION: IPermissionsAction;
+  USERGROUP: IUserGroup;
+  MODE: number;
+};

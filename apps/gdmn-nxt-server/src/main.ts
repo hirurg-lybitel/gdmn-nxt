@@ -7,7 +7,6 @@ import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
 import { authResult } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
-import { getReconciliationStatement } from './app/reconciliationStatement';
 import { upsertAccount, getAccounts } from './app/accounts';
 import contactGroups from './app/contactGrops';
 import departments from './app/departments';
@@ -25,6 +24,7 @@ import contractsListRouter from './app/routes/contractsListRouter';
 import reportsRouter from './app/routes/reportsRouter';
 import workTypes from './app/handlers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
+import permissionsRouter from './app/routes/permissionsRouter';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -288,6 +288,8 @@ router.use(actCompletionRouter);
 
 router.use(chartsRouter);
 router.use(systemRouter);
+
+router.use(permissionsRouter);
 
 router.get('/accounts', getAccounts);
 router.get('/accounts/email/:email', getAccounts);

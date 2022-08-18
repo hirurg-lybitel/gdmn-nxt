@@ -4,11 +4,12 @@ import dashboard from './dashboard';
 import managment from './managment';
 import { systemMenu } from './system';
 
+type IType = 'group' | 'collapse' | 'item'
 export interface IMenuItem {
   id: string;
   title?: string;
   url?: string;
-  type: string;
+  type: IType;
   icon?: React.ReactElement;
   children?: IMenuItem[];
 }

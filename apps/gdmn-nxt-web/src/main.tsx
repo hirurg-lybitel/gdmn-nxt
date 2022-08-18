@@ -39,6 +39,8 @@ import RemainsByInvoices from './app/pages/Analytics/UserReports/remains-by-invo
 import Labels from './app/pages/Managment/Lables';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import PermissionsList from './app/pages/Permissions/permissions-list/permissions-list';
+import UserGroups from './app/pages/Permissions/user-groups/user-groups';
 
 registerMUI();
 
@@ -67,6 +69,10 @@ const Main = () => {
                       <Route path="customers">
                         <Route path="list" element={<CustomersList />} />
                         <Route path="list/details/:id" element={<CustomerDetails />} />
+                      </Route>
+                      <Route path="permissions">
+                        <Route path="list" element={<PermissionsList />} />
+                        <Route path="usergroups" element={<UserGroups />} />
                       </Route>
                       <Route path="customers/orders/list" element={<OrderList />} />
                       <Route path="reports/reconciliation" element={<ReconciliationAct />} />
