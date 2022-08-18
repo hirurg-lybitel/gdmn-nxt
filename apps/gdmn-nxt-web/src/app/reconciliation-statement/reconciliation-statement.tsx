@@ -1,4 +1,4 @@
-import { useMemo, Fragment } from 'react';
+import { useMemo, Fragment, useEffect, useRef } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
@@ -59,9 +59,10 @@ export interface ReconciliationStatementProps {
   custId: number;
   dateBegin?: Date | null;
   dateEnd?: Date | null;
+  setBuilded?: (arg: boolean) => void;
 }
 
-export function ReconciliationStatement({ custId, dateBegin, dateEnd }: ReconciliationStatementProps) {
+export function ReconciliationStatement({ custId, dateBegin, dateEnd, setBuilded }: ReconciliationStatementProps) {
 
   const { data, isFetching } = useGetReconciliationStatementQuery({
     custId,
@@ -81,7 +82,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
       giveSum2,
       saldo,
       saldoEnd,
-      customerName: data?.queries.customerAct?.[0]?.['CUSTOMER'],
+      customerName: data?.queries.customerAct?.[0]?.['CUSTOMER'] || '<не определено>',
       ourName: data?.queries.firm?.[0]?.NAME ?? '',
       accountantName: data?.queries.firm?.[0]?.ACCOUNT ?? '',
       written: numberToWordsRu.convert(Math.abs(saldoEnd), {
@@ -106,6 +107,14 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd }: Reconcil
   }, [data]);
 
   const fv = (rec: any, rs: string, fld: string) => formatValue(rec, rs, fld, schema);
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 300,
+      behavior: 'auto',
+    });
+  }, [isFetching] );
+
 
   return (
     <Box>

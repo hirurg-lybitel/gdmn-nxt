@@ -1,18 +1,13 @@
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { DateRangePicker, DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { Autocomplete, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { createRef, Fragment, useEffect, useRef, useState } from 'react';
-import ruLocale from 'date-fns/locale/ru';
-import { useDispatch, useSelector } from 'react-redux';
-import { customersSelectors } from '../../../features/customer/customerSlice';
+import { Fragment, useRef, useState } from 'react';
 import { IContactWithLabels } from '@gsbelarus/util-api-types';
 import ReconciliationStatement from '../../../reconciliation-statement/reconciliation-statement';
 import { useParams } from 'react-router-dom';
-import { fetchCustomers } from '../../../features/customer/actions';
-import { RootState } from '../../../store';
 import CustomizedCard from '../../../components/customized-card/customized-card';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 
 
 const filterOptions = createFilterOptions({
@@ -46,8 +41,6 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
 
   const inCustomerId = Number(id);
 
-  const theme = useTheme();
-
   const [customerId, setCustomerId] = useState(inCustomerId ? inCustomerId : initState.cutomerId);
   const [dates, setDates] = useState<DateRange<Date>>(initState.dates);
 
@@ -55,17 +48,6 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
   const [inputParams, setInputParams] = useState<IInputParams>();
 
   const { data: customers, isFetching: customerFetching } = useGetCustomersQuery();
-  // const allCustomers = useSelector(customersSelectors.selectAll);
-  // const { loading: customersLoading } = useSelector((state: RootState) => state.customers);
-
-  const scollToRef = useRef<HTMLInputElement>(null);
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchCustomers());
-  }, []);
-
 
   const handleGenerate = () => {
     setInputParams((prevState) => ({
@@ -76,8 +58,6 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
     }));
 
     setGenerate(true);
-
-    scollToRef.current?.scrollIntoView();
   };
 
   const handelClear = () => {
@@ -85,7 +65,6 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
     setCustomerId(initState.cutomerId);
     setGenerate(false);
   };
-
 
   return (
     <Box flex="1">
@@ -102,6 +81,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                   getOptionLabel={option => option.NAME}
                   value={customers?.find(customer => customer.ID === customerId) || null}
                   onChange={(e, value) => {
+                    generate && setGenerate(false);
                     setCustomerId(value?.ID || null);
                   }}
                   renderOption={(props, option) => {
@@ -128,24 +108,24 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                 />
               </Grid>
               <Grid item>
-                  <DateRangePicker
-                    startText="Начало периода"
-                    endText="Конец периода"
-                    value={dates}
-                    onChange={setDates}
-                    renderInput={(startProps: any, endProps: any) => (
-                      <Fragment>
-                        <TextField {...startProps} />
-                        <Box sx={{ mx: 2 }}/>
-                        <TextField {...endProps} />
-                      </Fragment>
-                    )}
-                  />
+                <DateRangePicker
+                  startText="Начало периода"
+                  endText="Конец периода"
+                  value={dates}
+                  onChange={setDates}
+                  renderInput={(startProps: any, endProps: any) => (
+                    <Fragment>
+                      <TextField {...startProps} />
+                      <Box sx={{ mx: 2 }}/>
+                      <TextField {...endProps} />
+                    </Fragment>
+                  )}
+                />
               </Grid>
             </Grid>
           </CardContent>
           <Divider />
-          <CardActions>
+          <CardActions style={{ padding: '16px' }}>
             <Grid
               container
               direction={'row-reverse'}
@@ -173,16 +153,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
           ? <CustomizedCard
             borders
             boxShadows
-            sx={{ p: 1 }}
-            ref={scollToRef}
-            onChange={()=> console.log('onChange')}
-            onScroll={()=> console.log('onChange')}
-            onBlur={()=> console.log('onChange')}
-            onVolumeChange={()=> console.log('onChange')}
-            onDurationChange={()=> console.log('onChange')}
-            onTransitionEnd={()=> console.log('onChange')}
-            onLoad={()=> console.log('onChange')}
-            onTransitionEndCapture={()=> console.log('onChange')}
+            sx={{ p: 2 }}
           >
             <ReconciliationStatement
               custId={Number(inputParams?.cutomerId)}
@@ -192,6 +163,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
           </CustomizedCard>
           : null}
       </Stack>
+      <ScrollToTop />
     </Box>
   );
 };

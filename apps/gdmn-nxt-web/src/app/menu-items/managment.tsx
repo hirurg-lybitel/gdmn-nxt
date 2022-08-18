@@ -1,5 +1,8 @@
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import LabelIcon from '@mui/icons-material/Label';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { IMenuItem } from '.';
+
 
 const managment: IMenuItem = {
   id: 'managment',
@@ -18,15 +21,36 @@ const managment: IMenuItem = {
           type: 'item',
           url: 'customers/list'
         },
-        // {
-        //   id: 'customers-orders-list',
-        //   title: 'Список заказов',
-        //   type: 'item',
-        //   url: 'customers/orders/list'
-        // }
+      ]
+    },
+    {
+      id: 'labels',
+      title: 'Метки',
+      type: 'item',
+      url: 'labels',
+      icon: <LabelIcon color="secondary" />,
+    },
+    {
+      id: 'permissions',
+      title: 'Настройка прав',
+      type: 'collapse',
+      icon: <AdminPanelSettingsIcon color="secondary" />,
+      children: [
+        {
+          id: 'permissions-view',
+          title: 'Действия',
+          type: 'item',
+          url: 'permissions/list'
+        },
+        {
+          id: 'permissions-usergroups',
+          title: 'Группы пользователей',
+          type: 'item',
+          url: 'permissions/usergroups'
+        }
       ]
     }
   ]
-}
+};
 
 export default managment;
