@@ -26,6 +26,7 @@ import { contractsListApi } from '../features/contracts-list/contractsListApi';
 import { remainsInvoicesApi } from '../features/remains-by-invoices/remainsInvoicesApi';
 import { workTypesApi } from '../features/work-types/workTypesApi';
 import { labelsApi } from '../features/labels';
+import { permissionsApi } from '../features/permissions';
 
 
 export const store = configureStore({
@@ -56,7 +57,8 @@ export const store = configureStore({
     [contractsListApi.reducerPath]: contractsListApi.reducer,
     [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
     [workTypesApi.reducerPath]: workTypesApi.reducer,
-    [labelsApi.reducerPath]: labelsApi.reducer
+    [labelsApi.reducerPath]: labelsApi.reducer,
+    [permissionsApi.reducerPath]: permissionsApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -78,6 +80,7 @@ export const store = configureStore({
     .concat(remainsInvoicesApi.middleware)
     .concat(workTypesApi.middleware)
     .concat(labelsApi.middleware)
+    .concat(permissionsApi.middleware)
     .concat(errorMiddleware),
 });
 
