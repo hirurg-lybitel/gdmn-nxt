@@ -58,7 +58,10 @@ const Main = () => {
       <StrictMode>
         <CssBaseline>
           <ThemeProvider theme={savedTheme.current}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              localeText={{ start: 'Начало периода', end: 'Конец периода' }}
+            >
               {
                 loginStage === 'EMPLOYEE' ?
                   <Routes>

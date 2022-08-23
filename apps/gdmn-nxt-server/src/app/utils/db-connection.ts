@@ -257,8 +257,8 @@ export const startTransaction = async (sessionId: string) => {
 export const releaseTransaction = async (sessionId: string, transaction: Transaction) => {
   if (transaction.isValid) {
     await transaction.commit();
+    await releaseAttachment(sessionId);
   }
-  await releaseAttachment(sessionId);
 };
 
 export const commitTransaction = async (sessionId: string, transaction: Transaction) => {

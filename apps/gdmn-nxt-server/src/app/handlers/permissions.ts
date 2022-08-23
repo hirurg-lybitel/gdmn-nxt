@@ -1,7 +1,11 @@
 import { IRequestResult } from '@gsbelarus/util-api-types';
 import { query, raw, RequestHandler } from 'express';
+import { importedModels } from '../models';
 import { resultError } from '../responseMessages';
-import { getReadTransaction, releaseReadTransaction } from '../utils/db-connection';
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
+import { genId } from '../utils/genId';
+
+const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
 const getCross: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -36,14 +40,6 @@ const getCross: RequestHandler = async (req, res) => {
 
     const [rawCross, rawActions, rawUserGroups] = await Promise.all(queries.map(execQuery));
 
-    // interface IMapOfArrays {
-    //   [key: string]: any[];
-    // };
-
-    // const cross: IMapOfArrays = {};
-    // const actions: IMapOfArrays = {};
-    // const userGroup: IMapOfArrays = {};
-
     const cross = rawCross.map(c => {
       const ACTION = rawActions.filter(act => act['ID'] === c['USR$ACTIONKEY'])[0];
       const USERGROUP = rawUserGroups.filter(ug => ug['ID'] === c['USR$GROUPKEY'])[0];
@@ -66,8 +62,87 @@ const getCross: RequestHandler = async (req, res) => {
   }
 };
 
-const updateCross: RequestHandler = async (req, res) => {
+const upsertCross: RequestHandler = async (req, res) => {
+  const { attachment, transaction } = await startTransaction(req.sessionID);
 
+  try {
+    const _schema = {};
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const data = await attachment.executeSingletonAsObject(transaction, query, params);
+
+      return [name, data];
+    };
+
+    const ID = await (async () => {
+      const checkID = parseInt(req.body['ID']);
+      return checkID > 0
+        ? checkID
+        : await genId(attachment, transaction);
+    })();
+
+    const { erModel } = await importedModels;
+    const allFields = [...new Set(erModel.entities[eintityCrossName].attributes.map(attr => attr.name))];
+    const actualFields = allFields.filter(field => {
+      switch (field) {
+        case 'USR$ACTIONKEY':
+          return typeof req.body['ACTION'] !== 'undefined';
+        case 'USR$GROUPKEY':
+          return typeof req.body['USERGROUP'] !== 'undefined';
+        default:
+          return typeof req.body[field] !== 'undefined';
+      }
+    });
+
+    const paramsValues = actualFields.map(field => {
+      switch (field) {
+        case 'USR$ACTIONKEY':
+          return req.body['ACTION']['ID'];
+        case 'USR$GROUPKEY':
+          return req.body['USERGROUP']['ID'];
+        default:
+          return req.body[field];
+      }
+    });
+
+    const requiredFields = {
+      ID,
+    };
+
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (!actualFields.includes(key)) {
+        actualFields.push(key);
+        paramsValues.push(value);
+      }
+    };
+
+    const actualFieldsNames = actualFields.join(',');
+    const paramsString = actualFields.map( _ => '?' ).join(',');
+
+    const query = {
+      name: 'cross',
+      query: `
+        UPDATE OR INSERT INTO USR$CRM_PERMISSIONS_CROSS(${actualFieldsNames})
+        VALUES(${paramsString})
+        MATCHING(ID)
+        RETURNING ${actualFieldsNames}`,
+      params: paramsValues,
+    };
+
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries([await Promise.resolve(execQuery(query))])
+      },
+      _schema
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    await rollbackTransaction(req.sessionID, transaction);
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(req.sessionID, transaction);
+  }
 };
 
 const getUserGroups: RequestHandler = async (req, res) => {
@@ -156,4 +231,4 @@ const getActions: RequestHandler = async (req, res) => {
   };
 };
 
-export default { getCross, updateCross, upsertGroup, removeGroup, getActions, getUserGroups };
+export default { getCross, upsertCross, upsertGroup, removeGroup, getActions, getUserGroups };

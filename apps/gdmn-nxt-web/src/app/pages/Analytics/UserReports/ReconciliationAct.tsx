@@ -109,8 +109,8 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
               </Grid>
               <Grid item>
                 <DateRangePicker
-                  startText="Начало периода"
-                  endText="Конец периода"
+                  // startText="Начало периода"
+                  // endText="Конец периода"
                   value={dates}
                   onChange={setDates}
                   renderInput={(startProps: any, endProps: any) => (

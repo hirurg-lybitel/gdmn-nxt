@@ -1,9 +1,11 @@
 import { IPermissionsAction, IPermissionsView, IUserGroup } from '@gsbelarus/util-api-types';
 import { Button, CardContent, CardHeader, Checkbox, Divider, Stack, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import { DataGridPro, GridColDef } from '@mui/x-data-grid-pro';
+import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
-import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery } from '../../../features/permissions';
+import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery, useUpdateMatrixMutation } from '../../../features/permissions';
 import styles from './permissions-list.module.less';
 
 /* eslint-disable-next-line */
@@ -57,10 +59,25 @@ export interface PermissionsListProps {}
 //   }
 // ];
 
+const initialStateDataGrid: GridInitialStatePro = {
+  pinnedColumns: { left: ['NAME'] }
+};
+
 export function PermissionsList(props: PermissionsListProps) {
   const { data: actions, isFetching: actionsFetching } = useGetActionsQuery();
   const { data: userGroups, isFetching: userGroupsFetching } = useGetUserGroupsQuery();
   const { data: matrix, isFetching: matrixFetching } = useGetMatrixQuery();
+  const [updateMatrix] = useUpdateMatrixMutation();
+
+  const CheckBoxOnChange = (matrixID: number | undefined, action: IPermissionsAction, userGroup: IUserGroup) => (e: any, checked: boolean) => {
+    // console.log('onChange', e, checked, action, userGroup);
+    updateMatrix({
+      ID: matrixID,
+      ACTION: action,
+      USERGROUP: userGroup,
+      MODE: +checked
+    });
+  };
 
   const columns: GridColDef[] = userGroups?.map(ug => ({
     field: 'USERGROUP_' + ug.ID,
@@ -70,8 +87,15 @@ export function PermissionsList(props: PermissionsListProps) {
     editable: false,
     type: 'boolean',
     minWidth: 150,
-    renderCell: (params) => {
-      return <Checkbox checked={matrix?.filter(c => c.ACTION.ID === params.id).find(f => f.USERGROUP.ID === ug.ID)?.MODE === 1 || false} />;
+    renderCell: (params: any) => {
+      const actionID = params.id;
+      const matrixNode = matrix?.filter(c => c.ACTION.ID === actionID).find(f => f.USERGROUP.ID === ug.ID);
+      const checked = matrixNode?.MODE === 1 || false;
+
+      return <Checkbox
+        checked={checked}
+        onChange={CheckBoxOnChange(matrixNode?.ID, params.row, ug)}
+      />;
     },
     renderHeader: (params) => {
       return (
@@ -100,7 +124,7 @@ export function PermissionsList(props: PermissionsListProps) {
         flexDirection: 'column',
       }}
     >
-      <CardHeader title={<Typography variant="h3">Метки</Typography>} />
+      <CardHeader title={<Typography variant="h3">Права групп пользователей</Typography>} />
       {/* <Divider /> */}
       <CardContent
         style={{
@@ -111,6 +135,7 @@ export function PermissionsList(props: PermissionsListProps) {
         }}
       >
         <Stack flex={1}>
+          <Box style={{ height: '40px' }} />
           <StyledGrid
             columns={columns}
             rows={actions || []}
@@ -120,7 +145,7 @@ export function PermissionsList(props: PermissionsListProps) {
             // disableColumnResize
             disableColumnReorder
             disableColumnMenu
-            initialState={{ pinnedColumns: { left: ['NAME'] } }}
+            initialState={initialStateDataGrid}
           />
         </Stack>
       </CardContent>

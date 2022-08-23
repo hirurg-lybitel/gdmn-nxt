@@ -48,6 +48,17 @@ export const permissionsApi = createApi({
             { type: 'UserGroups', id: 'LIST' }
           ]
           : [{ type: 'UserGroups', id: 'LIST' }]
+    }),
+    updateMatrix: builder.mutation<IPermissionsView, Partial<IPermissionsView>>({
+      query: (body) => ({
+        url: 'permissions',
+        method: 'PUT',
+        body
+      }),
+      invalidatesTags: (result) =>
+        result
+          ? [{ type: 'Matrix', id: result?.ID }, { type: 'Matrix', id: 'LIST' }]
+          : [{ type: 'Matrix', id: 'LIST' }]
     })
   })
 
@@ -56,5 +67,6 @@ export const permissionsApi = createApi({
 export const {
   useGetMatrixQuery,
   useGetActionsQuery,
-  useGetUserGroupsQuery
+  useGetUserGroupsQuery,
+  useUpdateMatrixMutation
 } = permissionsApi;

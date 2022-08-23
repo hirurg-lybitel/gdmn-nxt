@@ -4,7 +4,7 @@ import perm from '../../handlers/permissions';
 const router = express.Router();
 
 router.get('/', perm.getCross);
-router.put('/', perm.updateCross);
+router.put('/', perm.upsertCross);
 router.get('/actions', perm.getActions);
 router.get('/userGroups', perm.getUserGroups);
 router.post('/groups', perm.upsertGroup);
