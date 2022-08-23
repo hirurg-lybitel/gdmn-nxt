@@ -1,7 +1,7 @@
 import './sales-funnel.module.less';
 import React from 'react';
 import { ResponsiveFunnel } from '@nivo/funnel';
-import CustomizedCard from '../../../components/customized-card/customized-card';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 
 /* eslint-disable-next-line */

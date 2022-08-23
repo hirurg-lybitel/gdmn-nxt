@@ -1,5 +1,5 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
-import CustomizedCard from '../../customized-card/customized-card';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import './order-card.module.less';

@@ -4,13 +4,13 @@ import { useExecuteScriptMutation, useGetHistoryQuery } from '../../../features/
 import { GridColDef, GridRowId } from '@mui/x-data-grid-pro';
 import { parseParams } from './sql-param-parser';
 import { MainToolbar, TBButton } from '../../../main-toolbar/main-toolbar';
-import { gridComponents, StyledDataGrid } from '../../styled-data-grid/styled-data-grid';
+import { gridComponents, StyledDataGrid } from '../../Styled/styled-data-grid/styled-data-grid';
 import { useViewForms } from '../../../features/view-forms-slice/viewFormsHook';
 import styles from './sql-editor.module.less';
 import command_run_large from './command-run-large.png';
 import command_history_large from './command-history-large.png';
 import command_undo_large from './command-undo-large.png';
-import { StyledSplit, StyledSplitPane } from '../../styled-split/styled-split';
+import { StyledSplit, StyledSplitPane } from '../../Styled/styled-split/styled-split';
 import { DGrid } from './dgrid';
 
 interface IHistoryProps {

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import './er-model-domains.module.less';
 import Grid from '@mui/material/Grid/Grid';
-import { gridComponents, StyledDataGrid } from '../components/styled-data-grid/styled-data-grid';
+import { gridComponents, StyledDataGrid } from '../components/Styled/styled-data-grid/styled-data-grid';
 import { useViewForms } from '../features/view-forms-slice/viewFormsHook';
 import { MainToolbar } from '../main-toolbar/main-toolbar';
 

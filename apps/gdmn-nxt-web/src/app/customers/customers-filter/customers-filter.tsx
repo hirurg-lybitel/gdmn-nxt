@@ -1,6 +1,6 @@
 import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, Paper, RadioGroup, Slide, Stack, Switch, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
-import CustomizedCard from '../../components/customized-card/customized-card';
-import CustomizedDialog from '../../components/customized-dialog/customized-dialog';
+import CustomizedCard from '../../components/Styled/customized-card/customized-card';
+import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import { makeStyles } from '@mui/styles';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -118,13 +118,13 @@ export function CustomersFilter(props: CustomersFilterProps) {
   function Filter() {
     return (
       <CustomizedCard
-        borders
-        boxShadows={open}
+        // borders
+        // boxShadows={open}
         style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          width: width
+          width: width,
         }}
       >
         <CardContent style={{ flex: 1 }}>
@@ -319,15 +319,29 @@ export function CustomersFilter(props: CustomersFilterProps) {
           </Stack>
         </CardContent>
         <CardActions style={{ padding: theme.spacing(2) }}>
-          <Button variant="contained" fullWidth onClick={() => onFilteringDataChange({})}>Очистить</Button>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => {
+              onFilteringDataChange({});
+              onClose && onClose({}, 'backdropClick');
+            }}>Очистить</Button>
         </CardActions>
       </CustomizedCard>
     );
   };
 
-  // return(
-  //   <div></div>
-  // );
+  return (
+    <Box flex={1} display="flex">
+      <CustomizedDialog
+        open={open}
+        onClose={onClose}
+        width={width}
+      >
+        <Filter />
+      </CustomizedDialog>
+    </Box>
+  );
 
   return (
     <Box flex={1} display="flex">

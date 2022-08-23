@@ -9,7 +9,7 @@ import NestedSets, { CollectionEl } from 'nested-sets-tree';
 import { Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import TreeItem from '@mui/lab/TreeItem';
 import { useCallback, useState } from 'react';
-import CustomizedCard from '../components/customized-card/customized-card';
+import CustomizedCard from '../components/Styled/customized-card/customized-card';
 
 interface CustomizedTreeItemProps extends CustomTreeViewProps {
   node: CollectionEl;

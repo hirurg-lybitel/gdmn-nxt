@@ -1,6 +1,6 @@
 import './kanban-card.module.less';
 import { useMemo, useState } from 'react';
-import CustomizedCard from '../../customized-card/customized-card';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';

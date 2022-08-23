@@ -35,7 +35,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../../features/contact/contactGroupApi';
 import { TransitionProps } from '@mui/material/transitions';
-import CustomizedCard from '../../customized-card/customized-card';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ContactPersonList from '../contact-person-list/contact-person-list';
 import { useGetLabelsQuery } from '../../../features/labels';

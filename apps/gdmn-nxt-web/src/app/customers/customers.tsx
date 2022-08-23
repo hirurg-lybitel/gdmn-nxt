@@ -11,7 +11,7 @@ import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useEffect, useState } from 'react';
-import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme } from '@mui/material';
+import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -25,13 +25,13 @@ import { RootState } from '../store';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
-import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
-import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
-import CustomizedCard from '../components/customized-card/customized-card';
+import CustomNoRowsOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
+import CustomLoadingOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomLoadingOverlay';
+import CustomizedCard from '../components/Styled/customized-card/customized-card';
 import { Link, useNavigate } from 'react-router-dom';
 import CustomersFilter, { IFilteringData } from './customers-filter/customers-filter';
 import SearchBar from '../components/search-bar/search-bar';
-import CustomGridToolbarOverlay from './DataGridProOverlay/CustomGridToolbarOverlay';
+import CustomGridToolbarOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
 import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation } from '../features/customer/customerApi_new';
 import { saveFilterData, saveFilterModel } from '../store/filtersSlice';
@@ -475,9 +475,9 @@ export function Customers(props: CustomersProps) {
 
   const filterHandlers = {
     handleFilter: async () => {
-      if (displayDataGrid) {
-        setDisplayDataGrid(false);
-      };
+      // if (displayDataGrid) {
+      //   setDisplayDataGrid(false);
+      // };
 
       setOpenFilters(!openFilters);
     },
@@ -499,14 +499,160 @@ export function Customers(props: CustomersProps) {
     },
     handleFilterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
       if (
-        event.type === 'keydown' &&
-        (event.key === 'Tab' || event.key === 'Shift')
+        event?.type === 'keydown' &&
+        (event?.key === 'Tab' || event?.key === 'Shift')
       ) {
         return;
       }
       setOpenFilters(false);
     }
   };
+
+  return (
+    <CustomizedCard
+      borders
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        ...(matchDownLg
+          ? {}
+          : {
+            transition: `${theme.transitions.create('width', {
+              easing: theme.transitions.easing.easeInOut,
+              duration: theme.transitions.duration.standard,
+            })}`
+          }),
+      }}
+    >
+      <CardHeader title={<Typography variant="h3">Клиенты</Typography>} />
+      <Divider />
+      <CardContent
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0
+        }}
+      >
+        <Stack flex={1}>
+          <Box p={3}>
+            <Stack direction="row" spacing={2}>
+              <Box display="flex" justifyContent="center">
+                <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
+                <Button onClick={handleAddOrganization} disabled={customerFetching} startIcon={<AddIcon/>}>Добавить</Button>
+              </Box>
+              <Box flex={1} />
+              <Box>
+                <SearchBar
+                  disabled={customerFetching}
+                  // onChange={filterHandlers.handleChange}
+                  onCancelSearch={filterHandlers.handleCancelSearch}
+                  onRequestSearch={filterHandlers.handleRequestSearch}
+                  cancelOnEscape
+                  placeholder="Поиск клиента"
+                />
+              </Box>
+              <Box display="flex" justifyContent="center">
+                <IconButton
+                  onClick={filterHandlers.handleFilter}
+                  disabled={customerFetching}
+                >
+                  <FilterAltIcon color="primary" />
+                </IconButton>
+              </Box>
+            </Stack>
+          </Box>
+          <Stack direction="row" flex={1} display="flex">
+            <Box flex={1}>
+              <DataGridPro
+                className={classes.DataGrid}
+                // style={{
+                //   display: `${displayDataGrid ? 'flex' : 'none'}`,
+                // }}
+                localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+                rows={
+                  customers
+                    ?.filter(customer =>
+                      customer.NAME.toUpperCase().includes(searchName.toUpperCase()) ||
+                          customer.TAXID?.toUpperCase().includes(searchName.toUpperCase())
+                    )
+                      ?? []}
+                columns={columns}
+                columnVisibilityModel={{
+                  CONTRACTS: false,
+                  DEPARTMENTS: false,
+                  WORKTYPES: false,
+                }}
+                pagination
+                disableMultipleSelection
+                loading={customerFetching}
+                getRowId={row => row.ID}
+                onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
+                components={{
+                  // Toolbar: CustomGridToolbarOverlay,
+                  LoadingOverlay: CustomLoadingOverlay,
+                  NoRowsOverlay: CustomNoRowsOverlay,
+                  NoResultsOverlay: CustomNoRowsOverlay,
+                }}
+                filterModel={filterModel}
+                onFilterModelChange={(model, detail) => setFilterModel(model)}
+                // pinnedColumns={{ left: [customersLoading ? '' : 'NAME'] }}
+                getRowHeight={(params) => {
+                  const customer: ICustomer = params.model as ICustomer;
+                  const labels: ILabel[] | undefined = customer.LABELS;
+
+                  if (labels?.length && labels.length > 4) {
+                    return 40 * Math.ceil(labels.length / 2);
+                  };
+
+                  return 80;
+                }}
+                rowsPerPageOptions={[20, 50, 100]}
+                pageSize={paginationData.pageSize}
+                onPageChange={(data) => {
+                  setPaginationData(prevState => ({ ...prevState, pageNo: data }));
+                }}
+                onPageSizeChange={(data) => {
+                  setPaginationData(prevState => ({ ...prevState, pageSize: data }));
+                }}
+                headerHeight={70}
+                disableColumnResize
+                disableColumnReorder
+              />
+            </Box>
+            <Box
+              // onTransitionEnd={() => setDisplayDataGrid(true)}
+              // display="flex"
+              // style={{
+              //   ...(matchDownLg
+              //     ? {}
+              //     : {
+              //       marginLeft: 0,
+              //       // marginLeft: theme.spacing(3),
+              //       marginRight: 0,
+              //       // marginRight: `${openFilters ? '0px' : '-' + theme.spacing(3)}`,
+              //       width: 0,
+              //       // width: `${openFilters ? '300px' : '0px'}`,
+              //       transition: `${theme.transitions.create(['width', 'margin'], {
+              //         easing: theme.transitions.easing.easeInOut,
+              //         duration: theme.transitions.duration.standard,
+              //       })}`
+              //     })
+              // }}
+            >
+              <CustomersFilter
+                open={openFilters}
+                onClose={filterHandlers.handleFilterClose}
+                filteringData={filteringData}
+                onFilteringDataChange={filterHandlers.handleFilteringData}
+              />
+            </Box>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </CustomizedCard>
+  );
 
   return (
     <Stack flex={1} display="flex" direction="column" spacing={2} style={{ overflow: 'hidden' }}>
@@ -548,7 +694,6 @@ export function Customers(props: CustomersProps) {
           <Stack direction="row" flex={1} display="flex">
             <CustomizedCard
               borders
-              boxShadows
               style={{
                 width: '100%',
                 ...(matchDownLg

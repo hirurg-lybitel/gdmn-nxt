@@ -1,7 +1,8 @@
 import { IPermissionsAction, IPermissionsView, IUserGroup } from '@gsbelarus/util-api-types';
-import { Checkbox, Stack } from '@mui/material';
+import { Button, CardContent, CardHeader, Checkbox, Divider, Stack, Typography } from '@mui/material';
 import { DataGridPro, GridColDef } from '@mui/x-data-grid-pro';
-import CustomizedCard from '../../../components/customized-card/customized-card';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
+import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery } from '../../../features/permissions';
 import styles from './permissions-list.module.less';
 
@@ -64,12 +65,24 @@ export function PermissionsList(props: PermissionsListProps) {
   const columns: GridColDef[] = userGroups?.map(ug => ({
     field: 'USERGROUP_' + ug.ID,
     headerName: ug.NAME,
+    flex: 1,
+    sortable: false,
+    editable: false,
+    type: 'boolean',
+    minWidth: 150,
     renderCell: (params) => {
       return <Checkbox checked={matrix?.filter(c => c.ACTION.ID === params.id).find(f => f.USERGROUP.ID === ug.ID)?.MODE === 1 || false} />;
     },
-    flex: 1,
-    // align: 'center',
-
+    renderHeader: (params) => {
+      return (
+        <div
+          className={`MuiDataGrid-columnHeaderTitle css-1jbbcbn-MuiDataGrid-columnHeaderTitle ${styles['columnHeader']}`}
+          onClick={() => console.log('onClick')}
+        >
+          {params.colDef.headerName}
+        </div>
+      );
+    },
   })) || [];
 
   columns.unshift({
@@ -83,21 +96,35 @@ export function PermissionsList(props: PermissionsListProps) {
       borders
       style={{
         flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <DataGridPro
-        sx={{
-          border: 'none',
-          padding: 5,
+      <CardHeader title={<Typography variant="h3">Метки</Typography>} />
+      {/* <Divider /> */}
+      <CardContent
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0
         }}
-        columns={columns}
-        rows={actions || []}
-        getRowId={row => row.ID}
-        hideFooter
-        disableColumnResize
-        disableColumnReorder
-        disableColumnMenu
-      />
+      >
+        <Stack flex={1}>
+          <StyledGrid
+            columns={columns}
+            rows={actions || []}
+            loading={actionsFetching || userGroupsFetching || matrixFetching}
+            getRowId={row => row.ID}
+            hideFooter
+            // disableColumnResize
+            disableColumnReorder
+            disableColumnMenu
+            initialState={{ pinnedColumns: { left: ['NAME'] } }}
+          />
+        </Stack>
+      </CardContent>
+
     </CustomizedCard>
 
   );

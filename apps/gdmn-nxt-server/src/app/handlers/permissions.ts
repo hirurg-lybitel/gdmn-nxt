@@ -135,7 +135,8 @@ const getActions: RequestHandler = async (req, res) => {
       name: 'actions',
       query: `
         SELECT act.ID, act.USR$NAME NAME
-        FROM USR$CRM_PERMISSIONS_ACTIONS act`,
+        FROM USR$CRM_PERMISSIONS_ACTIONS act
+        ORDER BY USR$SORTNUMBER`,
     };
 
     const actions = await Promise.resolve(execQuery(query));

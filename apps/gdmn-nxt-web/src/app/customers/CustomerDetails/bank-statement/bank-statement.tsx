@@ -2,11 +2,11 @@ import { Button, Stack } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
 import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
-import CustomizedCard from '../../../components/customized-card/customized-card';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetBankStatementQuery } from '../../../features/bank-statement/bankStatementApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useState } from 'react';
-import CustomNoRowsOverlay from '../../DataGridProOverlay/CustomNoRowsOverlay';
+import CustomNoRowsOverlay from '../../../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {

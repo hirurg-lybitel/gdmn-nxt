@@ -1,10 +1,10 @@
 import { Box, Button, Stack } from '@mui/material';
 import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
-import CustomizedCard from '../../../components/customized-card/customized-card';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetContractsListQuery } from '../../../features/contracts-list/contractsListApi';
 import styles from './contracts-list.module.less';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import CustomNoRowsOverlay from '../../DataGridProOverlay/CustomNoRowsOverlay';
+import CustomNoRowsOverlay from '../../../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(() => ({

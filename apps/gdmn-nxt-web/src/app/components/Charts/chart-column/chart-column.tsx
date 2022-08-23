@@ -1,7 +1,7 @@
 import './chart-column.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
-import CustomizedCard from '../../customized-card/customized-card';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Autocomplete, Checkbox, createFilterOptions, Grid, MenuItem, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { IChartFilter, useGetSumByPeriodQuery } from '../../../features/charts/chartDataApi';

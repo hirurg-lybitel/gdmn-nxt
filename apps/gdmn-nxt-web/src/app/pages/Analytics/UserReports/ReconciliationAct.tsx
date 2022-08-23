@@ -5,7 +5,7 @@ import { Fragment, useRef, useState } from 'react';
 import { IContactWithLabels } from '@gsbelarus/util-api-types';
 import ReconciliationStatement from '../../../reconciliation-statement/reconciliation-statement';
 import { useParams } from 'react-router-dom';
-import CustomizedCard from '../../../components/customized-card/customized-card';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 

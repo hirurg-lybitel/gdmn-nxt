@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles';
 import { IconButton, Input, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import CustomizedCard from '../customized-card/customized-card';
+import CustomizedCard from '../Styled/customized-card/customized-card';
 
 export interface StyleProps {
   isFocus: boolean;

@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/system';
 import { Button, Card, CardActions, CardContent, CardMedia, Grid, Typography } from "@mui/material";
-import CustomizedCard from '../../components/customized-card/customized-card';
+import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 //import sdfs from '../../../assets/'
 // 404
 

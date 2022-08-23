@@ -17,7 +17,7 @@ import {
   Theme
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/customized-card/customized-card';
+import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import {
   logoutUser,
   UserState

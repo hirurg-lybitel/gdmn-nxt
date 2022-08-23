@@ -2,7 +2,7 @@ import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, TextField, Typography } from '@mui/material';
 import { DesktopDatePicker } from '@mui/x-date-pickers';
 import ruLocale from 'date-fns/locale/ru';
-import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/customized-card/customized-card';
+import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './remains-by-invoices.module.less';
 import { useRef, useState } from 'react';
 import RemainsByInvoicesReport from '../remains-by-invoices-report/remains-by-invoices-report';

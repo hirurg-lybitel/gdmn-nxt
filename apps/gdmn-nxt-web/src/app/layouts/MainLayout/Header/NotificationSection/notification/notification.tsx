@@ -13,7 +13,7 @@ import {
   Typography
 } from '@mui/material';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
-import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/customized-card/customized-card';
+import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { makeStyles } from '@mui/styles';
 import { useEffect, useState } from 'react';
 import clsx from 'clsx';

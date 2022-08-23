@@ -1,6 +1,6 @@
 import { Avatar, Stack, Theme, Typography, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import CustomizedCard from '../../customized-card/customized-card';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import './earning-card.module.less';
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';

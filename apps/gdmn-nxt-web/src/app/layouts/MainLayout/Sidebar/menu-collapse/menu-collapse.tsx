@@ -25,10 +25,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export interface MenuCollapseProps {
   menu: IMenuItem;
+  level?: number;
 }
 
 export function MenuCollapse(props: MenuCollapseProps) {
-  const { menu } = props;
+  const { menu, level = 0 } = props;
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -42,7 +43,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
   const menus = menu.children?.map((item: IMenuItem) => {
     switch (item.type) {
       case 'item':
-        return <MenuItem key={item.id} item={item} />;
+        return <MenuItem key={item.id} item={item} level={level + 1} />;
       default:
         return (
           <Typography key={item.id} variant="h6" color="error" align="center">
@@ -53,15 +54,18 @@ export function MenuCollapse(props: MenuCollapseProps) {
   });
 
   const menuIcon = menu.icon;
-  
+
   return (
     <>
       <ListItemButton
         className={classes.menuCollapse}
+        sx={{
+          pl: `${level * 24}px`
+        }}
         selected={selected === menu.id}
         onClick={handleClick}
       >
-        <ListItemIcon color="secondary" >
+        <ListItemIcon color="secondary" sx={{ minWidth: !menu.icon ? 18 : 36 }}>
           {menuIcon}
         </ListItemIcon>
         <ListItemText

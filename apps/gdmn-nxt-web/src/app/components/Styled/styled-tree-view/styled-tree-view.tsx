@@ -2,7 +2,7 @@ import TreeItem from '@mui/lab/TreeItem/TreeItem';
 import treeItemClasses from '@mui/lab/TreeItem/treeItemClasses';
 import TreeView from '@mui/lab/TreeView/TreeView';
 import { alpha, styled } from '@mui/material/styles';
-import { gdmnTheme } from '../../theme/gdmn-theme';
+import { gdmnTheme } from '../../../theme/gdmn-theme';
 import './styled-tree-view.module.less';
 
 export const StyledTreeView = styled(TreeView)(({ theme }) => ({

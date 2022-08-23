@@ -1,7 +1,7 @@
-import { Box, Button, CardContent, CardHeader, Divider, Grid, IconButton, Skeleton, Stack } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Divider, Grid, IconButton, Skeleton, Stack, Typography } from '@mui/material';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import AddIcon from '@mui/icons-material/Add';
-import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/customized-card/customized-card';
+import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { useAddLabelMutation, useGetLabelsQuery } from 'apps/gdmn-nxt-web/src/app/features/labels';
 import LabelListItem from '../label-list-item/label-list-item';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -11,6 +11,7 @@ import styles from './label-list.module.less';
 import { useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { ILabel } from '@gsbelarus/util-api-types';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 /* eslint-disable-next-line */
 export interface LabelListProps {}
@@ -43,45 +44,61 @@ export function LabelList(props: LabelListProps) {
 
   return (
     <Stack flex={1}>
-      <Stack direction="row" pb={2}>
+      {/* <Stack direction="row" pb={2}>
         <Box flex={1} />
         <Button
-          variant='contained'
+          variant="contained"
           disabled={dataIsFetching}
           onClick={() => setOpenEditForm(true)}
         >
           Добавить
         </Button>
-      </Stack>
-    <CustomizedCard
-      borders
-    >
-      <CardContent style={{ padding: 0 }}>
-        {dataIsLoading
-          ? [...Array(5)].map((el, idx) =>
-            <div key={idx}>
-              {idx !== 0 ? <Divider /> : <></>}
-              <ItemSkeleton />
-            </div>)
-          : <PerfectScrollbar
-            style={{
-              maxHeight: 'calc(100vh - 185px)',
-            }}
-          >
-            {labels?.map((label, idx) =>
-              <div key={label.ID}>
+      </Stack> */}
+      <CustomizedCard
+        borders
+      >
+        <CardHeader title={<Typography variant="h3">Метки</Typography>} />
+        <Divider />
+        <CardContent style={{ padding: 0 }}>
+          <Stack direction="row" p={3}>
+            <Box flex={1} />
+            {/* <IconButton>
+              <AddCircleIcon fontSize="large" color="primary" />
+            </IconButton> */}
+            <Button
+              variant="contained"
+              disabled={dataIsFetching}
+              onClick={() => setOpenEditForm(true)}
+            >
+          Добавить
+            </Button>
+          </Stack>
+          <Divider />
+          {dataIsLoading
+            ? [...Array(5)].map((el, idx) =>
+              <div key={idx}>
                 {idx !== 0 ? <Divider /> : <></>}
-                <LabelListItem data={label} />
-              </div>) || <></>}
-          </PerfectScrollbar>
-        }
-        <LabelListItemEdit
-          open={openEditForm}
-          onSubmit={handleOnSubmit}
-          onCancelClick={handleCancelClick}
-        />
-      </CardContent>
-    </CustomizedCard>
+                <ItemSkeleton />
+              </div>)
+            : <PerfectScrollbar
+              style={{
+                maxHeight: 'calc(100vh - 185px)',
+              }}
+            >
+              {labels?.map((label, idx) =>
+                <div key={label.ID}>
+                  {idx !== 0 ? <Divider /> : <></>}
+                  <LabelListItem data={label} />
+                </div>) || <></>}
+            </PerfectScrollbar>
+          }
+          <LabelListItemEdit
+            open={openEditForm}
+            onSubmit={handleOnSubmit}
+            onCancelClick={handleCancelClick}
+          />
+        </CardContent>
+      </CustomizedCard>
     </Stack>
   );
 }

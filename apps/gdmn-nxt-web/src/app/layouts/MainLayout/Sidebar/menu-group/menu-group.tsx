@@ -13,18 +13,17 @@ export function MenuGroup(props: MenuGroupProps) {
   const items = item.children?.map((menu: any) => {
     switch (menu.type) {
       case 'collapse':
-        return <MenuCollapse key={menu.id} menu={menu} />;
+        return <MenuCollapse key={menu.id} menu={menu} level={1} />;
 
       case 'item':
-        return <MenuItem key={menu.id} item={menu} />
+        return <MenuItem key={menu.id} item={menu} level={1} />;
       default:
         return (
           <Typography key={menu.id} variant="h6" color="error" align="center">
               Ошибка отображения
           </Typography>
-      );
+        );
     }
-
   });
 
   return (
@@ -32,9 +31,9 @@ export function MenuGroup(props: MenuGroupProps) {
       <List
         subheader={
           item.title && (
-              <Typography variant="h2" color="inherit" display="block" gutterBottom>
-                  {item.title}
-              </Typography>
+            <Typography variant="h2" color="inherit" display="block" gutterBottom>
+              {item.title}
+            </Typography>
           )
         }
       >

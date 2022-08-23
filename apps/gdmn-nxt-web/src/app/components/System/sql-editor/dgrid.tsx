@@ -1,6 +1,6 @@
 import { GridRowId, GridColDef } from "@mui/x-data-grid-pro";
 import { useMemo } from "react";
-import { StyledDataGrid, gridComponents } from "../../styled-data-grid/styled-data-grid";
+import { StyledDataGrid, gridComponents } from "../../Styled/styled-data-grid/styled-data-grid";
 
 interface IDataGridProps {
   rows?: any[];
