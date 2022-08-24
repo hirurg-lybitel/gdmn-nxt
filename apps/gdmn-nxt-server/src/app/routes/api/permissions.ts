@@ -11,4 +11,6 @@ router.post('/groups', perm.upsertGroup);
 router.put('/groups/:id', perm.upsertGroup);
 router.delete('/groups/:id', perm.removeGroup);
 
+router.get('/userGroups/:id/users', perm.getUserByGroup);
+
 export default router;

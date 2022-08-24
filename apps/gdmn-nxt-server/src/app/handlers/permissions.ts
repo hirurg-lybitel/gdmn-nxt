@@ -193,7 +193,6 @@ const getUserGroups: RequestHandler = async (req, res) => {
 const upsertGroup: RequestHandler = async (req, res) => {
 };
 
-
 const removeGroup: RequestHandler = async (req, res) => {
 };
 
@@ -236,4 +235,71 @@ const getActions: RequestHandler = async (req, res) => {
   };
 };
 
-export default { getCross, upsertCross, upsertGroup, removeGroup, getActions, getUserGroups };
+const getUserByGroup: RequestHandler = async (req, res) => {
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
+
+  try {
+    const _schema = {};
+
+    const aTime = new Date().getTime();
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const rs = await attachment.executeQuery(transaction, query, params);
+      const data = await rs.fetchAsObject();
+      await rs.close();
+
+      return data as any;
+    };
+
+    const query = {
+      name: 'users',
+      query: `
+        SELECT
+          ul.ID,
+          u.NAME,
+          u.FULLNAME,
+          u.DISABLED,
+          con.ID AS CONTACT_ID,
+          con.NAME AS CONTACT_NAME,
+          con.PHONE
+        FROM USR$CRM_PERMISSIONS_USERGROUPS ug
+        JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
+        JOIN GD_USER u ON u.ID = ul.USR$USERKEY
+        JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+        WHERE
+          ug.ID = ?`,
+      params: [id]
+    };
+
+    const rawUsers = await Promise.resolve(execQuery(query));
+
+
+    const users = rawUsers.map(user => {
+      const CONTACT = { ID: user['CONTACT_ID'], NAME: user['CONTACT_NAME'], PHONE: user['PHONE'] };
+      const { CONTACT_ID, CONTACT_NAME, PHONE, ...newObject } = user;
+      return { ...newObject, CONTACT };
+    });
+    // const [rawCross, rawActions] = await Promise.all(queries.map(execQuery));
+
+    const result: IRequestResult = {
+      queries: {
+        users
+      },
+      ...(id ? { _params: [{ id: id }] } : {}),
+      _schema
+    };
+
+    console.log(`fetch time ${new Date().getTime() - aTime} ms`);
+
+    return res.status(200).send(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseReadTransaction(req.sessionID);
+  }
+};
+
+export default { getCross, upsertCross, upsertGroup, removeGroup, getActions, getUserGroups, getUserByGroup };

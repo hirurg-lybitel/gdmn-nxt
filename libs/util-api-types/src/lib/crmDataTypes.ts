@@ -166,6 +166,13 @@ export interface IUserGroup extends IWithID {
   DESCRIPTION?: string;
 };
 
+export interface IUser extends IWithID {
+  NAME: string;
+  FULLNAME: string;
+  CONTACT: IContactWithID;
+  DISABLED: boolean;
+};
+
 export interface IPermissionsView extends IWithID {
   ACTION: IPermissionsAction;
   USERGROUP: IUserGroup;

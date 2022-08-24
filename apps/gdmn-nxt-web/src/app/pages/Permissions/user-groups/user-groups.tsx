@@ -1,4 +1,4 @@
-import { Box, Button, CardContent, CardHeader, Divider, List, ListItem, ListItemText, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Divider, List, ListItem, ListItemText, Skeleton, Stack, Theme, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -9,38 +9,48 @@ import { IUserGroup } from '@gsbelarus/util-api-types';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { Users } from './users';
 import AddIcon from '@mui/icons-material/Add';
+import { makeStyles } from '@mui/styles';
+import { GroupList } from './groupList';
 
-interface IGroupList {
-  groups: IUserGroup[];
-  setSelectedUserGroup?: Dispatch<SetStateAction<number>>;
-};
 
-const GroupList = (props: IGroupList) => {
-  const { groups, setSelectedUserGroup } = props;
+// export interface StyleProps {
+//   isFocus: boolean;
+// }
 
-  const onClick = (id:number) => (e: any) => {
-    setSelectedUserGroup && setSelectedUserGroup(id);
-  };
+// const styles = makeStyles<Theme, >
+// interface IGroupList {
+//   groups: IUserGroup[];
+//   setSelectedUserGroup?: Dispatch<SetStateAction<number>>;
+//   selectedUserGroup: number;
+// };
 
-  return <List>
-    {groups.map(group =>
-      <ListItem
-        key={group.ID}
-        button
-        divider
-        sx={{
-          py: 2
-        }}
-        onClick={onClick(group.ID)}
-      >
-        <ListItemText>
-          <Typography variant="body1">{group.NAME}</Typography>
-          <Typography variant="caption">{group.DESCRIPTION}</Typography>
-        </ListItemText>
+// const GroupList = (props: IGroupList) => {
+//   const { groups, setSelectedUserGroup } = props;
 
-      </ListItem>)}
-  </List>;
-};
+//   const onClick = (id:number) => (e: any) => {
+//     setSelectedUserGroup && setSelectedUserGroup(id);
+//   };
+
+//   return <List>
+//     {groups.map(group =>
+//       <ListItem
+//         key={group.ID}
+//         button
+//         divider
+//         sx={{
+//           py: 2,
+//           backgroundColor: 'red'
+//         }}
+//         onClick={onClick(group.ID)}
+//       >
+//         <ListItemText>
+//           <Typography variant="body1">{group.NAME}</Typography>
+//           <Typography variant="caption">{group.DESCRIPTION}</Typography>
+//         </ListItemText>
+
+//       </ListItem>)}
+//   </List>;
+// };
 
 const ItemGroupSkeleton = () => {
   return (
@@ -129,6 +139,7 @@ export function UserGroups(props: UserGroupsProps) {
                     || []
                   }
                   setSelectedUserGroup={setSelectedUserGroup}
+                  selectedUserGroup={selectedUserGroup}
                 />}
             </PerfectScrollbar>
           </Stack>
@@ -145,12 +156,9 @@ export function UserGroups(props: UserGroupsProps) {
                 Добавить
               </Button>
             </Stack>
-            <div>buttons</div>
-            <div>grid</div>
-            <Users />
+            <Users groupID={selectedUserGroup}/>
           </Stack>
         </Stack>
-
       </CardContent>
     </CustomizedCard>
   );

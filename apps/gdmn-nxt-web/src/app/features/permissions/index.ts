@@ -1,4 +1,4 @@
-import { IPermissionsAction, IPermissionsView, IRequestResult, IUserGroup } from '@gsbelarus/util-api-types';
+import { IPermissionsAction, IPermissionsView, IRequestResult, IUser, IUserGroup } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -11,9 +11,12 @@ type IActionsRequestResult = IRequestResult<{ actions: IPermissionsAction[]}>;
 type UserGroupsResponse = IUserGroup[];
 type IUserGroupsRequestResult = IRequestResult<{ userGroups: IUserGroup[]}>;
 
+type UsersResponse = IUser[];
+type IUsersRequestResult = IRequestResult<{ users: IUser[]}>;
+
 export const permissionsApi = createApi({
   reducerPath: 'permissions',
-  tagTypes: ['Matrix', 'Actions', 'UserGroups'],
+  tagTypes: ['Matrix', 'Actions', 'UserGroups', 'Users'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getMatrix: builder.query<MatrixResponse, void>({
@@ -59,6 +62,18 @@ export const permissionsApi = createApi({
         result
           ? [{ type: 'Matrix', id: result?.ID }, { type: 'Matrix', id: 'LIST' }]
           : [{ type: 'Matrix', id: 'LIST' }]
+    }),
+    getUsersByGroup: builder.query<UsersResponse, number>({
+      query: (groupID) => `permissions/userGroups/${groupID}/users`,
+      transformResponse: (response: IUsersRequestResult) => response.queries.users || [],
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'Users' as const, ID })),
+            { type: 'Users', id: 'LIST' }
+          ]
+          : [{ type: 'Users', id: 'LIST' }]
+
     })
   })
 
@@ -68,5 +83,6 @@ export const {
   useGetMatrixQuery,
   useGetActionsQuery,
   useGetUserGroupsQuery,
-  useUpdateMatrixMutation
+  useUpdateMatrixMutation,
+  useGetUsersByGroupQuery
 } = permissionsApi;
