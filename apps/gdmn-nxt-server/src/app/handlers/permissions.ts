@@ -89,6 +89,8 @@ const upsertCross: RequestHandler = async (req, res) => {
           return typeof req.body['ACTION'] !== 'undefined';
         case 'USR$GROUPKEY':
           return typeof req.body['USERGROUP'] !== 'undefined';
+        case 'USR$MODE':
+          return typeof req.body['MODE'] !== 'undefined';
         default:
           return typeof req.body[field] !== 'undefined';
       }
@@ -100,6 +102,8 @@ const upsertCross: RequestHandler = async (req, res) => {
           return req.body['ACTION']['ID'];
         case 'USR$GROUPKEY':
           return req.body['USERGROUP']['ID'];
+        case 'USR$MODE':
+          return req.body['MODE'];
         default:
           return req.body[field];
       }
@@ -164,7 +168,8 @@ const getUserGroups: RequestHandler = async (req, res) => {
       query: `
         SELECT
           ug.ID,
-         ug.USR$NAME AS NAME
+          ug.USR$NAME AS NAME,
+          USR$DESCRIPTION DESCRIPTION
         FROM USR$CRM_PERMISSIONS_USERGROUPS ug`
     };
 

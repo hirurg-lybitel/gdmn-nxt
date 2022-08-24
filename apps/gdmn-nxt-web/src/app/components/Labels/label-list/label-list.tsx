@@ -12,22 +12,21 @@ import { useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { ILabel } from '@gsbelarus/util-api-types';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+const ItemSkeleton = () => {
+  return (
+    <Stack direction="row" spacing={6} height={70} p={2} alignItems="center">
+      <Skeleton variant="rectangular" width={60} height={20} style={{ borderRadius: '12px' }} />
+      <Skeleton variant="text" height={10} width="90%" />
+      <Skeleton variant="text" height={10} width="5%" />
+    </Stack>
+  );
+};
 
 /* eslint-disable-next-line */
 export interface LabelListProps {}
 
 export function LabelList(props: LabelListProps) {
   const { data: labels, isFetching: dataIsFetching, isLoading: dataIsLoading } = useGetLabelsQuery(undefined, { refetchOnMountOrArgChange: true });
-
-  const ItemSkeleton = () => {
-    return (
-      <Stack direction="row" spacing={6} height={70} p={2} alignItems="center">
-        <Skeleton variant="rectangular" width={60} height={20} style={{ borderRadius: '12px' }} />
-        <Skeleton variant="text" height={10} width="90%" />
-        <Skeleton variant="text" height={10} width="5%" />
-      </Stack>
-    );
-  };
 
   const [openEditForm, setOpenEditForm] = useState(false);
   const [addLabel] = useAddLabelMutation();
@@ -44,16 +43,6 @@ export function LabelList(props: LabelListProps) {
 
   return (
     <Stack flex={1}>
-      {/* <Stack direction="row" pb={2}>
-        <Box flex={1} />
-        <Button
-          variant="contained"
-          disabled={dataIsFetching}
-          onClick={() => setOpenEditForm(true)}
-        >
-          Добавить
-        </Button>
-      </Stack> */}
       <CustomizedCard
         borders
       >
@@ -70,7 +59,7 @@ export function LabelList(props: LabelListProps) {
               disabled={dataIsFetching}
               onClick={() => setOpenEditForm(true)}
             >
-          Добавить
+              Добавить
             </Button>
           </Stack>
           <Divider />

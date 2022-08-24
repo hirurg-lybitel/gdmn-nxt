@@ -163,6 +163,7 @@ export interface IPermissionsAction extends IWithID {
 
 export interface IUserGroup extends IWithID {
   NAME: string;
+  DESCRIPTION?: string;
 };
 
 export interface IPermissionsView extends IWithID {

@@ -70,7 +70,6 @@ export function PermissionsList(props: PermissionsListProps) {
   const [updateMatrix] = useUpdateMatrixMutation();
 
   const CheckBoxOnChange = (matrixID: number | undefined, action: IPermissionsAction, userGroup: IUserGroup) => (e: any, checked: boolean) => {
-    // console.log('onChange', e, checked, action, userGroup);
     updateMatrix({
       ID: matrixID,
       ACTION: action,

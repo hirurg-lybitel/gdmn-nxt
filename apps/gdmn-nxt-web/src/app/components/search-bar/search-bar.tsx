@@ -1,5 +1,5 @@
 import './search-bar.module.less';
-import { ChangeEvent, cloneElement, CSSProperties, ReactElement, useRef, useState } from "react";
+import { ChangeEvent, cloneElement, CSSProperties, ReactElement, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { IconButton, Input, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -12,21 +12,21 @@ export interface StyleProps {
 
 const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   root: {
-    display: "flex",
-    justifyContent: "space-between",
+    display: 'flex',
+    justifyContent: 'space-between',
     width: '200px'
   },
   iconButton: {
     color: theme.palette.action.active,
-    transform: "scale(1, 1)",
-    transition: theme.transitions.create(["transform", "color"], {
+    transform: 'scale(1, 1)',
+    transition: theme.transitions.create(['transform', 'color'], {
       duration: theme.transitions.duration.shorter,
       easing: theme.transitions.easing.easeInOut,
     }),
   },
   iconButtonHidden: {
-    transform: "scale(0, 0)",
-    "& > $icon": {
+    transform: 'scale(0, 0)',
+    '& > $icon': {
       opacity: 0.5,
     },
   },
@@ -34,16 +34,16 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
     marginRight: theme.spacing(-5),
   },
   icon: {
-    transition: theme.transitions.create(["opacity"], {
+    transition: theme.transitions.create(['opacity'], {
       duration: theme.transitions.duration.shorter,
       easing: theme.transitions.easing.easeInOut,
     }),
   },
   input: {
-    width: "100%",
+    width: '100%',
   },
   searchContainer: {
-    margin: "auto 16px",
+    margin: 'auto 16px',
     width: '100%',
   },
   mouseOnFocus: {
@@ -57,6 +57,9 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen
     }),
+  },
+  fullWidth: {
+    width: '100%',
   }
 }));
 
@@ -67,26 +70,28 @@ export interface SearchBarProps {
   searchIcon?: ReactElement,
   disabled?: boolean,
   onCancelSearch?: () => void,
-  onChange?:  (value: string) => void,
-  onRequestSearch?:  (value: string) => void,
+  onChange?: (value: string) => void,
+  onRequestSearch?: (value: string) => void,
   placeholder?: string,
   style?: CSSProperties,
   value?: string,
+  fullWidth?: boolean;
 }
 
 export function SearchBar(props: SearchBarProps) {
   const {
     cancelOnEscape,
-    className="",
-    closeIcon=<ClearIcon />,
-    searchIcon=<SearchIcon />,
-    disabled=false,
+    className = '',
+    closeIcon = <ClearIcon />,
+    searchIcon = <SearchIcon />,
+    disabled = false,
     onCancelSearch,
     onChange,
     onRequestSearch,
-    placeholder="Поиск",
+    placeholder = 'Поиск',
     style,
-    value="",
+    value = '',
+    fullWidth = false,
     ...inputProps
   } = props;
 
@@ -120,11 +125,11 @@ export function SearchBar(props: SearchBarProps) {
   };
 
   const handleKeyUp = (event: any) => {
-    if (event.charCode === 13 || event.key === "Enter") {
+    if (event.charCode === 13 || event.key === 'Enter') {
       handleRequestSearch();
     } else if (
       cancelOnEscape &&
-      (event.charCode === 27 || event.key === "Escape")
+      (event.charCode === 27 || event.key === 'Escape')
     ) {
       handleCancel();
     }
@@ -155,8 +160,9 @@ export function SearchBar(props: SearchBarProps) {
       className={`
         ${classes.root}
         ${className}
-        ${mouseOnFocus ? classes.mouseOnFocus : ""}
-        ${onFocus ? classes.onFocus : ""}
+        ${mouseOnFocus ? classes.mouseOnFocus : ''}
+        ${onFocus ? classes.onFocus : ''}
+        ${fullWidth ? classes.fullWidth : ''}
       `}
       style={style}
     >
@@ -184,7 +190,7 @@ export function SearchBar(props: SearchBarProps) {
         className={`
           ${classes.iconButton}
           ${classes.searchIconButton}
-          ${searchValue !== "" ? classes.iconButtonHidden : ""}
+          ${searchValue !== '' ? classes.iconButtonHidden : ''}
         `}
         disabled={disabled}
       >
@@ -196,7 +202,7 @@ export function SearchBar(props: SearchBarProps) {
         onClick={handleCancel}
         className={`
           ${classes.iconButton}
-          ${searchValue === "" ? classes.iconButtonHidden : ""}
+          ${searchValue === '' ? classes.iconButtonHidden : ''}
         `}
         disabled={disabled}
       >
