@@ -144,10 +144,7 @@ export function LabelListItem(props: LabelListItemProps) {
     l = +(l * 100).toFixed(1);
 
     return { h, s, l };
-  }
-
-  // console.log('hexToRGB', hexToRGB('#7adbb5'));
-  // console.log('RGBToHSL', RGBToHSL(hexToRGB('#7adbb5').r, hexToRGB('#7adbb5').g, hexToRGB('#7adbb5').b));
+  };
 
   const rgb = hexToRGB(data.USR$COLOR);
   const hsl = RGBToHSL(rgb.r, rgb.g, rgb.b);
@@ -164,24 +161,6 @@ export function LabelListItem(props: LabelListItemProps) {
     <Box className={styles['Box-row']}>
       <Grid container alignItems="center">
         <Grid item xs={2}>
-          {/* <div
-            className={classes.label}
-            style={{
-              // border: '1px solid hsl(201.71, 100%, 60%)',
-              // backgroundColor: 'hsla(201.71, 100%, 72%, 0.2)',
-              // color: 'hsl(201.71, 100%, 60%)',
-              color: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`,
-              backgroundColor: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${backgroundAlpha})`,
-              // background: `rgba(${labelR}, ${labelG}, ${labelB}, ${backgroundAlpha})`,
-              borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`
-
-              // color: hsl(var(--label-h), calc(var(--label-s) * 1%), calc((var(--label-l) + var(--lighten-by)) * 1%));
-              // background: rgba(var(--label-r), var(--label-g), var(--label-b), var(--background-alpha));
-              // border-color: hsla(var(--label-h), calc(var(--label-s) * 1%), calc((var(--label-l) + var(--lighten-by)) * 1%), var(--border-alpha));
-            }}
-          >
-            {data.USR$NAME}
-          </div> */}
           <LabelMarker label={data} />
         </Grid>
         {/* <Grid item xs={4}>

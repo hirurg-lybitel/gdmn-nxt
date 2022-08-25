@@ -153,7 +153,6 @@ export function SearchBar(props: SearchBarProps) {
     }
   };
 
-
   return (
     <CustomizedCard
       borders
@@ -185,7 +184,6 @@ export function SearchBar(props: SearchBarProps) {
         />
       </div>
       <IconButton
-        aria-label='mysearch'
         onClick={handleRequestSearch}
         className={`
           ${classes.iconButton}

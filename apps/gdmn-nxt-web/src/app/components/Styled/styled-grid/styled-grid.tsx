@@ -1,6 +1,9 @@
-import { DataGridPro } from '@mui/x-data-grid-pro';
+import { DataGridPro, DataGridProProps, ruRU } from '@mui/x-data-grid-pro';
 import { styled } from '@mui/system';
 import styles from './styled-grid.module.less';
+import { useDataGridProProps } from '@mui/x-data-grid-pro/DataGridPro/useDataGridProProps';
+import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
+import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
 
 const defaultTheme = {
   border: 'none',
@@ -29,13 +32,21 @@ const defaultTheme = {
   },
 };
 
-/* eslint-disable-next-line */
-export interface StyledGridProps {}
-
-const StyledGrid = styled(DataGridPro, {
-  shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
-})<StyledGridProps>(({ theme }) => ({
-  ...defaultTheme
-}));
-
-export default StyledGrid;
+export default function StyledGrid(props: DataGridProProps) {
+  return (
+    <DataGridPro
+      localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+      getRowId={row => row.ID}
+      components={{
+        LoadingOverlay: CustomLoadingOverlay,
+        NoRowsOverlay: CustomNoRowsOverlay,
+        NoResultsOverlay: CustomNoRowsOverlay,
+      }}
+      {...props}
+      sx={{
+        ...defaultTheme,
+        ...props.sx
+      }}
+    />
+  );
+};

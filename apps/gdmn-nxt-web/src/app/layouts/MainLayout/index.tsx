@@ -133,13 +133,14 @@ export const MainLayout = () => {
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
+  const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
 
-  const location = useLocation();
+  // const location = useLocation();
 
   useEffect(() => {
-    const menuId: string = location.pathname.split('/').at(-1) || '';
-    dispatch(setActiveMenu(menuId));
-  }, [location]);
+    const menuID = activeMenuId === '' ? 'dashboard' : activeMenuId;
+    dispatch(setActiveMenu(menuID));
+  }, []);
 
   useEffect(() => {
     if (errorMessage) {

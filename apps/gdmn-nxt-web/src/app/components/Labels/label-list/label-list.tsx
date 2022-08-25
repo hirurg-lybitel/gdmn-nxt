@@ -1,17 +1,14 @@
-import { Box, Button, CardContent, CardHeader, Divider, Grid, IconButton, Skeleton, Stack, Typography } from '@mui/material';
-import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import AddIcon from '@mui/icons-material/Add';
+import { Box, Button, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { useAddLabelMutation, useGetLabelsQuery } from 'apps/gdmn-nxt-web/src/app/features/labels';
 import LabelListItem from '../label-list-item/label-list-item';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-
 import styles from './label-list.module.less';
 import { useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { ILabel } from '@gsbelarus/util-api-types';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+
 const ItemSkeleton = () => {
   return (
     <Stack direction="row" spacing={6} height={70} p={2} alignItems="center">
@@ -51,9 +48,6 @@ export function LabelList(props: LabelListProps) {
         <CardContent style={{ padding: 0 }}>
           <Stack direction="row" p={3}>
             <Box flex={1} />
-            {/* <IconButton>
-              <AddCircleIcon fontSize="large" color="primary" />
-            </IconButton> */}
             <Button
               variant="contained"
               disabled={dataIsFetching}

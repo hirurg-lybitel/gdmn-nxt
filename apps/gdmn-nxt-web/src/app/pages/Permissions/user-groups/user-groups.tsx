@@ -11,46 +11,8 @@ import { Users } from './users';
 import AddIcon from '@mui/icons-material/Add';
 import { makeStyles } from '@mui/styles';
 import { GroupList } from './groupList';
+import UserGroupEdit from '../../../components/Permissions/user-group-edit/user-group-edit';
 
-
-// export interface StyleProps {
-//   isFocus: boolean;
-// }
-
-// const styles = makeStyles<Theme, >
-// interface IGroupList {
-//   groups: IUserGroup[];
-//   setSelectedUserGroup?: Dispatch<SetStateAction<number>>;
-//   selectedUserGroup: number;
-// };
-
-// const GroupList = (props: IGroupList) => {
-//   const { groups, setSelectedUserGroup } = props;
-
-//   const onClick = (id:number) => (e: any) => {
-//     setSelectedUserGroup && setSelectedUserGroup(id);
-//   };
-
-//   return <List>
-//     {groups.map(group =>
-//       <ListItem
-//         key={group.ID}
-//         button
-//         divider
-//         sx={{
-//           py: 2,
-//           backgroundColor: 'red'
-//         }}
-//         onClick={onClick(group.ID)}
-//       >
-//         <ListItemText>
-//           <Typography variant="body1">{group.NAME}</Typography>
-//           <Typography variant="caption">{group.DESCRIPTION}</Typography>
-//         </ListItemText>
-
-//       </ListItem>)}
-//   </List>;
-// };
 
 const ItemGroupSkeleton = () => {
   return (
@@ -70,6 +32,7 @@ export function UserGroups(props: UserGroupsProps) {
 
   const [searchName, setSearchName] = useState('');
   const [selectedUserGroup, setSelectedUserGroup] = useState(-1);
+  const [openEditUserGroupForm, setOpenEditUserGroupForm] = useState(false);
 
   const filterHandlers = {
     handleRequestSearch: async (value: string) => {
@@ -78,6 +41,15 @@ export function UserGroups(props: UserGroupsProps) {
     handleCancelSearch: async () => {
       setSearchName('');
     },
+  };
+
+  const userGroupHandlers = {
+    handleOnSubmit: async () => {
+      setOpenEditUserGroupForm(true);
+    },
+    handleCancelClick: async () => {
+      setOpenEditUserGroupForm(false);
+    }
   };
 
   return (
@@ -106,7 +78,7 @@ export function UserGroups(props: UserGroupsProps) {
                 variant="contained"
                 disabled={userGroupFetching}
                 startIcon={<AddIcon fontSize="large" />}
-                // </Stack>onClick={() => setOpenEditForm(true)}
+                onClick={() => setOpenEditUserGroupForm(true)}
               >
                 Группа
               </Button>
@@ -114,7 +86,6 @@ export function UserGroups(props: UserGroupsProps) {
             <SearchBar
               disabled={userGroupFetching}
               onCancelSearch={filterHandlers.handleCancelSearch}
-              // onRequestSearch={filterHandlers.handleRequestSearch}
               onChange={filterHandlers.handleRequestSearch}
               cancelOnEscape
               fullWidth
@@ -142,6 +113,11 @@ export function UserGroups(props: UserGroupsProps) {
                   selectedUserGroup={selectedUserGroup}
                 />}
             </PerfectScrollbar>
+            <UserGroupEdit
+              open={openEditUserGroupForm}
+              onSubmit={userGroupHandlers.handleOnSubmit}
+              onCancelClick={userGroupHandlers.handleCancelClick}
+            />
           </Stack>
           <Divider orientation="vertical" flexItem />
           <Stack flex={1} p={2} spacing={2}>
@@ -149,14 +125,17 @@ export function UserGroups(props: UserGroupsProps) {
               <Box flex={1} />
               <Button
                 variant="contained"
-                disabled={userGroupFetching}
+                disabled={userGroupFetching || selectedUserGroup < 0}
                 startIcon={<AddIcon fontSize="large" />}
                 // </Stack>onClick={() => setOpenEditForm(true)}
               >
                 Добавить
               </Button>
             </Stack>
-            <Users groupID={selectedUserGroup}/>
+            {selectedUserGroup > 0
+              ? <Users groupID={selectedUserGroup}/>
+              : <></>
+            }
           </Stack>
         </Stack>
       </CardContent>

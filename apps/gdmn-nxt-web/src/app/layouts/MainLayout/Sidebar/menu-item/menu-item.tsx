@@ -4,7 +4,7 @@ import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 import { ForwardedRef, forwardRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -73,7 +73,6 @@ export function MenuItem(props: MenuItemProps) {
           </Typography>
         }
       />
-
     </ListItemButton>
   );
 }
