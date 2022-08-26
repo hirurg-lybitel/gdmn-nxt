@@ -289,6 +289,9 @@ const removeGroup: RequestHandler = async (req, res) => {
           DELETE FROM USR$CRM_PERMISSIONS_UG_LINES
           WHERE USR$GROUPKEY = :UG_ID;
 
+          DELETE FROM USR$CRM_PERMISSIONS_CROSS
+          WHERE USR$GROUPKEY = :UG_ID;
+
           DELETE FROM USR$CRM_PERMISSIONS_USERGROUPS WHERE CURRENT OF curUserGroup;
 
           SUCCESS = 1;

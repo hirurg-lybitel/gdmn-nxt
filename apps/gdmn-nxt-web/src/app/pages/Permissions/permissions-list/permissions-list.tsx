@@ -64,9 +64,9 @@ const initialStateDataGrid: GridInitialStatePro = {
 };
 
 export function PermissionsList(props: PermissionsListProps) {
-  const { data: actions, isFetching: actionsFetching } = useGetActionsQuery();
-  const { data: userGroups, isFetching: userGroupsFetching } = useGetUserGroupsQuery();
-  const { data: matrix, isFetching: matrixFetching } = useGetMatrixQuery();
+  const { data: actions, isFetching: actionsFetching, isLoading: actionsLoading } = useGetActionsQuery();
+  const { data: userGroups, isFetching: userGroupsFetching, isLoading: userGroupsLoading } = useGetUserGroupsQuery();
+  const { data: matrix, isFetching: matrixFetching, isLoading: matrixLoading } = useGetMatrixQuery();
   const [updateMatrix] = useUpdateMatrixMutation();
 
   const CheckBoxOnChange = (matrixID: number | undefined, action: IPermissionsAction, userGroup: IUserGroup) => (e: any, checked: boolean) => {
@@ -138,7 +138,7 @@ export function PermissionsList(props: PermissionsListProps) {
           <StyledGrid
             columns={columns}
             rows={actions || []}
-            loading={actionsFetching || userGroupsFetching || matrixFetching}
+            loading={actionsLoading || userGroupsLoading || matrixLoading}
             getRowId={row => row.ID}
             hideFooter
             // disableColumnResize
