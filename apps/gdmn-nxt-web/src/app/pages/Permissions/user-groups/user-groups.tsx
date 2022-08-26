@@ -4,14 +4,14 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './user-groups.module.less';
 import SearchBar from '../../../components/search-bar/search-bar';
-import { useGetUserGroupsQuery } from '../../../features/permissions';
+import { useAddUserGroupMutation, useGetUserGroupsQuery, useUpdateUserGroupMutation } from '../../../features/permissions';
 import { IUserGroup } from '@gsbelarus/util-api-types';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Users } from './users';
 import AddIcon from '@mui/icons-material/Add';
-import { makeStyles } from '@mui/styles';
 import { GroupList } from './groupList';
 import UserGroupEdit from '../../../components/Permissions/user-group-edit/user-group-edit';
+import UserEdit from '../../../components/Permissions/user-edit/user-edit';
 
 
 const ItemGroupSkeleton = () => {
@@ -29,10 +29,14 @@ export interface UserGroupsProps {}
 
 export function UserGroups(props: UserGroupsProps) {
   const { data: userGroups, isLoading: userGroupsLoading, isFetching: userGroupFetching } = useGetUserGroupsQuery();
+  const [addUserGroup, { data: res, isSuccess: addingIsSuccess }] = useAddUserGroupMutation();
+  const [updateUserGroup] = useUpdateUserGroupMutation();
 
   const [searchName, setSearchName] = useState('');
   const [selectedUserGroup, setSelectedUserGroup] = useState(-1);
   const [openEditUserGroupForm, setOpenEditUserGroupForm] = useState(false);
+  const [openAddUserGroupForm, setOpenAddUserGroupForm] = useState(false);
+  const [openEditUserForm, setOpenEditUserForm] = useState(false);
 
   const filterHandlers = {
     handleRequestSearch: async (value: string) => {
@@ -43,14 +47,58 @@ export function UserGroups(props: UserGroupsProps) {
     },
   };
 
+  useEffect(() => {
+    addingIsSuccess && setSelectedUserGroup(res?.ID || -1);
+  }, [addingIsSuccess]);
+
   const userGroupHandlers = {
-    handleOnSubmit: async () => {
+    handleOnSubmit: async (userGroup: IUserGroup) => {
+      openEditUserGroupForm && setOpenEditUserGroupForm(false);
+      openAddUserGroupForm && setOpenAddUserGroupForm(false);
+
+      if (userGroup.ID > 0) {
+        updateUserGroup(userGroup);
+      } else {
+        addUserGroup(userGroup);
+      };
+    },
+    handleCancel: async () => {
+      openEditUserGroupForm && setOpenEditUserGroupForm(false);
+      openAddUserGroupForm && setOpenAddUserGroupForm(false);
+    },
+    handleClose: async (e: any, reason: string) => {
+      if (reason === 'backdropClick') {
+        openEditUserGroupForm && setOpenEditUserGroupForm(false);
+        openAddUserGroupForm && setOpenAddUserGroupForm(false);
+      };
+    },
+    handleOnEdit: (id: number) => (e: any) => {
+      setSelectedUserGroup(id);
       setOpenEditUserGroupForm(true);
     },
-    handleCancelClick: async () => {
-      setOpenEditUserGroupForm(false);
+    handleAdd: () => {
+      // setSelectedUserGroup(-1);
+      setOpenAddUserGroupForm(true);
     }
   };
+
+  const userUsersHandlers = {
+    handleOnSubmit: async () => {
+      setOpenEditUserForm(true);
+    },
+    handleCancel: async () => {
+      setOpenEditUserForm(false);
+    },
+    handleClose: async (e: any, reason: string) => {
+      if (reason === 'backdropClick') setOpenEditUserForm(false);
+    }
+  };
+
+  const UsersList = useMemo(() =>
+    selectedUserGroup > 0
+      ? <Users groupID={selectedUserGroup}/>
+      : <></>,
+  [selectedUserGroup]);
 
   return (
     <CustomizedCard
@@ -76,15 +124,15 @@ export function UserGroups(props: UserGroupsProps) {
               <Box flex={1} />
               <Button
                 variant="contained"
-                disabled={userGroupFetching}
+                disabled={userGroupsLoading}
                 startIcon={<AddIcon fontSize="large" />}
-                onClick={() => setOpenEditUserGroupForm(true)}
+                onClick={userGroupHandlers.handleAdd}
               >
                 Группа
               </Button>
             </Stack>
             <SearchBar
-              disabled={userGroupFetching}
+              disabled={userGroupsLoading}
               onCancelSearch={filterHandlers.handleCancelSearch}
               onChange={filterHandlers.handleRequestSearch}
               cancelOnEscape
@@ -111,12 +159,21 @@ export function UserGroups(props: UserGroupsProps) {
                   }
                   setSelectedUserGroup={setSelectedUserGroup}
                   selectedUserGroup={selectedUserGroup}
+                  onEdit={userGroupHandlers.handleOnEdit}
                 />}
             </PerfectScrollbar>
             <UserGroupEdit
               open={openEditUserGroupForm}
+              userGroup={userGroups?.find(ug => ug.ID === selectedUserGroup)}
               onSubmit={userGroupHandlers.handleOnSubmit}
-              onCancelClick={userGroupHandlers.handleCancelClick}
+              onCancel={userGroupHandlers.handleCancel}
+              onClose={userGroupHandlers.handleClose}
+            />
+            <UserGroupEdit
+              open={openAddUserGroupForm}
+              onSubmit={userGroupHandlers.handleOnSubmit}
+              onCancel={userGroupHandlers.handleCancel}
+              onClose={userGroupHandlers.handleClose}
             />
           </Stack>
           <Divider orientation="vertical" flexItem />
@@ -127,15 +184,18 @@ export function UserGroups(props: UserGroupsProps) {
                 variant="contained"
                 disabled={userGroupFetching || selectedUserGroup < 0}
                 startIcon={<AddIcon fontSize="large" />}
-                // </Stack>onClick={() => setOpenEditForm(true)}
+                onClick={() => setOpenEditUserForm(true)}
               >
                 Добавить
               </Button>
             </Stack>
-            {selectedUserGroup > 0
-              ? <Users groupID={selectedUserGroup}/>
-              : <></>
-            }
+            {UsersList}
+            <UserEdit
+              open={openEditUserForm}
+              onSubmit={userUsersHandlers.handleOnSubmit}
+              onCancel={userUsersHandlers.handleCancel}
+              onClose={userUsersHandlers.handleClose}
+            />
           </Stack>
         </Stack>
       </CardContent>

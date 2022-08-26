@@ -1,10 +1,9 @@
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { Console } from 'console';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importedModels } from '../models';
 import { resultError } from '../responseMessages';
-import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
+import { getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
 import { genId } from '../utils/genId';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_CRM_LABELS';
@@ -133,7 +132,7 @@ const upsert: RequestHandler = async (req, res) => {
 };
 
 export const remove: RequestHandler = async(req, res) => {
-  const id  = parseInt(req.params.id);
+  const id = parseInt(req.params.id);
   const { attachment, transaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
@@ -145,9 +144,10 @@ export const remove: RequestHandler = async(req, res) => {
       )
       RETURNS(SUCCESS SMALLINT)
       AS
+      DECLARE VARIABLE LAB_ID INTEGER;
       BEGIN
         SUCCESS = 0;
-        FOR SELECT ID FROM USR$CRM_LABELS WHERE ID = :ID AS CURSOR curLABEL
+        FOR SELECT ID FROM USR$CRM_LABELS WHERE ID = :ID INTO :LAB_ID AS CURSOR curLABEL
         DO
         BEGIN
           DELETE FROM USR$CRM_LABELS WHERE CURRENT OF curLABEL;

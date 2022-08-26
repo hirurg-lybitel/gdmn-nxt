@@ -1,0 +1,41 @@
+import { IUser, IRequestResult } from '@gsbelarus/util-api-types';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { baseUrlApi } from '../../const';
+
+type UsersResponse = IUser[];
+type IUsersRequestResult = IRequestResult<{ users: IUser[] }>;
+
+type IUserRequestResult = IRequestResult<{ user: IUser }>;
+
+export const systemUsers = createApi({
+  reducerPath: 'systemUsers',
+  tagTypes: ['Users'],
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  endpoints: (builder) => ({
+    getUsers: builder.query<UsersResponse, void>({
+      query: () => 'system/users',
+      transformResponse: (response: IUsersRequestResult) => response.queries?.users || [],
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'Users' as const, ID })),
+            { type: 'Users', id: 'LIST' },
+          ]
+          : [{ type: 'Users', id: 'LIST' }],
+    }),
+    getUser: builder.query<IUser, number>({
+      query: (id) => `system/user/${id}`,
+      transformResponse: (response: IUserRequestResult) => response.queries?.user,
+      providesTags: (result) =>
+        result
+          ? [{ type: 'Users', id: result?.ID }, { type: 'Users', id: 'LIST' }]
+          : [{ type: 'Users', id: 'LIST' }],
+    }),
+  })
+});
+
+
+export const {
+  useGetUsersQuery,
+  useGetUserQuery
+} = systemUsers;

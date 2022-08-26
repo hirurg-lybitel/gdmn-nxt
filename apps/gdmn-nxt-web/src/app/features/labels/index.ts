@@ -65,7 +65,6 @@ export const labelsApi = createApi({
         };
       },
       invalidatesTags: (result) => {
-        console.log('invalidatesTags', result);
         return result
           ? [{ type: 'Label', id: result?.id }, { type: 'Label', id: 'LIST' }]
           : [{ type: 'Label', id: 'LIST' }];

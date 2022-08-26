@@ -27,6 +27,7 @@ import { remainsInvoicesApi } from '../features/remains-by-invoices/remainsInvoi
 import { workTypesApi } from '../features/work-types/workTypesApi';
 import { labelsApi } from '../features/labels';
 import { permissionsApi } from '../features/permissions';
+import { systemUsers } from '../features/systemUsers';
 
 
 export const store = configureStore({
@@ -58,7 +59,8 @@ export const store = configureStore({
     [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
     [workTypesApi.reducerPath]: workTypesApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,
-    [permissionsApi.reducerPath]: permissionsApi.reducer
+    [permissionsApi.reducerPath]: permissionsApi.reducer,
+    [systemUsers.reducerPath]: systemUsers.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -81,6 +83,7 @@ export const store = configureStore({
     .concat(workTypesApi.middleware)
     .concat(labelsApi.middleware)
     .concat(permissionsApi.middleware)
+    .concat(systemUsers.middleware)
     .concat(errorMiddleware),
 });
 

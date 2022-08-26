@@ -4,6 +4,8 @@ import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useGetUsersByGroupQuery } from '../../../features/permissions';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import UserEdit from '../../../components/Permissions/user-edit/user-edit';
+import { useState } from 'react';
 
 interface IUsersProps{
   groupID: number;
@@ -13,6 +15,20 @@ export function Users(props: IUsersProps) {
   const { groupID } = props;
 
   const { data: users, isFetching: usersFetching } = useGetUsersByGroupQuery(groupID);
+
+  const [openEditForm, setOpenEditForm] = useState(false);
+
+  const userUsersHandlers = {
+    handleOnSubmit: async () => {
+      setOpenEditForm(true);
+    },
+    handleCancel: async () => {
+      setOpenEditForm(false);
+    },
+    handleClose: async (e: any, reason: string) => {
+      if (reason === 'backdropClick') setOpenEditForm(false);
+    }
+  };
 
   const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Логин', minWidth: 150 },
@@ -48,9 +64,9 @@ export function Users(props: IUsersProps) {
 
         return (
           <Box>
-            <IconButton>
+            {/* <IconButton>
               <EditOutlinedIcon fontSize="small" color="primary" />
-            </IconButton>
+            </IconButton> */}
             <IconButton>
               <DeleteForeverIcon fontSize="small" color="primary" />
             </IconButton>
@@ -77,5 +93,13 @@ export function Users(props: IUsersProps) {
       />
     </Box>;
 
-  return <UsersView />;
+  return <>
+    <UsersView />
+    <UserEdit
+      open={openEditForm}
+      onSubmit={userUsersHandlers.handleOnSubmit}
+      onCancel={userUsersHandlers.handleCancel}
+      onClose={userUsersHandlers.handleClose}
+    />
+  </>;
 };

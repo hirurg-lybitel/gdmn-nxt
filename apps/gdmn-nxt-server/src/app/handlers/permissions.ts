@@ -1,5 +1,5 @@
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { query, raw, RequestHandler } from 'express';
+import { RequestHandler } from 'express';
 import { importedModels } from '../models';
 import { resultError } from '../responseMessages';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
@@ -14,10 +14,9 @@ const getCross: RequestHandler = async (req, res) => {
     const _schema = {};
 
     const execQuery = async (query: string) => {
-      const aTime = new Date().getTime();
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
-      console.log(`fetch time ${new Date().getTime() - aTime} ms`);
+
       await rs.close();
 
       return data as any;
@@ -191,9 +190,129 @@ const getUserGroups: RequestHandler = async (req, res) => {
 };
 
 const upsertGroup: RequestHandler = async (req, res) => {
+  const { attachment, transaction } = await startTransaction(req.sessionID);
+
+  const isInsertMode = (req.method === 'POST');
+
+  const id = parseInt(req.params.id);
+  if (!isInsertMode) {
+    if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
+  };
+
+  try {
+    const _schema = {};
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const data = await attachment.executeSingletonAsObject(transaction, query, params);
+
+      return [name, data];
+    };
+
+    const { erModel } = await importedModels;
+    const allFields = [...new Set(erModel.entities['TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_USERGROUPS'].attributes.map(attr => attr.name))];
+
+    const actualFields = allFields.filter(field => typeof req.body[field.replace('USR$', '')] !== 'undefined');
+
+    const paramsValues = actualFields.map(field => {
+      return req.body[field.replace('USR$', '')];
+    });
+
+    let ID = id;
+    if (isInsertMode) {
+      ID = await genId(attachment, transaction);
+      if (actualFields.indexOf('ID') >= 0) {
+        paramsValues.splice(actualFields.indexOf('ID'), 1, ID);
+      };
+    };
+
+    const requiredFields = {
+      ID: ID,
+    };
+
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (!actualFields.includes(key)) {
+        actualFields.push(key);
+        paramsValues.push(value);
+      }
+    };
+
+    const actualFieldsNames = actualFields.join(',');
+    const paramsString = actualFields.map( _ => '?' ).join(',');
+
+    const query = {
+      name: 'userGroup',
+      query: `
+        UPDATE OR INSERT INTO USR$CRM_PERMISSIONS_USERGROUPS(${actualFieldsNames})
+        VALUES(${paramsString})
+        MATCHING(ID)
+        RETURNING ${actualFieldsNames}`,
+      params: paramsValues,
+    };
+
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries([await Promise.resolve(execQuery(query))])
+      },
+      _params: id ? [{ id: id }] : undefined,
+      _schema
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    await rollbackTransaction(req.sessionID, transaction);
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(req.sessionID, transaction);
+  };
 };
 
 const removeGroup: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
+
+  const { attachment, transaction } = await startTransaction(req.sessionID);
+
+  try {
+    const result = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE UG_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_PERMISSIONS_USERGROUPS WHERE ID = :ID INTO :UG_ID AS CURSOR curUserGroup
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_PERMISSIONS_UG_LINES
+          WHERE USR$GROUPKEY = :UG_ID;
+
+          DELETE FROM USR$CRM_PERMISSIONS_USERGROUPS WHERE CURRENT OF curUserGroup;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [id]
+    );
+
+    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    await result.close();
+    await transaction.commit();
+
+    if (data[0].SUCCESS !== 1) {
+      return res.status(500).send(resultError('Объект не найден'));
+    };
+
+    return res.status(200).json({ id });
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(req.sessionID, transaction);
+  };
 };
 
 const getActions: RequestHandler = async (req, res) => {
@@ -302,4 +421,124 @@ const getUserByGroup: RequestHandler = async (req, res) => {
   }
 };
 
-export default { getCross, upsertCross, upsertGroup, removeGroup, getActions, getUserGroups, getUserByGroup };
+const addUserGroupLine: RequestHandler = async (req, res) => {
+  const { attachment, transaction } = await startTransaction(req.sessionID);
+
+  try {
+    const _schema = {};
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const data = await attachment.executeSingletonAsObject(transaction, query, params);
+
+      return [name, data];
+    };
+
+    const { erModel } = await importedModels;
+    const allFields = [...new Set(erModel.entities['TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_UG_LINES'].attributes.map(attr => attr.name))];
+
+    const actualFields = allFields.filter(field => {
+      switch (field) {
+        case 'USR$USERKEY':
+          return typeof req.body['USER'] !== 'undefined';
+        case 'USR$GROUPKEY':
+          return typeof req.body['USERGROUP'] !== 'undefined';
+        default:
+          return typeof req.body[field] !== 'undefined';
+      }
+    });
+
+    const paramsValues = actualFields.map(field => {
+      switch (field) {
+        case 'USR$USERKEY':
+          return req.body['USER']['ID'];
+        case 'USR$GROUPKEY':
+          return req.body['USERGROUP']['ID'];
+        default:
+          return req.body[field];
+      }
+    });
+
+    const query = {
+      name: 'users',
+      query: `
+      INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(USR$USERKEY, USR$GROUPKEY)
+      VALUES(?, ?)
+      RETURNING ID, USR$USERKEY, USR$GROUPKEY`,
+      params: paramsValues,
+    };
+
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries([await Promise.resolve(execQuery(query))])
+      },
+      _schema
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    await rollbackTransaction(req.sessionID, transaction);
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(req.sessionID, transaction);
+  };
+};
+
+const removeUserGroupLine: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
+
+  const { attachment, transaction } = await startTransaction(req.sessionID);
+
+  try {
+    const result = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE UG_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_PERMISSIONS_UG_LINES WHERE ID = :ID INTO :UG_ID AS CURSOR curUserGroup
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_PERMISSIONS_UG_LINES WHERE CURRENT OF curUserGroup;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [id]
+    );
+
+    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    await result.close();
+    await transaction.commit();
+
+    if (data[0].SUCCESS !== 1) {
+      return res.status(500).send(resultError('Объект не найден'));
+    };
+
+    return res.status(200).json({ id });
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(req.sessionID, transaction);
+  };
+};
+
+
+export default {
+  getCross,
+  upsertCross,
+  upsertGroup,
+  removeGroup,
+  getActions,
+  getUserGroups,
+  getUserByGroup,
+  addUserGroupLine,
+  removeUserGroupLine
+};

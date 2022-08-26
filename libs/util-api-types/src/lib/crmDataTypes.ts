@@ -178,3 +178,8 @@ export interface IPermissionsView extends IWithID {
   USERGROUP: IUserGroup;
   MODE: number;
 };
+
+export interface IUserGroupLine extends IWithID {
+  USERGROUP: IUserGroup;
+  USER: IUser;
+};

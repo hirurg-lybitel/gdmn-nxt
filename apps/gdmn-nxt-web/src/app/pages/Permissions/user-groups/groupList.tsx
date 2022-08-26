@@ -1,24 +1,21 @@
 import { IUserGroup } from '@gsbelarus/util-api-types';
-import { List, ListItem, ListItemText, Theme, Typography } from '@mui/material';
+import { IconButton, List, ListItem, ListItemText, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Dispatch, SetStateAction } from 'react';
-
-interface StyleProps {
-  selected: boolean;
-}
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
 const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     borderRadius: '4px',
-    // backgroundColor: theme.palette.primary.main,
-    // color: theme.palette.secondary.main,
-    // transition: theme.transitions.create(['transform', 'color'], {
-    //   duration: theme.transitions.duration.shortest,
-    //   easing: theme.transitions.easing.easeInOut,
-    // }),
     '&:hover': {
       backgroundColor: theme.color.grey[300],
       color: 'initial',
+    },
+    '&:hover .actions': {
+      display: 'inline',
+      position: 'absolute',
+      right: 0,
+      top: 0
     }
   },
   listItemSelected: {
@@ -31,10 +28,11 @@ interface IGroupList {
   groups: IUserGroup[];
   setSelectedUserGroup?: Dispatch<SetStateAction<number>>;
   selectedUserGroup: number;
+  onEdit: (id: number) => (e: any) => void;
 };
 
 export const GroupList = (props: IGroupList) => {
-  const { groups, setSelectedUserGroup, selectedUserGroup } = props;
+  const { groups, setSelectedUserGroup, selectedUserGroup, onEdit } = props;
 
   const classes = useStyles();
 
@@ -60,8 +58,15 @@ export const GroupList = (props: IGroupList) => {
         <ListItemText>
           <Typography variant="body1">{group.NAME}</Typography>
           <Typography variant="caption" style={{ color: 'inherit' }}>{group.DESCRIPTION}</Typography>
+          <div
+            className="actions"
+            hidden
+          >
+            <IconButton size="small" onClick={onEdit(group.ID)}>
+              <EditOutlinedIcon fontSize="small" />
+            </IconButton >
+          </div>
         </ListItemText>
-
       </ListItem>)}
   </List>;
 };

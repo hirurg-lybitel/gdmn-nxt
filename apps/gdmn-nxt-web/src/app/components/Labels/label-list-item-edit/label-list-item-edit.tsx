@@ -111,15 +111,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                 value={formik.values.USR$NAME}
                 helperText={formik.errors.USR$NAME}
               />
-              <TextField
-                label="Описание"
-                type="text"
-                name="USR$DESCRIPTION"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.USR$DESCRIPTION}
-                helperText={formik.errors.USR$DESCRIPTION}
-              />
               <Stack spacing={0.5}>
                 <TextField
                   label="Цвет"
@@ -141,6 +132,17 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                   />
                 }
               </Stack>
+              <TextField
+                label="Описание"
+                type="text"
+                name="USR$DESCRIPTION"
+                multiline
+                minRows={4}
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.USR$DESCRIPTION}
+                helperText={formik.errors.USR$DESCRIPTION}
+              />
             </Stack>
           </Form>
         </FormikProvider>

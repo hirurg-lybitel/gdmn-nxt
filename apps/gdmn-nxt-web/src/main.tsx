@@ -39,6 +39,7 @@ import RemainsByInvoices from './app/pages/Analytics/UserReports/remains-by-invo
 import Labels from './app/pages/Managment/Lables';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import ruLocale from 'date-fns/locale/ru';
 import PermissionsList from './app/pages/Permissions/permissions-list/permissions-list';
 import UserGroups from './app/pages/Permissions/user-groups/user-groups';
 
@@ -61,6 +62,7 @@ const Main = () => {
             <LocalizationProvider
               dateAdapter={AdapterDateFns}
               localeText={{ start: 'Начало периода', end: 'Конец периода' }}
+              adapterLocale={ruLocale}
             >
               {
                 loginStage === 'EMPLOYEE' ?

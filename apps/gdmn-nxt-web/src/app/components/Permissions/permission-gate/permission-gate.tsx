@@ -1,4 +1,4 @@
-import { PERMISSIONS } from '../permission-map';
+// import { PERMISSIONS } from '../permission-map';
 import styles from './permissions-gate.module.less';
 
 // const hasPermission = ({ permissions: string[], scopes }) => {
@@ -19,7 +19,7 @@ export function PermissionsGate(props: PermissionsGateProps) {
   const { children, scopes } = props;
   // const { role } = useGetRole();
   const role = '1';
-  const permissions = PERMISSIONS[role];
+  // const permissions = PERMISSIONS[role];
 
   // const permissionGranted = hasPermission({ permissions, scopes });
 

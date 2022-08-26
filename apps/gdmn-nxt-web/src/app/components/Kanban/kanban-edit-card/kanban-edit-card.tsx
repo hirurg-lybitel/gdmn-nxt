@@ -329,7 +329,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         <DesktopDatePicker
                           label="Срок"
                           value={formik.values.DEAL?.USR$DEADLINE || null}
-                          mask="__.__.____"
+                          // mask="__.__.____"
+                          inputFormat="dd/MM/yyyy"
                           onChange={(value) => {
                             formik.setFieldValue(
                               'DEAL',

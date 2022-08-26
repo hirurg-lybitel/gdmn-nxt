@@ -149,7 +149,7 @@ export function KanbanCard(props: KanbanCardProps) {
                   <ContentCopyIcon fontSize="small" />
                 </IconButton >
               </div>
-            : <></>}
+              : <></>}
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
