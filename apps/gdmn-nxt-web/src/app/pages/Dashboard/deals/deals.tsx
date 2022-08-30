@@ -1,26 +1,31 @@
 import './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { toggleMenu } from '../../../store/settingsSlice';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { CircularIndeterminate } from '../../../components/circular-indeterminate/circular-indeterminate';
+import { RootState } from '../../../store';
+import { UserState } from '../../../features/user/userSlice';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
+import { Stack } from '@mui/material';
 
 /* eslint-disable-next-line */
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
-  const dispatch = useDispatch();
+  const user = useSelector<RootState, UserState>(state => state.user);
+  const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery({ userId: user.userProfile?.id || -1 });
 
-  const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery();
-
+  // const dispatch = useDispatch();
   // useEffect(() => {
   //   dispatch(toggleMenu(false));
   // }, []);
 
   return (
     <>
-      <KanbanBoard columns={columns || []} />
+
+      {!isLoading && <KanbanBoard columns={columns || []} />}
       <div
         style={{
           position: 'absolute',

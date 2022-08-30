@@ -1,5 +1,5 @@
 import './kanban-card.module.less';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
@@ -7,6 +7,7 @@ import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 
 /* eslint-disable-next-line */
@@ -28,8 +29,6 @@ export function KanbanCard(props: KanbanCardProps) {
   const theme = useTheme();
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
-
-  const [showActions, setShowActions] = useState(false);
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
@@ -56,12 +55,9 @@ export function KanbanCard(props: KanbanCardProps) {
       editCard && setEditCard(false);
       copyCard && setCopyCard(false);
     },
-    OnMouseEnter: async () => {
-      setShowActions(true);
+    handleClose: async (e: any, reason: string) => {
+      if (reason === 'backdropClick') setEditCard(false);
     },
-    OnMouseExit: async () => {
-      setShowActions(false);
-    }
   };
 
   const TaskStatus = useMemo(() => {
@@ -110,6 +106,136 @@ export function KanbanCard(props: KanbanCardProps) {
   },
   [card]);
 
+  const memoEditCard = useMemo(() => {
+    return (
+      <KanbanEditCard
+        open={editCard}
+        card={card}
+        currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
+        stages={columns}
+        onSubmit={cardHandlers.handleSubmit}
+        onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
+      />
+    );
+  }, [editCard]);
+
+  const memoCopyCard = useMemo(() => {
+    return (
+      <KanbanEditCard
+        open={copyCard}
+        card={{ ...card, ID: -1, DEAL: { ...card.DEAL, ID: -1, USR$NAME: '' } }}
+        currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
+        stages={columns}
+        onSubmit={cardHandlers.handleSubmit}
+        onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
+      />
+    );
+  }, [copyCard]);
+
+  const getDayDiff = useCallback((startDate: Date, endDate: Date) => {
+    const msInDay = 24 * 60 * 60 * 1000;
+
+    return Math.round(
+      (startDate.getTime() - endDate.getTime()) / msInDay,
+    );
+  }, []);
+
+
+  const memoCard = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 10);
+
+    const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
+
+    return (
+      <CustomizedCard
+        borders
+        key={card.ID}
+        style={{
+          width: '100%',
+          textOverflow: 'ellipsis',
+          padding: 5,
+          ...(snapshot.isDragging
+            ? {
+              opacity: 0.7,
+              border: `solid ${theme.menu?.backgroundColor}`
+            }
+            : {
+              borderLeft: `0.5rem solid ${
+                (() => {
+                  if (card.DEAL?.USR$DONE) return theme.menu?.backgroundColor;;
+                  switch (true) {
+                    case dateDiff <= 0:
+                      return theme.color.red['A200'];
+                    case dateDiff > 1:
+                      return theme.menu?.backgroundColor;
+                    case dateDiff > 0:
+                    case dateDiff < 1:
+                      return theme.color.yellow['A700'];
+                    default:
+                      return theme.menu?.backgroundColor;
+                  }
+                })()
+              }`,
+            }
+          )
+        }}
+        sx={{
+          '&:hover .actions': {
+            display: 'inline',
+            position: 'absolute',
+            right: 0,
+          }
+        }}
+        onDoubleClick={() => setEditCard(true)}
+      >
+        <Stack direction="column" spacing={1}>
+          <Stack
+            direction="row"
+            style={{ position: 'relative' }}
+          >
+            <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
+            <PermissionsGate actionCode={2}>
+              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+                ?
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton size="small" onClick={() => setCopyCard(true)}>
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+                : null}
+            </PermissionsGate>
+          </Stack>
+          <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+          <Stack direction="row">
+            <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+            <Box flex={1} />
+            <Typography>
+              {card.DEAL?.USR$DEADLINE
+                ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+                : '-/-'}
+            </Typography>
+          </Stack>
+          {TaskStatus}
+        </Stack>
+      </CustomizedCard>
+    );
+  }, [card, snapshot.isDragging]);
+
+  return (
+    <>
+      {memoCard}
+      {memoEditCard}
+      {memoCopyCard}
+    </>
+  );
 
   return (
     <div>
@@ -130,26 +256,34 @@ export function KanbanCard(props: KanbanCardProps) {
             }
           )
         }}
+        sx={{
+          '&:hover .actions': {
+            display: 'inline',
+            position: 'absolute',
+            right: 0,
+          }
+        }}
         onDoubleClick={() => setEditCard(true)}
-        onMouseEnter={cardHandlers.OnMouseEnter}
-        onMouseLeave={cardHandlers.OnMouseExit}
       >
         <Stack direction="column" spacing={1}>
-          <Stack direction="row" style={{ position: 'relative' }}>
+          <Stack
+            direction="row"
+            style={{ position: 'relative' }}
+          >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-              ? <div
-                style={{
-                  display: showActions ? 'inline' : 'none',
-                  position: 'absolute',
-                  right: 0,
-                }}
-              >
-                <IconButton size="small" onClick={() => setCopyCard(true)}>
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton >
-              </div>
-              : <></>}
+            <PermissionsGate actionCode={2}>
+              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+                ?
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton size="small" onClick={() => setCopyCard(true)}>
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+                : null}
+            </PermissionsGate>
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
@@ -163,6 +297,7 @@ export function KanbanCard(props: KanbanCardProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
       />
       <KanbanEditCard
         open={copyCard}
@@ -171,6 +306,7 @@ export function KanbanCard(props: KanbanCardProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
       />
     </div>
   );

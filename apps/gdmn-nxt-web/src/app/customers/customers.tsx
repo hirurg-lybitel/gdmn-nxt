@@ -10,8 +10,8 @@ import {
 import './customers.module.less';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
-import React, { CSSProperties, ForwardedRef, forwardRef, useEffect, useState } from 'react';
-import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent } from '@mui/material';
+import React, { CSSProperties, ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
+import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -19,6 +19,7 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from '../components/Customers/customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
@@ -112,11 +113,11 @@ export function Customers(props: CustomersProps) {
 
   const { data: customers, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery();
   // {
-    // pagination: paginationData,
-    // ...(filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {}),
-    // ...(filteringData ? { filter: filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {} } : {})
-    // ...(filteringData ? { filter: filteringData } : {})
-    // filter: filteringData
+  // pagination: paginationData,
+  // ...(filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {}),
+  // ...(filteringData ? { filter: filteringData['DEPARTMENTS']?.length > 0 ? { departments: filteringData['DEPARTMENTS']?.map((el: any) => el.ID) } : {} } : {})
+  // ...(filteringData ? { filter: filteringData } : {})
+  // filter: filteringData
   // };
   const [updateCustomer] = useUpdateCustomerMutation();
   const [addCustomer] = useAddCustomerMutation();
@@ -124,11 +125,7 @@ export function Customers(props: CustomersProps) {
 
   const dispatch = useDispatch();
 
-  // console.log('setFilterModel', filterModel);
-  // console.log('setFilteringData', filteringData);
-
   const { data: labels } = useGetLabelsQuery();
-
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
   const theme = useTheme();
@@ -263,13 +260,12 @@ export function Customers(props: CustomersProps) {
       }
 
       if (!filterItem?.value.length) return (params: any): boolean => true;
-
       return (params: any): boolean => {
         if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false) {
-          return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) =>el.USR$CONTRACTJOBKEY === contract.ID));
+          return params.row.JOBWORKS?.find((job: any) => filterItem.value.find((el: any) =>el.ID === job.ID));
         } else {
           return filterItem.value.every((value: any) => {
-            return params.row.CONTRACTS?.find((el: any) => el.ID === value.USR$CONTRACTJOBKEY);
+            return params.row.JOBWORKS?.find((el: any) => el.ID === value.ID);
           });
         }
       };
@@ -382,10 +378,14 @@ export function Customers(props: CustomersProps) {
   useEffect(() => {
     setFilterModel(filtersStorage.filterModels['customers']);
     setFilteringData(filtersStorage.filterData['customers']);
-    if (Object.keys(filtersStorage.filterData['customers'] || {}).length > 0) {
-      setOpenFilters(true);
-    };
+    // if (Object.keys(filtersStorage.filterData['customers'] || {}).length > 0) {
+    //   setOpenFilters(true);
+    // };
   }, []);
+
+  useEffect(() => {
+    SaveFilters();
+  }, [filterModel, filteringData]);
 
   useEffect(() => {
     if (customersError) {
@@ -508,6 +508,20 @@ export function Customers(props: CustomersProps) {
     }
   };
 
+  const memoUpsertCustomer = useMemo(() =>
+    <CustomerEdit
+      open={openEditForm}
+      customer={
+        customers
+          ?.find(element => element.ID === currentOrganization)
+                  || null
+      }
+      onSubmit={handleOrganiztionEditSubmit}
+      onCancelClick={handleOrganiztionEditCancelClick}
+      onDeleteClick={handleOrganizationDeleteOnClick}
+    />,
+  [openEditForm])
+
   return (
     <CustomizedCard
       borders
@@ -558,7 +572,12 @@ export function Customers(props: CustomersProps) {
                   onClick={filterHandlers.handleFilter}
                   disabled={customerFetching}
                 >
-                  <FilterAltIcon color="primary" />
+                  <Badge
+                    color="error"
+                    variant={Object.keys(filteringData || {}).length > 0 ? 'dot' : 'standard'}
+                  >
+                    <FilterListIcon color={customerFetching ? 'disabled' : 'primary'} />
+                  </Badge>
                 </IconButton>
               </Box>
             </Stack>
@@ -648,6 +667,18 @@ export function Customers(props: CustomersProps) {
                 onFilteringDataChange={filterHandlers.handleFilteringData}
               />
             </Box>
+            {memoUpsertCustomer}
+            {/* <CustomerEdit
+              open={openEditForm}
+              customer={
+                customers
+                  ?.find(element => element.ID === currentOrganization)
+                  || null
+              }
+              onSubmit={handleOrganiztionEditSubmit}
+              onCancelClick={handleOrganiztionEditCancelClick}
+              onDeleteClick={handleOrganizationDeleteOnClick}
+            /> */}
           </Stack>
         </Stack>
       </CardContent>
@@ -791,7 +822,7 @@ export function Customers(props: CustomersProps) {
         </Stack>
         {/* </div> */}
       </Stack>
-      <CustomerEdit
+      {/* <CustomerEdit
         open={openEditForm}
         customer={
           customers
@@ -801,7 +832,7 @@ export function Customers(props: CustomersProps) {
         onSubmit={handleOrganiztionEditSubmit}
         onCancelClick={handleOrganiztionEditCancelClick}
         onDeleteClick={handleOrganizationDeleteOnClick}
-      />
+      /> */}
       {/* {openEditForm ?
         <CustomerEdit
           open={openEditForm}

@@ -64,7 +64,7 @@ export const GroupList = (props: IGroupList) => {
           >
             <IconButton size="small" onClick={onEdit(group.ID)}>
               <EditOutlinedIcon fontSize="small" />
-            </IconButton >
+            </IconButton>
           </div>
         </ListItemText>
       </ListItem>)}

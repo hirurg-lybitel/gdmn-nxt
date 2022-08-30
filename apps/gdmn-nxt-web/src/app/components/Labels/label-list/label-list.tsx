@@ -8,6 +8,7 @@ import styles from './label-list.module.less';
 import { useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { ILabel } from '@gsbelarus/util-api-types';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 const ItemSkeleton = () => {
   return (
@@ -46,17 +47,19 @@ export function LabelList(props: LabelListProps) {
         <CardHeader title={<Typography variant="h3">Метки</Typography>} />
         <Divider />
         <CardContent style={{ padding: 0 }}>
-          <Stack direction="row" p={3}>
-            <Box flex={1} />
-            <Button
-              variant="contained"
-              disabled={dataIsFetching}
-              onClick={() => setOpenEditForm(true)}
-            >
-              Добавить
-            </Button>
-          </Stack>
-          <Divider />
+          <PermissionsGate actionCode={5}>
+            <Stack direction="row" p={3}>
+              <Box flex={1} />
+              <Button
+                variant="contained"
+                disabled={dataIsFetching}
+                onClick={() => setOpenEditForm(true)}
+              >
+                Добавить
+              </Button>
+            </Stack>
+            <Divider />
+          </PermissionsGate>
           {dataIsLoading
             ? [...Array(5)].map((el, idx) =>
               <div key={idx}>

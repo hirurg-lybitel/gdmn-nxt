@@ -9,7 +9,7 @@ export interface SalesFunnelProps {}
 
 /** Guid for @nivo/funnel https://nivo.rocks/funnel/ */
 export function SalesFunnel(props: SalesFunnelProps) {
-  const { data: stages, isFetching } = useGetKanbanDealsQuery();
+  const { data: stages, isFetching } = useGetKanbanDealsQuery({ userId: -1 });
 
   const funnelData = stages?.map(stage => ({
     id: stage.ID,

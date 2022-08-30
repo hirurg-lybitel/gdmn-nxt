@@ -7,6 +7,7 @@ import contactEmployees from '../../handlers/contactEmployees';
 const router = express.Router();
 
 router.get('/', getContacts);
+router.get('/customerId/:customerId', getContacts);
 router.get('/taxId/:taxId', getContacts);
 router.get('/rootId/:rootId', getContacts);
 // router.put('/:id', updateContact);

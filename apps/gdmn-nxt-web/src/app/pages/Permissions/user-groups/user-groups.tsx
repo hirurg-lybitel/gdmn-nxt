@@ -4,14 +4,14 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './user-groups.module.less';
 import SearchBar from '../../../components/search-bar/search-bar';
-import { useAddUserGroupMutation, useGetUserGroupsQuery, useUpdateUserGroupMutation } from '../../../features/permissions';
-import { IUserGroup } from '@gsbelarus/util-api-types';
+import { useAddUserGroupLineMutation, useAddUserGroupMutation, useDeleteUseGroupMutation, useGetUserGroupsQuery, useUpdateUserGroupMutation } from '../../../features/permissions';
+import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
 import { useEffect, useMemo, useState } from 'react';
-import { Users } from './users';
+import { Users } from './user-groups-line';
 import AddIcon from '@mui/icons-material/Add';
 import { GroupList } from './groupList';
 import UserGroupEdit from '../../../components/Permissions/user-group-edit/user-group-edit';
-import UserEdit from '../../../components/Permissions/user-edit/user-edit';
+import UserGroupLineEdit from '../../../components/Permissions/user-group-line-edit/user-group-line-edit';
 
 
 const ItemGroupSkeleton = () => {
@@ -29,8 +29,10 @@ export interface UserGroupsProps {}
 
 export function UserGroups(props: UserGroupsProps) {
   const { data: userGroups, isLoading: userGroupsLoading, isFetching: userGroupFetching } = useGetUserGroupsQuery();
-  const [addUserGroup, { data: res, isSuccess: addingIsSuccess }] = useAddUserGroupMutation();
+  const [addUserGroup, { data: addingResult, isSuccess: addingIsSuccess }] = useAddUserGroupMutation();
   const [updateUserGroup] = useUpdateUserGroupMutation();
+  const [deleteUserGroup] = useDeleteUseGroupMutation();
+  const [addUserGroupLine] = useAddUserGroupLineMutation();
 
   const [searchName, setSearchName] = useState('');
   const [selectedUserGroup, setSelectedUserGroup] = useState(-1);
@@ -48,13 +50,18 @@ export function UserGroups(props: UserGroupsProps) {
   };
 
   useEffect(() => {
-    addingIsSuccess && setSelectedUserGroup(res?.ID || -1);
+    addingIsSuccess && setSelectedUserGroup(addingResult?.ID || -1);
   }, [addingIsSuccess]);
 
   const userGroupHandlers = {
-    handleOnSubmit: async (userGroup: IUserGroup) => {
+    handleOnSubmit: async (userGroup: IUserGroup, deleting: boolean) => {
       openEditUserGroupForm && setOpenEditUserGroupForm(false);
       openAddUserGroupForm && setOpenAddUserGroupForm(false);
+
+      if (deleting) {
+        deleteUserGroup(userGroup.ID);
+        return;
+      };
 
       if (userGroup.ID > 0) {
         updateUserGroup(userGroup);
@@ -83,8 +90,9 @@ export function UserGroups(props: UserGroupsProps) {
   };
 
   const userUsersHandlers = {
-    handleOnSubmit: async () => {
-      setOpenEditUserForm(true);
+    handleOnSubmit: async (userGroupLine: IUserGroupLine) => {
+      setOpenEditUserForm(false);
+      addUserGroupLine(userGroupLine);
     },
     handleCancel: async () => {
       setOpenEditUserForm(false);
@@ -190,8 +198,15 @@ export function UserGroups(props: UserGroupsProps) {
               </Button>
             </Stack>
             {UsersList}
-            <UserEdit
+            <UserGroupLineEdit
               open={openEditUserForm}
+              userGroupLine={{
+                ID: -1,
+                USERGROUP: {
+                  ID: selectedUserGroup,
+                  NAME: ''
+                }
+              }}
               onSubmit={userUsersHandlers.handleOnSubmit}
               onCancel={userUsersHandlers.handleCancel}
               onClose={userUsersHandlers.handleClose}

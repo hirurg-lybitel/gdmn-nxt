@@ -5,6 +5,8 @@ import { resultError } from './responseMessages';
 import { genId } from './utils/genId';
 
 export const getContacts: RequestHandler = async (req, res) => {
+  const customerId = parseInt(req.params.customerId);
+
   const { pageSize, pageNo } = req.query;
 
   let fromRecord = 0;
@@ -56,8 +58,14 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const queries = [
       // 'SELECT DISTINCT USR$JOBKEY, USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER ORDER BY USR$CUSTOMERKEY, USR$JOBKEY, USR$DEPOTKEY',
-      'SELECT DISTINCT USR$JOBKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER',
-      'SELECT DISTINCT USR$DEPOTKEY, USR$CUSTOMERKEY FROM USR$CRM_CUSTOMER',
+      `SELECT DISTINCT
+        USR$JOBKEY, USR$JOBWORKKEY, USR$CUSTOMERKEY
+      FROM USR$CRM_CUSTOMER
+      ${customerId > 0 ? `WHERE USR$CUSTOMERKEY = ${customerId}` : ''}`,
+      `SELECT
+        DISTINCT USR$DEPOTKEY, USR$CUSTOMERKEY
+      FROM USR$CRM_CUSTOMER
+      ${customerId > 0 ? `WHERE USR$CUSTOMERKEY = ${customerId}` : ''}`,
       'SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0',
       `SELECT
          c.id,
@@ -74,6 +82,7 @@ export const getContacts: RequestHandler = async (req, res) => {
          ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
        WHERE
          c.contacttype IN (3,5)
+         ${customerId > 0 ? `AND c.ID = ${customerId}` : ''}
        ORDER BY c.ID DESC
        ${fromRecord > 0 ? `ROWS ${fromRecord} TO ${toRecord}` : ''}`,
       `SELECT
@@ -84,6 +93,7 @@ export const getContacts: RequestHandler = async (req, res) => {
         FROM USR$CRM_CONTACT_LABELS cl
         JOIN GD_CONTACT con ON con.ID = cl.USR$CONTACTKEY
         JOIN USR$CRM_LABELS l ON l.ID = cl.USR$LABELKEY
+        ${customerId > 0 ? `WHERE cl.USR$CONTACTKEY = ${customerId}` : ''}
         ORDER BY cl.USR$CONTACTKEY`
     ];
 
@@ -103,12 +113,12 @@ export const getContacts: RequestHandler = async (req, res) => {
       [customerId: string]: any[];
     };
 
+    const jobWorks: IMapOfArrays = {};
     const contracts: IMapOfArrays = {};
     const departments: IMapOfArrays = {};
     const labels: IMapOfArrays = {};
 
     const tMap = new Date().getTime();
-
     rawContracts.forEach(c => {
       if (contracts[c.USR$CUSTOMERKEY]) {
         if (!contracts[c.USR$CUSTOMERKEY].includes(c.USR$JOBKEY)) {
@@ -118,13 +128,15 @@ export const getContacts: RequestHandler = async (req, res) => {
         contracts[c.USR$CUSTOMERKEY] = [c.USR$JOBKEY];
       };
 
-      // if (departments[c.USR$CUSTOMERKEY]) {
-      //   if (!departments[c.USR$CUSTOMERKEY].includes(c.USR$DEPOTKEY)) {
-      //     departments[c.USR$CUSTOMERKEY].push(c.USR$DEPOTKEY);
-      //   }
-      // } else {
-      //   departments[c.USR$CUSTOMERKEY] = [c.USR$DEPOTKEY];
-      // };
+      if (c.USR$JOBWORKKEY) {
+        if (jobWorks[c.USR$CUSTOMERKEY]) {
+          if (!jobWorks[c.USR$CUSTOMERKEY].includes(c.USR$JOBWORKKEY)) {
+            jobWorks[c.USR$CUSTOMERKEY].push(c.USR$JOBWORKKEY);
+          }
+        } else {
+          jobWorks[c.USR$CUSTOMERKEY] = [c.USR$JOBWORKKEY];
+        };
+      }
     });
 
 
@@ -148,7 +160,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    // console.log(`Map time ${new Date().getTime() - tMap} ms`);
+    console.log(`Map time ${new Date().getTime() - tMap} ms`);
 
     interface IFolders {
       [id: string]: string;
@@ -167,16 +179,21 @@ export const getContacts: RequestHandler = async (req, res) => {
       })) ?? null;
 
       const CONTRACTS = contracts[c.ID]?.map(c => ({
-        ID: c
+        ID: c,
       })) ?? null;
 
       const LABELS = labels[c.ID] ?? null;
+
+      const JOBWORKS = jobWorks[c.ID]?.map(c => ({
+        ID: c,
+      })) ?? null;
 
       return {
         ...c,
         NAME: c.NAME || '<не указано>',
         DEPARTMENTS,
         CONTRACTS,
+        JOBWORKS,
         LABELS,
         FOLDERNAME: folders[c.PARENT]
       };

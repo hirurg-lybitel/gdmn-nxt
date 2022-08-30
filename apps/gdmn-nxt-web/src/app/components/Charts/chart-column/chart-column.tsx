@@ -57,10 +57,10 @@ interface IMapOfChartData {
   [key: string]: IMapOfArrays;
 };
 
-const filterOptions = (limit: number = 50, fieldName: string = '') => createFilterOptions({
+const filterOptions = (limit = 50, fieldName = '') => createFilterOptions({
   matchFrom: 'any',
   limit,
-  stringify: (option: any) => option[fieldName],
+  stringify: (option: any) => option[fieldName] || '',
 });
 
 interface IAnalyticsDataParams {
@@ -163,6 +163,9 @@ export function ChartColumn(props: ChartColumnProps) {
 
   const series: {name?: string, data: number[]}[] = [];
 
+  // for (const [key, value] of Object.entries(seriesMap)) {
+  //   series.push({ name: key, data: Object.values(value) });
+  // };
   if (periodType?.id === 1) {
     for (const [key, value] of Object.entries(seriesMap)) {
       series.push({ name: key, data: Object.values(value) });
@@ -174,7 +177,7 @@ export function ChartColumn(props: ChartColumnProps) {
       seriesData.push(Number(Object.values(value)));
     };
 
-    series.push({ data: seriesData });
+    series.push({ name: 'Сумма продаж', data: seriesData });
   };
 
   const chartCategories: string[] =
@@ -211,9 +214,9 @@ export function ChartColumn(props: ChartColumnProps) {
     },
     yaxis: {
       labels: {
-        formatter: (value) => {
-          return value.toLocaleString();
-        }
+        formatter: (value) => (
+          value.toLocaleString()
+        )
       }
     },
     tooltip: {
@@ -228,7 +231,6 @@ export function ChartColumn(props: ChartColumnProps) {
       fontSize: '15px',
       fontFamily: '\'Roboto\', sans-serif',
       offsetY: 5,
-
       labels: {
         colors: theme.color.grey[500],
       },
@@ -256,10 +258,17 @@ export function ChartColumn(props: ChartColumnProps) {
       borders
       boxShadows
       ref={ref2}
-      style={{
+      sx={(theme: any) => ({
         flex: 1,
-        display: 'flex'
-      }}
+        display: 'flex',
+        [theme.breakpoints.down('xl')]: {
+          minHeight: 'calc(100vh - 130px)',
+        },
+        [theme.breakpoints.up('xl')]: {
+          minHeight: 'calc(100vh - 300px)',
+        },
+        maxHeight: 'calc(100vh - 130px)'
+      })}
     >
       <Stack direction="column" spacing={3} p={2} flex={1} display="flex">
         {analyticsDataIsLoading
@@ -272,7 +281,9 @@ export function ChartColumn(props: ChartColumnProps) {
                   analyticsDataRefetch();
                   departmentsRefetch();
                 }}
-              >Продажи по месяцам</Typography>
+              >
+                Продажи за период
+              </Typography>
               <Box flex={1} />
 
               <TextField
@@ -290,205 +301,109 @@ export function ChartColumn(props: ChartColumnProps) {
                 ))}
               </TextField>
             </Stack>
-            <Grid container spacing={1} ref={ref}
-                style={{
-                  width: width || '100%'
-                }}
+            <Grid
+              container
+              spacing={1}
+              ref={ref}
+              style={{
+                width: width || '100%'
+              }}
             >
               <Grid item xs={4}>
-              <Autocomplete
-                multiple
-                filterOptions={filterOptions(50, 'NAME')}
-                loading={departmentsIsFetching}
-                options={departments || []}
-                onChange={(e, value) => changeChartFilter('departments', value)}
-                value={chartFilter['departments'] || []}
-                getOptionLabel={option => option.NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      checked={selected}
+                <Autocomplete
+                  multiple
+                  filterOptions={filterOptions(50, 'NAME')}
+                  loading={departmentsIsFetching}
+                  options={departments || []}
+                  onChange={(e, value) => changeChartFilter('departments', value)}
+                  value={chartFilter['departments'] || []}
+                  getOptionLabel={option => option.NAME}
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props} key={option.ID}>
+                      <Checkbox
+                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                        checkedIcon={<CheckBoxIcon fontSize="small" />}
+                        checked={selected}
+                      />
+                      {option.NAME}
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Все отделы"
                     />
-                    {option.NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Все отделы"
-                  />
-                )}
-              />
+                  )}
+                />
               </Grid>
               <Grid item xs={4}>
-              <Autocomplete
-                multiple
-                filterOptions={filterOptions(50, 'USR$NUMBER')}
-                loading={customerContractsIsFetching}
-                options={customerContracts || []}
-                onChange={(e, value) => changeChartFilter('contracts', value)}
-                value={chartFilter['contracts'] || []}
-                getOptionLabel={option => option.USR$NUMBER}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      // style={{ marginRight: 8 }}
-                      checked={selected}
+                <Autocomplete
+                  multiple
+                  filterOptions={filterOptions(50, 'USR$NUMBER')}
+                  loading={customerContractsIsFetching}
+                  options={customerContracts || []}
+                  onChange={(e, value) => changeChartFilter('contracts', value)}
+                  value={chartFilter['contracts'] || []}
+                  getOptionLabel={option => option.USR$NUMBER}
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props} key={option.ID}>
+                      <Checkbox
+                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                        checkedIcon={<CheckBoxIcon fontSize="small" />}
+                        // style={{ marginRight: 8 }}
+                        checked={selected}
+                      />
+                      {option.USR$NUMBER}
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Все заказы"
                     />
-                    {option.USR$NUMBER}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Все заказы"
-                  />
-                )}
-              />
+                  )}
+                />
               </Grid>
               <Grid item xs={4}>
-              <Autocomplete
-                multiple
-                filterOptions={filterOptions(50, 'USR$NAME')}
-                loading={workTypesIsFetching}
-                options={workTypes || []}
-                onChange={(e, value) => changeChartFilter('workTypes', value)}
-                value={chartFilter['workTypes'] || []}
-                getOptionLabel={option => option.USR$NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      // style={{ marginRight: 8 }}
-                      checked={selected}
+                <Autocomplete
+                  multiple
+                  filterOptions={filterOptions(50, 'USR$NAME')}
+                  loading={workTypesIsFetching}
+                  options={workTypes || []}
+                  onChange={(e, value) => changeChartFilter('workTypes', value)}
+                  value={chartFilter['workTypes'] || []}
+                  getOptionLabel={option => option.USR$NAME || ''}
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props} key={option.ID}>
+                      <Checkbox
+                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                        checkedIcon={<CheckBoxIcon fontSize="small" />}
+                        // style={{ marginRight: 8 }}
+                        checked={selected}
+                      />
+                      {option.USR$NAME}
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Виды работ"
                     />
-                    {option.USR$NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Виды работ"
-                  />
-                )}
-              />
+                  )}
+                />
               </Grid>
             </Grid>
-            {/* <Stack direction="row" spacing={1} sx={{ backgroundColor: 'red' }}>
-              <Autocomplete
-                multiple
-                // fullWidth
-                style={{
-                  // flexGrow: 2,
-                  width: '200px'
-                }}
-                filterOptions={filterOptions}
-                loading={departmentsIsFetching}
-                options={departments || []}
-                onChange={(e, value) => changeChartFilter('DEPARTMENTS', value)}
-                value={chartFilter['DEPARTMENTS'] || []}
-                getOptionLabel={option => option.NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      // style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.NAME}
-                  </li>
-                )}
-                noOptionsText="Не найден"
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    style={{
-                      flexGrow: 2,
-                    }}
-                    placeholder="Все отделы"
-                  />
-                )}
-              />
-              <Autocomplete
-                multiple
-                // fullWidth
-                style={{
-                  width: '200px'
-                }}
-                filterOptions={filterOptions}
-                loading={customerContractsIsFetching}
-                options={customerContracts || []}
-                onChange={(e, value) => changeChartFilter('CONTRACTS', value)}
-                value={chartFilter['CONTRACTS'] || []}
-                getOptionLabel={option => option.USR$NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      // style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.USR$NAME}
-                  </li>
-                )}
-                noOptionsText="Не найден"
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Все заказы"
-                  />
-                )}
-              />
-              <Autocomplete
-                multiple
-                // fullWidth
-                // style={{
-                //   width: '30%'
-                // }}
-                filterOptions={filterOptions}
-                loading={workTypesIsFetching}
-                options={workTypes || []}
-                onChange={(e, value) => changeChartFilter('WORKTYPES', value)}
-                value={chartFilter['WORKTYPES'] || []}
-                getOptionLabel={option => option.USR$NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      // style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.USR$NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    style={{
-                      flexGrow: 1,
-                    }}
-                    placeholder="Виды работ"
-                  />
-                )}
-              />
-
-            </Stack> */}
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Chart
-              options={chartOptions}
-              series={chartData.series}
-              type="bar"
-            />
+            <Box flex={1}>
+              <Chart
+                options={chartOptions}
+                series={chartData.series}
+                height="100%"
+                type="bar"
+              />
+            </Box>
             <Autocomplete
               multiple
               disableCloseOnSelect

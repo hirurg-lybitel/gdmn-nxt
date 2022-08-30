@@ -71,7 +71,7 @@ export const contactApi = createApi({
         };
       },
       transformResponse: (response: IContactPersonsRequestResult) => response.queries?.persons[0] || null,
-      invalidatesTags: ['Persons'],
+      invalidatesTags: [{ type: 'Persons', id: 'LIST' }],
     }),
     updateContactPerson: builder.mutation<IContactPerson, Partial<IContactWithID>>({
       query: (body) => ({

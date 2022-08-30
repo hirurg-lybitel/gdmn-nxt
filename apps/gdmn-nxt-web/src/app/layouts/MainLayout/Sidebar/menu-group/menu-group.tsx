@@ -1,4 +1,5 @@
 import { Divider, List, Typography } from '@mui/material';
+import PermissionsGate from 'apps/gdmn-nxt-web/src/app/components/Permissions/permission-gate/permission-gate';
 import MenuCollapse from '../menu-collapse/menu-collapse';
 import MenuItem from '../menu-item/menu-item';
 import './menu-group.module.less';
@@ -13,7 +14,9 @@ export function MenuGroup(props: MenuGroupProps) {
   const items = item.children?.map((menu: any) => {
     switch (menu.type) {
       case 'collapse':
-        return <MenuCollapse key={menu.id} menu={menu} level={1} />;
+        return <PermissionsGate key={menu.id} actionCode={menu.checkAction} disableDefault={false}>
+          <MenuCollapse menu={menu} level={1} />
+        </PermissionsGate>;
 
       case 'item':
         return <MenuItem key={menu.id} item={menu} level={1} />;
@@ -38,7 +41,6 @@ export function MenuGroup(props: MenuGroupProps) {
         }
       >
         {items}
-
       </List>
       <Divider />
     </>

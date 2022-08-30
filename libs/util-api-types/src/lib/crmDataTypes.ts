@@ -31,9 +31,9 @@ export interface IContractJob extends IContactWithID {
 };
 
 export interface ICustomer extends IContactWithID {
-  // LABELS?: ILabelsContact[];
   LABELS?: ILabel[];
   CONTRACTS?: IContractJob[];
+  JOBWORKS?: IWorkType[];
   DEPARTMETNS?: IContactWithID[];
   TAXID?: string;
 };
@@ -59,6 +59,10 @@ export interface IDeal extends IWithID {
   USR$DISABLED?: boolean;
   USR$DONE?: boolean;
   USR$READYTOWORK?: boolean;
+  DEPARTMENT?: IContactWithID;
+  DENY?: IDenyReason;
+  DENIED?: boolean;
+  COMMENT?: string;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -155,10 +159,10 @@ export interface ILabel extends IWithID {
   USR$DESCRIPTION?: string;
 };
 
-
 export interface IPermissionsAction extends IWithID {
   NAME: string;
   ISACTIVE: boolean;
+  CODE: number;
 };
 
 export interface IUserGroup extends IWithID {
@@ -181,5 +185,14 @@ export interface IPermissionsView extends IWithID {
 
 export interface IUserGroupLine extends IWithID {
   USERGROUP: IUserGroup;
-  USER: IUser;
+  USER?: IUser;
+};
+
+export interface IPermissionByUser {
+  CODE: number;
+  MODE: number;
+};
+
+export interface IDenyReason extends IWithID {
+  NAME: string;
 };

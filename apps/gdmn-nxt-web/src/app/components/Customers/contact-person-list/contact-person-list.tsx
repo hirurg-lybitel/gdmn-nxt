@@ -9,7 +9,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { IContactPerson, IPhone } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import PersonEdit from '../person-edit/person-edit';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   DataGrid: {
@@ -146,6 +146,15 @@ export function ContactPersonList(props: ContactPersonListProps) {
     }
   ];
 
+  const memUpsertPerson = useMemo(() =>
+    <PersonEdit
+      open={personEdit}
+      person={currentPerson}
+      onSubmit={handlePersonEditSubmit}
+      onCancelClick={handlePersonEditCancelClick}
+    />,
+  [personEdit]);
+
   return (
     <Stack direction="column" flex={1}>
       <Stack direction="row">
@@ -179,23 +188,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
           return rowHeight;
         }}
       />
-      <PersonEdit
-        open={personEdit}
-        person={currentPerson}
-        onSubmit={handlePersonEditSubmit}
-        onCancelClick={handlePersonEditCancelClick}
-      />
-      {/* <PersonEdit
-          open={personEdit}
-          person={
-            allCustomers
-              .find(element => element.ID === currentOrganization)
-            || null
-          }
-          onSubmit={handleOrganiztionEditSubmit}
-          onCancelClick={handleOrganiztionEditCancelClick}
-          onDeleteClick={handleOrganizationDeleteOnClick}
-        />          */}
+      {memUpsertPerson}
     </Stack>
   );
 }

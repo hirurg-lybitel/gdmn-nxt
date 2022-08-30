@@ -11,6 +11,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
+import CustomerInfo from '../../../customers/CustomerDetails/customer-info/customer-info';
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -37,7 +38,7 @@ export interface CustomerDetailsProps {}
 export function CustomerDetails(props: CustomerDetailsProps) {
   const classes = useStyles();
 
-  const [tabIndex, setTabIndex] = useState('2');
+  const [tabIndex, setTabIndex] = useState('1');
 
   const { id: customerId } = useParams();
 
@@ -87,16 +88,16 @@ export function CustomerDetails(props: CustomerDetailsProps) {
           <TabContext value={tabIndex}>
             <Box className={classes.tabsBox}>
               <TabList onChange={handleTabsChange}>
-                {/* <Tab label="Подробности" value="1" /> */}
+                <Tab label="Подробности" value="1" />
                 <Tab label="Акты выполненных работ" value="2" />
                 <Tab label="Выписки по р/с" value="3" />
                 <Tab label="Договоры" value="4" />
               </TabList>
             </Box>
             <Divider />
-            {/* <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''} >
-              <div>Информация о клиенте</div>
-            </TabPanel> */}
+            <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''} >
+              <CustomerInfo customerId={Number(customerId)} />
+            </TabPanel>
             <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
               <ActCompletion customerId={Number(customerId)} />
             </TabPanel>

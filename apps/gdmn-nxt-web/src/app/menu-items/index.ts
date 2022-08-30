@@ -12,6 +12,7 @@ export interface IMenuItem {
   type: IType;
   icon?: React.ReactElement;
   children?: IMenuItem[];
+  checkAction?: number;
 }
 
 // TODO доделать systemMenu или убрать вовсе

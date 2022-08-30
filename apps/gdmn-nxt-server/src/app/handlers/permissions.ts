@@ -31,7 +31,7 @@ const getCross: RequestHandler = async (req, res) => {
       FROM USR$CRM_PERMISSIONS_CROSS cr
       JOIN USR$CRM_PERMISSIONS_ACTIONS act ON act.ID = cr.USR$ACTIONKEY
       JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = cr.USR$GROUPKEY`,
-      `SELECT act.ID, act.USR$NAME NAME
+      `SELECT act.ID, act.USR$NAME NAME, USR$CODE CODE
       FROM USR$CRM_PERMISSIONS_ACTIONS act`,
       `SELECT ug.ID, ug.USR$NAME NAME
       FROM USR$CRM_PERMISSIONS_USERGROUPS ug`
@@ -169,7 +169,8 @@ const getUserGroups: RequestHandler = async (req, res) => {
           ug.ID,
           ug.USR$NAME AS NAME,
           USR$DESCRIPTION DESCRIPTION
-        FROM USR$CRM_PERMISSIONS_USERGROUPS ug`
+        FROM USR$CRM_PERMISSIONS_USERGROUPS ug
+        ORDER BY ug.USR$NAME`
     };
 
     const userGroups = await Promise.resolve(execQuery(query));
@@ -335,7 +336,7 @@ const getActions: RequestHandler = async (req, res) => {
     const query = {
       name: 'actions',
       query: `
-        SELECT act.ID, act.USR$NAME NAME
+        SELECT act.ID, act.USR$NAME NAME, USR$CODE CODE
         FROM USR$CRM_PERMISSIONS_ACTIONS act
         ORDER BY USR$SORTNUMBER`,
     };
@@ -357,6 +358,93 @@ const getActions: RequestHandler = async (req, res) => {
   };
 };
 
+const getUserGroupLine: RequestHandler = async (req, res) => {
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+
+  const groupId = parseInt(req.params.groupId);
+  if (isNaN(groupId)) return res.status(422).send(resultError('Поле "groupId" не указано или неверного типа'));
+
+  try {
+    const _schema = {};
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const rs = await attachment.executeQuery(transaction, query, params);
+      const data = await rs.fetchAsObject();
+      await rs.close();
+
+      return data as any;
+    };
+
+    const query = {
+      name: 'users',
+      query: `
+        SELECT
+          ul.ID,
+          ug.ID GROUP_ID,
+          ug.USR$NAME GROUP_NAME,
+          u.ID USER_ID,
+          u.NAME USER_NAME,
+          u.FULLNAME USER_FULLNAME,
+          u.DISABLED USER_DISABLED,
+          con.ID AS CONTACT_ID,
+          con.NAME AS CONTACT_NAME,
+          con.PHONE CONTACT_PHONE
+        FROM USR$CRM_PERMISSIONS_USERGROUPS ug
+        JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
+        JOIN GD_USER u ON u.ID = ul.USR$USERKEY
+        JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+        WHERE
+          ug.ID = ?`,
+      params: [groupId]
+    };
+
+    const rawUsers = await Promise.resolve(execQuery(query));
+
+
+    const users = rawUsers.map(user => {
+      const CONTACT = {
+        ID: user['CONTACT_ID'],
+        NAME: user['CONTACT_NAME'],
+        PHONE: user['CONTACT_PHONE']
+      };
+      const USER = {
+        ID: user['USER_ID'],
+        NAME: user['USER_NAME'],
+        FULLNAME: user['USER_FULLNAME'],
+        DISABLED: user['USER_DISABLED'],
+        CONTACT: { ...CONTACT }
+      };
+      const USERGROUP = {
+        ID: user['GROUP_ID'],
+        NAME: user['GROUP_NAME'],
+      };
+      const { CONTACT_ID, CONTACT_NAME, PHONE, ...newObject } = user;
+      return {
+        ID: user['ID'],
+        USERGROUP: { ...USERGROUP },
+        USER: { ...USER }
+      };
+    });
+    // const [rawCross, rawActions] = await Promise.all(queries.map(execQuery));
+
+    const result: IRequestResult = {
+      queries: {
+        users
+      },
+      ...(groupId ? { _params: [{ groupId: groupId }] } : {}),
+      _schema
+    };
+
+    // console.log(`fetch time ${new Date().getTime() - aTime} ms`);
+
+    return res.status(200).send(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseReadTransaction(req.sessionID);
+  }
+};
+
 const getUserByGroup: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
@@ -366,7 +454,7 @@ const getUserByGroup: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const aTime = new Date().getTime();
+    // const aTime = new Date().getTime();
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
@@ -414,7 +502,7 @@ const getUserByGroup: RequestHandler = async (req, res) => {
       _schema
     };
 
-    console.log(`fetch time ${new Date().getTime() - aTime} ms`);
+    // console.log(`fetch time ${new Date().getTime() - aTime} ms`);
 
     return res.status(200).send(result);
   } catch (error) {
@@ -445,6 +533,8 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
           return typeof req.body['USER'] !== 'undefined';
         case 'USR$GROUPKEY':
           return typeof req.body['USERGROUP'] !== 'undefined';
+        case 'ID':
+          break;
         default:
           return typeof req.body[field] !== 'undefined';
       }
@@ -464,7 +554,7 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
     const query = {
       name: 'users',
       query: `
-      INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(USR$USERKEY, USR$GROUPKEY)
+      INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(${actualFields})
       VALUES(?, ?)
       RETURNING ID, USR$USERKEY, USR$GROUPKEY`,
       params: paramsValues,
@@ -533,6 +623,61 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
   };
 };
 
+const getPermissionByUser: RequestHandler = async (req, res) => {
+  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+
+  const actionCode = parseInt(req.params.actionCode);
+  if (isNaN(actionCode)) return res.status(422).send(resultError('Поле "actionCode" не указано или неверного типа'));
+
+  const userID = parseInt(req.params.userID);
+  if (isNaN(userID)) return res.status(422).send(resultError('Поле "userID" не указано или неверного типа'));
+
+  try {
+    const _schema = {};
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      // const data = await attachment.executeSingletonAsObject(transaction, query, params);
+      // return [name, data];
+
+      const rs = await attachment.executeQuery(transaction, query, params);
+      const data = await rs.fetchAsObject();
+      await rs.close();
+
+      return [name, data[0]];
+    };
+
+    const query = {
+      name: 'action',
+      query: `
+        SELECT cr.USR$MODE MODE, act.USR$CODE CODE
+        FROM USR$CRM_PERMISSIONS_CROSS cr
+          JOIN USR$CRM_PERMISSIONS_ACTIONS act ON act.ID = cr.USR$ACTIONKEY
+          JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = cr.USR$GROUPKEY
+          JOIN USR$CRM_PERMISSIONS_UG_LINES line ON line.USR$GROUPKEY = ug.ID
+        WHERE
+          act.USR$CODE = ?
+          AND line.USR$USERKEY = ?
+        ROWS 1`,
+      params: [actionCode, userID]
+    };
+
+    // const action = await Promise.resolve(execQuery(query));
+
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries([await Promise.resolve(execQuery(query))])
+      },
+      _params: [{ actionCode, userID }],
+      _schema
+    };
+
+    return res.status(200).send(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseReadTransaction(req.sessionID);
+  };
+};
 
 export default {
   getCross,
@@ -543,5 +688,7 @@ export default {
   getUserGroups,
   getUserByGroup,
   addUserGroupLine,
-  removeUserGroupLine
+  removeUserGroupLine,
+  getUserGroupLine,
+  getPermissionByUser
 };

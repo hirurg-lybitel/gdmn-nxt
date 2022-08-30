@@ -4,11 +4,13 @@ import columns from '../../kanban/columns';
 import kanban from '../../kanban/kanban';
 import history from '../../kanban/history';
 import tasks from '../../kanban/task';
+import denyReasons from '../../kanban/denyReasons';
 
 
 const router = express.Router();
 
 router.get('/data/:mode', kanban.get);
+router.get('/data/:mode?userID=:userID', kanban.get);
 router.put('/reordercolumns', kanban.reorderColumns);
 router.put('/reordercards', kanban.reorderCards);
 
@@ -31,5 +33,7 @@ router.get('/tasks/:cardId', tasks.get);
 router.post('/tasks', tasks.upsert);
 router.put('/tasks/:id', tasks.upsert);
 router.delete('/tasks/:id', tasks.remove);
+
+router.get('/denyreasons', denyReasons.get);
 
 export default router;

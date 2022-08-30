@@ -15,6 +15,7 @@ import { Theme } from '@mui/material/styles';
 import { useGetWorkTypesQuery } from '../../features/work-types/workTypesApi';
 import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
+import filterOptions from '../../components/filter-options';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -118,8 +119,6 @@ export function CustomersFilter(props: CustomersFilterProps) {
   function Filter() {
     return (
       <CustomizedCard
-        // borders
-        // boxShadows={open}
         style={{
           flex: 1,
           display: 'flex',
@@ -222,12 +221,13 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 multiple
                 limitTags={2}
                 disableCloseOnSelect
+                filterOptions={filterOptions(30, 'USR$NAME')}
                 options={workTypes || []}
                 onChange={(e, value) => handleOnChange('WORKTYPES', value)}
                 value={
                   workTypes?.filter(wt => filteringData && (filteringData['WORKTYPES'])?.find((el: any) => el.ID === wt.ID))
                 }
-                getOptionLabel={option => option.USR$NAME}
+                getOptionLabel={option => option.USR$NAME || ''}
                 renderOption={(props, option, { selected }) => (
                   <li {...props} key={option.ID}>
                     <Checkbox

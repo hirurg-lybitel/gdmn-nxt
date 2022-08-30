@@ -1,7 +1,7 @@
-import { IPermissionsAction, IPermissionsView, IUserGroup } from '@gsbelarus/util-api-types';
-import { Button, CardContent, CardHeader, Checkbox, Divider, Stack, Typography } from '@mui/material';
+import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
+import { CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { DataGridPro, GridColDef } from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
@@ -10,54 +10,6 @@ import styles from './permissions-list.module.less';
 
 /* eslint-disable-next-line */
 export interface PermissionsListProps {}
-
-// const mActions: IPermissionsAction[] = [
-//   {
-//     ID: 1,
-//     ISACTIVE: true,
-//     NAME: 'Action 1'
-//   },
-//   {
-//     ID: 2,
-//     ISACTIVE: true,
-//     NAME: 'Action 2'
-//   },
-//   {
-//     ID: 3,
-//     ISACTIVE: false,
-//     NAME: 'Action 3'
-//   }
-// ];
-
-// const mUserGroups: IUserGroup[] = [
-//   {
-//     ID: 1,
-//     NAME: 'Group 1'
-//   },
-//   {
-//     ID: 2,
-//     NAME: 'Group 2'
-//   },
-//   {
-//     ID: 3,
-//     NAME: 'Group long name 3'
-//   }
-// ];
-
-// const mCross: IPermissionsView[] = [
-//   {
-//     ID: 1,
-//     ACTION: mActions[0],
-//     USERGROUP: mUserGroups[1],
-//     MODE: 1
-//   },
-//   {
-//     ID: 2,
-//     ACTION: mActions[2],
-//     USERGROUP: mUserGroups[0],
-//     MODE: 1
-//   }
-// ];
 
 const initialStateDataGrid: GridInitialStatePro = {
   pinnedColumns: { left: ['NAME'] }
@@ -92,6 +44,7 @@ export function PermissionsList(props: PermissionsListProps) {
       const checked = matrixNode?.MODE === 1 || false;
 
       return <Checkbox
+        disabled={matrixFetching}
         checked={checked}
         onChange={CheckBoxOnChange(matrixNode?.ID, params.row, ug)}
       />;
@@ -124,7 +77,6 @@ export function PermissionsList(props: PermissionsListProps) {
       }}
     >
       <CardHeader title={<Typography variant="h3">Права групп пользователей</Typography>} />
-      {/* <Divider /> */}
       <CardContent
         style={{
           flex: 1,
@@ -141,16 +93,13 @@ export function PermissionsList(props: PermissionsListProps) {
             loading={actionsLoading || userGroupsLoading || matrixLoading}
             getRowId={row => row.ID}
             hideFooter
-            // disableColumnResize
             disableColumnReorder
             disableColumnMenu
             initialState={initialStateDataGrid}
           />
         </Stack>
       </CardContent>
-
     </CustomizedCard>
-
   );
 }
 

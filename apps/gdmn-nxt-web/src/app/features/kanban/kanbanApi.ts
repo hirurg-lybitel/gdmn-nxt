@@ -1,4 +1,4 @@
-import { IContactWithID, IKanbanCard, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactWithID, IDenyReason, IKanbanCard, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -16,15 +16,17 @@ interface IHistory{
 
 type IKanbanHistoryRequestResult = IRequestResult<IHistory>;
 
+type IDenyReasonRequestResult = IRequestResult<{ denyReasons: IDenyReason[] }>;
+
 export const kanbanApi = createApi({
   reducerPath: 'kanban',
   tagTypes: ['Kanban', 'Column', 'Card', 'Task'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getKanbanDeals: builder.query<IKanbanColumn[], void>({
-      query() {
+    getKanbanDeals: builder.query<IKanbanColumn[], { userId?: number }>({
+      query({ userId }) {
         return {
-          url: 'kanban/data/deals',
+          url: `kanban/data/deals?userID=${userId}`,
           method: 'GET'
         };
       },
@@ -281,6 +283,13 @@ export const kanbanApi = createApi({
       }
 
     }),
+    getDenyReasons: builder.query<IDenyReason[], void>({
+      query: (arg) => ({
+        url: 'kanban/denyreasons',
+        method: 'GET'
+      }),
+      transformResponse: (response: IDenyReasonRequestResult) => response.queries.denyReasons || []
+    })
   })
 });
 
@@ -299,5 +308,6 @@ export const {
   useGetTasksQuery,
   useAddTaskMutation,
   useUpdateTaskMutation,
-  useDeleteTaskMutation
+  useDeleteTaskMutation,
+  useGetDenyReasonsQuery
 } = kanbanApi;

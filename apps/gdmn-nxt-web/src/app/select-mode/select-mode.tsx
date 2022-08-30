@@ -23,6 +23,7 @@ export function SelectMode({ employeeModeSelected, customerModeSelected }: Selec
         <Button
           onClick={customerModeSelected}
           variant="contained"
+          disabled={true}
         >
           Войти как клиент
         </Button>

@@ -109,7 +109,7 @@ export function PersonEdit(props: PersonEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string().required('').max(80, 'Слишком длинное имя'),
+      NAME: yup.string().required('Не указано имя').max(80, 'Слишком длинное имя'),
       USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
     }),
     onSubmit: (values) => {
@@ -117,6 +117,7 @@ export function PersonEdit(props: PersonEditProps) {
       if (newPhones?.length) values.PHONES = [...newPhones];
 
       setConfirmOpen(false);
+      // console.log('onSubmit');
       onSubmit(values, deleting);
     },
     onReset: (values) => {
@@ -163,6 +164,8 @@ export function PersonEdit(props: PersonEditProps) {
     setPhones(newPhones);
   };
 
+  // console.log('formik.errors.NAME', formik.errors.NAME);
+
   return (
     <Dialog
       open={open}
@@ -192,6 +195,7 @@ export function PersonEdit(props: PersonEditProps) {
                     onChange={formik.handleChange}
                     value={formik.values.NAME}
                     helperText={formik.errors.NAME}
+                    error={Boolean(formik.errors.NAME)}
                   />
                   <TextField
                     label="Email"
@@ -315,16 +319,15 @@ export function PersonEdit(props: PersonEditProps) {
         </Button>
         <Button
           className={classes.button}
-          type={!formik.isValid ? 'submit' : 'button'}
-
-          form="mainForm"
+          // type={!formik.isValid ? 'submit' : 'button'}
+          // form="mainForm"
           onClick={() => {
             setDeleting(false);
             setConfirmOpen(formik.isValid);
           }}
           variant="contained"
         >
-            OK
+            Сохранить
         </Button>
       </DialogActions>
       <ConfirmDialog

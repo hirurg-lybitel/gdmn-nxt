@@ -9,6 +9,7 @@ import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } f
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 export interface LabelListItemProps {
   data: ILabel;
@@ -171,12 +172,16 @@ export function LabelListItem(props: LabelListItemProps) {
         </Grid>
         <Grid item xs={1}>
           <Box>
-            <IconButton onClick={handleEditClick}>
-              <EditOutlinedIcon fontSize="small" color="primary" />
-            </IconButton>
-            <IconButton onClick={handleDeleteClick}>
-              <DeleteForeverIcon fontSize="small" color="primary" />
-            </IconButton>
+            <PermissionsGate actionCode={6}>
+              <IconButton onClick={handleEditClick}>
+                <EditOutlinedIcon fontSize="small" color="primary" />
+              </IconButton>
+            </PermissionsGate>
+            <PermissionsGate actionCode={7}>
+              <IconButton onClick={handleDeleteClick}>
+                <DeleteForeverIcon fontSize="small" color="primary" />
+              </IconButton>
+            </PermissionsGate>
           </Box>
         </Grid>
       </Grid>

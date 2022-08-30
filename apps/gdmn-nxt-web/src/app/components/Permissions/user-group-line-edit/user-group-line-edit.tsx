@@ -1,14 +1,14 @@
-import { IUser } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Slide, Stack, TextField } from '@mui/material';
+import { IUserGroupLine } from '@gsbelarus/util-api-types';
+import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { forwardRef, ReactElement, Ref, useEffect, useState } from 'react';
-import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { useGetUsersQuery } from '../../../features/systemUsers';
+import * as yup from 'yup';
+import styles from './user-group-line-edit.module.less';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import filterOptions from '../../filter-options';
-import styles from './user-edit.module.less';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -17,7 +17,6 @@ const useStyles = makeStyles(() => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    // width: '20vw',
     minWidth: 430,
     maxWidth: '100%',
     borderTopRightRadius: 0,
@@ -37,16 +36,16 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-export interface UserEditProps {
+export interface UserGroupLineEditProps {
   open: boolean;
-  user?: IUser;
-  onSubmit: (user: IUser) => void;
+  userGroupLine: IUserGroupLine;
+  onSubmit: (user: IUserGroupLine) => void;
   onCancel: () => void;
   onClose: (e: any, r: string) => void;
 }
 
-export function UserEdit(props: UserEditProps) {
-  const { open, user } = props;
+export function UserGroupLineEdit(props: UserGroupLineEditProps) {
+  const { open, userGroupLine } = props;
   const { onSubmit, onCancel, onClose } = props;
 
   const { data: users, isFetching: usersIsFetching } = useGetUsersQuery();
@@ -55,22 +54,20 @@ export function UserEdit(props: UserEditProps) {
 
   const classes = useStyles();
 
-  const initValue: IUser = {
-    ID: user?.ID || -1,
-    NAME: user?.NAME || '',
-    FULLNAME: user?.FULLNAME || '',
-    CONTACT: user?.CONTACT || { ID: -1, NAME: '' },
-    DISABLED: user?.DISABLED || false,
+  const initValue: IUserGroupLine = {
+    ID: userGroupLine?.ID || -1,
+    USER: userGroupLine?.USER,
+    USERGROUP: userGroupLine?.USERGROUP,
   };
 
-  const formik = useFormik<IUser>({
+  const formik = useFormik<IUserGroupLine>({
     enableReinitialize: true,
     initialValues: {
-      ...user,
+      ...userGroupLine,
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string().required('').max(40, 'Слишком длинное наименование'),
+      USER: yup.object().required('Не выбран пользователь'),
     }),
     onSubmit: (value) => {
       setConfirmOpen(false);
@@ -82,7 +79,6 @@ export function UserEdit(props: UserEditProps) {
     if (!open) formik.resetForm();
   }, [open]);
 
-
   return (
     <Dialog
       open={open}
@@ -91,34 +87,23 @@ export function UserEdit(props: UserEditProps) {
       onClose={onClose}
     >
       <DialogTitle>
-        {user ? `Редактирование: ${user.NAME}` : 'Добавление'}
+        {userGroupLine.USER ? `Редактирование: ${userGroupLine.USER.NAME}` : 'Добавление'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
           <Form id="mainForm" onSubmit={formik.handleSubmit}>
             <Stack direction="column" spacing={3}>
-              {/* <TextField
-                label="Наименование"
-                type="text"
-                required
-                autoFocus
-                name="NAME"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.NAME}
-                helperText={formik.errors.NAME}
-              /> */}
               <Autocomplete
                 options={users || []}
                 getOptionLabel={option => option.NAME}
-                filterOptions={filterOptions(50, 'NAME')}
-                value={users?.find(el => el.ID === formik.values.CONTACT?.ID) || null}
+                filterOptions={filterOptions(30, 'NAME')}
+                value={users?.find(el => el.ID === formik.values.USER?.ID) || null}
                 loading={usersIsFetching}
                 loadingText="Загрузка данных..."
+                onBlur={formik.handleBlur}
                 onChange={(event, value) => {
                   formik.setFieldValue(
-                    'DEAL',
-                    { ...formik.values, CONTACT: value ? value : null }
+                    'USER', value ? value : undefined
                   );
                 }}
                 renderOption={(props, option) => (
@@ -135,23 +120,15 @@ export function UserEdit(props: UserEditProps) {
                   <TextField
                     {...params}
                     label="Пользователь"
+                    name="USER"
                     required
+                    focused
                     placeholder="Выберите пользователя"
+                    error={Boolean(formik.errors.USER)}
+                    helperText={formik.errors.USER}
                   />
                 )}
               />
-              {/* <FormControlLabel
-                control={
-                  <Checkbox
-                    name="DISABLED"
-                    checked={formik.values.DISABLED}
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    value={formik.values.DISABLED}
-                  />
-                }
-                label="Отключен"
-              /> */}
             </Stack>
           </Form>
         </FormikProvider>
@@ -189,4 +166,4 @@ export function UserEdit(props: UserEditProps) {
   );
 }
 
-export default UserEdit;
+export default UserGroupLineEdit;

@@ -1,11 +1,12 @@
 import { IUserGroup } from '@gsbelarus/util-api-types';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Slide, Stack, TextField } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { forwardRef, ReactElement, Ref, useEffect, useState } from 'react';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import DeleteIcon from '@mui/icons-material/Delete';
 import styles from './user-group-edit.module.less';
 
 const useStyles = makeStyles(() => ({
@@ -15,7 +16,6 @@ const useStyles = makeStyles(() => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    // width: '20vw',
     minWidth: 430,
     maxWidth: '100%',
     borderTopRightRadius: 0,
@@ -38,7 +38,7 @@ const Transition = forwardRef(function Transition(
 export interface UserGroupEditProps {
   open: boolean;
   userGroup?: IUserGroup;
-  onSubmit: (userGroup: IUserGroup) => void;
+  onSubmit: (userGroup: IUserGroup, deleting: boolean) => void;
   onCancel: () => void;
   onClose: (e: any, r: string) => void;
 }
@@ -48,6 +48,7 @@ export function UserGroupEdit(props: UserGroupEditProps) {
   const { onSubmit, onCancel, onClose } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const classes = useStyles();
 
@@ -67,10 +68,9 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       NAME: yup.string().required('').max(40, 'Слишком длинное наименование'),
       DESCRIPTION: yup.string().max(260, 'Слишком длинное описание'),
     }),
-    onSubmit: (value, formikHelpers) => {
-      console.log('onSubmit', formik.isSubmitting);
+    onSubmit: (value) => {
       setConfirmOpen(false);
-      onSubmit(value);
+      onSubmit(value, deleting);
     }
   });
 
@@ -78,8 +78,16 @@ export function UserGroupEdit(props: UserGroupEditProps) {
     e.key === 'Enter' && e.preventDefault();
   };
 
+  const onDeleteClick = () => {
+    setDeleting(true);
+    setConfirmOpen(true);
+  };
+
   useEffect(() => {
-    if (!open) formik.resetForm();
+    if (!open) {
+      setDeleting(false);
+      formik.resetForm();
+    }
   }, [open]);
 
 
@@ -128,6 +136,9 @@ export function UserGroupEdit(props: UserGroupEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
+        <IconButton size="large" onClick={onDeleteClick}>
+          <DeleteIcon />
+        </IconButton >
         <Box flex={1}/>
         <Button
           className={classes.button}

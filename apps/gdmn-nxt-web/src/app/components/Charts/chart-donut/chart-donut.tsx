@@ -14,7 +14,7 @@ export function ChartDonut(props: ChartDonutProps) {
 
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
-  const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery();
+  const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({ userId: -1 });
 
   const series = stages?.map(stage => stage.CARDS?.length || 0) || [];
 
@@ -79,21 +79,31 @@ export function ChartDonut(props: ChartDonutProps) {
     <CustomizedCard
       borders
       boxShadows
-      style={{
+      sx={(theme: any) => ({
         flex: 1,
-        display: 'flex'
-      }}
+        display: 'flex',
+        [theme.breakpoints.down('xl')]: {
+          minHeight: 'calc(100vh - 130px)',
+        },
+        [theme.breakpoints.up('xl')]: {
+          minHeight: 'calc(100vh - 300px)',
+        },
+        maxHeight: 'calc(100vh - 130px)'
+      })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex">
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
             <Typography variant="h1">Статус сделок</Typography>
-            <Chart
-              type="donut"
-              options={chartOptions}
-              {...chartData}
-            />
+            <Box flex={1}>
+              <Chart
+                type="donut"
+                height="100%"
+                options={chartOptions}
+                {...chartData}
+              />
+            </Box>
           </>}
       </Stack>
 

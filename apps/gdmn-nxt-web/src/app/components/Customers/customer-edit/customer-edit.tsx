@@ -16,7 +16,8 @@ import {
   Accordion,
   AccordionSummary,
   Typography,
-  AccordionDetails
+  AccordionDetails,
+  Tab
 } from '@mui/material';
 import {
   Theme
@@ -26,7 +27,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { IContactWithLabels, ICustomer, ILabel, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { forwardRef, ReactElement, useState } from 'react';
+import { forwardRef, ReactElement, useMemo, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -42,6 +43,7 @@ import { useGetLabelsQuery } from '../../../features/labels';
 import LabelMarker from '../../Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -51,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: '25vw',
+    width: '30vw',
     minWidth: 500,
     maxWidth: '100%',
     borderTopRightRadius: 0,
@@ -69,6 +71,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   button: {
     width: '120px',
   },
+  tabPanel: {
+    flex: 1,
+    display: 'flex',
+    paddingLeft: 0,
+    paddingRight: 0,
+  }
 }));
 
 const Transition = forwardRef(function Transition(
@@ -93,15 +101,12 @@ export function CustomerEdit(props: CustomerEditProps) {
   const { open, customer } = props;
   const { onCancelClick, onSubmit } = props;
 
-  console.log('CustomerEdit');
-
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [tabIndex, setTabIndex] = useState('1');
 
-  const { data: groups } = useGetGroupsQuery();
-  const { data: labels } = useGetLabelsQuery();
-
-  const [open2, setOpen2] = useState(false);
+  const { data: groups, isFetching: groupFetching } = useGetGroupsQuery();
+  const { data: labels, isFetching: labelsFetching } = useGetLabelsQuery();
 
   const classes = useStyles();
 
@@ -144,7 +149,23 @@ export function CustomerEdit(props: CustomerEditProps) {
     onCancelClick();
   };
 
-  // labels?.filter(label => formik.values.LABELS?.find(el => el.ID === label.ID));
+  const handleTabsChange = (event: any, newindex: string) => {
+    setTabIndex(newindex);
+  };
+
+  const memoContactlist = useMemo(() =>
+    <ContactPersonList customerId={customer?.ID || -1} />,
+  [customer?.ID]);
+
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      setOpen={setConfirmOpen}
+      title={deleting ? 'Удаление клиента' : 'Сохранение'}
+      text="Вы уверены, что хотите продолжить?"
+      onConfirm={formik.handleSubmit}
+    />
+  , [confirmOpen]);
 
   return (
     <Dialog
@@ -160,7 +181,204 @@ export function CustomerEdit(props: CustomerEditProps) {
           <Stack direction="column" spacing={3} style={{ flex: 1, display: 'flex' }}>
             <FormikProvider value={formik}>
               <Form id="mainForm" onSubmit={formik.handleSubmit}>
-                <Stack direction="column" spacing={3}>
+                <TabContext value={tabIndex}>
+                  <Box>
+                    <TabList onChange={handleTabsChange}>
+                      <Tab label="Сведения" value="1" />
+                      <Tab label="Сотрудники" value="2" />
+                    </TabList>
+                  </Box>
+                  <Divider style={{ margin: 0 }} />
+                  <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
+                    <Stack direction="column" spacing={3} flex={1}>
+                      <TextField
+                        label="Наименование"
+                        className={classes.helperText}
+                        type="text"
+                        required
+                        autoFocus
+                        name="NAME"
+                        onBlur={formik.handleBlur}
+                        onChange={formik.handleChange}
+                        value={formik.values.NAME}
+                        helperText={formik.errors.NAME}
+                      />
+                      <Autocomplete
+                        options={groups || []}
+                        loading={groupFetching}
+                        getOptionLabel={option => option.NAME}
+                        value={groups?.filter(el => el.ID === formik.values.PARENT)[0] || null}
+                        onChange={(e, value) => {
+                          formik.setFieldValue(
+                            'PARENT',
+                            value ? value.ID : initValue.PARENT
+                          );
+                        }}
+                        renderOption={(props, option) => {
+                          return (
+                            <li {...props} key={option.ID}>
+                              {option.NAME}
+                            </li>
+                          );
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            key={params.id}
+                            label="Папка"
+                            className={classes.helperText}
+                            type="text"
+                            required
+                            name="PARENT"
+                            onBlur={formik.handleBlur}
+                            onChange={formik.handleChange}
+                            value={formik.values.PARENT}
+                            helperText={formik.errors.PARENT}
+                            placeholder="Выберите папку"
+                          />
+                        )}
+                      />
+                      <TextField
+                        label="УНП"
+                        className={classes.helperText}
+                        type="text"
+                        name="TAXID"
+                        onBlur={formik.handleBlur}
+                        onChange={formik.handleChange}
+                        value={formik.values.TAXID}
+                        helperText={formik.errors.TAXID}
+                      />
+                      <Stack direction="row" spacing={2}>
+                        <TextField
+                          label="Email"
+                          type="email"
+                          name="EMAIL"
+                          onBlur={formik.handleBlur}
+                          onChange={formik.handleChange}
+                          value={formik.values.EMAIL}
+                          fullWidth
+                        />
+                        <TextField
+                          label="Телефон"
+                          className={classes.helperText}
+                          type="text"
+                          name="PHONE"
+                          onBlur={formik.handleBlur}
+                          onChange={formik.handleChange}
+                          value={formik.values.PHONE}
+                          helperText={formik.errors.PHONE}
+                          fullWidth
+                        />
+                      </Stack>
+                      <TextField
+                        label="Адрес"
+                        className={classes.helperText}
+                        type="text"
+                        name="ADDRESS"
+                        onBlur={formik.handleBlur}
+                        onChange={formik.handleChange}
+                        value={formik.values.ADDRESS}
+                        helperText={formik.errors.ADDRESS}
+                        placeholder="Введите адрес"
+                      />
+                      <Autocomplete
+                        multiple
+                        limitTags={2}
+                        disableCloseOnSelect
+                        onChange={(e, value) => {
+                          formik.setFieldValue(
+                            'LABELS',
+                            value || initValue.LABELS
+                          );
+                        }}
+                        value={
+                          labels
+                            ?.filter(label => formik.values.LABELS?.find(el => el.ID === label.ID))
+                        }
+                        options={labels || []}
+                        loading={labelsFetching}
+                        getOptionLabel={opt => opt.USR$NAME}
+                        renderOption={(props, option, { selected }) => (
+                          <li {...props} key={option.ID}>
+                            <Checkbox
+                              icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                              checkedIcon={<CheckBoxIcon fontSize="small" />}
+                              style={{ marginRight: 8 }}
+                              checked={selected}
+                            />
+                            <Stack direction="column">
+                              <Stack direction="row">
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    width: 14,
+                                    height: 14,
+                                    // flexShrink: 0,
+                                    borderRadius: '12px',
+                                    mr: 1,
+                                    alignSelf: 'center',
+                                  }}
+                                  style={{ backgroundColor: option.USR$COLOR }}
+                                />
+                                <Box>
+                                  {option.USR$NAME}
+                                </Box>
+                              </Stack>
+                              <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
+                            </Stack>
+                          </li>
+                        )}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Метки"
+                            placeholder="Выберите метки"
+                          />
+                        )}
+                        renderTags={(value: readonly ILabel[], getTagProps) =>
+                          value.map((option: ILabel, index: number) =>
+                            <LabelMarker label={option} {...getTagProps({ index })}/>
+                          )
+                        }
+                      />
+                    </Stack>
+                  </TabPanel>
+                  <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
+                    <Box style={{ flex: 1, minHeight: '50vh', padding: 0, display: 'flex' }}>
+                      {memoContactlist}
+                    </Box>
+                    {/* <CustomizedCard
+                      borders
+                      style={{
+                        borderColor: 'lightgrey',
+                      }}
+                    >
+                      <Accordion disableGutters>
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          style={{
+                            height: 56,
+                          }}
+                        >
+                          <Typography sx={{ width: '70%', flexShrink: 0 }}>
+                          Сотрудники клиента
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails
+                          style={{
+                            height: '30vh',
+                            display: 'flex',
+                            padding: 0
+                          }}
+                        >
+                          {memoContactlist}
+                        </AccordionDetails>
+                      </Accordion>
+                    </CustomizedCard> */}
+                  </TabPanel>
+                </TabContext>
+
+                {/* <Stack direction="column" spacing={3}>
                   <TextField
                     label="Наименование"
                     className={classes.helperText}
@@ -175,6 +393,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                   />
                   <Autocomplete
                     options={groups || []}
+                    loading={groupFetching}
                     getOptionLabel={option => option.NAME}
                     value={groups?.filter(el => el.ID === formik.values.PARENT)[0] || null}
                     onChange={(e, value) => {
@@ -208,6 +427,14 @@ export function CustomerEdit(props: CustomerEditProps) {
                     )}
                   />
                   <TextField
+                    label="Email"
+                    type="email"
+                    name="EMAIL"
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    value={formik.values.EMAIL}
+                  />
+                  <TextField
                     label="Телефон"
                     className={classes.helperText}
                     type="text"
@@ -216,14 +443,6 @@ export function CustomerEdit(props: CustomerEditProps) {
                     onChange={formik.handleChange}
                     value={formik.values.PHONE}
                     helperText={formik.errors.PHONE}
-                  />
-                  <TextField
-                    label="Email"
-                    type="email"
-                    name="EMAIL"
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    value={formik.values.EMAIL}
                   />
                   <Autocomplete
                     multiple
@@ -240,6 +459,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                         ?.filter(label => formik.values.LABELS?.find(el => el.ID === label.ID))
                     }
                     options={labels || []}
+                    loading={labelsFetching}
                     getOptionLabel={opt => opt.USR$NAME}
                     renderOption={(props, option, { selected }) => (
                       <li {...props} key={option.ID}>
@@ -305,11 +525,10 @@ export function CustomerEdit(props: CustomerEditProps) {
                     value={formik.values.TAXID}
                     helperText={formik.errors.TAXID}
                   />
-                </Stack>
+                </Stack> */}
               </Form>
             </FormikProvider>
-            <CustomerEdit open={open2} customer={customer} onSubmit={onSubmit} onCancelClick={() => setOpen2(false)} />
-            <CustomizedCard
+            {/* <CustomizedCard
               borders
               style={{
                 borderColor: 'lightgrey',
@@ -322,8 +541,8 @@ export function CustomerEdit(props: CustomerEditProps) {
                     height: 56,
                   }}
                 >
-                  <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                  Контакты
+                  <Typography sx={{ width: '70%', flexShrink: 0 }}>
+                  Сотрудники клиента
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails
@@ -333,11 +552,10 @@ export function CustomerEdit(props: CustomerEditProps) {
                     padding: 0
                   }}
                 >
-                  <ContactPersonList customerId={customer?.ID || -1} />
+                  {memoContactlist}
                 </AccordionDetails>
               </Accordion>
-
-            </CustomizedCard>
+            </CustomizedCard> */}
           </Stack>
         </PerfectScrollbar>
       </DialogContent>
@@ -376,13 +594,7 @@ export function CustomerEdit(props: CustomerEditProps) {
             Сохранить
         </Button>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        setOpen={setConfirmOpen}
-        title={deleting ? 'Удаление клиента' : 'Сохранение'}
-        text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
-      />
+      {memoConfirmDialog}
     </Dialog>
   );
 }

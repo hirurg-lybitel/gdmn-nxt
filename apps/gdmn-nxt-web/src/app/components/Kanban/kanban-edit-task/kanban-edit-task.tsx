@@ -128,6 +128,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
 
     const timeString = time.getHours() + ':' + time.getMinutes() + ':00';
 
+    console.log('date', date);
+
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -154,128 +156,129 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
           <Stack direction="column" p="16px 24px">
             <FormikProvider value={formik}>
               <Form id="taskForm" onSubmit={formik.handleSubmit}>
-                  <Stack direction="column" spacing={3}>
-                    <TextField
-                      label="Описание"
-                      type="text"
-                      name="USR$NAME"
-                      onBlur={formik.handleBlur}
-                      onChange={formik.handleChange}
-                      value={formik.values.USR$NAME}
-                      required
-                      focused
-                    />
-                    <Autocomplete
-                      options={employees || []}
-                      filterOptions={filterOptions}
-                      readOnly
-                      value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
-                      onChange={(e, value) => {
-                        formik.setFieldValue(
-                          'PERFORMER',
-                          value ? { ID: value.ID, NAME: value.NAME } : undefined
-                        );
-                      }}
-                      getOptionLabel={option => option.NAME}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.ID}>
-                          {option.NAME}
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Постановщик"
-                          placeholder="Выберите постановщика"
-                          required
-                        />
-                      )}
-                      loading={employeesIsFetching}
-                      loadingText="Загрузка данных..."
-                    />
-                    <Autocomplete
-                      options={employees || []}
-                      filterOptions={filterOptions}
-                      value={employees?.find(el => el.ID === formik.values.PERFORMER?.ID) || null}
-                      onChange={(e, value) => {
-                        formik.setFieldValue(
-                          'PERFORMER',
-                          value ? { ID: value.ID, NAME: value.NAME } : undefined
-                        );
-                      }}
-                      getOptionLabel={option => option.NAME}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.ID}>
-                          {option.NAME}
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Исполнитель"
-                          placeholder="Выберите исполнителя"
-                        />
-                      )}
-                      loading={employeesIsFetching}
-                      loadingText="Загрузка данных..."
-                    />
-                    <Divider textAlign="left">Срок выполнения</Divider>
-                    <Stack direction="row" spacing={3}>
-                      <DesktopDatePicker
-                        label="Дата"
-                        value={formik.values.USR$DEADLINE || null}
-                        mask="__.__.____"
-                        // onChange={formik.handleChange}
-                        onChange={(value) => {
-                          console.log('date_value', value);
+                <Stack direction="column" spacing={3}>
+                  <TextField
+                    label="Описание"
+                    type="text"
+                    name="USR$NAME"
+                    onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    value={formik.values.USR$NAME}
+                    required
+                    focused
+                  />
+                  <Autocomplete
+                    options={employees || []}
+                    filterOptions={filterOptions}
+                    readOnly
+                    value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
+                    onChange={(e, value) => {
+                      formik.setFieldValue(
+                        'PERFORMER',
+                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                      );
+                    }}
+                    getOptionLabel={option => option.NAME}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.ID}>
+                        {option.NAME}
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Постановщик"
+                        placeholder="Выберите постановщика"
+                        required
+                      />
+                    )}
+                    loading={employeesIsFetching}
+                    loadingText="Загрузка данных..."
+                  />
+                  <Autocomplete
+                    options={employees || []}
+                    filterOptions={filterOptions}
+                    value={employees?.find(el => el.ID === formik.values.PERFORMER?.ID) || null}
+                    onChange={(e, value) => {
+                      formik.setFieldValue(
+                        'PERFORMER',
+                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                      );
+                    }}
+                    getOptionLabel={option => option.NAME}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.ID}>
+                        {option.NAME}
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Исполнитель"
+                        placeholder="Выберите исполнителя"
+                      />
+                    )}
+                    loading={employeesIsFetching}
+                    loadingText="Загрузка данных..."
+                  />
+                  <Divider textAlign="left">Срок выполнения</Divider>
+                  <Stack direction="row" spacing={3}>
+                    <DesktopDatePicker
+                      label="Дата"
+                      value={formik.values.USR$DEADLINE || null}
+                      mask="__.__.____"
+                      // onChange={formik.handleChange}
+                      onChange={(value) => {
+                        console.log('date_value', value);
 
-                          formik.setFieldValue('USR$DEADLINE', value);
-                          // formik.setFieldValue(
-                          //   'DEAL',
-                          //   { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
-                          // );
-                        }}
-                        renderInput={(params) => <TextField {...params} />}
-                      />
-                      <TimePicker
-                        label="Время"
-                        value={formik.values.USR$DEADLINE || null}
-                        disabled={formik.values.USR$DEADLINE ? false : true}
-                        onChange={(value) => {
-                          formik.setFieldValue(
-                            'USR$DEADLINE',
-                            combineDateAndTime(formik.values.USR$DEADLINE, value || undefined)
-                          );
-                        }}
-                        renderInput={(params) => <TextField {...params} />}
-                      />
-                    </Stack>
-                    <Divider textAlign="left">Дата выполнения</Divider>
-                    <Stack direction="row" spacing={3}>
-                      <DesktopDatePicker
-                        label="Дата"
-                        readOnly
-                        value={formik.values.USR$DATECLOSE || null}
-                        mask="__.__.____"
-                        onChange={formik.handleChange}
-                        // onChange={(value) => {
-                        //   formik.setFieldValue(
-                        //     'DEAL',
-                        //     { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
-                        //   );
-                        // }}
-                        renderInput={(params) => <TextField {...params} />}
-                      />
-                      <TimePicker
-                        label="Время"
-                        readOnly
-                        value={formik.values.USR$DATECLOSE || null}
-                        onChange={formik.handleChange}
-                        renderInput={(params) => <TextField {...params} />}
-                      />
-                    </Stack>
-                    <Divider />
+                        formik.setFieldValue('USR$DEADLINE', value);
+                        // formik.setFieldValue(
+                        //   'DEAL',
+                        //   { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
+                        // );
+                      }}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                    <TimePicker
+                      label="Время"
+                      ampm={false}
+                      value={formik.values.USR$DEADLINE || null}
+                      disabled={formik.values.USR$DEADLINE ? false : true}
+                      onChange={(value) => {
+                        formik.setFieldValue(
+                          'USR$DEADLINE',
+                          combineDateAndTime(formik.values.USR$DEADLINE ? new Date(formik.values.USR$DEADLINE) : new Date(), value || undefined)
+                        );
+                      }}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
                   </Stack>
+                  <Divider textAlign="left">Дата выполнения</Divider>
+                  <Stack direction="row" spacing={3}>
+                    <DesktopDatePicker
+                      label="Дата"
+                      readOnly
+                      value={formik.values.USR$DATECLOSE || null}
+                      mask="__.__.____"
+                      onChange={formik.handleChange}
+                      // onChange={(value) => {
+                      //   formik.setFieldValue(
+                      //     'DEAL',
+                      //     { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
+                      //   );
+                      // }}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                    <TimePicker
+                      label="Время"
+                      readOnly
+                      value={formik.values.USR$DATECLOSE || null}
+                      onChange={formik.handleChange}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                  </Stack>
+                  <Divider />
+                </Stack>
               </Form>
             </FormikProvider>
           </Stack>

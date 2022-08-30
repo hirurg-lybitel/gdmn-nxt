@@ -1,5 +1,5 @@
 import './kanban-column.module.less';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, Input, IconButton, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +11,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 
 export interface KanbanColumnProps {
@@ -50,31 +51,27 @@ export function KanbanColumn(props: KanbanColumnProps) {
       setUpsertCard(false);
     },
     handleCancel: async () => setUpsertCard(false),
+    handleClose: async (e: any, reason: string) => {
+      if (reason === 'backdropClick') setUpsertCard(false);
+    },
   };
 
-  const [editTitleHidden, setEditTitleHidden] = useState(true);
   const [editTitleText, setEditTitleText] = useState(false);
   const [titleText, setTitleText] = useState(item.USR$NAME);
 
   const header = () => {
-    const handleTitleOnMouseEnter = () => {
-      setEditTitleHidden(false);
-    };
-    const handleTitleOnMouseLeave = () => {
-      setEditTitleHidden(true);
-    };
     const handleEditTitle = () => {
       setEditTitleText(true);
     };
 
     const handleTitleKeyPress = (event: any) => {
-      if (event.keyCode === 13 ) {
-        onEdit({...item, USR$NAME: titleText});
+      if (event.keyCode === 13) {
+        onEdit({ ...item, USR$NAME: titleText });
         setEditTitleText(false);
         return;
       }
 
-      if (event.keyCode === 27 ) {
+      if (event.keyCode === 27) {
         setTitleText(item.USR$NAME);
         setEditTitleText(false);
         return;
@@ -89,12 +86,18 @@ export function KanbanColumn(props: KanbanColumnProps) {
     return (
       <Stack
         direction="row"
-        onMouseEnter={handleTitleOnMouseEnter}
-        onMouseLeave={handleTitleOnMouseLeave}
         onKeyPress={handleTitleKeyPress}
         onKeyDown={handleTitleKeyPress}
         onBlur={(e) => onBlur(e)}
         maxWidth="200px"
+        sx={{
+          '&:hover .title': {
+            opacity: 0.3
+          },
+          '&:hover .actions': {
+            display: 'inline',
+          }
+        }}
       >
         <Box
           style={{
@@ -114,16 +117,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
             : <Typography
               variant="h4"
               noWrap
-              style={{
-                opacity: `${editTitleHidden ? 1 : 0.3}`,
-              }}
+              className="title"
             > {item.USR$NAME}</Typography>
           }
         </Box>
         <div
-          style={{
-            display: `${editTitleHidden ? 'none' : 'inline'}`
-          }}
+          className="actions"
+          hidden
         >
           <IconButton size="small" onClick={() => handleEditTitle()}>
             <EditIcon fontSize="small" />
@@ -135,6 +135,104 @@ export function KanbanColumn(props: KanbanColumnProps) {
       </Stack>
     );
   };
+
+  // const memoColumn = useMemo(() => {
+  //   console.log('memoColumn');
+  //   return <Box
+  //     style={{ display: 'flex' }}
+  //   >
+  //     <CustomizedCard
+  //       borders
+  //       style={{
+  //         minWidth: '230px',
+  //         maxWidth: '400px',
+  //         width: '250px',
+  //         display: 'flex',
+  //         flexDirection: 'column',
+  //         ...(dragSnapshot.isDragging
+  //           ? {
+  //             backgroundColor: '#deebff',
+  //             opacity: 0.7,
+  //             border: `solid ${theme.menu?.backgroundColor}`
+  //           }
+  //           : {
+  //           }),
+  //       }}
+  //     >
+  //       <CardHeader
+  //         sx={{ height: 10 }}
+  //         title={header()}
+  //         {...provided.dragHandleProps}
+  //       />
+  //       <Divider />
+  //       <CardContent
+  //         style={{
+  //           flex: 1,
+  //           paddingLeft: 0,
+  //           paddingRight: 0,
+  //           maxHeight: 'calc(100vh - 240px)',
+  //           ...(dropSnapshot.isDraggingOver
+  //             ? {
+  //               backgroundColor: '#deebff',
+  //             }
+  //             : {
+  //             })
+  //         }}
+  //       >
+  //         <PerfectScrollbar
+  //           style={{
+  //             overflow: 'auto',
+  //             paddingRight: '16px',
+  //             paddingLeft: '16px'
+  //           }}
+  //         >
+  //           <Stack
+  //             direction="column"
+  //             spacing={2}
+  //           >
+  //             {children}
+  //           </Stack>
+  //         </PerfectScrollbar>
+  //       </CardContent>
+  //       <CardActions>
+  //         <PermissionsGate actionCode={1}>
+  //           {item.USR$INDEX === 0
+  //             ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
+  //             : <></>}
+  //         </PermissionsGate>
+  //       </CardActions>
+  //     </CustomizedCard>
+  //     <KanbanEditCard
+  //       open={upsertCard}
+  //       currentStage={item}
+  //       stages={columns}
+  //       onSubmit={cardHandlers.handleSubmit}
+  //       onCancelClick={cardHandlers.handleCancel}
+  //       onClose={cardHandlers.handleClose}
+  //     />
+  //     <ConfirmDialog
+  //       open={confirmOpen}
+  //       setOpen={setConfirmOpen}
+  //       title={'Удаление группы: ' + item.USR$NAME}
+  //       text="Вы уверены, что хотите продолжить?"
+  //       onConfirm={() => onDelete(item)}
+  //     />
+  //   </Box> }, [header, children]);
+
+  // return <>{memoColumn}</>;
+
+  const memoAddCard = useMemo(() => {
+    console.log('memoAddCard');
+
+    return <KanbanEditCard
+      open={upsertCard}
+      currentStage={item}
+      stages={columns}
+      onSubmit={cardHandlers.handleSubmit}
+      onCancelClick={cardHandlers.handleCancel}
+      onClose={cardHandlers.handleClose}
+    />;
+  }, [upsertCard]);
 
   return (
     <Box
@@ -148,6 +246,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           width: '250px',
           display: 'flex',
           flexDirection: 'column',
+          height: 'calc(100vh - 220px)',
           ...(dragSnapshot.isDragging
             ? {
               backgroundColor: '#deebff',
@@ -169,7 +268,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             flex: 1,
             paddingLeft: 0,
             paddingRight: 0,
-            maxHeight: 'calc(100vh - 240px)',
+            height: 'calc(100vh - 320px)',
             ...(dropSnapshot.isDraggingOver
               ? {
                 backgroundColor: '#deebff',
@@ -194,18 +293,14 @@ export function KanbanColumn(props: KanbanColumnProps) {
           </PerfectScrollbar>
         </CardContent>
         <CardActions>
-          {item.USR$INDEX === 0
-            ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
-            : <></>}
+          <PermissionsGate actionCode={1}>
+            {item.USR$INDEX === 0
+              ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
+              : <></>}
+          </PermissionsGate>
         </CardActions>
       </CustomizedCard>
-      <KanbanEditCard
-        open={upsertCard}
-        currentStage={item}
-        stages={columns}
-        onSubmit={cardHandlers.handleSubmit}
-        onCancelClick={cardHandlers.handleCancel}
-      />
+      {memoAddCard}
       <ConfirmDialog
         open={confirmOpen}
         setOpen={setConfirmOpen}

@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 
-import UserEdit from './user-edit';
+import CustomerInfo from './customer-info';
 
-describe('UserEdit', () => {
+describe('CustomerInfo', () => {
   it('should render successfully', () => {
-    // const { baseElement } = render(<UserEdit />);
+    // const { baseElement } = render(<CustomerInfo />);
     expect(true).toBeTruthy();
   });
 });

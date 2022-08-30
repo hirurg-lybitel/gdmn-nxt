@@ -39,11 +39,11 @@ const get = (url: string) => query({ method: 'get', url, baseURL: baseUrl, withC
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage } = useSelector<RootState, UserState>( state => state.user );
+  const { loginStage, userProfile } = useSelector<RootState, UserState>( state => state.user );
 
   /** Загрузка данных на фоне в овремя авторизации  */
   const { } = useGetCustomersQuery();
-  const { } = useGetKanbanDealsQuery();
+  const { } = useGetKanbanDealsQuery({ userId: userProfile?.id || -1 });
 
   useEffect(() => {
     (async function () {

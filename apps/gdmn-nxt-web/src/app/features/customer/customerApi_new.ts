@@ -28,6 +28,15 @@ export const customerApi = createApi({
   tagTypes: ['Customers'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
+    getCustomer: builder.query<ICustomer, { customerId: number }>({
+      query({ customerId }) {
+        return {
+          url: `contacts/customerId/${customerId}`,
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: ICustomersRequestResult) => response.queries.contacts[0]
+    }),
     getCustomers: builder.query<ICustomer[], Partial<IQueryOptions> | void>({
       query(options) {
         const params: string[] = [];
@@ -121,6 +130,7 @@ export const customerApi = createApi({
 });
 
 export const {
+  useGetCustomerQuery,
   useGetCustomersQuery,
   useUpdateCustomerMutation,
   useAddCustomerMutation,

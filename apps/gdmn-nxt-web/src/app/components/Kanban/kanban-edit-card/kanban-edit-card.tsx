@@ -28,7 +28,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { forwardRef, ReactElement, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { ErrorMessage, Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { IDeal, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
@@ -45,6 +45,9 @@ import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
+import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
+import filterOptions from '../../filter-options';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -87,11 +90,11 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-const filterOptions = createFilterOptions({
-  matchFrom: 'any',
-  limit: 100,
-  stringify: (option: ICustomer) => option.NAME,
-});
+// const filterOptions = createFilterOptions({
+//   matchFrom: 'any',
+//   limit: 100,
+//   stringify: (option: ICustomer) => option.NAME,
+// });
 
 export interface KanbanEditCardProps {
   open: boolean;
@@ -100,26 +103,27 @@ export interface KanbanEditCardProps {
   stages: IKanbanColumn[];
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: () => void;
+  onClose: (e: any, r: string) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
   const { open, currentStage, card, stages } = props;
-  const { onSubmit, onCancelClick } = props;
+  const { onSubmit, onCancelClick, onClose } = props;
 
   const classes = useStyles();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
-
+  const [expanded, setExpanded] = useState('');
+  const [tabIndex, setTabIndex] = useState('1');
   const user = useSelector<RootState, UserState>(state => state.user);
 
-  const [expanded, setExpanded] = useState('');
-
-  const [tabIndex, setTabIndex] = useState('1');
-
+  const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { data: customers, isFetching: customerFetching } = useGetCustomersQuery();
+  const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
+
+
+  // console.log('employees', employees);
 
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
@@ -159,6 +163,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         ID: user.userProfile?.contactkey || -1,
         NAME: ''
       },
+      DEPARTMENT: card?.DEAL?.DEPARTMENT || undefined,
     },
     CREATOR: card?.DEAL?.CREATOR || undefined,
     PERFORMER: card?.DEAL?.PERFORMER || undefined,
@@ -174,11 +179,30 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      // USR$NAME:
-      //   yup.string()
-      //     .required('')
-      //     .max(20, 'Слишком длинное наименование'),
       USR$MASTERKEY: yup.string().required(''),
+      DEAL: yup.object()
+        .shape({
+          USR$NAME: yup.string()
+            .required('Не указано наименование')
+            .max(20, 'Слишком длинное наименование'),
+          CONTACT: yup.object()
+            .nullable()
+            .required('Не указан клиент'),
+          CREATOR: yup.object()
+            .nullable()
+            .required('Не указан создатель'),
+          PERFORMER: yup.object()
+            .nullable()
+            .required('Не указан создатель сделки'),
+          DEPARTMENT: yup.object()
+            .nullable()
+            .required('Не указан отдел')
+            // .shape({
+            //   ID: yup.number()
+            //     .nullable()
+            //     .required('Не указан отдел 2')
+            // })
+        })
     }),
     onSubmit: (values) => {
       setConfirmOpen(false);
@@ -189,6 +213,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     }
   });
 
+  // console.log('KanbanEditCard', formik.values);
+  // console.log('getIn', getIn(formik.errors, 'DEAL.DEPARTMENT'), Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT')));
+
   return (
     <Dialog
       open={open}
@@ -196,6 +223,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       classes={{
         paper: classes.dialog
       }}
+      onClose={onClose}
     >
       <DialogTitle>
         {formik.values.ID > 0 ? `Редактирование ${formik.values?.DEAL?.USR$NAME}` : 'Создание сделки'}
@@ -244,21 +272,19 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           );
                         }}
                         value={formik.values.DEAL?.USR$NAME || ''}
+                        error={Boolean(getIn(formik.errors, 'DEAL.USR$NAME'))}
+                        helperText={getIn(formik.errors, 'DEAL.USR$NAME')}
                       />
                       <Stack direction={matchDownLg ? 'column' : 'row'} spacing={3}>
                         <Autocomplete
                           options={customers || []}
                           fullWidth
                           getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions}
+                          filterOptions={filterOptions(50, 'NAME')}
                           value={customers?.find(el => el.ID === formik.values.DEAL?.CONTACT?.ID) || null}
                           loading={customerFetching}
                           loadingText="Загрузка данных..."
                           onChange={(event, value) => {
-                            // formik.setFieldValue(
-                            //   'USR$CONTACTKEY',
-                            //   value ? value.ID : initValue.USR$CONTACTKEY
-                            // );
                             formik.setFieldValue(
                               'DEAL',
                               { ...formik.values.DEAL, CONTACT: value ? value : null }
@@ -277,20 +303,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               label="Клиент"
                               placeholder="Выберите клиента"
                               required
+                              error={Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
+                              helperText={getIn(formik.errors, 'DEAL.CONTACT')}
                             />
-                            // <TextField
-                            //   {...params}
-                            //   key={params.id}
-                            //   label="Клиент"
-                            //   type="text"
-                            //   name="USR$CONTACTKEY"
-                            //   required
-                            //   onBlur={formik.handleBlur}
-                            //   onChange={formik.handleChange}
-                            //   value={formik.values.USR$CONTACTKEY}
-                            //   helperText={formik.errors.USR$CONTACTKEY}
-                            //   placeholder="Выберите клиента"
-                            // />
                           )}
                         />
                         <TextField
@@ -342,12 +357,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       </Stack>
 
                       <Divider variant="middle" />
-                      <Stack direction={matchDownMd ? 'column' : 'row'} spacing={3}>
+                      <Stack direction={matchDownMd ? 'column' : 'column'} spacing={3}>
                         <Autocomplete
                           fullWidth
                           options={employees || []}
                           getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions}
+                          filterOptions={filterOptions(50, 'NAME')}
                           value={employees?.find(el => el.ID === formik.values.DEAL?.CREATOR?.ID) || null}
                           loading={employeesIsFetching}
                           loadingText="Загрузка данных..."
@@ -370,6 +385,40 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               label="Создал"
                               required
                               placeholder="Выберите сотрудника"
+                              error={Boolean(getIn(formik.errors, 'DEAL.CREATOR'))}
+                              helperText={getIn(formik.errors, 'DEAL.CREATOR') || ''}
+                            />
+                          )}
+                        />
+                        <Autocomplete
+                          fullWidth
+                          options={departments || []}
+                          getOptionLabel={option => option.NAME}
+                          filterOptions={filterOptions(50, 'NAME')}
+                          value={departments?.find(el => el.ID === formik.values.DEAL?.DEPARTMENT?.ID) || null}
+                          loading={departmentsIsFetching}
+                          loadingText="Загрузка данных..."
+                          onChange={(event, value) => {
+                            formik.setFieldValue(
+                              'DEAL',
+                              { ...formik.values.DEAL, DEPARTMENT: value ? value : null }
+                            );
+                          }}
+                          renderOption={(props, option) => {
+                            return (
+                              <li {...props} key={option.ID}>
+                                {option.NAME}
+                              </li>
+                            );
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Отдел"
+                              required
+                              placeholder="Выберите отдел"
+                              error={Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))}
+                              helperText={getIn(formik.errors, 'DEAL.DEPARTMENT') || ''}
                             />
                           )}
                         />
@@ -377,7 +426,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           fullWidth
                           options={employees || []}
                           getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions}
+                          filterOptions={filterOptions(50, 'NAME')}
                           readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
                           value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMER?.ID) || null}
                           loading={employeesIsFetching}
@@ -407,9 +456,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             />
                           )}
                         />
-
                       </Stack>
-
                       <Stack direction="row" spacing={3}>
                         {(formik.values.USR$MASTERKEY === stages[1].ID || formik.values.USR$MASTERKEY === stages[2].ID) ?
                           <FormControlLabel
@@ -420,7 +467,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                   const value = e.target.checked;
                                   formik.setFieldValue(
                                     'DEAL',
-                                    { ...formik.values.DEAL, USR$READYTOWORK: value}
+                                    { ...formik.values.DEAL, USR$READYTOWORK: value }
                                   );
                                   formik.setFieldValue(
                                     'USR$MASTERKEY',
@@ -455,6 +502,25 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           : <></>
                         }
                       </Stack>
+                      {/* <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={formik.values.DEAL?.DENIED}
+                            onChange={(e) => {
+                              const value = e.target.checked;
+                              formik.setFieldValue(
+                                'DEAL',
+                                { ...formik.values.DEAL, DENIED: value }
+                              );
+                              formik.setFieldValue(
+                                'USR$MASTERKEY',
+                                value ? stages[4].ID : stages[4].ID
+                              );
+                            }}
+                          />
+                        }
+                        label="Отказ"
+                      /> */}
                     </Stack>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
@@ -484,24 +550,29 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions style={{ display: 'flex' }}>
-        <IconButton onClick={handleDeleteClick} size="large" >
-          <DeleteIcon />
-        </IconButton>
+        <PermissionsGate actionCode={4}>
+          <IconButton onClick={handleDeleteClick} size="large" >
+            <DeleteIcon />
+          </IconButton>
+        </PermissionsGate>
         <Box flex={1} />
         {/* <Button variant="outlined" color="error" onClick={handleDeleteClick}>Удалить</Button> */}
         <Button
           className={classes.button}
           onClick={handleCancelClick}
         >Отменить</Button>
-        <Button
-          className={classes.button}
-          form="mainForm"
-          type="submit"
-          variant="contained"
-          onClick={() => {
-            setDeleting(false);
-          }}
-        >Сохранить</Button>
+        <PermissionsGate actionCode={formik.values.ID > 0 ? 3 : 1}>
+          <Button
+            className={classes.button}
+            // form="mainForm"
+            // type="submit"
+            variant="contained"
+            onClick={() => {
+              setDeleting(false);
+              setConfirmOpen(formik.isValid);
+            }}
+          >Сохранить</Button>
+        </PermissionsGate>
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}

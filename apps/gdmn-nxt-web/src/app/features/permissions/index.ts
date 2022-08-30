@@ -1,4 +1,4 @@
-import { IPermissionsAction, IPermissionsView, IRequestResult, IUser, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
+import { IPermissionByUser, IPermissionsAction, IPermissionsView, IRequestResult, IUser, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -12,12 +12,17 @@ type UserGroupsResponse = IUserGroup[];
 type IUserGroupsRequestResult = IRequestResult<{ userGroups: IUserGroup[]}>;
 type IUserGroupRequestResult = IRequestResult<{ userGroup: IUserGroup}>;
 
+type IUserGroupsLineRequestResult = IRequestResult<{ users: IUserGroupLine[]}>;
+
 type UsersResponse = IUser[];
 type IUsersRequestResult = IRequestResult<{ users: IUser[]}>;
 
+
+type IPermissionByUserRequestResult = IRequestResult<{ action: IPermissionByUser}>;
+
 export const permissionsApi = createApi({
   reducerPath: 'permissions',
-  tagTypes: ['Matrix', 'Actions', 'UserGroups', 'Users'],
+  tagTypes: ['Matrix', 'Actions', 'UserGroups', 'Users', 'ActionByUser'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getMatrix: builder.query<MatrixResponse, void>({
@@ -50,7 +55,7 @@ export const permissionsApi = createApi({
       }),
       invalidatesTags: (result) =>
         result
-          ? [{ type: 'Matrix', id: result?.ID }, { type: 'Matrix', id: 'LIST' }]
+          ? [{ type: 'Matrix', id: result?.ID }, { type: 'Matrix', id: 'LIST' }, { type: 'ActionByUser', id: 'LIST' }]
           : [{ type: 'Matrix', id: 'LIST' }]
     }),
     getUsersByGroup: builder.query<UsersResponse, number>({
@@ -63,7 +68,17 @@ export const permissionsApi = createApi({
             { type: 'Users', id: 'LIST' }
           ]
           : [{ type: 'Users', id: 'LIST' }]
-
+    }),
+    getUserGroupLine: builder.query<IUserGroupLine[], number>({
+      query: (groupID) => `permissions/usergroupsline/${groupID}`,
+      transformResponse: (response: IUserGroupsLineRequestResult) => response.queries.users || [],
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'Users' as const, ID })),
+            { type: 'Users', id: 'LIST' }
+          ]
+          : [{ type: 'Users', id: 'LIST' }]
     }),
     getUserGroups: builder.query<UserGroupsResponse, void>({
       query: () => 'permissions/usergroups',
@@ -101,7 +116,7 @@ export const permissionsApi = createApi({
     }),
     deleteUseGroup: builder.mutation<{ id: number}, number>({
       query: (id) => ({
-        url: `permissions/usergroups${id}`,
+        url: `permissions/usergroups/${id}`,
         method: 'DELETE'
       }),
       invalidatesTags: (result) =>
@@ -120,8 +135,23 @@ export const permissionsApi = createApi({
     deleteUserGroupLine: builder.mutation<{ id: number }, number>({
       query: (id) => ({
         url: `permissions/usergroupsline/${id}`,
-        method: 'METHOD'
+        method: 'DELETE'
       }),
+      invalidatesTags: (result) =>
+        result
+          ? [{ type: 'Users', id: result?.id }, { type: 'Users', id: 'LIST' }]
+          : [{ type: 'Users', id: 'LIST' }]
+    }),
+    getPermissionByUser: builder.query<IPermissionByUser, { actionCode: number, userID: number }>({
+      query: ({ actionCode, userID }) => `permissions/actions/${actionCode}/byUser/${userID}`,
+      transformResponse: (response: IPermissionByUserRequestResult) => response.queries.action,
+      providesTags: (result) =>
+        result
+          ? [
+            { type: 'ActionByUser' as const, id: result.CODE },
+            { type: 'ActionByUser', id: 'LIST' }
+          ]
+          : [{ type: 'ActionByUser', id: 'LIST' }]
     })
   })
 });
@@ -137,4 +167,7 @@ export const {
   useDeleteUseGroupMutation,
   useDeleteUserGroupLineMutation,
   useUpdateUserGroupMutation,
+  useGetUserGroupLineQuery,
+  useGetPermissionByUserQuery
 } = permissionsApi;
+
