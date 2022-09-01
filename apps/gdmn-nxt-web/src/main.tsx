@@ -42,6 +42,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ruLocale from 'date-fns/locale/ru';
 import PermissionsList from './app/pages/Permissions/permissions-list/permissions-list';
 import UserGroups from './app/pages/Permissions/user-groups/user-groups';
+import TopEarningPage from './app/pages/Analytics/UserReports/TopEarningPage';
 
 registerMUI();
 
@@ -80,9 +81,13 @@ const Main = () => {
                         <Route path="usergroups" element={<UserGroups />} />
                       </Route>
                       <Route path="customers/orders/list" element={<OrderList />} />
-                      <Route path="reports/reconciliation" element={<ReconciliationAct />} />
-                      <Route path="reports/reconciliation/:customerId" element={<ReconciliationAct />} />
-                      <Route path="reports/remainbyinvoices" element={<RemainsByInvoices />} />
+                      <Route path="reports">
+                        <Route path="reconciliation" element={<ReconciliationAct />} />
+                        <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
+                        <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
+                        <Route path="topEarning" element={<TopEarningPage />} />
+
+                      </Route>
                       <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
                       <Route path="labels" element={<Labels />}/>
                     </Route>

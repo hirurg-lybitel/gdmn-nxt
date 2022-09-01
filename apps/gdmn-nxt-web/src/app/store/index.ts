@@ -28,7 +28,7 @@ import { workTypesApi } from '../features/work-types/workTypesApi';
 import { labelsApi } from '../features/labels';
 import { permissionsApi } from '../features/permissions';
 import { systemUsers } from '../features/systemUsers';
-
+import { topEarningApi } from '../features/topEarning';
 
 export const store = configureStore({
   reducer: {
@@ -60,7 +60,8 @@ export const store = configureStore({
     [workTypesApi.reducerPath]: workTypesApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
-    [systemUsers.reducerPath]: systemUsers.reducer
+    [systemUsers.reducerPath]: systemUsers.reducer,
+    [topEarningApi.reducerPath]: topEarningApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -84,6 +85,7 @@ export const store = configureStore({
     .concat(labelsApi.middleware)
     .concat(permissionsApi.middleware)
     .concat(systemUsers.middleware)
+    .concat(topEarningApi.middleware)
     .concat(errorMiddleware),
 });
 

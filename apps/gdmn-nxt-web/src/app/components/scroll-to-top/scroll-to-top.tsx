@@ -34,14 +34,14 @@ export function ScrollToTop(props: ScrollToTopProps) {
 
   return (
     <Fab
-      size="small"
+      // size="small"
       color='info'
       style={{
-        opacity: isVisible ? 1 : 0,
+        opacity: isVisible ? 0.7 : 0,
         position: 'fixed',
         zIndex: 1,
-        bottom: '20px',
-        right: '20px',
+        bottom: '30px',
+        right: '30px',
         cursor: 'pointer',
         transition: 'opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
       }}

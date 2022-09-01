@@ -8,13 +8,29 @@ interface IWorkTypes{
 
 type IWorkTypesRequestResult = IRequestResult<IWorkTypes>;
 
+interface IParams {
+  id?: number;
+  contractJob?: number[];
+}
+
 export const workTypesApi = createApi({
   reducerPath: 'workTypes',
   tagTypes: ['workType'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getWorkTypes: builder.query<IWorkType[], { id?: number, contractJob?: number[] } >({
-      query: ({ id, contractJob }) => {
+    getWorkTypes: builder.query<IWorkType[], IParams | void >({
+      query: (params) => {
+
+        const { id, contractJob } = (() => {
+          if (params) {
+            const id = params['id'];
+            const contractJob = params['contractJob'];
+            return { id, contractJob };
+          };
+          return { id: null, contractJob: null };
+        })();
+
+
         let urlString = '';
         if (Array.isArray(contractJob) && contractJob.length > 0) {
           urlString = `/contractJobKey/${contractJob.join()}`;

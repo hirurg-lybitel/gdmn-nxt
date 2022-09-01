@@ -24,6 +24,12 @@ const analytics: IMenuItem = {
           title: 'Остатки по р/с',
           url: 'reports/remainbyinvoices',
           type: 'item',
+        },
+        {
+          id: 'topEarning',
+          title: 'ТОП по выручке',
+          url: 'reports/topEarning',
+          type: 'item',
         }
       ]
     },
