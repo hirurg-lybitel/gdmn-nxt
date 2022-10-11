@@ -1,4 +1,4 @@
-import { ICustomerContractWithID, IDataSchema, IEntities, IRequestResult } from '@gsbelarus/util-api-types';
+import { ICustomerContract, IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
@@ -105,7 +105,7 @@ const upsert: RequestHandler = async (req, res) => {
     const actualFields = allFields.filter( field => typeof req.body[field] !== 'undefined' );
     const paramsValues = actualFields.map(field => {
       return req.body[field];
-    })
+    });
 
     if (isInsertMode) {
       paramsValues.splice(actualFields.indexOf('ID'), 1);
@@ -114,7 +114,7 @@ const upsert: RequestHandler = async (req, res) => {
       const requiredFields = {
         ID: ID,
         USR$BG_ACTING: 1
-      }
+      };
 
       for (const [key, value] of Object.entries(requiredFields)) {
         if (!actualFields.includes(key)) {
@@ -139,9 +139,9 @@ const upsert: RequestHandler = async (req, res) => {
     const row = await attachment.executeSingleton(transaction, sql, paramsValues);
     await transaction.commit();
 
-    const result: IRequestResult<{ departments: ICustomerContractWithID[] }> = {
+    const result: IRequestResult<{ departments: ICustomerContract[] }> = {
       queries: {
-        departments: [Object.fromEntries(allFields.map((field, idx) => ([field, row[idx]]))) as ICustomerContractWithID]
+        departments: [Object.fromEntries(allFields.map((field, idx) => ([field, row[idx]]))) as ICustomerContract]
       },
       _schema: undefined
     };

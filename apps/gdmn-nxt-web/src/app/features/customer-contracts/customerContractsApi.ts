@@ -1,19 +1,15 @@
-import { ICustomerContractWithID, IRequestResult } from "@gsbelarus/util-api-types";
+import { ICustomerContract, IRequestResult } from "@gsbelarus/util-api-types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { baseUrlApi } from '../../const';
 
-interface ICustomerContract{
-  customerContracts: ICustomerContractWithID[];
-};
-
-type ICustomerContractsRequestResult = IRequestResult<ICustomerContract>;
+type ICustomerContractsRequestResult = IRequestResult<{ customerContracts: ICustomerContract[] }>;
 
 export const customerContractsApi = createApi({
   reducerPath: 'customerContracts',
   tagTypes: ['CustomerContracts'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getCustomerContracts: builder.query<ICustomerContractWithID[], number | void>({
+    getCustomerContracts: builder.query<ICustomerContract[], number | void>({
       query: (id) => `customerContracts${id ? `/${id}` : ''}`,
       async onQueryStarted(){console.log('⏩ request', "GET", `${baseUrlApi}customercontracts`)},
       transformResponse: (response: ICustomerContractsRequestResult) => response.queries?.customerContracts || [],
@@ -28,7 +24,7 @@ export const customerContractsApi = createApi({
         : [{ type: 'CustomerContracts', id: 'LIST' }]
 
     }),
-    updateCustomerContract: builder.mutation<ICustomerContractsRequestResult, Partial<ICustomerContractWithID>>({
+    updateCustomerContract: builder.mutation<ICustomerContractsRequestResult, Partial<ICustomerContract>>({
       async onQueryStarted({ID:id}){console.log('⏩ request', "PUT", `${baseUrlApi}customerContracts/${id}`)},
       query(body) {
         const {ID:id} = body;
@@ -48,7 +44,7 @@ export const customerContractsApi = createApi({
             ? [{ type: 'CustomerContracts', id: 'ERROR' }]
             : [{ type: 'CustomerContracts', id: 'LIST' }]
     }),
-    addCustomerContract: builder.mutation<ICustomerContractWithID[], Partial<ICustomerContractWithID>>({
+    addCustomerContract: builder.mutation<ICustomerContract[], Partial<ICustomerContract>>({
       async onQueryStarted(){console.log('⏩ request', "POST", `${baseUrlApi}customerContracts`)},
       query(body) {
         return {

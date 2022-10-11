@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, Paper, RadioGroup, Slide, Stack, Switch, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import { makeStyles } from '@mui/styles';
@@ -62,6 +62,7 @@ export interface CustomersFilterProps {
   onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
+  onFilterClear: () => void;
 }
 
 export function CustomersFilter(props: CustomersFilterProps) {
@@ -70,7 +71,8 @@ export function CustomersFilter(props: CustomersFilterProps) {
     width = '300px',
     onClose,
     filteringData,
-    onFilteringDataChange
+    onFilteringDataChange,
+    onFilterClear
   } = props;
 
   const classes = useStyles();
@@ -309,9 +311,11 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 />
               )}
               renderTags={(value: readonly ILabel[], getTagProps) =>
-                value.map((option: ILabel, index: number) =>
-                  <LabelMarker label={option} {...getTagProps({ index })}/>
-                )
+                <Stack direction="row" spacing={1}>
+                  {value.map((option: ILabel, index: number) =>
+                    <LabelMarker label={option} {...getTagProps({ index })}/>
+                  )}
+                </Stack>
               }
               loading={labelsIsFetching}
               loadingText="Загрузка данных..."
@@ -323,9 +327,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
             variant="contained"
             fullWidth
             onClick={() => {
-              onFilteringDataChange({});
+              onFilterClear();
               onClose && onClose({}, 'backdropClick');
-            }}>Очистить</Button>
+            }}
+          >
+            Очистить
+          </Button>
         </CardActions>
       </CustomizedCard>
     );

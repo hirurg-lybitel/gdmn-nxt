@@ -1,7 +1,12 @@
-import { ICustomer, IRequestResult } from '@gsbelarus/util-api-types';
+import { ICustomer, ICustomerCross, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { url } from 'inspector';
 import { baseUrlApi } from '../../const';
+
+export interface ISortingData {
+  field: string;
+  sort: 'asc' | 'desc' | null | undefined;
+};
 
 export interface IPaginationData {
   pageNo: number;
@@ -14,6 +19,7 @@ interface IFilteringData {
 export interface IQueryOptions {
   pagination?: IPaginationData;
   filter?: IFilteringData;
+  sort?: ISortingData;
 };
 
 interface ICustomers {
@@ -21,7 +27,9 @@ interface ICustomers {
 };
 
 type ICustomersRequestResult = IRequestResult<ICustomers>;
+type ICustomersWithCountRequestResult = IRequestResult<{contacts: ICustomer[], rowCount: any}>;
 type ICustomerRequestResult = IRequestResult<{ contact: ICustomer }>;
+type ICustomersCrossRequestResult = IRequestResult<{ cross: ICustomerCross[] }>;
 
 export const customerApi = createApi({
   reducerPath: 'customer',
@@ -37,15 +45,30 @@ export const customerApi = createApi({
       },
       transformResponse: (response: ICustomersRequestResult) => response.queries.contacts[0]
     }),
-    getCustomers: builder.query<ICustomer[], Partial<IQueryOptions> | void>({
+    getCustomers: builder.query<{data: ICustomer[], count?: number}, Partial<IQueryOptions> | void>({
       query(options) {
         const params: string[] = [];
+
+        // console.log('options', options);
 
         for (const [name, value] of Object.entries(options || {})) {
           switch (true) {
             case typeof value === 'object' && value !== null:
               for (const [subName, subKey] of Object.entries(value)) {
-                params.push(`${subName}=${subKey}`);
+                const subParams = [];
+                if (typeof subKey === 'object' && subKey !== null) {
+                  for (const [subName_l2, subKey_l2] of Object.entries(subKey)) {
+                    if (typeof subKey_l2 === 'object' && subKey_l2 !== null) {
+                      subParams.push((subKey_l2 as any)['ID']);
+                    };
+                    if (typeof subKey_l2 === 'string') {
+                      subParams.push(subKey_l2);
+                    };
+                  }
+                } else {
+                  subParams.push(subKey);
+                };
+                params.push(`${subName}=${subParams}`);
               };
               break;
 
@@ -54,6 +77,8 @@ export const customerApi = createApi({
               break;
           }
         };
+
+        // console.log('params', params);
         return {
           url: `contacts?${params.join('&')}`,
           method: 'GET',
@@ -62,11 +87,11 @@ export const customerApi = createApi({
       onQueryStarted() {
         console.info('⏩ request', 'GET', `${baseUrlApi}contacts`);
       },
-      transformResponse: (response: ICustomersRequestResult) => response.queries?.contacts || [],
+      transformResponse: (response: ICustomersWithCountRequestResult) => ({ data: response.queries?.contacts || [], count: response.queries?.rowCount[0].COUNT || -1 }),
       providesTags: (result, error) =>
-        result
+        result?.data
           ? [
-            ...result.map(({ ID }) => ({ type: 'Customers' as const, ID })),
+            ...result?.data.map(({ ID }) => ({ type: 'Customers' as const, ID })),
             { type: 'Customers', id: 'LIST' },
           ]
           : error
@@ -102,14 +127,10 @@ export const customerApi = createApi({
       }),
       invalidatesTags: (result, error) =>
         result
-          ? [
-            ...result.queries.contacts.map(({ ID }) => ({ type: 'Customers' as const, ID })),
-            { type: 'Customers', id: 'LIST' },
-          ]
+          ? [{ type: 'Customers', id: 'LIST' }]
           : error
             ? [{ type: 'Customers', id: 'ERROR' }]
             : [{ type: 'Customers', id: 'LIST' }]
-
     }),
     deleteCustomer: builder.mutation<{id: number}, number>({
       query: (id) => ({
@@ -125,6 +146,15 @@ export const customerApi = createApi({
 
         return [{ type: 'Customers', id: 'LIST' }];
       }
+    }),
+    getCustomersCross: builder.query<ICustomerCross, void>({
+      query() {
+        return {
+          url: 'contacts/customerscross',
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: ICustomersCrossRequestResult) => response.queries.cross[0] || [],
     })
   }),
 });
@@ -134,5 +164,6 @@ export const {
   useGetCustomersQuery,
   useUpdateCustomerMutation,
   useAddCustomerMutation,
-  useDeleteCustomerMutation
+  useDeleteCustomerMutation,
+  useGetCustomersCrossQuery
 } = customerApi;

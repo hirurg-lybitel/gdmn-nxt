@@ -1,5 +1,5 @@
 import './search-bar.module.less';
-import { ChangeEvent, cloneElement, CSSProperties, ReactElement, useRef, useState } from 'react';
+import { ChangeEvent, cloneElement, CSSProperties, ReactElement, useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { IconButton, Input, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -99,6 +99,11 @@ export function SearchBar(props: SearchBarProps) {
   const [searchValue, setSearchValue] = useState(value);
   const [mouseOnFocus, setMouseOnFocus] = useState(false);
   const [onFocus, setOnFocus] = useState(false);
+
+  useEffect(() => {
+    setSearchValue(value);
+    setOnFocus(Boolean(value));
+  }, [value]);
 
 
   const propsStyle: StyleProps = {

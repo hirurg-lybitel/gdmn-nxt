@@ -14,6 +14,7 @@ import { Navigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/circular-indeterminate/circular-indeterminate';
 import { useGetCustomersQuery } from './features/customer/customerApi_new';
 import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
+import { InitData } from './store/initData';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -39,11 +40,10 @@ const get = (url: string) => query({ method: 'get', url, baseURL: baseUrl, withC
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage, userProfile } = useSelector<RootState, UserState>( state => state.user );
+  const { loginStage } = useSelector<RootState, UserState>( state => state.user );
 
-  /** Загрузка данных на фоне в овремя авторизации  */
-  const { } = useGetCustomersQuery();
-  const { } = useGetKanbanDealsQuery({ userId: userProfile?.id || -1 });
+  /** Загрузка данных на фоне во время авторизации  */
+  InitData();
 
   useEffect(() => {
     (async function () {

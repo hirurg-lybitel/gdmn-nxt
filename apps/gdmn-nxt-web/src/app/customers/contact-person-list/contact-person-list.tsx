@@ -1,6 +1,6 @@
 import { Box, Button, IconButton, List, ListItem, Stack, Typography } from '@mui/material';
 import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
-import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateContactPersonMutation } from '../../../features/contact/contactApi';
+import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateContactPersonMutation } from '../../features/contact/contactApi';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';

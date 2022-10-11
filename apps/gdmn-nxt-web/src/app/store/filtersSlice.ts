@@ -21,13 +21,17 @@ export const filtersSlice = createSlice({
     },
     saveFilterModel: (state, action: PayloadAction<{ [key: string]: GridFilterModel | undefined }>) => {
       return { ...state, filterModels: { ...state.filterModels, ...action.payload } };
+    },
+    clearFilterData: (state) => {
+      return { ...state, filterData: {} };
     }
   }
 });
 
 export const {
   saveFilterData,
-  saveFilterModel
+  saveFilterModel,
+  clearFilterData
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

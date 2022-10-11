@@ -1,5 +1,5 @@
-import express from 'express';
-import { addContact, deleteContact, getContactHierarchy, getContacts, updateContact, upsertContact } from '../../contacts';
+import express from 'express'; getCustomersCross
+import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, updateContact, upsertContact } from '../../contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../labels';
 import contactPersons from '../../handlers/contactPersons';
 import contactEmployees from '../../handlers/contactEmployees';
@@ -10,8 +10,6 @@ router.get('/', getContacts);
 router.get('/customerId/:customerId', getContacts);
 router.get('/taxId/:taxId', getContacts);
 router.get('/rootId/:rootId', getContacts);
-// router.put('/:id', updateContact);
-// router.post('/', addContact);
 router.put('/:id', upsertContact);
 router.post('/', upsertContact);
 
@@ -30,5 +28,7 @@ router.delete('/persons/:id', contactPersons.remove);
 
 router.get('/employees/:id', contactEmployees.get);
 router.get('/employees', contactEmployees.get);
+
+router.get('/customerscross', getCustomersCross);
 
 export default router;

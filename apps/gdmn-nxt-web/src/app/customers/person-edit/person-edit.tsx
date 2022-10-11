@@ -16,15 +16,15 @@ import {
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { forwardRef, ReactElement, Ref, useEffect, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { customersSelectors } from '../../../features/customer/customerSlice';
-import { RootState } from '../../../store';
+import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
+import { customersSelectors } from '../../features/customer/customerSlice';
+import { RootState } from '../../store';
 import * as yup from 'yup';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
+import { useGetDepartmentsQuery } from '../../features/departments/departmentsApi';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: '25vw',
+    width: '30vw',
     minWidth: 500,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0
@@ -113,12 +113,12 @@ export function PersonEdit(props: PersonEditProps) {
       USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
     }),
     onSubmit: (values) => {
-      const newPhones = values.PHONES?.filter(phone => (phone.USR$PHONENUMBER));
-      if (newPhones?.length) values.PHONES = [...newPhones];
-
+      if (!confirmOpen) {
+        setDeleting(false);
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      // console.log('onSubmit');
-      onSubmit(values, deleting);
     },
     onReset: (values) => {
       setPhones([]);
@@ -163,6 +163,19 @@ export function PersonEdit(props: PersonEditProps) {
     formik.setFieldValue('PHONES', newPhones);
     setPhones(newPhones);
   };
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+
+    const newPhones = formik.values.PHONES?.filter(phone => (phone.USR$PHONENUMBER));
+    if (newPhones?.length) formik.values.PHONES = [...newPhones];
+
+    onSubmit(formik.values, deleting);
+  }, [formik.values, deleting]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
   // console.log('formik.errors.NAME', formik.errors.NAME);
 
@@ -332,10 +345,10 @@ export function PersonEdit(props: PersonEditProps) {
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title={deleting ? 'Удаление клиента' : 'Сохранение'}
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Dialog>
   );

@@ -26,21 +26,21 @@ import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { IContactWithLabels, ICustomer, ILabel, ILabelsContact } from '@gsbelarus/util-api-types';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { forwardRef, ReactElement, useMemo, useState } from 'react';
+import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
+import { forwardRef, ReactElement, useCallback, useMemo, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
-import { hierarchySelectors } from '../../../features/customer/customerSlice';
+import { hierarchySelectors } from '../../features/customer/customerSlice';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { useGetGroupsQuery } from '../../../features/contact/contactGroupApi';
+import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
 import { TransitionProps } from '@mui/material/transitions';
-import CustomizedCard from '../../Styled/customized-card/customized-card';
+import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ContactPersonList from '../contact-person-list/contact-person-list';
-import { useGetLabelsQuery } from '../../../features/labels';
-import LabelMarker from '../../Labels/label-marker/label-marker';
+import { useGetLabelsQuery } from '../../features/labels';
+import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -133,8 +133,12 @@ export function CustomerEdit(props: CustomerEditProps) {
       PARENT: yup.string().required('')
     }),
     onSubmit: (values) => {
+      if (!confirmOpen) {
+        setDeleting(false);
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      onSubmit(values, deleting);
     },
   });
 
@@ -153,6 +157,15 @@ export function CustomerEdit(props: CustomerEditProps) {
     setTabIndex(newindex);
   };
 
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    onSubmit(formik.values, deleting);
+  }, [formik.values, deleting]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
+
   const memoContactlist = useMemo(() =>
     <ContactPersonList customerId={customer?.ID || -1} />,
   [customer?.ID]);
@@ -160,10 +173,10 @@ export function CustomerEdit(props: CustomerEditProps) {
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      setOpen={setConfirmOpen}
       title={deleting ? 'Удаление клиента' : 'Сохранение'}
       text="Вы уверены, что хотите продолжить?"
-      onConfirm={formik.handleSubmit}
+      confirmClick={handleConfirmOkClick}
+      cancelClick={handleConfirmCancelClick}
     />
   , [confirmOpen]);
 
@@ -336,9 +349,11 @@ export function CustomerEdit(props: CustomerEditProps) {
                           />
                         )}
                         renderTags={(value: readonly ILabel[], getTagProps) =>
-                          value.map((option: ILabel, index: number) =>
-                            <LabelMarker label={option} {...getTagProps({ index })}/>
-                          )
+                          <Stack direction="row" spacing={1}>
+                            {value.map((option: ILabel, index: number) =>
+                              <LabelMarker label={option} {...getTagProps({ index })}/>
+                            )}
+                          </Stack>
                         }
                       />
                     </Stack>

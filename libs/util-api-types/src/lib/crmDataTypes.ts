@@ -32,13 +32,23 @@ export interface IContractJob extends IContactWithID {
 
 export interface ICustomer extends IContactWithID {
   LABELS?: ILabel[];
-  CONTRACTS?: IContractJob[];
+  CONTRACTS?: ICustomerContractWithID[];
   JOBWORKS?: IWorkType[];
   DEPARTMETNS?: IContactWithID[];
   TAXID?: string;
 };
 
-export interface ICustomerContract {
+interface IMapOfArrays {
+  [key: string]: any[];
+};
+
+export interface ICustomerCross {
+  departments: IMapOfArrays,
+  contracts: IMapOfArrays,
+  jobWorks: IMapOfArrays,
+};
+
+export interface ICustomerContract extends IWithID {
   USR$NUMBER: string;
   USR$NAME: string;
   USR$DATEBEGIN: Date;
@@ -60,7 +70,7 @@ export interface IDeal extends IWithID {
   USR$DONE?: boolean;
   USR$READYTOWORK?: boolean;
   DEPARTMENT?: IContactWithID;
-  DENY?: IDenyReason;
+  DENYREASON?: IDenyReason;
   DENIED?: boolean;
   COMMENT?: string;
 };

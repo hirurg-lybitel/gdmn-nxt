@@ -16,14 +16,17 @@ const Transition = forwardRef(function Transition(
 
 export interface ConfirmDialogProps {
   open: boolean;
-  setOpen: (value: boolean) => void;
-  onConfirm: (value: any) => void;
+  setOpen?: (value: boolean) => void;
+  onConfirm?: (value: any) => void;
   title?: string;
   text?: string;
+  confirmClick?: () => void;
+  cancelClick?: () => void;
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
   const { open, setOpen, onConfirm, text, title } = props;
+  const { confirmClick, cancelClick } = props;
 
   const classes = useStyles();
 
@@ -34,7 +37,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       <DialogActions className={classes.dialogAction}>
         <Button
           className={classes.button}
-          onClick={() => setOpen(false)}
+          onClick={cancelClick}
           variant="contained"
           color="primary"
         >
@@ -43,10 +46,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         <Button
           className={classes.button}
           type="submit"
-          onClick={() => {
-            setOpen(false);
-            onConfirm({});
-          }}
+          onClick={confirmClick}
           variant="contained"
           color="success"
         >

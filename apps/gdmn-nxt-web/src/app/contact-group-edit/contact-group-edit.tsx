@@ -2,7 +2,7 @@ import { IContactHierarchy } from '@gsbelarus/util-api-types';
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import * as yup from 'yup';
 import ConfirmDialog from '../confirm-dialog/confirm-dialog';
 import { useGetGroupsQuery } from '../features/contact/contactGroupApi';
@@ -62,8 +62,11 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
       NAME:  yup.string().required('').max(80, 'Слишком длинное наименование')
     }),
     onSubmit: (values) => {
+      if (!confirmOpen) {
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      onSubmit(values);
     },
   });
 
@@ -75,6 +78,15 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
     formik.resetForm();
     onCancel();
   };
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    onSubmit(formik.values);
+  }, [formik.values]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
   return (
     <Dialog classes={{ paper: classes.dialog}} open={true}>
@@ -158,10 +170,10 @@ export function ContactGroupEditForm(props: IContactGroupEditProps) {
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title="Подтвердите действие"
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Dialog>
   );
