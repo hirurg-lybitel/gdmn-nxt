@@ -1,4 +1,4 @@
-import express from 'express'; getCustomersCross
+import express from 'express';
 import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, updateContact, upsertContact } from '../../contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../labels';
 import contactPersons from '../../handlers/contactPersons';
