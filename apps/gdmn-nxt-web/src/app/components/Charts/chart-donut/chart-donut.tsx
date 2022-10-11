@@ -18,6 +18,14 @@ export function ChartDonut(props: ChartDonutProps) {
 
   const series = stages?.map(stage => stage.CARDS?.length || 0) || [];
 
+  const colors = [
+    theme.color.purple[500],
+    theme.color.red['A200'],
+    theme.color.yellow['800'],
+    theme.color.green['A400'],
+    theme.color.blueGrey[400]
+  ]
+
   const chartOptions: ApexCharts.ApexOptions = {
     labels: stages?.map(stage => stage.USR$NAME) ?? [],
     chart: {
@@ -25,6 +33,10 @@ export function ChartDonut(props: ChartDonutProps) {
         show: true,
       },
     },
+    fill: {
+      colors
+    },
+    colors,
     legend: {
       fontSize: '20em',
       fontWeight: 600,
@@ -33,9 +45,11 @@ export function ChartDonut(props: ChartDonutProps) {
         vertical: 10,
       },
       markers: {
+        fillColors: colors,
         width: 20,
         height: 20,
-        radius: 5
+        radius: 5,
+        offsetY: 2,
       },
       labels: {
         colors: theme.color.grey[500],

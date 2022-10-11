@@ -22,8 +22,6 @@ export interface TopEarningProps {
 export function TopEarning({params}: TopEarningProps) {
   const [getTopEarning, {data, isLoading, isSuccess}] = useGetTopEarningQuery();
 
-  console.log('TopEarning', params);
-
   useEffect(() => {
     params && getTopEarning(params);
   }, [params]);

@@ -2,11 +2,11 @@ import './chart-column.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Autocomplete, Checkbox, createFilterOptions, Grid, MenuItem, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Autocomplete, Checkbox, createFilterOptions, Grid, MenuItem, Stack, TextField, Typography, useTheme } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
 import { IChartFilter, useGetSumByPeriodQuery } from '../../../features/charts/chartDataApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import { IContactWithID, ICustomerContractWithID, IWorkType } from '@gsbelarus/util-api-types';
+import { IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
 import { Box } from '@mui/system';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -68,7 +68,7 @@ interface IAnalyticsDataParams {
   dateEnd: number,
   departments?: IContactWithID[],
   workTypes?: IWorkType[]
-  contracts?: ICustomerContractWithID[]
+  contracts?: ICustomerContract[]
 };
 
 
