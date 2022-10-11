@@ -1,49 +1,28 @@
 import './kanban-board.module.less';
-import { Autocomplete, Box, Button, Checkbox, Stack, TextField, Typography } from '@mui/material';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Button, Stack } from '@mui/material';
+import { useCallback, useEffect, useRef } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
 import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
-import { useAddCardMutation, useAddColumnMutation, useAddHistoryMutation, useDeleteCardMutation, useDeleteColumnMutation, useReorderCardsMutation, useReorderColumnsMutation, useUpdateCardMutation, useUpdateColumnMutation } from '../../../features/kanban/kanbanApi';
+import {
+  useAddCardMutation,
+  useAddColumnMutation,
+  useAddHistoryMutation,
+  useDeleteCardMutation,
+  useDeleteColumnMutation,
+  useReorderCardsMutation,
+  useReorderColumnsMutation,
+  useUpdateCardMutation,
+  useUpdateColumnMutation
+} from '../../../features/kanban/kanbanApi';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { customersSelectors } from '../../../features/customer/customerSlice';
-import { fetchCustomers } from '../../../features/customer/actions';
-import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { setError } from '../../../features/error-slice/error-slice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import CustomizedCard from '../../Styled/customized-card/customized-card';
-
-interface IKanbanFilter {
-  [key: string]: any;
-};
-
-const cardDateFilter = [
-  {
-    id: 1,
-    name: 'Все сделки'
-  },
-  {
-    id: 2,
-    name: 'Срок сегодня'
-  },
-  {
-    id: 3,
-    name: 'Срок завтра'
-  },
-  {
-    id: 4,
-    name: 'Срок просрочен'
-  },
-  {
-    id: 5,
-    name: 'Без срока'
-  },
-];
 
 interface IChanges {
   id: number;
@@ -52,14 +31,13 @@ interface IChanges {
   newValue: string | number | undefined;
 };
 export interface KanbanBoardProps {
-  columns: IKanbanColumn[];
+  columns?: IKanbanColumn[];
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {
-  const { columns: inColumns } = props;
+  const { columns = [] } = props;
 
-  const [columns, setColumns] = useState<IKanbanColumn[]>(inColumns);
-  const [kanbanFilter, setKanbanFilter] = useState<IKanbanFilter>({ deadline: cardDateFilter[0] });
+  const user = useSelector<RootState, UserState>(state => state.user);
   const [updateColumn] = useUpdateColumnMutation();
   const [addColumn] = useAddColumnMutation();
   const [deleteColumn] = useDeleteColumnMutation();
@@ -81,12 +59,12 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
   const changes = useRef<IChanges[]>([]);
 
-  const user = useSelector<RootState, UserState>(state => state.user);
+  // const user = useSelector<RootState, UserState>(state => state.user);
 
-  useEffect(()=>{
-    setColumns(inColumns);
-    // dispatch(fetchCustomers());
-  }, [inColumns]);
+  // useEffect(()=>{
+  //   setColumns(inColumns);
+  //   // dispatch(fetchCustomers());
+  // }, [inColumns]);
 
   useEffect(()=>{
     if ((updateCardSuccess) && changes.current.length > 0) {
@@ -264,7 +242,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         return { ...el, USR$INDEX: index };
       });
 
-      setColumns(newColumns);
+      // setColumns(newColumns);
       reorderColumn(newColumns);
     };
 
@@ -285,7 +263,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
           index === Number(result.source.droppableId) ? { ...column, CARDS: newCards } : column
         );
 
-        setColumns(newColumns);
+        // setColumns(newColumns);
         reorderCard(newCards);
       } else {
         /** перемещаем в другую колонку */
@@ -318,7 +296,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
           return { ...column, CARDS: newCards };
         });
 
-        setColumns(newColumns);
+        // setColumns(newColumns);
         changes.current.push({
           id: moveCard.ID,
           fieldName: 'Этап',
@@ -339,17 +317,31 @@ export function KanbanBoard(props: KanbanBoardProps) {
     );
   }, []);
 
+
+  // if (isLoading) {
+  //   return (
+  //     <div
+  //       style={{
+  //         position: 'absolute',
+  //         left: '50%',
+  //         top: '50%',
+  //         zIndex: 999
+  //       }}
+  //     >
+  //       <CircularIndeterminate open={isLoading} size={100} />
+  //     </div>
+  //   );
+  // }
+
+
   return (
     <PerfectScrollbar
       style={{
         display: 'flex',
       }}
     >
-      <Stack display="flex" spacing={2}>
-        <CustomizedCard borders style={{ padding: '13px' }}>
-          {/* <Typography color="text.primary" variant="h1">
-            Сделки
-          </Typography> */}
+      <Box display="flex">
+        {/* <CustomizedCard borders style={{ padding: '13px' }}>
           <Autocomplete
             style={{
               width: '210px',
@@ -372,7 +364,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
               />
             )}
           />
-        </CustomizedCard>
+        </CustomizedCard> */}
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="board" type="board" direction="horizontal">
             {(provided, snapshot) => (
@@ -415,39 +407,34 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
-                                      const today = new Date();
-                                      today.setHours(0,0,0,0);
-                                      const tomorrow = new Date(today);
-                                      tomorrow.setDate(tomorrow.getDate() + 1000);
-                                      const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
+                                      // const today = new Date();
+                                      // today.setHours(0,0,0,0);
+                                      // const tomorrow = new Date(today);
+                                      // tomorrow.setDate(tomorrow.getDate() + 1000);
+                                      // const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
-                                      switch (kanbanFilter['deadline'] ? kanbanFilter['deadline']['id'] : -1) {
-                                        case 1:
-                                          break;
-                                        case 2:
-                                          console.log('today',
-                                            card.DEAL?.USR$NAME,
-                                            dateDiff,
-                                            card.DEAL?.USR$DEADLINE ? (new Date(card.DEAL.USR$DEADLINE)) : -1,
-                                            today);
-
-                                          if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
-                                          if (dateDiff !== 0) return <Fragment key={card.ID + column.ID * 10} />;
-                                          break;
-                                        case 3:
-                                          if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
-                                          if (dateDiff !== 1) return <Fragment key={card.ID + column.ID * 10} />;
-                                          break;
-                                        case 4:
-                                          if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
-                                          if (!(dateDiff < 0)) return <Fragment key={card.ID + column.ID * 10} />;
-                                          break;
-                                        case 5:
-                                          if (!(dateDiff >= 1000)) return <Fragment key={card.ID + column.ID * 10} />;
-                                          break;
-                                        default:
-                                          break;
-                                      }
+                                      // switch (kanbanFilter['deadline'] ? kanbanFilter['deadline']['id'] : -1) {
+                                      //   case 1:
+                                      //     break;
+                                      //   case 2:
+                                      //     if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     if (dateDiff !== 0) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     break;
+                                      //   case 3:
+                                      //     if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     if (dateDiff !== 1) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     break;
+                                      //   case 4:
+                                      //     if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     if (!(dateDiff < 0)) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     break;
+                                      //   case 5:
+                                      //     console.log('dateDiff', card.ID, dateDiff);
+                                      //     if (!(dateDiff >= 1000)) return <Fragment key={card.ID + column.ID * 10} />;
+                                      //     break;
+                                      //   default:
+                                      //     break;
+                                      // }
                                       return (
                                         <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column.ID * 10).toString()} index={index}>
                                           {(provided, snapshot) => (
@@ -489,7 +476,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
             )}
           </Droppable>
         </DragDropContext>
-      </Stack>
+      </Box>
     </PerfectScrollbar>
   );
 }

@@ -129,8 +129,8 @@ const upsert: RequestHandler = async (req, res) => {
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
-        USR$PERFORMER, USR$DEADLINE, USR$SOURCE, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        USR$PERFORMER, USR$DEADLINE, USR$SOURCE, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
@@ -146,7 +146,10 @@ const upsert: RequestHandler = async (req, res) => {
       deal.USR$SOURCE,
       deal.USR$READYTOWORK,
       deal.USR$DONE,
-      deal.DEPARTMENT?.ID || null
+      deal.DEPARTMENT?.ID || null,
+      deal.COMMENT,
+      deal.DENIED,
+      deal.DENYREASON?.ID || null
     ];
 
     dealRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);

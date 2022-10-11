@@ -33,7 +33,9 @@ const get: RequestHandler = async (req, res) => {
     }
   };
 
-  const userID = parseInt(req.query.userID as string);
+  const { deadline } = req.query;
+
+  const userId = parseInt(req.query.userId as string);
 
   const checkFullView = `
     EXISTS(
@@ -42,27 +44,39 @@ const get: RequestHandler = async (req, res) => {
         JOIN USR$CRM_PERMISSIONS_CROSS cr ON ul.USR$GROUPKEY = cr.USR$GROUPKEY
         JOIN GD_RUID r ON r.ID = cr.USR$ACTIONKEY
       WHERE
+        /* Если есть право на действие Видёть все */
         r.XID = 370486335 AND r.DBID = 1811180906
         AND cr.USR$MODE = 1
-        AND ul.USR$USERKEY = ${userID})`;
+        AND ul.USR$USERKEY = ${userId})`;
 
 
   const checkCardsVisibility = `
-  AND TRUE = IIF(NOT ${checkFullView},
-    EXISTS(
-      SELECT
-        empl.ID
-      FROM GD_USER u
-        JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
-        JOIN GD_CONTACT empl ON empl.PARENT = con.PARENT
-        JOIN GD_PEOPLE p ON p.CONTACTKEY = con.ID
-        JOIN GD_RUID r ON p.WPOSITIONKEY = r.ID
-      WHERE
-        u.ID = ${userID}
-        AND empl.contacttype = 2
-        /* Если начальник отдела, то видит всех сотрудников */
-        AND empl.ID = IIF(r.XID = 169735453 AND r.DBID = 979150408, empl.ID, con.ID)
-        AND empl.ID IN (performer.ID, creator.ID)), TRUE)`;
+    AND 1 = IIF(NOT ${checkFullView},
+      IIF(EXISTS(
+        SELECT DISTINCT
+          con.NAME,
+          ud.USR$DEPOTKEY
+        FROM GD_USER u
+          JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+          LEFT JOIN USR$CRM_USERSDEPOT ud ON ud.USR$USERKEY = u.ID
+          JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$USERKEY = u.ID
+          LEFT JOIN GD_P_GETRUID(ul.USR$GROUPKEY) r ON 1 = 1
+        WHERE
+          u.ID = ${userId}
+          /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
+          AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
+          OR con.ID IN (performer.ID, creator.ID))), 1, 0), 1)`;
+
+  const filter = `
+    AND 1 =
+    CASE ${deadline || -1}
+      WHEN 1 THEN 1
+      WHEN 2 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 0, 0, 1)
+      WHEN 3 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 1, 0, 1)
+      WHEN 4 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) >= 0, 0, 1)
+      WHEN 5 THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
+      ELSE 1
+    END`;
 
   const _schema: IDataSchema = {
     tasks: {
@@ -121,7 +135,8 @@ const get: RequestHandler = async (req, res) => {
           LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
           LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
         WHERE 1=1
-        ${userID > 0 ? checkCardsVisibility : ''}
+        ${userId > 0 ? checkCardsVisibility : ''}
+        ${filter}
         ORDER BY card.USR$MASTERKEY, USR$INDEX`
     },
     {
@@ -144,6 +159,16 @@ const get: RequestHandler = async (req, res) => {
         LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
         LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY`
     },
+    // {
+    //   name: 'deny',
+    //   query: `
+    //     SELECT
+    //       ID,
+    //       USR$NAME NAME
+    //     FROM USR$CRM_DENY_REASONS
+    //     WHERE DISABLED = 0
+    //     ORDER BY USR$NAME`
+    // }
   ];
 
   const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
@@ -154,6 +179,15 @@ const get: RequestHandler = async (req, res) => {
 
   const cards: IMapOfArrays = {};
   const tasks: IMapOfArrays = {};
+  const denyReasons: IMapOfArrays = {};
+
+  // rawDeny.forEach(el => {
+  //   if (denyReasons[el['ID']]) {
+  //     denyReasons[el['ID']].push(el);
+  //   } else {
+  //     denyReasons[el['ID']] = [el];
+  //   };
+  // });
 
   rawTasks.forEach(el => {
     const newTask = {
@@ -225,7 +259,7 @@ const get: RequestHandler = async (req, res) => {
           },
         }),
         ...(el['DENY_ID'] && {
-          DENY: {
+          DENYREASON: {
             ID: el['DENY_ID'],
             NAME: el['DENY_NAME'],
           },

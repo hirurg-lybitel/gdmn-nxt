@@ -18,15 +18,58 @@ type IKanbanHistoryRequestResult = IRequestResult<IHistory>;
 
 type IDenyReasonRequestResult = IRequestResult<{ denyReasons: IDenyReason[] }>;
 
+interface IFilteringData {
+  [name: string] : any[];
+};
+export interface IDealsQueryOptions {
+  userId?: number;
+  filter?: IFilteringData;
+};
+
 export const kanbanApi = createApi({
   reducerPath: 'kanban',
   tagTypes: ['Kanban', 'Column', 'Card', 'Task'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getKanbanDeals: builder.query<IKanbanColumn[], { userId?: number }>({
-      query({ userId }) {
+    getKanbanDeals: builder.query<IKanbanColumn[], IDealsQueryOptions | void>({
+      query(options) {
+        // const userId = options?.userId;
+        // const filter = options?.filter;
+
+        const params: string[] = [];
+
+        for (const [name, value] of Object.entries(options || {})) {
+          switch (true) {
+            case typeof value === 'object' && value !== null:
+              for (const [subName, subKey] of Object.entries(value)) {
+                // console.log('getKanbanDeals_2', subName, subKey);
+                const subParams = [];
+                if (typeof subKey === 'object' && subKey !== null) {
+                  for (const [subName_l2, subKey_l2] of Object.entries(subKey)) {
+                    if (typeof subKey_l2 === 'object' && subKey_l2 !== null) {
+                      subParams.push((subKey_l2 as any)['id']);
+                    };
+                    if (typeof subKey_l2 === 'string' || typeof subKey_l2 === 'number') {
+                      subParams.push(subKey_l2);
+                    };
+                  }
+                } else {
+                  subParams.push(subKey);
+                };
+                params.push(`${subName}=${subParams}`);
+              };
+              break;
+
+            default:
+              params.push(`${name}=${value}`);
+              break;
+          }
+        };
+
+        // console.log('getKanbanDeals', params.join('&'));
+
         return {
-          url: `kanban/data/deals?userID=${userId}`,
+          url: `kanban/data/deals?${params.join('&')}`,
           method: 'GET'
         };
       },

@@ -1,7 +1,7 @@
 import { Autocomplete, Box, Button, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Slide, Stack, TextField, Typography } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
-import { forwardRef, ReactElement, Ref, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useState } from 'react';
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
@@ -105,9 +105,12 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       USR$NAME: yup.string().required('').max(80, 'Слишком длинное описание'),
     }),
     onSubmit: (values) => {
-      console.log('values', values);
+      if (!confirmOpen) {
+        setDeleting(false);
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      onSubmit(values, deleting);
     },
     isInitialValid: false,
   });
@@ -122,6 +125,15 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     formik.resetForm();
     onCancelClick();
   };
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    onSubmit(formik.values, deleting);
+  }, [formik.values, deleting]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
   function combineDateAndTime(date?: Date, time?: Date) {
     if (!date || !time) return;
@@ -312,10 +324,10 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title={deleting ? 'Удаление клиента' : 'Сохранение'}
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Dialog>
   );

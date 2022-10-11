@@ -32,7 +32,7 @@ export function KanbanCard(props: KanbanCardProps) {
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
-      if (card.ID <= 0) {
+      if (!card.ID) {
         if (!copyCard) return;
 
         onAdd(card);

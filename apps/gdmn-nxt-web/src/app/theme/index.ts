@@ -1,6 +1,7 @@
 import { colors } from '@mui/material';
 import * as locales from '@mui/material/locale';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { breakpoints } from '@mui/system';
 import { ICustomization } from '../store/settingsSlice';
 import componentStyleOverrides from './componentStyleOverrides';
 import { styledTheme } from './styles';
@@ -9,9 +10,17 @@ import themeTypography from './typography';
 declare module '@mui/material/styles' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface Theme extends styledTheme {}
-  // allow configuration using `createTheme`
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   export interface ThemeOptions extends styledTheme {}
+  interface BreakpointOverrides {
+    xs: true;
+    sm: true;
+    md: true;
+    lg: true;
+    xl: true;
+    laptop: true;
+    ultraWide: true;
+  }
 };
 
 export const theme = (customization: ICustomization) => {
@@ -61,6 +70,18 @@ export const theme = (customization: ICustomization) => {
       marginRight: '20px',
       borderRadius: '12px'
     },
+    breakpoints: {
+      /** breakpoints берём немного с меньше, чем разрешение экрана*/
+      values:{
+        xs: 0,
+        sm: 600,
+        md: 900,
+        lg: 1280,
+        xl: 1536,
+        laptop: 1366,
+        ultraWide: 1920
+      }
+    }
   };
 
   const themes = createTheme(themeOptions, locales.ruRU);
