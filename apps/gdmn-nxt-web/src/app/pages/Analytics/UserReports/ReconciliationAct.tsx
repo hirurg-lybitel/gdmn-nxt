@@ -1,8 +1,8 @@
 import { DateRangePicker, DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { Autocomplete, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { Fragment, useRef, useState } from 'react';
-import { IContactWithLabels } from '@gsbelarus/util-api-types';
+import { Fragment, useMemo, useRef, useState } from 'react';
+import { IContactWithLabels, ICustomer } from '@gsbelarus/util-api-types';
 import ReconciliationStatement from '../../../reconciliation-statement/reconciliation-statement';
 import { useParams } from 'react-router-dom';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
@@ -47,7 +47,8 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<IInputParams>();
 
-  const { data: customers, isFetching: customerFetching } = useGetCustomersQuery();
+  const { data, isFetching: customerFetching } = useGetCustomersQuery();
+  const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
 
   const handleGenerate = () => {
     setInputParams((prevState) => ({
@@ -101,8 +102,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
                       required
                       value={customerId}
                     />
-                  )
-                  }
+                  )}
                   loading={customerFetching}
                   loadingText="Загрузка данных..."
                 />

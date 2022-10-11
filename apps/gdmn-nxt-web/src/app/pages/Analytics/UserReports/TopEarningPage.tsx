@@ -2,7 +2,7 @@ import { IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-ap
 import { Autocomplete, Box, Button, CardActions, CardContent, CardHeader, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useState } from 'react';
-import TopEarning, { ITopEarningParams } from "../../../components/Reports/top-earning/top-earning";
+import TopEarning, { ITopEarningParams } from '../../../components/Reports/top-earning/top-earning';
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
@@ -18,7 +18,7 @@ const initState: IInitState = {
   dates: [new Date(), new Date()]
 };
 
-export default function TopEarningPage(){
+export default function TopEarningPage() {
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<ITopEarningParams>();
   const [dates, setDates] = useState<DateRange<Date>>(initState.dates);
@@ -27,9 +27,9 @@ export default function TopEarningPage(){
   const [selectedConstract, setSelectedConstract] = useState<ICustomerContract | null>(null);
   const [selectedWorkType, setSelectedWorkType] = useState<IWorkType | null>(null);
 
-  const {data: departments, isFetching: departmentsFetching } = useGetDepartmentsQuery();
-  const {data: contracts, isFetching: contractsFetching} = useGetCustomerContractsQuery();
-  const {data: workTypes, isFetching: workTypesFetching} = useGetWorkTypesQuery({
+  const { data: departments, isFetching: departmentsFetching } = useGetDepartmentsQuery();
+  const { data: contracts, isFetching: contractsFetching } = useGetCustomerContractsQuery();
+  const { data: workTypes, isFetching: workTypesFetching } = useGetWorkTypesQuery({
     contractJob: selectedConstract ? [selectedConstract.ID] : undefined
   });
 
@@ -42,7 +42,7 @@ export default function TopEarningPage(){
   };
 
   const handleGenerate = () => {
-        setInputParams((prevState) => ({
+    setInputParams((prevState) => ({
       dates,
       customerCount,
       ...(selectedDep && { depId: selectedDep.ID }),
@@ -61,121 +61,121 @@ export default function TopEarningPage(){
 
   return (
     <>
-    <Stack direction="column" flex={1} spacing={2}>
-      <CustomizedCard borders boxShadows>
-        <CardHeader title={<Typography variant="h3">ТОП по выручке</Typography>} />
-        <Divider />
-        <CardContent>
-          <Grid container direction="column" spacing={2}>
-            <Grid item>
-              <DateRangePicker
-                value={dates}
-                onChange={setDates}
-                renderInput={(startProps: any, endProps: any) => (
-                  <>
-                    <TextField {...startProps} />
-                    <Box sx={{ mx: 2 }}/>
-                    <TextField {...endProps} />
-                  </>
-                )}
-              />
-            </Grid>
-            <Grid item>
-              <TextField
-                label="Кол-во клиентов"
-                type="number"
-                value={customerCount}
-                onChange={(e) => setCustomerCount(Number(e.target.value))}
-              />
-            </Grid>
-            <Grid item container xs={12} spacing={2}>
-              <Grid item xs={4}>
-                <Autocomplete
-                  options={departments || []}
-                  getOptionLabel={option => option.NAME}
-                  renderOption={renderOption('NAME')}
-                  loading={departmentsFetching}
-                  value={selectedDep}
-                  onChange={(e, value) => setSelectedDep(value)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Подразделение"
-                      placeholder="Выберите подразделение"
-                    />
+      <Stack direction="column" flex={1} spacing={2}>
+        <CustomizedCard borders boxShadows>
+          <CardHeader title={<Typography variant="h3">ТОП по выручке</Typography>} />
+          <Divider />
+          <CardContent>
+            <Grid container direction="column" spacing={2}>
+              <Grid item>
+                <DateRangePicker
+                  value={dates}
+                  onChange={setDates}
+                  renderInput={(startProps: any, endProps: any) => (
+                    <>
+                      <TextField {...startProps} />
+                      <Box sx={{ mx: 2 }}/>
+                      <TextField {...endProps} />
+                    </>
                   )}
                 />
               </Grid>
-              <Grid item xs={4}>
-                <Autocomplete
-                  options={contracts || []}
-                  getOptionLabel={option => option.USR$NAME || ''}
-                  renderOption={renderOption('USR$NAME')}
-                  loading={contractsFetching}
-                  value={selectedConstract || null}
-                  onChange={(e, value) => {
-                    setSelectedConstract(value);
-                    setSelectedWorkType(null)
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Заказ"
-                      placeholder="Выберите заказ"
-                    />
-                  )}
+              <Grid item>
+                <TextField
+                  label="Кол-во клиентов"
+                  type="number"
+                  value={customerCount}
+                  onChange={(e) => setCustomerCount(Number(e.target.value))}
                 />
               </Grid>
-              <Grid item xs={4}>
-                <Autocomplete
-                  options={workTypes || []}
-                  getOptionLabel={option => option.USR$NAME || ''}
-                  renderOption={renderOption('USR$NAME')}
-                  loading={workTypesFetching}
-                  value={selectedWorkType}
-                  onChange={(e, value) => setSelectedWorkType(value)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Вид работы"
-                      placeholder="Выберите вид работы"
-                    />
-                  )}
-                />
+              <Grid item container xs={12} spacing={2} direction={{ sm: 'column', md: 'row' }}>
+                <Grid item xs={4}>
+                  <Autocomplete
+                    options={departments || []}
+                    getOptionLabel={option => option.NAME}
+                    renderOption={renderOption('NAME')}
+                    loading={departmentsFetching}
+                    value={selectedDep}
+                    onChange={(e, value) => setSelectedDep(value)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Подразделение"
+                        placeholder="Выберите подразделение"
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={4}>
+                  <Autocomplete
+                    options={contracts || []}
+                    getOptionLabel={option => option.USR$NUMBER || ''}
+                    renderOption={renderOption('USR$NUMBER')}
+                    loading={contractsFetching}
+                    value={selectedConstract || null}
+                    onChange={(e, value) => {
+                      setSelectedConstract(value);
+                      setSelectedWorkType(null)
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Заказ"
+                        placeholder="Выберите заказ"
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={4}>
+                  <Autocomplete
+                    options={workTypes || []}
+                    getOptionLabel={option => option.USR$NAME || ''}
+                    renderOption={renderOption('USR$NAME')}
+                    loading={workTypesFetching}
+                    value={selectedWorkType}
+                    onChange={(e, value) => setSelectedWorkType(value)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Вид работы"
+                        placeholder="Выберите вид работы"
+                      />
+                    )}
+                  />
+                </Grid>
               </Grid>
             </Grid>
-          </Grid>
-        </CardContent>
-        <Divider />
-        <CardActions style={{ padding: '16px' }}>
-          <Stack direction="row" spacing={3} flex={1}>
-            <Box flex={1} />
-            <Button
-            onClick={handelClear}
-            >
+          </CardContent>
+          <Divider />
+          <CardActions style={{ padding: '16px' }}>
+            <Stack direction="row" spacing={3} flex={1}>
+              <Box flex={1} />
+              <Button
+                onClick={handelClear}
+              >
                   Очистить
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleGenerate}
-            >
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleGenerate}
+              >
                   Сформировать
-            </Button>
+              </Button>
 
-          </Stack>
-        </CardActions>
+            </Stack>
+          </CardActions>
 
-      </CustomizedCard>
-      {generate
-        ? <CustomizedCard
-          borders
-          boxShadows
-          style={{ padding: '16px' }}
-        >
-          <TopEarning params={inputParams} />
         </CustomizedCard>
-        : null}
-    </Stack>
-    <ScrollToTop /></>
+        {generate
+          ? <CustomizedCard
+            borders
+            boxShadows
+            style={{ padding: '16px' }}
+          >
+            <TopEarning params={inputParams} />
+          </CustomizedCard>
+          : null}
+      </Stack>
+      <ScrollToTop /></>
   );
 };

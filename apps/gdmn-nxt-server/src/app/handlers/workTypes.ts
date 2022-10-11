@@ -35,7 +35,8 @@ const get: RequestHandler = async (req, res) => {
             USR$BG_JOBWORK w
           WHERE
             1 = 1
-            /* and coalesce(w.USR$NOTACTIVE, 0) = 0*/
+            AND COALESCE(w.USR$NAME, '') != ''
+            AND COALESCE(w.USR$NOTACTIVE, 0) = 0
             ${contractJobKeys ? ` AND w.USR$CONTRACTJOBKEY IN (${contractJobKeys})` : ''}`
       },
     ];

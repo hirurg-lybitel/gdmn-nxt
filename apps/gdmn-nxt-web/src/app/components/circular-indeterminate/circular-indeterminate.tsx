@@ -17,3 +17,5 @@ export function CircularIndeterminate(props: CircularIndeterminateProps) {
     </Box>
   );
 }
+
+export default CircularIndeterminate;

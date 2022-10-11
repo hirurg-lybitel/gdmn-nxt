@@ -1,21 +1,15 @@
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, TextField, Typography } from '@mui/material';
 import { DesktopDatePicker } from '@mui/x-date-pickers';
-import ruLocale from 'date-fns/locale/ru';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './remains-by-invoices.module.less';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import RemainsByInvoicesReport from '../remains-by-invoices-report/remains-by-invoices-report';
-import { useGetRemainsInvoicesQuery } from 'apps/gdmn-nxt-web/src/app/features/remains-by-invoices/remainsInvoicesApi';
 
 /* eslint-disable-next-line */
 export interface RemainsByInvoicesProps {}
 
 export function RemainsByInvoices(props: RemainsByInvoicesProps) {
   // const onDate = useRef();
-
-  console.log('RemainsByInvoices');
-
   const [generate, setGenerate] = useState(false);
   const [onDate, setOnDate] = useState<Date | null>(
     new Date(),
