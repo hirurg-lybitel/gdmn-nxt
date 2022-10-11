@@ -3,7 +3,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconBut
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { forwardRef, ReactElement, Ref, useEffect, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -69,8 +69,12 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       DESCRIPTION: yup.string().max(260, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
+      if (!confirmOpen) {
+        setDeleting(false);
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      onSubmit(value, deleting);
     }
   });
 
@@ -89,6 +93,15 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       formik.resetForm();
     }
   }, [open]);
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    onSubmit(formik.values, deleting);
+  }, [formik.values, deleting]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
 
   return (
@@ -162,10 +175,10 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title="Сохранение"
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Dialog>
   );

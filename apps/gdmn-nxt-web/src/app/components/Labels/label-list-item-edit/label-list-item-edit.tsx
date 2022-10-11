@@ -1,6 +1,6 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField, Theme } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
-import { forwardRef, ReactElement, Ref, useEffect, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
 import styles from './label-list-item-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ILabel } from '@gsbelarus/util-api-types';
@@ -71,8 +71,11 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       USR$DESCRIPTION: yup.string().max(40, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
+      if (!confirmOpen) {
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      onSubmit(value);
     }
   });
 
@@ -85,6 +88,15 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
   const onCancel = () => {
     onCancelClick();
   };
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    onSubmit(formik.values);
+  }, [formik.values]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
   return (
     <Dialog
@@ -171,10 +183,10 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title="Сохранение"
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Dialog>
   );

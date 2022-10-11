@@ -3,7 +3,7 @@ import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, Dialog
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { forwardRef, ReactElement, Ref, useEffect, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import * as yup from 'yup';
 import styles from './user-group-line-edit.module.less';
@@ -70,14 +70,26 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
       USER: yup.object().required('Не выбран пользователь'),
     }),
     onSubmit: (value) => {
+      if (!confirmOpen) {
+        setConfirmOpen(true);
+        return;
+      };
       setConfirmOpen(false);
-      onSubmit(value);
     }
   });
 
   useEffect(() => {
     if (!open) formik.resetForm();
   }, [open]);
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    onSubmit(formik.values);
+  }, [formik.values]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
   return (
     <Dialog
@@ -157,10 +169,10 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
       </DialogActions>
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title="Сохранение"
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={formik.handleSubmit}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Dialog>
   );

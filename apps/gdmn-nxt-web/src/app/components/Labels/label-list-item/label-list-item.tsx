@@ -3,7 +3,7 @@ import { Box, Divider, Grid, IconButton } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import styles from './label-list-item.module.less';
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useCallback, useState } from 'react';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
@@ -72,14 +72,12 @@ export function LabelListItem(props: LabelListItemProps) {
   };
 
   const handleDeleteClick = () => {
-    console.log('handleDeleteClick');
     setConfirmOpen(true);
   };
 
-  const removeLabel = () => {
-    console.log('deleteLabel', ID);
-    deleteLabel(ID);
-  };
+  // const removeLabel = () => {
+  //   deleteLabel(ID);
+  // };
 
   const handleOnSubmit = (label: ILabel) => {
     // console.log('handleOnSubmit', label);
@@ -96,6 +94,15 @@ export function LabelListItem(props: LabelListItemProps) {
   const handleCancelClick = () => {
     setOpenEditForm(false);
   };
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    deleteLabel(ID);
+  }, [ID]);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
 
   function hexToRGB(h: any) {
     let r = 0, g = 0, b = 0;
@@ -193,10 +200,10 @@ export function LabelListItem(props: LabelListItemProps) {
       />
       <ConfirmDialog
         open={confirmOpen}
-        setOpen={setConfirmOpen}
         title="Удаление метки"
         text="Вы уверены, что хотите продолжить?"
-        onConfirm={removeLabel}
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
       />
     </Box>
   );
