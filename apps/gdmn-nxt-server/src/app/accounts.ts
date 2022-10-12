@@ -140,7 +140,7 @@ export const upsertAccount: RequestHandler = async (req, res) => {
     }
   }
   catch (err) {
-    console.error(err);
+    // console.error(err);
     res.sendStatus(500);
   }
   finally {
