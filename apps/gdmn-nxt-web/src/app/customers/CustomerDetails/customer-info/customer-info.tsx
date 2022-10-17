@@ -15,6 +15,11 @@ export function CustomerInfo(props: CustomerInfoProps) {
 
   const columns = [
     {
+      field: 'TAXID',
+      title: 'УНП',
+      renderFn: (value: any) => value
+    },
+    {
       field: 'EMAIL',
       title: 'Email',
       renderFn: (value: any) => value
@@ -25,13 +30,13 @@ export function CustomerInfo(props: CustomerInfoProps) {
       renderFn: (value: any) => value
     },
     {
-      field: 'TAXID',
-      title: 'УНП',
+      field: 'ADDRESS',
+      title: 'Адрес',
       renderFn: (value: any) => value
     },
     {
-      field: 'ADDRESS',
-      title: 'Адрес',
+      field: 'EMPLOYEES',
+      title: 'Сотрудники',
       renderFn: (value: any) => value
     },
     // {
