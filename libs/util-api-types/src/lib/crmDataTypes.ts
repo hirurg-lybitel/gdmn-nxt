@@ -46,6 +46,7 @@ export interface ICustomerCross {
   departments: IMapOfArrays,
   contracts: IMapOfArrays,
   jobWorks: IMapOfArrays,
+  persons: IMapOfArrays,
 };
 
 export interface ICustomerContract extends IWithID {
@@ -73,6 +74,11 @@ export interface IDeal extends IWithID {
   DENYREASON?: IDenyReason;
   DENIED?: boolean;
   COMMENT?: string;
+  REQUESTNUMBER?: string;
+  PRODUCTNAME?: string;
+  CONTACT_NAME?: string;
+  CONTACT_EMAIL?: string;
+  CONTACT_PHONE?: string;
 };
 
 export interface IKanbanCard extends IWithID {
