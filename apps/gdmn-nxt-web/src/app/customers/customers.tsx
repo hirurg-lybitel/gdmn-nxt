@@ -129,7 +129,7 @@ export function Customers(props: CustomersProps) {
   );
 
   const customersData: ICustomer[] = useMemo(() => [...customersResponse?.data || []], [customersResponse?.data]);
-  const customersCount: number | undefined = useMemo(() => customersResponse?.count || -1, [customersResponse?.count]);
+  const customersCount: number | undefined = useMemo(() => customersResponse?.count || 0, [customersResponse?.count]);
   // const { data: customersData } = customersResponse;
   const { data: wotkTypes } = useGetWorkTypesQuery();
   const { data: departments } = useGetDepartmentsQuery();
@@ -138,11 +138,11 @@ export function Customers(props: CustomersProps) {
 
   useEffect(() => {
     const newCustomers = customersData?.map(customer => {
-      const DEPARTMETNS: IContactWithID[] = [];
+      const DEPARTMENTS: IContactWithID[] = [];
       customersCross?.departments[customer.ID]?.forEach((el:number) => {
         const department = departments?.find(wt => wt.ID === el);
         if (!department) return;
-        DEPARTMETNS.push(department);
+        DEPARTMENTS.push(department);
       });
 
       const JOBWORKS: IWorkType[] = [];
@@ -161,7 +161,7 @@ export function Customers(props: CustomersProps) {
 
       return {
         ...customer,
-        DEPARTMETNS,
+        DEPARTMENTS,
         CONTRACTS,
         JOBWORKS
       };
@@ -539,9 +539,7 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(!openFilters);
     },
     handleRequestSearch: async (value: string) => {
-      console.log('handleRequestSearch1', filteringData);
       const newObject = { ...filteringData };
-      console.log('handleRequestSearch2', newObject);
       delete newObject['NAME'];
       setFilteringData({
         ...newObject,
@@ -598,7 +596,6 @@ export function Customers(props: CustomersProps) {
       onDeleteClick={handleOrganizationDeleteOnClick}
     />,
   [openEditForm]);
-
 
   const memoSearchBar = useMemo(() =>
     <SearchBar
@@ -680,6 +677,7 @@ export function Customers(props: CustomersProps) {
               <DataGridPro
                 className={classes.DataGrid}
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+                hideFooterSelectedRowCount
                 rows={
                   customers ?? []}
                 columns={columns}

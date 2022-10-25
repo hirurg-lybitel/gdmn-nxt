@@ -34,8 +34,10 @@ export interface ICustomer extends IContactWithID {
   LABELS?: ILabel[];
   CONTRACTS?: ICustomerContractWithID[];
   JOBWORKS?: IWorkType[];
-  DEPARTMETNS?: IContactWithID[];
+  DEPARTMENTS?: IContactWithID[];
   TAXID?: string;
+  FULLNAME?: string;
+  POSTADDRESS?: string;
 };
 
 interface IMapOfArrays {
@@ -123,6 +125,7 @@ export interface IActCompletion extends IWithID {
   DEPT_NAME: string;
   JOB_NUMBER: string;
   USR$SUMNCU: number;
+  JOBWORKNAME?: string;
 };
 
 export interface IBankStatement extends IWithID {

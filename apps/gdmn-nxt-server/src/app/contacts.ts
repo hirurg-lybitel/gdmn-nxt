@@ -1,4 +1,4 @@
-import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactPerson, ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
 import { resultError } from './responseMessages';
@@ -72,10 +72,14 @@ export const getContacts: RequestHandler = async (req, res) => {
             c.email,
             c.parent,
             comp.taxid,
-            c.address
+            c.address,
+            com.FULLNAME,
+            c.FAX,
+            c.USR$CRM_POSTADDRESS AS POSTADDRESS
           FROM
             gd_contact c
             join gd_companycode comp on comp.COMPANYKEY = c.id
+            JOIN GD_COMPANY com ON com.CONTACTKEY = c.ID
             ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
             ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
             ${DEPARTMENTS || CONTRACTS || WORKTYPES
@@ -544,9 +548,29 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
           FROM USR$CRM_CUSTOMER
           ORDER BY USR$CUSTOMERKEY`,
       },
+      {
+        name: 'persons',
+        query: `
+          SELECT
+            con.PARENT, empl.ID, empl.NAME, empl.EMAIL, p.RANK
+          FROM GD_CONTACT con
+          JOIN GD_CONTACT empl ON empl.PARENT = con.ID
+          JOIN GD_PEOPLE p  ON p.CONTACTKEY = empl.ID
+          WHERE
+            UPPER(con.NAME) = 'КОНТАКТЫ'
+          ORDER BY con.PARENT`
+      },
+      {
+        name: 'phones',
+        query: `
+          SELECT
+            p.ID, p.USR$CONTACTKEY, p.USR$PHONENUMBER
+          FROM USR$CRM_PHONES p
+          ORDER BY p.USR$CONTACTKEY`
+      }
     ];
 
-    const [rawCustomers] = await Promise.all(queries.map(execQuery));
+    const [rawCustomers, rawPersons, rawPhones] = await Promise.all(queries.map(execQuery));
 
     interface IMapOfArrays {
       [key: string]: any[];
@@ -555,7 +579,8 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
     const jobWorks: IMapOfArrays = {};
     const contracts: IMapOfArrays = {};
     const departments: IMapOfArrays = {};
-    const labels: IMapOfArrays = {};
+    const persons: IMapOfArrays = {};
+    const phones: IMapOfArrays = {};
 
     rawCustomers.forEach(c => {
       if (c.USR$JOBKEY) {
@@ -589,13 +614,43 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
       }
     });
 
+    rawPhones.forEach(p => {
+      const newPhone = {
+        ID: p.ID,
+        USR$PHONENUMBER: p.USR$PHONENUMBER
+      };
+
+      if (phones[p.USR$CONTACTKEY]) {
+        phones[p.USR$CONTACTKEY].push(newPhone);
+      } else {
+        phones[p.USR$CONTACTKEY] = [newPhone];
+      }
+    });
+
+    rawPersons.forEach(p => {
+      const newPerson: IContactPerson = {
+        ID: p.ID,
+        NAME: p.NAME,
+        EMAIL: p.EMAIL,
+        RANK: p.RANK,
+        PHONES: phones[p.ID] || []
+      };
+
+      if (persons[p.PARENT]) {
+        persons[p.PARENT].push(newPerson);
+      } else {
+        persons[p.PARENT] = [newPerson];
+      };
+    });
+
     const result: IRequestResult = {
       queries: {
         // ...Object.fromEntries(await Promise.all(queries.map(execQuery)))
         cross: [{
           departments,
           contracts,
-          jobWorks
+          jobWorks,
+          persons
         }]
       },
       _schema

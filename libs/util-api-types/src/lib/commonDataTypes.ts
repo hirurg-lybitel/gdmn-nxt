@@ -51,6 +51,7 @@ export interface IBaseContact {
   FOLDERNAME?: string;
   NOTE?: string;
   ADDRESS?: string;
+  FAX?: string;
 };
 
 export interface IContactWithID extends IBaseContact, IWithID, IWithParent {}
