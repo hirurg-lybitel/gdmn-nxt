@@ -10,16 +10,17 @@ import { useGetCustomerContractsQuery } from '../features/customer-contracts/cus
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const skip = !userProfile?.id;
 
   const { } = useGetCustomersQuery({
     pagination: {
       pageNo: 0,
       pageSize: 10
     }
-  });
-  const { } = useGetKanbanDealsQuery({ userId: userProfile?.id || -1 });
-  const { } = useGetCustomersCrossQuery();
-  const { } = useGetWorkTypesQuery();
-  const { } = useGetDepartmentsQuery();
-  const { } = useGetCustomerContractsQuery();
+  }, { skip });
+  const { } = useGetKanbanDealsQuery({ userId: userProfile?.id || -1 }, { skip });
+  const { } = useGetCustomersCrossQuery(undefined, { skip });
+  const { } = useGetWorkTypesQuery(undefined, { skip });
+  const { } = useGetDepartmentsQuery(undefined, { skip });
+  const { } = useGetCustomerContractsQuery(undefined, { skip });
 };
