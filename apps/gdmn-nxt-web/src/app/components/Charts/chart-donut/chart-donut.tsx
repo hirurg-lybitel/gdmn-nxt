@@ -24,7 +24,7 @@ export function ChartDonut(props: ChartDonutProps) {
     theme.color.yellow['800'],
     theme.color.green['A400'],
     theme.color.blueGrey[400]
-  ]
+  ];
 
   const chartOptions: ApexCharts.ApexOptions = {
     labels: stages?.map(stage => stage.USR$NAME) ?? [],

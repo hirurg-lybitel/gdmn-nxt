@@ -34,8 +34,10 @@ export interface ICustomer extends IContactWithID {
   LABELS?: ILabel[];
   CONTRACTS?: ICustomerContractWithID[];
   JOBWORKS?: IWorkType[];
-  DEPARTMETNS?: IContactWithID[];
+  DEPARTMENTS?: IContactWithID[];
   TAXID?: string;
+  FULLNAME?: string;
+  POSTADDRESS?: string;
 };
 
 interface IMapOfArrays {
@@ -46,6 +48,7 @@ export interface ICustomerCross {
   departments: IMapOfArrays,
   contracts: IMapOfArrays,
   jobWorks: IMapOfArrays,
+  persons: IMapOfArrays,
 };
 
 export interface ICustomerContract extends IWithID {
@@ -73,6 +76,11 @@ export interface IDeal extends IWithID {
   DENYREASON?: IDenyReason;
   DENIED?: boolean;
   COMMENT?: string;
+  REQUESTNUMBER?: string;
+  PRODUCTNAME?: string;
+  CONTACT_NAME?: string;
+  CONTACT_EMAIL?: string;
+  CONTACT_PHONE?: string;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -117,6 +125,7 @@ export interface IActCompletion extends IWithID {
   DEPT_NAME: string;
   JOB_NUMBER: string;
   USR$SUMNCU: number;
+  JOBWORKNAME?: string;
 };
 
 export interface IBankStatement extends IWithID {

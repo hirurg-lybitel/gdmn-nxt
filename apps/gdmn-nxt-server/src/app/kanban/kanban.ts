@@ -126,7 +126,12 @@ const get: RequestHandler = async (req, res) => {
             deny.ID DENY_ID,
             deny.USR$NAME AS DENY_NAME,
             deal.USR$DENIED DENIED,
-            deal.USR$COMMENT COMMENT
+            deal.USR$COMMENT COMMENT,
+            deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
+            deal.USR$PRODUCTNAME AS PRODUCTNAME,
+            deal.USR$CONTACT_NAME AS CONTACT_NAME,
+            deal.USR$CONTACT_EMAIL AS CONTACT_EMAIL,
+            deal.USR$CONTACT_PHONE AS CONTACT_PHONE
           FROM USR$CRM_KANBAN_CARDS card
             JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
@@ -197,7 +202,11 @@ const get: RequestHandler = async (req, res) => {
 
     rawCards.forEach(el => {
       const newCard = {
-        ...el,
+        // ...el,
+        ID: el['ID'],
+        USR$INDEX: el['USR$INDEX'],
+        USR$MASTERKEY: el['USR$MASTERKEY'],
+        USR$DEALKEY: el['USR$DEALKEY'],
         DEAL: {
           ID: el['DEAL_ID'],
           USR$NAME: el['DEAL_USR$NAME'],
@@ -239,6 +248,11 @@ const get: RequestHandler = async (req, res) => {
           USR$READYTOWORK: el['USR$READYTOWORK'] === 1,
           DENIED: el['DENIED'] === 1,
           COMMENT: el['COMMENT'],
+          REQUESTNUMBER: el['REQUESTNUMBER'],
+          PRODUCTNAME: el['PRODUCTNAME'],
+          CONTACT_NAME: el['CONTACT_NAME'],
+          CONTACT_EMAIL: el['CONTACT_EMAIL'],
+          CONTACT_PHONE: el['CONTACT_PHONE'],
         },
         TASKS: tasks[el['ID']]
       };

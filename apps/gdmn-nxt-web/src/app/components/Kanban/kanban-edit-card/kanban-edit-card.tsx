@@ -11,7 +11,6 @@ import {
   Slide,
   Stack,
   TextField,
-  createFilterOptions,
   Theme,
   Box,
   Divider,
@@ -28,10 +27,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
-import { ErrorMessage, Form, FormikProvider, getIn, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IDeal, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { ICustomer } from '@gsbelarus/util-api-types';
@@ -95,12 +94,6 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-// const filterOptions = createFilterOptions({
-//   matchFrom: 'any',
-//   limit: 100,
-//   stringify: (option: ICustomer) => option.NAME,
-// });
-
 export interface KanbanEditCardProps {
   open: boolean;
   currentStage?: IKanbanColumn;
@@ -139,7 +132,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
-  // const allCustomers = customers as ICustomer[];
 
   const handleChangeAccordion = (panel: string) => (event: any, newExpanded: any) => {
     if (newExpanded) setExpanded(panel);
@@ -207,7 +199,16 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .required('Не указан создатель'),
           DEPARTMENT: yup.object()
             .nullable()
-            .required('Не указан отдел')
+            .required('Не указан отдел'),
+          CONTACT_NAME: yup.string().nullable().max(80, 'Слишком длинное имя'),
+          CONTACT_EMAIL: yup.string()
+            .nullable()
+            .matches(/@./, 'Адрес электрочнной почты должен содержать символы @ и .')
+            .max(40, 'Слишком длинный email'),
+          CONTACT_PHONE: yup.string().nullable().max(40, 'Слишком длинный номер'),
+          REQUESTNUMBER: yup.string().nullable().max(20, 'Слишком длинный номер'),
+          PRODUCTNAME: yup.string().nullable().max(180, 'Слишком длинное наименование'),
+
             // .shape({
             //   ID: yup.number()
             //     .nullable()
@@ -236,6 +237,71 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
   }, []);
+
+  const KanbanRequestInfo = useMemo(() => {
+    if ((getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))) ||
+        (getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))) ||
+        (getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))) ||
+        (getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))) ||
+        (getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE')))) {
+      setTabIndex('2');
+    };
+
+    return (
+      <Stack flex={1} spacing={3}>
+        <TextField
+          label="Номер заявки"
+          type="text"
+          name="DEAL.REQUESTNUMBER"
+          onChange={formik.handleChange}
+          value={formik.values.DEAL?.REQUESTNUMBER || ''}
+          error={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))}
+          helperText={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && getIn(formik.errors, 'DEAL.REQUESTNUMBER')}
+        />
+        <TextField
+          label="Продукция"
+          type="text"
+          name="DEAL.PRODUCTNAME"
+          onChange={formik.handleChange}
+          value={formik.values.DEAL?.PRODUCTNAME || ''}
+          error={getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))}
+          helperText={getIn(formik.touched, 'DEAL.PRODUCTNAME') && getIn(formik.errors, 'DEAL.PRODUCTNAME')}
+        />
+        <Divider />
+        <TextField
+          label="Заявитель"
+          type="text"
+          name="DEAL.CONTACT_NAME"
+          onChange={formik.handleChange}
+          value={formik.values.DEAL?.CONTACT_NAME || ''}
+          error={getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))}
+          helperText={getIn(formik.touched, 'DEAL.CONTACT_NAME') && getIn(formik.errors, 'DEAL.CONTACT_NAME')}
+        />
+        <Stack flex={1} spacing={3} direction={{ sm: 'column', md: 'row', lg: 'row' }}>
+          <TextField
+            label="Email"
+            type="email"
+            fullWidth
+            name="DEAL.CONTACT_EMAIL"
+            onChange={formik.handleChange}
+            value={formik.values.DEAL?.CONTACT_EMAIL || ''}
+            error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
+            helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}
+          />
+          <TextField
+            label="Телефон"
+            type="text"
+            fullWidth
+            name="DEAL.CONTACT_PHONE"
+            onChange={formik.handleChange}
+            value={formik.values.DEAL?.CONTACT_PHONE || ''}
+            error={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE'))}
+            helperText={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && getIn(formik.errors, 'DEAL.CONTACT_PHONE')}
+          />
+        </Stack>
+      </Stack>
+    )
+  }, [formik.values, formik.touched, formik.errors]);
 
   return (
     <Dialog
@@ -270,8 +336,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                   <Box>
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Сведения" value="1" />
-                      <Tab label="Задачи" value="2" />
-                      <Tab label="Хронология" value="3" />
+                      <Tab label="Заявка" value="2" />
+                      <Tab label="Задачи" value="3" />
+                      <Tab label="Хронология" value="4" />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -628,9 +695,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </Stack>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
-                    <KanbanTasks card={card} />
+                    {KanbanRequestInfo}
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''}>
+                    <KanbanTasks card={card} />
+                  </TabPanel>
+                  <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''}>
                     <CustomizedCard
                       borders
                       style={{
@@ -671,10 +741,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             form="mainForm"
             type="submit"
             variant="contained"
-            // onClick={() => {
-            //   setDeleting(false);
-            //   setConfirmOpen(formik.isValid);
-            // }}
           >Сохранить</Button>
         </PermissionsGate>
       </DialogActions>
