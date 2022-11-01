@@ -226,6 +226,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
       <ConfirmDialog
         open={confirmOpen}
         title={'Удаление группы: ' + item.USR$NAME}
+        dangerous={true}
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />

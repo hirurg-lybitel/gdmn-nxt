@@ -121,12 +121,12 @@ passport.use(new Strategy({
 ));
 
 passport.serializeUser((user: IUser, done) => {
-  console.log('passport serialize');
+  // console.log('passport serialize');
   done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`);
 });
 
 passport.deserializeUser(async (un: string, done) => {
-  console.log('passport deserialize');
+  // console.log('passport deserialize');
 
   const userType = un.slice(0, 1);
   const userName = un.slice(1);

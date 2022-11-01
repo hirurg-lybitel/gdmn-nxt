@@ -5,7 +5,7 @@ import styles from './label-list-item-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ILabel } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { TwitterPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
@@ -62,6 +62,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const formik = useFormik<ILabel>({
     enableReinitialize: true,
+    validateOnBlur: false,
     initialValues: {
       ...label,
       ...initValue
@@ -118,10 +119,11 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                 required
                 autoFocus
                 name="USR$NAME"
-                onBlur={formik.handleBlur}
+                // onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.USR$NAME}
-                helperText={formik.errors.USR$NAME}
+                error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
               />
               <Stack spacing={0.5}>
                 <TextField
@@ -150,10 +152,11 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                 name="USR$DESCRIPTION"
                 multiline
                 minRows={4}
-                onBlur={formik.handleBlur}
+                // onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.USR$DESCRIPTION}
-                helperText={formik.errors.USR$DESCRIPTION}
+                error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}
+                helperText={getIn(formik.touched, 'USR$DESCRIPTION') && getIn(formik.errors, 'USR$DESCRIPTION')}
               />
             </Stack>
           </Form>
@@ -171,11 +174,8 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
         </Button>
         <Button
           className={classes.button}
-          type={!formik.isValid ? 'submit' : 'button'}
+          type="submit"
           form="mainForm"
-          onClick={() => {
-            setConfirmOpen(formik.isValid);
-          }}
           variant="contained"
         >
             Сохранить

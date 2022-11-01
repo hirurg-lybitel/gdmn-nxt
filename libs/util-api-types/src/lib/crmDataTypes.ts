@@ -81,6 +81,7 @@ export interface IDeal extends IWithID {
   CONTACT_NAME?: string;
   CONTACT_EMAIL?: string;
   CONTACT_PHONE?: string;
+  CREATIONDATE?: Date;
 };
 
 export interface IKanbanCard extends IWithID {

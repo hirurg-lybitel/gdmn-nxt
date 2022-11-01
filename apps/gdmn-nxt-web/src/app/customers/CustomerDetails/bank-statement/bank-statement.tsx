@@ -42,13 +42,13 @@ export function BankStatement(props: BankStatementProps) {
   const { data: bankStatement, refetch, isFetching: bankStatementIsFetching } = useGetBankStatementQuery(companyId);
 
   const columns: GridColDef[] = [
-    { field: 'NUMBER', headerName: 'Номер', width: 150 },
-    { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100,
+    { field: 'NUMBER', headerName: 'Номер', width: 100 },
+    { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100, type: 'date',
       renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
-    { field: 'DEPT_NAME', headerName: 'Отдел', width: 100 },
-    { field: 'JOB_NUMBER', headerName: 'Заказ', width: 100 },
-    { field: 'CSUMNCU', headerName: 'Сумма', width: 150,
+    { field: 'DEPT_NAME', headerName: 'Отдел', width: 70 },
+    { field: 'JOB_NUMBER', headerName: 'Заказ', width: 70 },
+    { field: 'CSUMNCU', headerName: 'Сумма', minWidth: 100, align: 'right',
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
     { field: 'COMMENT', headerName: 'Комментарии', flex: 1, minWidth: 300,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
@@ -63,13 +63,13 @@ export function BankStatement(props: BankStatementProps) {
       spacing={1}
       p={3}
     >
-      <Box>
+      {/* <Box>
         <Button
           onClick={refetch}
           disabled={bankStatementIsFetching}
           startIcon={<RefreshIcon/>}
         >Обновить</Button>
-      </Box>
+      </Box> */}
       <CustomizedCard
         borders
         style={{

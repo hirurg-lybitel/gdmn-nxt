@@ -8,7 +8,7 @@ import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
 const defaultTheme = {
   border: 'none',
   padding: '0px',
-  '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
+  '& .MuiDataGrid-cell': {
     padding: '24px',
   },
   '& ::-webkit-scrollbar': {

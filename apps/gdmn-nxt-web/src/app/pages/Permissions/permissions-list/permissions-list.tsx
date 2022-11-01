@@ -64,7 +64,8 @@ export function PermissionsList(props: PermissionsListProps) {
   columns.unshift({
     field: 'NAME',
     headerName: 'Действие',
-    minWidth: 200
+    minWidth: 200,
+    headerAlign: 'center'
   });
 
   return (

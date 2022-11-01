@@ -131,7 +131,8 @@ const get: RequestHandler = async (req, res) => {
             deal.USR$PRODUCTNAME AS PRODUCTNAME,
             deal.USR$CONTACT_NAME AS CONTACT_NAME,
             deal.USR$CONTACT_EMAIL AS CONTACT_EMAIL,
-            deal.USR$CONTACT_PHONE AS CONTACT_PHONE
+            deal.USR$CONTACT_PHONE AS CONTACT_PHONE,
+            deal.USR$CREATIONDATE CREATIONDATE
           FROM USR$CRM_KANBAN_CARDS card
             JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
@@ -201,7 +202,7 @@ const get: RequestHandler = async (req, res) => {
     });
 
     rawCards.forEach(el => {
-      const newCard = {
+      const newCard: IKanbanCard = {
         // ...el,
         ID: el['ID'],
         USR$INDEX: el['USR$INDEX'],
@@ -253,6 +254,7 @@ const get: RequestHandler = async (req, res) => {
           CONTACT_NAME: el['CONTACT_NAME'],
           CONTACT_EMAIL: el['CONTACT_EMAIL'],
           CONTACT_PHONE: el['CONTACT_PHONE'],
+          CREATIONDATE: el['CREATIONDATE'],
         },
         TASKS: tasks[el['ID']]
       };

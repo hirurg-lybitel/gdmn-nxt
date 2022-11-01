@@ -130,8 +130,8 @@ const upsert: RequestHandler = async (req, res) => {
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
         USR$PERFORMER, USR$DEADLINE, USR$SOURCE, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
-        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
@@ -155,7 +155,8 @@ const upsert: RequestHandler = async (req, res) => {
       deal.PRODUCTNAME,
       deal.CONTACT_NAME,
       deal.CONTACT_EMAIL,
-      deal.CONTACT_PHONE
+      deal.CONTACT_PHONE,
+      deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
 
     dealRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
@@ -168,14 +169,23 @@ const upsert: RequestHandler = async (req, res) => {
     //     ${new Date(deal.USR$DEADLINE).toLocaleDateString() || null}
     //   )`;
 
+    // DEALKEY DINTKEY,
+    // USERKEY DINTKEY,
+    // CONTACTKEY USR$GS_DCUSTOMER,
+    // EMPLKEY USR$BN_DEMPLOYEE,
+    // DATEENDPLAN DDATE,
+    // CREATIONDATE DDATE)
+
     sql = `
-      EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?)`;
+      EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
 
     paramsValues = [
+      deal.ID || null,
       deal.CREATOR?.ID || null,
       deal.CONTACT?.ID || null,
       deal.PERFORMER?.ID || null,
-      new Date(deal.USR$DEADLINE)
+      deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
+      deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
 
     const rec = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);

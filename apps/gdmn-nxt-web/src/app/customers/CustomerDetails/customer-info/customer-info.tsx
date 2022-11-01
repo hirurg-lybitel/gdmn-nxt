@@ -9,6 +9,7 @@ import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi'
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import { useMemo } from 'react';
+import CircularIndeterminate from '../../../components/circular-indeterminate/circular-indeterminate';
 
 export interface CustomerInfoProps {
   customerId: number;
@@ -125,6 +126,15 @@ export function CustomerInfo(props: CustomerInfoProps) {
     //   renderFn: (value: any) => value?.map((label: ILabel, idx: number) => <LabelMarker label={label} key={idx} />) || null
     // },
   ];
+
+
+  if (customerLoading) {
+    return (
+      <Box flex={1} display="flex">
+          <CircularIndeterminate open={customerLoading} />
+      </Box>
+    );
+  }
 
   return (
     <Box flex={1}>

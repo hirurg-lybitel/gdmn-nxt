@@ -2,13 +2,31 @@ import Button from '@mui/material/Button/Button';
 import Stack from '@mui/material/Stack/Stack';
 import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
-import { Alert, LinearProgress, Dialog } from '@mui/material';
+import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import Box from '@mui/system/Box/Box';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import VisibilityOnIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import BelgissLogo from '../../../../../apps/gdmn-nxt-web/src/app/components/belgiss-logo/belgiss-logo';
+
+const useStyles = makeStyles((theme: Theme) => ({
+  input: {
+    '&:-webkit-autofill' : {
+      WebkitBoxShadow: '0 0 0 1000px white inset',
+    }
+  },
+  visibilityPassword: {
+    marginRight: '-10px'
+  }
+
+}));
 
 type Stage = 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
 
@@ -85,6 +103,10 @@ function reducer(state: State, action: Action): State {
 export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator }: SignInSignUpProps) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
+  const classes = useStyles();
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
   const waitAndDispatch = (fn: () => Promise<IAuthResult>) => () => {
     dispatch({ type: 'SET_WAITING' });
     fn().then(r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }));
@@ -104,6 +126,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
       doSignIn();
     }
   };
+
 
   const result =
     stage === 'FORGOT_PASSWORD'
@@ -191,11 +214,21 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           {bottomDecorator?.(stage)}
         </Stack>
         :
-        <Stack direction="column" spacing={2}>
+        <Stack direction="column" spacing={3}>
           {topDecorator?.(stage)}
-          <Typography variant="h1">
-          Войти в систему
-          </Typography>
+          <Box textAlign={"center"}>
+            <BelgissLogo color='#64b5f6' scale={1.5}/>
+          </Box>
+          <Box textAlign={"center"}>
+            <Typography variant="h1" fontSize={"2rem"}>
+              Вход в систему
+            </Typography>
+          </Box>
+          {/* <Box textAlign={"center"}>
+            <Typography variant="subtitle1" color={"GrayText"}>
+              Введите свои учётные данные
+            </Typography>
+          </Box> */}
           <TextField
             label="Пользователь"
             value={userName}
@@ -205,23 +238,49 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
             autoFocus
             onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
             onKeyDown={keyPress}
+            inputProps={{ className: classes.input }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountCircleIcon />
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
             label="Пароль"
-            type="password"
+            type={passwordVisible ? 'text' : 'password'}
             value={password}
             error={authResult?.result === 'INVALID_PASSWORD'}
             helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
             disabled={waiting}
             onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
             onKeyDown={keyPress}
+            autoComplete={"false"}
+            inputProps={{ className: classes.input }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <VpnKeyIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton className={classes.visibilityPassword} onClick={() => setPasswordVisible(!passwordVisible)}>
+                    {passwordVisible
+                      ? <VisibilityOnIcon />
+                      : <VisibilityOffIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             variant="contained"
             disabled={waiting || !userName || !password || !!authResult}
             onClick={doSignIn}
           >
-          Вход
+          Войти
           </Button>
           {
             newPassword

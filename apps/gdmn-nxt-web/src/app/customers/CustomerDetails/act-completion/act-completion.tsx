@@ -45,11 +45,12 @@ export function ActCompletion(props: ActCompletionProps) {
   const columns: GridColDef[] = [
     { field: 'NUMBER', headerName: 'Номер', minWidth: 150 },
     { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100,
-      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      type: 'date',
+      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }),
     },
-    { field: 'DEPT_NAME', headerName: 'Отдел', minWidth: 100 },
-    { field: 'JOB_NUMBER', headerName: 'Заказ', minWidth: 100 },
-    { field: 'USR$SUMNCU', headerName: 'Сумма', width: 150,
+    { field: 'DEPT_NAME', headerName: 'Отдел', width: 70 },
+    { field: 'JOB_NUMBER', headerName: 'Заказ', width: 70 },
+    { field: 'USR$SUMNCU', headerName: 'Сумма', width: 100, align: 'right',
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })
     },
     {
@@ -66,13 +67,13 @@ export function ActCompletion(props: ActCompletionProps) {
       spacing={1}
       p={3}
     >
-      <Box>
+      {/* <Box>
         <Button
           onClick={refetch}
           disabled={actCompletionIsFetching}
           startIcon={<RefreshIcon/>}
         >Обновить</Button>
-      </Box>
+      </Box> */}
       <CustomizedCard
         borders
         style={{

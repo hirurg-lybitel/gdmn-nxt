@@ -175,10 +175,11 @@ export function CustomerEdit(props: CustomerEditProps) {
       open={confirmOpen}
       title={deleting ? 'Удаление клиента' : 'Сохранение'}
       text="Вы уверены, что хотите продолжить?"
+      dangerous={deleting}
       confirmClick={handleConfirmOkClick}
       cancelClick={handleConfirmCancelClick}
     />
-  , [confirmOpen]);
+  , [confirmOpen, deleting]);
 
   return (
     <Dialog
@@ -286,6 +287,8 @@ export function CustomerEdit(props: CustomerEditProps) {
                       <TextField
                         label="Адрес"
                         className={classes.helperText}
+                        multiline
+                        minRows={1}
                         type="text"
                         name="ADDRESS"
                         onBlur={formik.handleBlur}

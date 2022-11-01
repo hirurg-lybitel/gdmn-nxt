@@ -111,6 +111,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const classes = useStyles();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState('');
   const [tabIndex, setTabIndex] = useState('1');
@@ -127,7 +128,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   useEffect(() => {
     refComment && refComment.current && refComment.current.scrollIntoView({ behavior: 'smooth' });
   }, [refComment.current]);
-
 
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
@@ -172,7 +172,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
       PERFORMER: card?.DEAL?.PERFORMER,
       CONTACT: card?.DEAL?.CONTACT,
-      COMMENT: card?.DEAL?.COMMENT || ''
+      COMMENT: card?.DEAL?.COMMENT || '',
+      CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate
     },
     TASKS: card?.TASKS || undefined,
   };
@@ -208,12 +209,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           CONTACT_PHONE: yup.string().nullable().max(40, 'Слишком длинный номер'),
           REQUESTNUMBER: yup.string().nullable().max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable().max(180, 'Слишком длинное наименование'),
-
-            // .shape({
-            //   ID: yup.number()
-            //     .nullable()
-            //     .required('Не указан отдел 2')
-            // })
         })
     }),
     onSubmit: (values) => {
@@ -250,15 +245,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     return (
       <Stack flex={1} spacing={3}>
         <TextField
-          label="Номер заявки"
-          type="text"
-          name="DEAL.REQUESTNUMBER"
-          onChange={formik.handleChange}
-          value={formik.values.DEAL?.REQUESTNUMBER || ''}
-          error={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))}
-          helperText={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && getIn(formik.errors, 'DEAL.REQUESTNUMBER')}
-        />
-        <TextField
           label="Продукция"
           type="text"
           name="DEAL.PRODUCTNAME"
@@ -267,6 +253,25 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           error={getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))}
           helperText={getIn(formik.touched, 'DEAL.PRODUCTNAME') && getIn(formik.errors, 'DEAL.PRODUCTNAME')}
         />
+        <Stack direction={"row"} spacing={3}>
+          <TextField
+            fullWidth
+            label="Номер заявки"
+            type="text"
+            name="DEAL.REQUESTNUMBER"
+            onChange={formik.handleChange}
+            value={formik.values.DEAL?.REQUESTNUMBER || ''}
+            error={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))}
+            helperText={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && getIn(formik.errors, 'DEAL.REQUESTNUMBER')}
+          />
+          <DesktopDatePicker
+            label="Дата"
+            value={formik.values.DEAL?.CREATIONDATE}
+            inputFormat="dd.MM.yyyy"
+            onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
+            renderInput={(params) => <TextField {...params} fullWidth />}
+          />
+        </Stack>
         <Divider />
         <TextField
           label="Заявитель"
@@ -302,6 +307,18 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       </Stack>
     )
   }, [formik.values, formik.touched, formik.errors]);
+
+
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={deleting ? 'Удаление' : 'Сохранение'}
+      text="Вы уверены, что хотите продолжить?"
+      dangerous={deleting}
+      confirmClick={handleConfirmOkClick}
+      cancelClick={handleConfirmCancelClick}
+    />,
+    [confirmOpen, deleting, handleConfirmOkClick, handleConfirmCancelClick]);
 
   return (
     <Dialog
@@ -432,7 +449,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           label="Срок"
                           value={formik.values.DEAL?.USR$DEADLINE || null}
                           // mask="__.__.____"
-                          inputFormat="dd/MM/yyyy"
+                          inputFormat="dd.MM.yyyy"
                           onChange={(value) => {
                             formik.setFieldValue(
                               'DEAL',
@@ -741,16 +758,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             form="mainForm"
             type="submit"
             variant="contained"
+            disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching}
           >Сохранить</Button>
         </PermissionsGate>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        title={deleting ? 'Удаление' : 'Сохранение'}
-        text="Вы уверены, что хотите продолжить?"
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
+      {memoConfirmDialog}
     </Dialog>
   );
 }

@@ -10,6 +10,7 @@ import { IContactPerson, IPhone } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import PersonEdit from '../person-edit/person-edit';
 import { useMemo, useState } from 'react';
+import StyledGrid from '../../components/Styled/styled-grid/styled-grid';
 
 const useStyles = makeStyles((theme) => ({
   DataGrid: {
@@ -166,7 +167,26 @@ export function ContactPersonList(props: ContactPersonListProps) {
           <AddCircleRoundedIcon />
         </IconButton>
       </Stack>
-      <DataGridPro
+      <StyledGrid
+        rows={persons || []}
+        columns={columns}
+        loading={personsIsFetching}
+        getRowHeight={(params) => {
+          const person: IContactPerson = params.model as IContactPerson;
+          const phones = person.PHONES;
+
+          const rowHeight = 70;
+          if (phones?.length) {
+            const newRowHeight = 30 * phones?.length;
+            return newRowHeight > rowHeight ? newRowHeight : rowHeight;
+          };
+
+          return rowHeight;
+        }}
+        hideFooter
+        disableColumnResize
+      />
+      {/* <DataGridPro
         className={classes.DataGrid}
         localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
         rows={persons || []}
@@ -187,7 +207,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
 
           return rowHeight;
         }}
-      />
+      /> */}
       {memUpsertPerson}
     </Stack>
   );
