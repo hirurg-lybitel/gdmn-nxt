@@ -17,7 +17,7 @@ interface IKanbanFilter {
 const cardDateFilter = [
   {
     id: 1,
-    name: 'Все сделки'
+    name: 'Только активные'
   },
   {
     id: 2,
@@ -35,19 +35,17 @@ const cardDateFilter = [
     id: 5,
     name: 'Без срока'
   },
+  {
+    id: 6,
+    name: 'Все сделки'
+  },
+
 ];
 
 /* eslint-disable-next-line */
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
-  // const dispatch = useDispatch();
-  // useEffect(() => {
-  //   dispatch(toggleMenu(false));
-  // }, []);
-
-  // return <KanbanBoard />;
-
   const [kanbanFilter, setKanbanFilter] = useState<IKanbanFilter>({ deadline: cardDateFilter[0] });
 
   const user = useSelector<RootState, UserState>(state => state.user);

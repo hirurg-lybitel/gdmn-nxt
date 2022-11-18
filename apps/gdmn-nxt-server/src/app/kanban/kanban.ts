@@ -87,11 +87,12 @@ const get: RequestHandler = async (req, res) => {
     const filter = `
       AND 1 =
       CASE ${deadline || -1}
-        WHEN 1 THEN 1
+        WHEN 1 THEN IIF(deal.USR$DONE = 0, 1, 0)
         WHEN 2 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 0, 0, 1)
         WHEN 3 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 1, 0, 1)
         WHEN 4 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) >= 0, 0, 1)
         WHEN 5 THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
+        WHEN 6 THEN 1
         ELSE 1
       END`;
 
