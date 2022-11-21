@@ -1,15 +1,21 @@
-import { DataGridPro, DataGridProProps, ruRU } from '@mui/x-data-grid-pro';
-import { styled } from '@mui/system';
+import { DataGridPro, DataGridProProps, GridRenderCellParams, ruRU } from '@mui/x-data-grid-pro';
 import styles from './styled-grid.module.less';
-import { useDataGridProProps } from '@mui/x-data-grid-pro/DataGridPro/useDataGridProProps';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
+import React, { memo, useEffect, useRef, useState } from 'react';
+import { Box, Popper, Typography } from '@mui/material';
+import CustomizedCard from '../customized-card/customized-card';
 
 const defaultTheme = {
   border: 'none',
   padding: '0px',
   '& .MuiDataGrid-cell': {
-    padding: '24px',
+    paddingLeft: '24px',
+    paddingRight: '24px',
+  },
+  '& .MuiDataGrid-columnHeader': {
+    paddingLeft: '24px',
+    paddingRight: '24px'
   },
   '& ::-webkit-scrollbar': {
     width: '6px',
@@ -29,6 +35,9 @@ const defaultTheme = {
   },
   '& ::-webkit-scrollbar-thumb:hover': {
     backgroundColor: '#999',
+  },
+  '& > .MuiDataGrid-columnSeparator': {
+    visibility: 'hidden',
   },
 };
 
@@ -50,3 +59,122 @@ export default function StyledGrid(props: DataGridProProps) {
     />
   );
 };
+
+function isOverflown(element: HTMLDivElement | null) {
+  if (!element) return false;
+  return (
+    element?.scrollHeight > element?.clientHeight ||
+    element?.scrollWidth > element?.clientWidth
+  );
+}
+
+interface GridCellExpandProps {
+  width: number;
+  value: string;
+};
+
+
+export const GridCellExpand = memo(function GridCellExpand(props: GridCellExpandProps) {
+  const { width, value } = props;
+  const wrapper = useRef(null);
+  const cellDiv = useRef<HTMLDivElement>(null);
+  const cellValue = useRef<HTMLDivElement>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+  const [showFullCell, setShowFullCell] = useState(false);
+  const [showPopper, setShowPopper] = useState(false);
+
+  const handleMouseEnter = () => {
+    const isCurrentlyOverflown = isOverflown(cellValue.current);
+    setShowPopper(isCurrentlyOverflown);
+    setAnchorEl(cellDiv.current);
+    setShowFullCell(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowFullCell(false);
+  };
+
+  useEffect(() => {
+    if (!showFullCell) {
+      return undefined;
+    }
+
+    function handleKeyDown(nativeEvent: any) {
+      if (nativeEvent.key === 'Escape' || nativeEvent.key === 'Esc') {
+        setShowFullCell(false);
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [setShowFullCell, showFullCell]);
+
+  return (
+    <Box
+      ref={wrapper}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      sx={{
+        alignItems: 'center',
+        lineHeight: '24px',
+        width: 1,
+        height: 1,
+        position: 'relative',
+        display: 'flex',
+      }}
+    >
+      <Box
+        ref={cellDiv}
+        sx={{
+          height: 1,
+          width,
+          display: 'block',
+          position: 'absolute',
+          top: 0,
+        }}
+      />
+      <Box
+        ref={cellValue}
+        sx={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}
+      >
+        {value}
+      </Box>
+      {showPopper && (
+        <Popper
+          open={showFullCell && anchorEl !== null}
+          anchorEl={anchorEl}
+          style={{
+            width,
+            marginLeft: -17
+          }}
+        >
+          <CustomizedCard
+            style={{
+              minHeight: wrapper?.current ? (wrapper.current as any).offsetHeight : 0 - 3
+            }}
+            borders
+            boxShadows
+          >
+            <Typography variant="body2" style={{ padding: 8 }}>
+              {value}
+            </Typography>
+          </CustomizedCard>
+        </Popper>
+      )}
+    </Box>
+  );
+});
+
+export function renderCellExpand(params: GridRenderCellParams, value = '') {
+  return (
+    <GridCellExpand value={value} width={params.colDef.computedWidth} />
+  );
+};
+

@@ -191,7 +191,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         .shape({
           USR$NAME: yup.string()
             .required('Не указано наименование')
-            .max(20, 'Слишком длинное наименование'),
+            .max(80, 'Слишком длинное наименование'),
           CONTACT: yup.object()
             .nullable()
             .required('Не указан клиент'),
@@ -201,7 +201,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           DEPARTMENT: yup.object()
             .nullable()
             .required('Не указан отдел'),
-          CONTACT_NAME: yup.string().nullable().max(80, 'Слишком длинное имя'),
+          CONTACT_NAME: yup.string()
+            .nullable()
+            .max(80, 'Слишком длинное имя'),
           CONTACT_EMAIL: yup.string()
             .nullable()
             .matches(/@./, 'Адрес электрочнной почты должен содержать символы @ и .')

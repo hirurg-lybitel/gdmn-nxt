@@ -7,7 +7,7 @@ export interface CircularIndeterminateProps {
 }
 
 export function CircularIndeterminate(props: CircularIndeterminateProps) {
-  const { open, size } = props;
+  const { open, size = 40 } = props;
 
   if (!open) return null;
 

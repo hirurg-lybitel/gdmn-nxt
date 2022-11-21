@@ -136,7 +136,7 @@ const upsert: RequestHandler = async (req, res) => {
       RETURNING ID`;
 
     paramsValues = [
-      deal.ID > 0 ? deal.ID : ID,
+      ID,
       deal.USR$NAME || '',
       deal.USR$DISABLED ? 1 : 0,
       deal.USR$AMOUNT || 0,
@@ -145,11 +145,11 @@ const upsert: RequestHandler = async (req, res) => {
       deal.PERFORMER?.ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
       deal.USR$SOURCE,
-      deal.USR$READYTOWORK,
-      deal.USR$DONE,
+      deal.USR$READYTOWORK || 0,
+      deal.USR$DONE || 0,
       deal.DEPARTMENT?.ID || null,
       deal.COMMENT,
-      deal.DENIED,
+      deal.DENIED || 0,
       deal.DENYREASON?.ID || null,
       deal.REQUESTNUMBER,
       deal.PRODUCTNAME,
@@ -180,7 +180,7 @@ const upsert: RequestHandler = async (req, res) => {
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
 
     paramsValues = [
-      deal.ID || null,
+      ID,
       deal.CREATOR?.ID || null,
       deal.CONTACT?.ID || null,
       deal.PERFORMER?.ID || null,
