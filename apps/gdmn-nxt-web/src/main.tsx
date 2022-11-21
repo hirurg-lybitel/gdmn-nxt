@@ -43,6 +43,9 @@ import ruLocale from 'date-fns/locale/ru';
 import PermissionsList from './app/pages/Permissions/permissions-list/permissions-list';
 import UserGroups from './app/pages/Permissions/user-groups/user-groups';
 import TopEarningPage from './app/pages/Analytics/UserReports/TopEarningPage';
+import Profile from './app/pages/Preferences/profile/profile';
+import AccountSettings from './app/pages/Preferences/account-settings/account-settings';
+// import { socketIO }  from '@gdmn-nxt/socket';
 
 registerMUI();
 
@@ -86,10 +89,13 @@ const Main = () => {
                         <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
                         <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
                         <Route path="topEarning" element={<TopEarningPage />} />
-
                       </Route>
                       <Route path="analytics/salesfunnel" element={<SalesFunnel />} />
                       <Route path="labels" element={<Labels />}/>
+                      <Route path="preferences">
+                        <Route path="account" element={<Profile />} />
+                        <Route path="settings" element={<AccountSettings />} />
+                      </Route>
                     </Route>
                     <Route path="/system" element={<BaseForm />}>
                       <Route path="er-model-domains" element={<ErModelDomains />} />

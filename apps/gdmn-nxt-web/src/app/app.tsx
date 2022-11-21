@@ -61,7 +61,7 @@ function App() {
             .then( data => {
               if (data[ 'userName' ]) {
                 if (data['gedeminUser']) {
-                  dispatch(signedInEmployee({ userName: data['userName'], id: data['id'], contactkey: data['contactkey'] }));
+                  dispatch(signedInEmployee({ ...data }));
                 } else {
                   dispatch(signedInCustomer({ userName: data['userName'], id: data['id'], contactkey: data['contactkey'] }));
                 }

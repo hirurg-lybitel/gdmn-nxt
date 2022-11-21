@@ -23,11 +23,12 @@ import {
   UserState
 } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { AppDispatch, RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import { useState } from 'react';
+import { ForwardedRef, forwardRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -94,6 +95,17 @@ export function Profile(props: ProfileProps) {
     return text + ',';
   };
 
+  const accountComponent = {
+    // eslint-disable-next-line react/display-name
+    component: forwardRef((props, ref: ForwardedRef<any>) =>
+      <Link
+        ref={ref}
+        {...props}
+        to="preferences/account"
+        target="_self"
+      />)
+  };
+
   return (
     <>
       <IconButton
@@ -141,12 +153,12 @@ export function Profile(props: ProfileProps) {
                             {user.userProfile?.userName ?? 'Неизвестный пользователь'}
                           </Typography>
                         </Stack>
-                        <Typography variant="caption">Должность</Typography>
+                        <Typography variant="caption">{user.userProfile?.rank || ''}</Typography>
                       </Stack>
                     </ListItem>
                     <Divider />
                     <ListItem disablePadding>
-                      <ListItemButton>
+                      <ListItemButton {...accountComponent} onClick={handleClose}>
                         <ListItemIcon className={classes.listItemIcon}>
                           <AccountCircleIcon />
                         </ListItemIcon>
