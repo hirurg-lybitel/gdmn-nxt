@@ -25,6 +25,7 @@ import reportsRouter from './app/routes/reportsRouter';
 import workTypes from './app/handlers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
 import permissionsRouter from './app/routes/permissionsRouter';
+import { Notifications } from './app/routes/notifications';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -33,6 +34,8 @@ dotenv.config({ path: '../..' });
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
+
+
 
 
 app.use(cors({
@@ -243,6 +246,9 @@ router.get('/test', (req, res) => {
     return res.send('from router: Not authenticated!');
   }
 });
+
+/** Notifications module */
+Notifications({ router });
 
 /** Contacts */
 router.use(contactsRouter);

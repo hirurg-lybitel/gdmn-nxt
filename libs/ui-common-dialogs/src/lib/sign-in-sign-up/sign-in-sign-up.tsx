@@ -127,7 +127,6 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
     }
   };
 
-
   const result =
     stage === 'FORGOT_PASSWORD'
       ?

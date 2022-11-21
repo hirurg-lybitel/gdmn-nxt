@@ -1,18 +1,23 @@
-import './notification-list.module.less';
+import styles from './notification-list.module.less';
 import { IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
+import { IMessage } from '@gdmn-nxt/socket';
+import ReactMarkdown from 'react-markdown';
 
 /* eslint-disable-next-line */
-export interface NotificationListProps {}
-
-export interface IMessage {
-  id: number;
-  date: Date;
-  title: string;
-  text: string;
+export interface NotificationListProps {
+  messages: IMessage[];
+  onDelete: (arg: number) => void;
 };
+
+// export interface IMessage {
+//   id: number;
+//   date: Date;
+//   title: string;
+//   text: string;
+// };
 
 const mes: IMessage[] = [
   {
@@ -54,21 +59,44 @@ const mes: IMessage[] = [
 ];
 
 export function NotificationList(props: NotificationListProps) {
-  const [messages, setMessages] = useState<IMessage[]>(mes);
+  const { messages } = props;
+  const { onDelete } = props;
 
-  const handleDelete = (index: number) => {
+  // const [messages, setMessages] = useState<IMessage[]>(message ? [message] : []);
+
+  // const messages = [message];
+
+  // useEffect(() => {
+  //   console.log('NotificationList');
+  // }, []);
+
+  // socketClient.on('message', (data: any) => {
+  //   console.log('message', data);
+  // });
+
+  // window.addEventListener('DOMMouseScroll', (e) => e.preventDefault(), false); // older FF
+  // window.addEventListener('mousewheel', (e) => e.preventDefault(), { passive: false }); // modern desktop
+  // window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false }); // modern desktop
+  // document.body.style.overflow = 'unset';
+
+  const handleDelete = (id: number) => () => {
+    console.log('handleDelete', id);
     const newMessages = [...messages];
-    newMessages.splice(index, 1);
+    newMessages.splice(id, 1);
 
-    setMessages(newMessages);
+    onDelete(id);
+
+    // setMessages(newMessages);
   };
+
+  // console.log('messages', messages);
 
   return (
     <List disablePadding>
       {messages.length
         ? messages.map((message, index) =>
           <ListItem
-            key={message.id}
+            key={message?.id}
             button
             divider
           >
@@ -81,13 +109,18 @@ export function NotificationList(props: NotificationListProps) {
             </ListItemIcon>
             <ListItemText>
               <Stack direction="column" spacing={1}>
-                <Typography variant="h4">{message.title}</Typography>
-                <Typography variant="body1">{message.text}</Typography>
+                <Typography variant="h4">{message?.title}</Typography>
+                <Typography variant="body1" component="div">
+                  <ReactMarkdown className={styles['markdown']}>
+                    {message?.text || ''}
+                  </ReactMarkdown>
+                </Typography>
+                {/* <Typography variant="body1">{message?.text}</Typography> */}
                 <Typography
                   variant="caption"
                   color="GrayText"
                 >
-                  {message.date.toLocaleString('default', {
+                  {new Date(message?.date || 0).toLocaleString('default', {
                     month: 'short',
                     day: '2-digit',
                     hour: '2-digit',
@@ -97,7 +130,7 @@ export function NotificationList(props: NotificationListProps) {
               </Stack>
             </ListItemText>
             <ListItemSecondaryAction style={{ top: '25px' }}>
-              <IconButton onClick={() => handleDelete(index)}>
+              <IconButton onClick={handleDelete(message.id)}>
                 <CloseIcon fontSize="small" />
               </IconButton>
             </ListItemSecondaryAction>
