@@ -25,6 +25,8 @@ import reportsRouter from './app/routes/reportsRouter';
 import workTypes from './app/handlers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
 import permissionsRouter from './app/routes/permissionsRouter';
+import businessProcessRouter from './app/routes/businessProcess';
+import profileSettingsRouter from './app/routes/profileSettings';
 import { Notifications } from './app/routes/notifications';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -46,7 +48,7 @@ app.use(cors({
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 const apiRoot = {
@@ -276,6 +278,8 @@ router.delete('/customercontracts/:id', customerContracts.remove);
 router.get('/worktypes', workTypes.get);
 router.get('/worktypes/contractJobKey/:contractJobKeys', workTypes.get);
 
+router.use(businessProcessRouter);
+
 /** Labels*/
 router.use(labelsRouter);
 
@@ -304,6 +308,9 @@ router.post('/account', upsertAccount);
 router.put('/account/:ID', upsertAccount);
 
 router.use(reportsRouter);
+
+/** Profile settings */
+router.use(profileSettingsRouter);
 
 // router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 

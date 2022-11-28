@@ -29,6 +29,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { Link } from 'react-router-dom';
+import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
+import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -79,6 +81,9 @@ export function Profile(props: ProfileProps) {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
 
+  const { userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const { data: settings } = useGetProfileSettingsQuery(userProfile?.id || -1);
+
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);
     setOpen(!open);
@@ -87,6 +92,16 @@ export function Profile(props: ProfileProps) {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const handleAccountClick = () => {
+    dispatch(setActiveMenu('account'));
+    handleClose();
+  };
+
+  const handleSettingsClick = () => {
+    dispatch(setActiveMenu('settings'));
+    handleClose();
+  }
 
   const welcomeText = () => {
     const date = new Date();
@@ -106,13 +121,24 @@ export function Profile(props: ProfileProps) {
       />)
   };
 
+  const settingsComponent = {
+    // eslint-disable-next-line react/display-name
+    component: forwardRef((props, ref: ForwardedRef<any>) =>
+      <Link
+        ref={ref}
+        {...props}
+        to="preferences/settings"
+        target="_self"
+      />)
+  };
+
   return (
     <>
       <IconButton
         size="large"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
-        <Avatar />
+        <Avatar src={settings?.AVATAR} />
       </IconButton>
       <Popper
         className={classes.popper}
@@ -158,7 +184,7 @@ export function Profile(props: ProfileProps) {
                     </ListItem>
                     <Divider />
                     <ListItem disablePadding>
-                      <ListItemButton {...accountComponent} onClick={handleClose}>
+                      <ListItemButton {...accountComponent} onClick={handleAccountClick}>
                         <ListItemIcon className={classes.listItemIcon}>
                           <AccountCircleIcon />
                         </ListItemIcon>
@@ -166,7 +192,7 @@ export function Profile(props: ProfileProps) {
                       </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
-                      <ListItemButton>
+                      <ListItemButton {...settingsComponent} onClick={handleSettingsClick}>
                         <ListItemIcon className={classes.listItemIcon}>
                           <Settings />
                         </ListItemIcon>
