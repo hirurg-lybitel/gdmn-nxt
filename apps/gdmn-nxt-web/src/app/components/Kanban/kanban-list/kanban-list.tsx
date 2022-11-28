@@ -327,6 +327,7 @@ export function KanbanList(props: KanbanListProps) {
         getTreeDataPath={getTreeDataPath}
         groupingColDef={groupingColDef}
         hideFooter
+        hideHeaderSeparator
       />
       {memoEditCard}
       {memoAddCard}

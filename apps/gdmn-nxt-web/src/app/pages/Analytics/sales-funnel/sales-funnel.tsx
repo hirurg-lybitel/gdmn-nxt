@@ -3,7 +3,7 @@ import React from 'react';
 import { ResponsiveFunnel } from '@nivo/funnel';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { useTheme } from '@mui/material';
+import { CardHeader, Typography, useTheme } from '@mui/material';
 
 /* eslint-disable-next-line */
 export interface SalesFunnelProps {}
@@ -30,6 +30,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
 
   return (
     <CustomizedCard borders boxShadows style={{ height: 'calc(100vh - 130px)', flex: 1 }}>
+      <CardHeader title={<Typography variant="h3">Воронка продаж</Typography>} />
       {isFetching
         ? <></>
         : <ResponsiveFunnel

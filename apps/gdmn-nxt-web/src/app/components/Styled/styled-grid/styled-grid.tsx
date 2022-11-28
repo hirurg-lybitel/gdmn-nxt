@@ -6,12 +6,15 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Popper, Typography } from '@mui/material';
 import CustomizedCard from '../customized-card/customized-card';
 
-const defaultTheme = {
+const defaultTheme = ({ hideHeaderSeparator }: IStyledGridProps) => ({
   border: 'none',
   padding: '0px',
   '& .MuiDataGrid-cell': {
     paddingLeft: '24px',
     paddingRight: '24px',
+  },
+  '& .MuiDataGrid-cell:focus-within': {
+    outline: 'none !important',
   },
   '& .MuiDataGrid-columnHeader': {
     paddingLeft: '24px',
@@ -39,9 +42,16 @@ const defaultTheme = {
   '& > .MuiDataGrid-columnSeparator': {
     visibility: 'hidden',
   },
-};
+  '& .MuiDataGrid-iconSeparator': {
+    ...(hideHeaderSeparator && { display: 'none' })
+  },
+});
 
-export default function StyledGrid(props: DataGridProProps) {
+interface IStyledGridProps extends DataGridProProps{
+  hideHeaderSeparator?: boolean;
+}
+
+export default function StyledGrid(props: IStyledGridProps) {
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
@@ -53,7 +63,7 @@ export default function StyledGrid(props: DataGridProProps) {
       }}
       {...props}
       sx={{
-        ...defaultTheme,
+        ...defaultTheme(props),
         ...props.sx
       }}
     />
