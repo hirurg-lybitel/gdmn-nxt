@@ -38,6 +38,7 @@ export interface ICustomer extends IContactWithID {
   TAXID?: string;
   FULLNAME?: string;
   POSTADDRESS?: string;
+  BUSINESSPROCESSES?: IBusinessProcess[];
 };
 
 interface IMapOfArrays {
@@ -49,6 +50,7 @@ export interface ICustomerCross {
   contracts: IMapOfArrays,
   jobWorks: IMapOfArrays,
   persons: IMapOfArrays,
+  // businessProcesses: IMapOfArrays,
 };
 
 export interface ICustomerContract extends IWithID {
@@ -216,3 +218,7 @@ export interface IPermissionByUser {
 export interface IDenyReason extends IWithID {
   NAME: string;
 };
+
+export interface IBusinessProcess extends IWithID {
+  NAME: string
+}

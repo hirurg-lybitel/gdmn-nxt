@@ -24,7 +24,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from './customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { IContactWithID, IContractJob, ICustomer, ICustomerContract, ICustomerContractWithID, ILabel, IWorkType } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactWithID, IContractJob, ICustomer, ICustomerContract, ICustomerContractWithID, ILabel, IWorkType } from '@gsbelarus/util-api-types';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
 import CustomNoRowsOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
@@ -42,6 +42,7 @@ import LabelMarker from '../components/Labels/label-marker/label-marker';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetDepartmentsQuery } from '../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
+import { useGetBusinessProcessesQuery } from '../features/business-processes';
 
 const useStyles = makeStyles((theme: Theme) => ({
   DataGrid: {
@@ -67,6 +68,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     '&.MuiDataGrid-root .MuiDataGrid-cell:focus, .MuiDataGrid-columnHeader:focus': {
       outline: 'none',
     },
+    '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
+      outline: 'none !important',
+    },
     '& .MuiDataGrid-iconSeparator': {
       display: 'none',
     },
@@ -83,11 +87,6 @@ const labelStyle: CSSProperties = {
   display: 'inline-block',
   padding: '2.5px 0px',
 };
-
-// interface IPaginationData {
-//   pageNo: number;
-//   pageSize: number;
-// };
 
 /* eslint-disable-next-line */
 export interface CustomersProps {}
@@ -134,6 +133,7 @@ export function Customers(props: CustomersProps) {
   const { data: wotkTypes } = useGetWorkTypesQuery();
   const { data: departments } = useGetDepartmentsQuery();
   const { data: customerContracts } = useGetCustomerContractsQuery();
+  const { data: businessProcesses } = useGetBusinessProcessesQuery();
   const [customers, setCustomers] = useState<ICustomer[] | undefined>();
 
   useEffect(() => {
@@ -159,6 +159,13 @@ export function Customers(props: CustomersProps) {
         CONTRACTS.push(customerContract);
       });
 
+      // const BUSINESSPROCESSES: IBusinessProcess[] = [];
+      // customersCross?.businessProcesses[customer.ID]?.forEach((el: number) => {
+      //   const businessProcess = businessProcesses?.find(bp => bp.ID === el);
+      //   if (!businessProcess) return;
+      //   BUSINESSPROCESSES.push(businessProcess);
+      // });
+
       return {
         ...customer,
         DEPARTMENTS,
@@ -168,7 +175,7 @@ export function Customers(props: CustomersProps) {
     });
 
     setCustomers(newCustomers);
-  }, [customerFetching, customersData, customersCross, wotkTypes, departments, customerContracts]);
+  }, [customerFetching, customersData, customersCross, wotkTypes, departments, customerContracts, businessProcesses]);
 
   const [updateCustomer] = useUpdateCustomerMutation();
   const [addCustomer] = useAddCustomerMutation();
@@ -176,35 +183,35 @@ export function Customers(props: CustomersProps) {
 
   const dispatch = useDispatch();
 
-  const { data: labels } = useGetLabelsQuery();
+  // const { data: labels } = useGetLabelsQuery();
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
   const theme = useTheme();
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
 
-  function CurrentLabelFilter(props: GridFilterInputValueProps) {
-    const { item, applyValue, focusElementRef } = props;
+  // function CurrentLabelFilter(props: GridFilterInputValueProps) {
+  //   const { item, applyValue, focusElementRef } = props;
 
-    const label = labels?.find(el => el.ID === item.value);
+  //   const label = labels?.find(el => el.ID === item.value);
 
-    return (
-      <div
-        style={{
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'end',
-          paddingBottom: '6px'
-        }}
-      >
-        <div
-          style={labelStyle}
-        >
-          {label ? <LabelMarker label={label} /> : <></>}
-        </div>
-      </div>
-    );
-  };
+  //   return (
+  //     <div
+  //       style={{
+  //         height: '100%',
+  //         display: 'flex',
+  //         justifyContent: 'center',
+  //         alignItems: 'end',
+  //         paddingBottom: '6px'
+  //       }}
+  //     >
+  //       <div
+  //         style={labelStyle}
+  //       >
+  //         {label ? <LabelMarker label={label} /> : <></>}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   // const isLabel: GridFilterOperator = {
   //   label: 'Содержит',
@@ -650,8 +657,15 @@ export function Customers(props: CustomersProps) {
           <Box p={3}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
-                <Button onClick={handleAddOrganization} disabled={customerFetching} startIcon={<AddIcon/>}>Добавить</Button>
+                {/* <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button> */}
+                <Button
+                  variant="contained"
+                  onClick={handleAddOrganization}
+                  disabled={customerFetching}
+                  startIcon={<AddIcon/>}
+                >
+                  Добавить
+                </Button>
               </Box>
               <Box flex={1} />
               <Box>
@@ -692,14 +706,10 @@ export function Customers(props: CustomersProps) {
                 getRowId={row => row.ID}
                 onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
                 components={{
-                  // Toolbar: CustomGridToolbarOverlay,
                   LoadingOverlay: CustomLoadingOverlay,
                   NoRowsOverlay: CustomNoRowsOverlay,
                   NoResultsOverlay: CustomNoRowsOverlay,
                 }}
-                // filterModel={filterModel}
-                // onFilterModelChange={(model, detail) => setFilterModel(model)}
-                // pinnedColumns={{ left: [customersLoading ? '' : 'NAME'] }}
                 getRowHeight={(params) => {
                   const customer: ICustomer = params.model as ICustomer;
                   const labels: ILabel[] | undefined = customer.LABELS;
