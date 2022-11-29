@@ -1,6 +1,7 @@
 # Gedemin CRM
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![GitHub package version](https://img.shields.io/github/package-json/v/gsbelarus/gdmn-nxt?style=flat-square)](https://github.com/gsbelarus/gdmn-nxt/)
 
 ![image](https://user-images.githubusercontent.com/11502258/204565528-24a71789-4bb5-4072-a201-511ea5e921cd.png)
 
