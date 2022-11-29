@@ -19,31 +19,31 @@ import filterOptions from '../../components/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  dialog: {
-    position: 'absolute',
-    right: 0,
-    margin: 0,
-    height: '100%',
-    maxHeight: '100%',
-    width: 500,
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0
-  },
-  label: {
-    display: 'inline-block',
-    fontSize: '0.625rem',
-    fontWeight: 'bold',
-    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-    textTransform: 'uppercase',
-    border: '1px solid hsl(198, 100%, 60%)',
-    borderRadius: '2em',
-    backgroundColor: 'hsla(198, 100%, 72%, 0.2)',
-    color: 'hsl(198, 100%, 60%)',
-    padding: '2.5px 9px',
-    margin: '0px 5px',
-    width: 'fit-content',
-    height: 'fit-content'
-  },
+  // dialog: {
+  //   position: 'absolute',
+  //   right: 0,
+  //   margin: 0,
+  //   height: '100%',
+  //   maxHeight: '100%',
+  //   width: 500,
+  //   borderTopRightRadius: 0,
+  //   borderBottomRightRadius: 0
+  // },
+  // label: {
+  //   display: 'inline-block',
+  //   fontSize: '0.625rem',
+  //   fontWeight: 'bold',
+  //   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+  //   textTransform: 'uppercase',
+  //   border: '1px solid hsl(198, 100%, 60%)',
+  //   borderRadius: '2em',
+  //   backgroundColor: 'hsla(198, 100%, 72%, 0.2)',
+  //   color: 'hsl(198, 100%, 60%)',
+  //   padding: '2.5px 9px',
+  //   margin: '0px 5px',
+  //   width: 'fit-content',
+  //   height: 'fit-content'
+  // },
   switchButton: {
     '& .MuiButtonBase-root': {
       color: theme.palette.primary.main
@@ -381,19 +381,19 @@ export function CustomersFilter(props: CustomersFilterProps) {
     </Box>
   );
 
-  return (
-    <Box flex={1} display="flex">
-      {matchDownLg
-        ? <CustomizedDialog
-          open={open}
-          onClose={onClose}
-          width={width}
-        >
-          <Filter />
-        </CustomizedDialog>
-        : <Filter />}
-    </Box>
-  );
+  // return (
+  //   <Box flex={1} display="flex">
+  //     {matchDownLg
+  //       ? <CustomizedDialog
+  //         open={open}
+  //         onClose={onClose}
+  //         width={width}
+  //       >
+  //         <Filter />
+  //       </CustomizedDialog>
+  //       : <Filter />}
+  //   </Box>
+  // );
 }
 
 export default CustomersFilter;

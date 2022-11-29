@@ -53,6 +53,7 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
+    const { departments, customers, requestNumber } = req.query;
 
     const checkFullView = `
       EXISTS(
@@ -94,7 +95,10 @@ const get: RequestHandler = async (req, res) => {
         WHEN 5 THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
         WHEN 6 THEN 1
         ELSE 1
-      END`;
+      END
+      ${departments ? `AND dep.ID IN (${departments})` : ''}
+      ${customers ? `AND con.ID IN (${customers})` : ''}
+      ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''} `;
 
     const queries = [
       {

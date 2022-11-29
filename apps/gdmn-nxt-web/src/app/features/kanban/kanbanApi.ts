@@ -42,12 +42,11 @@ export const kanbanApi = createApi({
           switch (true) {
             case typeof value === 'object' && value !== null:
               for (const [subName, subKey] of Object.entries(value)) {
-                // console.log('getKanbanDeals_2', subName, subKey);
                 const subParams = [];
                 if (typeof subKey === 'object' && subKey !== null) {
                   for (const [subName_l2, subKey_l2] of Object.entries(subKey)) {
                     if (typeof subKey_l2 === 'object' && subKey_l2 !== null) {
-                      subParams.push((subKey_l2 as any)['id']);
+                      subParams.push((subKey_l2 as any)['ID']);
                     };
                     if (typeof subKey_l2 === 'string' || typeof subKey_l2 === 'number') {
                       subParams.push(subKey_l2);

@@ -8,15 +8,16 @@ import { CircularIndeterminate } from '../../../components/circular-indeterminat
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, BottomNavigation, BottomNavigationAction, Button, IconButton, Stack, TextField, Tooltip } from '@mui/material';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import TableRowsIcon from '@mui/icons-material/TableRows';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import { Box } from '@mui/system';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
 import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
+import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 
 export interface IChanges {
   id: number;
@@ -31,27 +32,27 @@ interface IKanbanFilter {
 
 const cardDateFilter = [
   {
-    id: 1,
+    ID: 1,
     name: 'Только активные'
   },
   {
-    id: 2,
+    ID: 2,
     name: 'Срок сегодня'
   },
   {
-    id: 3,
+    ID: 3,
     name: 'Срок завтра'
   },
   {
-    id: 4,
+    ID: 4,
     name: 'Срок просрочен'
   },
   {
-    id: 5,
+    ID: 5,
     name: 'Без срока'
   },
   {
-    id: 6,
+    ID: 6,
     name: 'Все сделки'
   },
 
@@ -115,15 +116,65 @@ export interface DealsProps {}
 export function Deals(props: DealsProps) {
   const [kanbanFilter, setKanbanFilter] = useState<IKanbanFilter>({ deadline: cardDateFilter[0] });
   const [tabNo, setTabNo] = useState(0);
+  const [openFilters, setOpenFilters] = useState(false);
+  const [filteringData, setFilteringData] = useState<IFilteringData>({});
 
+  const dispatch = useDispatch();
+  const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
   const user = useSelector<RootState, UserState>(state => state.user);
+
   const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery({
     userId: user.userProfile?.id || -1,
     filter: {
-      ...kanbanFilter,
-      deadline: kanbanFilter['deadline']?.id
+      deadline: kanbanFilter['deadline']?.ID,
+      ...filteringData,
     }
   });
+
+  useEffect(() => {
+    setFilteringData(filtersStorage.filterData['deals']);
+  }, []);
+
+  useEffect(() => {
+    SaveFilters();
+  }, [filteringData]);
+
+  const SaveFilters = () => {
+    dispatch(saveFilterData({ 'deals': filteringData }));
+  };
+
+  const filterHandlers = {
+    filterClick: async() => {
+      setOpenFilters(true);
+    },
+    filterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
+      if (
+        event?.type === 'keydown' &&
+        (event?.key === 'Tab' || event?.key === 'Shift')
+      ) {
+        return;
+      }
+      setOpenFilters(false);
+    },
+    filterClear: async () => {
+      dispatch(clearFilterData());
+
+      setFilteringData({});
+    },
+    filteringDataChange: async(newValue: IFilteringData) => {
+      setFilteringData(newValue);
+    }
+  };
+
+  const DealsFilterMemo = useMemo(() =>
+    <DealsFilter
+      open={openFilters}
+      filteringData={filteringData}
+      onClose={filterHandlers.filterClose}
+      onFilteringDataChange={filterHandlers.filteringDataChange}
+      onFilterClear={filterHandlers.filterClear}
+    />,
+    [openFilters, filteringData])
 
   const Header = useMemo(() => {
     return (
@@ -134,12 +185,12 @@ export function Deals(props: DealsProps) {
             padding: '15px',
             paddingTop: '13px',
             borderBottomLeftRadius: 0,
-            // height: '100px'
+            display: 'flex'
           }}
         >
           <Autocomplete
             style={{
-              maxWidth: '210px',
+              width: '210px',
             }}
             options={cardDateFilter}
             disableClearable
@@ -148,7 +199,7 @@ export function Deals(props: DealsProps) {
             value={kanbanFilter['deadline'] || null}
             onChange={(e, value) => setKanbanFilter({ deadline: value })}
             renderOption={(props, option, { selected }) => (
-              <li {...props} key={option.id}>
+              <li {...props} key={option.ID}>
                 {option.name}
               </li>
             )}
@@ -160,6 +211,18 @@ export function Deals(props: DealsProps) {
               />
             )}
           />
+          <Box flex={1} />
+          <IconButton
+            onClick={filterHandlers.filterClick}
+            // disabled={customerFetching}
+          >
+            <Badge
+              color="error"
+              variant={Object.keys(filteringData || {}).length > 0 ? 'dot' : 'standard'}
+            >
+              <FilterListIcon color="primary" />
+            </Badge>
+          </IconButton>
         </CustomizedCard>
         <CustomizedCard
           borders
@@ -193,7 +256,7 @@ export function Deals(props: DealsProps) {
 
       </>
     );}
-  , [kanbanFilter['deadline'], tabNo]);
+  , [kanbanFilter['deadline'], tabNo, filteringData]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} />, [columns]);
 
@@ -222,6 +285,7 @@ export function Deals(props: DealsProps) {
       }}
     >
       {Header}
+      {DealsFilterMemo}
       <div style={{ marginTop: '5px', display: 'flex', flex: 1 }}>
         {(() => {
           switch (tabNo) {

@@ -159,13 +159,6 @@ export function Customers(props: CustomersProps) {
         CONTRACTS.push(customerContract);
       });
 
-      // const BUSINESSPROCESSES: IBusinessProcess[] = [];
-      // customersCross?.businessProcesses[customer.ID]?.forEach((el: number) => {
-      //   const businessProcess = businessProcesses?.find(bp => bp.ID === el);
-      //   if (!businessProcess) return;
-      //   BUSINESSPROCESSES.push(businessProcess);
-      // });
-
       return {
         ...customer,
         DEPARTMENTS,
@@ -183,7 +176,6 @@ export function Customers(props: CustomersProps) {
 
   const dispatch = useDispatch();
 
-  // const { data: labels } = useGetLabelsQuery();
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
   const theme = useTheme();
@@ -371,59 +363,6 @@ export function Customers(props: CustomersProps) {
       }
     },
     { field: 'PHONE', headerName: 'Телефон', width: 200 },
-    // { field: 'LABELS',
-    //   headerName: 'Метки',
-    //   width: 350,
-    //   renderCell: (params) => {
-    //     const numberLabelsInRow = 2;
-
-    //     const labels: ILabel[] = params.row.LABELS;
-
-    //     if (!labels?.length) {
-    //       return <></>;
-    //     };
-
-    //     return (
-    //       <Stack direction="column">
-    //         {labels.map((label, index) => {
-    //           if (index % numberLabelsInRow === 0) {
-    //             return (
-    //               <List
-    //                 key={label.ID + index * 10}
-    //                 style={{
-    //                   flexDirection: 'row',
-    //                   padding: '0px',
-    //                   width: 'fit-content',
-    //                 }}
-    //               >
-    //                 {labels.slice(index, index + numberLabelsInRow).map((subLabel, index) => {
-    //                   return (
-    //                     <ListItemButton
-    //                       key={subLabel.ID}
-    //                       onClick={() => {
-    //                         setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: subLabel.ID, operatorValue: 'is' }] });
-    //                         setFilteringData({ 'LABELS': [{ ID: subLabel.ID }] });
-    //                       }}
-    //                       style={labelStyle}
-    //                       sx={{
-    //                         '&:hover': {
-    //                           backgroundColor: 'transparent',
-    //                         }
-    //                       }}
-    //                     >
-    //                       <LabelMarker label={subLabel} />
-    //                     </ListItemButton>
-    //                   );
-    //                 })}
-    //               </List>
-    //             );
-    //           }
-    //           return null;
-    //         })}
-    //       </Stack>
-    //     );
-    //   }
-    // },
     {
       field: 'Actions',
       headerName: 'Действия',
