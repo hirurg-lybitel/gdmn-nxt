@@ -1,4 +1,4 @@
-import './deals.module.less';
+import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useMemo, useState } from 'react';
@@ -181,12 +181,7 @@ export function Deals(props: DealsProps) {
       <>
         <CustomizedCard
           borders
-          style={{
-            padding: '15px',
-            paddingTop: '13px',
-            borderBottomLeftRadius: 0,
-            display: 'flex'
-          }}
+          className={styles['headerCard']}
         >
           <Autocomplete
             style={{
@@ -214,7 +209,7 @@ export function Deals(props: DealsProps) {
           <Box flex={1} />
           <IconButton
             onClick={filterHandlers.filterClick}
-            // disabled={customerFetching}
+            disabled={columnsIsFetching}
           >
             <Badge
               color="error"
@@ -226,20 +221,11 @@ export function Deals(props: DealsProps) {
         </CustomizedCard>
         <CustomizedCard
           borders
-          style={{
-            margin: 0,
-            borderTop: 'none',
-            borderTopLeftRadius: 0,
-            borderTopRightRadius: 0,
-            width: '235px'
-          }}
+          className={styles['switchViewCard']}
         >
           <BottomNavigation
-            // showLabels
             value={tabNo}
-            style={{
-              height: 40
-            }}
+            className={styles['bottomNavigation']}
             onChange={(e, newValue: number) => {
               setTabNo(newValue);
             }}
@@ -251,12 +237,10 @@ export function Deals(props: DealsProps) {
               <BottomNavigationAction style={{ padding: 0, margin: 0 }} icon={<ViewStreamIcon />} />
             </Tooltip>
           </BottomNavigation>
-
         </CustomizedCard>
-
       </>
     );}
-  , [kanbanFilter['deadline'], tabNo, filteringData]);
+  , [kanbanFilter['deadline'], tabNo, filteringData, columnsIsFetching]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} />, [columns]);
 
@@ -264,14 +248,7 @@ export function Deals(props: DealsProps) {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          zIndex: 999
-        }}
-      >
+      <div className={styles['loadingContainer']}>
         <CircularIndeterminate open={isLoading} size={100} />
       </div>
     );
@@ -286,7 +263,7 @@ export function Deals(props: DealsProps) {
     >
       {Header}
       {DealsFilterMemo}
-      <div style={{ marginTop: '5px', display: 'flex', flex: 1 }}>
+      <div className={styles['dataContainer']}>
         {(() => {
           switch (tabNo) {
             case 0:
