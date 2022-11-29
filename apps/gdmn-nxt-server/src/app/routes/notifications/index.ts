@@ -31,7 +31,6 @@ export function Notifications({ router }: NotificationsProps) {
     console.log(`⚡: ${socket.id} user just connected!`);
 
     socket.on('delete', async (notificationId) => {
-      console.log('delete', notificationId);
       await deleteNotification(sessionId, notificationId);
       sendMessages();
       // socket.emit('messages')
