@@ -38,7 +38,7 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { DesktopDatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
@@ -48,6 +48,10 @@ import { useGetDepartmentsQuery } from '../../../features/departments/department
 import filterOptions from '../../filter-options';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
+import AlarmIcon from '@mui/icons-material/Alarm';
+import SnoozeIcon from '@mui/icons-material/Snooze';
+import ClockIcon from '@mui/icons-material/AccessTime';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -266,13 +270,21 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             error={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))}
             helperText={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && getIn(formik.errors, 'DEAL.REQUESTNUMBER')}
           />
-          <DesktopDatePicker
-            label="Дата"
-            value={formik.values.DEAL?.CREATIONDATE}
-            inputFormat="dd.MM.yyyy"
-            onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
-            renderInput={(params) => <TextField {...params} fullWidth />}
-          />
+          <Stack direction="column" spacing={2}>
+            <DesktopDatePicker
+              label="Дата"
+              value={formik.values.DEAL?.CREATIONDATE}
+              inputFormat="dd.MM.yyyy"
+              onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
+              renderInput={(params) => <TextField {...params} fullWidth />}
+            />
+            <TimePicker
+              label="Время"
+              value={formik.values.DEAL?.CREATIONDATE}
+              onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </Stack>
         </Stack>
         <Divider />
         <TextField
