@@ -14,7 +14,7 @@ export function MenuGroup(props: MenuGroupProps) {
   const items = item.children?.map((menu: any) => {
     switch (menu.type) {
       case 'collapse':
-        return <PermissionsGate key={menu.id} actionCode={menu.checkAction} disableDefault={false}>
+        return <PermissionsGate key={menu.id} actionCode={menu.checkAction} disableDefault={true}>
           <MenuCollapse menu={menu} level={1} />
         </PermissionsGate>;
 

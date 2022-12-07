@@ -61,7 +61,7 @@ function App() {
             .then( data => {
               if (data[ 'userName' ]) {
                 if (data['gedeminUser']) {
-                  dispatch(signedInEmployee({ userName: data['userName'], id: data['id'], contactkey: data['contactkey'] }));
+                  dispatch(signedInEmployee({ ...data }));
                 } else {
                   dispatch(signedInCustomer({ userName: data['userName'], id: data['id'], contactkey: data['contactkey'] }));
                 }
@@ -74,6 +74,10 @@ function App() {
     })();
   }, [ loginStage ]);
 
+  useEffect(() => {
+    if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
+  },  [loginStage])
+
   const result =
     <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto',  height: '100vh', maxWidth: "440px" }}>
       {
@@ -85,17 +89,19 @@ function App() {
             </Typography>
           </Stack>
           : loginStage === 'SELECT_MODE' ?
-            <SelectMode
-              employeeModeSelected={ () => dispatch(signInEmployee()) }
-              customerModeSelected={ () => dispatch(signInCustomer()) }
-            />
+            <></>
+            // dispatch(signInEmployee())
+            // <SelectMode
+            //   employeeModeSelected={ () => dispatch(signInEmployee()) }
+            //   customerModeSelected={ () => dispatch(signInCustomer()) }
+            // />
           : loginStage === 'CUSTOMER' ? <Navigate to="/customer" />
           : loginStage === 'EMPLOYEE' ? <Navigate to="/employee/dashboard" />
           : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={ () => dispatch(selectMode()) } />
           : loginStage === 'SIGN_IN_EMPLOYEE' ?
             <SignInSignUp
               checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
-              bottomDecorator={ () => <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography> }
+              // bottomDecorator={ () => <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography> }
             />
           :
             <SignInSignUp

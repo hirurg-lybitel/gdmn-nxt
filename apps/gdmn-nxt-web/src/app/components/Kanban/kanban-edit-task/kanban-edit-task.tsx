@@ -326,6 +326,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         open={confirmOpen}
         title={deleting ? 'Удаление клиента' : 'Сохранение'}
         text="Вы уверены, что хотите продолжить?"
+        dangerous={deleting}
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />

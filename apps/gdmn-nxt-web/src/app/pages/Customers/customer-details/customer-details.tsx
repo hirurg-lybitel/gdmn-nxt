@@ -9,7 +9,7 @@ import { makeStyles } from '@mui/styles';
 import BankStatement from '../../../customers/CustomerDetails/bank-statement/bank-statement';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
-import { useGetCustomerQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import { useGetCustomerQuery, useGetCustomersCrossQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
 import CustomerInfo from '../../../customers/CustomerDetails/customer-info/customer-info';
 import { ICustomer } from '@gsbelarus/util-api-types';
@@ -17,7 +17,8 @@ import { ICustomer } from '@gsbelarus/util-api-types';
 const useStyles = makeStyles(() => ({
   card: {
     flex: 1,
-    display: 'flex'
+    display: 'flex',
+    // maxHeight: "calc(100% - 300px)"
   },
   tabsBox: {
     borderBottom: 10,
@@ -25,7 +26,8 @@ const useStyles = makeStyles(() => ({
   },
   tabPanel: {
     flex: 1,
-    display: 'flex'
+    display: 'flex',
+    padding: 0
   },
   link: {
     display: 'flex',
@@ -46,6 +48,10 @@ export function CustomerDetails(props: CustomerDetailsProps) {
   // const { data } = useGetCustomersQuery();
   const { data: customer } = useGetCustomerQuery({ customerId: Number(customerId) });
   // const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
+
+  const { data: cross } = useGetCustomersCrossQuery();
+
+  // console.log('cross', cross?.persons[customer?.ID || -1]);
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -86,6 +92,7 @@ export function CustomerDetails(props: CustomerDetailsProps) {
           direction="column"
           flex={1}
           display="flex"
+          // style={{ backgroundColor: 'purple' }}
         >
           <TabContext value={tabIndex}>
             <Box className={classes.tabsBox}>

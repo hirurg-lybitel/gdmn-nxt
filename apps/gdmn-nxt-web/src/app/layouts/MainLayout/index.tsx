@@ -12,6 +12,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
+import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -126,7 +127,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
 export const MainLayout = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  const user = useSelector<RootState, UserState>( state => state.user );
+  const user = useSelector<RootState, UserState>(state => state.user);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
@@ -136,10 +137,19 @@ export const MainLayout = () => {
   const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
 
   // const location = useLocation();
-
   useEffect(() => {
     const menuID = activeMenuId === '' ? 'dashboard' : activeMenuId;
     dispatch(setActiveMenu(menuID));
+
+    setSocketClient({
+      url: `http://localhost:${process.env.NX_SOCKET_PORT}`,
+      userId: user.userProfile?.id || -1
+    });
+
+    return () => {
+      socketClient.removeAllListeners();
+      socketClient.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -147,7 +157,6 @@ export const MainLayout = () => {
       setOpenSnackBar(true);
     }
   }, [errorMessage]);
-
 
   const handleDrawerToggle = () => {
     dispatch(toggleMenu(!menuOpened));
@@ -189,34 +198,7 @@ export const MainLayout = () => {
         }}
       >
         <Toolbar>
-        {/* <ButtonBase disableRipple component={Link} to={config.defaultPath}> */}
-        {/* </ButtonBase>           */}
-          {/* <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            // onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
-            onClick={handleDrawerToggle}
-          >
-            <MenuIcon />
-          </IconButton>
-          <ButtonBase disableRipple component={Link} to={'/'} >
-            <BelgissLogo />
-          </ButtonBase>
-          <Box sx={{ flexGrow: 1 }} /> */}
-          {/* <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
-            Портал БелГИСС
-          </Typography> */}
-
           <Header onDrawerToggle={handleDrawerToggle} />
-          {/* <IconButton
-            size="large"
-            onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
-          >
-            <Avatar />
-          </IconButton> */}
         </Toolbar>
       </AppBar>
       <CustomMenu

@@ -51,6 +51,7 @@ export interface IBaseContact {
   FOLDERNAME?: string;
   NOTE?: string;
   ADDRESS?: string;
+  FAX?: string;
 };
 
 export interface IContactWithID extends IBaseContact, IWithID, IWithParent {}
@@ -86,3 +87,8 @@ export interface IResultError {
 };
 
 export type IEmployee = IContactWithID;
+
+export interface IProfileSettings {
+  AVATAR?: string;
+  RANK?: string;
+}

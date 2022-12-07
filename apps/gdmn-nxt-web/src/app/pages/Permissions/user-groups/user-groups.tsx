@@ -194,7 +194,7 @@ export function UserGroups(props: UserGroupsProps) {
                 startIcon={<AddIcon fontSize="large" />}
                 onClick={() => setOpenEditUserForm(true)}
               >
-                Добавить
+                Пользователь
               </Button>
             </Stack>
             {UsersList}

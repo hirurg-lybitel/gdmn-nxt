@@ -168,7 +168,7 @@ export function LabelListItem(props: LabelListItemProps) {
   return (
     <Box className={styles['Box-row']}>
       <Grid container alignItems="center">
-        <Grid item xs={2}>
+        <Grid item xs={2} paddingLeft={2} paddingRight={2}>
           <LabelMarker label={data} />
         </Grid>
         {/* <Grid item xs={4}>
@@ -202,6 +202,7 @@ export function LabelListItem(props: LabelListItemProps) {
         open={confirmOpen}
         title="Удаление метки"
         text="Вы уверены, что хотите продолжить?"
+        dangerous
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />

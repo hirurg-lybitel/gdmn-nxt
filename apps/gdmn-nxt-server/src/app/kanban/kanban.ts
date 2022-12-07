@@ -53,6 +53,7 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
+    const { departments, customers, requestNumber } = req.query;
 
     const checkFullView = `
       EXISTS(
@@ -87,13 +88,17 @@ const get: RequestHandler = async (req, res) => {
     const filter = `
       AND 1 =
       CASE ${deadline || -1}
-        WHEN 1 THEN 1
+        WHEN 1 THEN IIF(deal.USR$DONE = 0, 1, 0)
         WHEN 2 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 0, 0, 1)
         WHEN 3 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 1, 0, 1)
         WHEN 4 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) >= 0, 0, 1)
         WHEN 5 THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
+        WHEN 6 THEN 1
         ELSE 1
-      END`;
+      END
+      ${departments ? `AND dep.ID IN (${departments})` : ''}
+      ${customers ? `AND con.ID IN (${customers})` : ''}
+      ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''} `;
 
     const queries = [
       {
@@ -126,7 +131,13 @@ const get: RequestHandler = async (req, res) => {
             deny.ID DENY_ID,
             deny.USR$NAME AS DENY_NAME,
             deal.USR$DENIED DENIED,
-            deal.USR$COMMENT COMMENT
+            deal.USR$COMMENT COMMENT,
+            deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
+            deal.USR$PRODUCTNAME AS PRODUCTNAME,
+            deal.USR$CONTACT_NAME AS CONTACT_NAME,
+            deal.USR$CONTACT_EMAIL AS CONTACT_EMAIL,
+            deal.USR$CONTACT_PHONE AS CONTACT_PHONE,
+            deal.USR$CREATIONDATE CREATIONDATE
           FROM USR$CRM_KANBAN_CARDS card
             JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
@@ -196,8 +207,12 @@ const get: RequestHandler = async (req, res) => {
     });
 
     rawCards.forEach(el => {
-      const newCard = {
-        ...el,
+      const newCard: IKanbanCard = {
+        // ...el,
+        ID: el['ID'],
+        USR$INDEX: el['USR$INDEX'],
+        USR$MASTERKEY: el['USR$MASTERKEY'],
+        USR$DEALKEY: el['USR$DEALKEY'],
         DEAL: {
           ID: el['DEAL_ID'],
           USR$NAME: el['DEAL_USR$NAME'],
@@ -239,6 +254,12 @@ const get: RequestHandler = async (req, res) => {
           USR$READYTOWORK: el['USR$READYTOWORK'] === 1,
           DENIED: el['DENIED'] === 1,
           COMMENT: el['COMMENT'],
+          REQUESTNUMBER: el['REQUESTNUMBER'],
+          PRODUCTNAME: el['PRODUCTNAME'],
+          CONTACT_NAME: el['CONTACT_NAME'],
+          CONTACT_EMAIL: el['CONTACT_EMAIL'],
+          CONTACT_PHONE: el['CONTACT_PHONE'],
+          CREATIONDATE: el['CREATIONDATE'],
         },
         TASKS: tasks[el['ID']]
       };

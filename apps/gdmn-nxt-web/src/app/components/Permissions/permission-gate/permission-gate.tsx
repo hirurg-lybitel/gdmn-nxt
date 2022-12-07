@@ -1,4 +1,5 @@
 // import { PERMISSIONS } from '../permission-map';
+import { Tooltip, Typography } from '@mui/material';
 import { ReactNode, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useGetPermissionByUserQuery } from '../../../features/permissions';
@@ -48,14 +49,26 @@ export function PermissionsGate(props: PermissionsGateProps) {
     return data?.MODE === 1;
   })();
 
-  // console.log('permissionGranted', permissionGranted);
-
-  if (!permissionGranted) return <></>;
-
-  // const test = useMemo(() => {
-  //   console.log('data', data);
-  //   return <>{children}</>;
-  // }, [data?.CODE, data?.MODE]);
+  if (!permissionGranted) {
+    return (
+      <Tooltip title={<Typography variant="body1">У вас нет прав на это</Typography>} >
+        <div style={{ position: 'relative' }}>
+          {children}
+          <div
+            style={{
+              display: 'block',
+              zIndex: 99,
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+        </div>
+      </Tooltip>
+    );
+  };
 
   return <>{children}</>;
 }

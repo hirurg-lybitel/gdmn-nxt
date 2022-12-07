@@ -22,13 +22,13 @@ const dashboard: IMenuItem = {
       url: 'dashboard/deals',
       icon: <WorkIcon color="secondary" />
     },
-    {
-      id: 'map',
-      title: 'Карта',
-      type: 'item',
-      url: 'dashboard/map',
-      icon: <MapIcon color="secondary" />
-    },
+    // {
+    //   id: 'map',
+    //   title: 'Карта',
+    //   type: 'item',
+    //   url: 'dashboard/map',
+    //   icon: <MapIcon color="secondary" />
+    // },
   ]
 };
 

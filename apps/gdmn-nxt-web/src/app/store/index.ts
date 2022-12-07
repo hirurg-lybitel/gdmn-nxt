@@ -29,6 +29,8 @@ import { labelsApi } from '../features/labels';
 import { permissionsApi } from '../features/permissions';
 import { systemUsers } from '../features/systemUsers';
 import { topEarningApi } from '../features/topEarning';
+import { businessProcessesApi } from '../features/business-processes';
+import { profileSettingsApi } from '../features/profileSettings';
 
 export const store = configureStore({
   reducer: {
@@ -61,7 +63,9 @@ export const store = configureStore({
     [labelsApi.reducerPath]: labelsApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
     [systemUsers.reducerPath]: systemUsers.reducer,
-    [topEarningApi.reducerPath]: topEarningApi.reducer
+    [topEarningApi.reducerPath]: topEarningApi.reducer,
+    [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
+    [profileSettingsApi.reducerPath]: profileSettingsApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -86,6 +90,8 @@ export const store = configureStore({
     .concat(permissionsApi.middleware)
     .concat(systemUsers.middleware)
     .concat(topEarningApi.middleware)
+    .concat(businessProcessesApi.middleware)
+    .concat(profileSettingsApi.middleware)
     .concat(errorMiddleware),
 });
 

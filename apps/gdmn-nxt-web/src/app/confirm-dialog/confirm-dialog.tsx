@@ -1,7 +1,7 @@
 import './confirm-dialog.module.less';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide } from '@mui/material';
 import useStyles from './styles';
-import { forwardRef, ReactElement, Ref } from 'react';
+import { forwardRef, ReactElement, Ref, useMemo } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 
 const Transition = forwardRef(function Transition(
@@ -20,12 +20,13 @@ export interface ConfirmDialogProps {
   onConfirm?: (value: any) => void;
   title?: string;
   text?: string;
+  dangerous?: boolean;
   confirmClick?: () => void;
   cancelClick?: () => void;
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const { open, setOpen, onConfirm, text, title } = props;
+  const { open, setOpen, onConfirm, text, title, dangerous = false } = props;
   const { confirmClick, cancelClick } = props;
 
   const classes = useStyles();
@@ -38,7 +39,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         <Button
           className={classes.button}
           onClick={cancelClick}
-          variant="contained"
+          variant="outlined"
           color="primary"
         >
           Нет
@@ -48,7 +49,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           type="submit"
           onClick={confirmClick}
           variant="contained"
-          color="success"
+          color={dangerous ? 'error' : 'primary'}
         >
           Да
         </Button>

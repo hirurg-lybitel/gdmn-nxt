@@ -33,7 +33,7 @@ interface IInitState {
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date(), new Date()]
+  dates: [new Date((new Date).getFullYear(), (new Date).getMonth(), 1), new Date()]
 };
 
 export const ReconciliationAct = (props: ReconciliationAct) => {

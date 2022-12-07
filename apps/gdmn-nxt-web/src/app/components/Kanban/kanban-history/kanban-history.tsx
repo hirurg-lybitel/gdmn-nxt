@@ -2,6 +2,7 @@ import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem
 import { Box, Stack, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import { useGetHistoryQuery } from '../../../features/kanban/kanbanApi';
+import CircularIndeterminate from '../../circular-indeterminate/circular-indeterminate';
 
 
 export interface KanbanHistoryProps {
@@ -22,6 +23,19 @@ export function KanbanHistory(props: KanbanHistoryProps) {
   const setHistoryDate = (newDate: string) => {
     historyDate.current = { date: newDate, isChanged: true };
   };
+
+  if (isFetching) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+        }}
+      >
+        <CircularIndeterminate open={true} size={60} />
+      </div>
+    );
+  }
 
   return (
     <Box>
@@ -60,7 +74,7 @@ export function KanbanHistory(props: KanbanHistoryProps) {
                 </TimelineOppositeContent>
                 <TimelineSeparator key={el.ID}>
                   <TimelineDot variant="outlined"/>
-                  {index === data.length - 1
+                  {index === data?.length || 0 - 1
                     ? <></>
                     : <TimelineConnector />
                   }

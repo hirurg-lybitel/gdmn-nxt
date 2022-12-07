@@ -43,17 +43,21 @@ export const get: RequestHandler = async(req, res) => {
       name: 'actCompletion',
       query: `
         SELECT DISTINCT
-          doc.ID,
+          --doc.ID,
+          RDB$GET_CONTEXT('USER_TRANSACTION', 'RowNumber') AS ID,
+          RDB$SET_CONTEXT('USER_TRANSACTION', 'RowNumber', COALESCE(CAST(RDB$GET_CONTEXT('USER_TRANSACTION', 'RowNumber') AS INTEGER), 0) + 1),
           job.USR$NUMBER as JOB_NUMBER,
           dep.NAME as DEPT_NAME,
           doc.NUMBER,
           doc.DOCUMENTDATE,
-          c.USR$SUMNCU
+          c.USR$SUMNCU,
+          jwork.USR$NAME as JOBWORKNAME
         FROM
           USR$CRM_CUSTOMER c
           JOIN gd_document doc ON doc.ID = c.USR$ID
           JOIN USR$BG_CONTRACTJOB job ON job.ID = c.USR$JOBKEY
           JOIN gd_contact dep ON dep.ID = c.USR$DEPOTKEY
+          LEFT JOIN USR$BG_JOBWORK jwork ON jwork.ID = c.USR$JOBWORKKEY
         ${isNaN(customerId) ? '' : 'WHERE c.USR$CUSTOMERKEY = ?'}
         ORDER BY
           doc.DOCUMENTDATE DESC`,
