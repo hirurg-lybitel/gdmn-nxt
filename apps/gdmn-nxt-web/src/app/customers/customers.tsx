@@ -787,7 +787,7 @@ export function Customers(props: CustomersProps) {
               </Box>
             </Stack>
           </Box>
-          <Box p={3} className={style.bodySelectedDataContainer} style={{ paddingBottom: '0px' }}>
+          <Box p={3} className={style.bodySelectedDataContainer} style={{ paddingTop: '20px', paddingBottom: '0px' }}>
             <Stack style={{ flexWrap: 'wrap' }} direction="row" spacing={2}>
               {filteringData?.DEPARTMENTS && (
                 <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
