@@ -8,5 +8,4 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
     },
-    "eslint.autoFixOnSave": true
 }

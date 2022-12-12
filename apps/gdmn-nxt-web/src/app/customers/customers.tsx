@@ -1,41 +1,8 @@
-import {
-  DataGridPro,
-  GridColDef,
-  ruRU,
-  GridFilterItem,
-  GridFilterInputValueProps,
-  GridFilterModel,
-  GridFilterOperator,
-  GridSortModel
-} from '@mui/x-data-grid-pro';
-import style from './customers.module.less';
+import { DataGridPro, GridColDef, ruRU, GridFilterItem, GridFilterInputValueProps, GridFilterModel, GridFilterOperator, GridSortModel } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
-import React, {
-  CSSProperties,
-  ForwardedRef,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react';
-import {
-  Chip,
-  Box,
-  List,
-  ListItemButton,
-  Snackbar,
-  IconButton,
-  useMediaQuery,
-  Theme,
-  CardHeader,
-  Typography,
-  Divider,
-  CardContent,
-  Badge,
-  TextField
-} from '@mui/material';
+import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { Chip, Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, TextField } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -47,16 +14,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from './customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import {
-  IBusinessProcess,
-  IContactWithID,
-  IContractJob,
-  ICustomer,
-  ICustomerContract,
-  ICustomerContractWithID,
-  ILabel,
-  IWorkType
-} from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactWithID, IContractJob, ICustomer, ICustomerContract, ICustomerContractWithID, ILabel, IWorkType } from '@gsbelarus/util-api-types';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
 import CustomNoRowsOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
@@ -69,20 +27,8 @@ import CustomersFilter, {
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
-import {
-  useGetCustomersQuery,
-  useUpdateCustomerMutation,
-  useAddCustomerMutation,
-  IPaginationData,
-  useDeleteCustomerMutation,
-  useGetCustomersCrossQuery,
-  ISortingData
-} from '../features/customer/customerApi_new';
-import {
-  clearFilterData,
-  saveFilterData,
-  saveFilterModel
-} from '../store/filtersSlice';
+import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation, useGetCustomersCrossQuery, ISortingData } from '../features/customer/customerApi_new';
+import { clearFilterData, saveFilterData, saveFilterModel } from '../store/filtersSlice';
 import { useGetLabelsQuery } from '../features/labels';
 import LabelMarker from '../components/Labels/label-marker/label-marker';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
@@ -90,6 +36,8 @@ import { useGetDepartmentsQuery } from '../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
 import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import { maxWidth } from '@mui/system';
+import style from './customers.module.less';
+import DataField from './dataField/DataField';
 
 const useStyles = makeStyles((theme: Theme) => ({
   DataGrid: {
@@ -130,42 +78,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
   }
 }));
-
-interface DataFieldProps {
-  name: string;
-  masName: string;
-  data: any;
-  deleteField: any;
-}
-
-const DataField = ({ name, data, masName, deleteField }: DataFieldProps) => {
-  console.log(data);
-  return (
-    <Box style={{ margin: '0px 20px 20px 0px' }}>
-      <div className={style.selectedDataContainer}>
-        <div className={style.selectedDataContainer_name}>
-          <span>{name}</span>
-        </div>
-        <div className={style.selectedDataContainer_list}>
-          {data.map((item: any) => (
-            <div className={style.selectedDataContainer_item} key={item.ID}>
-              <Chip
-                style={{ maxWidth: '220px', margin: '0px' }}
-                className={style.selectedDataContainer_list}
-                label={item.NAME || item.USR$NUMBER || item.USR$NAME}
-                variant="outlined"
-                color="info"
-                onDelete={()=>{
-                  deleteField(masName, item.NAME || item.USR$NUMBER || item.USR$NAME);
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </Box>
-  );
-};
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
@@ -623,7 +535,6 @@ export function Customers(props: CustomersProps) {
       setFilteringData(newObject);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
-      console.log(newValue);
       const filterModels: any[] = [];
 
       for (const [key, arr] of Object.entries(newValue)) {
@@ -787,7 +698,7 @@ export function Customers(props: CustomersProps) {
               </Box>
             </Stack>
           </Box>
-          <Box p={3} className={style.bodySelectedDataContainer} style={{ paddingTop: '20px', paddingBottom: '0px' }}>
+          <Box p={3} className={style.bodySelectedDataContainer}>
             <Stack style={{ flexWrap: 'wrap' }} direction="row" spacing={2}>
               {filteringData?.DEPARTMENTS && (
                 <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
@@ -796,12 +707,7 @@ export function Customers(props: CustomersProps) {
                 <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
               )}
               {filteringData?.WORKTYPES && (
-                <DataField
-                  name="Виды работ"
-                  data={filteringData.WORKTYPES}
-                  masName={'WORKTYPES'}
-                  deleteField={handleOnChange}
-                />
+                <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
               )}
               {filteringData?.LABELS && (
                 <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
