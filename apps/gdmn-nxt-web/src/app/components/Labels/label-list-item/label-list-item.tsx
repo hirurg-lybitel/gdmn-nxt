@@ -168,13 +168,13 @@ export function LabelListItem(props: LabelListItemProps) {
   return (
     <Box className={styles['Box-row']}>
       <Grid container alignItems="center">
-        <Grid item xs={2} paddingLeft={2} paddingRight={2}>
+        <Grid item xs={4} paddingLeft={2} paddingRight={2}>
           <LabelMarker label={data} />
         </Grid>
         {/* <Grid item xs={4}>
           {data.USR$NAME}
         </Grid> */}
-        <Grid item xs={9}>
+        <Grid item xs={7}>
           {data.USR$DESCRIPTION}
         </Grid>
         <Grid item xs={1}>

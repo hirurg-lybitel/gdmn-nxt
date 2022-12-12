@@ -6,9 +6,9 @@ export interface ChartSkeletonProps {}
 export function ChartSkeleton(props: ChartSkeletonProps) {
   return (
     <>
-      <Skeleton variant="text" height={100} />
-      <Skeleton variant="rectangular" height={400} />
-      <Skeleton variant="text" height={100} />
+      <Skeleton variant="text" height={'10%'} />
+      <Skeleton variant="rectangular" height={'80%'} />
+      <Skeleton variant="text" height={'10%'} />
     </>
   );
 }
