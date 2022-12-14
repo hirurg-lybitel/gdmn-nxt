@@ -30,27 +30,27 @@ const managment: IMenuItem = {
       url: 'labels',
       icon: <LabelIcon color="secondary" />,
     },
-    {
-      id: 'permissions',
-      title: 'Настройка прав',
-      type: 'collapse',
-      checkAction: 8,
-      icon: <AdminPanelSettingsIcon color="secondary" />,
-      children: [
-        {
-          id: 'permissions-view',
-          title: 'Действия',
-          type: 'item',
-          url: 'permissions/list'
-        },
-        {
-          id: 'permissions-usergroups',
-          title: 'Группы пользователей',
-          type: 'item',
-          url: 'permissions/usergroups'
-        }
-      ]
-    }
+    // {
+    //   id: 'permissions',
+    //   title: 'Настройка прав',
+    //   type: 'collapse',
+    //   checkAction: 8,
+    //   icon: <AdminPanelSettingsIcon color="secondary" />,
+    //   children: [
+    //     {
+    //       id: 'permissions-view',
+    //       title: 'Действия',
+    //       type: 'item',
+    //       url: 'permissions/list'
+    //     },
+    //     {
+    //       id: 'permissions-usergroups',
+    //       title: 'Группы пользователей',
+    //       type: 'item',
+    //       url: 'permissions/usergroups'
+    //     }
+    //   ]
+    // }
   ]
 };
 

@@ -6,7 +6,7 @@ export interface AccountSettingsProps {}
 export function AccountSettings(props: AccountSettingsProps) {
   return (
     <div className={styles['container']}>
-      <h1>Welcome to AccountSettings!</h1>
+      <h1>Этой страницы пока не существует...</h1>
     </div>
   );
 }
