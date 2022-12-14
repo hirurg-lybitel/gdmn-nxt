@@ -1,6 +1,8 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import { IMenuItem } from '.';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
 
 const preferences: IMenuItem = {
   id: 'preferences',
@@ -21,6 +23,34 @@ const preferences: IMenuItem = {
       url: 'preferences/settings',
       icon: <Settings color="secondary" />
     },
+    {
+      id: 'permissions',
+      title: 'Настройка прав',
+      type: 'collapse',
+      checkAction: 8,
+      icon: <AdminPanelSettingsIcon color="secondary" />,
+      children: [
+        {
+          id: 'permissions-view',
+          title: 'Действия',
+          type: 'item',
+          url: 'permissions/list'
+        },
+        {
+          id: 'permissions-usergroups',
+          title: 'Группы пользователей',
+          type: 'item',
+          url: 'permissions/usergroups'
+        }
+      ]
+    },
+    {
+      id: 'notifications',
+      title: 'Центр уведомлений',
+      type: 'item',
+      url: 'preferences/notifications',
+      icon: <EditNotificationsIcon color="secondary" />
+    }
   ]
 };
 

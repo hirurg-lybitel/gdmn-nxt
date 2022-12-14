@@ -72,7 +72,7 @@ export const updateNotifications = async (sessionId: string) => {
           JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
           WHERE
             :CONTACTKEY IN (task.USR$CREATORKEY, task.USR$PERFORMER)
-            AND d.USR$DONE = 0 AND d.USR$DENIED = 0
+            AND d.USR$DONE = 0 AND d.USR$DENIED = 0 AND task.USR$CLOSED = 0
           ORDER BY d.USR$NUMBER
           INTO :TASK_ID, :DEAL_NUMBER, :DEAL_NAME, :TASK_NAME, :TASK_CREATIONDATE, :TASK_DEADLINE
           DO

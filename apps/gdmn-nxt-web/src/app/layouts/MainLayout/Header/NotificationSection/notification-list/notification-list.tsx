@@ -9,87 +9,19 @@ import ReactMarkdown from 'react-markdown';
 /* eslint-disable-next-line */
 export interface NotificationListProps {
   messages: IMessage[];
-  onDelete: (arg: number) => void;
+  onDelete?: (arg: number) => void;
 };
-
-// export interface IMessage {
-//   id: number;
-//   date: Date;
-//   title: string;
-//   text: string;
-// };
-
-const mes: IMessage[] = [
-  {
-    id: 1,
-    date: new Date('2022-02-17T03:24:00'),
-    title: 'Новые возможности!',
-    text: 'Управление сделками через удобную рабочую доску'
-  },
-  {
-    id: 2,
-    date: new Date('2022-02-10T14:14:00'),
-    title: 'Напоминание',
-    text: 'Позвонить клиенту СБУ'
-  },
-  {
-    id: 3,
-    date: new Date('2022-02-07T19:33:00'),
-    title: 'От администратора',
-    text: 'Технологические работы с 13:00 по 14:00. Портал будет недоступен'
-  },
-  {
-    id: 4,
-    date: new Date('2022-02-02T10:03:00'),
-    title: 'Напоминание',
-    text: 'Отослать контракт ООО"Чебурашка"'
-  },
-  {
-    id: 5,
-    date: new Date('2022-01-17T13:24:00'),
-    title: 'Напоминание',
-    text: 'Пора поесть'
-  },
-  {
-    id: 6,
-    date: new Date('2022-01-11T16:43:00'),
-    title: 'Сообщение',
-    text: 'Кто забыл кружку на кухне?'
-  },
-];
 
 export function NotificationList(props: NotificationListProps) {
   const { messages } = props;
   const { onDelete } = props;
 
-  // const [messages, setMessages] = useState<IMessage[]>(message ? [message] : []);
-
-  // const messages = [message];
-
-  // useEffect(() => {
-  //   console.log('NotificationList');
-  // }, []);
-
-  // socketClient.on('message', (data: any) => {
-  //   console.log('message', data);
-  // });
-
-  // window.addEventListener('DOMMouseScroll', (e) => e.preventDefault(), false); // older FF
-  // window.addEventListener('mousewheel', (e) => e.preventDefault(), { passive: false }); // modern desktop
-  // window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false }); // modern desktop
-  // document.body.style.overflow = 'unset';
-
   const handleDelete = (id: number) => () => {
-    console.log('handleDelete', id);
     const newMessages = [...messages];
     newMessages.splice(id, 1);
 
-    onDelete(id);
-
-    // setMessages(newMessages);
+    onDelete && onDelete(id);
   };
-
-  // console.log('messages', messages);
 
   return (
     <List disablePadding>
