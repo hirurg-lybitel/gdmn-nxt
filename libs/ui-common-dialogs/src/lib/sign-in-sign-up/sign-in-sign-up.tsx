@@ -14,7 +14,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import BelgissLogo from '../../../../../apps/gdmn-nxt-web/src/app/components/belgiss-logo/belgiss-logo';
+// import BelgissLogo from '../../../../../apps/gdmn-nxt-web/src/app/components/belgiss-logo/belgiss-logo';
 
 const useStyles = makeStyles((theme: Theme) => ({
   input: {
@@ -215,9 +215,9 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         :
         <Stack direction="column" spacing={3}>
           {topDecorator?.(stage)}
-          <Box textAlign={"center"}>
+          {/* <Box textAlign={"center"}>
             <BelgissLogo color='#64b5f6' scale={1.5}/>
-          </Box>
+          </Box> */}
           <Box textAlign={"center"}>
             <Typography variant="h1" fontSize={"2rem"}>
               Вход в систему
