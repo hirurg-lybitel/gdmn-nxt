@@ -545,7 +545,7 @@ export function Customers(props: CustomersProps) {
                   <Badge
                     color="error"
                     variant={
-                      Object.keys(filteringData || {}).length > 0
+                      Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
                         ? 'dot'
                         : 'standard'
                     }
