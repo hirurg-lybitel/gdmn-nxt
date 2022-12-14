@@ -464,7 +464,7 @@ export function Customers(props: CustomersProps) {
         }
       />
     ),
-    [customerFetching, filteringData ? filteringData.NAME : []]
+    [customerFetching, filteringData]
   );
 
   const memoFilter = useMemo(
