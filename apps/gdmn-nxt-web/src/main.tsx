@@ -46,7 +46,6 @@ import TopEarningPage from './app/pages/Analytics/UserReports/TopEarningPage';
 import Profile from './app/pages/Preferences/profile/profile';
 import AccountSettings from './app/pages/Preferences/account-settings/account-settings';
 import NotificationCenter from './app/pages/NotificationCenter/notification-center/notification-center';
-import NotFound from './app/pages/NotFound';
 // import { socketIO }  from '@gdmn-nxt/socket';
 
 registerMUI();
@@ -119,7 +118,7 @@ const Main = () => {
                     :
                     <Routes>
                       <Route path="/" element={<App />} />
-                      <Route path="*" element={<NotFound />} />
+                      <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
               }
             </LocalizationProvider>
