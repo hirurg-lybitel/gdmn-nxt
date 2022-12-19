@@ -31,6 +31,7 @@ import { systemUsers } from '../features/systemUsers';
 import { topEarningApi } from '../features/topEarning';
 import { businessProcessesApi } from '../features/business-processes';
 import { profileSettingsApi } from '../features/profileSettings';
+import faqReducer from '../features/FAQ/faqSlice';
 
 export const store = configureStore({
   reducer: {
@@ -42,6 +43,7 @@ export const store = configureStore({
     nlp: nlpReducer,
     customers: customersReducer,
     customersHierarchy: hierarchyReducer,
+    faq: faqReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,

@@ -1,4 +1,5 @@
 import { Grid, Stack } from '@mui/material';
+import { Navigate } from 'react-router-dom';
 import ChartColumn from '../../../components/Charts/chart-column/chart-column';
 import ChartDonut from '../../../components/Charts/chart-donut/chart-donut';
 import EarningCard from '../../../components/Charts/earning-card/earning-card';

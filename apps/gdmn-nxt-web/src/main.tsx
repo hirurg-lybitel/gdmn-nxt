@@ -46,6 +46,7 @@ import TopEarningPage from './app/pages/Analytics/UserReports/TopEarningPage';
 import Profile from './app/pages/Preferences/profile/profile';
 import AccountSettings from './app/pages/Preferences/account-settings/account-settings';
 import NotificationCenter from './app/pages/NotificationCenter/notification-center/notification-center';
+import FAQ from './app/pages/FAQ/Index';
 // import { socketIO }  from '@gdmn-nxt/socket';
 
 registerMUI();
@@ -97,6 +98,7 @@ const Main = () => {
                         <Route path="account" element={<Profile />} />
                         <Route path="settings" element={<AccountSettings />} />
                         <Route path="notifications" element={<NotificationCenter />} />
+                        <Route path="faq" element={<FAQ />} />
                       </Route>
                     </Route>
                     <Route path="/system" element={<BaseForm />}>

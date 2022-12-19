@@ -1,5 +1,6 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
+import HelpIcon from '@mui/icons-material/Help';
 import { IMenuItem } from '.';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
@@ -50,6 +51,13 @@ const preferences: IMenuItem = {
       type: 'item',
       url: 'preferences/notifications',
       icon: <EditNotificationsIcon color="secondary" />
+    },
+    {
+      id: 'faq',
+      title: 'Часто задаваемые вопросы',
+      type: 'item',
+      url: 'preferences/faq',
+      icon: <HelpIcon color="secondary" />
     }
   ]
 };
