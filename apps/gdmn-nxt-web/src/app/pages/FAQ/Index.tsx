@@ -9,6 +9,7 @@ import * as React from 'react';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
 import NewFaqForm from './newFaqForm/newFaqForm';
+import ReactMarkdown from 'react-markdown';
 
 export default function FAQ() {
   const faqs = useSelector((state:RootState) => state.faq.faqs);
@@ -37,9 +38,11 @@ export default function FAQ() {
                 </AccordionSummary>
                 <AccordionDetails style={{ backgroundColor: 'rgb(245, 245, 245)' }} >
                   <Typography>
-                    {
-                      item.answer
-                    }
+                    <ReactMarkdown>
+                      {
+                        item.answer
+                      }
+                    </ReactMarkdown>
                   </Typography>
                 </AccordionDetails>
               </Accordion>

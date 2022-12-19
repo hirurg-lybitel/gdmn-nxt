@@ -1,12 +1,14 @@
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addNewFaq } from '../../../features/FAQ/faqSlice';
 import { CardHeader, Typography, Button } from '@mui/material';
 import style from './newFaqForm.module.less';
+import ReactMarkdown from 'react-markdown';
 
 export default function NewFaqForm() {
   const dispatch = useDispatch();
-
+  const [answer, setAnswer] = useState('');
   const {
     handleSubmit,
     register,
@@ -16,8 +18,14 @@ export default function NewFaqForm() {
   } = useForm({ mode: 'all', });
 
   const onSubmit = async (data:any) => {
-    reset();
     dispatch(addNewFaq({ 'question': data.question, 'answer': data.answer }));
+    setAnswer('');
+    reset();
+  };
+
+  const onHandleChange = () => (e:any) => {
+    console.log(answer);
+    setAnswer(e.target.value);
   };
 
   return (
@@ -49,10 +57,21 @@ export default function NewFaqForm() {
           onFocus={() => {
             clearErrors('answer');
           }}
+          onChange={onHandleChange()}
         />
         {
           errors.answer
             && <div className={style.errorMessage}>{errors.answer.message}</div>
+        }
+        {
+          answer &&
+          <div className={style.previe}>
+            <ReactMarkdown >
+              {
+                answer
+              }
+            </ReactMarkdown>
+          </div>
         }
       </div>
       <Button type="submit" variant="contained">Добавить</Button>
