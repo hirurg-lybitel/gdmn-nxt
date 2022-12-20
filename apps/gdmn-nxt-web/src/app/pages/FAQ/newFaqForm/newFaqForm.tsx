@@ -6,6 +6,7 @@ import { CardHeader, Typography, Button } from '@mui/material';
 import style from './newFaqForm.module.less';
 import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
+import Visibility from '@mui/icons-material/Visibility';
 
 export default function NewFaqForm() {
   const dispatch = useDispatch();
@@ -73,40 +74,32 @@ export default function NewFaqForm() {
         >Preview</button>
       </div>
       <div className={style.inputContainer}>
+        <TextField
+          className={isPrevie ? style.unVisible : style.textArea}
+          id="outlined-textarea"
+          placeholder="Ответ"
+          multiline
+          {...register('answer', {
+            required: 'Обязательное поле'
+          })}
+          onFocus={() => {
+            clearErrors('answer');
+          }}
+          onChange={onHandleChange()}
+        />
         {
-          !isPrevie ?
-            <>
-              <TextField
-                className={style.textArea}
-                id="outlined-textarea"
-                placeholder="Ответ"
-                multiline
-                {...register('answer', {
-                  required: 'Обязательное поле'
-                })}
-                onFocus={() => {
-                  clearErrors('answer');
-                }}
-                onChange={onHandleChange()}
-              />
-            </>
-            :
-            <>
-              {
-                answer &&
-          <div className={style.preview}>
+          errors.answer
+                && <div className={style.errorMessage}>{errors.answer.message}</div>
+        }
+        {
+          answer &&
+          <div className={!isPrevie ? style.unVisible : style.preview}>
             <ReactMarkdown >
               {
                 answer
               }
             </ReactMarkdown>
           </div>
-              }
-              {
-                errors.answer
-            && <div className={style.errorMessage}>{errors.answer.message}</div>
-              }
-            </>
         }
       </div>
       <Button type="submit" variant="contained">Добавить</Button>
