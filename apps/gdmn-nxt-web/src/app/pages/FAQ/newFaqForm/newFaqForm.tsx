@@ -5,10 +5,12 @@ import { addNewFaq } from '../../../features/FAQ/faqSlice';
 import { CardHeader, Typography, Button } from '@mui/material';
 import style from './newFaqForm.module.less';
 import ReactMarkdown from 'react-markdown';
+import TextField from '@mui/material/TextField';
 
 export default function NewFaqForm() {
   const dispatch = useDispatch();
   const [answer, setAnswer] = useState('');
+  const [isPrevie, setIsPrevie] = useState(false);
   const {
     handleSubmit,
     register,
@@ -26,6 +28,15 @@ export default function NewFaqForm() {
   const onHandleChange = () => (e:any) => {
     console.log(answer);
     setAnswer(e.target.value);
+  };
+
+  const openPreview = () => () => {
+    setIsPrevie(true);
+    console.log('isPrivie');
+  };
+
+  const closePreview = () => () => {
+    setIsPrevie(false);
   };
 
   return (
@@ -47,31 +58,55 @@ export default function NewFaqForm() {
             && <div className={style.errorMessage}>{errors.question.message}</div>
         }
       </div>
+      <div>
+        <button
+          type="button"
+          className={style.previewToggleButton}
+          style={{ backgroundColor: !isPrevie ? 'rgb(242, 242, 242' : '' }}
+          onClick={closePreview()}
+        >Edit</button>
+        <button
+          type="button"
+          className={style.previewToggleButton}
+          style={{ backgroundColor: isPrevie ? 'rgb(242, 242, 242' : '' }}
+          onClick={openPreview()}
+        >Preview</button>
+      </div>
       <div className={style.inputContainer}>
-        <textarea
-          className={style.textArea}
-          placeholder={'Ответ'}
-          {...register('answer', {
-            required: 'Обязательное поле'
-          })}
-          onFocus={() => {
-            clearErrors('answer');
-          }}
-          onChange={onHandleChange()}
-        />
         {
-          errors.answer
-            && <div className={style.errorMessage}>{errors.answer.message}</div>
-        }
-        {
-          answer &&
-          <div className={style.previe}>
+          !isPrevie ?
+            <>
+              <TextField
+                className={style.textArea}
+                id="outlined-textarea"
+                placeholder="Ответ"
+                multiline
+                {...register('answer', {
+                  required: 'Обязательное поле'
+                })}
+                onFocus={() => {
+                  clearErrors('answer');
+                }}
+                onChange={onHandleChange()}
+              />
+            </>
+            :
+            <>
+              {
+                answer &&
+          <div className={style.preview}>
             <ReactMarkdown >
               {
                 answer
               }
             </ReactMarkdown>
           </div>
+              }
+              {
+                errors.answer
+            && <div className={style.errorMessage}>{errors.answer.message}</div>
+              }
+            </>
         }
       </div>
       <Button type="submit" variant="contained">Добавить</Button>
