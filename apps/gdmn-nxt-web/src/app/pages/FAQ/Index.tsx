@@ -9,30 +9,42 @@ import * as React from 'react';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
 import NewFaqForm from './newFaqForm/newFaqForm';
+import EditFaqForm from './editFaqForm/editFaqForm';
 import ReactMarkdown from 'react-markdown';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 
 export default function FAQ() {
   const faqs = useSelector((state:RootState) => state.faq.faqs);
-
   const [expanded, setExpanded] = React.useState<string | false>(false);
+  const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
+  const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
+  const [index, setIndex] = React.useState<number>(0);
 
-  const [isOpened, setIsOpened] = React.useState<boolean>(false);
-
-  const handleOpen = () => {
-    setIsOpened(true);
+  const handleOpenAddPopup = () => {
+    setIsOpenedAddPopup(true);
   };
 
-  const handleClose = () => {
-    setIsOpened(false);
+  const handleCloseAddPopup = () => {
+    setIsOpenedAddPopup(false);
+  };
+
+  const handleOpenEditPopup = (index:number) => () => {
+    setIsOpenedEditPopup(true);
+    setIndex(index);
+  };
+
+  const handleCloseEditPopup = () => {
+    setIsOpenedEditPopup(false);
   };
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
+
   return (
     <>
-      <NewFaqForm close={handleClose} isOpened={isOpened}/>
+      <EditFaqForm close={handleCloseEditPopup} isOpened={isOpenedEditPopup} index={index}/>
+      <NewFaqForm close={handleCloseAddPopup} isOpened={isOpenedAddPopup}/>
       <div className={style.body} >
         <div className={style.container}>
           <CardHeader title={<Typography variant="h3">Часто задаваемые вопросы</Typography>} />
@@ -41,7 +53,7 @@ export default function FAQ() {
             <Grid item xs={12}>
               {
                 faqs.map(item => <>
-                  <Accordion expanded={expanded === `panel${item.num}`} onChange={handleChange(`panel${item.num}`)}>
+                  <Accordion expanded={expanded === `panel${faqs.indexOf(item) + 1}`} onChange={handleChange(`panel${item.num}`)}>
                     <AccordionSummary
                       expandIcon={<ExpandMoreIcon />}
                       aria-controls="panel1a-content"
@@ -53,6 +65,7 @@ export default function FAQ() {
                             item.question
                           }
                         </ReactMarkdown>
+                        <Button variant="contained" onClick={handleOpenEditPopup(faqs.indexOf(item))}>Изменить</Button>
                       </Typography>
                     </AccordionSummary>
                     <AccordionDetails className={style.answerField}>
@@ -70,7 +83,7 @@ export default function FAQ() {
               }
             </Grid>
             <div className={style.addButton}>
-              <Button variant="contained" style={{ marginTop: '30px' }} onClick={handleOpen}>Добавить</Button>
+              <Button variant="contained" style={{ marginTop: '30px' }} onClick={handleOpenAddPopup}>Добавить</Button>
             </div>
           </PerfectScrollbar>
         </div>

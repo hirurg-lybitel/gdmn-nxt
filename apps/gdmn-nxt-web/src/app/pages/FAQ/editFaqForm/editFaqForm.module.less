@@ -1,0 +1,98 @@
+.background{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1300;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: 0.3s;
+}
+.unactiveBackground{
+    pointer-events: none;
+    opacity: 0;
+    visibility: 0;
+}
+.newQuestionBody{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: end;
+    transition: 0.3s;
+}
+.unactiveNewQuestionBody{
+    width: 0px;
+}
+.scrollBar{
+    z-index: 1301;
+    border-radius: 15px 0px 0px 15px;
+    padding: 16px 24px; 
+    background-color: white;
+    transition: 0.2s;
+}
+.unactiveScrollBar{
+    padding: 16px 0px; 
+}
+.fakeBody{
+    width: 40vw;
+}
+.newQustionContainer{
+    margin: 0;
+    width: 60vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.inputContainer{
+    word-wrap: break-word;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+    margin-bottom: 40px;
+}
+.textArea{
+    border-radius: 15px;
+    width: 100%;
+    font-size: 20px !important;
+}
+.preview{
+    line-height: 23px;
+    font-family: "Roboto","Helvetica","Arial",sans-serif;
+    font-size: 16px;
+    min-height: 50px;
+    border-radius: 12px;
+    padding: 1px 14px 0px 14px;
+    background-color: rgb(242, 242, 242);
+    width: 100%;
+    color: black;
+}
+.errorMessage{
+    bottom: -30px;
+    color: red;
+    position: absolute;
+}
+.previewToggleButton{
+    border-radius: 15px 15px 0px 0px;
+    background-color: white;
+    cursor: pointer;
+    padding: 10px 30px;
+    color: black;
+    border: none;
+    outline: none;
+}
+.activePreviewToggleButton{
+    background-color: rgb(242, 242, 242);
+}
+.previewToggleButton:hover{
+    color: rgb(107, 107, 107);
+}
+.unVisible{
+    width: 0px;
+    position: absolute;
+    visibility: hidden;
+    opacity: 0;
+}
