@@ -14,6 +14,7 @@
     visibility: 0;
 }
 .newQuestionBody{
+    overflow: hidden;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -23,36 +24,35 @@
     justify-content: end;
     transition: 0.3s;
 }
-.unactiveNewQuestionBody{
-    width: 0px;
-}
-.scrollBar{
-    z-index: 1301;
-    border-radius: 15px 0px 0px 15px;
-    padding: 16px 24px; 
+.NewQustionContainer{
+    border-radius: 15px 0 0 15px;
     background-color: white;
-    transition: 0.2s;
+    width: 30vw;
+    height: 100%;
+    right: 0;
+    position: relative;
+    z-index: 1301;
+    transition: 0.1s;
 }
-.unactiveScrollBar{
-    padding: 16px 0px; 
+.inactiveNewQustionContainer{
+    right: -30vw;
 }
-.fakeBody{
-    width: 40vw;
-}
-.newQustionContainer{
+.qustionForm{
+    position: relative;
+    border-radius: 15px 0px 0px 15px;
     margin: 0;
-    width: 60vw;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 .inputContainer{
+    margin-bottom: 20px;
     word-wrap: break-word;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     width: 100%;
     position: relative;
-    margin-bottom: 40px;
 }
 .textArea{
     border-radius: 15px;
@@ -63,7 +63,7 @@
     line-height: 23px;
     font-family: "Roboto","Helvetica","Arial",sans-serif;
     font-size: 16px;
-    min-height: 50px;
+    height: 309px;
     border-radius: 12px;
     padding: 1px 14px 0px 14px;
     background-color: rgb(242, 242, 242);
@@ -71,28 +71,13 @@
     color: black;
 }
 .errorMessage{
+    margin-left: 5px;
     bottom: -30px;
     color: red;
     position: absolute;
 }
-.previewToggleButton{
-    border-radius: 15px 15px 0px 0px;
-    background-color: white;
-    cursor: pointer;
-    padding: 10px 30px;
-    color: black;
-    border: none;
-    outline: none;
-}
-.activePreviewToggleButton{
-    background-color: rgb(242, 242, 242);
-}
-.previewToggleButton:hover{
-    color: rgb(107, 107, 107);
-}
-.unVisible{
-    width: 0px;
-    position: absolute;
-    visibility: hidden;
-    opacity: 0;
+.tab{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
 }

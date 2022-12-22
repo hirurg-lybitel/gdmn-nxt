@@ -8,7 +8,7 @@ import style from './faq.module.less';
 import * as React from 'react';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
-import NewFaqForm from './newFaqForm/newFaqForm';
+import AddFaqForm from './addFaqForm/addFaqForm';
 import EditFaqForm from './editFaqForm/editFaqForm';
 import ReactMarkdown from 'react-markdown';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -46,7 +46,7 @@ export default function FAQ() {
   return (
     <>
       <EditFaqForm close={handleCloseEditPopup} isOpened={isOpenedEditPopup} index={index}/>
-      <NewFaqForm close={handleCloseAddPopup} isOpened={isOpenedAddPopup}/>
+      <AddFaqForm close={handleCloseAddPopup} isOpened={isOpenedAddPopup}/>
       <div className={style.body} >
         <CustomizedCard borders boxShadows className={style.container}>
           <CardHeader

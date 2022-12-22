@@ -58,7 +58,7 @@ export const faqSlice = createSlice({
   name: 'faq',
   initialState,
   reducers: {
-    addNewFaq: (state, action) => {
+    addFaq: (state, action) => {
       state.faqs.push(action.payload);
     },
     editFaq: (state, action) => {
@@ -76,7 +76,7 @@ export const faqSlice = createSlice({
 });
 
 export const {
-  addNewFaq,
+  addFaq,
   editFaq,
   deleteFaq
 } = faqSlice.actions;
