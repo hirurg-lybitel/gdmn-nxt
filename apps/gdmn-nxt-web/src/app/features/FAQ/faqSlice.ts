@@ -65,13 +65,20 @@ export const faqSlice = createSlice({
       let faq:object = state.faqs[action.payload.index];
       faq = ({ 'question': action.payload.question, 'answer': action.payload.answer });
       state.faqs.push([...state.faqs, state.faqs[action.payload.index] = faq]);
+    },
+    deleteFaq: (state, action) => {
+      console.log(action.payload);
+      const faq = state.faqs;
+      faq.splice(action.payload, 1);
+      state.faqs = faq;
     }
   },
 });
 
 export const {
   addNewFaq,
-  editFaq
+  editFaq,
+  deleteFaq
 } = faqSlice.actions;
 
 export default faqSlice.reducer;

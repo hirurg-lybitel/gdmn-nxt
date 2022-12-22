@@ -49,9 +49,18 @@ export default function FAQ() {
       <NewFaqForm close={handleCloseAddPopup} isOpened={isOpenedAddPopup}/>
       <div className={style.body} >
         <CustomizedCard borders boxShadows className={style.container}>
-          <CardHeader title={<Typography variant="h3">Часто задаваемые вопросы</Typography>} />
+          <CardHeader
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h3">
+                  Часто задаваемые вопросы
+                </Typography>
+                <Button variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+              </div>
+            }
+          />
           <Divider/>
-          <PerfectScrollbar style={{ padding: '16px 24px', height: '86.7%' }}>
+          <PerfectScrollbar style={{ padding: '16px 24px', height: '85%' }}>
             <Grid item xs={12}>
               {
                 faqs.map(item =>
@@ -96,9 +105,6 @@ export default function FAQ() {
                 )
               }
             </Grid>
-            <div className={style.addButton}>
-              <Button variant="contained" style={{ marginTop: '30px' }} onClick={handleOpenAddPopup}>Добавить</Button>
-            </div>
           </PerfectScrollbar>
         </CustomizedCard>
       </div>

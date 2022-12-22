@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { editFaq } from '../../../features/FAQ/faqSlice';
+import { editFaq, deleteFaq } from '../../../features/FAQ/faqSlice';
 import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton } from '@mui/material';
 import style from './editFaqForm.module.less';
 import ReactMarkdown from 'react-markdown';
@@ -72,6 +72,11 @@ export default function EditFaqForm({ close, isOpened, index }:NewFaqFormProps) 
     setValue('question', faqs[index].question);
     setValue('answer', faqs[index].answer);
   }, [faqs, index]);
+
+  const handleDelete = () => {
+    dispatch(deleteFaq(index));
+    closePopup();
+  };
 
   return (
     <>
@@ -168,7 +173,7 @@ export default function EditFaqForm({ close, isOpened, index }:NewFaqFormProps) 
               }}
             >
               <div>
-                <IconButton aria-label="Удалить">
+                <IconButton aria-label="Удалить" onClick={handleDelete}>
                   <DeleteIcon />
                 </IconButton>
               </div>
