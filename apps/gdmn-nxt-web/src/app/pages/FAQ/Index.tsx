@@ -3,7 +3,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { CardHeader, Typography, Divider, Button } from '@mui/material';
+import { CardHeader, Typography, Divider, Button, IconButton } from '@mui/material';
 import style from './faq.module.less';
 import * as React from 'react';
 import { RootState } from '../../store';
@@ -12,9 +12,11 @@ import NewFaqForm from './newFaqForm/newFaqForm';
 import EditFaqForm from './editFaqForm/editFaqForm';
 import ReactMarkdown from 'react-markdown';
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import CustomizedCard from '../../components/Styled/customized-card/customized-card';
+import EditIcon from '@mui/icons-material/Edit';
 
 export default function FAQ() {
-  const faqs = useSelector((state:RootState) => state.faq.faqs);
+  const faqs:any[] = useSelector((state:RootState) => state.faq.faqs);
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
@@ -46,39 +48,51 @@ export default function FAQ() {
       <EditFaqForm close={handleCloseEditPopup} isOpened={isOpenedEditPopup} index={index}/>
       <NewFaqForm close={handleCloseAddPopup} isOpened={isOpenedAddPopup}/>
       <div className={style.body} >
-        <div className={style.container}>
+        <CustomizedCard borders boxShadows className={style.container}>
           <CardHeader title={<Typography variant="h3">Часто задаваемые вопросы</Typography>} />
+          <Divider/>
           <PerfectScrollbar style={{ padding: '16px 24px', height: '86.7%' }}>
-            <Divider style={{ width: '100%' }}/>
             <Grid item xs={12}>
               {
-                faqs.map(item => <>
-                  <Accordion expanded={expanded === `panel${faqs.indexOf(item) + 1}`} onChange={handleChange(`panel${item.num}`)}>
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel1a-content"
-                      id="panel1a-header"
+                faqs.map(item =>
+                  <div key={faqs.indexOf(item)} className={style.faqList}>
+                    <Accordion
+                      expanded={expanded === `panel${faqs.indexOf(item)}`}
+                      onChange={handleChange(`panel${faqs.indexOf(item)}`)}
+                      style={{ width: '100%' }}
                     >
-                      <Typography>
-                        <ReactMarkdown >
-                          {
-                            item.question
-                          }
-                        </ReactMarkdown>
-                        <Button variant="contained" onClick={handleOpenEditPopup(faqs.indexOf(item))}>Изменить</Button>
-                      </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails className={style.answerField}>
-                      <Typography>
-                        <ReactMarkdown >
-                          {
-                            item.answer
-                          }
-                        </ReactMarkdown>
-                      </Typography>
-                    </AccordionDetails>
-                  </Accordion>
-                </>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                      >
+                        <Typography>
+                          <ReactMarkdown >
+                            {
+                              item.question
+                            }
+
+                          </ReactMarkdown>
+
+                        </Typography>
+
+                      </AccordionSummary>
+                      <AccordionDetails className={style.answerField}>
+                        <Typography>
+                          <ReactMarkdown >
+                            {
+                              item.answer
+                            }
+                          </ReactMarkdown>
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
+                    <div>
+                      <IconButton style={{ marginTop: '20px' }} onClick={handleOpenEditPopup(faqs.indexOf(item))} aria-label="Изменить">
+                        <EditIcon />
+                      </IconButton>
+                    </div>
+                  </div>
                 )
               }
             </Grid>
@@ -86,7 +100,7 @@ export default function FAQ() {
               <Button variant="contained" style={{ marginTop: '30px' }} onClick={handleOpenAddPopup}>Добавить</Button>
             </div>
           </PerfectScrollbar>
-        </div>
+        </CustomizedCard>
       </div>
     </>
   );
