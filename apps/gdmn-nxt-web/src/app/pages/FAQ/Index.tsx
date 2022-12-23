@@ -64,42 +64,39 @@ export default function FAQ() {
             <Grid item xs={12}>
               {
                 faqs.map(item =>
-                  <div key={faqs.indexOf(item)} className={style.faqList}>
-                    <Accordion
-                      expanded={expanded === `panel${faqs.indexOf(item)}`}
-                      onChange={handleChange(`panel${faqs.indexOf(item)}`)}
-                      style={{ width: '100%' }}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1a-content"
-                        id="panel1a-header"
+                  <div key={faqs.indexOf(item)}>
+                    {faqs.indexOf(item) !== 0 && <Divider/>}
+                    <div className={style.faqList}>
+                      <Accordion
+                        expanded={expanded === `panel${faqs.indexOf(item)}`}
+                        onChange={handleChange(`panel${faqs.indexOf(item)}`)}
+                        style={{ width: '100%' }}
                       >
-                        <Typography>
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          aria-controls="panel1a-content"
+                          id="panel1a-header"
+                        >
                           <ReactMarkdown >
                             {
                               item.question
                             }
 
                           </ReactMarkdown>
-
-                        </Typography>
-
-                      </AccordionSummary>
-                      <AccordionDetails className={style.answerField}>
-                        <Typography>
+                        </AccordionSummary>
+                        <AccordionDetails className={style.answerField}>
                           <ReactMarkdown >
                             {
                               item.answer
                             }
                           </ReactMarkdown>
-                        </Typography>
-                      </AccordionDetails>
-                    </Accordion>
-                    <div>
-                      <IconButton style={{ marginTop: '20px' }} onClick={handleOpenEditPopup(faqs.indexOf(item))} aria-label="Изменить">
-                        <EditIcon />
-                      </IconButton>
+                        </AccordionDetails>
+                      </Accordion>
+                      <div>
+                        <IconButton style={{ marginTop: '20px' }} onClick={handleOpenEditPopup(faqs.indexOf(item))} aria-label="Изменить">
+                          <EditIcon />
+                        </IconButton>
+                      </div>
                     </div>
                   </div>
                 )
