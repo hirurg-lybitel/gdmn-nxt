@@ -1,7 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+export interface faq {
+  question: string,
+  answer: string
+}
+
 export interface FaqState {
-  faqs: any[]
+  faqs: faq[]
 };
 
 const initialState: FaqState = {

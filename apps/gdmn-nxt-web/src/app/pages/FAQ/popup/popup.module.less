@@ -47,7 +47,7 @@
     align-items: center;
     justify-content: space-between;
 }
-
+#questionForm .Card{width: 100%; }
 .inputContainer{
     margin-bottom: 20px;
     word-wrap: break-word;
@@ -61,16 +61,28 @@
     width: 100%;
     font-size: 20px !important;
 }
+.previewBackground{
+    background-color: rgb(242, 242, 242); 
+    border-radius: 12px;
+}
 .preview{
-    line-height: 23px;
+    position: relative;
+    line-height: 30px;
     font-family: "Roboto","Helvetica","Arial",sans-serif;
     font-size: 16px;
-    height: 309px;
-    border-radius: 12px;
+    height: 269px;
+    min-height: 269px;
+    max-height: 269px;
     padding: 1px 14px 0px 14px;
-    background-color: rgb(242, 242, 242);
-    width: 100%;
+    margin: 20px 0;
+    width: 350px;
     color: black;
+}
+.previewContent{
+    position: absolute; 
+    top: -23px; 
+    right: 0;
+    left: 14px;
 }
 .errorMessage{
     margin-left: 5px;
@@ -82,4 +94,15 @@
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-bottom: 0 !important;
+}
+.saveButton{
+    margin-left: 10px !important;
+}
+.buttonsContainer{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding-right: 20px;
+    padding-left: 10px;
+    margin-bottom: 15px;
 }
