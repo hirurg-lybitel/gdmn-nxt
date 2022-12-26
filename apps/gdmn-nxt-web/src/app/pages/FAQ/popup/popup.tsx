@@ -42,18 +42,20 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
   });
 
   const closePopup = () => {
+    setTabIndex('1');
     close();
     clearErrors();
   };
 
-  const editFaqHandler = async () => {
+  const editFaqHandler = () => {
     handleConfirmCancelClick();
     dispatch(editFaq({ 'question': getValues('question'), 'answer': getValues('answer'), 'index': index }));
     closePopup();
   };
 
-  const addFaqHandler = async (data:IShippingFields) => {
-    dispatch(addFaq({ 'question': data.question, 'answer': data.answer }));
+  const addFaqHandler = () => {
+    handleConfirmCancelClick();
+    dispatch(addFaq({ 'question': getValues('question'), 'answer': getValues('answer') }));
     closePopup();
     reset();
   };
@@ -114,6 +116,10 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
     setConfirmOpen(true);
   };
 
+  const handleAddClick = () => {
+    setConfirmOpen(true);
+  };
+
   const handleConfirmCancelClick = () => {
     setConfirmOpen(false);
   };
@@ -121,9 +127,19 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={isDelete ? 'Удаление вопроса с ответом' : 'Сохранение изменений'}
+      title={isAddPopup
+        ? 'Добавление нового вопроса с ответом'
+        : (isDelete
+          ? 'Удаление вопроса с ответом'
+          : 'Сохранение изменений'
+        )}
       text="Вы уверены, что хотите продолжить?"
-      confirmClick={isDelete ? handleDelete : editFaqHandler}
+      confirmClick={isAddPopup
+        ? addFaqHandler
+        : (isDelete
+          ? handleDelete
+          : editFaqHandler
+        )}
       cancelClick={handleConfirmCancelClick}
     />
   , [confirmOpen]);
@@ -144,10 +160,10 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
           }
         >
           <form
-            onSubmit={isAddPopup ? handleSubmit(addFaqHandler) : handleSubmit(handleSaveClick)}
-            className={style.questionForm}
+            onSubmit={isAddPopup ? handleSubmit(handleAddClick) : handleSubmit(handleSaveClick)}
+            className={style.qustionForm}
           >
-            <Card>
+            <Card className={style.card}>
               <CardHeader
                 title={<Typography variant="h4">{
                   isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
@@ -248,6 +264,7 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
                 </>
               }
             </div>
+
           </form>
         </div>
       </div>

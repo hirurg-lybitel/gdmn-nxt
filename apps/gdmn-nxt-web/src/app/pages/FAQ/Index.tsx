@@ -78,11 +78,10 @@ export default function FAQ() {
                             aria-controls="panel1a-content"
                             id="panel1a-header"
                           >
-                            <ReactMarkdown >
+                            <ReactMarkdown className={style.question}>
                               {
                                 item.question
                               }
-
                             </ReactMarkdown>
                           </AccordionSummary>
                           <AccordionDetails className={style.answerField}>
