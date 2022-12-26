@@ -48,6 +48,7 @@ const preferences: IMenuItem = {
       id: 'notifications',
       title: 'Центр уведомлений',
       type: 'item',
+      checkAction: 10,
       url: 'preferences/notifications',
       icon: <EditNotificationsIcon color="secondary" />
     }

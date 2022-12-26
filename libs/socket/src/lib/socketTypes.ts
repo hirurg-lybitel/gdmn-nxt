@@ -2,13 +2,16 @@ export interface ServerToClientEvents {
   noArg: () => void;
   basicEmit: (a: number, b: string, c: Buffer) => void;
   withAck: (d: string, callback: (e: number) => void) => void;
-  message: (data: IMessage) => void;
   messages: (data: IMessage[]) => void;
+  messagesByUser_response: (data: IMessage[]) => void;
+  sendMessageToUsers_response: (status: number, statusText: string) => void;
 }
 
 export interface ClientToServerEvents {
   hello: () => void;
   delete: (notificationId: number) => void;
+  messagesByUser_request: (userId: number) => void;
+  sendMessageToUsers_request: (message: string, userIDs: number[]) => void;
 }
 
 export interface InterServerEvents {
