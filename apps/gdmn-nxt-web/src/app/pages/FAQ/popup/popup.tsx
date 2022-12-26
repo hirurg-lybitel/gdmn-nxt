@@ -114,13 +114,25 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
   };
 
   const handleSaveClick = () => {
-    setIsDelete(false);
-    setConfirmOpen(true);
+    if ((getValues('answer').trim()).length !== 0) {
+      if ((getValues('question').trim()).length !== 0) {
+        setIsDelete(false);
+        setConfirmOpen(true);
+      } else {
+        setError('question', { message: 'Обязательное поле' });
+      }
+    } else {
+      setError('answer', { message: 'Обязательное поле' });
+    }
   };
 
   const handleAddClick = () => {
-    if (getValues('answer').length !== 0) {
-      setConfirmOpen(true);
+    if ((getValues('answer').trim()).length !== 0) {
+      if ((getValues('question').trim()).length !== 0) {
+        setConfirmOpen(true);
+      } else {
+        setError('question', { message: 'Обязательное поле' });
+      }
     } else {
       setError('answer', { message: 'Обязательное поле' });
     }
@@ -149,6 +161,16 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
       cancelClick={handleConfirmCancelClick}
     />
   , [confirmOpen]);
+
+  const onSubmitClick = () => {
+    if ((getValues('answer').trim()).length === 0) {
+      setError('answer', { message: 'Обязательное поле' });
+    }
+    if ((getValues('question').trim()).length === 0) {
+      console.log('1');
+      setError('question', { message: 'Обязательное поле' });
+    }
+  };
 
   return (
     <>
@@ -253,7 +275,7 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
                   <div />
                   <div>
                     <Button type="button" variant="contained" onClick={clearAndClosePopup}>Отмена</Button>
-                    <Button type="submit" variant="contained" className={style.saveButton}>Добавить</Button>
+                    <Button type="submit" variant="contained" onClick={onSubmitClick} className={style.saveButton}>Добавить</Button>
                   </div>
                 </>
                 :
@@ -265,7 +287,7 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
                   </div>
                   <div>
                     <Button type="button" variant="contained" onClick={clearAndClosePopup}>Отмена</Button>
-                    <Button type="submit" variant="contained" className={style.saveButton}>Сохранить</Button>
+                    <Button type="submit" variant="contained" onClick={onSubmitClick} className={style.saveButton}>Сохранить</Button>
                   </div>
                 </>
               }
