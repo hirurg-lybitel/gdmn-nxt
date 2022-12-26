@@ -11,6 +11,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import { setError } from '../../../features/error-slice/error-slice';
 
 interface PopupProps {
   close:()=>void
@@ -36,7 +37,8 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
     setValue,
     reset,
     getValues,
-    clearErrors
+    clearErrors,
+    setError
   } = useForm<IShippingFields>({
     mode: 'onSubmit'
   });
@@ -117,7 +119,11 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
   };
 
   const handleAddClick = () => {
-    setConfirmOpen(true);
+    if (getValues('answer').length !== 0) {
+      setConfirmOpen(true);
+    } else {
+      setError('answer', { message: 'Обязательное поле' });
+    }
   };
 
   const handleConfirmCancelClick = () => {
