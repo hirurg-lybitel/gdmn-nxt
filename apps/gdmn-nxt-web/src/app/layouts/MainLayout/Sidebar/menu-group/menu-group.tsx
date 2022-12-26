@@ -19,7 +19,9 @@ export function MenuGroup(props: MenuGroupProps) {
         </PermissionsGate>;
 
       case 'item':
-        return <MenuItem key={menu.id} item={menu} level={1} />;
+        return <PermissionsGate key={menu.id} actionCode={menu.checkAction} disableDefault={true}>
+          <MenuItem key={menu.id} item={menu} level={1} />
+        </PermissionsGate>;
       default:
         return (
           <Typography key={menu.id} variant="h6" color="error" align="center">

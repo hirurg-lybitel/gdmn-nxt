@@ -14,11 +14,12 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { BelgissLogo } from '@gdmn-nxt/assets';
 // import BelgissLogo from '../../../../../apps/gdmn-nxt-web/src/app/components/belgiss-logo/belgiss-logo';
 
 const useStyles = makeStyles((theme: Theme) => ({
   input: {
-    '&:-webkit-autofill' : {
+    '&:-webkit-autofill': {
       WebkitBoxShadow: '0 0 0 1000px white inset',
     }
   },
@@ -215,11 +216,11 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         :
         <Stack direction="column" spacing={3}>
           {topDecorator?.(stage)}
-          {/* <Box textAlign={"center"}>
-            <BelgissLogo color='#64b5f6' scale={1.5}/>
-          </Box> */}
-          <Box textAlign={"center"}>
-            <Typography variant="h1" fontSize={"2rem"}>
+          <Box textAlign={'center'}>
+            <BelgissLogo color="#64b5f6" scale={1.5}/>
+          </Box>
+          <Box textAlign={'center'}>
+            <Typography variant="h1" fontSize={'2rem'}>
               Вход в систему
             </Typography>
           </Box>
@@ -255,7 +256,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
             disabled={waiting}
             onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
             onKeyDown={keyPress}
-            autoComplete={"false"}
+            autoComplete={'false'}
             inputProps={{ className: classes.input }}
             InputProps={{
               startAdornment: (
