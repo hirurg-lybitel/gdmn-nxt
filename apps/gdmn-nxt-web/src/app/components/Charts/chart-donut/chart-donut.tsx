@@ -20,9 +20,9 @@ export function ChartDonut(props: ChartDonutProps) {
 
   const colors = [
     theme.color.purple[500],
-    theme.color.red['A200'],
+    theme.color.red.A200,
     theme.color.yellow['800'],
-    theme.color.green['A400'],
+    theme.color.green.A400,
     theme.color.blueGrey[400]
   ];
 
@@ -105,7 +105,7 @@ export function ChartDonut(props: ChartDonutProps) {
         maxHeight: 'calc(100vh - 130px)'
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex">
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
