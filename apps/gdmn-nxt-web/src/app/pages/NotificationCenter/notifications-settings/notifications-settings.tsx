@@ -10,20 +10,23 @@ export function NotificationsSettings(props: NotificationsSettingsProps) {
     <CustomizedCard borders style={{ flex: 1, padding: 10, display: 'flex', flexDirection: 'column' }} boxShadows>
       <Box flex={1}>
         <TextField
-          label="With normal TextField"
-          id="outlined-start-adornment"
+          label="Дней без срока"
           sx={{ m: 1, width: '25ch' }}
           InputProps={{
             startAdornment: <InputAdornment position="start">Дн.</InputAdornment>,
           }}
+          value={10}
+          disabled={true}
         />
         <TextField
-          label="With normal TextField"
+          label="Время удаления уведомлений"
           id="outlined-start-adornment"
           sx={{ m: 1, width: '25ch' }}
           InputProps={{
             startAdornment: <InputAdornment position="start">Мин.</InputAdornment>,
           }}
+          value={60}
+          disabled={true}
         />
       </Box>
       <CardActions>

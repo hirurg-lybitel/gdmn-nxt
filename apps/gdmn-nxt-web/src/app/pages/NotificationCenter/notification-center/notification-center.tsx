@@ -19,13 +19,15 @@ export function NotificationCenter(props: NotificationCenterProps) {
         display: 'flex',
       }}
     >
-      <CardHeader title={<Typography variant="h3">Центр уведомлений (образец)</Typography>} />
+      <CardHeader title={<Typography variant="h3">Центр уведомлений</Typography>} />
       <Divider />
-      <CardContent style={{
-        flex: 1,
-        display: 'flex',
-        padding: '40px',
-        }}>
+      <CardContent
+        style={{
+          flex: 1,
+          display: 'flex',
+          padding: '40px',
+        }}
+      >
         <Stack direction="row" spacing={5} flex={1}>
           <Stack spacing={5}>
             <NotificationsSettings />

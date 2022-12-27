@@ -2,7 +2,9 @@ import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketDa
 import { Router } from 'express';
 import { Server } from 'socket.io';
 import { deleteNotification } from './handlers/deleteNotification';
+import { getMessagesByUser } from './handlers/getMessagesByUser';
 import { getNotifications } from './handlers/getNotifications';
+import { insertNotification } from './handlers/insertNotification';
 import { updateNotifications } from './handlers/updateNotifications';
 
 interface NotificationsProps {
@@ -11,16 +13,16 @@ interface NotificationsProps {
 
 export function Notifications({ router }: NotificationsProps) {
   const socketIO = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->({
-  cors: {
-    credentials: true,
-    origin: `http://localhost:${process.env.NODE_ENV === 'development' ? '4200' : '80'}`
-  }
-});
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >({
+    cors: {
+      credentials: true,
+      origin: `http://localhost:${process.env.NODE_ENV === 'development' ? '4200' : '80'}`
+    }
+  });
 
   const sessionId = 'notification';
   const users: IUser[] = [];
@@ -33,7 +35,32 @@ export function Notifications({ router }: NotificationsProps) {
     socket.on('delete', async (notificationId) => {
       await deleteNotification(sessionId, notificationId);
       sendMessages();
-      // socket.emit('messages')
+    });
+
+    socket.on('messagesByUser_request', async (userId) => {
+      const notifications = await getNotifications(sessionId);
+      const userNotifications: INotification[] = notifications[userId];
+
+      socket.emit('messagesByUser_response', userNotifications?.map(n => {
+        const { message, userId, ...mes } = n;
+        return { ...mes, text: n.message };
+      }) || []);
+    });
+
+    socket.on('sendMessageToUsers_request', async (message, userIDs) => {
+      if (!message || userIDs?.length === 0) {
+        return;
+      };
+
+      try {
+        await insertNotification(sessionId, message, userIDs);
+      } catch (error) {
+        socket.emit('sendMessageToUsers_response', 500, 'Сообщение не отправлено. Обратитесь к администратору');
+        return;
+      };
+
+      sendMessages();
+      socket.emit('sendMessageToUsers_response', 200, 'Сообщение успешно отправлено');
     });
 
     // socket.emit('message', {
@@ -61,25 +88,24 @@ export function Notifications({ router }: NotificationsProps) {
   async function sendMessages() {
     if (users.length === 0) return;
 
-    // обновить список уведомлений в базе
+    /** обновить список уведомлений в базе */
     await updateNotifications(sessionId);
 
-    // считать актуальные уведомления
+    /** считать актуальные уведомления */
     const notifications = await getNotifications(sessionId);
 
-    // отправить каждому активному пользователю из users свои уведомления
+    /** отправить каждому активному пользователю из users свои уведомления */
     users.forEach(user => {
       const userNotifications: INotification[] = notifications[user.userId];
-      // console.log('userNotifications', userNotifications, userNotifications?.length);
 
-      // if (userNotifications?.length > 0) {
       socketIO.to(user.socketId).emit('messages', userNotifications?.map(n => {
         const { message, userId, ...mes } = n;
         return { ...mes, text: n.message };
       }) || []);
-      // };
     });
   }
 
   setInterval(sendMessages, 5000);
+
+  router.get('/notifications/user/:userId', getMessagesByUser);
 }
