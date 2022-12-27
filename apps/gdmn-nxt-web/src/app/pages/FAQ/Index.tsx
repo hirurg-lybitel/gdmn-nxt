@@ -49,7 +49,7 @@ export default function FAQ() {
         <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} index={index}/>
         <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true}/>
         <div className={style.body} >
-          <CustomizedCard borders boxShadows>
+          <CustomizedCard>
             <CardHeader
               title={
                 <div className={style.title}>
