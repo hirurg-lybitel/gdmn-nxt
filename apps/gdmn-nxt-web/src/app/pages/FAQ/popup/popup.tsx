@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { editFaq, deleteFaq, addFaq, faq } from '../../../features/FAQ/faqSlice';
 import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card } from '@mui/material';
 import style from './popup.module.less';
 import ReactMarkdown from 'react-markdown';
@@ -11,13 +10,13 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { setError } from '../../../features/error-slice/error-slice';
+import { faqApi, faq } from '../../../features/FAQ/faqApi';
 
 interface PopupProps {
   close:()=>void
   isOpened:boolean
   isAddPopup: boolean
-  index?: number | undefined
+  index?: number
 }
 
 interface IShippingFields {
@@ -26,8 +25,10 @@ interface IShippingFields {
 }
 
 export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps) {
-  const dispatch = useDispatch();
-  const faqs:faq[] = useSelector((state:RootState) => state.faq.faqs);
+  const { data: faqs } = faqApi.useGetAllfaqsQuery(1);
+  const [addFaq] = faqApi.useAddfaqMutation();
+  const [editFaq] = faqApi.useEditFaqMutation();
+  const [deleteFaq] = faqApi.useDeleteFaqMutation();
   const [tabIndex, setTabIndex] = useState('1');
 
   const {
@@ -50,14 +51,16 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
   };
 
   const editFaqHandler = () => {
-    handleConfirmCancelClick();
-    dispatch(editFaq({ 'question': getValues('question'), 'answer': getValues('answer'), 'index': index }));
-    closePopup();
+    if (index !== undefined) {
+      handleConfirmCancelClick();
+      editFaq({ faq: { 'question': getValues('question'), 'answer': getValues('answer') }, 'index': index });
+      closePopup();
+    }
   };
 
   const addFaqHandler = () => {
     handleConfirmCancelClick();
-    dispatch(addFaq({ 'question': getValues('question'), 'answer': getValues('answer') }));
+    addFaq({ 'question': getValues('question'), 'answer': getValues('answer') });
     closePopup();
     reset();
   };
@@ -81,16 +84,18 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
 
   useEffect(()=>{
     const itemIndex:number = index !== undefined ? index : 0;
-    if (faqs.length > itemIndex && !isAddPopup) {
+    if (faqs && (faqs.length > itemIndex) && !isAddPopup) {
       setValue('question', faqs[itemIndex].question);
       setValue('answer', faqs[itemIndex].answer);
     }
   }, isAddPopup ? [] : [faqs, index]);
 
   const handleDelete = () => {
-    dispatch(deleteFaq(index));
-    handleConfirmCancelClick();
-    closePopup();
+    if (index !== undefined) {
+      deleteFaq(index);
+      handleConfirmCancelClick();
+      closePopup();
+    }
   };
 
   const clearAndClosePopup = () => {
@@ -99,8 +104,10 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
       reset();
     } else {
       const itemIndex:number = index !== undefined ? index : 0;
-      setValue('question', faqs[itemIndex].question);
-      setValue('answer', faqs[itemIndex].answer);
+      if (faqs) {
+        setValue('question', faqs[itemIndex].question);
+        setValue('answer', faqs[itemIndex].answer);
+      }
     }
   };
 

@@ -13,10 +13,10 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
-import { faq } from '../../features/FAQ/faqSlice';
+import { faqApi, faq } from '../../features/FAQ/faqApi';
 
 export default function FAQ() {
-  const faqs:faq[] = useSelector((state:RootState) => state.faq.faqs);
+  const { data: faqs } = faqApi.useGetAllfaqsQuery(1);
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
@@ -43,73 +43,80 @@ export default function FAQ() {
     setExpanded(isExpanded ? panel : false);
   };
 
-  return (
-    <>
-      <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} index={index}/>
-      <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true}/>
-      <div className={style.body} >
-        <CustomizedCard borders boxShadows>
-          <CardHeader
-            title={
-              <div className={style.title}>
-                <Typography variant="h3">
+  if (faqs !== undefined) {
+    return (
+      <>
+        <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} index={index}/>
+        <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true}/>
+        <div className={style.body} >
+          <CustomizedCard borders boxShadows>
+            <CardHeader
+              title={
+                <div className={style.title}>
+                  <Typography variant="h3">
                   Часто задаваемые вопросы
-                </Typography>
-                <Button variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-              </div>
-            }
-          />
-          <Divider/>
-          <CardContent className={style.scrollBarContainer}>
-            <PerfectScrollbar className={style.scrollBar}>
-              <Grid item xs={12}>
-                {
-                  faqs.map(item =>
-                    <div key={faqs.indexOf(item)}>
-                      {faqs.indexOf(item) !== 0 && <Divider/>}
-                      <div className={style.faqList}>
-                        <Accordion
-                          expanded={expanded === `panel${faqs.indexOf(item)}`}
-                          onChange={handleChange(`panel${faqs.indexOf(item)}`)}
-                          className={style.accordion}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
+                  </Typography>
+                  <Button variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+                </div>
+              }
+            />
+            <Divider/>
+            <CardContent className={style.scrollBarContainer}>
+              <PerfectScrollbar className={style.scrollBar}>
+                <Grid item xs={12}>
+                  {
+                    faqs.map(item =>
+                      <div key={faqs.indexOf(item)}>
+                        {faqs.indexOf(item) !== 0 && <Divider/>}
+                        <div className={style.faqList}>
+                          <Accordion
+                            expanded={expanded === `panel${faqs.indexOf(item)}`}
+                            onChange={handleChange(`panel${faqs.indexOf(item)}`)}
+                            className={style.accordion}
                           >
-                            <ReactMarkdown>
-                              {
-                                item.question
-                              }
-                            </ReactMarkdown>
-                          </AccordionSummary>
-                          <AccordionDetails className={style.answerField}>
-                            <ReactMarkdown >
-                              {
-                                item.answer
-                              }
-                            </ReactMarkdown>
-                          </AccordionDetails>
-                        </Accordion>
-                        <div>
-                          <IconButton
-                            className={style.changeButton}
-                            onClick={handleOpenEditPopup(faqs.indexOf(item))}
-                            aria-label="Изменить"
-                          >
-                            <EditIcon />
-                          </IconButton>
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
+                            >
+                              <ReactMarkdown>
+                                {
+                                  item.question
+                                }
+                              </ReactMarkdown>
+                            </AccordionSummary>
+                            <AccordionDetails className={style.answerField}>
+                              <ReactMarkdown >
+                                {
+                                  item.answer
+                                }
+                              </ReactMarkdown>
+                            </AccordionDetails>
+                          </Accordion>
+                          <div>
+                            <IconButton
+                              className={style.changeButton}
+                              onClick={handleOpenEditPopup(faqs.indexOf(item))}
+                              aria-label="Изменить"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                }
-              </Grid>
-            </PerfectScrollbar>
-          </CardContent>
-        </CustomizedCard>
-      </div>
-    </>
-  );
+                    )
+                  }
+                </Grid>
+              </PerfectScrollbar>
+            </CardContent>
+          </CustomizedCard>
+
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <div />
+    );
+  }
 };

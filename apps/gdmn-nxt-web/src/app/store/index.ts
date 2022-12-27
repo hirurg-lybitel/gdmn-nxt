@@ -1,3 +1,4 @@
+import { faqApi } from './../features/FAQ/faqApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
@@ -43,7 +44,7 @@ export const store = configureStore({
     nlp: nlpReducer,
     customers: customersReducer,
     customersHierarchy: hierarchyReducer,
-    faq: faqReducer,
+    _faq: faqReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,
@@ -67,7 +68,8 @@ export const store = configureStore({
     [systemUsers.reducerPath]: systemUsers.reducer,
     [topEarningApi.reducerPath]: topEarningApi.reducer,
     [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
-    [profileSettingsApi.reducerPath]: profileSettingsApi.reducer
+    [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
+    [faqApi.reducerPath]: faqApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -94,7 +96,8 @@ export const store = configureStore({
     .concat(topEarningApi.middleware)
     .concat(businessProcessesApi.middleware)
     .concat(profileSettingsApi.middleware)
-    .concat(errorMiddleware),
+    .concat(errorMiddleware)
+    .concat(faqApi.middleware),
 });
 
 setupListeners(store.dispatch);

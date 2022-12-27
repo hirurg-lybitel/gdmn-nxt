@@ -28,6 +28,7 @@ import permissionsRouter from './app/routes/permissionsRouter';
 import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
 import { Notifications } from './app/routes/notifications';
+import faqRouter from './app/routes/faqRouter';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -36,8 +37,6 @@ dotenv.config({ path: '../..' });
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
-
-
 
 
 app.use(cors({
@@ -282,6 +281,9 @@ router.use(businessProcessRouter);
 
 /** Labels*/
 router.use(labelsRouter);
+
+/** FAQ*/
+router.use(faqRouter);
 
 /** Contracts list */
 router.use(contractsListRouter);
