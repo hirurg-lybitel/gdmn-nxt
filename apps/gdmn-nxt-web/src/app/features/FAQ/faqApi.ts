@@ -1,24 +1,27 @@
+import { Parameters } from './../../../../../../libs/util-helpers/src/lib/sql-param-parser';
+import { number } from 'yup';
 import { IContactWithID, IDenyReason, IKanbanCard, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
 import { build } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/cacheLifecycle';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
 export interface faq {
-  question: string,
-  answer: string
+  USR$QUESTION: string,
+  USR$ANSWER: string
 }
 
-export interface editFaq {
-  faq: faq,
-  index: number
+export interface fullFaq {
+  USR$QUESTION: string,
+  USR$ANSWER: string,
+  ID: number
 }
 
 export const faqApi = createApi({
   reducerPath: 'faq',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   tagTypes: ['faq'],
   endpoints: (builder) => ({
-    getAllfaqs: builder.query<faq[], number>({
+    getAllfaqs: builder.query<any, number>({
       query: () => ({
         url: 'faq',
       }),
@@ -32,19 +35,18 @@ export const faqApi = createApi({
       }),
       invalidatesTags: ['faq']
     }),
-    editFaq: builder.mutation<faq[], editFaq>({
-      query: (body) => ({
-        url: 'faq',
+    editFaq: builder.mutation<faq[], [faq, number]>({
+      query: ([body, id]) => ({
+        url: `faq/${id}`,
         method: 'PUT',
-        body
+        body,
       }),
       invalidatesTags: ['faq']
     }),
     deleteFaq: builder.mutation<faq[], number>({
-      query: (index) => ({
-        url: 'faq',
+      query: (id) => ({
+        url: `faq/${id}`,
         method: 'DELETE',
-        body: { 'index': index }
       }),
       invalidatesTags: ['faq']
     })

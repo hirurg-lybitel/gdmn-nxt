@@ -6,21 +6,21 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { CardHeader, Typography, Divider, Button, IconButton } from '@mui/material';
 import style from './faq.module.less';
 import * as React from 'react';
-import { RootState } from '../../store';
-import { useSelector } from 'react-redux';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
-import { faqApi, faq } from '../../features/FAQ/faqApi';
+import { faqApi, faq, fullFaq } from '../../features/FAQ/faqApi';
 
 export default function FAQ() {
-  const { data: faqs } = faqApi.useGetAllfaqsQuery(1);
+  const { data: allFaqs } = faqApi.useGetAllfaqsQuery(1);
+  const faqs:fullFaq[] = allFaqs?.queries.faqs;
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
-  const [index, setIndex] = React.useState<number>(0);
+  const [faq, setFaq] = useState<fullFaq>();
 
   const handleOpenAddPopup = () => {
     setIsOpenedAddPopup(true);
@@ -30,9 +30,9 @@ export default function FAQ() {
     setIsOpenedAddPopup(false);
   };
 
-  const handleOpenEditPopup = (index:number) => () => {
+  const handleOpenEditPopup = (editableFaq: fullFaq) => () => {
+    setFaq(editableFaq);
     setIsOpenedEditPopup(true);
-    setIndex(index);
   };
 
   const handleCloseEditPopup = () => {
@@ -46,7 +46,7 @@ export default function FAQ() {
   if (faqs !== undefined) {
     return (
       <>
-        <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} index={index}/>
+        <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} faq={faq}/>
         <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true}/>
         <div className={style.body} >
           <CustomizedCard>
@@ -66,12 +66,12 @@ export default function FAQ() {
                 <Grid item xs={12}>
                   {
                     faqs.map(item =>
-                      <div key={faqs.indexOf(item)}>
+                      <div key={item.ID}>
                         {faqs.indexOf(item) !== 0 && <Divider/>}
                         <div className={style.faqList}>
                           <Accordion
-                            expanded={expanded === `panel${faqs.indexOf(item)}`}
-                            onChange={handleChange(`panel${faqs.indexOf(item)}`)}
+                            expanded={expanded === `panel${item.ID}`}
+                            onChange={handleChange(`panel${item.ID}`)}
                             className={style.accordion}
                           >
                             <AccordionSummary
@@ -81,14 +81,14 @@ export default function FAQ() {
                             >
                               <ReactMarkdown>
                                 {
-                                  item.question
+                                  item.USR$QUESTION
                                 }
                               </ReactMarkdown>
                             </AccordionSummary>
                             <AccordionDetails className={style.answerField}>
                               <ReactMarkdown >
                                 {
-                                  item.answer
+                                  item.USR$ANSWER
                                 }
                               </ReactMarkdown>
                             </AccordionDetails>
@@ -96,7 +96,7 @@ export default function FAQ() {
                           <div>
                             <IconButton
                               className={style.changeButton}
-                              onClick={handleOpenEditPopup(faqs.indexOf(item))}
+                              onClick={handleOpenEditPopup(item)}
                               aria-label="Изменить"
                             >
                               <EditIcon />
