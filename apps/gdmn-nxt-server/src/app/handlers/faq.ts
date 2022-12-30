@@ -114,7 +114,6 @@ const upsert: RequestHandler = async (req, res) => {
       _params: id ? [{ id: id }] : undefined,
       _schema
     };
-    console.log(7);
     return res.status(200).json(result);
   } catch (error) {
     await rollbackTransaction(req.sessionID, transaction);

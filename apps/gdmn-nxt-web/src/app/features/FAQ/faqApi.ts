@@ -1,9 +1,11 @@
-import { Parameters } from './../../../../../../libs/util-helpers/src/lib/sql-param-parser';
-import { number } from 'yup';
-import { IContactWithID, IDenyReason, IKanbanCard, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
-import { build } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/cacheLifecycle';
+
+import { IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
+
+interface IFaqs{
+  faqs: fullFaq[];
+};
 
 export interface faq {
   USR$QUESTION: string,
@@ -16,15 +18,17 @@ export interface fullFaq {
   ID: number
 }
 
+type FaqResponse = fullFaq[];
+type IFaqRequestResult = IRequestResult<IFaqs>
+
 export const faqApi = createApi({
   reducerPath: 'faq',
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   tagTypes: ['faq'],
   endpoints: (builder) => ({
-    getAllfaqs: builder.query<any, number>({
-      query: () => ({
-        url: 'faq',
-      }),
+    getAllfaqs: builder.query<FaqResponse, void>({
+      query: () => 'faq',
+      transformResponse: (response: IFaqRequestResult) => response.queries?.faqs || [],
       providesTags: result => ['faq']
     }),
     addfaq: builder.mutation<faq[], faq>({

@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card } from '@mui/material';
+import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card, LinearProgress } from '@mui/material';
 import style from './popup.module.less';
 import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
@@ -23,12 +23,11 @@ interface IShippingFields {
 }
 
 export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
-  const { data: allFaqs } = faqApi.useGetAllfaqsQuery(1);
-  const faqs:faq[] = allFaqs?.queries.faqs;
   const [addFaq] = faqApi.useAddfaqMutation();
   const [editFaq] = faqApi.useEditFaqMutation();
   const [deleteFaq] = faqApi.useDeleteFaqMutation();
   const [tabIndex, setTabIndex] = useState('1');
+  const [isFetching, setIsFetching] = useState(false);
 
   const {
     handleSubmit,
@@ -51,17 +50,21 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
 
   const editFaqHandler = async () => {
     if (faq) {
+      setIsFetching(true);
       handleConfirmCancelClick();
       await editFaq([{ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') }, faq.ID]);
       closePopup();
+      setIsFetching(false);
     }
   };
 
   const addFaqHandler = async () => {
+    setIsFetching(true);
     handleConfirmCancelClick();
     await addFaq({ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') });
     closePopup();
     reset();
+    setIsFetching(false);
   };
 
   const handleTabsChange = (event: any, newindex: string) => {
@@ -83,9 +86,11 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
 
   const handleDelete = async () => {
     if (faq) {
-      await deleteFaq(faq.ID);
       handleConfirmCancelClick();
+      setIsFetching(true);
+      await deleteFaq(faq.ID);
       closePopup();
+      setIsFetching(false);
     }
   };
 
@@ -201,7 +206,8 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
                   isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
                 }</Typography>}
               />
-              <Divider />
+              <Divider/>
+              {isFetching && <LinearProgress className={style.loader}/>}
               <CardContent >
                 <div className={style.inputContainer}>
                   <TextField
@@ -278,20 +284,42 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
                 <>
                   <div />
                   <div>
-                    <Button type="button" variant="contained" onClick={clearAndClosePopup}>Отмена</Button>
-                    <Button type="submit" variant="contained" onClick={onSubmitClick} className={style.saveButton}>Добавить</Button>
+                    <Button
+                      disabled={isFetching}
+                      type="button"
+                      variant="contained"
+                      onClick={clearAndClosePopup}
+                    >Отмена</Button>
+                    <Button
+                      disabled={isFetching}
+                      type="submit"
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      className={style.saveButton}
+                    >Добавить</Button>
                   </div>
                 </>
                 :
                 <>
                   <div>
-                    <IconButton aria-label="Удалить" onClick={handleDeleteClick}>
+                    <IconButton disabled={isFetching} aria-label="Удалить" onClick={handleDeleteClick}>
                       <DeleteIcon />
                     </IconButton>
                   </div>
                   <div>
-                    <Button type="button" variant="contained" onClick={clearAndClosePopup}>Отмена</Button>
-                    <Button type="submit" variant="contained" onClick={onSubmitClick} className={style.saveButton}>Сохранить</Button>
+                    <Button
+                      disabled={isFetching}
+                      type="button"
+                      variant="contained"
+                      onClick={clearAndClosePopup}
+                    >Отмена</Button>
+                    <Button
+                      disabled={isFetching}
+                      type="submit"
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      className={style.saveButton}
+                    >Сохранить</Button>
                   </div>
                 </>
               }
