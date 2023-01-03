@@ -1,9 +1,10 @@
-import { IChartSumByperiod, IRequestResult } from '@gsbelarus/util-api-types';
+import { IChartSumByperiod, IChartBusinessDirection, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
 interface IChartData{
-  sumByperiod: IChartSumByperiod[];
+  sumByperiod?: IChartSumByperiod[];
+  businessDirection?: IChartBusinessDirection[];
 };
 
 type IChartDataRequestResult = IRequestResult<IChartData>;
@@ -29,18 +30,31 @@ export const chartDataApi = createApi({
           method: 'GET',
         });
       },
-      onQueryStarted(options) {
+      // onQueryStarted(options) {
+      //   const params = [];
+
+      //   for (const [name, value] of Object.entries(options)) {
+      //     params.push(`${name}=${value}`);
+      //   };
+
+      //   console.info('⏩ request', 'GET', `${baseUrlApi}charts/sumbyperiod?${params.join('&')}`);
+      // },
+      transformResponse: (response: IChartDataRequestResult) => response.queries?.sumByperiod?.map(el => ({ ...el, ONDATE: new Date(el.ONDATE) })) || [],
+    }),
+    getBusinessDirection: builder.query<IChartBusinessDirection[], IChartFilter>({
+      query: (options) => {
         const params = [];
 
         for (const [name, value] of Object.entries(options)) {
-          params.push(`${name}=${value}`);
+          params.push(`${name}=${Array.isArray(value) ? value.join(',') : value}`);
         };
-
-        console.info('⏩ request', 'GET', `${baseUrlApi}charts/sumbyperiod?${params.join('&')}`);
+        return {
+          url: `${baseUrlApi}charts/businessDirection?${params.join('&')}`,
+        };
       },
-      transformResponse: (response: IChartDataRequestResult) => response.queries?.sumByperiod.map(el => ({ ...el, ONDATE: new Date(el.ONDATE) })) || [],
+      transformResponse: (response: IChartDataRequestResult) => response.queries.businessDirection || []
     })
   })
 });
 
-export const { useGetSumByPeriodQuery } = chartDataApi;
+export const { useGetSumByPeriodQuery, useGetBusinessDirectionQuery } = chartDataApi;

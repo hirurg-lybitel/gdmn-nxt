@@ -145,6 +145,16 @@ export interface IChartSumByperiod {
   AMOUNT: number;
 };
 
+export interface IChartBusinessProcesses {
+  name: string;
+  amount: number;
+}
+export interface IChartBusinessDirection {
+  name: string;
+  amount: number;
+  businessProcesses: IChartBusinessProcesses[]
+};
+
 export interface IPhone extends IWithID {
   USR$CONTACTKEY?: number;
   USR$PHONENUMBER: string;

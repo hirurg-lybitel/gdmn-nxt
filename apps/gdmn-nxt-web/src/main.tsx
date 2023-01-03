@@ -48,6 +48,7 @@ import AccountSettings from './app/pages/Preferences/account-settings/account-se
 import NotificationCenter from './app/pages/NotificationCenter/notification-center/notification-center';
 import FAQ from './app/pages/FAQ/Index';
 import { SnackbarProvider } from 'notistack';
+import Analytics from './app/pages/Dashboard/analytics/analytics';
 
 registerMUI();
 
@@ -75,9 +76,13 @@ const Main = () => {
                   loginStage === 'EMPLOYEE' ?
                     <Routes>
                       <Route path="/employee" element={<MainLayout />}>
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="dashboard/deals" element={<Deals />} />
-                        <Route path="dashboard/map" element={<CustomersMap />} />
+                        <Route path="*" element={<Dashboard />} />
+                        <Route path="dashboard">
+                          <Route path="overview" element={<Dashboard />} />
+                          <Route path="deals" element={<Deals />} />
+                          <Route path="analytics" element={<Analytics />} />
+                          <Route path="map" element={<Dashboard />} />
+                        </Route>
                         <Route path="customers">
                           <Route path="list" element={<CustomersList />} />
                           <Route path="list/details/:id" element={<CustomerDetails />} />
@@ -108,7 +113,7 @@ const Main = () => {
                         <Route path="nlp-main" element={<NlpMain />} />
                         <Route path="sql-editor" element={<SqlEditor />} />
                       </Route>
-                      <Route path="*" element={<Navigate to="/employee/dashboard" />} />
+                      <Route path="*" element={<Navigate to="/employee/dashboard/overview" />} />
                     </Routes>
                     : loginStage === 'CUSTOMER' ?
                       <Routes>
