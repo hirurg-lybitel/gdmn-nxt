@@ -24,6 +24,17 @@ export default function FAQ() {
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
 
+  const addFaqHandler = (question:string, answer:string) => {
+    console.log(question + ' - ' + answer);
+    addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
+  };
+  const editFaqHandler = (question:string, answer:string, id:number) => {
+    editFaq([{ 'USR$QUESTION': question, 'USR$ANSWER': answer }, id]);
+  };
+  const deleteFaqHandler = (id:number) => {
+    deleteFaq(id);
+  };
+
   const handleOpenAddPopup = () => {
     setIsOpenedAddPopup(true);
   };
@@ -54,8 +65,20 @@ export default function FAQ() {
   }
   return (
     <>
-      <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} faq={faq} editFaq={editFaq} deleteFaq={deleteFaq}/>
-      <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true} addFaq={addFaq}/>
+      <Popup
+        close={handleCloseEditPopup}
+        isOpened={isOpenedEditPopup}
+        isAddPopup={false}
+        faq={faq}
+        editFaq={editFaqHandler}
+        deleteFaq={deleteFaqHandler}
+      />
+      <Popup
+        close={handleCloseAddPopup}
+        isOpened={isOpenedAddPopup}
+        isAddPopup={true}
+        addFaq={addFaqHandler}
+      />
       <div className={style.body} >
         <CustomizedCard>
           <CardHeader

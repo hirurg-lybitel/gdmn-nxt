@@ -11,13 +11,13 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { fullFaq } from '../../../features/FAQ/faqApi';
 
 interface PopupProps {
-  close:()=>void
+  close: ()=>void
   isOpened:boolean
   isAddPopup: boolean
   faq?: fullFaq,
-  addFaq?: any,
-  editFaq?: any,
-  deleteFaq?: any
+  addFaq?: (question:string, answer:string)=>void,
+  editFaq?: (question:string, answer:string, id:number)=>void,
+  deleteFaq?: (id:number)=>void
 }
 
 interface IShippingFields {
@@ -51,14 +51,14 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     if (faq) {
       handleConfirmCancelClick();
       closePopup();
-      await editFaq([{ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') }, faq.ID]);
+      editFaq && editFaq(getValues('question'), getValues('answer'), faq.ID);
     }
   };
 
   const addFaqHandler = async () => {
     handleConfirmCancelClick();
     closePopup();
-    await addFaq({ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') });
+    addFaq && addFaq(getValues('question'), getValues('answer'));
     reset();
   };
 
@@ -79,11 +79,11 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     };
   }, [escPressed]);
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (faq) {
       handleConfirmCancelClick();
       closePopup();
-      await deleteFaq(faq.ID);
+      deleteFaq && deleteFaq(faq.ID);
     }
   };
 
