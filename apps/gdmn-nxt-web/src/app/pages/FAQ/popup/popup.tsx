@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card, LinearProgress } from '@mui/material';
+import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card } from '@mui/material';
 import style from './popup.module.less';
 import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
@@ -8,13 +8,16 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { faqApi, faq, fullFaq } from '../../../features/FAQ/faqApi';
+import { fullFaq } from '../../../features/FAQ/faqApi';
 
 interface PopupProps {
   close:()=>void
   isOpened:boolean
   isAddPopup: boolean
-  faq?: fullFaq
+  faq?: fullFaq,
+  addFaq?: any,
+  editFaq?: any,
+  deleteFaq?: any
 }
 
 interface IShippingFields {
@@ -22,12 +25,8 @@ interface IShippingFields {
   answer: string
 }
 
-export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
-  const [addFaq] = faqApi.useAddfaqMutation();
-  const [editFaq] = faqApi.useEditFaqMutation();
-  const [deleteFaq] = faqApi.useDeleteFaqMutation();
+export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq, deleteFaq }:PopupProps) {
   const [tabIndex, setTabIndex] = useState('1');
-  const [isFetching, setIsFetching] = useState(false);
 
   const {
     handleSubmit,
@@ -50,21 +49,17 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
 
   const editFaqHandler = async () => {
     if (faq) {
-      setIsFetching(true);
       handleConfirmCancelClick();
-      await editFaq([{ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') }, faq.ID]);
       closePopup();
-      setIsFetching(false);
+      await editFaq([{ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') }, faq.ID]);
     }
   };
 
   const addFaqHandler = async () => {
-    setIsFetching(true);
     handleConfirmCancelClick();
-    await addFaq({ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') });
     closePopup();
+    await addFaq({ 'USR$QUESTION': getValues('question'), 'USR$ANSWER': getValues('answer') });
     reset();
-    setIsFetching(false);
   };
 
   const handleTabsChange = (event: any, newindex: string) => {
@@ -87,10 +82,8 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
   const handleDelete = async () => {
     if (faq) {
       handleConfirmCancelClick();
-      setIsFetching(true);
-      await deleteFaq(faq.ID);
       closePopup();
-      setIsFetching(false);
+      await deleteFaq(faq.ID);
     }
   };
 
@@ -176,7 +169,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
       setError('answer', { message: 'Обязательное поле' });
     }
     if ((getValues('question').trim()).length === 0) {
-      console.log('1');
       setError('question', { message: 'Обязательное поле' });
     }
   };
@@ -207,7 +199,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
                 }</Typography>}
               />
               <Divider/>
-              {isFetching && <LinearProgress className={style.loader}/>}
               <CardContent >
                 <div className={style.inputContainer}>
                   <TextField
@@ -285,13 +276,11 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
                   <div />
                   <div>
                     <Button
-                      disabled={isFetching}
                       type="button"
                       variant="contained"
                       onClick={clearAndClosePopup}
                     >Отмена</Button>
                     <Button
-                      disabled={isFetching}
                       type="submit"
                       variant="contained"
                       onClick={onSubmitClick}
@@ -302,19 +291,17 @@ export default function Popup({ close, isOpened, isAddPopup, faq }:PopupProps) {
                 :
                 <>
                   <div>
-                    <IconButton disabled={isFetching} aria-label="Удалить" onClick={handleDeleteClick}>
+                    <IconButton aria-label="Удалить" onClick={handleDeleteClick}>
                       <DeleteIcon />
                     </IconButton>
                   </div>
                   <div>
                     <Button
-                      disabled={isFetching}
                       type="button"
                       variant="contained"
                       onClick={clearAndClosePopup}
                     >Отмена</Button>
                     <Button
-                      disabled={isFetching}
                       type="submit"
                       variant="contained"
                       onClick={onSubmitClick}

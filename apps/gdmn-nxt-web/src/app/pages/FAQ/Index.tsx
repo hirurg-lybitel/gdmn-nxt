@@ -12,7 +12,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
-import { faqApi, faq, fullFaq } from '../../features/FAQ/faqApi';
+import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
 
 export default function FAQ() {
   const { data: faqs, isFetching } = faqApi.useGetAllfaqsQuery();
@@ -20,6 +20,9 @@ export default function FAQ() {
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
   const [faq, setFaq] = useState<fullFaq>();
+  const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
+  const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
+  const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
 
   const handleOpenAddPopup = () => {
     setIsOpenedAddPopup(true);
@@ -51,8 +54,8 @@ export default function FAQ() {
   }
   return (
     <>
-      <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} faq={faq}/>
-      <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true}/>
+      <Popup close={handleCloseEditPopup} isOpened={isOpenedEditPopup} isAddPopup={false} faq={faq} editFaq={editFaq} deleteFaq={deleteFaq}/>
+      <Popup close={handleCloseAddPopup} isOpened={isOpenedAddPopup} isAddPopup={true} addFaq={addFaq}/>
       <div className={style.body} >
         <CustomizedCard>
           <CardHeader
@@ -61,7 +64,7 @@ export default function FAQ() {
                 <Typography variant="h3">
                   Часто задаваемые вопросы
                 </Typography>
-                <Button variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+                <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
               </div>
             }
           />
@@ -100,6 +103,7 @@ export default function FAQ() {
                         </Accordion>
                         <div>
                           <IconButton
+                            disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                             className={style.changeButton}
                             onClick={handleOpenEditPopup(item)}
                             aria-label="Изменить"
