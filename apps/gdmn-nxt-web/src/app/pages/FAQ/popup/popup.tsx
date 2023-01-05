@@ -1,22 +1,23 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card } from '@mui/material';
 import style from './popup.module.less';
 import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
-import { RootState } from '../../../store';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { faqApi, faq } from '../../../features/FAQ/faqApi';
+import { fullFaq } from '../../../features/FAQ/faqApi';
 
 interface PopupProps {
-  close:()=>void
+  close: ()=>void
   isOpened:boolean
   isAddPopup: boolean
-  index?: number
+  faq?: fullFaq,
+  addFaq?: (question:string, answer:string)=>void,
+  editFaq?: (question:string, answer:string, id:number)=>void,
+  deleteFaq?: (id:number)=>void
 }
 
 interface IShippingFields {
@@ -24,11 +25,7 @@ interface IShippingFields {
   answer: string
 }
 
-export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps) {
-  const { data: faqs } = faqApi.useGetAllfaqsQuery(1);
-  const [addFaq] = faqApi.useAddfaqMutation();
-  const [editFaq] = faqApi.useEditFaqMutation();
-  const [deleteFaq] = faqApi.useDeleteFaqMutation();
+export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq, deleteFaq }:PopupProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   const {
@@ -50,18 +47,18 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
     clearErrors();
   };
 
-  const editFaqHandler = () => {
-    if (index !== undefined) {
+  const editFaqHandler = async () => {
+    if (faq) {
       handleConfirmCancelClick();
-      editFaq({ faq: { 'question': getValues('question'), 'answer': getValues('answer') }, 'index': index });
       closePopup();
+      editFaq && editFaq(getValues('question'), getValues('answer'), faq.ID);
     }
   };
 
-  const addFaqHandler = () => {
+  const addFaqHandler = async () => {
     handleConfirmCancelClick();
-    addFaq({ 'question': getValues('question'), 'answer': getValues('answer') });
     closePopup();
+    addFaq && addFaq(getValues('question'), getValues('answer'));
     reset();
   };
 
@@ -82,19 +79,11 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
     };
   }, [escPressed]);
 
-  useEffect(()=>{
-    const itemIndex:number = index !== undefined ? index : 0;
-    if (faqs && (faqs.length > itemIndex) && !isAddPopup) {
-      setValue('question', faqs[itemIndex].question);
-      setValue('answer', faqs[itemIndex].answer);
-    }
-  }, isAddPopup ? [] : [faqs, index]);
-
   const handleDelete = () => {
-    if (index !== undefined) {
-      deleteFaq(index);
+    if (faq) {
       handleConfirmCancelClick();
       closePopup();
+      deleteFaq && deleteFaq(faq.ID);
     }
   };
 
@@ -103,10 +92,9 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
     if (isAddPopup) {
       reset();
     } else {
-      const itemIndex:number = index !== undefined ? index : 0;
-      if (faqs) {
-        setValue('question', faqs[itemIndex].question);
-        setValue('answer', faqs[itemIndex].answer);
+      if (faq) {
+        setValue('question', faq.USR$QUESTION);
+        setValue('answer', faq.USR$ANSWER);
       }
     }
   };
@@ -149,6 +137,13 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
     setConfirmOpen(false);
   };
 
+  useEffect(()=>{
+    if (faq) {
+      setValue('question', faq.USR$QUESTION);
+      setValue('answer', faq.USR$ANSWER);
+    }
+  }, [faq]);
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
@@ -174,7 +169,6 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
       setError('answer', { message: 'Обязательное поле' });
     }
     if ((getValues('question').trim()).length === 0) {
-      console.log('1');
       setError('question', { message: 'Обязательное поле' });
     }
   };
@@ -204,7 +198,7 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
                   isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
                 }</Typography>}
               />
-              <Divider />
+              <Divider/>
               <CardContent >
                 <div className={style.inputContainer}>
                   <TextField
@@ -281,8 +275,17 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
                 <>
                   <div />
                   <div>
-                    <Button type="button" variant="contained" onClick={clearAndClosePopup}>Отмена</Button>
-                    <Button type="submit" variant="contained" onClick={onSubmitClick} className={style.saveButton}>Добавить</Button>
+                    <Button
+                      type="button"
+                      variant="contained"
+                      onClick={clearAndClosePopup}
+                    >Отмена</Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      className={style.saveButton}
+                    >Добавить</Button>
                   </div>
                 </>
                 :
@@ -293,8 +296,17 @@ export default function Popup({ close, isOpened, isAddPopup, index }:PopupProps)
                     </IconButton>
                   </div>
                   <div>
-                    <Button type="button" variant="contained" onClick={clearAndClosePopup}>Отмена</Button>
-                    <Button type="submit" variant="contained" onClick={onSubmitClick} className={style.saveButton}>Сохранить</Button>
+                    <Button
+                      type="button"
+                      variant="contained"
+                      onClick={clearAndClosePopup}
+                    >Отмена</Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      className={style.saveButton}
+                    >Сохранить</Button>
                   </div>
                 </>
               }

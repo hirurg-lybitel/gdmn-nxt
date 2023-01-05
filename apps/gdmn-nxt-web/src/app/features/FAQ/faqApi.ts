@@ -1,27 +1,34 @@
-import { IContactWithID, IDenyReason, IKanbanCard, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
-import { build } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/cacheLifecycle';
+
+import { IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
+interface IFaqs{
+  faqs: fullFaq[];
+};
+
 export interface faq {
-  question: string,
-  answer: string
+  USR$QUESTION: string,
+  USR$ANSWER: string
 }
 
-export interface editFaq {
-  faq: faq,
-  index: number
+export interface fullFaq {
+  USR$QUESTION: string,
+  USR$ANSWER: string,
+  ID: number
 }
+
+type FaqResponse = fullFaq[];
+type IFaqRequestResult = IRequestResult<IFaqs>
 
 export const faqApi = createApi({
   reducerPath: 'faq',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   tagTypes: ['faq'],
   endpoints: (builder) => ({
-    getAllfaqs: builder.query<faq[], number>({
-      query: () => ({
-        url: 'faq',
-      }),
+    getAllfaqs: builder.query<FaqResponse, void>({
+      query: () => 'faq',
+      transformResponse: (response: IFaqRequestResult) => response.queries?.faqs || [],
       providesTags: result => ['faq']
     }),
     addfaq: builder.mutation<faq[], faq>({
@@ -32,19 +39,18 @@ export const faqApi = createApi({
       }),
       invalidatesTags: ['faq']
     }),
-    editFaq: builder.mutation<faq[], editFaq>({
-      query: (body) => ({
-        url: 'faq',
+    editFaq: builder.mutation<faq[], [faq, number]>({
+      query: ([body, id]) => ({
+        url: `faq/${id}`,
         method: 'PUT',
-        body
+        body,
       }),
       invalidatesTags: ['faq']
     }),
     deleteFaq: builder.mutation<faq[], number>({
-      query: (index) => ({
-        url: 'faq',
+      query: (id) => ({
+        url: `faq/${id}`,
         method: 'DELETE',
-        body: { 'index': index }
       }),
       invalidatesTags: ['faq']
     })
