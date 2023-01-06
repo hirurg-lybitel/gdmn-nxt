@@ -26,13 +26,23 @@ const useStyles = makeStyles((theme: Theme) => ({
 export interface MenuItemProps {
   item: any;
   level?: number;
+  isOpen?:boolean
+  open?:()=>void;
 };
 
-export function MenuItem(props: MenuItemProps) {
-  const { item, level = 0 } = props;
 
+export function MenuItem(props: MenuItemProps) {
+  const { item, level = 0, isOpen, open } = props;
+  const settings = useSelector((state: RootState) => state.settings);
+  console.log(settings.activeMenuId + ' - ' + item.id);
+  if (settings.activeMenuId === item.id) {
+    if (isOpen) {
+      open && open();
+    }
+  }
   const classes = useStyles();
   const dispatch = useDispatch();
+
 
   const itemIcon = item?.icon ||
     (level > 1
@@ -42,18 +52,19 @@ export function MenuItem(props: MenuItemProps) {
           height: 6
         }}
         color="secondary"
-      />
+        />
       : <></>);
 
   const listComponent = {
     component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`${item.url}`} target="_self" />)
   };
 
-  const settings = useSelector((state: RootState) => state.settings);
 
   const handleItemOnClick = () => {
     dispatch(setActiveMenu(item.id));
   };
+
+  alert
 
   return (
     <ListItemButton

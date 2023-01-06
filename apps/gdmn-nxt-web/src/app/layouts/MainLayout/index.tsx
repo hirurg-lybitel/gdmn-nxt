@@ -7,14 +7,14 @@ import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
-import { setActiveMenu, toggleMenu } from '../../store/settingsSlice'
+import { setActiveMenu, toggleMenu } from '../../store/settingsSlice';
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
 import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
@@ -58,7 +58,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
 
 interface IMenuItem {
   type: 'item';
-  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string; };
   caption: string;
   onClick: () => void;
 };
@@ -203,7 +203,7 @@ export const MainLayout = () => {
       </AppBar>
       <CustomMenu
         anchorEl={anchorProfileEl}
-        handleClose={ () => setAnchorProfileEl(null) }
+        handleClose={() => setAnchorProfileEl(null)}
         items={profileMenuItems}
       />
       <Sidebar

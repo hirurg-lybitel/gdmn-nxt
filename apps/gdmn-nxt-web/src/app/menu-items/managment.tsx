@@ -19,7 +19,7 @@ const managment: IMenuItem = {
           id: 'customers-list',
           title: 'Список клиентов',
           type: 'item',
-          url: 'customers/list'
+          url: 'managment/customers/list'
         },
       ]
     },
@@ -27,7 +27,7 @@ const managment: IMenuItem = {
       id: 'labels',
       title: 'Метки',
       type: 'item',
-      url: 'labels',
+      url: 'managment/labels',
       icon: <LabelIcon color="secondary" />,
     },
     // {
