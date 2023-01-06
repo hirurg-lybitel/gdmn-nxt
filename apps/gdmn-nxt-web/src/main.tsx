@@ -67,7 +67,6 @@ const Main = () => {
     savedTheme.current = theme(customization);
   }, [customization]);
   const url:string[] = window.location.href.split(/[/]\s*/);
-  useEffect(()=>{});
   menuItems.items.map((item, index) =>{
     if (item.id === url[4] || item.id === url[3]) {
       menuItems.items[index].children?.map(childrens => {
@@ -108,12 +107,21 @@ const Main = () => {
                       loginStage === 'EMPLOYEE' ?
                         <Routes>
                           <Route path="/employee" element={<MainLayout />}>
+<<<<<<< Updated upstream
                             <Route path="" element={<Navigate to="dashboard/overview" />} />
                             <Route path="dashboard">
                               <Route path="" element={<Navigate to="overview" />} />
                               <Route path="overview" element={<Dashboard />} />
                               <Route path="analytics" element={<Analytics />} />
                               <Route path="map" element={<Dashboard />} />
+=======
+                            <Route path="" element={<NotFound/>} />
+                            <Route path="dashboard">
+                              <Route path="overview" element={<Dashboard />} />
+                              <Route path="deals" element={<Deals />} />
+                              <Route path="analytics" element={<Analytics />} />
+                              <Route path="map" element={<CustomersMap />} />
+>>>>>>> Stashed changes
                             </Route>
                             <Route path="managment">
                               <Route path="" element={<Navigate to="deals" />} />
