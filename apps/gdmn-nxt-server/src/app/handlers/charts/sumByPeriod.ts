@@ -1,10 +1,10 @@
 import { IDataSchema, IRequestResult, ITableSchema } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
-import { getReadTransaction, releaseReadTransaction } from '../utils/db-connection';
-import { sqlQuery } from '../utils/sqlQuery';
+import { resultError } from '../../responseMessages';
+import { getReadTransaction, releaseReadTransaction } from '../../utils/db-connection';
+import { sqlQuery } from '../../utils/sqlQuery';
 
-const getSumByPeriod: RequestHandler = async(req, res) => {
+export const getSumByPeriod: RequestHandler = async(req, res) => {
   // sumbyperiod/?departmentId=147016912&dateBegin=1577912400000&dateEnd=1643662800000
 
   const dateBegin = new Date(Number(req.query.dateBegin));
@@ -87,7 +87,7 @@ const getSumByPeriod: RequestHandler = async(req, res) => {
     namedSQL.setParamByName('DateEnd').value = dateEnd;
 
     const sumByperiod = await namedSQL.execute();
-    applySchema(schema['sumByperiod'], sumByperiod);
+    applySchema(schema.sumByperiod, sumByperiod);
 
     const result: IRequestResult = {
       queries: { sumByperiod },
@@ -103,5 +103,3 @@ const getSumByPeriod: RequestHandler = async(req, res) => {
   };
 };
 
-
-export default { getSumByPeriod };

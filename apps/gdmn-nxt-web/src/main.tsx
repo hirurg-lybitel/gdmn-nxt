@@ -52,6 +52,7 @@ import NotFound from './app/pages/NotFound';
 import { baseUrl } from './app/const';
 import menuItems from './app/menu-items';
 import { setActiveMenu } from './app/store/settingsSlice';
+import Analytics from './app/pages/Dashboard/analytics/analytics';
 
 registerMUI();
 
@@ -108,9 +109,12 @@ const Main = () => {
                         <Routes>
                           <Route path="/employee" element={<MainLayout />}>
                             <Route path="" element={<NotFound/>} />
-                            <Route path="dashboard" element={<Dashboard />} />
-                            <Route path="dashboard/deals" element={<Deals />} />
-                            <Route path="dashboard/map" element={<CustomersMap />} />
+                            <Route path="dashboard">
+                              <Route path="" element={<Dashboard />} />
+                              <Route path="deals" element={<Deals />} />
+                              <Route path="analytics" element={<Analytics />} />
+                              <Route path="map" element={<Dashboard />} />
+                            </Route>
                             <Route path="managment">
                               <Route path="" element={<NotFound/>} />
                               <Route path="customers" >

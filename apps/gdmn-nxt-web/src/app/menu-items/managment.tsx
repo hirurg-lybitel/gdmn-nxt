@@ -1,5 +1,6 @@
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LabelIcon from '@mui/icons-material/Label';
+import WorkIcon from '@mui/icons-material/Work';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { IMenuItem } from '.';
 
@@ -9,6 +10,13 @@ const managment: IMenuItem = {
   title: 'Управление',
   type: 'group',
   children: [
+    {
+      id: 'deals',
+      title: 'Сделки',
+      type: 'item',
+      url: 'dashboard/deals',
+      icon: <WorkIcon color="secondary" />
+    },
     {
       id: 'customers',
       title: 'Клиенты',
