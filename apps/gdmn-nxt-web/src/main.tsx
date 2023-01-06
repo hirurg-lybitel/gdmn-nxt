@@ -108,15 +108,16 @@ const Main = () => {
                       loginStage === 'EMPLOYEE' ?
                         <Routes>
                           <Route path="/employee" element={<MainLayout />}>
-                            <Route path="" element={<NotFound/>} />
+                            <Route path="" element={<Navigate to="dashboard/overview" />} />
                             <Route path="dashboard">
-                              <Route path="" element={<Dashboard />} />
-                              <Route path="deals" element={<Deals />} />
+                              <Route path="" element={<Navigate to="overview" />} />
+                              <Route path="overview" element={<Dashboard />} />
                               <Route path="analytics" element={<Analytics />} />
                               <Route path="map" element={<Dashboard />} />
                             </Route>
                             <Route path="managment">
-                              <Route path="" element={<NotFound/>} />
+                              <Route path="" element={<Navigate to="deals" />} />
+                              <Route path="deals" element={<Deals />} />
                               <Route path="customers" >
                                 <Route path="" element={<NotFound/>} />
                                 <Route path="orders/list" element={<OrderList />} />
@@ -126,9 +127,9 @@ const Main = () => {
                               <Route path="labels" element={<Labels />}/>
                             </Route>
                             <Route path="analytics">
-                              <Route path="" element={<NotFound/>} />
+                              <Route path="" element={<Navigate to="reports/reconciliation" />} />
                               <Route path="reports">
-                                <Route path="" element={<NotFound/>} />
+                                <Route path="" element={<Navigate to="reconciliation" />} />
                                 <Route path="reconciliation" element={<ReconciliationAct />} />
                                 <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
                                 <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
@@ -137,33 +138,33 @@ const Main = () => {
                               <Route path="salesfunnel" element={<SalesFunnel />} />
                             </Route>
                             <Route path="preferences">
-                              <Route path="" element={<NotFound/>} />
+                              <Route path="" element={<Navigate to="account" />} />
                               <Route path="account" element={<Profile />} />
                               <Route path="settings" element={<AccountSettings />} />
                               <Route path="notifications" element={<NotificationCenter />} />
                               <Route path="faq" element={<FAQ />} />
                               <Route path="permissions">
-                                <Route path="" element={<NotFound/>} />
+                                <Route path="" element={<Navigate to="list" />} />
                                 <Route path="list" element={<PermissionsList />} />
                                 <Route path="usergroups" element={<UserGroups />} />
                               </Route>
                             </Route>
                           </Route>
                           <Route path="/system" element={<BaseForm />}>
-                            <Route path="" element={<NotFound/>} />
+                            <Route path="" element={<Navigate to="er-model-domains" />} />
                             <Route path="er-model-domains" element={<ErModelDomains />} />
                             <Route path="er-model" element={<ErModel />} />
                             <Route path="nlp-main" element={<NlpMain />} />
                             <Route path="sql-editor" element={<SqlEditor />} />
                             <Route path="*" element={<NotFound/>} />
-                          </Route><Route path="/" element={<Navigate to="/employee/dashboard" />} />
+                          </Route>
                           <Route path="/" element={<Navigate to="/employee/dashboard" />} />
                           <Route path="*" element={<NotFound/>} />
                         </Routes>
                         : loginStage === 'CUSTOMER' ?
                           <Routes>
                             <Route path="/customer" element={<CustomerHomePage />}>
-                              <Route path="" element={<NotFound/>} />
+                              <Route path="" element={<Navigate to="standard-order" />} />
                               <Route path="standard-order" element={<StandardOrder />} />
                               <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
                             </Route>
