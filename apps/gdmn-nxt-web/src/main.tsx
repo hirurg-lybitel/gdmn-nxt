@@ -67,7 +67,6 @@ const Main = () => {
     savedTheme.current = theme(customization);
   }, [customization]);
   const url:string[] = window.location.href.split(/[/]\s*/);
-  useEffect(()=>{});
   menuItems.items.map((item, index) =>{
     if (item.id === url[4] || item.id === url[3]) {
       menuItems.items[index].children?.map(childrens => {
