@@ -3,9 +3,8 @@ import styles from './business-direction-compare.module.less';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import Chart from 'react-apexcharts';
-import { Box, Grid, Stack, TextField, useTheme } from '@mui/material';
+import { Box, Grid, TextField } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
-import ChartColumn from '../chart-column/chart-column';
 import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
 
@@ -53,15 +52,9 @@ const chartOptionsDefault: ApexCharts.ApexOptions = {
     show: false,
     fontWeight: 600,
     position: 'top',
-
     markers: {
-
       radius: 5,
-      // offsetY: 2,
     },
-    // labels: {
-    //   colors: theme.color.grey[500],
-    // },
   },
   dataLabels: {
     enabled: false,
@@ -99,6 +92,15 @@ const chartOptionsBarDefault: ApexCharts.ApexOptions = {
     zoom: {
       enabled: false
     }
+  },
+  title: {
+    text: 'Сравнение бизнес-процессов и направлений',
+    align: 'center',
+    style: {
+      fontSize: '1.2em',
+      fontWeight: 700
+    },
+    offsetY: 20
   },
   noData: {
     text: 'Нет данных',
@@ -160,8 +162,8 @@ interface IInitState {
   dateRight: DateRange<Date>;
 }
 
-const onDate = new Date(2022, 7, 17);
-// const onDate = new Date();
+// const onDate = new Date(2022, 7, 17);
+const onDate = new Date();
 const initState: IInitState = {
   datesLeft: [
     new Date((onDate).getFullYear(), (onDate).getMonth(), 1),
@@ -177,7 +179,6 @@ const initState: IInitState = {
 export interface BusinessDirectionCompareProps {}
 
 export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
-  const theme = useTheme();
   const [selectedLeftMasterSeriesId, setSelectedLeftMasterSeriesId] = useState(-1);
   const [selectedRightMasterSeriesId, setSelectedRightMasterSeriesId] = useState(-1);
 
@@ -301,7 +302,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
 
   return (
     <Grid container direction="column" spacing={3}>
-      <Grid item container direction={{ md: 'column', lg: 'row' }} xs={6} spacing={3} >
+      <Grid item container direction={{ xs: 'column', md: 'column', lg: 'row' }} xs={6} spacing={3} >
         <Grid item container xs={6}>
           <CustomizedCard borders style={{ flex: 1 }}>
             <Grid container direction="column">
@@ -386,9 +387,8 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           <Chart
             type="bar"
             height="100%"
-            series={chartOptionsBar.series}
-
             options={chartOptionsBar}
+            series={chartOptionsBar.series}
           />
         </CustomizedCard>
       </Grid>
