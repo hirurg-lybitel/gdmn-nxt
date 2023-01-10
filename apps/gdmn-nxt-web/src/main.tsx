@@ -51,7 +51,7 @@ import { SnackbarProvider } from 'notistack';
 import NotFound from './app/pages/NotFound';
 import { baseUrl } from './app/const';
 import menuItems from './app/menu-items';
-import { setActiveMenu } from './app/store/settingsSlice';
+import { setActiveMenu, setPageIdFound } from './app/store/settingsSlice';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
 
 registerMUI();
@@ -62,34 +62,58 @@ const Main = () => {
   const loginStage = useSelector<RootState, LoginStage>(state => state.user.loginStage);
   const savedTheme = useRef<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
+  const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
 
   useEffect(() => {
     savedTheme.current = theme(customization);
   }, [customization]);
-  const url:string[] = window.location.href.split(/[/]\s*/);
-  menuItems.items.map((item, index) =>{
-    if (item.id === url[4] || item.id === url[3]) {
-      menuItems.items[index].children?.map(childrens => {
-        if (childrens.children) {
-          if (childrens.id === url[url.length - 2]) {
-            childrens.children.map(children => {
-              if (children.url === (url[url.length - 3] + '/' + url[url.length - 2] + '/' + url[url.length - 1])) {
-                if (children.id !== settings.activeMenuId && settings.activeMenuId !== '') {
-                  dispatch(setActiveMenu(children.id));
-                }
-              }
-            });
+
+  const url:string[] = window.location.href.split('/');
+  // Поиск и установка id страницы, который соответствует url, в state
+  if (!pageIdFound && settings.activeMenuId !== '') {
+    for (let item = 0; item < menuItems.items.length; item++) {
+      if (pageIdFound) {
+        break;
+      }
+      if (!(menuItems.items[item].id === url[4] || menuItems.items[item].id === url[3])) {
+        continue;
+      }
+
+      const rightItem = menuItems.items[item];
+      for (let childrensNum = 0; childrensNum < (rightItem?.children ? rightItem.children.length : 0); childrensNum++) {
+        if (pageIdFound) {
+          break;
+        }
+
+        const childrens = rightItem.children?.[childrensNum];
+        if (childrens?.children) {
+          if (childrens.id !== url[url.length - 2]) {
+            continue;
+          }
+
+          for (let childrenNum = 0; childrenNum < childrens.children.length; childrenNum++) {
+            if (pageIdFound) {
+              break;
+            }
+            const children = childrens.children[childrenNum];
+            if (children.url !== (url[url.length - 3] + '/' + url[url.length - 2] + '/' + url[url.length - 1])) {
+              continue;
+            }
+
+            dispatch(setPageIdFound(true));
+            dispatch(setActiveMenu(children.id));
           }
         } else {
-          if (childrens.id === url[url.length - 1]) {
-            if (childrens.id !== settings.activeMenuId && settings.activeMenuId !== '') {
-              dispatch(setActiveMenu(childrens.id));
-            }
+          if (childrens?.id !== url[url.length - 1]) {
+            continue;
           }
+
+          dispatch(setPageIdFound(true));
+          dispatch(setActiveMenu(childrens.id));
         }
-      });
+      }
     }
-  });
+  }
   return (
     <BrowserRouter>
       <StrictMode>

@@ -25,7 +25,6 @@ export default function FAQ() {
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
 
   const addFaqHandler = (question:string, answer:string) => {
-    console.log(question + ' - ' + answer);
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
   };
   const editFaqHandler = (question:string, answer:string, id:number) => {

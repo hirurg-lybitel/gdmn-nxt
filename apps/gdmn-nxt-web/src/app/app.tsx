@@ -37,7 +37,6 @@ const post = (url: string, data: Object) => query({ method: 'post', url, baseURL
 function App() {
   const dispatch = useDispatch<AppDispatch>();
   const { loginStage } = useSelector<RootState, UserState>(state => state.user);
-  console.log(loginStage);
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();

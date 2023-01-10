@@ -34,7 +34,6 @@ export interface MenuItemProps {
 export function MenuItem(props: MenuItemProps) {
   const { item, level = 0, isOpen, open } = props;
   const settings = useSelector((state: RootState) => state.settings);
-  console.log(settings.activeMenuId + ' - ' + item.id);
   if (settings.activeMenuId === item.id) {
     if (isOpen) {
       open && open();
@@ -52,7 +51,7 @@ export function MenuItem(props: MenuItemProps) {
           height: 6
         }}
         color="secondary"
-        />
+      />
       : <></>);
 
   const listComponent = {
@@ -63,8 +62,6 @@ export function MenuItem(props: MenuItemProps) {
   const handleItemOnClick = () => {
     dispatch(setActiveMenu(item.id));
   };
-
-  alert
 
   return (
     <ListItemButton
