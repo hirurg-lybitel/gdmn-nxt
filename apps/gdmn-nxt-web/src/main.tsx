@@ -71,47 +71,49 @@ const Main = () => {
   const url:string[] = window.location.href.split('/');
   // Поиск и установка id страницы, который соответствует url, в state
   useEffect(()=>{
-    if (!pageIdFound && settings.activeMenuId !== '') {
-      for (let item = 0; item < menuItems.items.length; item++) {
+    if (pageIdFound || settings.activeMenuId === '' || url.length < 5) {
+      return;
+    }
+
+    for (let item = 0; item < menuItems.items.length; item++) {
+      if (pageIdFound) {
+        break;
+      }
+      if (menuItems.items[item].id !== url[4] || menuItems.items[item].id !== url[3]) {
+        continue;
+      }
+
+      const rightItem = menuItems.items[item];
+      for (let childrensNum = 0; childrensNum < (rightItem?.children ? rightItem.children.length : 0); childrensNum++) {
         if (pageIdFound) {
           break;
         }
-        if (!(menuItems.items[item].id === url[4] || menuItems.items[item].id === url[3])) {
-          continue;
-        }
 
-        const rightItem = menuItems.items[item];
-        for (let childrensNum = 0; childrensNum < (rightItem?.children ? rightItem.children.length : 0); childrensNum++) {
-          if (pageIdFound) {
-            break;
+        const childrens = rightItem.children?.[childrensNum];
+        if (childrens?.children) {
+          if (childrens.id !== url[url.length - 2]) {
+            continue;
           }
 
-          const childrens = rightItem.children?.[childrensNum];
-          if (childrens?.children) {
-            if (childrens.id !== url[url.length - 2]) {
-              continue;
+          for (let childrenNum = 0; childrenNum < childrens.children.length; childrenNum++) {
+            if (pageIdFound) {
+              break;
             }
-
-            for (let childrenNum = 0; childrenNum < childrens.children.length; childrenNum++) {
-              if (pageIdFound) {
-                break;
-              }
-              const children = childrens.children[childrenNum];
-              if (children.url !== (url[url.length - 3] + '/' + url[url.length - 2] + '/' + url[url.length - 1])) {
-                continue;
-              }
-
-              dispatch(setPageIdFound(true));
-              dispatch(setActiveMenu(children.id));
-            }
-          } else {
-            if (childrens?.id !== url[url.length - 1]) {
+            const children = childrens.children[childrenNum];
+            if (children.url !== (url[url.length - 3] + '/' + url[url.length - 2] + '/' + url[url.length - 1])) {
               continue;
             }
 
             dispatch(setPageIdFound(true));
-            dispatch(setActiveMenu(childrens.id));
+            dispatch(setActiveMenu(children.id));
           }
+        } else {
+          if (childrens?.id !== url[url.length - 1]) {
+            continue;
+          }
+
+          dispatch(setPageIdFound(true));
+          dispatch(setActiveMenu(childrens.id));
         }
       }
     }
