@@ -71,39 +71,43 @@ const Main = () => {
   const url:string[] = window.location.href.split('/');
   // Поиск и установка id страницы, который соответствует url, в state
   useEffect(()=>{
+    let pageFound = false;
     if (pageIdFound || settings.activeMenuId === '' || url.length < 5) {
       return;
     }
-
+    // Поиск соответствующего пункта меню
     for (let item = 0; item < menuItems.items.length; item++) {
-      if (pageIdFound) {
+      if (pageFound) {
         break;
       }
-      if (menuItems.items[item].id !== url[4] || menuItems.items[item].id !== url[3]) {
+      if (!(menuItems.items[item].id === url[4] || menuItems.items[item].id === url[3])) {
         continue;
       }
-
       const rightItem = menuItems.items[item];
+      // Поиск соответствующего подкункта
       for (let childrensNum = 0; childrensNum < (rightItem?.children ? rightItem.children.length : 0); childrensNum++) {
-        if (pageIdFound) {
+        if (pageFound) {
           break;
         }
 
         const childrens = rightItem.children?.[childrensNum];
+        // разветвление на раскрывающиеся списки и обычные кнопки в меню
         if (childrens?.children) {
           if (childrens.id !== url[url.length - 2]) {
             continue;
           }
-
+          // поиск объекта с соответствующим url в раскрывающемся списке
           for (let childrenNum = 0; childrenNum < childrens.children.length; childrenNum++) {
-            if (pageIdFound) {
+            if (pageFound) {
               break;
             }
             const children = childrens.children[childrenNum];
+
             if (children.url !== (url[url.length - 3] + '/' + url[url.length - 2] + '/' + url[url.length - 1])) {
               continue;
             }
-
+            // запись id, соответствующего странице, в state
+            pageFound = true;
             dispatch(setPageIdFound(true));
             dispatch(setActiveMenu(children.id));
           }
@@ -111,7 +115,8 @@ const Main = () => {
           if (childrens?.id !== url[url.length - 1]) {
             continue;
           }
-
+          // запись id, соответствующего странице, в state
+          pageFound = true;
           dispatch(setPageIdFound(true));
           dispatch(setActiveMenu(childrens.id));
         }
