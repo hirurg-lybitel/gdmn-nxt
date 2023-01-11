@@ -60,12 +60,12 @@ export function MenuCollapse(props: MenuCollapseProps) {
   const menuIcon = menu.icon;
   const settings = useSelector((state: RootState) => state.settings);
   useEffect(()=>{
-    menu.children?.map((item: IMenuItem) => {
+    menu.children?.forEach((item: IMenuItem) => {
       if (settings.activeMenuId === item.id) {
         handleOpen();
       }
     });
-  }, [settings.activeMenuId]);
+  }, []);
 
 
   return (

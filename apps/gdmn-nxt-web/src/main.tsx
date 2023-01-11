@@ -68,11 +68,12 @@ const Main = () => {
     savedTheme.current = theme(customization);
   }, [customization]);
 
-  const url:string[] = window.location.href.split('/');
+  const pathName:string[] = window.location.pathname.split('/');
+  pathName.splice(0, 1);
   // Поиск и установка id страницы, который соответствует url, в state
   useEffect(()=>{
     let pageFound = false;
-    if (pageIdFound || settings.activeMenuId === '' || url.length < 5) {
+    if (pageIdFound || settings.activeMenuId === '' || pathName.length < 2) {
       return;
     }
     // Поиск соответствующего пункта меню
@@ -80,7 +81,7 @@ const Main = () => {
       if (pageFound) {
         break;
       }
-      if (!(menuItems.items[item].id === url[4] || menuItems.items[item].id === url[3])) {
+      if (!(menuItems.items[item].id === pathName[1] || menuItems.items[item].id === pathName[0])) {
         continue;
       }
       const rightItem = menuItems.items[item];
@@ -93,7 +94,7 @@ const Main = () => {
         const childrens = rightItem.children?.[childrensNum];
         // разветвление на раскрывающиеся списки и обычные кнопки в меню
         if (childrens?.children) {
-          if (childrens.id !== url[url.length - 2]) {
+          if (childrens.id !== pathName[pathName.length - 2]) {
             continue;
           }
           // поиск объекта с соответствующим url в раскрывающемся списке
@@ -103,7 +104,7 @@ const Main = () => {
             }
             const children = childrens.children[childrenNum];
 
-            if (children.url !== (url[url.length - 3] + '/' + url[url.length - 2] + '/' + url[url.length - 1])) {
+            if (children.url !== (pathName[pathName.length - 3] + '/' + pathName[pathName.length - 2] + '/' + pathName[pathName.length - 1])) {
               continue;
             }
             // запись id, соответствующего странице, в state
@@ -112,7 +113,7 @@ const Main = () => {
             dispatch(setActiveMenu(children.id));
           }
         } else {
-          if (childrens?.id !== url[url.length - 1]) {
+          if (childrens?.id !== pathName[pathName.length - 1]) {
             continue;
           }
           // запись id, соответствующего странице, в state
