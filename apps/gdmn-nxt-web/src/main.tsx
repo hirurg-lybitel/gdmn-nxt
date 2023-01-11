@@ -53,6 +53,7 @@ import { baseUrl } from './app/const';
 import menuItems from './app/menu-items';
 import { setActiveMenu, setPageIdFound } from './app/store/settingsSlice';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
+import { IMenuItem } from './app/menu-items';
 
 registerMUI();
 
@@ -68,61 +69,34 @@ const Main = () => {
     savedTheme.current = theme(customization);
   }, [customization]);
 
+
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
   // Поиск и установка id страницы, который соответствует url, в state
-  useEffect(()=>{
-    let pageFound = false;
+  useEffect(() => {
     if (pageIdFound || settings.activeMenuId === '' || pathName.length < 2) {
       return;
     }
-    // Поиск соответствующего пункта меню
-    for (let item = 0; item < menuItems.items.length; item++) {
-      if (pageFound) {
-        break;
-      }
-      if (!(menuItems.items[item].id === pathName[1] || menuItems.items[item].id === pathName[0])) {
-        continue;
-      }
-      const rightItem = menuItems.items[item];
-      // Поиск соответствующего подкункта
-      for (let childrensNum = 0; childrensNum < (rightItem?.children ? rightItem.children.length : 0); childrensNum++) {
-        if (pageFound) {
-          break;
-        }
+    const flatMenuItems = (items: IMenuItem[]): IMenuItem[] =>
+      items.map(item =>
+        item.type === 'item'
+          ? item
+          : flatMenuItems(item.children || [])).flatMap(el => el);
 
-        const childrens = rightItem.children?.[childrensNum];
-        // разветвление на раскрывающиеся списки и обычные кнопки в меню
-        if (childrens?.children) {
-          if (childrens.id !== pathName[pathName.length - 2]) {
-            continue;
-          }
-          // поиск объекта с соответствующим url в раскрывающемся списке
-          for (let childrenNum = 0; childrenNum < childrens.children.length; childrenNum++) {
-            if (pageFound) {
-              break;
-            }
-            const children = childrens.children[childrenNum];
-
-            if (children.url !== (pathName[pathName.length - 3] + '/' + pathName[pathName.length - 2] + '/' + pathName[pathName.length - 1])) {
-              continue;
-            }
-            // запись id, соответствующего странице, в state
-            pageFound = true;
-            dispatch(setPageIdFound(true));
-            dispatch(setActiveMenu(children.id));
-          }
-        } else {
-          if (childrens?.id !== pathName[pathName.length - 1]) {
-            continue;
-          }
-          // запись id, соответствующего странице, в state
-          pageFound = true;
-          dispatch(setPageIdFound(true));
-          dispatch(setActiveMenu(childrens.id));
-        }
-      }
+    const flattedMenuItems = flatMenuItems(menuItems.items);
+    let path = '';
+    if (pathName[0] !== 'system') {
+      pathName.forEach((pathItem, index) => index !== 0 && (path += ('/' + pathItem)));
+      path = path.slice(1);
+    } else {
+      path = window.location.pathname;
     }
+    const pageId = (flattedMenuItems.find(item => item.url === path))?.id;
+    if (!pageId) {
+      return;
+    }
+    dispatch(setPageIdFound(true));
+    dispatch(setActiveMenu(pageId));
   }, [settings.activeMenuId]);
 
   return (
