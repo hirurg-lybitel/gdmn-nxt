@@ -1,4 +1,4 @@
-import { CardContent, Grid } from '@mui/material';
+import { Box, CardContent, Grid } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -13,9 +13,10 @@ import CustomizedCard from '../../components/Styled/customized-card/customized-c
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
+import LinearIndeterminate from '../../components/linear-indeterminate/linear-indeterminate';
 
 export default function FAQ() {
-  const { data: faqs, isFetching } = faqApi.useGetAllfaqsQuery();
+  const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
@@ -56,13 +57,6 @@ export default function FAQ() {
     setExpanded(isExpanded ? panel : false);
   };
 
-  if (isFetching) {
-    return (
-      <div className={style.preloadevBody}>
-        <CircularProgress size={100} />
-      </div>
-    );
-  }
   return (
     <>
       <Popup
@@ -87,59 +81,63 @@ export default function FAQ() {
                 <Typography variant="h3">
                   Часто задаваемые вопросы
                 </Typography>
-                <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+                {/* <Button disabled={addFaqObj.isLoading || isFetching} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button> */}
               </div>
             }
           />
-          <Divider/>
+          <Divider />
           <CardContent className={style.scrollBarContainer}>
-            <PerfectScrollbar className={style.scrollBar}>
-              <Grid item xs={12}>
-                {
-                  faqs?.map(item =>
-                    <div key={item.ID}>
-                      {faqs?.indexOf(item) !== 0 && <Divider/>}
-                      <div className={style.faqList}>
-                        <Accordion
-                          expanded={expanded === `panel${item.ID}`}
-                          onChange={handleChange(`panel${item.ID}`)}
-                          className={style.accordion}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
+            {isLoading
+              ? <div className={style.preloadevBody}>
+                <CircularProgress size={100} />
+              </div>
+              : <PerfectScrollbar className={style.scrollBar}>
+                <Grid item xs={12}>
+                  {
+                    faqs?.map(item =>
+                      <div key={item.ID}>
+                        {faqs?.indexOf(item) !== 0 && <Divider/>}
+                        <div className={style.faqList}>
+                          <Accordion
+                            expanded={expanded === `panel${item.ID}`}
+                            onChange={handleChange(`panel${item.ID}`)}
+                            className={style.accordion}
                           >
-                            <ReactMarkdown>
-                              {
-                                item.USR$QUESTION
-                              }
-                            </ReactMarkdown>
-                          </AccordionSummary>
-                          <AccordionDetails className={style.answerField}>
-                            <ReactMarkdown >
-                              {
-                                item.USR$ANSWER
-                              }
-                            </ReactMarkdown>
-                          </AccordionDetails>
-                        </Accordion>
-                        <div>
-                          <IconButton
-                            disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                            className={style.changeButton}
-                            onClick={handleOpenEditPopup(item)}
-                            aria-label="Изменить"
-                          >
-                            <EditIcon />
-                          </IconButton>
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
+                            >
+                              <ReactMarkdown>
+                                {
+                                  item.USR$QUESTION
+                                }
+                              </ReactMarkdown>
+                            </AccordionSummary>
+                            <AccordionDetails className={style.answerField}>
+                              <ReactMarkdown >
+                                {
+                                  item.USR$ANSWER
+                                }
+                              </ReactMarkdown>
+                            </AccordionDetails>
+                          </Accordion>
+                          {/* <div>
+                            <IconButton
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading || isFetching}
+                              className={style.changeButton}
+                              onClick={handleOpenEditPopup(item)}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </div> */}
                         </div>
                       </div>
-                    </div>
-                  )
-                }
-              </Grid>
-            </PerfectScrollbar>
+                    )
+                  }
+                </Grid>
+              </PerfectScrollbar>
+            }
           </CardContent>
         </CustomizedCard>
 
