@@ -29,7 +29,7 @@ const chartOptionsDefault: ApexCharts.ApexOptions = {
 
         return `
         <div class="${styles['pie-tooltip-value']}">
-          <span>${value}</span>
+          <span>${value.toLocaleString()}</span>
         </div>`;
       },
       title: {
@@ -81,6 +81,11 @@ const chartOptionsDefault: ApexCharts.ApexOptions = {
   }
 };
 
+const titleFormatter = (message: string) => (seriesName: string) => `
+  <div class="${styles['pie-tooltip-label']}">
+    <span>${seriesName === noDataLabel ? message : seriesName}</span>
+  </div>`;
+
 
 const chartOptionsBarDefault: ApexCharts.ApexOptions = {
   chart: {
@@ -116,7 +121,7 @@ const chartOptionsBarDefault: ApexCharts.ApexOptions = {
       formatter(value, opts) {
         return `
         <div class="${styles['bar-tooltip-label']}">
-          <span>${value}</span>
+          <span>${value.toLocaleString()}</span>
         </div>`;
       },
     },
@@ -130,6 +135,9 @@ const chartOptionsBarDefault: ApexCharts.ApexOptions = {
   },
   yaxis: {
     labels: {
+      style: {
+        // fontSize: '12px'
+      },
       formatter: (value) => (
         value.toLocaleString()
       )
@@ -222,7 +230,16 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           },
           colors: colorsMaster
         } : {
-          colors: colorsNoData
+          colors: colorsNoData,
+          tooltip: {
+            ...chartOptionsDefault.tooltip,
+            y: {
+              ...chartOptionsDefault.tooltip?.y,
+              title: {
+                formatter: titleFormatter('Нет данных за указанный период')
+              }
+            }
+          }
         }),
       },
       detail: {
@@ -253,7 +270,16 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           },
           colors: colorsMaster
         } : {
-          colors: colorsNoData
+          colors: colorsNoData,
+          tooltip: {
+            ...chartOptionsDefault.tooltip,
+            y: {
+              ...chartOptionsDefault.tooltip?.y,
+              title: {
+                formatter: titleFormatter('Нет данных за указанный период')
+              }
+            }
+          }
         }),
       },
       detail: {
@@ -282,7 +308,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       {
         name: 'Период 2',
         data: selectedLeftMasterSeriesId >= 0
-          ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => dataRight[selectedLeftMasterSeriesId].businessProcesses?.find(dr => dr.name === d.name)?.amount || 0)
+          ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => dataRight[selectedLeftMasterSeriesId]?.businessProcesses?.find(dr => dr.name === d.name)?.amount || 0)
           : dataLeft?.map(d => dataRight.find(dr => dr.name === d.name)?.amount || 0)
       }
     ],
