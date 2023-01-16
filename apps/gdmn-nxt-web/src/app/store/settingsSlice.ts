@@ -8,15 +8,17 @@ const initCustomization: ICustomization = {
   mode: 'light'
 };
 
-export interface ISettingsState {
+interface ISettingsState {
   menuOpened: boolean;
   activeMenuId: string,
+  pageIdFound: boolean,
   customization: ICustomization
 };
 
 const initialState: ISettingsState = {
   menuOpened: true,
   activeMenuId: '',
+  pageIdFound: false,
   customization: initCustomization
 };
 
@@ -30,20 +32,26 @@ export const settingsSlice = createSlice({
       );
     },
     setStyleMode: (state, action: PayloadAction<'light' | 'dark'>) => {
-      return ({ ...state, customization: { ...state.customization, mode: action.payload}})
+      return ({ ...state, customization: { ...state.customization, mode: action.payload } });
     },
     setActiveMenu: (state, action: PayloadAction<string>) => {
       return (
         { ...state, activeMenuId: action.payload }
       );
     },
+    setPageIdFound: (state, action: PayloadAction<boolean>) => {
+      return (
+        { ...state, pageIdFound: action.payload }
+      );
+    }
   }
 });
 
 export const {
   toggleMenu,
   setStyleMode,
-  setActiveMenu
+  setActiveMenu,
+  setPageIdFound
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;
