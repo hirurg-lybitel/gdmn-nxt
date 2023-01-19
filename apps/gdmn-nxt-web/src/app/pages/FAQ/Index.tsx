@@ -79,7 +79,7 @@ export default function FAQ() {
         addFaq={addFaqHandler}
       />
       <div className={style.body} >
-        <CustomizedCard>
+        <CustomizedCard borders className={style.card}>
           <CardHeader
             title={
               <div className={style.title}>
@@ -90,58 +90,58 @@ export default function FAQ() {
               </div>
             }
           />
-          <Divider/>
-          <CardContent className={style.scrollBarContainer}>
-            <PerfectScrollbar className={style.scrollBar}>
-              <Grid item xs={12}>
-                {
-                  faqs?.map(item =>
-                    <div key={item.ID}>
-                      {faqs?.indexOf(item) !== 0 && <Divider/>}
-                      <div className={style.faqList}>
-                        <Accordion
-                          expanded={expanded === `panel${item.ID}`}
-                          onChange={handleChange(`panel${item.ID}`)}
-                          className={style.accordion}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
+          <CardContent>
+            <div className={style.scrollBarContainer}>
+              <PerfectScrollbar className={style.scrollBar}>
+                <Grid item xs={12}>
+                  {
+                    faqs?.map(item =>
+                      <div key={item.ID}>
+                        {faqs?.indexOf(item) !== 0 && <Divider/>}
+                        <div className={style.faqList}>
+                          <Accordion
+                            expanded={expanded === `panel${item.ID}`}
+                            onChange={handleChange(`panel${item.ID}`)}
+                            className={style.accordion}
                           >
-                            <ReactMarkdown>
-                              {
-                                item.USR$QUESTION
-                              }
-                            </ReactMarkdown>
-                          </AccordionSummary>
-                          <AccordionDetails className={style.answerField}>
-                            <ReactMarkdown >
-                              {
-                                item.USR$ANSWER
-                              }
-                            </ReactMarkdown>
-                          </AccordionDetails>
-                        </Accordion>
-                        <div>
-                          <IconButton
-                            disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                            className={style.changeButton}
-                            onClick={handleOpenEditPopup(item)}
-                            aria-label="Изменить"
-                          >
-                            <EditIcon />
-                          </IconButton>
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
+                            >
+                              <ReactMarkdown>
+                                {
+                                  item.USR$QUESTION
+                                }
+                              </ReactMarkdown>
+                            </AccordionSummary>
+                            <AccordionDetails className={style.answerField}>
+                              <ReactMarkdown >
+                                {
+                                  item.USR$ANSWER
+                                }
+                              </ReactMarkdown>
+                            </AccordionDetails>
+                          </Accordion>
+                          <div>
+                            <IconButton
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                              className={style.changeButton}
+                              onClick={handleOpenEditPopup(item)}
+                              aria-label="Изменить"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                }
-              </Grid>
-            </PerfectScrollbar>
+                    )
+                  }
+                </Grid>
+              </PerfectScrollbar>
+            </div>
           </CardContent>
         </CustomizedCard>
-
       </div>
     </>
   );

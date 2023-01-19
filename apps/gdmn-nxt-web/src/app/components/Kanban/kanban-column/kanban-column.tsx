@@ -214,7 +214,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           flex: 1,
           flexDirection: 'column',
           // height: 'calc(100vh - 420px)',
-          backgroundColor: 'rgb(229, 231, 235)',
+          backgroundColor: theme.palette.mode === 'dark' ? '' : 'rgb(229, 231, 235)',
           ...(dragSnapshot.isDragging
             ? {
               backgroundColor: '#deebff',
@@ -239,7 +239,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             height: 'calc(100vh - 420px)',
             ...(dropSnapshot.isDraggingOver
               ? {
-                backgroundColor: '#deebff',
+                backgroundColor: theme.palette.mode === 'dark' ? '#616161' : '#deebff',
               }
               : {
               })
@@ -263,7 +263,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         <CardActions>
           <PermissionsGate actionCode={1}>
             {item.USR$INDEX === 0
-              ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
+              ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
               : <></>}
           </PermissionsGate>
         </CardActions>

@@ -7,7 +7,7 @@ import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
-import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton } from '@mui/material';
+import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/system/Box/Box';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -106,6 +106,8 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
 
   const classes = useStyles();
 
+  const theme = useTheme();
+
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const waitAndDispatch = (fn: () => Promise<IAuthResult>) => () => {
@@ -128,179 +130,188 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
     }
   };
 
-  const result =
-    stage === 'FORGOT_PASSWORD'
+  const result = stage === 'FORGOT_PASSWORD'
+    ?
+    <Stack direction="column" spacing={2}>
+      {topDecorator?.(stage)}
+      <TextField
+        label="Email"
+        value={email}
+        error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
+        helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+        disabled={waiting}
+        autoFocus
+        onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value })}
+      />
+      <Button
+        variant="contained"
+        disabled={waiting || !!authResult || !checkEmailAddress(email)}
+        onClick = {newPassword && waitAndDispatch(() => newPassword(email))}
+      >
+          Request new Password
+      </Button>
+      <Button
+        variant="outlined"
+        disabled={waiting}
+        onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}
+      >
+          Return to sign in
+      </Button>
+      {bottomDecorator?.(stage)}
+    </Stack>
+    :
+    stage === 'SIGNUP'
       ?
       <Stack direction="column" spacing={2}>
         {topDecorator?.(stage)}
+        <Typography variant="h1">
+          New user
+        </Typography>
+        <TextField
+          label="Пользователь"
+          value={userName}
+          disabled={waiting}
+          autoFocus
+          error={authResult?.result === 'DUPLICATE_USER_NAME'}
+          helperText={authResult?.result === 'DUPLICATE_USER_NAME' ? authResult?.message : undefined}
+          onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
+        />
         <TextField
           label="Email"
           value={email}
-          error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
-          helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
-          autoFocus
+          error={(email > '' && !checkEmailAddress(email)) || authResult?.result === 'DUPLICATE_EMAIL'}
+          helperText={authResult?.result === 'DUPLICATE_EMAIL' ? authResult?.message : undefined}
           onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value })}
         />
-        <Button
-          variant="contained"
-          disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick = {newPassword && waitAndDispatch(() => newPassword(email))}
-        >
-          Request new Password
-        </Button>
-        <Button
-          variant="outlined"
+        <TextField
+          label="Retype email"
+          value={email2}
           disabled={waiting}
-          onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}
-        >
-          Return to sign in
-        </Button>
+          error={email2 > '' && email2 !== email}
+          onChange={e => dispatch({ type: 'SET_EMAIL2', email2: e.target.value })}
+        />
+        <MathCaptcha
+          disabled={waiting}
+          onEnter={captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed })}
+        />
+        {
+          waiting ?
+            <Box sx={{ padding: 2, border: 1, borderColor: 'grey.50', borderRadius: 1 }}>
+              <LinearProgress />
+            </Box>
+            :
+            <Button
+              variant="contained"
+              disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 || !captchaPassed || !!authResult}
+              onClick={createUser && waitAndDispatch(() => createUser(userName, email))}
+            >
+              Sign up
+            </Button>
+        }
+        <Typography>
+          Already have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}>Sign in</Button>
+        </Typography>
         {bottomDecorator?.(stage)}
       </Stack>
       :
-      stage === 'SIGNUP'
-        ?
-        <Stack direction="column" spacing={2}>
-          {topDecorator?.(stage)}
-          <Typography variant="h1">
-          New user
-          </Typography>
-          <TextField
-            label="Пользователь"
-            value={userName}
-            disabled={waiting}
-            autoFocus
-            error={authResult?.result === 'DUPLICATE_USER_NAME'}
-            helperText={authResult?.result === 'DUPLICATE_USER_NAME' ? authResult?.message : undefined}
-            onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
-          />
-          <TextField
-            label="Email"
-            value={email}
-            disabled={waiting}
-            error={(email > '' && !checkEmailAddress(email)) || authResult?.result === 'DUPLICATE_EMAIL'}
-            helperText={authResult?.result === 'DUPLICATE_EMAIL' ? authResult?.message : undefined}
-            onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value })}
-          />
-          <TextField
-            label="Retype email"
-            value={email2}
-            disabled={waiting}
-            error={email2 > '' && email2 !== email}
-            onChange={e => dispatch({ type: 'SET_EMAIL2', email2: e.target.value })}
-          />
-          <MathCaptcha
-            disabled={waiting}
-            onEnter={captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed })}
-          />
-          {
-            waiting ?
-              <Box sx={{ padding: 2, border: 1, borderColor: 'grey.50', borderRadius: 1 }}>
-                <LinearProgress />
-              </Box>
-              :
-              <Button
-                variant="contained"
-                disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 || !captchaPassed || !!authResult}
-                onClick={createUser && waitAndDispatch(() => createUser(userName, email))}
-              >
-              Sign up
-              </Button>
-          }
-          <Typography>
-          Already have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}>Sign in</Button>
-          </Typography>
-          {bottomDecorator?.(stage)}
-        </Stack>
-        :
-        <Stack direction="column" spacing={3}>
-          {topDecorator?.(stage)}
-          <Box textAlign={'center'}>
-            <BelgissLogo color="#64b5f6" scale={1.5}/>
-          </Box>
-          <Box textAlign={'center'}>
-            <Typography variant="h1" fontSize={'2rem'}>
+      <Stack direction="column" spacing={3} >
+        {topDecorator?.(stage)}
+        <Box textAlign={'center'}>
+          <BelgissLogo color="#64b5f6" scale={1.5}/>
+        </Box>
+        <Box textAlign={'center'}>
+          <Typography variant="h1" fontSize={'2rem'}>
               Вход в систему
-            </Typography>
-          </Box>
-          {/* <Box textAlign={"center"}>
+          </Typography>
+        </Box>
+        {/* <Box textAlign={"center"}>
             <Typography variant="subtitle1" color={"GrayText"}>
               Введите свои учётные данные
             </Typography>
           </Box> */}
-          <TextField
-            label="Пользователь"
-            value={userName}
-            error={authResult?.result === 'UNKNOWN_USER'}
-            helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-            disabled={waiting}
-            autoFocus
-            onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
-            onKeyDown={keyPress}
-            inputProps={{ className: classes.input }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccountCircleIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            label="Пароль"
-            type={passwordVisible ? 'text' : 'password'}
-            value={password}
-            error={authResult?.result === 'INVALID_PASSWORD'}
-            helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
-            disabled={waiting}
-            onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
-            onKeyDown={keyPress}
-            autoComplete={'false'}
-            inputProps={{ className: classes.input }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <VpnKeyIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton className={classes.visibilityPassword} onClick={() => setPasswordVisible(!passwordVisible)}>
-                    {passwordVisible
-                      ? <VisibilityOnIcon />
-                      : <VisibilityOffIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            variant="contained"
-            disabled={waiting || !userName || !password || !!authResult}
-            onClick={doSignIn}
-          >
+        <TextField
+          label="Пользователь"
+          value={userName}
+          error={authResult?.result === 'UNKNOWN_USER'}
+          helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+          disabled={waiting}
+          autoFocus
+          onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
+          onKeyDown={keyPress}
+          inputProps={{ className: classes.input }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <AccountCircleIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          label="Пароль"
+          type={passwordVisible ? 'text' : 'password'}
+          value={password}
+          error={authResult?.result === 'INVALID_PASSWORD'}
+          helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
+          disabled={waiting}
+          onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
+          onKeyDown={keyPress}
+          autoComplete={'false'}
+          inputProps={{ className: classes.input }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <VpnKeyIcon />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton className={classes.visibilityPassword} onClick={() => setPasswordVisible(!passwordVisible)}>
+                  {passwordVisible
+                    ? <VisibilityOnIcon />
+                    : <VisibilityOffIcon />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Button
+          variant="contained"
+          disabled={waiting || !userName || !password || !!authResult}
+          onClick={doSignIn}
+        >
           Войти
-          </Button>
-          {
-            newPassword
+        </Button>
+        {
+          newPassword
           &&
           <Button variant="outlined" disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}>
             Забыли пароль?
           </Button>
-          }
-          {
-            createUser
+        }
+        {
+          createUser
           &&
           <Typography>
             Don't have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
           </Typography>
-          }
-          {bottomDecorator?.(stage)}
-        </Stack>;
+        }
+        {bottomDecorator?.(stage)}
+      </Stack>;
 
   return (
     <>
+      <div
+        style={{
+          position: 'absolute',
+          background: theme.palette.background.paper,
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0
+        }}
+      />
       {result}
       <Dialog onClose={() => dispatch({ type: 'CLEAR_AUTHRESULT' })} open={authResult?.result === 'ERROR'}>
         <Alert severity="error">{authResult?.message}</Alert>
