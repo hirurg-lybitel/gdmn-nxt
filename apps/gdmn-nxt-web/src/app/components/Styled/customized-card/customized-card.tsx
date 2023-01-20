@@ -10,7 +10,7 @@ interface ICustomizedCardProps {
 const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
 })<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false }) => ({
-  ...(borders ? { border: theme.palette.mode === 'dark' ? 'black' : '1px solid #E0E3E7' } : {}),
+  ...(borders ? { border: theme.palette.mode === 'dark' ? '1px solid #212121' : '1px solid #E0E3E7' } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : {})
 }));
 

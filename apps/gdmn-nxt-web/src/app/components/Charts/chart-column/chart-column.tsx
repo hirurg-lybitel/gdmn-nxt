@@ -209,14 +209,20 @@ export function ChartColumn(props: ChartColumnProps) {
       labels: {
         formatter: (value) => (
           isNaN(Number(value)) ? value : Number(value).toLocaleString()
-        )
+        ),
+        style: {
+          colors: theme.textColor
+        }
       }
     },
     yaxis: {
       labels: {
         formatter: (value) => (
           value.toLocaleString()
-        )
+        ),
+        style: {
+          colors: theme.textColor
+        }
       }
     },
     tooltip: {

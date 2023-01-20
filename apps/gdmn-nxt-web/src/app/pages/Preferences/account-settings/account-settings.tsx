@@ -63,11 +63,9 @@ export function AccountSettings(props: AccountSettingsProps) {
     if (event.target.checked) {
       dispatch(setStyleMode('dark'));
       localStorage.setItem('theme', 'dark');
-      window.location.reload();
     } else {
       dispatch(setStyleMode('light'));
       localStorage.removeItem('theme');
-      window.location.reload();
     }
   };
 

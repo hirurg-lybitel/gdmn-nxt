@@ -33,7 +33,7 @@ export const theme = (customization: ICustomization) => {
       secondaryColor: colors.common.white,
       headColor: colors.common.white,
       paper: colors.common.white,
-      customization
+      customization,
     }
     : {
       backgroundColor: colors.grey[900],
@@ -43,7 +43,7 @@ export const theme = (customization: ICustomization) => {
       secondaryColor: colors.grey[300],
       headColor: colors.grey[300],
       paper: colors.grey[800],
-      customization
+      customization,
     }
   );
 
@@ -60,7 +60,7 @@ export const theme = (customization: ICustomization) => {
       },
       primary: {
         main: themeOption.backgroundSecond,
-        contrastText: themeOption.headColor
+        contrastText: themeOption.headColor,
       },
       secondary: {
         main: themeOption.secondaryColor
