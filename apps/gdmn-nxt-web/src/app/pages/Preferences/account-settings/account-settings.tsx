@@ -59,6 +59,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 export function AccountSettings(props: AccountSettingsProps) {
   const dispatch = useDispatch();
   const theme = useSelector((state: RootState) => state.settings.customization.mode);
+
   const handleChange = async (event:any) => {
     if (event.target.checked) {
       dispatch(setStyleMode('dark'));
