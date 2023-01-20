@@ -255,7 +255,7 @@ export function ChartColumn(props: ChartColumnProps) {
       style: {
         colors: ['blue']
       }
-    }
+    },
   };
 
   const chartData: ApexCharts.ApexOptions = {

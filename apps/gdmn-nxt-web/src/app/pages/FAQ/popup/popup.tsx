@@ -278,7 +278,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                     <div>
                       <Button
                         type="button"
-                        variant="contained"
+                        variant="outlined"
                         onClick={clearAndClosePopup}
                       >Отмена</Button>
                       <Button
@@ -292,14 +292,14 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                   :
                   <>
                     <div>
-                      <IconButton aria-label="Удалить" onClick={handleDeleteClick}>
-                        <DeleteIcon />
+                      <IconButton aria-label="Удалить" onClick={handleDeleteClick} >
+                        <DeleteIcon color="primary"/>
                       </IconButton>
                     </div>
                     <div>
                       <Button
                         type="button"
-                        variant="contained"
+                        variant="outlined"
                         onClick={clearAndClosePopup}
                       >Отмена</Button>
                       <Button

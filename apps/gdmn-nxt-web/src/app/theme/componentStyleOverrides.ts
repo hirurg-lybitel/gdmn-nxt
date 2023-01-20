@@ -45,7 +45,7 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
     MuiButton: {
       styleOverrides: {
         contained: {
-          color: theme.palette?.mode === 'dark' ? 'black' : '',
+          color: theme.mainContent.buttonTextColor,
           // fontWeight: 500,
           // borderRadius: '4px'
         }

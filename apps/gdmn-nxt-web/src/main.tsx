@@ -107,7 +107,7 @@ const Main = () => {
   }, [settings]);
 
   return (
-    <div style={{ background: settings.customization.mode === 'dark' ? '#424242' : '' }}>
+    <div style={{ background: settings.customization.mode === 'dark' ? '#424242' : '', height: '100%' }}>
       <BrowserRouter>
         <StrictMode>
           <CssBaseline>

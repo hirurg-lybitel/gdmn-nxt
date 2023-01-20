@@ -188,7 +188,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       fontFamily: '\'Roboto\', sans-serif',
       offsetY: 5,
       labels: {
-        colors: theme.palette.mode === 'dark' ? 'white' : '',
+        colors: theme.textColor,
       },
       markers: {
         width: 16,
@@ -294,7 +294,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         trim: true,
         rotate: 0,
         style: {
-          colors: theme.palette.mode === 'dark' ? 'white' : ''
+          colors: theme.textColor
         }
       },
     }

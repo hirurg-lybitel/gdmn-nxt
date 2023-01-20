@@ -44,8 +44,8 @@ export function SalesFunnel(props: SalesFunnelProps) {
             },
             tooltip: {
               container: {
-                background: theme.palette.mode === 'dark' ? 'black' : '',
-                color: theme.palette.mode === 'dark' ? 'white' : ''
+                background: theme.palette.background.paper,
+                color: theme.textColor
               }
             }
           }}
@@ -72,7 +72,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
           currentPartSizeExtension={10}
           currentBorderWidth={40}
           motionConfig="wobbly"
-          />}
+        />}
     </CustomizedCard>
   );
 };

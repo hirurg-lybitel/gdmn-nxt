@@ -214,7 +214,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           flex: 1,
           flexDirection: 'column',
           // height: 'calc(100vh - 420px)',
-          backgroundColor: theme.palette.mode === 'dark' ? '' : 'rgb(229, 231, 235)',
+          backgroundColor: theme.palette.background.paper,
           ...(dragSnapshot.isDragging
             ? {
               backgroundColor: '#deebff',
@@ -239,7 +239,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             height: 'calc(100vh - 420px)',
             ...(dropSnapshot.isDraggingOver
               ? {
-                backgroundColor: theme.palette.mode === 'dark' ? '#616161' : '#deebff',
+                backgroundColor: theme.palette.background.paper,
               }
               : {
               })

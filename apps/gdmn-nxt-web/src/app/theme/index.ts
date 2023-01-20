@@ -34,6 +34,8 @@ export const theme = (customization: ICustomization) => {
       headColor: colors.common.white,
       paper: colors.common.white,
       customization,
+      borderColor: '#303030',
+      buttonTextColor: 'white'
     }
     : {
       backgroundColor: colors.grey[900],
@@ -44,6 +46,8 @@ export const theme = (customization: ICustomization) => {
       headColor: colors.grey[300],
       paper: colors.grey[800],
       customization,
+      borderColor: '#f0f0f0',
+      buttonTextColor: 'black'
     }
   );
 
@@ -67,7 +71,7 @@ export const theme = (customization: ICustomization) => {
       },
       text: {
         primary: themeOption.textColor
-      }
+      },
     },
     menu: {
       backgroundColor: themeOption.backgroundDefault,
@@ -82,6 +86,8 @@ export const theme = (customization: ICustomization) => {
       marginTop: '88px',
       marginRight: '20px',
       borderRadius: '12px',
+      borderColor: themeOption.borderColor,
+      buttonTextColor: themeOption.buttonTextColor
     },
     breakpoints: {
       /** breakpoints берём немного с меньше, чем разрешение экрана*/
