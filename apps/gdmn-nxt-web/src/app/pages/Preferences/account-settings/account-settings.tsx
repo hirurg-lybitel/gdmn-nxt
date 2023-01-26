@@ -5,6 +5,8 @@ import { styled } from '@mui/material/styles';
 import { setStyleMode } from '../../../store/settingsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import { ITheme, themeApi } from '../../../features/theme/themeApi';
+import { UserState } from '../../../features/user/userSlice';
 
 /* eslint-disable-next-line */
 export interface AccountSettingsProps {}
@@ -58,15 +60,38 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 
 export function AccountSettings(props: AccountSettingsProps) {
   const dispatch = useDispatch();
+  const user = useSelector<RootState, UserState>(state => state.user);
+  const userId = user.userProfile?.id;
+  const [editTheme, { isLoading: editIsLoading }] = themeApi.useEditThemeMutation();
+  const [addTheme, { isLoading: addIsLoading }] = themeApi.useAddThemeMutation();
   const theme = useSelector((state: RootState) => state.settings.customization.mode);
-
+  const { data: themeType, isFetching } = themeApi.useGetThemeQuery(userId);
+  const addOrUpdateTheme = (typeTheme:string) => {
+    if (!userId) {
+      return;
+    }
+    const body:ITheme = {
+      USR$ID: userId,
+      USR$MODE: typeTheme
+    };
+    if (themeType) {
+      editTheme([body, userId]);
+      localStorage.setItem('mode', typeTheme);
+    } else {
+      addTheme([body, userId]);
+      localStorage.setItem('mode', typeTheme);
+    }
+  };
   const handleChange = async (event:any) => {
+    if (!userId) {
+      return;
+    }
     if (event.target.checked) {
       dispatch(setStyleMode('dark'));
-      localStorage.setItem('theme', 'dark');
+      addOrUpdateTheme('dark');
     } else {
       dispatch(setStyleMode('light'));
-      localStorage.removeItem('theme');
+      addOrUpdateTheme('light');
     }
   };
 
@@ -87,7 +112,8 @@ export function AccountSettings(props: AccountSettingsProps) {
           <FormControlLabel
             control={
               <MaterialUISwitch
-                checked={theme === 'dark' ? true : false}
+                disabled={addIsLoading || editIsLoading}
+                checked={theme === 'dark'}
                 onChange={handleChange}
                 sx={{ m: 1 }}
               />}

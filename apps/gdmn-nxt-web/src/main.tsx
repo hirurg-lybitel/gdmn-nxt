@@ -53,6 +53,10 @@ import menuItems from './app/menu-items';
 import { setActiveMenu, setPageIdFound, setStyleMode } from './app/store/settingsSlice';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
 import { IMenuItem } from './app/menu-items';
+import { useState } from 'react';
+import { themeApi } from './app/features/theme/themeApi';
+import { UserState } from './app/features/user/userSlice';
+import { userInfo } from 'os';
 
 registerMUI();
 
@@ -60,22 +64,36 @@ const Main = () => {
   const dispatch = useDispatch();
   const customization = useSelector((state: RootState) => state.settings.customization);
   const loginStage = useSelector<RootState, LoginStage>(state => state.user.loginStage);
-  const savedTheme = useRef<Theme>(theme(customization));
+  const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
   const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
   const themeStyles = useTheme();
-
+  const user = useSelector<RootState, UserState>(state => state.user);
+  const userId = user.userProfile?.id;
+  const { data: themeType, isFetching } = themeApi.useGetThemeQuery(userId, { skip: !userId });
+  console.log(themeType);
   useEffect(() => {
-    savedTheme.current = theme(customization);
+    setSavedTheme(theme(customization));
   }, [customization]);
 
   useEffect(()=>{
-    const theme = localStorage.getItem('theme');
-    if (!theme || theme !== 'dark') {
-      return;
+    const localMode = localStorage.getItem('mode');
+    if (themeType) {
+      if (themeType === 'dark') {
+        dispatch(setStyleMode('dark'));
+        localStorage.setItem('mode', 'dark');
+      } else {
+        dispatch(setStyleMode('light'));
+        localStorage.setItem('mode', 'light');
+      }
+    } else {
+      if (!localMode || localMode === 'dark') {
+        dispatch(setStyleMode('dark'));
+      } else {
+        dispatch(setStyleMode('light'));
+      }
     }
-    dispatch(setStyleMode('dark'));
-  }, []);
+  }, [themeType]);
 
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
@@ -111,7 +129,7 @@ const Main = () => {
       <BrowserRouter>
         <StrictMode>
           <CssBaseline>
-            <ThemeProvider theme={savedTheme.current}>
+            <ThemeProvider theme={savedTheme}>
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 localeText={{ start: 'Начало периода', end: 'Конец периода' }}
