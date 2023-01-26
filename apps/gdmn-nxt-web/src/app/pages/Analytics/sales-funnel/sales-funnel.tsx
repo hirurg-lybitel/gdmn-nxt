@@ -16,9 +16,9 @@ export function SalesFunnel(props: SalesFunnelProps) {
 
   const colors = [
     theme.color.purple[500],
-    theme.color.red['A200'],
+    theme.color.red.A200,
     theme.color.yellow['800'],
-    theme.color.green['A400'],
+    theme.color.green.A400,
     theme.color.blueGrey[400]
   ];
 
@@ -41,6 +41,12 @@ export function SalesFunnel(props: SalesFunnelProps) {
                 fontSize: '1.5em',
                 fontWeight: 600
               }
+            },
+            tooltip: {
+              container: {
+                background: theme.palette.background.paper,
+                color: theme.textColor
+              }
             }
           }}
           data={funnelData}
@@ -56,8 +62,9 @@ export function SalesFunnel(props: SalesFunnelProps) {
                 'brighter',
                 2
               ]
-            ]
+            ],
           }}
+
           beforeSeparatorLength={100}
           beforeSeparatorOffset={20}
           afterSeparatorLength={100}
