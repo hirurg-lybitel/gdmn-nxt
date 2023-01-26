@@ -47,12 +47,12 @@ export function PermissionsList(props: PermissionsListProps) {
         disabled={matrixFetching}
         checked={checked}
         onChange={CheckBoxOnChange(matrixNode?.ID, params.row, ug)}
-      />;
+             />;
     },
     renderHeader: (params) => {
       return (
         <div
-          className={`MuiDataGrid-columnHeaderTitle css-1jbbcbn-MuiDataGrid-columnHeaderTitle ${styles['columnHeader']}`}
+          className={`MuiDataGrid-columnHeaderTitle css-1jbbcbn-MuiDataGrid-columnHeaderTitle ${styles.columnHeader}`}
           onClick={() => console.log('onClick')}
         >
           {params.colDef.headerName}

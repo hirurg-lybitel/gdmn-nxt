@@ -7,6 +7,7 @@ import { Box, Grid, TextField } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
+import { theme } from '../../../theme';
 
 const colorsMaster = ['#4ECDC4',	'#C7F464',	'#81D4FA',	'#546E7A',	'#FD6A6A', '#33B2DF',	'#03A9F4',	'#D4526E',	'#13D8AA',	'#A5978B'];
 const colorsDetail = ['#A300D6',	'#7D02EB',	'#5653FE',	'#2983FF',	'#00B1F2', '#5C4742',	'#A5978B',	'#8D5B4C',	'#5A2A27',	'#C4BBAF'];
@@ -164,7 +165,6 @@ const chartOptionsBarDefault: ApexCharts.ApexOptions = {
     enabled: false
   },
 };
-
 interface IInitState {
   datesLeft: DateRange<Date>;
   dateRight: DateRange<Date>;
@@ -214,6 +214,71 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     setSelectedRightMasterSeriesId(options.selectedDataPoints[0].length !== 0 ? options.dataPointIndex : -1);
   }, []);
 
+  const chartOptionsBarDefault: ApexCharts.ApexOptions = {
+    chart: {
+      id: 'column-bar',
+      stacked: false,
+      toolbar: {
+        show: false,
+      },
+      zoom: {
+        enabled: false
+      }
+    },
+    noData: {
+      text: 'Нет данных',
+      align: 'center',
+      verticalAlign: 'middle',
+      style: {
+        fontSize: '20px',
+      }
+    },
+    tooltip: {
+      theme: theme.palette.mode,
+      x: {
+        formatter(value, opts) {
+          return `
+          <div class="${styles['bar-tooltip-label']}">
+            <span>${value}</span>
+          </div>`;
+        },
+      },
+    },
+    xaxis: {
+      labels: {
+        formatter: (value) => (
+          isNaN(Number(value)) ? value : Number(value).toLocaleString()
+        )
+      }
+    },
+    yaxis: {
+      labels: {
+        formatter: (value) => (
+          value.toLocaleString()
+        )
+      }
+    },
+    legend: {
+      fontSize: '15px',
+      fontFamily: '\'Roboto\', sans-serif',
+      offsetY: 5,
+      labels: {
+        colors: theme.textColor,
+      },
+      markers: {
+        width: 16,
+        height: 16,
+        radius: 5
+      },
+      itemMargin: {
+        horizontal: 15,
+        vertical: 8
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+  };
 
   const chartOptionsLeft = useMemo(() => {
     return {
@@ -320,7 +385,10 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       labels: {
         hideOverlappingLabels: false,
         trim: true,
-        rotate: 0
+        rotate: 0,
+        style: {
+          colors: theme.textColor
+        }
       },
     }
   }), [dataLeft, dataRight, selectedLeftMasterSeriesId]);

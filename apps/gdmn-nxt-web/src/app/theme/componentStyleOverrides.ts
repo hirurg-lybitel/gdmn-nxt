@@ -1,4 +1,4 @@
-import { Components, ThemeOptions } from '@mui/material';
+import { Components, ThemeOptions, Paper, colors } from '@mui/material';
 import * as locales from '@mui/material/locale';
 
 export default function componentStyleOverrides(theme: ThemeOptions): Components {
@@ -35,16 +35,17 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
       },
       styleOverrides: {
         root: {
-          backgroundImage: 'none'
+          backgroundImage: 'none',
         },
         rounded: {
-          borderRadius: '12px'
+          borderRadius: '12px',
         },
       }
     },
     MuiButton: {
       styleOverrides: {
-        root: {
+        contained: {
+          color: theme.mainContent.buttonTextColor,
           // fontWeight: 500,
           // borderRadius: '4px'
         }
