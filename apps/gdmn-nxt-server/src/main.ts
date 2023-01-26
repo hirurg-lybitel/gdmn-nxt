@@ -291,7 +291,7 @@ router.use(contractsListRouter);
 router.use(bankStatementsRouter);
 
 /** Deals */
-router.use(dealsRouter);
+// router.use(dealsRouter);
 
 /** Kanban */
 router.use(kanbanRouter);
