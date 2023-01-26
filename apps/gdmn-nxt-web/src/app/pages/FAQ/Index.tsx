@@ -1,4 +1,4 @@
-import { CardContent, Grid } from '@mui/material';
+import { Box, CardContent, Grid } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -13,9 +13,10 @@ import CustomizedCard from '../../components/Styled/customized-card/customized-c
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
+import LinearIndeterminate from '../../components/linear-indeterminate/linear-indeterminate';
 
 export default function FAQ() {
-  const { data: faqs, isFetching } = faqApi.useGetAllfaqsQuery();
+  const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
@@ -55,13 +56,6 @@ export default function FAQ() {
     setExpanded(isExpanded ? panel : false);
   };
 
-  if (isFetching) {
-    return (
-      <div className={style.preloadevBody}>
-        <CircularProgress size={100} />
-      </div>
-    );
-  }
   return (
     <>
       <Popup
@@ -86,12 +80,17 @@ export default function FAQ() {
                 <Typography variant="h3">
                   Часто задаваемые вопросы
                 </Typography>
-                <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+                {/* <Button disabled={addFaqObj.isLoading || isFetching} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button> */}
               </div>
             }
           />
-          <CardContent>
-            <div className={style.scrollBarContainer}>
+          <Divider />
+          <CardContent className={style.scrollBarContainer}>
+            {isLoading
+              ? <div className={style.preloadevBody}>
+                <CircularProgress size={100} />
+              </div>
+              : <div className={style.scrollBarContainer}>
               <PerfectScrollbar className={style.scrollBar}>
                 <Grid item xs={12}>
                   {
@@ -106,40 +105,37 @@ export default function FAQ() {
                           >
                             <AccordionSummary
                               expandIcon={<ExpandMoreIcon />}
-                              aria-controls="panel1a-content"
-                              id="panel1a-header"
                             >
-                              <ReactMarkdown>
-                                {
-                                  item.USR$QUESTION
-                                }
-                              </ReactMarkdown>
+                              <Typography variant="h4">
+                                <ReactMarkdown>
+                                  {item.USR$QUESTION}
+                                </ReactMarkdown>
+                              </Typography>
                             </AccordionSummary>
                             <AccordionDetails className={style.answerField}>
-                              <ReactMarkdown >
-                                {
-                                  item.USR$ANSWER
-                                }
-                              </ReactMarkdown>
+                              <Typography variant="body1">
+                                <ReactMarkdown >
+                                  {item.USR$ANSWER}
+                                </ReactMarkdown>
+                              </Typography>
                             </AccordionDetails>
                           </Accordion>
-                          <div>
+                          {/* <div>
                             <IconButton
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading || isFetching}
                               className={style.changeButton}
                               onClick={handleOpenEditPopup(item)}
-                              aria-label="Изменить"
                             >
-                              <EditIcon />
+                              <EditIcon fontSize="small" />
                             </IconButton>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     )
                   }
                 </Grid>
               </PerfectScrollbar>
-            </div>
+            </div>}
           </CardContent>
         </CustomizedCard>
       </div>

@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card } from '@mui/material';
+import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card, CardActions } from '@mui/material';
 import style from './popup.module.less';
 import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
@@ -41,26 +41,28 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     mode: 'onSubmit'
   });
 
-  const closePopup = () => {
+  const closePopup = useCallback(() => {
     setTabIndex('1');
     close();
     clearErrors();
-  };
+  }, []);
 
-  const editFaqHandler = async () => {
+  const editFaqHandler = useCallback(async () => {
+    console.log('editFaqHandler');
     if (faq) {
       handleConfirmCancelClick();
       closePopup();
       editFaq && editFaq(getValues('question'), getValues('answer'), faq.ID);
     }
-  };
+  }, [faq]);
 
-  const addFaqHandler = async () => {
+  const addFaqHandler = useCallback(async () => {
+    console.log('addFaqHandler');
     handleConfirmCancelClick();
     closePopup();
     addFaq && addFaq(getValues('question'), getValues('answer'));
     reset();
-  };
+  }, []);
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -79,15 +81,16 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     };
   }, [escPressed]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
+    console.log('handleDelete');
     if (faq) {
       handleConfirmCancelClick();
       closePopup();
       deleteFaq && deleteFaq(faq.ID);
     }
-  };
+  }, [faq]);
 
-  const clearAndClosePopup = () => {
+  const clearAndClosePopup = useCallback(() => {
     closePopup();
     if (isAddPopup) {
       reset();
@@ -97,18 +100,18 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         setValue('answer', faq.USR$ANSWER);
       }
     }
-  };
+  }, []);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const [isDelete, setIsDelete] = useState(false);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setIsDelete(true);
     setConfirmOpen(true);
-  };
+  }, []);
 
-  const handleSaveClick = () => {
+  const handleSaveClick = useCallback(() => {
     if ((getValues('answer').trim()).length !== 0) {
       if ((getValues('question').trim()).length !== 0) {
         setIsDelete(false);
@@ -119,9 +122,9 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     } else {
       setError('answer', { message: 'Обязательное поле' });
     }
-  };
+  }, []);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     if ((getValues('answer').trim()).length !== 0) {
       if ((getValues('question').trim()).length !== 0) {
         setConfirmOpen(true);
@@ -131,11 +134,12 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     } else {
       setError('answer', { message: 'Обязательное поле' });
     }
-  };
+  }, []);
 
-  const handleConfirmCancelClick = () => {
+  const handleConfirmCancelClick = useCallback(() => {
+    console.log('handleConfirmCancelClick');
     setConfirmOpen(false);
-  };
+  }, []);
 
   useEffect(()=>{
     if (faq) {
@@ -147,6 +151,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
+      dangerous={isDelete}
       title={isAddPopup
         ? 'Добавление нового вопроса с ответом'
         : (isDelete
@@ -162,7 +167,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         )}
       cancelClick={handleConfirmCancelClick}
     />
-  , [confirmOpen]);
+  , [confirmOpen, isDelete, isAddPopup, addFaqHandler, handleDelete, editFaqHandler, handleConfirmCancelClick]);
 
   const onSubmitClick = () => {
     if ((getValues('answer').trim()).length === 0) {
@@ -184,39 +189,39 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         <div
           className={
             isOpened
-              ? style.NewQustionContainer
-              : `${style.NewQustionContainer} ${style.inactiveNewQustionContainer}`
+              ? style.NewQuestionContainer
+              : `${style.NewQuestionContainer} ${style.inactiveNewQuestionContainer}`
           }
         >
           <form
             onSubmit={isAddPopup ? handleSubmit(handleAddClick) : handleSubmit(handleSaveClick)}
-            className={style.qustionForm}
+            className={style.questionForm}
           >
             <Card className={style.card}>
-              <div>
-                <CardHeader
-                  title={<Typography variant="h4">{
-                    isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
-                  }</Typography>}
-                />
-                <Divider/>
-                <CardContent >
-                  <div className={style.inputContainer}>
-                    <TextField
-                      rows={4}
-                      className={style.textArea}
-                      id="outlined-textarea"
-                      placeholder="Вопрос"
-                      multiline
-                      {...register('question', {
-                        required: 'Обязательное поле'
-                      })}
-                      onChange={()=>{
-                        clearErrors('question');
-                      }}
-                    />
-                    {
-                      errors.question
+<div>
+              <CardHeader
+                title={<Typography variant="h4">{
+                  isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
+                }</Typography>}
+              />
+              <Divider/>
+              <CardContent style={{ flex: 1 }} >
+                <div className={style.inputContainer}>
+                  <TextField
+                    rows={4}
+                    className={style.textArea}
+                    id="outlined-textarea"
+                    placeholder="Вопрос"
+                    multiline
+                    {...register('question', {
+                      required: 'Обязательное поле'
+                    })}
+                    onChange={()=>{
+                      clearErrors('question');
+                    }}
+                  />
+                  {
+                    errors.question
                   && <div className={style.errorMessage}>{errors.question.message}</div>
                     }
                   </div>
@@ -309,6 +314,34 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                         className={style.saveButton}
                       >Сохранить</Button>
                     </div>
+                  </TabPanel>
+                </TabContext>
+              </CardContent>
+              <Divider/>
+              <CardActions className={style.buttonsContainer}>
+                {!isAddPopup &&
+                  <IconButton onClick={handleDeleteClick}>
+                    <DeleteIcon />
+                  </IconButton>
+                }
+                <Box flex={1} />
+                <div>
+                  <Button
+                    type="button"
+                    variant="text"
+                    onClick={clearAndClosePopup}
+                    className={style.button}
+                  >Отменить</Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    onClick={onSubmitClick}
+                    className={`${style.saveButton} ${style.button}`}
+                  >
+                    {isAddPopup ? 'Добавить' : 'Сохранить'}
+                  </Button>
+                </div>
+              </CardActions>
                   </>
                 }
               </div>

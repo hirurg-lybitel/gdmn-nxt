@@ -5,6 +5,7 @@ import kanban from '../../kanban/kanban';
 import history from '../../kanban/history';
 import tasks from '../../kanban/task';
 import denyReasons from '../../kanban/denyReasons';
+import { sourceCatalog } from '../../handlers/deals/sourceCatalog';
 
 
 const router = express.Router();
@@ -35,5 +36,11 @@ router.put('/tasks/:id', tasks.upsert);
 router.delete('/tasks/:id', tasks.remove);
 
 router.get('/denyreasons', denyReasons.get);
+
+/**Справочник источников сделки */
+router.get('/dealsource', sourceCatalog.get);
+router.post('/dealsource', sourceCatalog.upsert);
+router.put('/dealsource/:id', sourceCatalog.upsert);
+router.delete('/dealsource/:id', sourceCatalog.remove);
 
 export default router;

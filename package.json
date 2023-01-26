@@ -32,7 +32,6 @@
     "@nivo/funnel": "^0.79.1",
     "@react-leaflet/core": "^2.0.0",
     "@reduxjs/toolkit": "1.8.1",
-    "@types/react-leaflet-markercluster": "^3.0.0",
     "allotment": "^1.13.0",
     "apexcharts": "^3.33.1",
     "axios": "^0.24.0",
