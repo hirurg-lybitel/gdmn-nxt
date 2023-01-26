@@ -110,7 +110,7 @@ export function ChartDonut(props: ChartDonutProps) {
           ? <ChartSkeleton />
           : <>
             <Typography variant="h1">Статус сделок</Typography>
-            <Box flex={1} style={{ color: 'black' }}>
+            <Box flex={1}>
               <Chart
                 type="donut"
                 height="100%"

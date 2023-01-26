@@ -198,7 +198,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
             className={style.questionForm}
           >
             <Card className={style.card}>
-<div>
               <CardHeader
                 title={<Typography variant="h4">{
                   isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
@@ -223,96 +222,53 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                   {
                     errors.question
                   && <div className={style.errorMessage}>{errors.question.message}</div>
-                    }
-                  </div>
-                  <TabContext value={tabIndex}>
-                    <Box>
-                      <TabList onChange={handleTabsChange}>
-                        <Tab label="Изменить" value="1" />
-                        <Tab label="Просмотреть" value="2" />
-                      </TabList>
-                    </Box>
-                    <TabPanel value="1" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <TextField
-                          rows={12}
-                          className={style.textArea}
-                          id="outlined-textarea"
-                          placeholder="Ответ"
-                          multiline
-                          {...register('answer', {
-                            required: 'Обязательное поле'
-                          })}
-                          onChange={()=>{
-                            clearErrors('answer');
-                          }}
-                        />
-                        {
-                          errors.answer
+                  }
+                </div>
+                <TabContext value={tabIndex}>
+                  <Box>
+                    <TabList onChange={handleTabsChange}>
+                      <Tab label="Изменить" value="1" />
+                      <Tab label="Просмотреть" value="2" />
+                    </TabList>
+                  </Box>
+                  <TabPanel value="1" className={style.tab}>
+                    <div className={style.inputContainer}>
+                      <TextField
+                        rows={12}
+                        className={style.textArea}
+                        id="outlined-textarea"
+                        placeholder="Ответ"
+                        multiline
+                        {...register('answer', {
+                          required: 'Обязательное поле'
+                        })}
+                        onChange={()=>{
+                          clearErrors('answer');
+                        }}
+                      />
+                      {
+                        errors.answer
                         && <div className={style.errorMessage}>{errors.answer.message}</div>
-                        }
+                      }
+                    </div>
+                  </TabPanel>
+                  <TabPanel value="2" className={style.tab}>
+                    <div className={style.inputContainer}>
+                      <div className={style.previewBackground}>
+                        <PerfectScrollbar className={style.preview}>
+                          <div className={style.previewContent}>
+                            <ReactMarkdown >
+                              {
+                                getValues('answer')
+                              }
+                            </ReactMarkdown>
+                          </div>
+                        </PerfectScrollbar>
                       </div>
-                    </TabPanel>
-                    <TabPanel value="2" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <div className={style.previewBackground}>
-                          <PerfectScrollbar className={style.preview}>
-                            <div className={style.previewContent}>
-                              <ReactMarkdown className={style.markdown}>
-                                {
-                                  getValues('answer')
-                                }
-                              </ReactMarkdown>
-                            </div>
-                          </PerfectScrollbar>
-                        </div>
-                        {
-                          errors.answer
+                      {
+                        errors.answer
                         && <div className={style.errorMessage}>{errors.answer.message}</div>
-                        }
-                      </div>
-                    </TabPanel>
-                  </TabContext>
-                </CardContent>
-              </div>
-              <div className={style.buttonsContainer}>
-                {isAddPopup
-                  ?
-                  <>
-                    <div />
-                    <div>
-                      <Button
-                        type="button"
-                        variant="outlined"
-                        onClick={clearAndClosePopup}
-                      >Отмена</Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        onClick={onSubmitClick}
-                        className={style.saveButton}
-                      >Добавить</Button>
-                    </div>
-                  </>
-                  :
-                  <>
-                    <div>
-                      <IconButton aria-label="Удалить" onClick={handleDeleteClick} >
-                        <DeleteIcon color="primary"/>
-                      </IconButton>
-                    </div>
-                    <div>
-                      <Button
-                        type="button"
-                        variant="outlined"
-                        onClick={clearAndClosePopup}
-                      >Отмена</Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        onClick={onSubmitClick}
-                        className={style.saveButton}
-                      >Сохранить</Button>
+                      }
                     </div>
                   </TabPanel>
                 </TabContext>
@@ -342,9 +298,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                   </Button>
                 </div>
               </CardActions>
-                  </>
-                }
-              </div>
             </Card>
           </form>
         </div>

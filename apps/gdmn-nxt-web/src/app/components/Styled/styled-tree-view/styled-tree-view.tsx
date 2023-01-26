@@ -7,7 +7,7 @@ import './styled-tree-view.module.less';
 
 export const StyledTreeView = styled(TreeView)(({ theme }) => ({
   color:
-    theme.textColor,
+    theme.palette.mode === 'light' ? 'rgba(0,0,0,.85)' : 'rgba(255,255,255,0.85)',
   fontFamily: [
     '-apple-system',
     'BlinkMacSystemFont',

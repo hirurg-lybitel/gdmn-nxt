@@ -209,24 +209,18 @@ export function ChartColumn(props: ChartColumnProps) {
       labels: {
         formatter: (value) => (
           isNaN(Number(value)) ? value : Number(value).toLocaleString()
-        ),
-        style: {
-          colors: theme.textColor
-        }
+        )
       }
     },
     yaxis: {
       labels: {
         formatter: (value) => (
           value.toLocaleString()
-        ),
-        style: {
-          colors: theme.textColor
-        }
+        )
       }
     },
     tooltip: {
-      theme: theme.palette.mode
+      theme: 'light'
     },
     plotOptions: {
       bar: {
@@ -251,10 +245,7 @@ export function ChartColumn(props: ChartColumnProps) {
       }
     },
     dataLabels: {
-      enabled: false,
-      style: {
-        colors: ['blue']
-      }
+      enabled: false
     },
   };
 
@@ -405,7 +396,7 @@ export function ChartColumn(props: ChartColumnProps) {
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Box flex={1} style={{ color: 'black' }}>
+            <Box flex={1}>
               <Chart
                 options={chartOptions}
                 series={chartData.series}

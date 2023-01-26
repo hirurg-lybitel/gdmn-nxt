@@ -73,7 +73,7 @@ export default function FAQ() {
         addFaq={addFaqHandler}
       />
       <div className={style.body} >
-        <CustomizedCard borders className={style.card}>
+        <CustomizedCard>
           <CardHeader
             title={
               <div className={style.title}>
@@ -90,8 +90,7 @@ export default function FAQ() {
               ? <div className={style.preloadevBody}>
                 <CircularProgress size={100} />
               </div>
-              : <div className={style.scrollBarContainer}>
-              <PerfectScrollbar className={style.scrollBar}>
+              : <PerfectScrollbar className={style.scrollBar}>
                 <Grid item xs={12}>
                   {
                     faqs?.map(item =>
@@ -135,9 +134,10 @@ export default function FAQ() {
                   }
                 </Grid>
               </PerfectScrollbar>
-            </div>}
+            }
           </CardContent>
         </CustomizedCard>
+
       </div>
     </>
   );
