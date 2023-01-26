@@ -105,19 +105,21 @@ export default function FAQ() {
                           >
                             <AccordionSummary
                               expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
                             >
-                              <Typography variant="h4">
-                                <ReactMarkdown>
-                                  {item.USR$QUESTION}
-                                </ReactMarkdown>
-                              </Typography>
+                              <ReactMarkdown>
+                                {
+                                  item.USR$QUESTION
+                                }
+                              </ReactMarkdown>
                             </AccordionSummary>
                             <AccordionDetails className={style.answerField}>
-                              <Typography variant="body1">
-                                <ReactMarkdown >
-                                  {item.USR$ANSWER}
-                                </ReactMarkdown>
-                              </Typography>
+                              <ReactMarkdown >
+                                {
+                                  item.USR$ANSWER
+                                }
+                              </ReactMarkdown>
                             </AccordionDetails>
                           </Accordion>
                           {/* <div>
