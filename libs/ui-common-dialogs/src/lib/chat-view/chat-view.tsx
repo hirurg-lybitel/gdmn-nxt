@@ -1,7 +1,5 @@
 import { NLPDialog } from '@gsbelarus/util-api-types';
 import { forwardRef, Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { RootState } from '../../../../../apps/gdmn-nxt-web/src/app/store';
-import { useSelector } from 'react-redux';
 import styles from './chat-view.module.less';
 
 /* eslint-disable-next-line */
@@ -14,6 +12,49 @@ export interface ChatViewProps {
 interface IChatInputProps {
   onInputText: (text: string) => void;
 };
+
+const ChatInput = forwardRef(({ onInputText }: IChatInputProps, ref) => {
+  const [text, setText] = useState('');
+  const [prevText, setPrevText] = useState('');
+  const ta = useRef<HTMLTextAreaElement | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    setTextAndFocus: (text: string) => { setText(text); ta.current?.focus(); }
+  }));
+
+  const onInputPressEnter = useCallback( (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const trimText = text.trim();
+
+    if (e.key === 'Enter' && trimText) {
+      setText('');
+      setPrevText(trimText);
+      onInputText(trimText);
+      e.preventDefault();
+    }
+  }, [text, prevText]);
+
+  const onInputArrowUp = useCallback( (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const trimText = text.trim();
+
+    if (e.key === 'ArrowUp' && !trimText) {
+      setText(prevText);
+    }
+  }, [text, prevText]);
+
+  const onInputChange = useCallback( (e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value), []);
+
+  return (
+    <textarea
+      className={styles['NLPInput']}
+      spellCheck={false}
+      value={text}
+      onKeyPress={onInputPressEnter}
+      onKeyDown={onInputArrowUp}
+      onChange={onInputChange}
+      ref={ta}
+    />
+  );
+});
 
 const topGap = 24;
 const scrollTimerDelay = 4000;
@@ -47,58 +88,12 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
   const shownItems = useRef<HTMLDivElement[]>([]);
   const scrollThumb = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef();
-  const mode = useSelector((state: RootState) => state.settings.customization.mode);
 
   const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK, prevNLPDialog } = state;
 
   shownItems.current = [];
 
-  const ChatInput = forwardRef(({ onInputText }: IChatInputProps, ref) => {
-    const [text, setText] = useState('');
-    const [prevText, setPrevText] = useState('');
-    const ta = useRef<HTMLTextAreaElement | null>(null);
-
-    useImperativeHandle(ref, () => ({
-      setTextAndFocus: (text: string) => {
-        setText(text); ta.current?.focus();
-      }
-    }));
-
-    const onInputPressEnter = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      const trimText = text.trim();
-
-      if (e.key === 'Enter' && trimText) {
-        setText('');
-        setPrevText(trimText);
-        onInputText(trimText);
-        e.preventDefault();
-      }
-    }, [text, prevText]);
-
-    const onInputArrowUp = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      const trimText = text.trim();
-
-      if (e.key === 'ArrowUp' && !trimText) {
-        setText(prevText);
-      }
-    }, [text, prevText]);
-
-    const onInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value), []);
-
-    return (
-      <textarea
-        className={mode === 'dark' ? styles.NLPInputDark : styles.NLPInput}
-        spellCheck={false}
-        value={text}
-        onKeyPress={onInputPressEnter}
-        onKeyDown={onInputArrowUp}
-        onChange={onInputChange}
-        ref={ta}
-      />
-    );
-  });
-
-  useEffect(() => {
+  useEffect( () => {
     if (recalc || nlpDialog !== prevNLPDialog) {
       let sf = showFrom;
       let st = showTo;
@@ -119,7 +114,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
       if (shownItems.current.length) {
         if (shownItems.current[0].offsetTop > topGap) {
           if (shownItems.current.length < nlpDialog.length && sf > 0) {
-            setState(state => ({
+            setState( state => ({
               ...state,
               showFrom: sf - 1,
               showTo: st,
@@ -127,7 +122,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
               prevNLPDialog: nlpDialog
             }));
           } else {
-            setState(state => ({
+            setState( state => ({
               ...state,
               showFrom: sf,
               showTo: st,
@@ -144,7 +139,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
             prevNLPDialog: nlpDialog
           }));
         } else if (shownItems.current[0].offsetTop < 0 && !partialOK && !showFrom && showFrom < showTo) {
-          setState(state => ({
+          setState( state => ({
             ...state,
             showFrom: sf,
             showTo: st - 1,
@@ -152,7 +147,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
             prevNLPDialog: nlpDialog
           }));
         } else {
-          setState(state => ({
+          setState( state => ({
             ...state,
             showFrom: sf,
             showTo: st,
@@ -161,7 +156,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
           }));
         }
       } else {
-        setState(state => ({
+        setState( state => ({
           ...state,
           showFrom: 0,
           showTo: 0,
@@ -172,10 +167,10 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
     }
   }, [nlpDialog, prevNLPDialog, recalc, partialOK, showFrom, showTo]);
 
-  const onWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+  const onWheel = useCallback( (e: React.WheelEvent<HTMLDivElement>) => {
     const delayedScrollHide = () => ({
       scrollVisible: true,
-      scrollTimer: setTimeout(() => setState(state => ({ ...state, scrollVisible: false, scrollTimer: undefined })), scrollTimerDelay)
+      scrollTimer: setTimeout( () => setState( state => ({ ...state, scrollVisible: false, scrollTimer: undefined }) ), scrollTimerDelay)
     });
 
     if (scrollTimer) {
@@ -184,7 +179,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
 
     if (e.deltaY < 0) {
       if (showFrom > 0) {
-        setState(state => ({
+        setState( state => ({
           ...state,
           showFrom: showFrom - 1,
           showTo: showTo - 1,
@@ -193,7 +188,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
           ...delayedScrollHide()
         }));
       } else {
-        setState(state => ({
+        setState( state => ({
           ...state,
           partialOK: false,
           recalc: true,
@@ -201,7 +196,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
         }));
       }
     } else if (e.deltaY > 0 && showTo < nlpDialog.length - 1) {
-      setState(state => ({
+      setState( state => ({
         ...state,
         showFrom: showFrom + 1,
         showTo: showTo + 1,
@@ -210,14 +205,14 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
         ...delayedScrollHide()
       }));
     } else {
-      setState(state => ({
+      setState( state => ({
         ...state,
         ...delayedScrollHide()
       }));
     }
   }, [showFrom, showTo, scrollTimer]);
 
-  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerDown = useCallback( (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
 
     if (e.currentTarget === e.target && scrollThumb.current) {
@@ -250,7 +245,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
         newTo = nlpDialog.length - 1;
       }
 
-      setState(state => ({
+      setState( state => ({
         ...state,
         showFrom: newFrom,
         showTo: newTo,
@@ -259,7 +254,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
       }));
     } else {
       e.currentTarget.setPointerCapture(e.pointerId);
-      setState(state => ({
+      setState( state => ({
         ...state,
         scrollVisible: true,
         prevClientY: e.clientY,
@@ -268,7 +263,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
     }
   }, [showFrom, showTo, nlpDialog]);
 
-  const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerUp = useCallback( (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.releasePointerCapture(e.pointerId);
 
@@ -276,16 +271,16 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
       clearTimeout(scrollTimer);
     }
 
-    setState(state => ({
+    setState( state => ({
       ...state,
       scrollVisible: true,
-      scrollTimer: setTimeout(() => setState(state => ({ ...state, scrollVisible: false, scrollTimer: undefined })), scrollTimerDelay),
+      scrollTimer: setTimeout(() => setState( state => ({ ...state, scrollVisible: false, scrollTimer: undefined }) ), scrollTimerDelay),
       prevClientY: undefined,
       prevFrac: 0
     }));
   }, [scrollTimer]);
 
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerMove = useCallback( (e: React.PointerEvent<HTMLDivElement>) => {
     if (!(e.buttons === 1 && typeof prevClientY === 'number' && nlpDialog.length)) return;
 
     e.preventDefault();
@@ -298,7 +293,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
     if (!delta) return;
 
     if (showFrom === 0 && delta < 0) {
-      setState(state => ({
+      setState( state => ({
         ...state,
         partialOK: false,
         recalc: true
@@ -309,7 +304,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
       let newTo = showTo + delta;
       if (newTo >= nlpDialog.length) newTo = nlpDialog.length - 1;
       if (newFrom > newTo) newFrom = newTo;
-      setState(state => ({
+      setState( state => ({
         ...state,
         showFrom: newFrom,
         showTo: newTo,
@@ -321,8 +316,8 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
     }
   }, [nlpDialog, showFrom, showTo, prevClientY, prevFrac]);
 
-  const onInputText = useCallback((text: string) => {
-    setState(state => ({
+  const onInputText = useCallback( (text: string) => {
+    setState( state => ({
       ...state,
       showFrom: -1,
       showTo: -1,
@@ -340,38 +335,38 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
 
   return (
     <Fragment>
-      <div className={styles.NLPDialog}>
-        <div className={styles.NLPItems}>
-          <div className={styles.NLPItemsFlex} onWheel={onWheel}>
+      <div className={styles['NLPDialog']}>
+        <div className={styles['NLPItems']}>
+          <div className={styles['NLPItemsFlex']} onWheel={onWheel}>
             {nlpDialog.map(
-              (i, idx) =>
-                idx >= sf &&
+                (i, idx) =>
+                  idx >= sf &&
                   idx <= st && (
-                  <div
-                    key={i.id}
-                    className={`${styles.NLPItem} ${i.who === 'me' ? styles.NLPItemRight : styles.NLPItemLeft}`}
-                    ref={elem => elem && shownItems.current.push(elem)}
-                    onClick={() => {
-                      if (inputRef.current) {
-                        (inputRef.current as any).setTextAndFocus(i.text);
-                      }
-                    }}
-                  >
+                    <div
+                      key={i.id}
+                      className={`${styles['NLPItem']} ${i.who === 'me' ? styles['NLPItemRight'] : styles['NLPItemLeft']}`}
+                      ref={elem => elem && shownItems.current.push(elem)}
+                      onClick={ () => {
+                        if (inputRef.current) {
+                          (inputRef.current as any).setTextAndFocus(i.text);
+                        }
+                      } }
+                    >
                     {
                       i.who === 'me' ?
                         <>
-                          <span className={`${styles.Message} ${styles.MessageRight}`}>{i.text}</span>
-                          <span className={styles.Circle}>{i.who}</span>
+                          <span className={`${styles['Message']} ${styles['MessageRight']}`}>{i.text}</span>
+                          <span className={styles['Circle']}>{i.who}</span>
                         </>
-                        :
+                      :
                         <>
-                          <span className={styles.Circle}>{i.who}</span>
-                          <span className={`${styles.Message} ${styles.MessageLeft}`}>{i.text}</span>
+                          <span className={styles['Circle']}>{i.who}</span>
+                          <span className={`${styles['Message']} ${styles['MessageLeft']}`}>{i.text}</span>
                         </>
                     }
-                  </div>
-                )
-            )}
+                    </div>
+                  )
+              )}
             <div
               className={styles[state.scrollVisible ? 'NLPScrollBarVisible' : 'NLPScrollBar']}
               onPointerDown={onPointerDown}
@@ -379,7 +374,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
               onPointerMove={onPointerMove}
             >
               <div
-                className={styles.NLPScrollBarThumb}
+                className={styles['NLPScrollBarThumb']}
                 style={{ height: thumbHeight, top: thumbTop }}
                 ref={scrollThumb}
               />

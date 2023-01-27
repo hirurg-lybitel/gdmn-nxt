@@ -197,7 +197,7 @@ export const MainLayout = () => {
           transition: menuOpened ? theme.transitions.create('width') : 'none'
         }}
       >
-        <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
+        <Toolbar>
           <Header onDrawerToggle={handleDrawerToggle} />
         </Toolbar>
       </AppBar>

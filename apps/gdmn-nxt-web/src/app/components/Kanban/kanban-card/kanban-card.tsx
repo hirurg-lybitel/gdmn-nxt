@@ -66,6 +66,7 @@ export function KanbanCard(props: KanbanCardProps) {
 
     const allTasks = tasks?.length;
     const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
+
     return (
       closedTasks
         ? <Stack direction="row" alignItems="center"spacing={0.5}>
@@ -166,17 +167,17 @@ export function KanbanCard(props: KanbanCardProps) {
             : {
               borderLeft: `0.5rem solid ${
                 (() => {
-                  if (card.DEAL?.USR$DONE) return theme.palette.primary.main;
+                  if (card.DEAL?.USR$DONE) return theme.menu?.backgroundColor;;
                   switch (true) {
                     case dateDiff <= 0:
-                      return theme.color.red.A200;
+                      return theme.color.red['A200'];
                     case dateDiff > 1:
-                      return theme.palette.primary.main;
+                      return theme.menu?.backgroundColor;
                     case dateDiff > 0:
                     case dateDiff < 1:
-                      return theme.color.yellow.A700;
+                      return theme.color.yellow['A700'];
                     default:
-                      return theme.palette.primary.main;
+                      return theme.menu?.backgroundColor;
                   }
                 })()
               }`,

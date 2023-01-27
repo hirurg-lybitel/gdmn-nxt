@@ -18,9 +18,9 @@ export function ErModelDomains(props: ErModelDomainsProps) {
   const errorMessage = !error ?
     undefined
     : 'message' in error ? error.message
-      : 'error' in error ? error.error
-        : 'unknown error';
-  const rows = useMemo(() => data ? Object.values(data.domains) : [], [data]);
+    : 'error' in error ? error.error
+    : 'unknown error';
+  const rows = useMemo( () => data ? Object.values(data.domains) : [], [data]);
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
 
   const columns: GridColDef[] = [
@@ -105,7 +105,7 @@ export function ErModelDomains(props: ErModelDomainsProps) {
             selectionModel={selectionModel}
             rowHeight={24}
             headerHeight={24}
-            editMode="row"
+            editMode='row'
             components={gridComponents}
           />
         </Grid>

@@ -8,7 +8,6 @@ import { useCallback, useMemo, useState } from 'react';
 import ChartColumn from '../chart-column/chart-column';
 import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
-import { theme } from '../../../theme';
 
 const colorsMaster = ['#4ECDC4',	'#C7F464',	'#81D4FA',	'#546E7A',	'#FD6A6A', '#33B2DF',	'#03A9F4',	'#D4526E',	'#13D8AA',	'#A5978B'];
 const colorsDetail = ['#A300D6',	'#7D02EB',	'#5653FE',	'#2983FF',	'#00B1F2', '#5C4742',	'#A5978B',	'#8D5B4C',	'#5A2A27',	'#C4BBAF'];
@@ -150,6 +149,15 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         enabled: false
       }
     },
+    title: {
+      text: 'Сравнение бизнес-процессов и направлений',
+      align: 'center',
+      style: {
+        fontSize: '1.2em',
+        fontWeight: 700
+      },
+      offsetY: 20
+    },
     noData: {
       text: 'Нет данных',
       align: 'center',
@@ -159,12 +167,12 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       }
     },
     tooltip: {
-      theme: theme.palette.mode,
+      theme: 'light',
       x: {
         formatter(value, opts) {
           return `
           <div class="${styles['bar-tooltip-label']}">
-            <span>${value}</span>
+            <span>${value.toLocaleString()}</span>
           </div>`;
         },
       },
@@ -178,6 +186,9 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     },
     yaxis: {
       labels: {
+        style: {
+          // fontSize: '12px'
+        },
         formatter: (value) => (
           value.toLocaleString()
         )
@@ -187,9 +198,9 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       fontSize: '15px',
       fontFamily: '\'Roboto\', sans-serif',
       offsetY: 5,
-      labels: {
-        colors: theme.textColor,
-      },
+      // labels: {
+      //   colors: theme.color.grey[500],
+      // },
       markers: {
         width: 16,
         height: 16,
@@ -204,7 +215,6 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       enabled: false
     },
   };
-
   const chartOptionsLeft = useMemo(() => {
     return {
       master: {
@@ -292,10 +302,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       labels: {
         hideOverlappingLabels: false,
         trim: true,
-        rotate: 0,
-        style: {
-          colors: theme.textColor
-        }
+        rotate: 0
       },
     }
   }), [dataLeft, dataRight, selectedLeftMasterSeriesId]);

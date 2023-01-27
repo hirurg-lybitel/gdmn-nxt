@@ -8,7 +8,7 @@ import { BrowserRouter, json, Navigate, Route, Routes } from 'react-router-dom';
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
 import { registerMUI } from './mui-license';
-import { Theme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { Theme, ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
 import { LoginStage } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
@@ -49,14 +49,11 @@ import NotificationCenter from './app/pages/NotificationCenter/notification-cent
 import FAQ from './app/pages/FAQ/Index';
 import { SnackbarProvider } from 'notistack';
 import NotFound from './app/pages/NotFound';
+import { baseUrl } from './app/const';
 import menuItems from './app/menu-items';
-import { setActiveMenu, setPageIdFound, setStyleMode } from './app/store/settingsSlice';
+import { setActiveMenu, setPageIdFound } from './app/store/settingsSlice';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
 import { IMenuItem } from './app/menu-items';
-import { useState } from 'react';
-import { themeApi } from './app/features/theme/themeApi';
-import { UserState } from './app/features/user/userSlice';
-import { userInfo } from 'os';
 
 registerMUI();
 
@@ -64,36 +61,14 @@ const Main = () => {
   const dispatch = useDispatch();
   const customization = useSelector((state: RootState) => state.settings.customization);
   const loginStage = useSelector<RootState, LoginStage>(state => state.user.loginStage);
-  const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
+  const savedTheme = useRef<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
   const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
-  const themeStyles = useTheme();
-  const user = useSelector<RootState, UserState>(state => state.user);
-  const userId = user.userProfile?.id;
-  const { data: themeType, isFetching } = themeApi.useGetThemeQuery(userId, { skip: !userId });
-  console.log(themeType);
+
   useEffect(() => {
-    setSavedTheme(theme(customization));
+    savedTheme.current = theme(customization);
   }, [customization]);
 
-  useEffect(()=>{
-    const localMode = localStorage.getItem('mode');
-    if (themeType) {
-      if (themeType === 'dark') {
-        dispatch(setStyleMode('dark'));
-        localStorage.setItem('mode', 'dark');
-      } else {
-        dispatch(setStyleMode('light'));
-        localStorage.setItem('mode', 'light');
-      }
-    } else {
-      if (!localMode || localMode === 'dark') {
-        dispatch(setStyleMode('dark'));
-      } else {
-        dispatch(setStyleMode('light'));
-      }
-    }
-  }, [themeType]);
 
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
@@ -122,98 +97,97 @@ const Main = () => {
     }
     dispatch(setPageIdFound(true));
     dispatch(setActiveMenu(pageId));
-  }, [settings]);
+  }, [settings.activeMenuId]);
 
   return (
-    <div style={{ background: settings.customization.mode === 'dark' ? '#424242' : '', height: '100%' }}>
-      <BrowserRouter>
-        <StrictMode>
-          <CssBaseline>
-            <ThemeProvider theme={savedTheme}>
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                localeText={{ start: 'Начало периода', end: 'Конец периода' }}
-                adapterLocale={ruLocale}
-              >
-                <SnackbarProvider maxSnack={3}>
-                  {
-                    <>
-                      {
-                        loginStage === 'EMPLOYEE' ?
+    <BrowserRouter>
+      <StrictMode>
+        <CssBaseline>
+          <ThemeProvider theme={savedTheme.current}>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              localeText={{ start: 'Начало периода', end: 'Конец периода' }}
+              adapterLocale={ruLocale}
+            >
+              <SnackbarProvider maxSnack={3}>
+                {
+                  <>
+                    {
+                      loginStage === 'EMPLOYEE' ?
+                        <Routes>
+                          <Route path="/employee" element={<MainLayout />}>
+                            <Route path="" element={<Navigate to="dashboard/overview" />} />
+                            <Route path="dashboard">
+                              <Route path="" element={<Navigate to="overview" />} />
+                              <Route path="overview" element={<Dashboard />} />
+                              <Route path="analytics" element={<Analytics />} />
+                              <Route path="map" element={<Dashboard />} />
+                            </Route>
+                            <Route path="managment">
+                              <Route path="" element={<Navigate to="deals" />} />
+                              <Route path="deals" element={<Deals />} />
+                              <Route path="customers" >
+                                <Route path="" element={<NotFound/>} />
+                                <Route path="orders/list" element={<OrderList />} />
+                                <Route path="list" element={<CustomersList />} />
+                                <Route path="list/details/:id" element={<CustomerDetails />} />
+                              </Route>
+                              <Route path="labels" element={<Labels />}/>
+                            </Route>
+                            <Route path="analytics">
+                              <Route path="" element={<Navigate to="reports/reconciliation" />} />
+                              <Route path="reports">
+                                <Route path="" element={<Navigate to="reconciliation" />} />
+                                <Route path="reconciliation" element={<ReconciliationAct />} />
+                                <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
+                                <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
+                                <Route path="topEarning" element={<TopEarningPage />} />
+                              </Route>
+                              <Route path="salesfunnel" element={<SalesFunnel />} />
+                            </Route>
+                            <Route path="preferences">
+                              <Route path="" element={<Navigate to="account" />} />
+                              <Route path="account" element={<Profile />} />
+                              <Route path="settings" element={<AccountSettings />} />
+                              <Route path="notifications" element={<NotificationCenter />} />
+                              <Route path="faq" element={<FAQ />} />
+                              <Route path="permissions">
+                                <Route path="" element={<Navigate to="list" />} />
+                                <Route path="list" element={<PermissionsList />} />
+                                <Route path="usergroups" element={<UserGroups />} />
+                              </Route>
+                            </Route>
+                          </Route>
+                          <Route path="/system" element={<BaseForm />}>
+                            <Route path="" element={<Navigate to="er-model-domains" />} />
+                            <Route path="er-model-domains" element={<ErModelDomains />} />
+                            <Route path="er-model" element={<ErModel />} />
+                            <Route path="nlp-main" element={<NlpMain />} />
+                            <Route path="sql-editor" element={<SqlEditor />} />
+                            <Route path="*" element={<NotFound/>} />
+                          </Route>
+                          <Route path="/" element={<Navigate to="/employee/dashboard" />} />
+                          <Route path="*" element={<NotFound/>} />
+                        </Routes>
+                        : loginStage === 'CUSTOMER' ?
                           <Routes>
-                            <Route path="/employee" element={<MainLayout />}>
-                              <Route path="" element={<Navigate to="dashboard/overview" />} />
-                              <Route path="dashboard">
-                                <Route path="" element={<Navigate to="overview" />} />
-                                <Route path="overview" element={<Dashboard />} />
-                                <Route path="analytics" element={<Analytics />} />
-                              </Route>
-                              <Route path="managment">
-                                <Route path="" element={<Navigate to="deals" />} />
-                                <Route path="deals" element={<Deals />} />
-                                <Route path="customers" >
-                                  <Route path="" element={<NotFound/>} />
-                                  <Route path="orders/list" element={<OrderList />} />
-                                  <Route path="list" element={<CustomersList />} />
-                                  <Route path="list/details/:id" element={<CustomerDetails />} />
-                                </Route>
-                                <Route path="labels" element={<Labels />}/>
-                              </Route>
-                              <Route path="analytics">
-                                <Route path="" element={<Navigate to="reports/reconciliation" />} />
-                                <Route path="reports">
-                                  <Route path="" element={<Navigate to="reconciliation" />} />
-                                  <Route path="reconciliation" element={<ReconciliationAct />} />
-                                  <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
-                                  <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
-                                  <Route path="topEarning" element={<TopEarningPage />} />
-                                </Route>
-                                <Route path="salesfunnel" element={<SalesFunnel />} />
-                              </Route>
-                              <Route path="preferences">
-                                <Route path="" element={<Navigate to="account" />} />
-                                <Route path="account" element={<Profile />} />
-                                <Route path="settings" element={<AccountSettings />} />
-                                <Route path="notifications" element={<NotificationCenter />} />
-                                <Route path="faq" element={<FAQ />} />
-                                <Route path="permissions">
-                                  <Route path="" element={<Navigate to="list" />} />
-                                  <Route path="list" element={<PermissionsList />} />
-                                  <Route path="usergroups" element={<UserGroups />} />
-                                </Route>
-                              </Route>
+                            <Route path="/customer" element={<CustomerHomePage />}>
+                              <Route path="" element={<Navigate to="standard-order" />} />
+                              <Route path="standard-order" element={<StandardOrder />} />
+                              <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
                             </Route>
-                            <Route path="/system" element={<BaseForm />}>
-                              <Route path="" element={<Navigate to="er-model-domains" />} />
-                              <Route path="er-model-domains" element={<ErModelDomains />} />
-                              <Route path="er-model" element={<ErModel />} />
-                              <Route path="nlp-main" element={<NlpMain />} />
-                              <Route path="sql-editor" element={<SqlEditor />} />
-                              <Route path="*" element={<NotFound/>} />
-                            </Route>
-                            <Route path="/" element={<Navigate to="/employee/dashboard" />} />
+                            <Route path="/" element={<Navigate to="/customer" />} />
                             <Route path="*" element={<NotFound/>} />
                           </Routes>
-                          : loginStage === 'CUSTOMER' ?
-                            <Routes>
-                              <Route path="/customer" element={<CustomerHomePage />}>
-                                <Route path="" element={<Navigate to="standard-order" />} />
-                                <Route path="standard-order" element={<StandardOrder />} />
-                                <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
-                              </Route>
-                              <Route path="/" element={<Navigate to="/customer" />} />
-                              <Route path="*" element={<NotFound/>} />
-                            </Routes>
-                            : <App />
-                      }</>
-                  }
-                </SnackbarProvider>
-              </LocalizationProvider>
-            </ThemeProvider>
-          </CssBaseline>
-        </StrictMode>
-      </BrowserRouter>
-    </div>
+                          : <App />
+                    }</>
+                }
+              </SnackbarProvider>
+            </LocalizationProvider>
+          </ThemeProvider>
+        </CssBaseline>
+      </StrictMode>
+    </BrowserRouter>
   );
 };
 

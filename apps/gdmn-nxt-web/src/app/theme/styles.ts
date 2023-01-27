@@ -17,8 +17,6 @@ export interface styledTheme {
     padding?: string,
     marginTop?: string,
     marginRight?: string,
-    borderRadius?: string,
-    borderColor?: string,
-    buttonTextColor?: string
+    borderRadius?: string
   };
 }

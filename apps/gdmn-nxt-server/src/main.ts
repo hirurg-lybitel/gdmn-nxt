@@ -29,7 +29,6 @@ import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
 import { Notifications } from './app/routes/notifications';
 import faqRouter from './app/routes/faqRouter';
-import themeRouter from './app/routes/themeRouter';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -285,9 +284,6 @@ router.use(labelsRouter);
 
 /** FAQ*/
 router.use(faqRouter);
-
-/** Theme*/
-router.use(themeRouter);
 
 /** Contracts list */
 router.use(contractsListRouter);

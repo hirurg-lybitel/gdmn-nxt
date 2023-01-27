@@ -9,7 +9,7 @@ import { createElement } from 'react';
 
 export const gridComponents = {
   Pagination: CustomPagination,
-  ColumnResizeIcon: createSvgIcon(createElement('path', { d: 'M11 24V0h2v24z' }), 'Separator2')
+  ColumnResizeIcon: createSvgIcon(createElement("path",{d:"M11 24V0h2v24z"}),"Separator2")
 };
 
 const getBackgroundColor = (color: string, mode: string) =>
@@ -28,7 +28,7 @@ function customCheckbox(theme: Theme) {
       height: 16,
       backgroundColor: 'transparent',
       border: `1px solid ${
-        theme.mainContent.borderColor
+        theme.palette.mode === 'light' ? '#d9d9d9' : 'rgb(67, 67, 67)'
       }`,
       borderRadius: 2,
     },
@@ -68,7 +68,7 @@ function customCheckbox(theme: Theme) {
 export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
   border: 0,
   color:
-    theme.textColor,
+    theme.palette.mode === 'light' ? 'rgba(0,0,0,.85)' : 'rgba(255,255,255,0.85)',
   fontFamily: [
     '-apple-system',
     'BlinkMacSystemFont',
@@ -84,7 +84,7 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
   WebkitFontSmoothing: 'auto',
   letterSpacing: 'normal',
   '& .MuiDataGrid-columnsContainer': {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : '#1d1d1d',
   },
   // '& .MuiDataGrid-iconSeparator': {
   //   display: 'none',
@@ -94,12 +94,12 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
   },
   '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
     borderRight: `1px solid ${
-      theme.mainContent.borderColor
+      theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
     }`,
   },
   '& .MuiDataGrid-columnsContainer, .MuiDataGrid-cell': {
     borderBottom: `1px solid ${
-      theme.mainContent.borderColor
+      theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
     }`,
   },
   '& .MuiDataGrid-row:nth-of-type(2n)': {
@@ -119,13 +119,13 @@ export const StyledDataGrid = styled(DataGridPro)(({ theme }) => ({
   },
   '& .MuiDataGrid-cell': {
     color:
-      theme.textColor,
+      theme.palette.mode === 'light' ? 'rgba(0,0,0,.85)' : 'rgba(255,255,255,0.65)',
   },
   '& .MuiDataGrid-footerContainer': {
     minHeight: 32,
     borderTop: `1px solid ${
-      theme.mainContent.borderColor
-    }`, },
+      theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
+    }`,  },
   '& .MuiPaginationItem-root': {
     height: 16,
     width: 16,
