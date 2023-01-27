@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card } from '@mui/material';
+import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card, CardActions } from '@mui/material';
 import style from './popup.module.less';
 import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
@@ -200,7 +200,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                   }</Typography>}
                 />
                 <Divider/>
-                <CardContent >
+                <CardContent style={{ flex: 1 }} >
                   <div className={style.inputContainer}>
                     <TextField
                       rows={4}
@@ -269,48 +269,31 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                     </TabPanel>
                   </TabContext>
                 </CardContent>
-              </div>
-              <div className={style.buttonsContainer}>
-                {isAddPopup
-                  ?
-                  <>
-                    <div />
-                    <div>
-                      <Button
-                        type="button"
-                        variant="outlined"
-                        onClick={clearAndClosePopup}
-                      >Отмена</Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        onClick={onSubmitClick}
-                        className={style.saveButton}
-                      >Добавить</Button>
-                    </div>
-                  </>
-                  :
-                  <>
-                    <div>
-                      <IconButton aria-label="Удалить" onClick={handleDeleteClick} >
-                        <DeleteIcon color="primary"/>
-                      </IconButton>
-                    </div>
-                    <div>
-                      <Button
-                        type="button"
-                        variant="outlined"
-                        onClick={clearAndClosePopup}
-                      >Отмена</Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        onClick={onSubmitClick}
-                        className={style.saveButton}
-                      >Сохранить</Button>
-                    </div>
-                  </>
-                }
+                <Divider/>
+                <CardActions className={style.buttonsContainer}>
+                  {!isAddPopup &&
+                  <IconButton onClick={handleDeleteClick}>
+                    <DeleteIcon />
+                  </IconButton>
+                  }
+                  <Box flex={1} />
+                  <div>
+                    <Button
+                      type="button"
+                      variant="text"
+                      onClick={clearAndClosePopup}
+                      className={style.button}
+                    >Отменить</Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      className={`${style.saveButton} ${style.button}`}
+                    >
+                      {isAddPopup ? 'Добавить' : 'Сохранить'}
+                    </Button>
+                  </div>
+                </CardActions>
               </div>
             </Card>
           </form>

@@ -27,16 +27,22 @@ export const settingsSlice = createSlice({
   initialState,
   reducers: {
     toggleMenu: (state, action: PayloadAction<boolean>) => {
-      state.menuOpened = action.payload;
+      return (
+        { ...state, menuOpened: action.payload }
+      );
     },
     setStyleMode: (state, action: PayloadAction<'light' | 'dark'>) => {
-      state.customization.mode = action.payload;
+      return ({ ...state, customization: { ...state.customization, mode: action.payload } });
     },
     setActiveMenu: (state, action: PayloadAction<string>) => {
-      state.activeMenuId = action.payload;
+      return (
+        { ...state, activeMenuId: action.payload }
+      );
     },
     setPageIdFound: (state, action: PayloadAction<boolean>) => {
-      state.pageIdFound = action.payload;
+      return (
+        { ...state, pageIdFound: action.payload }
+      );
     }
   }
 });
