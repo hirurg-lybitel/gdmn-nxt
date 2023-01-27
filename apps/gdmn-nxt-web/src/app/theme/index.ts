@@ -34,7 +34,7 @@ export const theme = (customization: ICustomization) => {
       headColor: colors.common.white,
       paper: colors.common.white,
       customization,
-      borderColor: '#303030',
+      borderColor: '#f0f0f0',
       buttonTextColor: 'white'
     }
     : {
@@ -46,7 +46,7 @@ export const theme = (customization: ICustomization) => {
       headColor: colors.grey[300],
       paper: colors.grey[800],
       customization,
-      borderColor: '#f0f0f0',
+      borderColor: '#303030',
       buttonTextColor: 'black'
     }
   );

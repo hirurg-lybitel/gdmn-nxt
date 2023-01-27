@@ -57,6 +57,7 @@ import { useState } from 'react';
 import { themeApi } from './app/features/theme/themeApi';
 import { UserState } from './app/features/user/userSlice';
 import { userInfo } from 'os';
+import { join } from 'path';
 
 registerMUI();
 
@@ -109,13 +110,7 @@ const Main = () => {
           : flatMenuItems(item.children || [])).flatMap(el => el);
 
     const flattedMenuItems = flatMenuItems(menuItems.items);
-    let path = '';
-    if (pathName[0] !== 'system') {
-      pathName.forEach((pathItem, index) => index !== 0 && (path += ('/' + pathItem)));
-      path = path.slice(1);
-    } else {
-      path = window.location.pathname;
-    }
+    const path = (pathName.filter((pathItem, index) => index !== 0 && pathItem)).join('/');
     const pageId = (flattedMenuItems.find(item => item.url === path))?.id;
     if (!pageId) {
       return;

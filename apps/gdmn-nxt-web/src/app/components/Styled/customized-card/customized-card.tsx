@@ -1,8 +1,10 @@
 import { Card } from '@mui/material';
 import { styled } from '@mui/system';
 import './customized-card.module.less';
+import { Theme } from '@mui/material/styles';
 
 interface ICustomizedCardProps {
+  theme?: Theme
   borders?: boolean;
   boxShadows?: boolean;
 };
@@ -10,8 +12,8 @@ interface ICustomizedCardProps {
 const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
 })<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false }) => ({
-  ...(borders ? { border: theme.palette.mode === 'dark' ? '1px solid #212121' : '1px solid #E0E3E7' } : {}),
-  ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : {})
+  ...(borders ? { border: `1px solid ${theme.mainContent.borderColor }` } : {}),
+  ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : { boxShadow: 'none' })
 }));
 
 export default CustomizedCard;
