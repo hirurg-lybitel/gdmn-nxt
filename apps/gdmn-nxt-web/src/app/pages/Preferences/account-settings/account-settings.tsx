@@ -117,7 +117,7 @@ export function AccountSettings(props: AccountSettingsProps) {
                 onChange={handleChange}
                 sx={{ m: 1 }}
               />}
-            label="Темная тема"
+            label={theme === 'dark' ? 'Темная тема' : 'Светлая тема'}
           />
         </FormGroup>
       </CardContent>
