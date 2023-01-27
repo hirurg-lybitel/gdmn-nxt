@@ -14,7 +14,7 @@ import styles from './nlpquery.module.less';
 export interface NLPQueryProps {}
 
 export function NLPQuery(props: NLPQueryProps) {
-  const { nlpDialog } = useSelector<RootState, NLPState>( state => state.nlp );
+  const { nlpDialog } = useSelector<RootState, NLPState>(state => state.nlp);
   const dispatch = useDispatch();
   const [token, setToken] = useState<INLPToken | undefined>();
 
@@ -39,18 +39,17 @@ export function NLPQuery(props: NLPQueryProps) {
     text
   }, { skip: !text || !!command || !erModel });
 
-  useEffect( () => {
+  useEffect(() => {
     if (isFetching) {
       if (token) {
         setToken(undefined);
       }
-    }
-    else if (!token && data?.sents[0]?.tokens[0]) {
-      setToken(data?.sents[0]?.tokens[0])
+    } else if (!token && data?.sents[0]?.tokens[0]) {
+      setToken(data?.sents[0]?.tokens[0]);
     }
   }, [data, isFetching]);
 
-  useEffect( () => {
+  useEffect(() => {
     const text = (error as any)?.error;
     if (typeof text === 'string') {
       dispatch(pushNLPDialogItem({ who: 'it', text }));
@@ -62,25 +61,25 @@ export function NLPQuery(props: NLPQueryProps) {
     while (c.length < 8) {
       c.push(null);
     }
-    return c.map( (m, idx) => m ? <td key={m[0]}><span>{m[0]}{':'}</span>{m[1]}</td> : <td key={idx}>&nbsp;</td> );
+    return c.map((m, idx) => m ? <td key={m[0]}><span>{m[0]}{':'}</span>{m[1]}</td> : <td key={idx}>&nbsp;</td>);
   };
-
+  const mode = useSelector((state: RootState) => state.settings.customization.mode);
   return (
     <Grid container height="100%" columnSpacing={0}>
       <Grid item xs={8}>
-        <div className={styles['middle_container']}>
-          <div className={styles['tree_head']}>
+        <div className={styles.middle_container}>
+          <div className={mode === 'dark' ? styles.tree_headDark : styles.tree_head}>
             <Stack width="100%" direction="row" flexWrap="wrap" gap={1} paddingTop={1}>
               {data?.sents?.flatMap (
-                sent => sent.tokens.map( t =>
-                  <span key={t.id} className={styles[t === token ? 'selected' : 'word']} onClick={ () => setToken(t) }>
+                sent => sent.tokens.map(t =>
+                  <span key={t.id} className={styles[t === token ? 'selected' : 'word']} onClick={() => setToken(t)}>
                     {t.token}
                   </span>
                 )
               )}
             </Stack>
 
-            <table className={styles['table']}>
+            <table className={styles.table}>
               <tbody>
                 <tr>
                   <td>
@@ -101,10 +100,8 @@ export function NLPQuery(props: NLPQueryProps) {
                   <td>
                     <span>Shape:</span>{token?.shape}
                   </td>
-                  <td>
-                  </td>
-                  <td>
-                  </td>
+                  <td />
+                  <td />
                 </tr>
                 <tr>
                   <td>
@@ -138,7 +135,7 @@ export function NLPQuery(props: NLPQueryProps) {
               </tbody>
             </table>
           </div>
-          <div className={styles['tree_stack']}>
+          <div className={styles.tree_stack}>
             {
               data?.sents.map(
                 sent =>
@@ -146,7 +143,7 @@ export function NLPQuery(props: NLPQueryProps) {
                     key={sent.text}
                     nlpSentence={sent}
                     selectedToken={token}
-                    onClick={ id => setToken(sent.tokens.find( t => t.id.toString() === id )) }
+                    onClick={id => setToken(sent.tokens.find(t => t.id.toString() === id))}
                   />
               )
             }
@@ -154,13 +151,13 @@ export function NLPQuery(props: NLPQueryProps) {
         </div>
       </Grid>
       <Grid item xs={4}>
-        <div className={styles['container']}>
-          <pre className={styles['pre']}>
+        <div className={styles.container}>
+          <pre className={styles.pre}>
             {
               isFetching ?
                 'Fetching...'
-              :
-              JSON.stringify(data ?? error, undefined, 2)
+                :
+                JSON.stringify(data ?? error, undefined, 2)
             }
           </pre>
         </div>

@@ -15,7 +15,7 @@ import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
 
 export default function FAQ() {
-  const { data: faqs, isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
+  const { data: faqs, isFetching } = faqApi.useGetAllfaqsQuery();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
@@ -79,7 +79,7 @@ export default function FAQ() {
         addFaq={addFaqHandler}
       />
       <div className={style.body} >
-        <CustomizedCard>
+        <CustomizedCard borders className={style.card}>
           <CardHeader
             title={
               <div className={style.title}>
@@ -90,62 +90,58 @@ export default function FAQ() {
               </div>
             }
           />
-          <Divider />
-          <CardContent className={style.scrollBarContainer}>
-            {isLoading
-              ? <div className={style.preloadevBody}>
-                <CircularProgress size={100} />
-              </div>
-              : <div className={style.scrollBarContainer}>
-                <PerfectScrollbar className={style.scrollBar}>
-                  <Grid item xs={12}>
-                    {
-                      faqs?.map(item =>
-                        <div key={item.ID}>
-                          {faqs?.indexOf(item) !== 0 && <Divider/>}
-                          <div className={style.faqList}>
-                            <Accordion
-                              expanded={expanded === `panel${item.ID}`}
-                              onChange={handleChange(`panel${item.ID}`)}
-                              className={style.accordion}
+          <CardContent>
+            <div className={style.scrollBarContainer}>
+              <PerfectScrollbar className={style.scrollBar}>
+                <Grid item xs={12}>
+                  {
+                    faqs?.map(item =>
+                      <div key={item.ID}>
+                        {faqs?.indexOf(item) !== 0 && <Divider/>}
+                        <div className={style.faqList}>
+                          <Accordion
+                            expanded={expanded === `panel${item.ID}`}
+                            onChange={handleChange(`panel${item.ID}`)}
+                            className={style.accordion}
+                          >
+                            <AccordionSummary
+                              expandIcon={<ExpandMoreIcon />}
+                              aria-controls="panel1a-content"
+                              id="panel1a-header"
                             >
-                              <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                              >
-                                <Typography variant="h4">
-                                  <ReactMarkdown>
-                                    {item.USR$QUESTION}
-                                  </ReactMarkdown>
-                                </Typography>
-                              </AccordionSummary>
-                              <AccordionDetails className={style.answerField}>
-                                <Typography variant="body1">
-                                  <ReactMarkdown >
-                                    {item.USR$ANSWER}
-                                  </ReactMarkdown>
-                                </Typography>
-                              </AccordionDetails>
-                            </Accordion>
-                            {/* <div>
+                              <ReactMarkdown>
+                                {
+                                  item.USR$QUESTION
+                                }
+                              </ReactMarkdown>
+                            </AccordionSummary>
+                            <AccordionDetails className={style.answerField}>
+                              <ReactMarkdown >
+                                {
+                                  item.USR$ANSWER
+                                }
+                              </ReactMarkdown>
+                            </AccordionDetails>
+                          </Accordion>
+                          <div>
                             <IconButton
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading || isFetching}
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                               className={style.changeButton}
                               onClick={handleOpenEditPopup(item)}
+                              aria-label="Изменить"
                             >
-                              <EditIcon fontSize="small" />
+                              <EditIcon />
                             </IconButton>
-                          </div> */}
                           </div>
                         </div>
-                      )
-                    }
-                  </Grid>
-                </PerfectScrollbar>
-              </div>
-            }
+                      </div>
+                    )
+                  }
+                </Grid>
+              </PerfectScrollbar>
+            </div>
           </CardContent>
         </CustomizedCard>
-
       </div>
     </>
   );

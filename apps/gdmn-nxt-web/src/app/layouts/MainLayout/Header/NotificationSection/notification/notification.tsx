@@ -112,7 +112,7 @@ export function Notification(props: NotificationProps) {
   // console.log('Notification');
 
   useEffect(() => {
-    socketClient?.on('messages', (data: IMessage[]) => {
+    socketClient?.on?.('messages', (data: IMessage[]) => {
       setMessages(data);
     });
   }, [socketClient]);
@@ -236,11 +236,11 @@ export function Notification(props: NotificationProps) {
                         alignItems="center"
                         justifyContent="center"
                         spacing={1}
-                      >
+                        >
                         {/* <Icon fontSize="large">
                           <NotificationsOffOutlinedIcon fontSize="large" color="action" />
                         </Icon> */}
-                        <img src={logo} alt="" draggable={false} width="150" color='red' />
+                        <img src={logo} alt="" draggable={false} width="150" color="red" />
                         <Typography variant="h4" color={'GrayText'}>Пока нет уведомлений</Typography>
                       </Stack>}
                   </Stack>
