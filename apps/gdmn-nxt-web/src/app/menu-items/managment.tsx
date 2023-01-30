@@ -11,11 +11,24 @@ const managment: IMenuItem = {
   type: 'group',
   children: [
     {
-      id: 'deals',
+      id: 'dealsGroup',
       title: 'Сделки',
-      type: 'item',
-      url: 'managment/deals',
-      icon: <WorkIcon color="secondary" />
+      type: 'collapse',
+      icon: <WorkIcon color="secondary" />,
+      children: [
+        {
+          id: 'deals',
+          title: 'Список',
+          type: 'item',
+          url: 'managment/deals/list',
+        },
+        {
+          id: 'dealSources',
+          title: 'Источники заявок',
+          type: 'item',
+          url: 'managment/deals/dealSources',
+        },
+      ]
     },
     {
       id: 'customers',
@@ -38,27 +51,6 @@ const managment: IMenuItem = {
       url: 'managment/labels',
       icon: <LabelIcon color="secondary" />,
     },
-    // {
-    //   id: 'permissions',
-    //   title: 'Настройка прав',
-    //   type: 'collapse',
-    //   checkAction: 8,
-    //   icon: <AdminPanelSettingsIcon color="secondary" />,
-    //   children: [
-    //     {
-    //       id: 'permissions-view',
-    //       title: 'Действия',
-    //       type: 'item',
-    //       url: 'permissions/list'
-    //     },
-    //     {
-    //       id: 'permissions-usergroups',
-    //       title: 'Группы пользователей',
-    //       type: 'item',
-    //       url: 'permissions/usergroups'
-    //     }
-    //   ]
-    // }
   ]
 };
 

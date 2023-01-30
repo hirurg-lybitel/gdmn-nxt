@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useMemo, useState } from 'react';
 import { toggleMenu } from '../../../store/settingsSlice';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { CircularIndeterminate } from '../../../components/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
@@ -61,48 +61,48 @@ const cardDateFilter = [
 export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IKanbanCard) => {
   const changesArr: IChanges[] = [];
 
-  const deal = newCard['DEAL'];
-  const contact = newCard['DEAL']['CONTACT'] || {};
-  const performer = newCard['DEAL']['PERFORMER'] || {};
+  const deal = newCard.DEAL;
+  const contact = newCard.DEAL.CONTACT || {};
+  const performer = newCard.DEAL.PERFORMER || {};
 
-  if ((deal['USR$AMOUNT'] || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
+  if ((deal.USR$AMOUNT || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Сумма',
       oldValue: Number(oldCard.DEAL?.USR$AMOUNT) || 0,
-      newValue: deal['USR$AMOUNT'] || 0
+      newValue: deal.USR$AMOUNT || 0
     });
   }
-  if (contact['ID'] !== oldCard.DEAL?.CONTACT?.ID) {
+  if (contact.ID !== oldCard.DEAL?.CONTACT?.ID) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Клиент',
       oldValue: oldCard.DEAL?.CONTACT?.NAME,
-      newValue: contact['NAME']
+      newValue: contact.NAME
     });
   };
-  if (deal['USR$NAME'] !== oldCard.DEAL?.USR$NAME) {
+  if (deal.USR$NAME !== oldCard.DEAL?.USR$NAME) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Наименование',
       oldValue: oldCard.DEAL?.USR$NAME,
-      newValue: deal['USR$NAME']
+      newValue: deal.USR$NAME
     });
   };
-  if (performer['ID'] !== oldCard.DEAL?.PERFORMER?.ID) {
+  if (performer.ID !== oldCard.DEAL?.PERFORMER?.ID) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Исполнитель',
       oldValue: oldCard.DEAL?.PERFORMER?.NAME,
-      newValue: performer['NAME']
+      newValue: performer.NAME
     });
   };
-  if (newCard['USR$MASTERKEY'] !== oldCard.USR$MASTERKEY) {
+  if (newCard.USR$MASTERKEY !== oldCard.USR$MASTERKEY) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Этап',
       oldValue: columns.find(column => column.ID === oldCard.USR$MASTERKEY)?.USR$NAME || '',
-      newValue: columns.find(column => column.ID === newCard['USR$MASTERKEY'])?.USR$NAME || ''
+      newValue: columns.find(column => column.ID === newCard.USR$MASTERKEY)?.USR$NAME || ''
     });
   };
 
@@ -126,13 +126,13 @@ export function Deals(props: DealsProps) {
   const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery({
     userId: user.userProfile?.id || -1,
     filter: {
-      deadline: kanbanFilter['deadline']?.ID,
+      deadline: kanbanFilter.deadline?.ID,
       ...filteringData,
     }
   });
 
   useEffect(() => {
-    setFilteringData(filtersStorage.filterData['deals']);
+    setFilteringData(filtersStorage.filterData.deals);
   }, []);
 
   useEffect(() => {
@@ -174,14 +174,14 @@ export function Deals(props: DealsProps) {
       onFilteringDataChange={filterHandlers.filteringDataChange}
       onFilterClear={filterHandlers.filterClear}
     />,
-    [openFilters, filteringData])
+  [openFilters, filteringData]);
 
   const Header = useMemo(() => {
     return (
       <>
         <CustomizedCard
           borders
-          className={styles['headerCard']}
+          className={styles.headerCard}
         >
           <Autocomplete
             style={{
@@ -191,7 +191,7 @@ export function Deals(props: DealsProps) {
             disableClearable
             getOptionLabel={option => option.name}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            value={kanbanFilter['deadline'] || null}
+            value={kanbanFilter.deadline || null}
             onChange={(e, value) => setKanbanFilter({ deadline: value })}
             renderOption={(props, option, { selected }) => (
               <li {...props} key={option.ID}>
@@ -221,11 +221,11 @@ export function Deals(props: DealsProps) {
         </CustomizedCard>
         <CustomizedCard
           borders
-          className={styles['switchViewCard']}
+          className={styles.switchViewCard}
         >
           <BottomNavigation
             value={tabNo}
-            className={styles['bottomNavigation']}
+            className={styles.bottomNavigation}
             onChange={(e, newValue: number) => {
               setTabNo(newValue);
             }}
@@ -239,8 +239,9 @@ export function Deals(props: DealsProps) {
           </BottomNavigation>
         </CustomizedCard>
       </>
-    );}
-  , [kanbanFilter['deadline'], tabNo, filteringData, columnsIsFetching]);
+    );
+  }
+  , [kanbanFilter.deadline, tabNo, filteringData, columnsIsFetching]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} />, [columns]);
 
@@ -248,7 +249,7 @@ export function Deals(props: DealsProps) {
 
   if (isLoading) {
     return (
-      <div className={styles['loadingContainer']}>
+      <div className={styles.loadingContainer}>
         <CircularIndeterminate open={isLoading} size={100} />
       </div>
     );
@@ -263,7 +264,7 @@ export function Deals(props: DealsProps) {
     >
       {Header}
       {DealsFilterMemo}
-      <div className={styles['dataContainer']}>
+      <div className={styles.dataContainer}>
         {(() => {
           switch (tabNo) {
             case 0:

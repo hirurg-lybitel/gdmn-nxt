@@ -37,7 +37,7 @@ router.delete('/tasks/:id', tasks.remove);
 
 router.get('/denyreasons', denyReasons.get);
 
-/**Справочник источников сделки */
+/** Справочник источников сделки */
 router.get('/dealsource', sourceCatalog.get);
 router.post('/dealsource', sourceCatalog.upsert);
 router.put('/dealsource/:id', sourceCatalog.upsert);

@@ -122,7 +122,8 @@ const get: RequestHandler = async (req, res) => {
             performer.NAME AS PERFORMER_NAME,
             creator.ID AS CREATOR_ID,
             creator.NAME AS CREATOR_NAME,
-            deal.USR$SOURCE,
+            source.ID AS SOURCE_ID,
+            source.USR$NAME AS SOURCE_NAME,
             deal.USR$DEADLINE,
             deal.USR$DONE,
             deal.USR$READYTOWORK,
@@ -145,6 +146,7 @@ const get: RequestHandler = async (req, res) => {
             LEFT JOIN GD_CONTACT performer ON performer.ID = deal.USR$PERFORMER
             LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
             LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
+            LEFT JOIN USR$CRM_DEALS_SOURCE source ON source.ID = deal.USR$SOURCEKEY
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
@@ -219,7 +221,12 @@ const get: RequestHandler = async (req, res) => {
           USR$CONTACTKEY: el['DEAL_$CONTACTKEY'],
           USR$AMOUNT: el['DEAL_USR$AMOUNT'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$SOURCE: el['USR$SOURCE'],
+          ...(el['SOURCE_ID'] && {
+            SOURCE: {
+              ID: el['SOURCE_ID'],
+              NAME: el['SOURCE_NAME']
+            }
+          }),
           ...(el['CON_ID'] && {
             CONTACT: {
               ID: el['CON_ID'],

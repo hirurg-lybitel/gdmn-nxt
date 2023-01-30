@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setError } from '../../../features/error-slice/error-slice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { compareCards, IChanges } from '../../../pages/Dashboard/deals/deals';
+import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 
 // export interface IChanges {
 //   id: number;

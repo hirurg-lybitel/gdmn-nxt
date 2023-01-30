@@ -5,7 +5,7 @@ import { acquireReadTransaction, startTransaction } from '../../utils/db-connect
 import { genId } from '../../utils/genId';
 
 const get: RequestHandler = async (req, res) => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction('444' + req.sessionID);
 
   try {
     const _schema = {};
@@ -15,14 +15,13 @@ const get: RequestHandler = async (req, res) => {
       query: `
         SELECT
           ID,
-          USR$NAME
+          USR$NAME NAME
         FROM USR$CRM_DEALS_SOURCE`
     };
 
-
     const result: IRequestResult = {
       queries: {
-        dealSources: [ ... await fetchAsObject(query.query) ]
+        dealSources: [... await fetchAsObject(query.query)]
       },
       _schema
     };
@@ -65,7 +64,7 @@ const upsert: RequestHandler = async(req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        dealSources: [ ... await fetchAsObject(sql, { ID, NAME }) ]
+        dealSources: [... await fetchAsObject(sql, { ID, NAME })]
       },
       _schema
     };
@@ -76,7 +75,6 @@ const upsert: RequestHandler = async(req, res) => {
   } finally {
     await releaseTransaction();
   }
-
 };
 
 const remove: RequestHandler = async(req, res) => {
