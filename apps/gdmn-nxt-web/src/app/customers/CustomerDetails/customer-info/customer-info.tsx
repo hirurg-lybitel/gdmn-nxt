@@ -8,7 +8,7 @@ import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi'
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import { useMemo } from 'react';
-import CircularIndeterminate from '../../../components/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 
 
 type Requisites = IBusinessProcess[] & IContactWithID[] & ICustomerContract[] & IWorkType[] & string;
