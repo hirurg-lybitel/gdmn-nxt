@@ -48,10 +48,11 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query }) => {
-      // const aTime = new Date().getTime();
+      const startTime = new Date().getTime();
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
-      // console.log(`contacts ${name} fetch time ${new Date().getTime() - aTime} ms`);
+      const endTime = new Date().getTime();
+      console.log(`${name} fetch time ${endTime- startTime} ms`);
       await rs.close();
 
       return data as any;
@@ -165,7 +166,12 @@ export const getContacts: RequestHandler = async (req, res) => {
       // }
     ];
 
+    let startTime = new Date().getTime();
     const [rawFolders, rawContacts, rawLabels, rawBusinessProcesses, rowCount] = await Promise.all(queries.map(execQuery));
+
+    let endTime = new Date().getTime();
+
+    console.log(`promise time: ${endTime - startTime} ms`);
 
     // const [rawContacts] = await Promise.all(queries.map(execQuery));
     // const rawContacts = await Promise.resolve(execQuery(q[2]));
@@ -332,7 +338,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
     };
 
     const query = {
-      name: 'contacts',
+      name: 'contact',
       query: `
         EXECUTE BLOCK(
           in_ID  TYPE OF COLUMN GD_CONTACT.ID = ?,
@@ -472,13 +478,23 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
 };
 
 const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabelsContact[]): Promise<ILabelsContact[]> => {
+  const { attachment, transaction } = firebirdPropsL;
+
   if (!labels || labels?.length === 0) {
+    try {
+      const sql = `
+        DELETE FROM USR$CRM_CONTACT_LABELS
+        WHERE USR$CONTACTKEY = ?` ;
+
+      await attachment.execute(transaction, sql, [contactId])
+
+    } catch (error) {
+      console.error('upsertLabels', error);
+    }
     return [];
   };
 
   const contactLabels = labels.map(label => ({ CONTACT: contactId, LABELKEY: label.ID }));
-
-  const { attachment, transaction } = firebirdPropsL;
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
@@ -532,7 +548,7 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
 
     return records as ILabelsContact[];
   } catch (error) {
-    console.log('catch', error);
+    console.log('upsertLabels', error);
 
     return;
   } finally {
@@ -693,11 +709,21 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
 };
 
 const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, businessProcesses: IBusinessProcess[]) => {
+  const { attachment, transaction } = firebirdPropsL;
+
   if (!businessProcesses || businessProcesses?.length === 0) {
+    try {
+      const sql = `
+        DELETE FROM USR$CROSS1242_1980093301
+        WHERE USR$GD_CONTACTKEY = ?` ;
+
+      await attachment.execute(transaction, sql, [contactId])
+
+    } catch (error) {
+      console.error('upsertBusinessProcesses', error);
+    }
     return [];
   };
-
-  const { attachment, transaction } = firebirdPropsL;
 
   try {
     const params = businessProcesses.map(bp => ({ contactId, businessProcessId: bp.ID }));
@@ -729,6 +755,6 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
 
     return records;
   } catch (error) {
-    console.error('catch', error);
+    console.error('upsertBusinessProcesses', error);
   };
 };
