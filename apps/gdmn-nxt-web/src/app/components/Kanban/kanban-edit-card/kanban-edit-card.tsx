@@ -48,13 +48,16 @@ import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import filterOptions from '../../helpers/filter-options';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
+// import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
 import AlarmIcon from '@mui/icons-material/Alarm';
 import SnoozeIcon from '@mui/icons-material/Snooze';
 import ClockIcon from '@mui/icons-material/AccessTime';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DealSourcesSelect } from './components/deal-sources-select';
 import { CustomerSelect } from './components/customer-select';
+import styles from './kanban-edit-card.module.less';
+import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
+import { DenyReasonsSelect } from './components/deny-reasons-select';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -127,7 +130,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { isFetching: customerFetching } = useGetCustomersQuery();
   const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
-  const { data: denyReasons, isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
+  const { isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
 
   const refComment = useRef<null | HTMLDivElement>(null);
 
@@ -332,7 +335,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={deleting ? 'Удаление' : 'Сохранение'}
+      title={deleting ? 'Удаление сделки' : 'Сохранение сделки'}
       text="Вы уверены, что хотите продолжить?"
       dangerous={deleting}
       confirmClick={handleConfirmOkClick}
@@ -350,7 +353,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       onClose={onClose}
     >
       <DialogTitle>
-        {formik.values.ID > 0 ? `Редактирование ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
+        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
@@ -601,21 +604,27 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               />
                               : <></>
                             }
-                            {(formik.values.USR$MASTERKEY === stages[3].ID || formik.values.USR$MASTERKEY === stages[4].ID) ?
+                            {/* {(formik.values.USR$MASTERKEY === stages[3].ID || formik.values.USR$MASTERKEY === stages[4].ID) ? */}
+                            {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
                                     checked={formik.values.DEAL?.DENIED}
                                     onChange={(e) => {
-                                      const value = e.target.checked;
+                                      const checked = e.target.checked;
                                       formik.setFieldValue(
                                         'DEAL',
-                                        { ...formik.values.DEAL, DENIED: value }
+                                        { ...formik.values.DEAL, DENIED: checked }
                                       );
-                                      formik.setFieldValue(
-                                        'USR$MASTERKEY',
-                                        value ? stages[4].ID : stages[3].ID
-                                      );
+                                      const newMasterKey = (() => {
+                                        if (checked) return stages[4].ID;
+                                        if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
+                                        if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
+                                        if (formik.values.DEAL?.PERFORMER) return stages[1].ID;
+                                        return stages[0].ID;
+                                      })();
+                                      formik.setFieldValue('USR$MASTERKEY', newMasterKey);
+                                      if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
                                     }}
                                   />
                                 }
@@ -629,39 +638,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
                         {formik.values.DEAL?.DENIED &&
                           <Stack flex={1} spacing={3}>
-                            <Autocomplete
-                              options={denyReasons || []}
-                              getOptionLabel={option => option.NAME}
-                              value={denyReasons?.find(el => el.ID === formik.values.DEAL?.DENYREASON?.ID) || null}
-                              loading={denyReasonsIsFetching}
-                              loadingText="Загрузка данных..."
-                              // onOpen={formik.handleBlur}
-                              onChange={(event, value) => {
-                                formik.setFieldValue(
-                                  'DEAL',
-                                  { ...formik.values.DEAL, DENYREASON: value ? value : null }
-                                );
-                              }}
-                              renderOption={(props, option) => {
-                                return (
-                                  <li {...props} key={option.ID}>
-                                    {option.NAME}
-                                  </li>
-                                );
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Причина отказа"
-                                  autoFocus
-                                  required
-                                  placeholder="Выберите причину отказа"
-                                  name="DEAL.DENYREASON"
-                                  error={getIn(formik.touched, 'DEAL.DENYREASON') && Boolean(getIn(formik.errors, 'DEAL.DENYREASON'))}
-                                  helperText={getIn(formik.touched, 'DEAL.DENYREASON') && getIn(formik.errors, 'DEAL.DENYREASON')}
-                                />
-                              )}
-                            />
+                            <DenyReasonsSelect formik={formik} />
                             <TextField
                               label="Комментарий"
                               ref={refComment}
@@ -730,10 +707,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           </FormikProvider>
         </PerfectScrollbar>
       </DialogContent>
-      <DialogActions style={{ display: 'flex' }}>
+      <DialogActions className={styles.DialogActions}>
         <PermissionsGate actionCode={4}>
           {
-            card?.DEAL &&
+            (card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
             <IconButton onClick={handleDeleteClick} size="small" hidden>
               <DeleteIcon />
             </IconButton>

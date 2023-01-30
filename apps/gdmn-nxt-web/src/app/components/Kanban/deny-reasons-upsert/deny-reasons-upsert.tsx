@@ -1,5 +1,5 @@
-import styles from './deal-source-upsert.module.less';
-import { IDealSource } from '@gsbelarus/util-api-types';
+import styles from './deny-reasons-upsert.module.less';
+import { IDenyReason } from '@gsbelarus/util-api-types';
 import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,31 +8,31 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-export interface DealSourceUpsertProps {
+export interface DenyReasonsUpsertProps {
   open: boolean;
-  dealSource?: IDealSource;
-  onSubmit: (dealSource: IDealSource) => void;
+  denyReason?: IDenyReason;
+  onSubmit: (denyReason: IDenyReason) => void;
   onCancel: () => void;
   onDelete?: (id: number) => void;
 }
 
-export function DealSourceUpsert(props: DealSourceUpsertProps) {
-  const { open, dealSource } = props;
+export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
+  const { open, denyReason } = props;
   const { onSubmit, onCancel, onDelete } = props;
 
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const initValue: IDealSource = {
-    ID: dealSource?.ID || 0,
-    NAME: dealSource?.NAME || '',
+  const initValue: IDenyReason = {
+    ID: denyReason?.ID || 0,
+    NAME: denyReason?.NAME || '',
   };
 
-  const formik = useFormik<IDealSource>({
+  const formik = useFormik<IDenyReason>({
     enableReinitialize: true,
     validateOnBlur: false,
     initialValues: {
-      ...dealSource,
+      ...denyReason,
       ...initValue
     },
     validationSchema: yup.object().shape({
@@ -88,7 +88,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={deleting ? 'Удаление причины отказа' : 'Сохранение'}
+      title={deleting ? 'Удаление источника' : 'Сохранение'}
       text="Вы уверены, что хотите продолжить?"
       dangerous={deleting}
       confirmClick={handleConfirmOkClick(deleting)}
@@ -103,11 +103,11 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
       width={500}
     >
       <DialogTitle>
-        {dealSource ? `Редактирование: ${dealSource.NAME}` : 'Добавление причины отказа'}
+        {denyReason ? `Редактирование: ${denyReason.NAME}` : 'Добавление источника'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
-          <Form id="dealSource" onSubmit={formik.handleSubmit}>
+          <Form id="denyReason" onSubmit={formik.handleSubmit}>
             <TextField
               label="Наименование"
               type="text"
@@ -128,7 +128,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
         {
-          dealSource &&
+          denyReason &&
           <IconButton onClick={handleDeleteClick} size="small" hidden>
             <DeleteIcon />
           </IconButton>
@@ -145,7 +145,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
         <Button
           className={styles.Button}
           type="submit"
-          form="dealSource"
+          form="denyReason"
           variant="contained"
         >
              Сохранить
@@ -156,4 +156,4 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
   );
 }
 
-export default DealSourceUpsert;
+export default DenyReasonsUpsert;

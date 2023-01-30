@@ -54,7 +54,8 @@ import menuItems from './app/menu-items';
 import { setActiveMenu, setPageIdFound } from './app/store/settingsSlice';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
 import { IMenuItem } from './app/menu-items';
-import DealSources from './app/pages/Managment/dealsGroup/deal-sources/deal-sources';
+import DealSources from './app/pages/Managment/dealsCatalogs/deal-sources/deal-sources';
+import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-reasons';
 
 registerMUI();
 
@@ -128,6 +129,7 @@ const Main = () => {
                               <Route path="deals">
                                 <Route path="list" element={<Deals />} />
                                 <Route path="dealSources" element={<DealSources />} />
+                                <Route path="denyReasons" element={<DenyReasons />} />
                               </Route>
                               <Route path="customers" >
                                 <Route path="" element={<NotFound/>} />

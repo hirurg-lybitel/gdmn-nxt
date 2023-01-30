@@ -28,6 +28,12 @@ const managment: IMenuItem = {
           type: 'item',
           url: 'managment/deals/dealSources',
         },
+        {
+          id: 'denyReasons',
+          title: 'Причины отказа',
+          type: 'item',
+          url: 'managment/deals/denyReasons',
+        },
       ]
     },
     {

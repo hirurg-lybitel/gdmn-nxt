@@ -17,9 +17,12 @@ const useStyles = makeStyles<Theme, StyleProps>((theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: ({width}) => width,
+    width: ({ width }) => width,
     borderTopRightRadius: 0,
-    borderBottomRightRadius: 0
+    borderBottomRightRadius: 0,
+    '& .MuiDialogActions-root': {
+      padding: '12px 24px 12px 16px'
+    }
   },
 }));
 
@@ -33,10 +36,10 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-/* eslint-disable-next-line */
+
 export interface CustomizedDialogProps {
   open: boolean;
-  onClose?: (event: {}, reason: "backdropClick" | "escapeKeyDown") => void;
+  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
   children: ReactNode;
   width?: number | string;
 }
@@ -44,15 +47,13 @@ export interface CustomizedDialogProps {
 
 function CustomizedDialog(props: CustomizedDialogProps) {
   const { children, open, onClose } = props;
-  const { width=500 } = props;
+  const { width = 500 } = props;
 
   const styles = {
     width: width
-  }
+  };
 
   const classes = useStyles(styles);
-
-
 
   return (
     <Dialog
@@ -65,7 +66,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
     >
       {children}
     </Dialog>
-  )
+  );
 }
 
 

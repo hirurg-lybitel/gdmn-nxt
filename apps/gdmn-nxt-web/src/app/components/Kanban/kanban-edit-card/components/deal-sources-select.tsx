@@ -83,7 +83,6 @@ export function DealSourcesSelect(props: DealSourcesSelectProps) {
             {...params}
             label="Источник"
             placeholder={`${insertDealSourceIsLoading ? 'Создание...' : 'Выберите источник'}`}
-            required
             name="DEAL.SOURCE"
             error={getIn(formik.touched, 'DEAL.SOURCE') && Boolean(getIn(formik.errors, 'DEAL.SOURCE'))}
             helperText={getIn(formik.touched, 'DEAL.SOURCE') && getIn(formik.errors, 'DEAL.SOURCE')}
