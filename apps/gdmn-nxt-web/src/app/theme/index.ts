@@ -40,7 +40,7 @@ export const theme = (customization: ICustomization) => {
     : {
       backgroundColor: colors.grey[900],
       backgroundDefault: colors.blueGrey[900],
-      backgroundSecond: colors.blueGrey[300],
+      backgroundSecond: colors.blue[300],
       textColor: colors.common.white,
       secondaryColor: colors.grey[300],
       headColor: colors.grey[300],

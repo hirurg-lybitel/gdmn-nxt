@@ -202,6 +202,7 @@ export function ChartColumn(props: ChartColumnProps) {
       verticalAlign: 'middle',
       style: {
         fontSize: '20px',
+        color: theme.textColor
       }
     },
     xaxis: {

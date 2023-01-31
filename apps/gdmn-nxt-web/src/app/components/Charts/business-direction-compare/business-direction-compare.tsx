@@ -155,6 +155,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       align: 'center',
       verticalAlign: 'middle',
       style: {
+        color: theme.textColor,
         fontSize: '20px',
       }
     },

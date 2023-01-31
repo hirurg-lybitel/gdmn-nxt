@@ -54,10 +54,10 @@ import { setActiveMenu, setPageIdFound, setStyleMode } from './app/store/setting
 import Analytics from './app/pages/Dashboard/analytics/analytics';
 import { IMenuItem } from './app/menu-items';
 import { useState } from 'react';
-import { themeApi } from './app/features/theme/themeApi';
 import { UserState } from './app/features/user/userSlice';
 import { userInfo } from 'os';
 import { join } from 'path';
+import { useGetProfileSettingsQuery } from './app/features/profileSettings';
 
 registerMUI();
 
@@ -71,29 +71,17 @@ const Main = () => {
   const themeStyles = useTheme();
   const user = useSelector<RootState, UserState>(state => state.user);
   const userId = user.userProfile?.id;
-  const { data: themeType, isFetching } = themeApi.useGetThemeQuery(userId, { skip: !userId });
-  console.log(themeType);
+  const { data: Profilesettings, isFetching } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
+  const themeType = Profilesettings?.MODE;
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
   useEffect(()=>{
-    const localMode = localStorage.getItem('mode');
-    if (themeType) {
-      if (themeType === 'dark') {
-        dispatch(setStyleMode('dark'));
-        localStorage.setItem('mode', 'dark');
-      } else {
-        dispatch(setStyleMode('light'));
-        localStorage.setItem('mode', 'light');
-      }
-    } else {
-      if (!localMode || localMode === 'dark') {
-        dispatch(setStyleMode('dark'));
-      } else {
-        dispatch(setStyleMode('light'));
-      }
+    if (!themeType || themeType !== 'dark') {
+      return;
     }
+    dispatch(setStyleMode('dark'));
   }, [themeType]);
 
   const pathName:string[] = window.location.pathname.split('/');

@@ -54,10 +54,10 @@ export default function StyledGrid(props: IStyledGridProps) {
       ...(hideHeaderSeparator && { display: 'none' })
     },
     '& .MuiDataGrid-pinnedColumnHeaders': {
-      background: theme.palette.mode === 'dark' ? theme.palette.background.paper : ''
+      background: theme.palette.background.paper
     },
     '& .MuiDataGrid-pinnedColumns': {
-      background: theme.palette.mode === 'dark' ? theme.palette.background.paper : ''
+      background: theme.palette.background.paper
     }
   });
   return (

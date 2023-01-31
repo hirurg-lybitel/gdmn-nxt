@@ -1,5 +1,4 @@
 import { faqApi } from './../features/FAQ/faqApi';
-import { themeApi } from './../features/theme/themeApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
@@ -69,7 +68,6 @@ export const store = configureStore({
     [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
     [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
     [faqApi.reducerPath]: faqApi.reducer,
-    [themeApi.reducerPath]: themeApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(contactApi.middleware)
@@ -98,7 +96,6 @@ export const store = configureStore({
     .concat(profileSettingsApi.middleware)
     .concat(errorMiddleware)
     .concat(faqApi.middleware)
-    .concat(themeApi.middleware)
 });
 
 setupListeners(store.dispatch);

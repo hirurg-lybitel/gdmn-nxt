@@ -89,7 +89,7 @@ export default function FAQ() {
                 <Typography variant="h3">
                   Часто задаваемые вопросы
                 </Typography>
-                <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+                {/* <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button> */}
               </div>
             }
           />
