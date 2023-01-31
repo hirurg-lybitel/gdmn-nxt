@@ -324,13 +324,6 @@ export const kanbanApi = createApi({
             : [{ type: 'Task', id: 'ERROR' }];
       }
 
-    }),
-    getDenyReasons: builder.query<IDenyReason[], void>({
-      query: (arg) => ({
-        url: 'kanban/denyreasons',
-        method: 'GET'
-      }),
-      transformResponse: (response: IDenyReasonRequestResult) => response.queries.denyReasons || []
     })
   })
 });
@@ -350,6 +343,5 @@ export const {
   useGetTasksQuery,
   useAddTaskMutation,
   useUpdateTaskMutation,
-  useDeleteTaskMutation,
-  useGetDenyReasonsQuery
+  useDeleteTaskMutation
 } = kanbanApi;

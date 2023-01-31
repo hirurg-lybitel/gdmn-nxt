@@ -2,7 +2,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useEffect } from 'react';
 import { useGetTopEarningQuery } from '../../../features/topEarning';
-import { CircularIndeterminate } from '../../circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '../../helpers/circular-indeterminate/circular-indeterminate';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import styles from './top-earning.module.less';
 

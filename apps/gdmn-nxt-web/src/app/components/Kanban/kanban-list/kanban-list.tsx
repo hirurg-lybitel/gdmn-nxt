@@ -12,7 +12,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { compareCards, IChanges } from '../../../pages/Dashboard/deals/deals';
+import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
@@ -31,7 +31,7 @@ export function KanbanList(props: KanbanListProps) {
   const [column, setColumn] = useState<IKanbanColumn>();
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
-  const [deleteCard, { isLoading: deleteIsLoading}] = useDeleteCardMutation();
+  const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
   const [addHistory] = useAddHistoryMutation();
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -98,7 +98,7 @@ export function KanbanList(props: KanbanListProps) {
       id: -1,
       fieldName: 'Сделка',
       oldValue: '',
-      newValue: (newCard as any)['DEAL']['USR$NAME'] || ''
+      newValue: (newCard as any).DEAL.USR$NAME || ''
     });
 
     insertCard(newCard);
@@ -107,7 +107,6 @@ export function KanbanList(props: KanbanListProps) {
   const cardHandlers = {
 
     handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
-      console.log('handleSubmit', deleting, card);
       if (deleting) {
         onDelete(card);
       } else {

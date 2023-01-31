@@ -68,7 +68,7 @@ export interface IDeal extends IWithID {
   CONTACT?: IContactWithID;
   PERFORMER?: IContactWithID;
   CREATOR?: IContactWithID;
-  USR$SOURCE?: string;
+  SOURCE?: IDealSource;
   USR$DEADLINE?: Date;
   USR$CONTACTKEY?: number;
   USR$DISABLED?: boolean;
@@ -231,4 +231,8 @@ export interface IDenyReason extends IWithID {
 
 export interface IBusinessProcess extends IWithID {
   NAME: string
+}
+
+export interface IDealSource extends IWithID {
+  NAME: string;
 }

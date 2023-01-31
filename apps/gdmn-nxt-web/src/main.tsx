@@ -27,7 +27,7 @@ import '@fontsource/roboto/700.css';
 import { CssBaseline } from '@mui/material';
 import StandardOrder from './app/standard-order/standard-order';
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
-import Deals from './app/pages/Dashboard/deals/deals';
+import Deals from './app/pages/Managment/deals/deals';
 import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
@@ -58,6 +58,8 @@ import { UserState } from './app/features/user/userSlice';
 import { userInfo } from 'os';
 import { join } from 'path';
 import { useGetProfileSettingsQuery } from './app/features/profileSettings';
+import DealSources from './app/pages/Managment/dealsCatalogs/deal-sources/deal-sources';
+import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-reasons';
 
 registerMUI();
 
@@ -132,8 +134,11 @@ const Main = () => {
                                 <Route path="analytics" element={<Analytics />} />
                               </Route>
                               <Route path="managment">
-                                <Route path="" element={<Navigate to="deals" />} />
-                                <Route path="deals" element={<Deals />} />
+                                <Route path="deals">
+                                  <Route path="list" element={<Deals />} />
+                                  <Route path="dealSources" element={<DealSources />} />
+                                  <Route path="denyReasons" element={<DenyReasons />} />
+                                </Route>
                                 <Route path="customers" >
                                   <Route path="" element={<NotFound/>} />
                                   <Route path="orders/list" element={<OrderList />} />

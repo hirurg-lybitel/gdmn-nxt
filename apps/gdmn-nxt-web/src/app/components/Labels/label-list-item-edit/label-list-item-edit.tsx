@@ -140,7 +140,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       >
 
         <DialogTitle>
-          {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление'}
+          {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
         </DialogTitle>
         <DialogContent dividers>
 

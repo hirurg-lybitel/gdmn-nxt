@@ -5,23 +5,18 @@ import { acquireReadTransaction, startTransaction } from '../../utils/db-connect
 import { genId } from '../../utils/genId';
 
 const get: RequestHandler = async (req, res) => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction('444' + req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
   try {
     const _schema = {};
 
-    const query = {
-      name: '',
-      query: `
-        SELECT
-          ID,
-          USR$NAME NAME
-        FROM USR$CRM_DEALS_SOURCE`
-    };
+    const sql = `
+      SELECT ID, USR$NAME NAME
+      FROM USR$CRM_DENY_REASONS`;
 
     const result: IRequestResult = {
       queries: {
-        dealSources: [... await fetchAsObject(query.query)]
+        denyReasons: [... await fetchAsObject(sql)]
       },
       _schema
     };
@@ -50,7 +45,7 @@ const upsert: RequestHandler = async(req, res) => {
     const _schema = {};
 
     const sql = `
-      UPDATE OR INSERT INTO USR$CRM_DEALS_SOURCE(ID, USR$NAME)
+      UPDATE OR INSERT INTO USR$CRM_DENY_REASONS(ID, USR$NAME)
       VALUES(:ID, :NAME)
       MATCHING(ID)
       RETURNING ID, USR$NAME`;
@@ -64,7 +59,7 @@ const upsert: RequestHandler = async(req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        dealSources: [... await fetchAsObject(sql, { ID, NAME })]
+        denyReasons: [... await fetchAsObject(sql, { ID, NAME })]
       },
       _schema
     };
@@ -94,10 +89,12 @@ const remove: RequestHandler = async(req, res) => {
       DECLARE VARIABLE SOURCE_ID INTEGER;
       BEGIN
         SUCCESS = 0;
-        FOR SELECT ID FROM USR$CRM_DEALS_SOURCE WHERE ID = :ID INTO :SOURCE_ID AS CURSOR curTASK
+        FOR
+          SELECT ID FROM USR$CRM_DENY_REASONS WHERE ID = :ID
+        INTO :SOURCE_ID AS CURSOR curRec
         DO
         BEGIN
-          DELETE FROM USR$CRM_DEALS_SOURCE WHERE CURRENT OF curTASK;
+          DELETE FROM USR$CRM_DENY_REASONS WHERE CURRENT OF curRec;
 
           SUCCESS = 1;
         END
@@ -118,4 +115,4 @@ const remove: RequestHandler = async(req, res) => {
     await releaseTransaction();
   };
 };
-export const sourceCatalog = { get, upsert, remove };
+export const denyReasons = { get, upsert, remove };

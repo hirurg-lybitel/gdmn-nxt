@@ -28,7 +28,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { IBusinessProcess, IContactWithLabels, ICustomer, ILabel, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { forwardRef, ReactElement, useCallback, useMemo, useState } from 'react';
+import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -92,6 +92,7 @@ const Transition = forwardRef(function Transition(
 
 export interface CustomerEditProps {
   open: boolean;
+  deleteable?: boolean;
   customer: ICustomer | null;
   onSubmit: (arg1: ICustomer, arg2: boolean) => void;
   onSaveClick?: () => void;
@@ -100,7 +101,7 @@ export interface CustomerEditProps {
 }
 
 export function CustomerEdit(props: CustomerEditProps) {
-  const { open, customer } = props;
+  const { open, deleteable = true, customer } = props;
   const { onCancelClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -131,7 +132,8 @@ export function CustomerEdit(props: CustomerEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string().required('').max(80, 'Слишком длинное наименование'),
+      NAME: yup.string().required('')
+        .max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string().matches(/@./),
       PARENT: yup.string().required('')
     }),
@@ -144,6 +146,10 @@ export function CustomerEdit(props: CustomerEditProps) {
       setConfirmOpen(false);
     },
   });
+
+  useEffect(() => {
+    if (!open) formik.resetForm();
+  }, [open]);
 
   const handleDeleteClick = () => {
     setDeleting(true);
@@ -197,7 +203,7 @@ export function CustomerEdit(props: CustomerEditProps) {
         <PerfectScrollbar style={{ padding: '16px 24px' }}>
           <Stack direction="column" spacing={3} style={{ flex: 1, display: 'flex' }}>
             <FormikProvider value={formik}>
-              <Form id="mainForm" onSubmit={formik.handleSubmit}>
+              <Form id="customerEdit" onSubmit={formik.handleSubmit}>
                 <TabContext value={tabIndex}>
                   <Box>
                     <TabList onChange={handleTabsChange}>
@@ -410,9 +416,12 @@ export function CustomerEdit(props: CustomerEditProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions>
-        <IconButton onClick={handleDeleteClick} size="large">
-          <DeleteIcon />
-        </IconButton>
+        {
+          customer && deleteable &&
+          <IconButton onClick={handleDeleteClick} size="small" hidden>
+            <DeleteIcon />
+          </IconButton>
+        }
         {/* <Button
           className={classes.button}
           variant="text"
@@ -434,7 +443,7 @@ export function CustomerEdit(props: CustomerEditProps) {
         <Button
           className={classes.button}
           type={!formik.isValid ? 'submit' : 'button'}
-          form="mainForm"
+          form="customerEdit"
           onClick={() => {
             setDeleting(false);
             setConfirmOpen(formik.isValid);

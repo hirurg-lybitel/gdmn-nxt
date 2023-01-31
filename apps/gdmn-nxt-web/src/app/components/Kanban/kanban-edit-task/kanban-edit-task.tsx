@@ -112,7 +112,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       };
       setConfirmOpen(false);
     },
-    isInitialValid: false,
+    validateOnMount: true,
   });
 
   const handleDeleteClick = () => {
@@ -139,9 +139,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     if (!date || !time) return;
 
     const timeString = time.getHours() + ':' + time.getMinutes() + ':00';
-
-    console.log('date', date);
-
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -241,13 +238,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       mask="__.__.____"
                       // onChange={formik.handleChange}
                       onChange={(value) => {
-                        console.log('date_value', value);
-
                         formik.setFieldValue('USR$DEADLINE', value);
-                        // formik.setFieldValue(
-                        //   'DEAL',
-                        //   { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
-                        // );
                       }}
                       renderInput={(params) => <TextField {...params} />}
                     />

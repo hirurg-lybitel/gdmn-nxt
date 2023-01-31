@@ -2,7 +2,7 @@ import { useMemo, Fragment, useEffect, useRef } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
 import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
-import { CircularIndeterminate } from '../components/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '../components/helpers/circular-indeterminate/circular-indeterminate';
 import { Box } from '@mui/material';
 
 const shortenName = (s: string) => {

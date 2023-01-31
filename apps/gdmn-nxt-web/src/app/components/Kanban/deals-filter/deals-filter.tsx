@@ -4,7 +4,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './deals-filter.module.less';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import filterOptions from '../../filter-options';
+import filterOptions from '../../helpers/filter-options';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { useMemo } from 'react';
 import { ICustomer } from '@gsbelarus/util-api-types';

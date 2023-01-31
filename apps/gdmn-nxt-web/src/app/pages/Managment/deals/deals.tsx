@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useMemo, useState } from 'react';
 import { toggleMenu } from '../../../store/settingsSlice';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { CircularIndeterminate } from '../../../components/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';

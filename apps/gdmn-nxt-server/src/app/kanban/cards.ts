@@ -129,7 +129,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
-        USR$PERFORMER, USR$DEADLINE, USR$SOURCE, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
+        USR$PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
         USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
@@ -144,7 +144,7 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CREATOR?.ID || null,
       deal.PERFORMER?.ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
-      deal.USR$SOURCE,
+      deal.SOURCE?.ID || null,
       deal.USR$READYTOWORK || 0,
       deal.USR$DONE || 0,
       deal.DEPARTMENT?.ID || null,

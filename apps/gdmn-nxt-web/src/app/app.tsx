@@ -11,7 +11,7 @@ import { Button, Divider, Typography, Stack } from '@mui/material';
 import { SelectMode } from './select-mode/select-mode';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate } from 'react-router-dom';
-import { CircularIndeterminate } from './components/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { useGetCustomersQuery } from './features/customer/customerApi_new';
 import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
 import { InitData } from './store/initData';

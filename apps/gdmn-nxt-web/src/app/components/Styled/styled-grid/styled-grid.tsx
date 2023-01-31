@@ -17,9 +17,13 @@ export default function StyledGrid(props: IStyledGridProps) {
   const defaultTheme = ({ hideHeaderSeparator }: IStyledGridProps) => ({
     border: 'none',
     padding: '0px',
+    flex: 1,
     '& .MuiDataGrid-cell': {
       paddingLeft: '24px',
       paddingRight: '24px',
+    },
+    '& .MuiDataGrid-columnHeader:focus-within': {
+      outline: 'none !important',
     },
     '& .MuiDataGrid-cell:focus-within': {
       outline: 'none !important',

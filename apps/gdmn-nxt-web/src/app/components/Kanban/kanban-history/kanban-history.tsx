@@ -2,7 +2,7 @@ import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem
 import { Box, Stack, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import { useGetHistoryQuery } from '../../../features/kanban/kanbanApi';
-import CircularIndeterminate from '../../circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '../../helpers/circular-indeterminate/circular-indeterminate';
 
 
 export interface KanbanHistoryProps {
