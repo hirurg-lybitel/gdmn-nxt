@@ -221,7 +221,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return result;
   };
 
-  function onDragEnd(result: DropResult) {
+  const onDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) {
       return;
     };
@@ -308,7 +308,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         updateCard(moveCard);
       }
     }
-  };
+  }, [dragColumnsEnable, dragToColumnsEnable, columns]);
 
   const getDayDiff = useCallback((startDate: Date, endDate: Date) => {
     const msInDay = 24 * 60 * 60 * 1000;

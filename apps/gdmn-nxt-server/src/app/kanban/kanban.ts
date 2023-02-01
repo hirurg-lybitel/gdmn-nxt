@@ -114,7 +114,7 @@ const get: RequestHandler = async (req, res) => {
         name: 'cards',
         query:
           `SELECT
-            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
+            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY, card.USR$ISREAD,
             card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED,
             deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
             con.ID con_ID, con.NAME con_NAME,
@@ -133,6 +133,7 @@ const get: RequestHandler = async (req, res) => {
             deny.USR$NAME AS DENY_NAME,
             deal.USR$DENIED DENIED,
             deal.USR$COMMENT COMMENT,
+            deal.USR$DESCRIPTION DESCRIPTION,
             deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
             deal.USR$PRODUCTNAME AS PRODUCTNAME,
             deal.USR$CONTACT_NAME AS CONTACT_NAME,
@@ -150,7 +151,7 @@ const get: RequestHandler = async (req, res) => {
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$INDEX`
+          ORDER BY card.USR$MASTERKEY, USR$ISREAD, USR$INDEX`
       },
       {
         name: 'tasks',
@@ -267,8 +268,10 @@ const get: RequestHandler = async (req, res) => {
           CONTACT_EMAIL: el['CONTACT_EMAIL'],
           CONTACT_PHONE: el['CONTACT_PHONE'],
           CREATIONDATE: el['CREATIONDATE'],
+          DESCRIPTION: el['DESCRIPTION'],
         },
-        TASKS: tasks[el['ID']]
+        TASKS: tasks[el['ID']],
+        USR$ISREAD: el['USR$ISREAD'] === 1,
       };
 
       if (cards[el['USR$MASTERKEY']]) {

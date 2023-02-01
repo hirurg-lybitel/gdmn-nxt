@@ -1,15 +1,20 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
+import { DataGridPro, GridColDef, GridColumns, ruRU } from '@mui/x-data-grid-pro';
 import CustomNoRowsOverlay from '../../Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './kanban-tasks.module.less';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksQuery, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
+import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useGetTasksQuery, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import { useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { IChanges } from '../../../pages/Managment/deals/deals';
+import { useSelector } from 'react-redux';
+import { UserState } from '../../../features/user/userSlice';
+import { RootState } from '../../../store';
+import StyledGrid from '../../Styled/styled-grid/styled-grid';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {
@@ -45,7 +50,10 @@ const useStyles = makeStyles(() => ({
     },
     '& .MuiDataGrid-row': {
       maxHeight: 'none !important'
-    }
+    },
+    '& .MuiDataGrid-iconSeparator': {
+       display: 'none'
+    },
   },
 }));
 
@@ -61,9 +69,13 @@ export function KanbanTasks(props: KanbanTasksProps) {
   const [openEidtForm, setOpenEditForm] = useState(false);
 
   const { data: tasks, refetch, isFetching } = useGetTasksQuery(card?.ID || -1);
-  const [addTask] = useAddTaskMutation();
-  const [updateTask] = useUpdateTaskMutation();
-  const [deleteTask] = useDeleteTaskMutation();
+  const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
+  const [updateTask, { isSuccess: updatedTaskSuccess }] = useUpdateTaskMutation();
+  const [deleteTask, { isSuccess: deletedTaskSuccess }] = useDeleteTaskMutation();
+  const [addHistory] = useAddHistoryMutation();
+  const user = useSelector<RootState, UserState>(state => state.user);
+
+  const changes = useRef<IChanges[]>([]);
 
   const currentTask = useRef<IKanbanTask | undefined>();
 
@@ -71,13 +83,117 @@ export function KanbanTasks(props: KanbanTasksProps) {
     currentTask.current = task;
   };
 
+  useEffect(() => {
+    if ((updatedTaskSuccess) && changes.current.length > 0) {
+      changes.current.forEach(item =>
+        addHistory({
+          ID: -1,
+          USR$CARDKEY: card?.ID || -1,
+          USR$TYPE: '2',
+          USR$DESCRIPTION: item.fieldName,
+          USR$OLD_VALUE: item.oldValue?.toString() || '',
+          USR$NEW_VALUE: item.newValue?.toString() || '',
+          USR$USERKEY: user.userProfile?.id || -1
+        })
+      );
 
-  const handleClosedChange = (checked: boolean, row: any) => {
-    console.log(checked, row);
+      changes.current = [];
+    };
+  }, [updatedTaskSuccess]);
+
+  useEffect(() => {
+    if (addedTaskSuccess && addedTask) {
+      changes.current.forEach(item =>
+        addHistory({
+          ID: -1,
+          USR$CARDKEY: item.id,
+          USR$TYPE: '1',
+          USR$DESCRIPTION: item.fieldName,
+          USR$OLD_VALUE: item.oldValue?.toString() || '',
+          USR$NEW_VALUE: item.newValue?.toString() || '',
+          USR$USERKEY: user.userProfile?.id || -1
+        })
+      );
+
+      changes.current = [];
+    };
+  }, [addedTaskSuccess, addedTask]);
+
+  useEffect(() => {
+    if ((deletedTaskSuccess) && changes.current.length > 0) {
+      changes.current.forEach(item =>
+        addHistory({
+          ID: -1,
+          USR$CARDKEY: item.id,
+          USR$TYPE: '3',
+          USR$DESCRIPTION: item.fieldName,
+          USR$OLD_VALUE: item.oldValue?.toString() || '',
+          USR$NEW_VALUE: item.newValue?.toString() || '',
+          USR$USERKEY: user.userProfile?.id || -1
+        })
+      );
+
+      changes.current = [];
+    };
+  }, [deletedTaskSuccess]);
+
+  const compareTasks = useCallback((newTask: IKanbanTask, oldTask: IKanbanTask) => {
+    const changesArr: IChanges[] = [];
+
+    const creator = newTask.CREATOR;
+    const performer = newTask.PERFORMER;
+
+    if (creator?.ID !== oldTask.CREATOR?.ID) {
+      changesArr.push({
+        id: card?.ID || -1,
+        fieldName: `Постановщик задачи "${newTask.USR$NAME}"`,
+        oldValue: oldTask.CREATOR?.NAME,
+        newValue: creator?.NAME
+      });
+    };
+
+    if (performer?.ID !== oldTask?.PERFORMER?.ID) {
+      changesArr.push({
+        id: card?.ID || -1,
+        fieldName: `Исполнитель задачи "${newTask.USR$NAME}"`,
+        oldValue: oldTask?.PERFORMER?.NAME,
+        newValue: performer?.NAME
+      });
+    };
+
+    if (newTask.USR$NAME !== oldTask.USR$NAME) {
+      changesArr.push({
+        id: card?.ID || -1,
+        fieldName: 'Описание задачи',
+        oldValue: oldTask?.USR$NAME,
+        newValue: newTask?.USR$NAME
+      });
+    };
+
+    if ((newTask.USR$DEADLINE || -1) !== (oldTask.USR$DEADLINE || -1)) {
+      changesArr.push({
+        id: card?.ID || -1,
+        fieldName: `Срок выполнения задачи "${newTask.USR$NAME}"`,
+        oldValue: oldTask?.USR$DEADLINE ? new Date(oldTask?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+        newValue: newTask?.USR$DEADLINE ? new Date(newTask?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+      });
+    };
+
+    return changesArr;
+  }, [card]);
+
+  const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
     const newTask = { ...row, USR$CLOSED: checked };
 
+    changes.current.push({
+      id: newTask.ID,
+      fieldName: `Задача "${newTask.USR$NAME}"`,
+      oldValue: row.USR$CLOSED ? 'Выполнена' : 'Не выполнена',
+      newValue: newTask.USR$CLOSED ? 'Выполнена' : 'Не выполнена',
+    });
+
     updateTask(newTask);
-  };
+  }, []);
 
   const handleTaskEdit = ({ row }: any) => {
     setTask(row);
@@ -96,16 +212,31 @@ export function KanbanTasks(props: KanbanTasksProps) {
     };
 
     if (deleting) {
+      changes.current.push({
+        id: card?.ID || -1,
+        fieldName: 'Задача',
+        oldValue: newTask.USR$NAME || '',
+        newValue: newTask.USR$NAME || '',
+      });
       deleteTask(newTask.ID);
       setOpenEditForm(false);
       return;
     };
 
     if (newTask.ID > 0) {
+      changes.current = compareTasks(newTask, currentTask.current!);
+
       updateTask(newTask);
       setOpenEditForm(false);
       return;
     };
+
+    changes.current.push({
+      id: card?.ID || -1,
+      fieldName: 'Задача',
+      oldValue: '',
+      newValue: newTask.USR$NAME || '',
+    });
 
     addTask(newTask);
     setOpenEditForm(false);
@@ -115,9 +246,9 @@ export function KanbanTasks(props: KanbanTasksProps) {
     setOpenEditForm(false);
   };
 
-  const columns: GridColDef[] = [
+  const columns: GridColumns = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
-      renderCell: ({ value, row }) => <Checkbox checked={value} onChange={(e, checked) => handleClosedChange(checked, row)}/> },
+      renderCell: ({ value, row }) => <Checkbox checked={value} onChange={handleClosedChange(row)}/> },
     { field: 'USR$NAME', headerName: 'Описание', flex: 1, minWidth: 100,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
     },
@@ -148,7 +279,16 @@ export function KanbanTasks(props: KanbanTasksProps) {
     { field: 'CREATOR', headerName: 'Создатель', width: 130,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value?.NAME}</Box>
     },
-  ];
+  ], []);
+
+  const memoKanbanEditTask = useMemo(() =>
+    <KanbanEditTask
+      open={openEidtForm}
+      task={currentTask.current}
+      onSubmit={handleTaskEditSubmit}
+      onCancelClick={handleTaskEditCancelClick}
+    />,
+  [openEidtForm, currentTask.current]);
 
   return (
     <Stack
@@ -172,6 +312,14 @@ export function KanbanTasks(props: KanbanTasksProps) {
           flex: 1,
         }}
       >
+        {/* <StyledGrid
+          className={classes.dataGrid}
+          rows={tasks || []}
+          columns={columns}
+          loading={isFetching}
+          // rowHeight={80}
+          hideHeaderSeparator
+        /> */}
         <DataGridPro
           className={classes.dataGrid}
           localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
@@ -195,12 +343,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
           disableColumnPinning
         />
       </CustomizedCard>
-      <KanbanEditTask
-        open={openEidtForm}
-        task={currentTask.current}
-        onSubmit={handleTaskEditSubmit}
-        onCancelClick={handleTaskEditCancelClick}
-      />
+      {memoKanbanEditTask}
     </Stack>
   );
 }

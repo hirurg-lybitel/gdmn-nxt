@@ -1,7 +1,7 @@
 import './confirm-dialog.module.less';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide } from '@mui/material';
 import useStyles from './styles';
-import { forwardRef, ReactElement, Ref, useMemo } from 'react';
+import { forwardRef, ReactElement, Ref } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 
 const Transition = forwardRef(function Transition(
@@ -26,7 +26,7 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const { open, setOpen, onConfirm, text, title, dangerous = false } = props;
+  const { open, text, title, dangerous = false } = props;
   const { confirmClick, cancelClick } = props;
 
   const classes = useStyles();

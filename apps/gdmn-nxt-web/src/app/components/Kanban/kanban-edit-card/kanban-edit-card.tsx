@@ -58,6 +58,7 @@ import { CustomerSelect } from './components/customer-select';
 import styles from './kanban-edit-card.module.less';
 import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import { DenyReasonsSelect } from './components/deny-reasons-select';
+import { TabDescription } from './components/tab-descrption';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -74,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     maxWidth: '100%',
     minWidth: 400,
     borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
+    borderBottomRightRadius: 0
   },
   accordionTitle: {
     width: '33%',
@@ -379,6 +380,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <Tab label="Заявка" value="2" />
                       <Tab label="Задачи" value="3" />
                       <Tab label="Хронология" value="4" />
+                      <Tab label="Описание" value="5" />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -387,6 +389,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <TextField
                         label="Наименование"
                         type="text"
+                        multiline
+                        minRows={1}
                         required
                         fullWidth
                         autoFocus
@@ -700,6 +704,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       </PerfectScrollbar>
                     </CustomizedCard>
 
+                  </TabPanel>
+                  <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''}>
+                    <TabDescription formik={formik} />
                   </TabPanel>
                 </TabContext>
               </Stack>
