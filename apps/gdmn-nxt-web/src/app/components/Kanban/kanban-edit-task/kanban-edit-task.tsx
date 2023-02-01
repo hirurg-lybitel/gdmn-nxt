@@ -1,7 +1,7 @@
 import { Autocomplete, Box, Button, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Slide, Stack, TextField, Typography } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
-import { forwardRef, ReactElement, Ref, useCallback, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useMemo, useState } from 'react';
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
@@ -16,6 +16,7 @@ import { DesktopDatePicker, LocalizationProvider, TimePicker } from '@mui/x-date
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import ruLocale from 'date-fns/locale/ru';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -102,7 +103,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       ...initValue,
     },
     validationSchema: yup.object().shape({
-      USR$NAME: yup.string().required('').max(80, 'Слишком длинное описание'),
+      USR$NAME: yup.string().required('')
+        .max(80, 'Слишком длинное описание'),
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -120,11 +122,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     setConfirmOpen(true);
   };
 
-  const handleCancelClick = () => {
+  const handleCancelClick = useCallback(() => {
     setDeleting(false);
     formik.resetForm();
     onCancelClick();
-  };
+  }, [formik, onCancelClick]);
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
@@ -134,6 +136,10 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
   }, []);
+
+  const handleClose = useCallback((e: any, reason: string) => {
+    if (reason === 'backdropClick') handleCancelClick();
+  }, [handleCancelClick]);
 
   function combineDateAndTime(date?: Date, time?: Date) {
     if (!date || !time) return;
@@ -148,11 +154,22 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     return combined;
   };
 
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={deleting ? 'Удаление задачи' : 'Сохранение'}
+      text="Вы уверены, что хотите продолжить?"
+      dangerous={deleting}
+      confirmClick={handleConfirmOkClick}
+      cancelClick={handleConfirmCancelClick}
+    />,
+  [confirmOpen, deleting]);
+
   return (
-    <Dialog
+    <CustomizedDialog
       open={open}
-      classes={{ paper: classes.dialog }}
-      TransitionComponent={Transition}
+      onClose={handleClose}
+      width={400}
     >
       <DialogTitle>
         {Number(task?.ID) ? `Редактирование: ${task?.USR$NAME}` : 'Добавление задачи'}
@@ -174,7 +191,9 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     onChange={formik.handleChange}
                     value={formik.values.USR$NAME}
                     required
-                    focused
+                    autoFocus
+                    multiline
+                    minRows={1}
                   />
                   <Autocomplete
                     options={employees || []}
@@ -288,9 +307,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions className={classes.dialogAction}>
-        <IconButton onClick={handleDeleteClick} size="large">
+        {formik.values.ID > 0 &&
+        <IconButton onClick={handleDeleteClick} size="small">
           <DeleteIcon />
         </IconButton>
+        }
         <Box flex={1} />
         <Button
           className={classes.button}
@@ -313,15 +334,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
             OK
         </Button>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        title={deleting ? 'Удаление клиента' : 'Сохранение'}
-        text="Вы уверены, что хотите продолжить?"
-        dangerous={deleting}
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
-    </Dialog>
+      {memoConfirmDialog}
+    </CustomizedDialog>
   );
 }
 

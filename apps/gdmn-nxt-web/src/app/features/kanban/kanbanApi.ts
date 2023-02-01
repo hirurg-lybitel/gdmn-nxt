@@ -46,7 +46,7 @@ export const kanbanApi = createApi({
                 if (typeof subKey === 'object' && subKey !== null) {
                   for (const [subName_l2, subKey_l2] of Object.entries(subKey)) {
                     if (typeof subKey_l2 === 'object' && subKey_l2 !== null) {
-                      subParams.push((subKey_l2 as any)['ID']);
+                      subParams.push((subKey_l2 as any).ID);
                     };
                     if (typeof subKey_l2 === 'string' || typeof subKey_l2 === 'number') {
                       subParams.push(subKey_l2);
@@ -238,7 +238,24 @@ export const kanbanApi = createApi({
           : error
             ? [{ type: 'Column', id: 'LIST' }]
             : [{ type: 'Column', id: 'ERROR' }];
-      }
+      },
+      // async onQueryStarted(newCardsOrder, { dispatch, queryFulfilled }) {
+      //   console.log('onQueryStarted', newCardsOrder);
+      //   const patchResult = dispatch(
+      //     kanbanApi.util.updateQueryData('getKanbanDeals', undefined, (draft) => {
+      //       console.log('newCardsOrder', newCardsOrder);
+      //       console.log('draft', draft);
+      //       draft.find(d => d.ID === newCardsOrder[0].USR$MASTERKEY)?.CARDS.push(newCardsOrder[0]);
+      //     })
+      //   );
+      //   try {
+      //     console.log('onQueryStarted_try');
+      //     await queryFulfilled;
+      //   } catch {
+      //     console.log('onQueryStarted_catch');
+      //     patchResult.undo();
+      //   }
+      // }
     }),
     getHistory: builder.query<IKanbanHistory[], number>({
       query: (cardId) => `kanban/history/${cardId}`,
@@ -272,18 +289,18 @@ export const kanbanApi = createApi({
             ? [{ type: 'Task', id: 'ERROR' }]
             : [{ type: 'Task', id: 'LIST' }]
     }),
-    addTask: builder.mutation<IKanbanTask[], Partial<IKanbanTask>>({
+    addTask: builder.mutation<IKanbanTask, Partial<IKanbanTask>>({
       query: (body) => ({
         url: 'kanban/tasks',
         method: 'POST',
         body
       }),
-      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks || [],
+      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks[0],
       invalidatesTags: (result, error) => {
         return [{ type: 'Task', id: 'LIST' }];
       }
     }),
-    updateTask: builder.mutation<IKanbanTask[], Partial<IKanbanTask>>({
+    updateTask: builder.mutation<IKanbanTask, Partial<IKanbanTask>>({
       query (body) {
         const { ID: id } = body;
         return {
@@ -292,11 +309,11 @@ export const kanbanApi = createApi({
           body
         };
       },
-      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks || [],
+      transformResponse: (res: IKanbanRequestResult) => res.queries.tasks[0],
       invalidatesTags: (result, error) => {
         return result
           ? [
-            ...result.map(({ ID }) => ({ type: 'Task' as const, ID })),
+            { type: 'Task' as const, id: result.ID },
             { type: 'Task', id: 'LIST' }
           ]
           : error
