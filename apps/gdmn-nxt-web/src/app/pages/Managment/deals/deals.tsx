@@ -1,16 +1,16 @@
 import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toggleMenu } from '../../../store/settingsSlice';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { CircularIndeterminate } from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
-
+import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import { Box } from '@mui/system';
@@ -114,7 +114,7 @@ export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IK
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
-  const [kanbanFilter, setKanbanFilter] = useState<IKanbanFilter>({ deadline: cardDateFilter[0] });
+  const [kanbanFilter, setKanbanFilter] = useState<IKanbanFilter>({ deadline: cardDateFilter[5] });
   const [tabNo, setTabNo] = useState(0);
   const [openFilters, setOpenFilters] = useState(false);
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
@@ -123,7 +123,7 @@ export function Deals(props: DealsProps) {
   const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
   const user = useSelector<RootState, UserState>(state => state.user);
 
-  const { data: columns, isFetching: columnsIsFetching, isLoading } = useGetKanbanDealsQuery({
+  const { data: columns, isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanDealsQuery({
     userId: user.userProfile?.id || -1,
     filter: {
       deadline: kanbanFilter.deadline?.ID,
@@ -143,10 +143,12 @@ export function Deals(props: DealsProps) {
     dispatch(saveFilterData({ 'deals': filteringData }));
   };
 
+  const refreshBoard = useCallback(() => refetch(), []);
+
   const filterHandlers = {
-    filterClick: async() => {
+    filterClick: useCallback(() => {
       setOpenFilters(true);
-    },
+    }, []),
     filterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
       if (
         event?.type === 'keydown' &&
@@ -207,6 +209,15 @@ export function Deals(props: DealsProps) {
             )}
           />
           <Box flex={1} />
+          <IconButton
+            onClick={refreshBoard}
+            disabled={columnsIsFetching}
+          >
+            {columnsIsFetching
+              ? <CircularProgress size={17}/>
+              : <RefreshIcon color="primary" />
+            }
+          </IconButton>
           <IconButton
             onClick={filterHandlers.filterClick}
             disabled={columnsIsFetching}
