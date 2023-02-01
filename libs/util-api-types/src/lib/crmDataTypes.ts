@@ -84,6 +84,7 @@ export interface IDeal extends IWithID {
   CONTACT_EMAIL?: string;
   CONTACT_PHONE?: string;
   CREATIONDATE?: Date;
+  DESCRIPTION?: string;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -92,6 +93,7 @@ export interface IKanbanCard extends IWithID {
   USR$DEALKEY?: number;
   DEAL?: IDeal;
   TASKS?: IKanbanTask[];
+  USR$ISREAD?: boolean;
 };
 
 export interface IKanbanColumn extends IWithID {

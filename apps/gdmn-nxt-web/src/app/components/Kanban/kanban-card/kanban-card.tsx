@@ -142,6 +142,11 @@ export function KanbanCard(props: KanbanCardProps) {
     );
   }, []);
 
+  const doubleClick = useCallback(() => {
+    onEdit({ ...card, USR$ISREAD: true });
+    setEditCard(true);
+  }, [card]);
+
 
   const memoCard = useMemo(() => {
     const today = new Date();
@@ -159,6 +164,14 @@ export function KanbanCard(props: KanbanCardProps) {
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
+          ...(card?.USR$ISREAD || false
+            ? {}
+            : {
+              backgroundColor: 'rgba(193, 228, 250, 0.5)',
+              borderTop: '1px solid rgb(13, 228, 250)',
+              borderBottom: '1px solid rgb(13, 228, 250)',
+              borderRight: '1px solid rgb(13, 228, 250)',
+            }),
           ...(snapshot.isDragging
             ? {
               opacity: 0.7,
@@ -191,7 +204,7 @@ export function KanbanCard(props: KanbanCardProps) {
             right: 0,
           }
         }}
-        onDoubleClick={() => setEditCard(true)}
+        onDoubleClick={doubleClick}
       >
         <Stack direction="column" spacing={1}>
           <Stack
@@ -218,8 +231,8 @@ export function KanbanCard(props: KanbanCardProps) {
             <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
             <Box flex={1} />
             <Typography>
-              {card.DEAL?.USR$DEADLINE
-                ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+              {card.DEAL?.CREATIONDATE
+                ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
                 : '-/-'}
             </Typography>
           </Stack>
