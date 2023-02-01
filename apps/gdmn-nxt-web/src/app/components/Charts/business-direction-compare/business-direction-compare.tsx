@@ -273,23 +273,25 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     series: [
       {
         name: 'Период 1',
-        data: selectedLeftMasterSeriesId >= 0
+        data: (selectedLeftMasterSeriesId >= 0
           ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => d.amount)
           : dataLeft?.map(d => d.amount)
-
+        ) || []
       },
       {
         name: 'Период 2',
-        data: selectedLeftMasterSeriesId >= 0
+        data: (selectedLeftMasterSeriesId >= 0
           ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => dataRight[selectedLeftMasterSeriesId].businessProcesses?.find(dr => dr.name === d.name)?.amount || 0)
           : dataLeft?.map(d => dataRight.find(dr => dr.name === d.name)?.amount || 0)
+        ) || []
       }
     ],
     xaxis: {
       ...chartOptionsBarDefault.xaxis,
-      categories: selectedLeftMasterSeriesId >= 0
+      categories: (selectedLeftMasterSeriesId >= 0
         ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(({ name }) => name)
-        : dataLeft?.map(({ name }) => name) || ['Нет данных'],
+        : dataLeft?.map(({ name }) => name) || ['Нет данных']
+      ) || [],
       labels: {
         hideOverlappingLabels: false,
         trim: true,
