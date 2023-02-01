@@ -137,7 +137,7 @@ const upsert: RequestHandler = async (req, res) => {
       task.USR$CARDKEY,
       task.USR$NAME,
       Number(task.USR$CLOSED),
-      new Date(task.USR$DEADLINE),
+      task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
       task.PERFORMER?.ID,
       task.CREATOR?.ID
     ];
@@ -180,6 +180,7 @@ const remove: RequestHandler = async(req, res) => {
         DO
         BEGIN
           DELETE FROM USR$CRM_KANBAN_CARD_TASKS WHERE CURRENT OF curTASK;
+          DELETE FROM USR$CRM_NOTIFICATIONS WHERE USR$KEY = :TASK_ID;
 
           SUCCESS = 1;
         END
@@ -188,8 +189,6 @@ const remove: RequestHandler = async(req, res) => {
       END`,
       [id]
     );
-
-
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
