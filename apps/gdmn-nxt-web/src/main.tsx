@@ -162,13 +162,13 @@ const Main = () => {
                                 <Route path="" element={<Navigate to="account" />} />
                                 <Route path="account" element={<Profile />} />
                                 <Route path="settings" element={<AccountSettings />} />
-                                <Route path="notifications" element={<NotificationCenter />} />
-                                <Route path="faq" element={<FAQ />} />
                                 <Route path="permissions">
                                   <Route path="" element={<Navigate to="list" />} />
                                   <Route path="list" element={<PermissionsList />} />
                                   <Route path="usergroups" element={<UserGroups />} />
                                 </Route>
+                                <Route path="notifications" element={<NotificationCenter />} />
+                                <Route path="faq" element={<FAQ />} />
                               </Route>
                             </Route>
                             <Route path="/system" element={<BaseForm />}>
