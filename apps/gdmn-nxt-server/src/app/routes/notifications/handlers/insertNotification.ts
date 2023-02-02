@@ -19,6 +19,6 @@ export const insertNotification = async (sessionId: string, message: string, use
     transaction.rollback();
     throw new Error(error.message);
   } finally {
-    releaseTransaction();
+    await releaseTransaction();
   };
 };

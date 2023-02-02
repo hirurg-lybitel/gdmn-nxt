@@ -1,10 +1,9 @@
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { parseParams } from '@gsbelarus/util-helpers';
 import { RequestHandler } from 'express';
-import { Attachment, Blob } from 'node-firebird-driver-native';
+import { Blob } from 'node-firebird-driver-native';
 import { TextDecoder } from 'util';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, getReadTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction as releaseRT } from '../utils/db-connection';
 
 const getHistory: RequestHandler = async(req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -59,7 +58,8 @@ const getHistory: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseReadTransaction();
+    await releaseRT(req.sessionID);
+    await releaseReadTransaction();
   }
 };
 
@@ -76,9 +76,11 @@ const executeScript: RequestHandler = async(req, res) => {
   const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(req.sessionID);
 
   try {
+    const startTime = new Date().getTime();
     const rows = await fetchAsObject(script, params);
+    const endTime = new Date().getTime();
 
-    //console.log('rows', rows);
+    console.log('executeScript', endTime - startTime);
 
     const result: IRequestResult = {
       queries: { result: rows },
@@ -87,7 +89,6 @@ const executeScript: RequestHandler = async(req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.log('error', error.message);
     return res.status(500).send(resultError(error.message));
   } finally {
     releaseReadTransaction();

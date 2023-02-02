@@ -1,6 +1,6 @@
 import { IBusinessProcess, IContactPerson, ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
 import { resultError } from './responseMessages';
 import { genId } from './utils/genId';
 
@@ -21,7 +21,8 @@ export const getContacts: RequestHandler = async (req, res) => {
     if (fromRecord === 0) fromRecord = 1;
   };
 
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+
 
   try {
     const _schema: IDataSchema = {
@@ -49,11 +50,12 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const execQuery = async ({ name, query }) => {
       const startTime = new Date().getTime();
-      const rs = await attachment.executeQuery(transaction, query, []);
-      const data = await rs.fetchAsObject();
+      // const rs = await attachment.executeQuery(transaction, query, []);
+      const data = await fetchAsObject(query);
+      // const data = await rs.fetchAsObject();
       const endTime = new Date().getTime();
-      console.log(`${name} fetch time ${endTime- startTime} ms`);
-      await rs.close();
+      console.log(`${name} fetch time ms`, endTime - startTime);
+      // await rs.close();
 
       return data as any;
     };
@@ -171,7 +173,7 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     let endTime = new Date().getTime();
 
-    console.log(`promise time: ${endTime - startTime} ms`);
+    console.log('Promise time ms', endTime - startTime);
 
     // const [rawContacts] = await Promise.all(queries.map(execQuery));
     // const rawContacts = await Promise.resolve(execQuery(q[2]));
@@ -239,76 +241,61 @@ export const getContacts: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseReadTransaction(req.sessionID);
+    const a = 'a';
+    await releaseReadTransaction();
+    // await releaseReadTransaction(req.sessionID);
   }
 };
 
 export const updateContact: RequestHandler = async (req, res) => {
-  const { id } = req.params;
+  const { id: ID } = req.params;
   const { NAME, PHONE, EMAIL, PARENT, ADDRESS } = req.body;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, executeQuery, fetchAsObject } = await startTransaction(req.sessionID);
 
   try {
     try {
-      await attachment.execute(
-        transaction,
-        `UPDATE GD_CONTACT
-         SET
-           NAME = ?,
-           PHONE = ?,
-           EMAIL = ?,
-           PARENT = ?,
-           ADDRESS = ?
-         WHERE ID = ?`,
-        [NAME, PHONE, EMAIL, PARENT, ADDRESS, id]
-      );
+      await executeQuery(`
+        UPDATE GD_CONTACT
+        SET
+          NAME = ?,
+          PHONE = ?,
+          EMAIL = ?,
+          PARENT = ?,
+          ADDRESS = ?
+        WHERE ID = ?`,
+      [NAME, PHONE, EMAIL, PARENT, ADDRESS, ID]);
     } catch (error) {
       return res.status(500).send({ 'errorMessage': error.message });
     }
 
-    const resultSet = await attachment.executeQuery(
-      transaction,
-      `SELECT
-         con.ID,
-         con.PARENT,
-         con.NAME,
-         con.EMAIL,
-         con.PHONE,
-         par.NAME,
-         con.ADDRESS
-       FROM GD_CONTACT con
-       JOIN GD_CONTACT par ON par.ID = con.PARENT
-       WHERE con.ID = ?`,
-      [id]
-    );
-
-    const row = await resultSet.fetch();
+    const row = await fetchAsObject(`
+      SELECT
+        con.ID,
+        con.PARENT,
+        con.NAME,
+        con.EMAIL,
+        con.PHONE,
+        par.NAME,
+        con.ADDRESS
+      FROM GD_CONTACT con
+      JOIN GD_CONTACT par ON par.ID = con.PARENT
+      WHERE con.ID = :ID`,
+    { ID });
 
     const _schema = { };
 
     const result: IRequestResult = {
       queries: {
-        contacts: [{
-          ID: row[0][0],
-          PARENT: row[0][1],
-          NAME: row[0][2],
-          EMAIL: row[0][3],
-          PHONE: row[0][4],
-          FOLDERNAME: row[0][5],
-          ADDRESS: row[0][6]
-        }]
+        contacts: [row]
       },
       _schema
     };
 
-    await resultSet.close();
-    await transaction.commit();
-
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error });
+    return res.status(500).send(resultError(error.errorMessage));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 
@@ -404,7 +391,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
 export const deleteContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
@@ -421,12 +408,11 @@ export const deleteContact: RequestHandler = async (req, res) => {
       [id]
     );
 
-    await transaction.commit();
     return res.status(200).send(id);
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error.message });
+    return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 

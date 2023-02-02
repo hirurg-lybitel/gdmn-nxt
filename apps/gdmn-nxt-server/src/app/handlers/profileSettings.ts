@@ -2,7 +2,7 @@ import { IProfileSettings, IRequestResult } from '@gsbelarus/util-api-types';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { RequestHandler } from 'express';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, getReadTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, startTransaction, releaseReadTransaction as releaseRT } from '../utils/db-connection';
 import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
 
 const get: RequestHandler = async (req, res) => {
@@ -47,7 +47,9 @@ const get: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseReadTransaction();
+    /** Так как используем две транзакции */
+    await releaseRT(req.sessionID);
+    await releaseReadTransaction();
   }
 };
 
@@ -82,7 +84,7 @@ const set: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseTransaction();
+    await releaseTransaction(req.statusCode === 200);
   }
 };
 

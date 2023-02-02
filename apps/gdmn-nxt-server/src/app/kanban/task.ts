@@ -158,7 +158,7 @@ const upsert: RequestHandler = async (req, res) => {
 };
 
 const remove: RequestHandler = async(req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const id = parseInt(req.params.id);
 
@@ -192,7 +192,6 @@ const remove: RequestHandler = async(req, res) => {
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -202,7 +201,7 @@ const remove: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(req.statusCode === 200);
   };
 };
 
