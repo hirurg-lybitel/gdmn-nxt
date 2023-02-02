@@ -90,7 +90,7 @@ export const getMessagesByUser: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseReadTransaction();
+    await releaseReadTransaction();
   }
 
   return res.status(200).json(`result ${userId}`);

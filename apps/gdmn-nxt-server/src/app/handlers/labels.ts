@@ -55,7 +55,7 @@ export const get: RequestHandler = async(req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const isInsertMode = (req.method === 'POST');
 
@@ -124,16 +124,15 @@ const upsert: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    await rollbackTransaction(req.sessionID, transaction);
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
 export const remove: RequestHandler = async(req, res) => {
   const id = parseInt(req.params.id);
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
@@ -162,7 +161,6 @@ export const remove: RequestHandler = async(req, res) => {
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -172,7 +170,7 @@ export const remove: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 

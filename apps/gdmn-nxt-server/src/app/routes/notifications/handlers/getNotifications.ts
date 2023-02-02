@@ -77,6 +77,6 @@ export const getNotifications = async (sessionId: string) => {
   } catch (error) {
     console.error(resultError(error.message));
   } finally {
-    releaseReadTransaction();
+    await releaseReadTransaction();
   };
 };

@@ -1,9 +1,9 @@
-import { IProfileSettings, IRequestResult } from "@gsbelarus/util-api-types";
-import { parseIntDef } from "@gsbelarus/util-useful";
-import { RequestHandler } from "express";
-import { resultError } from "../responseMessages";
-import { acquireReadTransaction, getReadTransaction, startTransaction } from "../utils/db-connection";
-import { bin2String, string2Bin } from "@gsbelarus/util-helpers";
+import { IProfileSettings, IRequestResult } from '@gsbelarus/util-api-types';
+import { parseIntDef } from '@gsbelarus/util-useful';
+import { RequestHandler } from 'express';
+import { resultError } from '../responseMessages';
+import { acquireReadTransaction, getReadTransaction, startTransaction, releaseReadTransaction as releaseRT } from '../utils/db-connection';
+import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
 
 const get: RequestHandler = async (req, res) => {
   const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(req.sessionID);
@@ -45,12 +45,12 @@ const get: RequestHandler = async (req, res) => {
       _schema: {}
     };
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
-
   } finally {
-    releaseReadTransaction();
+    /** Так как используем две транзакции */
+    await releaseRT(req.sessionID);
+    await releaseReadTransaction();
   }
 };
 
@@ -74,7 +74,7 @@ const set: RequestHandler = async (req, res) => {
       VALUES(:userId, :avatar)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
-      { userId, avatar: blob});
+    { userId, avatar: blob});
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },
@@ -85,7 +85,7 @@ const set: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseTransaction();
+    await releaseTransaction(req.statusCode === 200);
   }
 
 };

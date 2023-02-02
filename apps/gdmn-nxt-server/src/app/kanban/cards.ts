@@ -56,8 +56,6 @@ const get: RequestHandler = async (req, res) => {
       _schema
     };
 
-    await commitTransaction(req.sessionID, transaction);
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
@@ -67,9 +65,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
-
-  const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -235,20 +231,16 @@ const upsert: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    await transaction.commit();
-
-    // await commitTransaction(req.sessionID, transaction);
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   };
 };
 
 const remove: RequestHandler = async(req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -288,12 +280,11 @@ const remove: RequestHandler = async(req, res) => {
     };
 
     await result.close();
-    await commitTransaction(req.sessionID, transaction);
     return res.status(200).json({ 'ID': id, 'USR$MASTERKEY': data[0].USR$MASTERKEY });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(req.statusCode === 200);
   };
 };
 

@@ -1,12 +1,13 @@
 import { resultError } from '../../../responseMessages';
-import { releaseTransaction, startTransaction } from '../../../utils/db-connection';
+import { startTransaction } from '../../../utils/db-connection';
 
 export const updateNotifications = async (sessionId: string) => {
-  const { attachment, transaction } = await startTransaction(sessionId);
+  const { releaseTransaction, fetchAsObject } = await startTransaction(sessionId);
 
   try {
     const sql = `
       EXECUTE BLOCK
+      RETURNS (SUCCESS SMALLINT)
       AS
         DECLARE VARIABLE CONTACTKEY TYPE OF COLUMN GD_CONTACT.ID;
         DECLARE VARIABLE MESSAGE TYPE OF COLUMN USR$CRM_NOTIFICATIONS.USR$MESSAGE;
@@ -97,10 +98,11 @@ export const updateNotifications = async (sessionId: string) => {
         END
       END`;
 
-    await attachment.executeQuery(transaction, sql);
+    await fetchAsObject(sql);
+    await releaseTransaction();
   } catch (error) {
-    console.error(resultError(error.message));
+    console.error('updateNotifications', error);
+    await releaseTransaction(false);
   } finally {
-    releaseTransaction(sessionId, transaction);
   };
 };

@@ -3,10 +3,10 @@ import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importModels } from '../er/er-utils';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
+import { commitTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
 
 const get: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema: IDataSchema = {
@@ -27,10 +27,10 @@ const get: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query }) => {
-      const rs = await attachment.executeQuery(transaction, query);
+      // const rs = await attachment.executeQuery(transaction, query);
 
       try {
-        const data = await rs.fetchAsObject();
+        const data = await fetchAsObject(query);
         const sch = _schema[name];
 
         if (sch) {
@@ -47,7 +47,7 @@ const get: RequestHandler = async (req, res) => {
         };
         return data as any;
       } finally {
-        await rs.close();
+        // await rs.close();
       }
     };
 
@@ -298,16 +298,15 @@ const get: RequestHandler = async (req, res) => {
     };
 
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(req.statusCode === 200);
   };
 };
 
 const reorderColumns: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     // const erModelFull = importERModel('TgdcDepartment');
@@ -350,18 +349,16 @@ const reorderColumns: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    await commitTransaction(req.sessionID, transaction);
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(req.statusCode === 200);
   };
 };
 
 const reorderCards: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     // const erModelFull = importERModel('TgdcDepartment');
@@ -409,7 +406,7 @@ const reorderCards: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await commitTransaction(req.sessionID, transaction);
+    await releaseTransaction(req.statusCode === 200);
   };
 };
 

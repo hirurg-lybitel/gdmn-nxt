@@ -5,7 +5,7 @@ import { acquireReadTransaction, startTransaction } from '../../utils/db-connect
 import { genId } from '../../utils/genId';
 
 const get: RequestHandler = async (req, res) => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction('444' + req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
   try {
     const _schema = {};
@@ -73,7 +73,7 @@ const upsert: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction();
+    await releaseTransaction(res.statusCode === 200);
   }
 };
 
