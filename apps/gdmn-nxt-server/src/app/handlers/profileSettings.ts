@@ -43,6 +43,7 @@ const get: RequestHandler = async (req, res) => {
       _params: [{ userId }],
       _schema: {}
     };
+    res.cookie('mode', result.queries.settings.MODE);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));

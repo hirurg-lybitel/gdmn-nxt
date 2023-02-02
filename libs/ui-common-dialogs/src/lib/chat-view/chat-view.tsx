@@ -1,7 +1,5 @@
 import { NLPDialog } from '@gsbelarus/util-api-types';
 import { forwardRef, Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { RootState } from '../../../../../apps/gdmn-nxt-web/src/app/store';
-import { useSelector } from 'react-redux';
 import styles from './chat-view.module.less';
 
 /* eslint-disable-next-line */
@@ -47,7 +45,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
   const shownItems = useRef<HTMLDivElement[]>([]);
   const scrollThumb = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef();
-  const mode = useSelector((state: RootState) => state.settings.customization.mode);
+  const mode = document.cookie.split('mode=')?.[1];
 
   const { showFrom, showTo, scrollTimer, prevClientY, prevFrac, recalc, partialOK, prevNLPDialog } = state;
 
