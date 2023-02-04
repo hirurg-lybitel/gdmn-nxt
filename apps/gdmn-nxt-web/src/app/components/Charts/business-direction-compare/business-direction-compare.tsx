@@ -5,10 +5,8 @@ import ApexCharts, { ApexOptions } from 'apexcharts';
 import Chart from 'react-apexcharts';
 import { Box, Grid, Stack, TextField, useTheme } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
-import ChartColumn from '../chart-column/chart-column';
 import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
-import { theme } from '../../../theme';
 
 const colorsMaster = ['#4ECDC4',	'#C7F464',	'#81D4FA',	'#546E7A',	'#FD6A6A', '#33B2DF',	'#03A9F4',	'#D4526E',	'#13D8AA',	'#A5978B'];
 const colorsDetail = ['#A300D6',	'#7D02EB',	'#5653FE',	'#2983FF',	'#00B1F2', '#5C4742',	'#A5978B',	'#8D5B4C',	'#5A2A27',	'#C4BBAF'];
@@ -31,7 +29,7 @@ const chartOptionsDefault: ApexCharts.ApexOptions = {
 
         return `
         <div class="${styles['pie-tooltip-value']}">
-          <span>${value}</span>
+          <span>${value.toLocaleString()}</span>
         </div>`;
       },
       title: {
@@ -54,15 +52,9 @@ const chartOptionsDefault: ApexCharts.ApexOptions = {
     show: false,
     fontWeight: 600,
     position: 'top',
-
     markers: {
-
       radius: 5,
-      // offsetY: 2,
     },
-    // labels: {
-    //   colors: theme.color.grey[500],
-    // },
   },
   dataLabels: {
     enabled: false,
@@ -89,13 +81,18 @@ const chartOptionsDefault: ApexCharts.ApexOptions = {
   }
 };
 
+const titleFormatter = (message: string) => (seriesName: string) => `
+  <div class="${styles['pie-tooltip-label']}">
+    <span>${seriesName === noDataLabel ? message : seriesName}</span>
+  </div>`;
+
 interface IInitState {
   datesLeft: DateRange<Date>;
   dateRight: DateRange<Date>;
 }
 
-const onDate = new Date(2022, 7, 17);
-// const onDate = new Date();
+// const onDate = new Date(2022, 7, 17);
+const onDate = new Date();
 const initState: IInitState = {
   datesLeft: [
     new Date((onDate).getFullYear(), (onDate).getMonth(), 1),
@@ -107,16 +104,18 @@ const initState: IInitState = {
   ],
 };
 
+
 /* eslint-disable-next-line */
 export interface BusinessDirectionCompareProps {}
 
 export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
-  const theme = useTheme();
   const [selectedLeftMasterSeriesId, setSelectedLeftMasterSeriesId] = useState(-1);
   const [selectedRightMasterSeriesId, setSelectedRightMasterSeriesId] = useState(-1);
 
   const [datesLeft, setDatesLeft] = useState<DateRange<Date>>(initState.datesLeft);
   const [datesRight, setDatesRight] = useState<DateRange<Date>>(initState.dateRight);
+
+  const theme = useTheme();
 
   const analyticsDataParamsLeft: IChartFilter = useMemo(() => ({
     dateBegin: datesLeft[0]?.getTime() || 0,
@@ -139,71 +138,82 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     setSelectedRightMasterSeriesId(options.selectedDataPoints[0].length !== 0 ? options.dataPointIndex : -1);
   }, []);
 
+
   const chartOptionsBarDefault: ApexCharts.ApexOptions = {
-    chart: {
-      id: 'column-bar',
-      stacked: false,
-      toolbar: {
-        show: false,
-      },
-      zoom: {
-        enabled: false
-      }
-    },
-    noData: {
-      text: 'Нет данных',
+  	chart: {
+  	id: 'column-bar',
+  	stacked: false,
+  	toolbar: {
+  	  show: false,
+  	  },
+  	  zoom: {
+  	    enabled: false
+  	  }
+  	},
+    title: {
+      text: 'Сравнение бизнес-процессов и направлений',
       align: 'center',
-      verticalAlign: 'middle',
       style: {
-        color: theme.textColor,
-        fontSize: '20px',
-      }
-    },
-    tooltip: {
-      theme: theme.palette.mode,
-      x: {
-        formatter(value, opts) {
-          return `
-          <div class="${styles['bar-tooltip-label']}">
-            <span>${value}</span>
-          </div>`;
-        },
+        fontSize: '1.2em',
+        fontWeight: 700,
+        color: theme.textColor
       },
+      offsetY: 20
     },
-    xaxis: {
-      labels: {
-        formatter: (value) => (
-          isNaN(Number(value)) ? value : Number(value).toLocaleString()
-        )
-      }
-    },
-    yaxis: {
-      labels: {
-        formatter: (value) => (
-          value.toLocaleString()
-        )
-      }
-    },
-    legend: {
-      fontSize: '15px',
-      fontFamily: '\'Roboto\', sans-serif',
-      offsetY: 5,
-      labels: {
-        colors: theme.textColor,
-      },
-      markers: {
-        width: 16,
-        height: 16,
-        radius: 5
-      },
-      itemMargin: {
-        horizontal: 15,
-        vertical: 8
-      }
-    },
-    dataLabels: {
-      enabled: false
-    },
+  	noData: {
+  	text: 'Нет данных',
+  	align: 'center',
+  	verticalAlign: 'middle',
+  	style: {
+  	color: theme.textColor,
+  	fontSize: '20px',
+  	}
+  	},
+  	tooltip: {
+  	theme: theme.palette.mode,
+  	x: {
+  	formatter(value, opts) {
+  	return `
+  	<div class="${styles['bar-tooltip-label']}">
+  	<span>${value}</span>
+  	</div>`;
+  	},
+  	},
+  	},
+  	xaxis: {
+  	labels: {
+  	formatter: (value) => (
+  	isNaN(Number(value)) ? value : Number(value).toLocaleString()
+  	)
+  	}
+  	},
+  	yaxis: {
+  	labels: {
+  	formatter: (value) => (
+  	value.toLocaleString()
+  	)
+  	}
+  	},
+  	legend: {
+  	fontSize: '15px',
+  	fontFamily: '\'Roboto\', sans-serif',
+  	offsetY: 5,
+  	labels: {
+  	colors: theme.textColor,
+  	},
+  	markers: {
+  	width: 16,
+  	height: 16,
+  	radius: 5
+  	},
+  	itemMargin: {
+  	horizontal: 15,
+  	vertical: 8
+  	}
+  	},
+  	dataLabels: {
+  	enabled: false
+  	},
   };
 
   const chartOptionsLeft = useMemo(() => {
@@ -221,7 +231,16 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           },
           colors: colorsMaster
         } : {
-          colors: colorsNoData
+          colors: colorsNoData,
+          tooltip: {
+            ...chartOptionsDefault.tooltip,
+            y: {
+              ...chartOptionsDefault.tooltip?.y,
+              title: {
+                formatter: titleFormatter('Нет данных за указанный период')
+              }
+            }
+          }
         }),
       },
       detail: {
@@ -252,7 +271,16 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           },
           colors: colorsMaster
         } : {
-          colors: colorsNoData
+          colors: colorsNoData,
+          tooltip: {
+            ...chartOptionsDefault.tooltip,
+            y: {
+              ...chartOptionsDefault.tooltip?.y,
+              title: {
+                formatter: titleFormatter('Нет данных за указанный период')
+              }
+            }
+          }
         }),
       },
       detail: {
@@ -275,27 +303,26 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         name: 'Период 1',
         data: (selectedLeftMasterSeriesId >= 0
           ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => d.amount)
-          : dataLeft?.map(d => d.amount)
-        ) || []
+          : dataLeft?.map(d => d.amount)) || []
+
       },
       {
         name: 'Период 2',
         data: (selectedLeftMasterSeriesId >= 0
-          ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => dataRight[selectedLeftMasterSeriesId].businessProcesses?.find(dr => dr.name === d.name)?.amount || 0)
-          : dataLeft?.map(d => dataRight.find(dr => dr.name === d.name)?.amount || 0)
-        ) || []
+          ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => dataRight[selectedLeftMasterSeriesId]?.businessProcesses?.find(dr => dr.name === d.name)?.amount || 0)
+          : dataLeft?.map(d => dataRight.find(dr => dr.name === d.name)?.amount || 0)) || []
       }
     ],
     xaxis: {
       ...chartOptionsBarDefault.xaxis,
       categories: (selectedLeftMasterSeriesId >= 0
         ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(({ name }) => name)
-        : dataLeft?.map(({ name }) => name) || ['Нет данных']
-      ) || [],
+        : dataLeft?.map(({ name }) => name) || ['Нет данных']) || [],
       labels: {
         hideOverlappingLabels: false,
         trim: true,
         rotate: 0,
+        otate: 0,
         style: {
           colors: theme.textColor
         }
@@ -306,7 +333,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
 
   return (
     <Grid container direction="column" spacing={3}>
-      <Grid item container direction={{ md: 'column', lg: 'row' }} xs={6} spacing={3} >
+      <Grid item container direction={{ xs: 'column', md: 'column', lg: 'row' }} xs={6} spacing={3} >
         <Grid item container xs={6}>
           <CustomizedCard borders style={{ flex: 1 }}>
             <Grid container direction="column">
@@ -391,8 +418,8 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           <Chart
             type="bar"
             height="100%"
-            series={chartOptionsBar.series}
             options={chartOptionsBar}
+            series={chartOptionsBar.series}
           />
         </CustomizedCard>
       </Grid>

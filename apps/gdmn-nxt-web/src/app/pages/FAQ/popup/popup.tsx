@@ -41,30 +41,30 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     mode: 'onSubmit'
   });
 
-  const closePopup = () => {
+  const closePopup = useCallback(() => {
     setTabIndex('1');
     close();
     clearErrors();
-  };
+  }, []);
 
-  const editFaqHandler = async () => {
+  const editFaqHandler = useCallback(async () => {
     if (faq) {
       handleConfirmCancelClick();
       closePopup();
       editFaq && editFaq(getValues('question'), getValues('answer'), faq.ID);
     }
-  };
+  }, [faq]);
 
-  const addFaqHandler = async () => {
+  const addFaqHandler = useCallback(async () => {
     handleConfirmCancelClick();
     closePopup();
     addFaq && addFaq(getValues('question'), getValues('answer'));
     reset();
-  };
+  }, []);
 
-  const handleTabsChange = (event: any, newindex: string) => {
+  const handleTabsChange = useCallback((event: any, newindex: string) => {
     setTabIndex(newindex);
-  };
+  }, [faq]);
 
   const escPressed = useCallback((event:KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -79,15 +79,15 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     };
   }, [escPressed]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (faq) {
       handleConfirmCancelClick();
       closePopup();
       deleteFaq && deleteFaq(faq.ID);
     }
-  };
+  }, [faq]);
 
-  const clearAndClosePopup = () => {
+  const clearAndClosePopup = useCallback(() => {
     closePopup();
     if (isAddPopup) {
       reset();
@@ -97,18 +97,18 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         setValue('answer', faq.USR$ANSWER);
       }
     }
-  };
+  }, []);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const [isDelete, setIsDelete] = useState(false);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setIsDelete(true);
     setConfirmOpen(true);
-  };
+  }, []);
 
-  const handleSaveClick = () => {
+  const handleSaveClick = useCallback(() => {
     if ((getValues('answer').trim()).length !== 0) {
       if ((getValues('question').trim()).length !== 0) {
         setIsDelete(false);
@@ -119,9 +119,9 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     } else {
       setError('answer', { message: 'Обязательное поле' });
     }
-  };
+  }, []);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     if ((getValues('answer').trim()).length !== 0) {
       if ((getValues('question').trim()).length !== 0) {
         setConfirmOpen(true);
@@ -131,11 +131,11 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     } else {
       setError('answer', { message: 'Обязательное поле' });
     }
-  };
+  }, []);
 
-  const handleConfirmCancelClick = () => {
+  const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
-  };
+  }, []);
 
   useEffect(()=>{
     if (faq) {
@@ -162,7 +162,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         )}
       cancelClick={handleConfirmCancelClick}
     />
-  , [confirmOpen]);
+  , [confirmOpen, isDelete, isAddPopup, addFaqHandler, handleDelete, editFaqHandler, handleConfirmCancelClick]);
 
   const onSubmitClick = () => {
     if ((getValues('answer').trim()).length === 0) {
