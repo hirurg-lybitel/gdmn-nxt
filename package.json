@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "prod": "node dist/apps/gdmn-nxt-server/main.js",
-    "start": "yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
-    "build": "cross-env NODE_ENV=production yarn nx run-many --target=build --all --parallel",
+    "prod": "set NODE_ENV=production && node dist/apps/gdmn-nxt-server/main.js",
+    "start:dev": "yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
+    "start:prod": "yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web --prod",
+    "build": "cross-env NODE_ENV=production yarn nx run-many --target=build --all --parallel --prod",
     "test": "yarn nx run-many --target=test --all --parallel",
     "all": "yarn nx run-many --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
     "pm2": "pm2 start dist/apps/gdmn-nxt-server/main.js --watch --name gdmn-nxt-server",
