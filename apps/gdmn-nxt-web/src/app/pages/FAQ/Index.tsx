@@ -6,14 +6,28 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress } from '@mui/material';
 import style from './faq.module.less';
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, Theme } from '@mui/material/styles';
+import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles((theme: Theme) => ({
+  accordion: {
+    width: '100%',
+    '& .MuiSvgIcon-root': {
+      color: theme.palette.primary.main
+    }
+  }
+}));
+
 
 export default function FAQ() {
   const { data: faqs, isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
@@ -24,6 +38,7 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
+  const classes = useStyles();
 
   const addFaqHandler = (question:string, answer:string) => {
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
@@ -52,6 +67,36 @@ export default function FAQ() {
     setIsOpenedEditPopup(false);
   };
 
+  const handleDelete = useCallback(() => {
+    if (faq) {
+      handleConfirmCancelClick();
+      deleteFaqHandler(faq.ID);
+    }
+  }, [faq]);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleDeleteClick = (deletedFaq: fullFaq) => () => {
+    setFaq(deletedFaq);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
+
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={'Удаление вопроса с ответом'}
+      text="Вы уверены, что хотите продолжить?"
+      confirmClick={
+        handleDelete
+      }
+      cancelClick={handleConfirmCancelClick}
+    />
+  , [confirmOpen, addFaqHandler, handleDelete, editFaqHandler, handleConfirmCancelClick]);
+
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
@@ -65,15 +110,16 @@ export default function FAQ() {
       </div>
     );
   }
+
   return (
     <>
+      {memoConfirmDialog}
       <Popup
         close={handleCloseEditPopup}
         isOpened={isOpenedEditPopup}
         isAddPopup={false}
         faq={faq}
         editFaq={editFaqHandler}
-        deleteFaq={deleteFaqHandler}
       />
       <Popup
         close={handleCloseAddPopup}
@@ -89,7 +135,10 @@ export default function FAQ() {
                 <Typography variant="h3">
                   Часто задаваемые вопросы
                 </Typography>
-                {/* <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button> */}
+                <PermissionsGate actionCode={11}>
+                  <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+                </PermissionsGate>
+
               </div>
             }
           />
@@ -109,7 +158,7 @@ export default function FAQ() {
                           <Accordion
                             expanded={expanded === `panel${item.ID}`}
                             onChange={handleChange(`panel${item.ID}`)}
-                            className={style.accordion}
+                            className={classes.accordion}
                           >
                             <AccordionSummary
                               expandIcon={<ExpandMoreIcon />}
@@ -128,15 +177,26 @@ export default function FAQ() {
                               </Typography>
                             </AccordionDetails>
                           </Accordion>
-                          {/* <div>
+                          <PermissionsGate actionCode={12}>
                             <IconButton
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading || isFetching}
-                              className={style.changeButton}
+                              color="primary"
+                              disabled={editFaqObj.isLoading || isFetching}
+                              style={{ marginTop: '20px' }}
                               onClick={handleOpenEditPopup(item)}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                          </div> */}
+                          </PermissionsGate>
+                          <PermissionsGate actionCode={13}>
+                            <IconButton
+                              color="primary"
+                              style={{ marginTop: '17.5px' }}
+                              disabled={deleteFaqObj.isLoading || isFetching}
+                              onClick={handleDeleteClick(item)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </PermissionsGate>
                         </div>
                       </div>
                     )

@@ -17,7 +17,6 @@ interface PopupProps {
   faq?: fullFaq,
   addFaq?: (question:string, answer:string)=>void,
   editFaq?: (question:string, answer:string, id:number)=>void,
-  deleteFaq?: (id:number)=>void
 }
 
 interface IShippingFields {
@@ -25,7 +24,7 @@ interface IShippingFields {
   answer: string
 }
 
-export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq, deleteFaq }:PopupProps) {
+export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq }:PopupProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   const {
@@ -79,14 +78,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     };
   }, [escPressed]);
 
-  const handleDelete = useCallback(() => {
-    if (faq) {
-      handleConfirmCancelClick();
-      closePopup();
-      deleteFaq && deleteFaq(faq.ID);
-    }
-  }, [faq]);
-
   const clearAndClosePopup = useCallback(() => {
     closePopup();
     if (isAddPopup) {
@@ -101,17 +92,9 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const [isDelete, setIsDelete] = useState(false);
-
-  const handleDeleteClick = useCallback(() => {
-    setIsDelete(true);
-    setConfirmOpen(true);
-  }, []);
-
   const handleSaveClick = useCallback(() => {
     if ((getValues('answer').trim()).length !== 0) {
       if ((getValues('question').trim()).length !== 0) {
-        setIsDelete(false);
         setConfirmOpen(true);
       } else {
         setError('question', { message: 'Обязательное поле' });
@@ -149,20 +132,16 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
       open={confirmOpen}
       title={isAddPopup
         ? 'Добавление нового вопроса с ответом'
-        : (isDelete
-          ? 'Удаление вопроса с ответом'
-          : 'Сохранение изменений'
-        )}
+        : 'Сохранение изменений'
+      }
       text="Вы уверены, что хотите продолжить?"
       confirmClick={isAddPopup
         ? addFaqHandler
-        : (isDelete
-          ? handleDelete
-          : editFaqHandler
-        )}
+        : editFaqHandler
+      }
       cancelClick={handleConfirmCancelClick}
     />
-  , [confirmOpen, isDelete, isAddPopup, addFaqHandler, handleDelete, editFaqHandler, handleConfirmCancelClick]);
+  , [confirmOpen, isAddPopup, addFaqHandler, editFaqHandler, handleConfirmCancelClick]);
 
   const onSubmitClick = () => {
     if ((getValues('answer').trim()).length === 0) {
@@ -271,11 +250,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                 </CardContent>
                 <Divider/>
                 <CardActions className={style.buttonsContainer}>
-                  {!isAddPopup &&
-                  <IconButton onClick={handleDeleteClick}>
-                    <DeleteIcon />
-                  </IconButton>
-                  }
                   <Box flex={1} />
                   <div>
                     <Button
