@@ -13,6 +13,7 @@ import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
 import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
+import { config } from '@gdmn-nxt/config';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -142,7 +143,7 @@ export const MainLayout = () => {
     dispatch(setActiveMenu(menuID));
 
     setSocketClient({
-      url: `http://localhost:${process.env.NX_SOCKET_PORT}`,
+      url: `http://${config.host}:${config.notificationPort}`,
       userId: user.userProfile?.id || -1
     });
 

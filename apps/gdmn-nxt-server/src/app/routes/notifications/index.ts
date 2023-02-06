@@ -6,10 +6,29 @@ import { getMessagesByUser } from './handlers/getMessagesByUser';
 import { getNotifications } from './handlers/getNotifications';
 import { insertNotification } from './handlers/insertNotification';
 import { updateNotifications } from './handlers/updateNotifications';
+import { config } from '@gdmn-nxt/config';
 
 interface NotificationsProps {
   router: Router;
 }
+
+const host = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 'localhost'
+    : process.env.NX_HOST_IP;
+})();
+
+const port = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 4201
+    : process.env.GDMN_NXT_SERVER_PORT;
+})();
+
+const notificationPort = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 7777
+    : Number(process.env.NX_SOCKET_PORT);
+})();
 
 export function Notifications({ router }: NotificationsProps) {
   const socketIO = new Server<
@@ -20,14 +39,15 @@ export function Notifications({ router }: NotificationsProps) {
   >({
     cors: {
       credentials: true,
-      origin: `http://localhost:${process.env.NODE_ENV === 'development' ? '4200' : '80'}`
+      // origin: `http://${process.env.NODE_ENV === 'development' ? 'localhost:4201' : `${process.env.NX_HOST_IP}:80`}`
+      origin: `http://${host}:${port}`
     }
   });
 
   const sessionId = 'notification';
   const users: IUser[] = [];
 
-  socketIO.listen(+process.env.NX_SOCKET_PORT || 4001);
+  socketIO.listen(config.notificationPort);
 
   socketIO.on('connection', (socket) => {
     console.log(`⚡: ${socket.id} user just connected!`);

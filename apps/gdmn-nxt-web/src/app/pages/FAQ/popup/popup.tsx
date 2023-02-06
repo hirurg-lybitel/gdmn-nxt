@@ -137,7 +137,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
   }, []);
 
   const handleConfirmCancelClick = useCallback(() => {
-    console.log('handleConfirmCancelClick');
     setConfirmOpen(false);
   }, []);
 

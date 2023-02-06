@@ -38,10 +38,31 @@ const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
 
+// console.log(`['NODE' + '_ENV']`, process.env['NODE' + '_ENV']);
+console.log('NODE_ENV', process.env.NODE_ENV);
+const host = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 'localhost'
+    : process.env.NX_HOST_IP;
+})();
+
+console.log('host', host);
+
+const port = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 4444
+    : process.env.GDMN_NXT_SERVER_PORT;
+})();
+
+// const notificationPort = (() => {
+//   return !!process.env['NODE' + '_ENV'] || process.env['NODE' + '_ENV'] === 'development'
+//     ? 7777
+//     : process.env.NX_SOCKET_PORT;
+// })();
 
 app.use(cors({
   credentials: true,
-  origin: `http://localhost:${process.env.NODE_ENV === 'development' ? '4200' : '80'}` // 'http://localhost:80'
+  origin: `http://${host}:${process.env.NODE_ENV === 'development' ? '4201' : '80'}` // 'http://localhost:80'
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -341,7 +362,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
+// const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);
