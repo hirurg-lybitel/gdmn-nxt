@@ -1,9 +1,9 @@
 module.exports = {
-  displayName: 'assets',
+  displayName: 'ui-assets',
   preset: '../../jest.preset.js',
   transform: {
     '^.+\\.[tj]sx?$': 'babel-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/libs/assets'
+  coverageDirectory: '../../coverage/libs/ui-assets'
 };

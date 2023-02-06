@@ -14,8 +14,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { BelgissLogo } from '@gdmn-nxt/assets';
-// import BelgissLogo from '../../../../../apps/gdmn-nxt-web/src/app/components/belgiss-logo/belgiss-logo';
+import { BelgissLogo } from '@gdmn-nxt/ui-assets';
 
 const useStyles = makeStyles((theme: Theme) => ({
   input: {

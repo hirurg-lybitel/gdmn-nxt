@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import Notification from './NotificationSection/notification/notification';
 import Profile from './profile/profile';
-import { BelgissLogo } from '@gdmn-nxt/assets';
 
 interface IHeaderProps {
   onDrawerToggle: () => void;

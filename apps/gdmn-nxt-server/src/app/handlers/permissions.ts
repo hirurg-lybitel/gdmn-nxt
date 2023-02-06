@@ -143,7 +143,7 @@ const upsertCross: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.statusCode === 200);
+    await releaseTransaction(res.statusCode === 200);
   }
 };
 
@@ -261,7 +261,7 @@ const upsertGroup: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.statusCode === 200);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
@@ -568,7 +568,7 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.statusCode === 200);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
@@ -614,7 +614,7 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.statusCode === 200);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

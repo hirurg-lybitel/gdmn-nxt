@@ -201,7 +201,7 @@ const remove: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.statusCode === 200);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

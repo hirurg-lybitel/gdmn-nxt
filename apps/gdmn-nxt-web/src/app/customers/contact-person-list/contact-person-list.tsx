@@ -126,7 +126,6 @@ export function ContactPersonList(props: ContactPersonListProps) {
 
         const handlePersonEdit = () => {
           setCurrentPerson(params.row);
-          // console.log('handlePersonEdit', params);
           setPersonEdit(true);
         };
 
