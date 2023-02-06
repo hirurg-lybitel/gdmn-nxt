@@ -12,7 +12,7 @@ const get: RequestHandler = async (req, res) => {
   const userId = parseIntDef(req.params.userId, -1);
 
   try {
-    const sqlResult:any = await fetchAsObject(`
+    const sqlResult = await fetchAsObject(`
       SELECT
         p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as MODE
       FROM GD_USER u
@@ -21,8 +21,8 @@ const get: RequestHandler = async (req, res) => {
       WHERE u.ID = :userId`, { userId });
 
     for (const r of sqlResult) {
-      if (r.AVATAR_BLOB !== null && typeof r.AVATAR_BLOB === 'object') {
-        const readStream = await attachment.openBlob(transaction, r.AVATAR_BLOB);
+      if (r.['AVATAR_BLOB'] !== null && typeof r.['AVATAR_BLOB'] === 'object') {
+        const readStream = await attachment.openBlob(transaction, r.['AVATAR_BLOB']);
         const blobLength = await readStream.length;
         const resultBuffer = Buffer.alloc(blobLength);
 
@@ -33,9 +33,9 @@ const get: RequestHandler = async (req, res) => {
         await readStream.close();
 
         const blob2String = resultBuffer.toString();
-        r.AVATAR = bin2String(blob2String.split(','));
+        r.['AVATAR'] = bin2String(blob2String.split(','));
       };
-      delete r.AVATAR_BLOB;
+      delete r.['AVATAR_BLOB'];
     };
 
     const result: IRequestResult<{settings: IProfileSettings}> = {
