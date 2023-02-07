@@ -164,7 +164,7 @@ export function LabelListItem(props: LabelListItemProps) {
         <Grid item flex={1}>
           {data.USR$DESCRIPTION}
         </Grid>
-        <Grid xs={2} md={1}>
+        <Grid item xs={2} md={1}>
           <Box display={'inline-flex'} width="100%" justifyContent={'center'}>
             <PermissionsGate actionCode={6}>
               <IconButton onClick={handleEditClick}>

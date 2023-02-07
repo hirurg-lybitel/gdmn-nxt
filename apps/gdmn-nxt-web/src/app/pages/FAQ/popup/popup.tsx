@@ -163,8 +163,8 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         <div
           className={
             isOpened
-              ? style.NewQustionContainer
-              : `${style.NewQustionContainer} ${style.inactiveNewQustionContainer}`
+              ? style.NNewQuestionContainer
+              : `${style.NewQuestionContainer} ${style.inactiveNewQuestionContainer}`
           }
         >
           <form

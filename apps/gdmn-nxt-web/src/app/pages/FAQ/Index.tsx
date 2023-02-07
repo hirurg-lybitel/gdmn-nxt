@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 
 export default function FAQ() {
-  const { data: faqs, isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
+  const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
