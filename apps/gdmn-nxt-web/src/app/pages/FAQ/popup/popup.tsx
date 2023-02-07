@@ -163,13 +163,13 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
         <div
           className={
             isOpened
-              ? style.NNewQuestionContainer
+              ? style.NewQuestionContainer
               : `${style.NewQuestionContainer} ${style.inactiveNewQuestionContainer}`
           }
         >
           <form
             onSubmit={isAddPopup ? handleSubmit(handleAddClick) : handleSubmit(handleSaveClick)}
-            className={style.qustionForm}
+            className={style.questionForm}
           >
             <Card className={style.card}>
               <div>
