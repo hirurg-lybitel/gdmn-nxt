@@ -43,14 +43,20 @@ export function ActCompletion(props: ActCompletionProps) {
   const { data: actCompletion, refetch, isFetching: actCompletionIsFetching } = useGetActCompletionQuery(customerId);
 
   const columns: GridColDef[] = [
-    { field: 'NUMBER', headerName: 'Номер', flex: 1, minWidth: 100 },
-    { field: 'DOCUMENTDATE', headerName: 'Дата', flex: 1, minWidth: 100,
-      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+    { field: 'NUMBER', headerName: 'Номер', minWidth: 150 },
+    { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100,
+      type: 'date',
+      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }),
     },
-    { field: 'DEPT_NAME', headerName: 'Отдел', flex: 1, minWidth: 100 },
-    { field: 'JOB_NUMBER', headerName: 'Заказ', flex: 1, minWidth: 100 },
-    { field: 'USR$SUMNCU', headerName: 'Сумма', flex: 1, minWidth: 100,
-      renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+    { field: 'DEPT_NAME', headerName: 'Отдел', width: 70 },
+    { field: 'JOB_NUMBER', headerName: 'Заказ', width: 70 },
+    { field: 'USR$SUMNCU', headerName: 'Сумма', width: 100, align: 'right',
+      renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })
+    },
+    {
+      field: 'JOBWORKNAME', headerName: 'Вид работ', flex: 1, minWidth: 200,
+      renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
+    }
   ];
 
   return (
@@ -59,14 +65,15 @@ export function ActCompletion(props: ActCompletionProps) {
       flex="1"
       display="flex"
       spacing={1}
+      p={3}
     >
-      <Box>
+      {/* <Box>
         <Button
           onClick={refetch}
           disabled={actCompletionIsFetching}
           startIcon={<RefreshIcon/>}
         >Обновить</Button>
-      </Box>
+      </Box> */}
       <CustomizedCard
         borders
         style={{
@@ -83,6 +90,7 @@ export function ActCompletion(props: ActCompletionProps) {
           pagination
           rowsPerPageOptions={[20]}
           pageSize={20}
+          rowHeight={100}
           components={{
             NoRowsOverlay: CustomNoRowsOverlay
           }}

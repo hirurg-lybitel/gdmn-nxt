@@ -62,7 +62,7 @@ const getCross: RequestHandler = async (req, res) => {
 };
 
 const upsertCross: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
@@ -141,10 +141,9 @@ const upsertCross: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    await rollbackTransaction(req.sessionID, transaction);
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   }
 };
 
@@ -191,7 +190,7 @@ const getUserGroups: RequestHandler = async (req, res) => {
 };
 
 const upsertGroup: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const isInsertMode = (req.method === 'POST');
 
@@ -260,10 +259,9 @@ const upsertGroup: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    await rollbackTransaction(req.sessionID, transaction);
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
@@ -271,7 +269,7 @@ const removeGroup: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
 
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const result = await attachment.executeQuery(
@@ -305,7 +303,6 @@ const removeGroup: RequestHandler = async (req, res) => {
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -315,7 +312,7 @@ const removeGroup: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   };
 };
 
@@ -513,7 +510,7 @@ const getUserByGroup: RequestHandler = async (req, res) => {
 };
 
 const addUserGroupLine: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
@@ -569,10 +566,9 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    await rollbackTransaction(req.sessionID, transaction);
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
@@ -581,7 +577,7 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
 
   if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
 
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const result = await attachment.executeQuery(
@@ -609,7 +605,6 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -619,7 +614,7 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

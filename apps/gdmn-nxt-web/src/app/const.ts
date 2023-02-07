@@ -1,2 +1,4 @@
-export const baseUrl = `http://${process.env.NODE_ENV === 'development' ? 'localhost' : process.env.NX_HOST_IP}:4444/`;
+import { config } from '@gdmn-nxt/config';
+
+export const baseUrl = `http://${config.host}:${config.port}/`;
 export const baseUrlApi = `${baseUrl}api/v1/`;

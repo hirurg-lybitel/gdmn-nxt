@@ -1,5 +1,5 @@
 import { Grid, Typography } from '@mui/material';
-import { CircularIndeterminate } from 'apps/gdmn-nxt-web/src/app/components/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from 'apps/gdmn-nxt-web/src/app/components/helpers/circular-indeterminate/circular-indeterminate';
 import { useGetRemainsInvoicesQuery } from 'apps/gdmn-nxt-web/src/app/features/remains-by-invoices/remainsInvoicesApi';
 import styles from './remains-by-invoices-report.module.less';
 

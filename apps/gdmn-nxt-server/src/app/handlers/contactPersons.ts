@@ -153,7 +153,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -340,10 +340,9 @@ const upsert: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    await rollbackTransaction(req.sessionID, transaction);
     return res.status(500).send(resultError(error.message));
   } finally {
-    await commitTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

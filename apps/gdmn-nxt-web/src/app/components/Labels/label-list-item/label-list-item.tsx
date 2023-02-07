@@ -48,11 +48,6 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-// a: 1
-// h: 24.705882352941174
-// l: 0.5
-// s: 1
-
 export function LabelListItem(props: LabelListItemProps) {
   const { data } = props;
   const { ID } = data;
@@ -67,20 +62,15 @@ export function LabelListItem(props: LabelListItemProps) {
   const classes = useStyles();
 
 
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
     setOpenEditForm(true);
-  };
+  }, []);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setConfirmOpen(true);
-  };
-
-  // const removeLabel = () => {
-  //   deleteLabel(ID);
-  // };
+  }, []);
 
   const handleOnSubmit = (label: ILabel) => {
-    // console.log('handleOnSubmit', label);
     setOpenEditForm(false);
 
     if (label.ID) {
@@ -91,9 +81,9 @@ export function LabelListItem(props: LabelListItemProps) {
     addLabel(label);
   };
 
-  const handleCancelClick = () => {
+  const handleCancelClick = useCallback(() => {
     setOpenEditForm(false);
-  };
+  }, []);
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
@@ -132,7 +122,7 @@ export function LabelListItem(props: LabelListItemProps) {
     // Find greatest and smallest channel values
     const cmin = Math.min(r, g, b),
       cmax = Math.max(r, g, b),
-      delta = cmax - cmin
+      delta = cmax - cmin;
     let h = 0,
       s = 0,
       l = 0;
@@ -168,17 +158,14 @@ export function LabelListItem(props: LabelListItemProps) {
   return (
     <Box className={styles['Box-row']}>
       <Grid container alignItems="center">
-        <Grid item xs={2}>
+        <Grid item xs={4} paddingLeft={2} paddingRight={2}>
           <LabelMarker label={data} />
         </Grid>
-        {/* <Grid item xs={4}>
-          {data.USR$NAME}
-        </Grid> */}
-        <Grid item xs={9}>
+        <Grid item flex={1}>
           {data.USR$DESCRIPTION}
         </Grid>
-        <Grid item xs={1}>
-          <Box>
+        <Grid item xs={2} md={1}>
+          <Box display={'inline-flex'} width="100%" justifyContent={'center'}>
             <PermissionsGate actionCode={6}>
               <IconButton onClick={handleEditClick}>
                 <EditOutlinedIcon fontSize="small" color="primary" />
@@ -202,6 +189,7 @@ export function LabelListItem(props: LabelListItemProps) {
         open={confirmOpen}
         title="Удаление метки"
         text="Вы уверены, что хотите продолжить?"
+        dangerous
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />

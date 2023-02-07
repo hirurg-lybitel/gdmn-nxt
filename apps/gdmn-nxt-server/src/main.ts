@@ -25,6 +25,10 @@ import reportsRouter from './app/routes/reportsRouter';
 import workTypes from './app/handlers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
 import permissionsRouter from './app/routes/permissionsRouter';
+import businessProcessRouter from './app/routes/businessProcess';
+import profileSettingsRouter from './app/routes/profileSettings';
+import { Notifications } from './app/routes/notifications';
+import faqRouter from './app/routes/faqRouter';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -34,16 +38,37 @@ const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
 
+// console.log(`['NODE' + '_ENV']`, process.env['NODE' + '_ENV']);
+console.log('NODE_ENV', process.env.NODE_ENV);
+const host = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 'localhost'
+    : process.env.NX_HOST_IP;
+})();
+
+console.log('host', host);
+
+const port = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 4444
+    : process.env.GDMN_NXT_SERVER_PORT;
+})();
+
+// const notificationPort = (() => {
+//   return !!process.env['NODE' + '_ENV'] || process.env['NODE' + '_ENV'] === 'development'
+//     ? 7777
+//     : process.env.NX_SOCKET_PORT;
+// })();
 
 app.use(cors({
   credentials: true,
-  origin: `http://localhost:${process.env.NODE_ENV === 'development' ? '4200' : '80'}` // 'http://localhost:80'
+  origin: `http://${host}:${process.env.NODE_ENV === 'development' ? '4201' : '80'}` // 'http://localhost:80'
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 const apiRoot = {
@@ -121,12 +146,12 @@ passport.use(new Strategy({
 ));
 
 passport.serializeUser((user: IUser, done) => {
-  console.log('passport serialize');
+  // console.log('passport serialize');
   done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`);
 });
 
 passport.deserializeUser(async (un: string, done) => {
-  console.log('passport deserialize');
+  // console.log('passport deserialize');
 
   const userType = un.slice(0, 1);
   const userName = un.slice(1);
@@ -244,6 +269,9 @@ router.get('/test', (req, res) => {
   }
 });
 
+/** Notifications module */
+Notifications({ router });
+
 /** Contacts */
 router.use(contactsRouter);
 
@@ -270,8 +298,13 @@ router.delete('/customercontracts/:id', customerContracts.remove);
 router.get('/worktypes', workTypes.get);
 router.get('/worktypes/contractJobKey/:contractJobKeys', workTypes.get);
 
+router.use(businessProcessRouter);
+
 /** Labels*/
 router.use(labelsRouter);
+
+/** FAQ*/
+router.use(faqRouter);
 
 /** Contracts list */
 router.use(contractsListRouter);
@@ -279,7 +312,7 @@ router.use(contractsListRouter);
 router.use(bankStatementsRouter);
 
 /** Deals */
-router.use(dealsRouter);
+// router.use(dealsRouter);
 
 /** Kanban */
 router.use(kanbanRouter);
@@ -298,6 +331,9 @@ router.post('/account', upsertAccount);
 router.put('/account/:ID', upsertAccount);
 
 router.use(reportsRouter);
+
+/** Profile settings */
+router.use(profileSettingsRouter);
 
 // router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
 
@@ -326,7 +362,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
+// const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
 const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 
 server.on('error', console.error);

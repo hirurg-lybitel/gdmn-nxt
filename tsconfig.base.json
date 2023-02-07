@@ -16,6 +16,9 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@gdmn-nxt/config": ["libs/config/src/index.ts"],
+      "@gdmn-nxt/socket": ["libs/socket/src/index.ts"],
+      "@gdmn-nxt/ui-assets": ["libs/ui-assets/src/index.ts"],
       "@gsbelarus/ui-common-dialogs": ["libs/ui-common-dialogs/src/index.ts"],
       "@gsbelarus/util-api-types": ["libs/util-api-types/src/index.ts"],
       "@gsbelarus/util-helpers": ["libs/util-helpers/src/index.ts"],

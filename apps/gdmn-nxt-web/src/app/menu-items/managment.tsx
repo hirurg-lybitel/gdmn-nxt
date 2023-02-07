@@ -1,5 +1,6 @@
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LabelIcon from '@mui/icons-material/Label';
+import WorkIcon from '@mui/icons-material/Work';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { IMenuItem } from '.';
 
@@ -10,6 +11,32 @@ const managment: IMenuItem = {
   type: 'group',
   children: [
     {
+      id: 'dealsGroup',
+      title: 'Сделки',
+      type: 'collapse',
+      icon: <WorkIcon color="secondary" />,
+      children: [
+        {
+          id: 'deals',
+          title: 'Список',
+          type: 'item',
+          url: 'managment/deals/list',
+        },
+        {
+          id: 'dealSources',
+          title: 'Источники заявок',
+          type: 'item',
+          url: 'managment/deals/dealSources',
+        },
+        {
+          id: 'denyReasons',
+          title: 'Причины отказа',
+          type: 'item',
+          url: 'managment/deals/denyReasons',
+        },
+      ]
+    },
+    {
       id: 'customers',
       title: 'Клиенты',
       type: 'collapse',
@@ -19,7 +46,7 @@ const managment: IMenuItem = {
           id: 'customers-list',
           title: 'Список клиентов',
           type: 'item',
-          url: 'customers/list'
+          url: 'managment/customers/list'
         },
       ]
     },
@@ -27,30 +54,9 @@ const managment: IMenuItem = {
       id: 'labels',
       title: 'Метки',
       type: 'item',
-      url: 'labels',
+      url: 'managment/labels',
       icon: <LabelIcon color="secondary" />,
     },
-    {
-      id: 'permissions',
-      title: 'Настройка прав',
-      type: 'collapse',
-      checkAction: 8,
-      icon: <AdminPanelSettingsIcon color="secondary" />,
-      children: [
-        {
-          id: 'permissions-view',
-          title: 'Действия',
-          type: 'item',
-          url: 'permissions/list'
-        },
-        {
-          id: 'permissions-usergroups',
-          title: 'Группы пользователей',
-          type: 'item',
-          url: 'permissions/usergroups'
-        }
-      ]
-    }
   ]
 };
 

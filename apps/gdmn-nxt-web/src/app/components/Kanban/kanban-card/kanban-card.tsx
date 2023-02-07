@@ -66,7 +66,6 @@ export function KanbanCard(props: KanbanCardProps) {
 
     const allTasks = tasks?.length;
     const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
-
     return (
       closedTasks
         ? <Stack direction="row" alignItems="center"spacing={0.5}>
@@ -142,6 +141,11 @@ export function KanbanCard(props: KanbanCardProps) {
     );
   }, []);
 
+  const doubleClick = useCallback(() => {
+    onEdit({ ...card, USR$ISREAD: true });
+    setEditCard(true);
+  }, [card]);
+
 
   const memoCard = useMemo(() => {
     const today = new Date();
@@ -159,6 +163,14 @@ export function KanbanCard(props: KanbanCardProps) {
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
+          ...(card?.USR$ISREAD || false
+            ? {}
+            : {
+              backgroundColor: 'rgba(193, 228, 250, 0.5)',
+              borderTop: '1px solid rgb(13, 228, 250)',
+              borderBottom: '1px solid rgb(13, 228, 250)',
+              borderRight: '1px solid rgb(13, 228, 250)',
+            }),
           ...(snapshot.isDragging
             ? {
               opacity: 0.7,
@@ -167,17 +179,17 @@ export function KanbanCard(props: KanbanCardProps) {
             : {
               borderLeft: `0.5rem solid ${
                 (() => {
-                  if (card.DEAL?.USR$DONE) return theme.menu?.backgroundColor;;
+                  if (card.DEAL?.USR$DONE) return theme.palette.primary.main;
                   switch (true) {
                     case dateDiff <= 0:
-                      return theme.color.red['A200'];
+                      return theme.color.red.A200;
                     case dateDiff > 1:
-                      return theme.menu?.backgroundColor;
+                      return theme.palette.primary.main;
                     case dateDiff > 0:
                     case dateDiff < 1:
-                      return theme.color.yellow['A700'];
+                      return theme.color.yellow.A700;
                     default:
-                      return theme.menu?.backgroundColor;
+                      return theme.palette.primary.main;
                   }
                 })()
               }`,
@@ -191,7 +203,7 @@ export function KanbanCard(props: KanbanCardProps) {
             right: 0,
           }
         }}
-        onDoubleClick={() => setEditCard(true)}
+        onDoubleClick={doubleClick}
       >
         <Stack direction="column" spacing={1}>
           <Stack
@@ -218,8 +230,8 @@ export function KanbanCard(props: KanbanCardProps) {
             <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
             <Box flex={1} />
             <Typography>
-              {card.DEAL?.USR$DEADLINE
-                ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+              {card.DEAL?.CREATIONDATE
+                ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
                 : '-/-'}
             </Typography>
           </Stack>

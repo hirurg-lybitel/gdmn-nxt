@@ -137,7 +137,7 @@ const upsert: RequestHandler = async (req, res) => {
       task.USR$CARDKEY,
       task.USR$NAME,
       Number(task.USR$CLOSED),
-      new Date(task.USR$DEADLINE),
+      task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
       task.PERFORMER?.ID,
       task.CREATOR?.ID
     ];
@@ -158,7 +158,7 @@ const upsert: RequestHandler = async (req, res) => {
 };
 
 const remove: RequestHandler = async(req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const id = parseInt(req.params.id);
 
@@ -180,6 +180,7 @@ const remove: RequestHandler = async(req, res) => {
         DO
         BEGIN
           DELETE FROM USR$CRM_KANBAN_CARD_TASKS WHERE CURRENT OF curTASK;
+          DELETE FROM USR$CRM_NOTIFICATIONS WHERE USR$KEY = :TASK_ID;
 
           SUCCESS = 1;
         END
@@ -189,11 +190,8 @@ const remove: RequestHandler = async(req, res) => {
       [id]
     );
 
-
-
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -203,7 +201,7 @@ const remove: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

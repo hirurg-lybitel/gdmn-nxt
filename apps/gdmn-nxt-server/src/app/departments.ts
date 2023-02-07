@@ -59,15 +59,15 @@ const get: RequestHandler = async (req, res) => {
     };
 
     return res.status(200).json(result);
-  } catch(error) {
+  } catch (error) {
     return res.status(500).send(resultError(error.message));
-  }finally {
+  } finally {
     await releaseReadTransaction(req.sessionID);
   }
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -122,7 +122,6 @@ const upsert: RequestHandler = async (req, res) => {
 
 
     const row = await attachment.executeSingleton(transaction, sql, paramsValues);
-    await transaction.commit();
 
     const result: IRequestResult<{ departments: IContactWithID[] }> = {
       queries: {
@@ -135,13 +134,13 @@ const upsert: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
@@ -170,7 +169,6 @@ const remove: RequestHandler = async(req, res) => {
 
     const data: {SUCCESS: number}[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -180,7 +178,7 @@ const remove: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 

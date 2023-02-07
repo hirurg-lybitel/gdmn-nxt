@@ -121,10 +121,7 @@ const add: RequestHandler = async(req, res) => {
       _schema
     };
 
-    await transaction.commit();
-
     return res.status(200).json(result);
-
   } catch (error) {
       return res.status(500).send(resultError(error.message));
   } finally {
@@ -204,11 +201,7 @@ const update: RequestHandler = async(req, res) => {
       _schema
     };
 
-    await transaction.commit();
-
-    //return res.status(500).json(resultError('my test error message'));
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
@@ -218,14 +211,12 @@ const update: RequestHandler = async(req, res) => {
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
 
-  let result: ResultSet;
   try {
-    result = await attachment.executeQuery(
-      transaction,
-      `EXECUTE BLOCK(
-        ID INTEGER = ?
+    const sql =`
+      EXECUTE BLOCK(
+        ID INTEGER = :id
       )
       RETURNS(SUCCESS SMALLINT)
       AS
@@ -241,23 +232,19 @@ const remove: RequestHandler = async(req, res) => {
         END
 
         SUSPEND;
-      END`,
-      [ id ]
-    );
+      END`;
 
-    const data: {SUCCESS: number}[] = await result.fetchAsObject();
-    await result.close();
-    await transaction.commit();
+    const data: object[] = await fetchAsObject(sql, [{ id }]);
 
-    if (data[0].SUCCESS !== 1) {
+    if (data[0]['SUCCESS'] !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
-    }
+    };
 
     return res.status(200).json({ 'id': id });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 

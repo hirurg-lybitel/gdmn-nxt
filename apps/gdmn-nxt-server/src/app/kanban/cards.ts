@@ -56,8 +56,6 @@ const get: RequestHandler = async (req, res) => {
       _schema
     };
 
-    await commitTransaction(req.sessionID, transaction);
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
@@ -67,9 +65,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
-
-  const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -88,14 +84,8 @@ const upsert: RequestHandler = async (req, res) => {
 
     // const allFields = [...new Set(entites['TgdcDepartment'].attributes.map(attr => attr.name))];
 
-    let allFields;
-    let actualFields;
     let paramsValues;
-    let actualFieldsNames;
-    let paramsString;
-    let returnFieldsNames;
     let sql;
-    let dealRecord: IDeal;
     const deal: IDeal = req.body['DEAL'];
 
     // allFields = ['ID', 'USR$NAME', 'USR$DISABLED', 'USR$AMOUNT', 'USR$CONTACTKEY'];
@@ -129,13 +119,14 @@ const upsert: RequestHandler = async (req, res) => {
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
-        USR$PERFORMER, USR$DEADLINE, USR$SOURCE, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        USR$PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
+        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
     paramsValues = [
-      deal.ID > 0 ? deal.ID : ID,
+      ID,
       deal.USR$NAME || '',
       deal.USR$DISABLED ? 1 : 0,
       deal.USR$AMOUNT || 0,
@@ -143,16 +134,23 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CREATOR?.ID || null,
       deal.PERFORMER?.ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
-      deal.USR$SOURCE,
-      deal.USR$READYTOWORK,
-      deal.USR$DONE,
+      deal.SOURCE?.ID || null,
+      deal.USR$READYTOWORK || 0,
+      deal.USR$DONE || 0,
       deal.DEPARTMENT?.ID || null,
       deal.COMMENT,
-      deal.DENIED,
-      deal.DENYREASON?.ID || null
+      deal.DENIED || 0,
+      deal.DENYREASON?.ID || null,
+      deal.REQUESTNUMBER,
+      deal.PRODUCTNAME,
+      deal.CONTACT_NAME,
+      deal.CONTACT_EMAIL,
+      deal.CONTACT_PHONE,
+      deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
+      deal.DESCRIPTION || ''
     ];
 
-    dealRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    const dealRecord: IDeal = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
 
     // sql = `
     //   EXECUTE PROCEDURE USR$CRM_CREATE_DEAL(
@@ -162,14 +160,23 @@ const upsert: RequestHandler = async (req, res) => {
     //     ${new Date(deal.USR$DEADLINE).toLocaleDateString() || null}
     //   )`;
 
+    // DEALKEY DINTKEY,
+    // USERKEY DINTKEY,
+    // CONTACTKEY USR$GS_DCUSTOMER,
+    // EMPLKEY USR$BN_DEMPLOYEE,
+    // DATEENDPLAN DDATE,
+    // CREATIONDATE DDATE)
+
     sql = `
-      EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?)`;
+      EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
 
     paramsValues = [
+      ID,
       deal.CREATOR?.ID || null,
       deal.CONTACT?.ID || null,
       deal.PERFORMER?.ID || null,
-      new Date(deal.USR$DEADLINE)
+      deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
+      deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
 
     const rec = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
@@ -179,10 +186,13 @@ const upsert: RequestHandler = async (req, res) => {
       ID = await genId(attachment, transaction);
     };
 
-    allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY'];
-    actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
+    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY', 'USR$ISREAD'];
+    const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     paramsValues = actualFields.map(field => {
+      if (typeof req.body[field] === 'boolean') {
+        return req.body[field] ? 1 : 0;
+      };
       return field === 'USR$DEALKEY' ? dealRecord.ID : req.body[field];
     });
 
@@ -202,9 +212,9 @@ const upsert: RequestHandler = async (req, res) => {
       };
     };
 
-    actualFieldsNames = actualFields.join(',');
-    paramsString = actualFields.map(_ => '?').join(',');
-    returnFieldsNames = allFields.join(',');
+    const actualFieldsNames = actualFields.join(',');
+    const paramsString = actualFields.map(_ => '?').join(',');
+    const returnFieldsNames = allFields.join(',');
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_KANBAN_CARDS(${actualFieldsNames})
@@ -221,20 +231,16 @@ const upsert: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    await transaction.commit();
-
-    // await commitTransaction(req.sessionID, transaction);
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   };
 };
 
 const remove: RequestHandler = async(req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -257,6 +263,7 @@ const remove: RequestHandler = async(req, res) => {
         BEGIN
           DELETE FROM USR$CRM_KANBAN_CARDS WHERE CURRENT OF curCARD;
           DELETE FROM USR$CRM_DEALS deal WHERE deal.ID = :DEAL_ID;
+          DELETE FROM USR$CRM_NOTIFICATIONS WHERE USR$KEY = :DEAL_ID;
 
           SUCCESS = 1;
         END
@@ -273,12 +280,11 @@ const remove: RequestHandler = async(req, res) => {
     };
 
     await result.close();
-    await commitTransaction(req.sessionID, transaction);
     return res.status(200).json({ 'ID': id, 'USR$MASTERKEY': data[0].USR$MASTERKEY });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

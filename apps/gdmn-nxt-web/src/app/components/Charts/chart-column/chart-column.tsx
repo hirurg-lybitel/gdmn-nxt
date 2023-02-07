@@ -84,9 +84,9 @@ export function ChartColumn(props: ChartColumnProps) {
   const analyticsDataParams: IAnalyticsDataParams = {
     dateBegin: new Date(activeYears.slice(0, 1)[0], 0, 1).getTime() || 0,
     dateEnd: new Date(activeYears.slice(-1)[0], 11, 31).getTime() || 0,
-    ...(chartFilter['departments']?.length > 0 ? { departments: chartFilter['departments'].map((el: any) => el.ID) } : {}),
-    ...(chartFilter['contracts']?.length > 0 ? { contracts: chartFilter['contracts'].map((el: any) => el.ID) } : {}),
-    ...(chartFilter['workTypes']?.length > 0 ? { workTypes: chartFilter['workTypes'].map((el: any) => el.ID) } : {})
+    ...(chartFilter.departments?.length > 0 ? { departments: chartFilter.departments.map((el: any) => el.ID) } : {}),
+    ...(chartFilter.contracts?.length > 0 ? { contracts: chartFilter.contracts.map((el: any) => el.ID) } : {}),
+    ...(chartFilter.workTypes?.length > 0 ? { workTypes: chartFilter.workTypes.map((el: any) => el.ID) } : {})
   };
 
   const {
@@ -98,7 +98,7 @@ export function ChartColumn(props: ChartColumnProps) {
 
   const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
   const { data: workTypes, isFetching: workTypesIsFetching } = useGetWorkTypesQuery({
-    contractJob: chartFilter['contracts']?.map((el: any) => el.ID)
+    contractJob: chartFilter.contracts?.map((el: any) => el.ID)
   });
   const { data: customerContracts, isFetching: customerContractsIsFetching } = useGetCustomerContractsQuery();
 
@@ -116,12 +116,12 @@ export function ChartColumn(props: ChartColumnProps) {
 
     /** При очистке выбранных заказов очищаем выбранные виды работ */
     if (key === 'contracts' && value?.length === 0) {
-      delete newChartFilter['workTypes'];
+      delete newChartFilter.workTypes;
     };
 
     /** Если были выбраны виды работ без указания заказов, то очищаем их при первичном выборе заказов */
-    if (key === 'contracts' && !newChartFilter['contracts']) {
-      delete newChartFilter['workTypes'];
+    if (key === 'contracts' && !newChartFilter.contracts) {
+      delete newChartFilter.workTypes;
     };
     setChartFilter({ ...newChartFilter, [key]: value });
   };
@@ -202,6 +202,7 @@ export function ChartColumn(props: ChartColumnProps) {
       verticalAlign: 'middle',
       style: {
         fontSize: '20px',
+        color: theme.textColor
       }
     },
     xaxis: {
@@ -209,18 +210,24 @@ export function ChartColumn(props: ChartColumnProps) {
       labels: {
         formatter: (value) => (
           isNaN(Number(value)) ? value : Number(value).toLocaleString()
-        )
+        ),
+        style: {
+          colors: theme.textColor
+        }
       }
     },
     yaxis: {
       labels: {
         formatter: (value) => (
           value.toLocaleString()
-        )
+        ),
+        style: {
+          colors: theme.textColor
+        }
       }
     },
     tooltip: {
-      theme: 'light'
+      theme: theme.palette.mode
     },
     plotOptions: {
       bar: {
@@ -245,7 +252,10 @@ export function ChartColumn(props: ChartColumnProps) {
       }
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
+      style: {
+        colors: ['blue']
+      }
     },
   };
 
@@ -270,7 +280,7 @@ export function ChartColumn(props: ChartColumnProps) {
         maxHeight: 'calc(100vh - 130px)'
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex">
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
         {analyticsDataIsLoading
           ? <ChartSkeleton />
           : <>
@@ -316,7 +326,7 @@ export function ChartColumn(props: ChartColumnProps) {
                   loading={departmentsIsFetching}
                   options={departments || []}
                   onChange={(e, value) => changeChartFilter('departments', value)}
-                  value={chartFilter['departments'] || []}
+                  value={chartFilter.departments || []}
                   getOptionLabel={option => option.NAME}
                   renderOption={(props, option, { selected }) => (
                     <li {...props} key={option.ID}>
@@ -343,7 +353,7 @@ export function ChartColumn(props: ChartColumnProps) {
                   loading={customerContractsIsFetching}
                   options={customerContracts || []}
                   onChange={(e, value) => changeChartFilter('contracts', value)}
-                  value={chartFilter['contracts'] || []}
+                  value={chartFilter.contracts || []}
                   getOptionLabel={option => option.USR$NUMBER}
                   renderOption={(props, option, { selected }) => (
                     <li {...props} key={option.ID}>
@@ -371,7 +381,7 @@ export function ChartColumn(props: ChartColumnProps) {
                   loading={workTypesIsFetching}
                   options={workTypes || []}
                   onChange={(e, value) => changeChartFilter('workTypes', value)}
-                  value={chartFilter['workTypes'] || []}
+                  value={chartFilter.workTypes || []}
                   getOptionLabel={option => option.USR$NAME || ''}
                   renderOption={(props, option, { selected }) => (
                     <li {...props} key={option.ID}>
@@ -396,7 +406,7 @@ export function ChartColumn(props: ChartColumnProps) {
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Box flex={1}>
+            <Box flex={1} style={{ color: 'black' }}>
               <Chart
                 options={chartOptions}
                 series={chartData.series}

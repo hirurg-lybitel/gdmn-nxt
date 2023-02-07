@@ -1,6 +1,6 @@
-import { ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactPerson, ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
 import { resultError } from './responseMessages';
 import { genId } from './utils/genId';
 
@@ -8,7 +8,7 @@ export const getContacts: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
 
   const { pageSize, pageNo } = req.query;
-  const { DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, NAME } = req.query;
+  const { DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME } = req.query;
   const { field: sortField, sort: sortMode } = req.query;
 
   let fromRecord = 0;
@@ -21,7 +21,8 @@ export const getContacts: RequestHandler = async (req, res) => {
     if (fromRecord === 0) fromRecord = 1;
   };
 
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+
 
   try {
     const _schema: IDataSchema = {
@@ -48,11 +49,13 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query }) => {
-      // const aTime = new Date().getTime();
-      const rs = await attachment.executeQuery(transaction, query, []);
-      const data = await rs.fetchAsObject();
-      // console.log(`contacts ${name} fetch time ${new Date().getTime() - aTime} ms`);
-      await rs.close();
+      const startTime = new Date().getTime();
+      // const rs = await attachment.executeQuery(transaction, query, []);
+      const data = await fetchAsObject(query);
+      // const data = await rs.fetchAsObject();
+      const endTime = new Date().getTime();
+      console.log(`${name} fetch time ms`, endTime - startTime);
+      // await rs.close();
 
       return data as any;
     };
@@ -72,10 +75,14 @@ export const getContacts: RequestHandler = async (req, res) => {
             c.email,
             c.parent,
             comp.taxid,
-            c.address
+            c.address,
+            com.FULLNAME,
+            c.FAX,
+            c.USR$CRM_POSTADDRESS AS POSTADDRESS
           FROM
             gd_contact c
             join gd_companycode comp on comp.COMPANYKEY = c.id
+            JOIN GD_COMPANY com ON com.CONTACTKEY = c.ID
             ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
             ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
             ${DEPARTMENTS || CONTRACTS || WORKTYPES
@@ -83,9 +90,9 @@ export const getContacts: RequestHandler = async (req, res) => {
                 ${CONTRACTS ? `AND cust.USR$JOBKEY IN (${CONTRACTS})` : ''}
                 ${DEPARTMENTS ? `AND cust.USR$DEPOTKEY IN (${DEPARTMENTS})` : ''}
                 ${WORKTYPES ? `AND cust.USR$JOBWORKKEY IN (${WORKTYPES})` : ''}`
-              : ''
-            }
+              : ''}
             ${LABELS ? `JOIN USR$CRM_CONTACT_LABELS lab ON lab.USR$CONTACTKEY = c.ID AND lab.USR$LABELKEY IN (${LABELS})` : ''}
+            ${BUSINESSPROCESSES ? `JOIN USR$CROSS1242_1980093301 bpcross ON bpcross.USR$GD_CONTACTKEY = c.ID AND bpcross.USR$BG_BISNESS_PROCKEY IN (${BUSINESSPROCESSES})` : ''}
           WHERE
             c.contacttype IN (3,5) /*and c.id = 147960147*/
             ${customerId > 0 ? `AND c.ID = ${customerId}` : ''}
@@ -108,6 +115,13 @@ export const getContacts: RequestHandler = async (req, res) => {
           ORDER BY cl.USR$CONTACTKEY`
       },
       {
+        name: 'businessProcesses',
+        query: `
+          SELECT c.USR$GD_CONTACTKEY AS CONTACTKEY, b.ID, b.USR$NAME AS NAME
+          FROM USR$CROSS1242_1980093301 c
+          JOIN USR$BG_BISNESS_PROC b ON b.ID = c.USR$BG_BISNESS_PROCKEY`
+      },
+      {
         name: 'rowCount',
         query: `
           SELECT COUNT(DISTINCT c.ID)
@@ -124,6 +138,7 @@ export const getContacts: RequestHandler = async (req, res) => {
             : ''
           }
           ${LABELS ? `JOIN USR$CRM_CONTACT_LABELS lab ON lab.USR$CONTACTKEY = c.ID AND lab.USR$LABELKEY IN (${LABELS})` : ''}
+          ${BUSINESSPROCESSES ? `JOIN USR$CROSS1242_1980093301 bpcross ON bpcross.USR$GD_CONTACTKEY = c.ID AND bpcross.USR$BG_BISNESS_PROCKEY IN (${BUSINESSPROCESSES})` : ''}
         WHERE
           c.contacttype IN (3,5) /*and c.id = 147960147*/
           ${customerId > 0 ? `AND c.ID = ${customerId}` : ''}
@@ -153,7 +168,12 @@ export const getContacts: RequestHandler = async (req, res) => {
       // }
     ];
 
-    const [rawFolders, rawContacts, rawLabels, rowCount] = await Promise.all(queries.map(execQuery));
+    let startTime = new Date().getTime();
+    const [rawFolders, rawContacts, rawLabels, rawBusinessProcesses, rowCount] = await Promise.all(queries.map(execQuery));
+
+    let endTime = new Date().getTime();
+
+    console.log('Promise time ms', endTime - startTime);
 
     // const [rawContacts] = await Promise.all(queries.map(execQuery));
     // const rawContacts = await Promise.resolve(execQuery(q[2]));
@@ -164,6 +184,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       [customerId: string]: any[];
     };
     const labels: IMapOfArrays = {};
+    const businessProcesses: IMapOfArrays = {};
 
 
     rawLabels.map(l => {
@@ -173,6 +194,16 @@ export const getContacts: RequestHandler = async (req, res) => {
         }
       } else {
         labels[l.USR$CONTACTKEY] = [{ ...l }];
+      };
+    });
+
+    rawBusinessProcesses.map(bp => {
+      if (businessProcesses[bp.CONTACTKEY]) {
+        if (!businessProcesses[bp.CONTACTKEY].includes(bp.ID)) {
+          businessProcesses[bp.CONTACTKEY].push({ ...bp });
+        }
+      } else {
+        businessProcesses[bp.CONTACTKEY] = [{ ...bp }];
       };
     });
 
@@ -189,10 +220,13 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     const contacts: ICustomer[] = rawContacts.map(c => {
       const LABELS = labels[c.ID] ?? null;
+      const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
+
       return {
         ...c,
         NAME: c.NAME || '<не указано>',
         LABELS,
+        BUSINESSPROCESSES,
         FOLDERNAME: folders[c.PARENT]
       };
     });
@@ -207,76 +241,61 @@ export const getContacts: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseReadTransaction(req.sessionID);
+    const a = 'a';
+    await releaseReadTransaction();
+    // await releaseReadTransaction(req.sessionID);
   }
 };
 
 export const updateContact: RequestHandler = async (req, res) => {
-  const { id } = req.params;
+  const { id: ID } = req.params;
   const { NAME, PHONE, EMAIL, PARENT, ADDRESS } = req.body;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, executeQuery, fetchAsObject } = await startTransaction(req.sessionID);
 
   try {
     try {
-      await attachment.execute(
-        transaction,
-        `UPDATE GD_CONTACT
-         SET
-           NAME = ?,
-           PHONE = ?,
-           EMAIL = ?,
-           PARENT = ?,
-           ADDRESS = ?
-         WHERE ID = ?`,
-        [NAME, PHONE, EMAIL, PARENT, ADDRESS, id]
-      );
+      await executeQuery(`
+        UPDATE GD_CONTACT
+        SET
+          NAME = ?,
+          PHONE = ?,
+          EMAIL = ?,
+          PARENT = ?,
+          ADDRESS = ?
+        WHERE ID = ?`,
+      [NAME, PHONE, EMAIL, PARENT, ADDRESS, ID]);
     } catch (error) {
       return res.status(500).send({ 'errorMessage': error.message });
     }
 
-    const resultSet = await attachment.executeQuery(
-      transaction,
-      `SELECT
-         con.ID,
-         con.PARENT,
-         con.NAME,
-         con.EMAIL,
-         con.PHONE,
-         par.NAME,
-         con.ADDRESS
-       FROM GD_CONTACT con
-       JOIN GD_CONTACT par ON par.ID = con.PARENT
-       WHERE con.ID = ?`,
-      [id]
-    );
-
-    const row = await resultSet.fetch();
+    const row = await fetchAsObject(`
+      SELECT
+        con.ID,
+        con.PARENT,
+        con.NAME,
+        con.EMAIL,
+        con.PHONE,
+        par.NAME,
+        con.ADDRESS
+      FROM GD_CONTACT con
+      JOIN GD_CONTACT par ON par.ID = con.PARENT
+      WHERE con.ID = :ID`,
+    { ID });
 
     const _schema = { };
 
     const result: IRequestResult = {
       queries: {
-        contacts: [{
-          ID: row[0][0],
-          PARENT: row[0][1],
-          NAME: row[0][2],
-          EMAIL: row[0][3],
-          PHONE: row[0][4],
-          FOLDERNAME: row[0][5],
-          ADDRESS: row[0][6]
-        }]
+        contacts: [row]
       },
       _schema
     };
 
-    await resultSet.close();
-    await transaction.commit();
-
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error });
+    return res.status(500).send(resultError(error.errorMessage));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 
@@ -285,7 +304,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
   if (id && !parseInt(id)) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
-  const { NAME, PHONE, EMAIL, PARENT, ADDRESS, TAXID, LABELS } = req.body;
+  const { NAME, PHONE, EMAIL, PARENT, ADDRESS, TAXID, LABELS, BUSINESSPROCESSES } = req.body;
   const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
@@ -300,12 +319,13 @@ export const upsertContact: RequestHandler = async (req, res) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       data['LABELS'] = await upsertLabels({ attachment, transaction }, data['ID'], LABELS);
+      data['BUSINESSPROCESSES'] = await upsertBusinessProcesses({ attachment, transaction }, data['ID'], BUSINESSPROCESSES);
 
       return [name, data];
     };
 
     const query = {
-      name: 'contacts',
+      name: 'contact',
       query: `
         EXECUTE BLOCK(
           in_ID  TYPE OF COLUMN GD_CONTACT.ID = ?,
@@ -371,7 +391,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
 export const deleteContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
@@ -388,12 +408,11 @@ export const deleteContact: RequestHandler = async (req, res) => {
       [id]
     );
 
-    await transaction.commit();
     return res.status(200).send(id);
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error.message });
+    return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 
@@ -445,13 +464,23 @@ export const getContactHierarchy : RequestHandler = async (req, res) => {
 };
 
 const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabelsContact[]): Promise<ILabelsContact[]> => {
+  const { attachment, transaction } = firebirdPropsL;
+
   if (!labels || labels?.length === 0) {
+    try {
+      const sql = `
+        DELETE FROM USR$CRM_CONTACT_LABELS
+        WHERE USR$CONTACTKEY = ?` ;
+
+      await attachment.execute(transaction, sql, [contactId])
+
+    } catch (error) {
+      console.error('upsertLabels', error);
+    }
     return [];
   };
 
   const contactLabels = labels.map(label => ({ CONTACT: contactId, LABELKEY: label.ID }));
-
-  const { attachment, transaction } = firebirdPropsL;
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
@@ -505,7 +534,7 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
 
     return records as ILabelsContact[];
   } catch (error) {
-    console.log('catch', error);
+    console.log('upsertLabels', error);
 
     return;
   } finally {
@@ -544,9 +573,36 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
           FROM USR$CRM_CUSTOMER
           ORDER BY USR$CUSTOMERKEY`,
       },
+      {
+        name: 'persons',
+        query: `
+          SELECT
+            con.PARENT, empl.ID, empl.NAME, empl.EMAIL, p.RANK
+          FROM GD_CONTACT con
+          JOIN GD_CONTACT empl ON empl.PARENT = con.ID
+          JOIN GD_PEOPLE p  ON p.CONTACTKEY = empl.ID
+          WHERE
+            UPPER(con.NAME) = 'КОНТАКТЫ'
+          ORDER BY con.PARENT`
+      },
+      {
+        name: 'phones',
+        query: `
+          SELECT
+            p.ID, p.USR$CONTACTKEY, p.USR$PHONENUMBER
+          FROM USR$CRM_PHONES p
+          ORDER BY p.USR$CONTACTKEY`
+      },
+      // {
+      //   name: 'businessProcesses',
+      //   query: `
+      //     SELECT c.USR$GD_CONTACTKEY AS CONTACTKEY, b.ID
+      //     FROM USR$CROSS1242_1980093301 c
+      //     JOIN USR$BG_BISNESS_PROC b ON b.ID = c.USR$BG_BISNESS_PROCKEY`
+      // }
     ];
 
-    const [rawCustomers] = await Promise.all(queries.map(execQuery));
+    const [rawCustomers, rawPersons, rawPhones] = await Promise.all(queries.map(execQuery));
 
     interface IMapOfArrays {
       [key: string]: any[];
@@ -555,7 +611,8 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
     const jobWorks: IMapOfArrays = {};
     const contracts: IMapOfArrays = {};
     const departments: IMapOfArrays = {};
-    const labels: IMapOfArrays = {};
+    const persons: IMapOfArrays = {};
+    const phones: IMapOfArrays = {};
 
     rawCustomers.forEach(c => {
       if (c.USR$JOBKEY) {
@@ -589,13 +646,41 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
       }
     });
 
+    rawPhones.forEach(p => {
+      const newPhone = {
+        ID: p.ID,
+        USR$PHONENUMBER: p.USR$PHONENUMBER
+      };
+
+      if (phones[p.USR$CONTACTKEY]) {
+        phones[p.USR$CONTACTKEY].push(newPhone);
+      } else {
+        phones[p.USR$CONTACTKEY] = [newPhone];
+      }
+    });
+
+    rawPersons.forEach(p => {
+      const newPerson: IContactPerson = {
+        ID: p.ID,
+        NAME: p.NAME,
+        EMAIL: p.EMAIL,
+        RANK: p.RANK,
+        PHONES: phones[p.ID] || []
+      };
+
+      if (persons[p.PARENT]) {
+        persons[p.PARENT].push(newPerson);
+      } else {
+        persons[p.PARENT] = [newPerson];
+      };
+    });
     const result: IRequestResult = {
       queries: {
-        // ...Object.fromEntries(await Promise.all(queries.map(execQuery)))
         cross: [{
           departments,
           contracts,
-          jobWorks
+          jobWorks,
+          persons,
         }]
       },
       _schema
@@ -607,4 +692,55 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
   } finally {
     await releaseReadTransaction(req.sessionID);
   }
+};
+
+const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, businessProcesses: IBusinessProcess[]) => {
+  const { attachment, transaction } = firebirdPropsL;
+
+  if (!businessProcesses || businessProcesses?.length === 0) {
+    try {
+      const sql = `
+        DELETE FROM USR$CROSS1242_1980093301
+        WHERE USR$GD_CONTACTKEY = ?` ;
+
+      await attachment.execute(transaction, sql, [contactId])
+
+    } catch (error) {
+      console.error('upsertBusinessProcesses', error);
+    }
+    return [];
+  };
+
+  try {
+    const params = businessProcesses.map(bp => ({ contactId, businessProcessId: bp.ID }));
+
+    const sql = `
+      EXECUTE BLOCK(
+        contactId INTEGER = ?,
+        businessProcessId INTEGER = ?
+      )
+      RETURNS(
+        ID INTEGER
+      )
+      AS
+      BEGIN
+        DELETE FROM USR$CROSS1242_1980093301
+        WHERE USR$GD_CONTACTKEY = :contactId AND USR$BG_BISNESS_PROCKEY = :businessProcessId ;
+
+        UPDATE OR INSERT INTO USR$CROSS1242_1980093301(USR$GD_CONTACTKEY, USR$BG_BISNESS_PROCKEY)
+        VALUES(:contactId, :businessProcessId)
+        MATCHING(USR$GD_CONTACTKEY, USR$BG_BISNESS_PROCKEY)
+        RETURNING USR$BG_BISNESS_PROCKEY INTO :ID;
+
+        SUSPEND;
+      END`;
+
+    const records: IBusinessProcess[] = await Promise.all(params.map(async bp => {
+      return (await attachment.executeReturningAsObject(transaction, sql, Object.values(bp)));
+    }));
+
+    return records;
+  } catch (error) {
+    console.error('upsertBusinessProcesses', error);
+  };
 };

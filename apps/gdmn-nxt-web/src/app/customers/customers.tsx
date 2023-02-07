@@ -1,18 +1,8 @@
-import {
-  DataGridPro,
-  GridColDef,
-  ruRU,
-  GridFilterItem,
-  GridFilterInputValueProps,
-  GridFilterModel,
-  GridFilterOperator,
-  GridSortModel
-} from '@mui/x-data-grid-pro';
-import './customers.module.less';
+import { DataGridPro, GridColDef, ruRU, GridFilterItem, GridFilterInputValueProps, GridFilterModel, GridFilterOperator, GridSortModel } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
+import { Chip, Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, TextField } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -24,14 +14,16 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from './customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { IContactWithID, IContractJob, ICustomer, ICustomerContract, ICustomerContractWithID, ILabel, IWorkType } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactWithID, IContractJob, ICustomer, ICustomerContract, ICustomerContractWithID, ILabel, IWorkType } from '@gsbelarus/util-api-types';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
 import CustomNoRowsOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLoadingOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomLoadingOverlay';
 import CustomizedCard from '../components/Styled/customized-card/customized-card';
 import { Link, useNavigate } from 'react-router-dom';
-import CustomersFilter, { IFilteringData } from './customers-filter/customers-filter';
+import CustomersFilter, {
+  IFilteringData
+} from './customers-filter/customers-filter';
 import SearchBar from '../components/search-bar/search-bar';
 import CustomGridToolbarOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
@@ -42,6 +34,10 @@ import LabelMarker from '../components/Labels/label-marker/label-marker';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetDepartmentsQuery } from '../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
+import { useGetBusinessProcessesQuery } from '../features/business-processes';
+import { maxWidth } from '@mui/system';
+import style from './customers.module.less';
+import DataField from './dataField/DataField';
 
 const useStyles = makeStyles((theme: Theme) => ({
   DataGrid: {
@@ -53,41 +49,40 @@ const useStyles = makeStyles((theme: Theme) => ({
       borderRadius: '6px'
     },
     '& ::-webkit-scrollbar:hover': {
-      backgroundColor: '#f0f0f0',
+      backgroundColor: '#f0f0f0'
     },
     '& ::-webkit-scrollbar-thumb': {
       position: 'absolute',
       right: 10,
       borderRadius: '6px',
-      backgroundColor: 'rgba(170, 170, 170, 0.5)',
+      backgroundColor: 'rgba(170, 170, 170, 0.5)'
     },
     '& ::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: '#999',
+      backgroundColor: '#999'
     },
-    '&.MuiDataGrid-root .MuiDataGrid-cell:focus, .MuiDataGrid-columnHeader:focus': {
-      outline: 'none',
+    '&.MuiDataGrid-root .MuiDataGrid-cell:focus, .MuiDataGrid-columnHeader:focus':
+      {
+        outline: 'none'
+      },
+    '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
+      outline: 'none !important'
     },
     '& .MuiDataGrid-iconSeparator': {
-      display: 'none',
+      display: 'none'
     },
     '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
-      padding: '24px',
+      padding: '24px'
     },
     '& .MuiDataGrid-columnHeader': {
       fontSize: '1rem'
-    },
-  },
+    }
+  }
 }));
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
-  padding: '2.5px 0px',
+  padding: '2.5px 0px'
 };
-
-// interface IPaginationData {
-//   pageNo: number;
-//   pageSize: number;
-// };
 
 /* eslint-disable-next-line */
 export interface CustomersProps {}
@@ -109,66 +104,89 @@ export function Customers(props: CustomersProps) {
   });
   const [sortingData, setSortingData] = useState<ISortingData | null>();
 
-  const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+  const filtersStorage = useSelector(
+    (state: RootState) => state.filtersStorage
+  );
 
   useEffect(() => {
-    setFilterModel(filtersStorage.filterModels['customers']);
-    setFilteringData(filtersStorage.filterData['customers']);
+    setFilterModel(filtersStorage.filterModels.customers);
+    setFilteringData(filtersStorage.filterData.customers);
   }, []);
 
-  const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
+  const { error: customersError, loading: customersLoading } = useSelector(
+    (state: RootState) => state.customers
+  );
 
   const { data: customersCross } = useGetCustomersCrossQuery();
-  const { data: customersResponse, isFetching: customerFetching, refetch: customerRefetch } = useGetCustomersQuery(
+  const {
+    data: customersResponse,
+    isFetching: customerFetching,
+    refetch: customerRefetch
+  } = useGetCustomersQuery(
     {
       pagination: paginationData,
       ...(filteringData ? { filter: filteringData } : {}),
-      ...(sortingData ? { sort: sortingData } : {}),
-    },
+      ...(sortingData ? { sort: sortingData } : {})
+    }
     // { refetchOnMountOrArgChange: true }
   );
 
-  const customersData: ICustomer[] = useMemo(() => [...customersResponse?.data || []], [customersResponse?.data]);
-  const customersCount: number | undefined = useMemo(() => customersResponse?.count || -1, [customersResponse?.count]);
+  const customersData: ICustomer[] = useMemo(
+    () => [...(customersResponse?.data || [])],
+    [customersResponse?.data]
+  );
+  const customersCount: number | undefined = useMemo(
+    () => customersResponse?.count || 0,
+    [customersResponse?.count]
+  );
   // const { data: customersData } = customersResponse;
   const { data: wotkTypes } = useGetWorkTypesQuery();
   const { data: departments } = useGetDepartmentsQuery();
   const { data: customerContracts } = useGetCustomerContractsQuery();
+  const { data: businessProcesses } = useGetBusinessProcessesQuery();
   const [customers, setCustomers] = useState<ICustomer[] | undefined>();
 
   useEffect(() => {
-    const newCustomers = customersData?.map(customer => {
-      const DEPARTMETNS: IContactWithID[] = [];
-      customersCross?.departments[customer.ID]?.forEach((el:number) => {
-        const department = departments?.find(wt => wt.ID === el);
+    const newCustomers = customersData?.map((customer) => {
+      const DEPARTMENTS: IContactWithID[] = [];
+      customersCross?.departments[customer.ID]?.forEach((el: number) => {
+        const department = departments?.find((wt) => wt.ID === el);
         if (!department) return;
-        DEPARTMETNS.push(department);
+        DEPARTMENTS.push(department);
       });
 
       const JOBWORKS: IWorkType[] = [];
-      customersCross?.jobWorks[customer.ID]?.forEach((el:number) => {
-        const wotkType = wotkTypes?.find(wt => wt.ID === el);
+      customersCross?.jobWorks[customer.ID]?.forEach((el: number) => {
+        const wotkType = wotkTypes?.find((wt) => wt.ID === el);
         if (!wotkType) return;
         JOBWORKS.push(wotkType);
       });
 
       const CONTRACTS: ICustomerContract[] = [];
-      customersCross?.contracts[customer.ID]?.forEach((el:number) => {
-        const customerContract = customerContracts?.find(wt => wt.ID === el);
+      customersCross?.contracts[customer.ID]?.forEach((el: number) => {
+        const customerContract = customerContracts?.find((wt) => wt.ID === el);
         if (!customerContract) return;
         CONTRACTS.push(customerContract);
       });
 
       return {
         ...customer,
-        DEPARTMETNS,
+        DEPARTMENTS,
         CONTRACTS,
         JOBWORKS
       };
     });
 
     setCustomers(newCustomers);
-  }, [customerFetching, customersData, customersCross, wotkTypes, departments, customerContracts]);
+  }, [
+    customerFetching,
+    customersData,
+    customersCross,
+    wotkTypes,
+    departments,
+    customerContracts,
+    businessProcesses
+  ]);
 
   const [updateCustomer] = useUpdateCustomerMutation();
   const [addCustomer] = useAddCustomerMutation();
@@ -176,160 +194,29 @@ export function Customers(props: CustomersProps) {
 
   const dispatch = useDispatch();
 
-  const { data: labels } = useGetLabelsQuery();
   const { errorMessage } = useSelector((state: RootState) => state.error);
 
   const theme = useTheme();
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
 
-  function CurrentLabelFilter(props: GridFilterInputValueProps) {
-    const { item, applyValue, focusElementRef } = props;
-
-    const label = labels?.find(el => el.ID === item.value);
-
-    return (
-      <div
-        style={{
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'end',
-          paddingBottom: '6px'
-        }}
-      >
-        <div
-          style={labelStyle}
-        >
-          {label ? <LabelMarker label={label} /> : <></>}
-        </div>
-      </div>
-    );
-  };
-
-  // const isLabel: GridFilterOperator = {
-  //   label: 'Содержит',
-  //   value: 'is',
-  //   getApplyFilterFn: (filterItem: GridFilterItem) => {
-  //     if (
-  //       !filterItem.columnField ||
-  //         !filterItem.value ||
-  //         !filterItem.operatorValue
-  //     ) {
-  //       return null;
-  //     }
-
-  //     return (params: any): boolean => {
-  //       return params.row.LABELS?.find((label: any) => label.ID === filterItem.value);
-  //     };
-  //   },
-  //   InputComponent: CurrentLabelFilter,
-  //   InputComponentProps: { type: 'number' },
-  // };
-
-  // const containLabels: GridFilterOperator = {
-  //   label: 'Содержит',
-  //   value: 'includes',
-  //   getApplyFilterFn: (filterItem: GridFilterItem) => {
-  //     if (
-  //       !filterItem.columnField ||
-  //       !filterItem.value ||
-  //       !filterItem.operatorValue
-  //     ) {
-  //       return null;
-  //     }
-
-  //     if (!filterItem?.value.length) return (params: any): boolean => true;
-
-  //     return (params: any): boolean => {
-  //       return params.row.LABELS?.find((label: any) => filterItem.value.find((el: any) => el.ID === label.ID));
-  //     };
-  //   }
-  // };
-
-  // const containContracts: GridFilterOperator = {
-  //   label: 'Содержит',
-  //   value: 'includes',
-  //   getApplyFilterFn: (filterItem: GridFilterItem) => {
-  //     if (
-  //       !filterItem.columnField ||
-  //       !filterItem.value ||
-  //       !filterItem.operatorValue
-  //     ) {
-  //       return null;
-  //     }
-
-  //     if (!filterItem?.value.length) return (params: any): boolean => true;
-
-  //     return (params: any): boolean => {
-  //       if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false) {
-  //         return params.row.CONTRACTS?.find((contract: any) => filterItem.value.find((el: any) => el.ID === contract.ID));
-  //       } else {
-  //         return filterItem.value.every((value: any) => {
-  //           return params.row.CONTRACTS?.find((el: any) => el.ID === value.ID);
-  //         });
-  //       }
-  //     };
-  //   }
-  // };
-
-  // const containDepartments: GridFilterOperator = {
-  //   label: 'Содержит',
-  //   value: 'includes',
-  //   getApplyFilterFn: (filterItem: GridFilterItem) => {
-  //     if (
-  //       !filterItem.columnField ||
-  //       !filterItem.value ||
-  //       !filterItem.operatorValue
-  //     ) {
-  //       return null;
-  //     }
-
-  //     if (!filterItem?.value.length) return (params: any): boolean => true;
-
-  //     return (params: any): boolean => {
-  //       if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false) {
-  //         return params.row.DEPARTMENTS?.find((department: any) => filterItem.value.find((el: any) => el.ID === department.ID));
-  //       } else {
-  //         return filterItem.value.every((value: any) => {
-  //           return params.row.DEPARTMENTS?.find((el: any) => el.ID === value.ID);
-  //         });
-  //       }
-  //     };
-  //   }
-  // };
-
-  // const containWorkTypes: GridFilterOperator = {
-  //   label: 'Содержит',
-  //   value: 'includes',
-  //   getApplyFilterFn: (filterItem: GridFilterItem) => {
-  //     if (
-  //       !filterItem.columnField ||
-  //       !filterItem.value ||
-  //       !filterItem.operatorValue
-  //     ) {
-  //       return null;
-  //     }
-
-  //     if (!filterItem?.value.length) return (params: any): boolean => true;
-  //     return (params: any): boolean => {
-  //       if (filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false) {
-  //         return params.row.JOBWORKS?.find((job: any) => filterItem.value.find((el: any) =>el.ID === job.ID));
-  //       } else {
-  //         return filterItem.value.every((value: any) => {
-  //           return params.row.JOBWORKS?.find((el: any) => el.ID === value.ID);
-  //         });
-  //       }
-  //     };
-  //   }
-  // };
-
-  const handleLabelClick = useCallback((label: ILabel) => () => {
-    setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: label.ID, operatorValue: 'is' }] });
-    setFilteringData({ 'LABELS': [{ ID: label.ID }] });
-  }, []);
+  const handleLabelClick = useCallback(
+    (label: ILabel) => () => {
+      setFilterModel({
+        items: [
+          { id: 1, columnField: 'LABELS', value: label.ID, operatorValue: 'is' }
+        ]
+      });
+      setFilteringData({ LABELS: [{ ID: label.ID }] });
+    },
+    []
+  );
 
   const columns: GridColDef[] = [
-    { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200,
+    {
+      field: 'NAME',
+      headerName: 'Наименование',
+      flex: 1,
+      minWidth: 200,
       renderCell: ({ value, row }) => {
         return (
           <Stack spacing={1}>
@@ -340,83 +227,30 @@ export function Customers(props: CustomersProps) {
                 padding: '0px',
                 width: 'fit-content',
                 display: 'flex',
-                gap: '5px',
+                flexWrap: 'wrap',
+                gap: '5px'
               }}
             >
-              {(row as ICustomer)?.LABELS?.map(label =>
+              {(row as ICustomer)?.LABELS?.map((label) => (
                 <ListItemButton
                   key={label.ID}
                   onClick={handleLabelClick(label)}
                   style={labelStyle}
                   sx={{
                     '&:hover': {
-                      backgroundColor: 'transparent',
+                      backgroundColor: 'transparent'
                     }
                   }}
                 >
                   <LabelMarker label={label} />
                 </ListItemButton>
-              )}
+              ))}
             </List>
-
           </Stack>
         );
       }
     },
     { field: 'PHONE', headerName: 'Телефон', width: 200 },
-    // { field: 'LABELS',
-    //   headerName: 'Метки',
-    //   width: 350,
-    //   renderCell: (params) => {
-    //     const numberLabelsInRow = 2;
-
-    //     const labels: ILabel[] = params.row.LABELS;
-
-    //     if (!labels?.length) {
-    //       return <></>;
-    //     };
-
-    //     return (
-    //       <Stack direction="column">
-    //         {labels.map((label, index) => {
-    //           if (index % numberLabelsInRow === 0) {
-    //             return (
-    //               <List
-    //                 key={label.ID + index * 10}
-    //                 style={{
-    //                   flexDirection: 'row',
-    //                   padding: '0px',
-    //                   width: 'fit-content',
-    //                 }}
-    //               >
-    //                 {labels.slice(index, index + numberLabelsInRow).map((subLabel, index) => {
-    //                   return (
-    //                     <ListItemButton
-    //                       key={subLabel.ID}
-    //                       onClick={() => {
-    //                         setFilterModel({ items: [{ id: 1, columnField: 'LABELS', value: subLabel.ID, operatorValue: 'is' }] });
-    //                         setFilteringData({ 'LABELS': [{ ID: subLabel.ID }] });
-    //                       }}
-    //                       style={labelStyle}
-    //                       sx={{
-    //                         '&:hover': {
-    //                           backgroundColor: 'transparent',
-    //                         }
-    //                       }}
-    //                     >
-    //                       <LabelMarker label={subLabel} />
-    //                     </ListItemButton>
-    //                   );
-    //                 })}
-    //               </List>
-    //             );
-    //           }
-    //           return null;
-    //         })}
-    //       </Stack>
-    //     );
-    //   }
-    // },
     {
       field: 'Actions',
       headerName: 'Действия',
@@ -433,28 +267,32 @@ export function Customers(props: CustomersProps) {
 
         const detailsComponent = {
           // eslint-disable-next-line react/display-name
-          component: forwardRef((props, ref: ForwardedRef<any>) =>
+          component: forwardRef((props, ref: ForwardedRef<any>) => (
             <Link
               ref={ref}
               {...props}
               to={`details/${customerId}`}
               target="_self"
               onClick={SaveFilters}
-            />)
+            />
+          ))
         };
 
         return (
           <Box>
-            <IconButton {...detailsComponent} disabled={customerFetching} >
+            <IconButton {...detailsComponent} disabled={customerFetching}>
               <VisibilityIcon fontSize="small" color="primary" />
             </IconButton>
-            <IconButton onClick={handleCustomerEdit} disabled={customerFetching} >
+            <IconButton
+              onClick={handleCustomerEdit}
+              disabled={customerFetching}
+            >
               <EditOutlinedIcon fontSize="small" color="primary" />
             </IconButton>
           </Box>
         );
       }
-    },
+    }
   ];
 
   useEffect(() => {
@@ -465,27 +303,29 @@ export function Customers(props: CustomersProps) {
     if (customersError) {
       setSnackBarMessage(customersError.toString());
       setOpenSnackBar(true);
-    };
+    }
 
     if (errorMessage) {
       setSnackBarMessage(errorMessage);
       setOpenSnackBar(true);
-    };
+    }
   }, [customersError, errorMessage]);
 
-
   /** Close snackbar manually */
-  const handleSnackBarClose = (event: React.SyntheticEvent | Event, reason?: string) => {
+  const handleSnackBarClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
     if (reason === 'clickaway') {
       return;
-    };
+    }
     dispatch(clearError());
     setOpenSnackBar(false);
   };
 
   const SaveFilters = () => {
-    dispatch(saveFilterData({ 'customers': filteringData }));
-    dispatch(saveFilterModel({ 'customers': filterModel }));
+    dispatch(saveFilterData({ customers: filteringData }));
+    dispatch(saveFilterModel({ customers: filterModel }));
   };
 
   const handleReconciliationClick = () => {
@@ -502,22 +342,24 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(false);
   };
 
-  const handleOrganiztionEditSubmit = async (values: ICustomer, deleting: boolean) => {
+  const handleOrganiztionEditSubmit = async (
+    values: ICustomer,
+    deleting: boolean
+  ) => {
     setOpenEditForm(false);
 
     if (deleting) {
       deleteCustomer(values.ID);
       return;
-    };
+    }
 
     if (!values.ID) {
       addCustomer(values);
       return;
-    };
+    }
 
     updateCustomer(values);
   };
-
 
   const handleAddOrganization = () => {
     setCurrentOrganization(0);
@@ -529,7 +371,7 @@ export function Customers(props: CustomersProps) {
       setSnackBarMessage('Не выбрана организация');
       setOpenSnackBar(true);
       return;
-    };
+    }
 
     deleteCustomer(currentOrganization);
   };
@@ -539,18 +381,16 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(!openFilters);
     },
     handleRequestSearch: async (value: string) => {
-      console.log('handleRequestSearch1', filteringData);
       const newObject = { ...filteringData };
-      console.log('handleRequestSearch2', newObject);
-      delete newObject['NAME'];
+      delete newObject.NAME;
       setFilteringData({
         ...newObject,
-        ...(value !== '' ? { 'NAME': [value] } : {})
+        ...(value !== '' ? { NAME: [value] } : {})
       });
     },
     handleCancelSearch: async () => {
       const newObject = { ...filteringData };
-      delete newObject['NAME'];
+      delete newObject.NAME;
 
       setFilteringData(newObject);
     },
@@ -558,13 +398,21 @@ export function Customers(props: CustomersProps) {
       const filterModels: any[] = [];
 
       for (const [key, arr] of Object.entries(newValue)) {
-        filterModels.push({ id: 2, columnField: key, value: arr, operatorValue: 'includes' });
-      };
+        filterModels.push({
+          id: 2,
+          columnField: key,
+          value: arr,
+          operatorValue: 'includes'
+        });
+      }
 
       setFilterModel({ items: filterModels });
       setFilteringData(newValue);
     },
-    handleFilterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
+    handleFilterClose: async (
+      event: any,
+      reason: 'backdropClick' | 'escapeKeyDown'
+    ) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
@@ -585,42 +433,66 @@ export function Customers(props: CustomersProps) {
     setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
 
-  const memoUpsertCustomer = useMemo(() =>
-    <CustomerEdit
-      open={openEditForm}
-      customer={
-        customers
-          ?.find(element => element.ID === currentOrganization)
-                  || null
-      }
-      onSubmit={handleOrganiztionEditSubmit}
-      onCancelClick={handleOrganiztionEditCancelClick}
-      onDeleteClick={handleOrganizationDeleteOnClick}
-    />,
-  [openEditForm]);
-
-
-  const memoSearchBar = useMemo(() =>
-    <SearchBar
-      disabled={customerFetching}
-      onCancelSearch={filterHandlers.handleCancelSearch}
-      onRequestSearch={filterHandlers.handleRequestSearch}
-      cancelOnEscape
-      placeholder="Поиск клиента"
-      value={filteringData && filteringData['NAME'] ? filteringData['NAME'][0] : undefined}
-    />,
-  [customerFetching, filteringData ? filteringData['NAME'] : []]);
-
-  const memoFilter = useMemo(() =>
-    <CustomersFilter
-      open={openFilters}
-      onClose={filterHandlers.handleFilterClose}
-      filteringData={filteringData}
-      onFilteringDataChange={filterHandlers.handleFilteringData}
-      onFilterClear={filterHandlers.handleFilterClear}
-    />,
-  [openFilters, filteringData]
+  const memoUpsertCustomer = useMemo(
+    () => (
+      <CustomerEdit
+        open={openEditForm}
+        customer={
+          customers?.find((element) => element.ID === currentOrganization) ||
+          null
+        }
+        onSubmit={handleOrganiztionEditSubmit}
+        onCancelClick={handleOrganiztionEditCancelClick}
+        onDeleteClick={handleOrganizationDeleteOnClick}
+      />
+    ),
+    [openEditForm]
   );
+
+  const memoSearchBar = useMemo(
+    () => (
+      <SearchBar
+        disabled={customerFetching}
+        onCancelSearch={filterHandlers.handleCancelSearch}
+        onRequestSearch={filterHandlers.handleRequestSearch}
+        cancelOnEscape
+        placeholder="Поиск клиента"
+        value={
+          filteringData && filteringData.NAME
+            ? filteringData.NAME[0]
+            : undefined
+        }
+      />
+    ),
+    [customerFetching, filteringData]
+  );
+
+  const memoFilter = useMemo(
+    () => (
+      <CustomersFilter
+        open={openFilters}
+        onClose={filterHandlers.handleFilterClose}
+        filteringData={filteringData}
+        onFilteringDataChange={filterHandlers.handleFilteringData}
+        onFilterClear={filterHandlers.handleFilterClear}
+      />
+    ),
+    [openFilters, filteringData]
+  );
+
+  const handleOnChange = (entity: string, value:any) => {
+    const newObject:any = Object.assign({}, filteringData);
+
+    if (entity === 'CONTRACTS') {
+      delete newObject.WORKTYPES;
+    };
+    if (newObject[entity].length === 1) {
+      delete newObject[entity];
+    } else {
+      newObject[entity] = newObject[entity].filter((item:any) => (item.NAME || item.USR$NUMBER || item.USR$NAME) !== value);
+    }
+    filterHandlers.handleFilteringData(Object.assign(newObject));
+  };
 
   return (
     <CustomizedCard
@@ -634,9 +506,9 @@ export function Customers(props: CustomersProps) {
           : {
             transition: `${theme.transitions.create('width', {
               easing: theme.transitions.easing.easeInOut,
-              duration: theme.transitions.duration.standard,
+              duration: theme.transitions.duration.standard
             })}`
-          }),
+          })
       }}
     >
       <CardHeader title={<Typography variant="h3">Клиенты</Typography>} />
@@ -653,13 +525,18 @@ export function Customers(props: CustomersProps) {
           <Box p={3}>
             <Stack direction="row" spacing={2}>
               <Box display="flex" justifyContent="center">
-                <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button>
-                <Button onClick={handleAddOrganization} disabled={customerFetching} startIcon={<AddIcon/>}>Добавить</Button>
+                {/* <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button> */}
+                <Button
+                  variant="contained"
+                  onClick={handleAddOrganization}
+                  disabled={customerFetching}
+                  startIcon={<AddIcon />}
+                >
+                  Добавить
+                </Button>
               </Box>
               <Box flex={1} />
-              <Box>
-                {memoSearchBar}
-              </Box>
+              <Box>{memoSearchBar}</Box>
               <Box display="flex" justifyContent="center">
                 <IconButton
                   onClick={filterHandlers.handleFilter}
@@ -667,12 +544,37 @@ export function Customers(props: CustomersProps) {
                 >
                   <Badge
                     color="error"
-                    variant={Object.keys(filteringData || {}).length > 0 ? 'dot' : 'standard'}
+                    variant={
+                      Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                        ? 'dot'
+                        : 'standard'
+                    }
                   >
-                    <FilterListIcon color={customerFetching ? 'disabled' : 'primary'} />
+                    <FilterListIcon
+                      color={customerFetching ? 'disabled' : 'primary'}
+                    />
                   </Badge>
                 </IconButton>
               </Box>
+            </Stack>
+          </Box>
+          <Box p={3} className={style.bodySelectedDataContainer}>
+            <Stack style={{ flexWrap: 'wrap' }} direction="row" spacing={2}>
+              {filteringData?.DEPARTMENTS && (
+                <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.CONTRACTS && (
+                <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.WORKTYPES && (
+                <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.LABELS && (
+                <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.BUSINESSPROCESSES && (
+                <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
+              )}
             </Stack>
           </Box>
           <Stack direction="row" flex={1} display="flex">
@@ -680,35 +582,33 @@ export function Customers(props: CustomersProps) {
               <DataGridPro
                 className={classes.DataGrid}
                 localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-                rows={
-                  customers ?? []}
+                hideFooterSelectedRowCount
+                rows={customers ?? []}
                 columns={columns}
                 columnVisibilityModel={{
                   CONTRACTS: false,
                   DEPARTMENTS: false,
-                  WORKTYPES: false,
+                  WORKTYPES: false
                 }}
                 pagination
                 disableMultipleSelection
                 loading={customerFetching}
-                getRowId={row => row.ID}
-                onSelectionModelChange={ids => setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)}
+                getRowId={(row) => row.ID}
+                onSelectionModelChange={(ids) =>
+                  setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
+                }
                 components={{
-                  // Toolbar: CustomGridToolbarOverlay,
                   LoadingOverlay: CustomLoadingOverlay,
                   NoRowsOverlay: CustomNoRowsOverlay,
-                  NoResultsOverlay: CustomNoRowsOverlay,
+                  NoResultsOverlay: CustomNoRowsOverlay
                 }}
-                // filterModel={filterModel}
-                // onFilterModelChange={(model, detail) => setFilterModel(model)}
-                // pinnedColumns={{ left: [customersLoading ? '' : 'NAME'] }}
                 getRowHeight={(params) => {
                   const customer: ICustomer = params.model as ICustomer;
                   const labels: ILabel[] | undefined = customer.LABELS;
 
                   if (labels?.length && labels.length > 4) {
                     return 40 * Math.ceil(labels.length / 2);
-                  };
+                  }
 
                   return 80;
                 }}
@@ -717,10 +617,16 @@ export function Customers(props: CustomersProps) {
                 rowCount={customersCount}
                 pageSize={paginationData.pageSize}
                 onPageChange={(data) => {
-                  setPaginationData(prevState => ({ ...prevState, pageNo: data }));
+                  setPaginationData((prevState) => ({
+                    ...prevState,
+                    pageNo: data
+                  }));
                 }}
                 onPageSizeChange={(data) => {
-                  setPaginationData(prevState => ({ ...prevState, pageSize: data }));
+                  setPaginationData((prevState) => ({
+                    ...prevState,
+                    pageSize: data
+                  }));
                 }}
                 sortingMode="server"
                 onSortModelChange={handleSortModelChange}
@@ -731,28 +637,7 @@ export function Customers(props: CustomersProps) {
                 disableColumnMenu
               />
             </Box>
-            <Box
-              // onTransitionEnd={() => setDisplayDataGrid(true)}
-              // display="flex"
-              // style={{
-              //   ...(matchDownLg
-              //     ? {}
-              //     : {
-              //       marginLeft: 0,
-              //       // marginLeft: theme.spacing(3),
-              //       marginRight: 0,
-              //       // marginRight: `${openFilters ? '0px' : '-' + theme.spacing(3)}`,
-              //       width: 0,
-              //       // width: `${openFilters ? '300px' : '0px'}`,
-              //       transition: `${theme.transitions.create(['width', 'margin'], {
-              //         easing: theme.transitions.easing.easeInOut,
-              //         duration: theme.transitions.duration.standard,
-              //       })}`
-              //     })
-              // }}
-            >
-              {memoFilter}
-            </Box>
+            <Box>{memoFilter}</Box>
             {memoUpsertCustomer}
           </Stack>
         </Stack>
@@ -761,9 +646,21 @@ export function Customers(props: CustomersProps) {
   );
 
   return (
-    <Stack flex={1} display="flex" direction="column" spacing={2} style={{ overflow: 'hidden' }}>
-      <Snackbar open={openSnackBar} autoHideDuration={5000} onClose={handleSnackBarClose}>
-        <Alert onClose={handleSnackBarClose} variant="filled" severity="error">{snackBarMessage}</Alert>
+    <Stack
+      flex={1}
+      display="flex"
+      direction="column"
+      spacing={2}
+      style={{ overflow: 'hidden' }}
+    >
+      <Snackbar
+        open={openSnackBar}
+        autoHideDuration={5000}
+        onClose={handleSnackBarClose}
+      >
+        <Alert onClose={handleSnackBarClose} variant="filled" severity="error">
+          {snackBarMessage}
+        </Alert>
       </Snackbar>
     </Stack>
   );

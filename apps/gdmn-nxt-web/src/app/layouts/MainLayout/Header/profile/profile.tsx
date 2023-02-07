@@ -23,11 +23,15 @@ import {
   UserState
 } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { AppDispatch, RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import { useState } from 'react';
+import { ForwardedRef, forwardRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
+import { Link } from 'react-router-dom';
+import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
+import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
+import { setStyleMode } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -78,6 +82,9 @@ export function Profile(props: ProfileProps) {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
 
+  const { userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const { data: settings } = useGetProfileSettingsQuery(userProfile?.id || -1);
+
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);
     setOpen(!open);
@@ -87,11 +94,48 @@ export function Profile(props: ProfileProps) {
     setOpen(false);
   };
 
+  const handleAccountClick = () => {
+    dispatch(setActiveMenu('account'));
+    handleClose();
+  };
+
+  const handleSettingsClick = () => {
+    dispatch(setActiveMenu('settings'));
+    handleClose();
+  };
+
   const welcomeText = () => {
     const date = new Date();
     const hours = date.getHours();
     const text = hours < 12 ? 'Доброе утро' : hours >= 18 ? 'Добрый вечер' : 'Добрый день';
     return text + ',';
+  };
+
+  const accountComponent = {
+    // eslint-disable-next-line react/display-name
+    component: forwardRef((props, ref: ForwardedRef<any>) =>
+      <Link
+        ref={ref}
+        {...props}
+        to="preferences/account"
+        target="_self"
+      />)
+  };
+
+  const settingsComponent = {
+    // eslint-disable-next-line react/display-name
+    component: forwardRef((props, ref: ForwardedRef<any>) =>
+      <Link
+        ref={ref}
+        {...props}
+        to="preferences/settings"
+        target="_self"
+      />)
+  };
+
+  const logout = async () => {
+    await dispatch(logoutUser());
+    dispatch(setStyleMode('light'));
   };
 
   return (
@@ -100,7 +144,7 @@ export function Profile(props: ProfileProps) {
         size="large"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
-        <Avatar />
+        <Avatar src={settings?.AVATAR} />
       </IconButton>
       <Popper
         className={classes.popper}
@@ -141,12 +185,12 @@ export function Profile(props: ProfileProps) {
                             {user.userProfile?.userName ?? 'Неизвестный пользователь'}
                           </Typography>
                         </Stack>
-                        <Typography variant="caption">Должность</Typography>
+                        <Typography variant="caption">{user.userProfile?.rank || ''}</Typography>
                       </Stack>
                     </ListItem>
                     <Divider />
                     <ListItem disablePadding>
-                      <ListItemButton>
+                      <ListItemButton {...accountComponent} onClick={handleAccountClick}>
                         <ListItemIcon className={classes.listItemIcon}>
                           <AccountCircleIcon />
                         </ListItemIcon>
@@ -154,7 +198,7 @@ export function Profile(props: ProfileProps) {
                       </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
-                      <ListItemButton>
+                      <ListItemButton {...settingsComponent} onClick={handleSettingsClick}>
                         <ListItemIcon className={classes.listItemIcon}>
                           <Settings />
                         </ListItemIcon>
@@ -163,7 +207,9 @@ export function Profile(props: ProfileProps) {
                     </ListItem>
                     <Divider />
                     <ListItem disablePadding>
-                      <ListItemButton onClick={() => dispatch(logoutUser())}>
+                      <ListItemButton
+                        onClick={logout}
+                      >
                         <ListItemIcon className={classes.listItemIcon}>
                           <Logout />
                         </ListItemIcon>

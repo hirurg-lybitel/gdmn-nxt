@@ -1,11 +1,13 @@
 import './menu-collapse.module.less';
 import { Collapse, List, ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuItem from '../menu-item/menu-item';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { makeStyles } from '@mui/styles';
+import { useSelector } from 'react-redux';
+import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuCollapse: {
@@ -52,8 +54,19 @@ export function MenuCollapse(props: MenuCollapseProps) {
         );
     }
   });
-
+  const handleOpen = () => {
+    setOpen(true);
+  };
   const menuIcon = menu.icon;
+  const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
+  useEffect(()=>{
+    if (activeMenuId) {
+      if (menu.children?.findIndex((item: IMenuItem) => activeMenuId === item.id) !== -1) {
+        handleOpen();
+      }
+    }
+  }, [activeMenuId]);
+
 
   return (
     <>
@@ -88,7 +101,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
           sx={{
             position: 'relative',
             '&:after': {
-              content: "''",
+              content: '\'\'',
               position: 'absolute',
               left: '32px',
               top: 0,

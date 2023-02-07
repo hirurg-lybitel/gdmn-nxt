@@ -26,7 +26,7 @@ export interface IResults {
   [queryName: string]: IDataRecord[];
 };
 
-export interface  IRequestResult<R = IResults> {
+export interface IRequestResult<R = IResults> {
   queries: R,
   _schema: IDataSchema;
   _params?: [IDataRecord];
@@ -51,6 +51,7 @@ export interface IBaseContact {
   FOLDERNAME?: string;
   NOTE?: string;
   ADDRESS?: string;
+  FAX?: string;
 };
 
 export interface IContactWithID extends IBaseContact, IWithID, IWithParent {}
@@ -86,3 +87,9 @@ export interface IResultError {
 };
 
 export type IEmployee = IContactWithID;
+
+export interface IProfileSettings {
+  AVATAR?: string;
+  RANK?: string;
+  MODE?: string;
+}

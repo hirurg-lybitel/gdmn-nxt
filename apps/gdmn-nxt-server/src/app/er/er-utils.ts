@@ -796,9 +796,9 @@ export const importModels = async () => {
 
             if (!refEntity) {
               const warning = `There is no corresponding entity for ${fld.RELATIONNAME}.${fld.FIELDNAME}...`;
-              if (warning !== prevWarning) {
-                console.warn(prevWarning = warning);
-              }
+              // if (warning !== prevWarning) {
+              //   console.warn(prevWarning = warning);
+              // }
               continue;
             }
 

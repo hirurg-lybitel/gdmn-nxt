@@ -3,10 +3,10 @@ import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importModels } from '../er/er-utils';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
+import { commitTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
 
 const get: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema: IDataSchema = {
@@ -27,10 +27,10 @@ const get: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query }) => {
-      const rs = await attachment.executeQuery(transaction, query);
+      // const rs = await attachment.executeQuery(transaction, query);
 
       try {
-        const data = await rs.fetchAsObject();
+        const data = await fetchAsObject(query);
         const sch = _schema[name];
 
         if (sch) {
@@ -47,12 +47,13 @@ const get: RequestHandler = async (req, res) => {
         };
         return data as any;
       } finally {
-        await rs.close();
+        // await rs.close();
       }
     };
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
+    const { departments, customers, requestNumber } = req.query;
 
     const checkFullView = `
       EXISTS(
@@ -87,13 +88,17 @@ const get: RequestHandler = async (req, res) => {
     const filter = `
       AND 1 =
       CASE ${deadline || -1}
-        WHEN 1 THEN 1
+        WHEN 1 THEN IIF(deal.USR$DONE = 0, 1, 0)
         WHEN 2 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 0, 0, 1)
         WHEN 3 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 1, 0, 1)
         WHEN 4 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) >= 0, 0, 1)
         WHEN 5 THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
+        WHEN 6 THEN 1
         ELSE 1
-      END`;
+      END
+      ${departments ? `AND dep.ID IN (${departments})` : ''}
+      ${customers ? `AND con.ID IN (${customers})` : ''}
+      ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''} `;
 
     const queries = [
       {
@@ -109,7 +114,7 @@ const get: RequestHandler = async (req, res) => {
         name: 'cards',
         query:
           `SELECT
-            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
+            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY, card.USR$ISREAD,
             card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED,
             deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
             con.ID con_ID, con.NAME con_NAME,
@@ -117,7 +122,8 @@ const get: RequestHandler = async (req, res) => {
             performer.NAME AS PERFORMER_NAME,
             creator.ID AS CREATOR_ID,
             creator.NAME AS CREATOR_NAME,
-            deal.USR$SOURCE,
+            source.ID AS SOURCE_ID,
+            source.USR$NAME AS SOURCE_NAME,
             deal.USR$DEADLINE,
             deal.USR$DONE,
             deal.USR$READYTOWORK,
@@ -126,7 +132,14 @@ const get: RequestHandler = async (req, res) => {
             deny.ID DENY_ID,
             deny.USR$NAME AS DENY_NAME,
             deal.USR$DENIED DENIED,
-            deal.USR$COMMENT COMMENT
+            deal.USR$COMMENT COMMENT,
+            deal.USR$DESCRIPTION DESCRIPTION,
+            deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
+            deal.USR$PRODUCTNAME AS PRODUCTNAME,
+            deal.USR$CONTACT_NAME AS CONTACT_NAME,
+            deal.USR$CONTACT_EMAIL AS CONTACT_EMAIL,
+            deal.USR$CONTACT_PHONE AS CONTACT_PHONE,
+            deal.USR$CREATIONDATE CREATIONDATE
           FROM USR$CRM_KANBAN_CARDS card
             JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
@@ -134,10 +147,11 @@ const get: RequestHandler = async (req, res) => {
             LEFT JOIN GD_CONTACT performer ON performer.ID = deal.USR$PERFORMER
             LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
             LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
+            LEFT JOIN USR$CRM_DEALS_SOURCE source ON source.ID = deal.USR$SOURCEKEY
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$INDEX`
+          ORDER BY card.USR$MASTERKEY, USR$ISREAD, USR$INDEX`
       },
       {
         name: 'tasks',
@@ -196,15 +210,24 @@ const get: RequestHandler = async (req, res) => {
     });
 
     rawCards.forEach(el => {
-      const newCard = {
-        ...el,
+      const newCard: IKanbanCard = {
+        // ...el,
+        ID: el['ID'],
+        USR$INDEX: el['USR$INDEX'],
+        USR$MASTERKEY: el['USR$MASTERKEY'],
+        USR$DEALKEY: el['USR$DEALKEY'],
         DEAL: {
           ID: el['DEAL_ID'],
           USR$NAME: el['DEAL_USR$NAME'],
           USR$CONTACTKEY: el['DEAL_$CONTACTKEY'],
           USR$AMOUNT: el['DEAL_USR$AMOUNT'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$SOURCE: el['USR$SOURCE'],
+          ...(el['SOURCE_ID'] && {
+            SOURCE: {
+              ID: el['SOURCE_ID'],
+              NAME: el['SOURCE_NAME']
+            }
+          }),
           ...(el['CON_ID'] && {
             CONTACT: {
               ID: el['CON_ID'],
@@ -239,8 +262,16 @@ const get: RequestHandler = async (req, res) => {
           USR$READYTOWORK: el['USR$READYTOWORK'] === 1,
           DENIED: el['DENIED'] === 1,
           COMMENT: el['COMMENT'],
+          REQUESTNUMBER: el['REQUESTNUMBER'],
+          PRODUCTNAME: el['PRODUCTNAME'],
+          CONTACT_NAME: el['CONTACT_NAME'],
+          CONTACT_EMAIL: el['CONTACT_EMAIL'],
+          CONTACT_PHONE: el['CONTACT_PHONE'],
+          CREATIONDATE: el['CREATIONDATE'],
+          DESCRIPTION: el['DESCRIPTION'],
         },
-        TASKS: tasks[el['ID']]
+        TASKS: tasks[el['ID']],
+        USR$ISREAD: el['USR$ISREAD'] === 1,
       };
 
       if (cards[el['USR$MASTERKEY']]) {
@@ -267,16 +298,15 @@ const get: RequestHandler = async (req, res) => {
     };
 
     return res.status(200).json(result);
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
 const reorderColumns: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     // const erModelFull = importERModel('TgdcDepartment');
@@ -319,18 +349,16 @@ const reorderColumns: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
-    await commitTransaction(req.sessionID, transaction);
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 
 const reorderCards: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     // const erModelFull = importERModel('TgdcDepartment');
@@ -378,7 +406,7 @@ const reorderCards: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await commitTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   };
 };
 

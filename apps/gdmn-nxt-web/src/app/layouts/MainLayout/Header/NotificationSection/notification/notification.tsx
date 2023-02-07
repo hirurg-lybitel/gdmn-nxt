@@ -5,6 +5,7 @@ import {
   ClickAwayListener,
   Divider,
   Fade,
+  Icon,
   IconButton,
   Paper,
   Popper,
@@ -15,11 +16,14 @@ import {
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { makeStyles } from '@mui/styles';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import NotificationList from '../notification-list/notification-list';
+import NotificationsOffOutlinedIcon from '@mui/icons-material/NotificationsOffOutlined';
+import { IMessage, socketClient } from '@gdmn-nxt/socket';
+import logo from './NoNotifications.png'; // with import
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -55,7 +59,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   mainPaper: {
     marginRight: 20,
     width: '20vw',
-    minWidth: '300px'
+    minWidth: '400px',
+    minHeight: '300px',
+    display: 'flex'
   },
   header: {
     padding: '16px 24px'
@@ -92,21 +98,66 @@ export interface NotificationProps {}
 export function Notification(props: NotificationProps) {
   const classes = useStyles();
 
+  // console.log('Notification', logo);
+  // console.log('users', socketClient);
+
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
   // const arrowRef = useRef<HTMLElement | null>(null);
   const [fadeOut, setFadeOut] = useState(false);
 
+  const [messages, setMessages] = useState<IMessage[]>([]);
+
+  // console.log('Notification');
+
   useEffect(() => {
-    if (!open) {
-      const timer = setTimeout(() => {
-        setFadeOut(!fadeOut);
-      }, 1000);
-      return () => clearTimeout(timer);
+    socketClient?.on?.('messages', (data: IMessage[]) => {
+      setMessages(data);
+    });
+  }, [socketClient]);
+
+  /** Disable scrolling for main window when notifications are opened */
+  const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
+
+  const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
+  const preventDefaultForScrollKeys = useCallback((e: KeyboardEvent) => {
+    if (keys[e.key]) {
+      preventDefault(e);
+      return false;
+    }
+    return true;
+  }, []);
+
+  const wheelOpt = { passive: false };
+  const wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
+  useEffect(() => {
+    if (open) {
+      window.addEventListener('DOMMouseScroll', preventDefault, false); // older FF
+      window.addEventListener(wheelEvent, preventDefault, wheelOpt); // modern desktop
+      window.addEventListener('touchmove', preventDefault, wheelOpt); // mobile
+      window.addEventListener('keydown', preventDefaultForScrollKeys, false);
+    } else {
+      window.removeEventListener('DOMMouseScroll', preventDefault, false);
+      window.removeEventListener(wheelEvent, preventDefault, false);
+      window.removeEventListener('touchmove', preventDefault, false);
+      window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
     };
-    return;
-  });
+  }, [open]);
+
+  // useEffect(() => {
+  //   if (!open) {
+  //     const timer = setTimeout(() => {
+  //       setFadeOut(!fadeOut);
+  //     }, 1000);
+  //     return () => clearTimeout(timer);
+  //   };
+  //   return;
+  // });
+
+  const handleDeleteNotification = (id: number) => {
+    socketClient?.emit('delete', id);
+  };
 
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);
@@ -127,17 +178,16 @@ export function Notification(props: NotificationProps) {
         size="large"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
-        {/* <Avatar variant="rounded" color=""> */}
         <Badge
-          classes={{
-            dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut })
-          }}
+          // classes={{
+          //   dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut }),
+          // }}
           color="error"
-          variant="dot"
+          variant="standard"
+          badgeContent={messages.length}
         >
           <NotificationsOutlinedIcon color="secondary" />
         </Badge>
-        {/* </Avatar> */}
       </IconButton>
       <Popper
         className={classes.popper}
@@ -159,11 +209,11 @@ export function Notification(props: NotificationProps) {
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
-            <Paper className={classes.mainPaper}>
+            <Paper className={classes.mainPaper} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
-                <CustomizedCard borders elevation={15}>
+                <CustomizedCard borders style={{ flex: 1, display: 'flex' }}>
                   <span className={classes.arrow} ref={setArrowRef} />
-                  <Stack direction="column" style={{ maxHeight: '50vh' }}>
+                  <Stack direction="column" style={{ maxHeight: '50vh', flex: 1, display: 'flex' }}>
                     <Stack
                       className={classes.header}
                       direction="row"
@@ -173,20 +223,26 @@ export function Notification(props: NotificationProps) {
                       <Typography variant="h3">
                         Уведомления
                       </Typography>
-                      {/* <Avatar
-                        style={{
-                          backgroundColor: 'red',
-                          height: '25px',
-                          width: '25px'
-                        }}
-                      >
-                        <Typography variant="body1" >2</Typography>
-                      </Avatar> */}
                     </Stack>
                     <Divider />
-                    <PerfectScrollbar>
-                      <NotificationList />
-                    </PerfectScrollbar>
+                    {messages.length > 0
+                      ? <PerfectScrollbar>
+                        <NotificationList messages={messages} onDelete={handleDeleteNotification} />
+                      </PerfectScrollbar>
+                      : <Stack
+                        flex={1}
+                        display="flex"
+                        direction="column"
+                        alignItems="center"
+                        justifyContent="center"
+                        spacing={1}
+                        >
+                        {/* <Icon fontSize="large">
+                          <NotificationsOffOutlinedIcon fontSize="large" color="action" />
+                        </Icon> */}
+                        <img src={logo} alt="" draggable={false} width="150" color="red" />
+                        <Typography variant="h4" color={'GrayText'}>Пока нет уведомлений</Typography>
+                      </Stack>}
                   </Stack>
                 </CustomizedCard>
               </ClickAwayListener>

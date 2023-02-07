@@ -1,7 +1,7 @@
 import './kanban-column.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography, Input, IconButton, useTheme } from '@mui/material';
+import { Box, Button, CardActions, CardContent, Stack, IconButton, useTheme, Chip, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -97,14 +97,17 @@ export function KanbanColumn(props: KanbanColumnProps) {
         direction="row"
         onKeyPress={handleTitleKeyPress}
         onKeyDown={handleTitleKeyPress}
-        onBlur={(e) => onBlur(e)}
-        maxWidth="200px"
+        // maxWidth="200px"
         sx={{
           '&:hover .title': {
             opacity: 0.3
           },
           '&:hover .actions': {
             display: 'inline',
+            alignSelf: 'center'
+          },
+          '&:hover .quantity': {
+            display: 'none'
           }
         }}
       >
@@ -117,17 +120,54 @@ export function KanbanColumn(props: KanbanColumnProps) {
           }}
         >
           {editTitleText
-            ? <Input
+            // ? <Input
+            //   value={titleText}
+            //   onChange={(e) => setTitleText(e.target.value)}
+            //   // onBlur={(e) => onBlur(e)}
+            //   autoFocus
+            // />
+            ? <TextField
               value={titleText}
+              variant="standard"
               onChange={(e) => setTitleText(e.target.value)}
-
+              onBlur={(e) => onBlur(e)}
               autoFocus
+              fullWidth
             />
-            : <Typography
-              variant="h4"
-              noWrap
+            : <Stack
               className="title"
-            > {`${item.USR$NAME} ${item.CARDS.length > 0 ? `(${item.CARDS.length})` : ''}`}</Typography>
+              direction="row"
+              alignItems="center"
+              spacing={1}
+            >
+              <TextField
+                value={item.USR$NAME}
+                variant="standard"
+                fullWidth
+                sx={{
+                  '& .MuiInputBase-input': {
+                    textOverflow: 'ellipsis',
+                  }
+                }}
+                InputProps={{
+                  disableUnderline: true,
+                  readOnly: true,
+                  style: { ...theme.typography.h4 },
+                }}
+
+              />
+              {/* <Typography
+                variant="h4"
+                noWrap
+                // className="title"
+                // textAlign={'center'}
+                // justifyContent={'center'}
+              >
+                {`${item.USR$NAME}`}
+              </Typography> */}
+              <Box flex={1} />
+              <Chip className="quantity" label={item.CARDS.length} />
+            </Stack>
           }
         </Box>
         <div
@@ -158,17 +198,23 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   return (
     <Box
-      style={{ display: 'flex' }}
+      style={{ display: 'flex', flex: 1, height: 'calc(100vh - 255px)', }}
+      flexDirection={'column'}
     >
+      <Box px={2} pb={1} {...provided.dragHandleProps}>
+        {header()}
+      </Box>
       <CustomizedCard
-        borders
+        // borders
         style={{
-          minWidth: '230px',
-          maxWidth: '400px',
-          width: '250px',
+          // minWidth: '250px',
+          // maxWidth: '400px',
+          width: '350px',
           display: 'flex',
+          flex: 1,
           flexDirection: 'column',
-          height: 'calc(100vh - 220px)',
+          // height: 'calc(100vh - 420px)',
+          backgroundColor: theme.palette.background.paper,
           ...(dragSnapshot.isDragging
             ? {
               backgroundColor: '#deebff',
@@ -179,21 +225,21 @@ export function KanbanColumn(props: KanbanColumnProps) {
             }),
         }}
       >
-        <CardHeader
+        {/* <CardHeader
           sx={{ height: 10 }}
           title={header()}
           {...provided.dragHandleProps}
-        />
-        <Divider />
+        /> */}
+        {/* <Divider /> */}
         <CardContent
           style={{
             flex: 1,
             paddingLeft: 0,
             paddingRight: 0,
-            height: 'calc(100vh - 320px)',
+            height: 'calc(100vh - 420px)',
             ...(dropSnapshot.isDraggingOver
               ? {
-                backgroundColor: '#deebff',
+                backgroundColor: theme.palette.background.paper,
               }
               : {
               })
@@ -217,7 +263,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         <CardActions>
           <PermissionsGate actionCode={1}>
             {item.USR$INDEX === 0
-              ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>}>Сделка</Button>
+              ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
               : <></>}
           </PermissionsGate>
         </CardActions>
@@ -226,6 +272,8 @@ export function KanbanColumn(props: KanbanColumnProps) {
       <ConfirmDialog
         open={confirmOpen}
         title={'Удаление группы: ' + item.USR$NAME}
+        text="Вы уверены, что хотите продолжить?"
+        dangerous={true}
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />

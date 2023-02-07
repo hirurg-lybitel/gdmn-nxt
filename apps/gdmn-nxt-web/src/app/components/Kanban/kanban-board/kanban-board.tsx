@@ -23,13 +23,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setError } from '../../../features/error-slice/error-slice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 
-interface IChanges {
-  id: number;
-  fieldName: string,
-  oldValue: string | number | undefined;
-  newValue: string | number | undefined;
-};
+// export interface IChanges {
+//   id: number;
+//   fieldName: string,
+//   oldValue: string | number | undefined;
+//   newValue: string | number | undefined;
+// };
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
 };
@@ -102,56 +103,56 @@ export function KanbanBoard(props: KanbanBoardProps) {
     };
   }, [addCardSuccess, addedCard]);
 
-  const compareCards = (newCard: any, oldCard: IKanbanCard) => {
-    const changesArr: IChanges[] = [];
+  // const compareCards = (newCard: any, oldCard: IKanbanCard) => {
+  //   const changesArr: IChanges[] = [];
 
-    const deal = newCard['DEAL'];
-    const contact = newCard['DEAL']['CONTACT'] || {};
-    const performer = newCard['DEAL']['PERFORMER'] || {};
+  //   const deal = newCard['DEAL'];
+  //   const contact = newCard['DEAL']['CONTACT'] || {};
+  //   const performer = newCard['DEAL']['PERFORMER'] || {};
 
-    if ((deal['USR$AMOUNT'] || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
-      changesArr.push({
-        id: newCard.ID,
-        fieldName: 'Сумма',
-        oldValue: Number(oldCard.DEAL?.USR$AMOUNT) || 0,
-        newValue: deal['USR$AMOUNT'] || 0
-      });
-    }
-    if (contact['ID'] !== oldCard.DEAL?.CONTACT?.ID) {
-      changesArr.push({
-        id: newCard.ID,
-        fieldName: 'Клиент',
-        oldValue: oldCard.DEAL?.CONTACT?.NAME,
-        newValue: contact['NAME']
-      });
-    };
-    if (deal['USR$NAME'] !== oldCard.DEAL?.USR$NAME) {
-      changesArr.push({
-        id: newCard.ID,
-        fieldName: 'Наименование',
-        oldValue: oldCard.DEAL?.USR$NAME,
-        newValue: deal['USR$NAME']
-      });
-    };
-    if (performer['ID'] !== oldCard.DEAL?.PERFORMER?.ID) {
-      changesArr.push({
-        id: newCard.ID,
-        fieldName: 'Исполнитель',
-        oldValue: oldCard.DEAL?.PERFORMER?.NAME,
-        newValue: performer['NAME']
-      });
-    };
-    if (newCard['USR$MASTERKEY'] !== oldCard.USR$MASTERKEY) {
-      changesArr.push({
-        id: newCard.ID,
-        fieldName: 'Этап',
-        oldValue: columns.find(column => column.ID === oldCard.USR$MASTERKEY)?.USR$NAME || '',
-        newValue: columns.find(column => column.ID === newCard['USR$MASTERKEY'])?.USR$NAME || ''
-      });
-    };
+  //   if ((deal['USR$AMOUNT'] || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
+  //     changesArr.push({
+  //       id: newCard.ID,
+  //       fieldName: 'Сумма',
+  //       oldValue: Number(oldCard.DEAL?.USR$AMOUNT) || 0,
+  //       newValue: deal['USR$AMOUNT'] || 0
+  //     });
+  //   }
+  //   if (contact['ID'] !== oldCard.DEAL?.CONTACT?.ID) {
+  //     changesArr.push({
+  //       id: newCard.ID,
+  //       fieldName: 'Клиент',
+  //       oldValue: oldCard.DEAL?.CONTACT?.NAME,
+  //       newValue: contact['NAME']
+  //     });
+  //   };
+  //   if (deal['USR$NAME'] !== oldCard.DEAL?.USR$NAME) {
+  //     changesArr.push({
+  //       id: newCard.ID,
+  //       fieldName: 'Наименование',
+  //       oldValue: oldCard.DEAL?.USR$NAME,
+  //       newValue: deal['USR$NAME']
+  //     });
+  //   };
+  //   if (performer['ID'] !== oldCard.DEAL?.PERFORMER?.ID) {
+  //     changesArr.push({
+  //       id: newCard.ID,
+  //       fieldName: 'Исполнитель',
+  //       oldValue: oldCard.DEAL?.PERFORMER?.NAME,
+  //       newValue: performer['NAME']
+  //     });
+  //   };
+  //   if (newCard['USR$MASTERKEY'] !== oldCard.USR$MASTERKEY) {
+  //     changesArr.push({
+  //       id: newCard.ID,
+  //       fieldName: 'Этап',
+  //       oldValue: columns.find(column => column.ID === oldCard.USR$MASTERKEY)?.USR$NAME || '',
+  //       newValue: columns.find(column => column.ID === newCard['USR$MASTERKEY'])?.USR$NAME || ''
+  //     });
+  //   };
 
-    return changesArr;
-  };
+  //   return changesArr;
+  // };
 
   const columnHandlers = {
     handleTitleEdit: async (newColumn: IKanbanColumn) => {
@@ -195,7 +196,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         return true;
       });
 
-      changes.current = compareCards(newCard, oldCard);
+      changes.current = compareCards(columns, newCard, oldCard);
     },
     handleDeleteCard: async (deletinCard: IKanbanCard) => {
       deleteCard(deletinCard.ID);
@@ -205,7 +206,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         id: -1,
         fieldName: 'Сделка',
         oldValue: '',
-        newValue: (newCard as any)['DEAL']['USR$NAME'] || ''
+        newValue: (newCard as any).DEAL.USR$NAME || ''
       });
 
       addCard(newCard);
@@ -220,7 +221,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return result;
   };
 
-  function onDragEnd(result: DropResult) {
+  const onDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) {
       return;
     };
@@ -307,7 +308,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         updateCard(moveCard);
       }
     }
-  };
+  }, [dragColumnsEnable, dragToColumnsEnable, columns]);
 
   const getDayDiff = useCallback((startDate: Date, endDate: Date) => {
     const msInDay = 24 * 60 * 60 * 1000;
@@ -338,43 +339,21 @@ export function KanbanBoard(props: KanbanBoardProps) {
     <PerfectScrollbar
       style={{
         display: 'flex',
+        paddingBottom: '10px'
       }}
     >
-      <Box display="flex">
-        {/* <CustomizedCard borders style={{ padding: '13px' }}>
-          <Autocomplete
-            style={{
-              width: '210px',
-            }}
-            options={cardDateFilter}
-            disableClearable
-            getOptionLabel={option => option.name}
-            value={kanbanFilter['deadline'] || null}
-            onChange={(e, value) => setKanbanFilter({ deadline: value })}
-            renderOption={(props, option, { selected }) => (
-              <li {...props} key={option.id}>
-                {option.name}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                size="small"
-                placeholder="Фильтр по сроку"
-              />
-            )}
-          />
-        </CustomizedCard> */}
+      <Box display="flex" flex={1}>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="board" type="board" direction="horizontal">
             {(provided, snapshot) => (
               <Stack
                 direction="row"
-                spacing={2}
+                spacing={4}
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 display="flex"
                 overflow="auto"
+                flex={1}
               >
                 {columns.map((column: IKanbanColumn, index) => (
                   <Draggable key={column.ID} draggableId={column.ID.toString()} index={index}>
@@ -386,11 +365,15 @@ export function KanbanBoard(props: KanbanBoardProps) {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           display="flex"
+                          flex={1}
                         >
                           <Droppable key={index} droppableId={`${index}`} type="column">
                             {(provided, snapshot) => (
                               <Box
-                                style={{ display: 'flex' }}
+                                style={{
+                                  display: 'flex',
+                                  width: '350px',
+                                }}
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
                               >
@@ -407,34 +390,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
-                                      // const today = new Date();
-                                      // today.setHours(0,0,0,0);
-                                      // const tomorrow = new Date(today);
-                                      // tomorrow.setDate(tomorrow.getDate() + 1000);
-                                      // const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
-
-                                      // switch (kanbanFilter['deadline'] ? kanbanFilter['deadline']['id'] : -1) {
-                                      //   case 1:
-                                      //     break;
-                                      //   case 2:
-                                      //     if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     if (dateDiff !== 0) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     break;
-                                      //   case 3:
-                                      //     if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     if (dateDiff !== 1) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     break;
-                                      //   case 4:
-                                      //     if (card.DEAL?.USR$DONE) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     if (!(dateDiff < 0)) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     break;
-                                      //   case 5:
-                                      //     console.log('dateDiff', card.ID, dateDiff);
-                                      //     if (!(dateDiff >= 1000)) return <Fragment key={card.ID + column.ID * 10} />;
-                                      //     break;
-                                      //   default:
-                                      //     break;
-                                      // }
                                       return (
                                         <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column.ID * 10).toString()} index={index}>
                                           {(provided, snapshot) => (

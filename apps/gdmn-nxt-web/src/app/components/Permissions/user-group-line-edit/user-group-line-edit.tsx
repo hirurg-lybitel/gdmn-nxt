@@ -8,7 +8,7 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import * as yup from 'yup';
 import styles from './user-group-line-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import filterOptions from '../../filter-options';
+import filterOptions from '../../helpers/filter-options';
 
 const useStyles = makeStyles(() => ({
   dialog: {

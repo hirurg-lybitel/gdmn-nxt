@@ -12,6 +12,8 @@ import command_history_large from './command-history-large.png';
 import command_undo_large from './command-undo-large.png';
 import { StyledSplit, StyledSplitPane } from '../../Styled/styled-split/styled-split';
 import { DGrid } from './dgrid';
+import { RootState } from '../../../store';
+import { useSelector } from 'react-redux';
 
 interface IHistoryProps {
   onSelectScript: (script: string) => void;
@@ -43,7 +45,7 @@ const History = ({ onSelectScript }: IHistoryProps) => {
       rowHeight={24}
       headerHeight={24}
       getRowId={row => row.ID}
-      onRowClick={ params => onSelectScript(params.row['SQL_TEXT']) }
+      onRowClick={params => onSelectScript(params.row.SQL_TEXT)}
       loading={isFetching}
       disableColumnResize
       disableColumnSelector
@@ -70,8 +72,9 @@ export function SqlEditor(props: SqlEditorProps) {
   const [params, setParams] = useState<Param[] | undefined>();
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
   const [prevScript, setPrevScript] = useState('');
+  const mode = useSelector((state: RootState) => state.settings.customization.mode);
 
-  const handleRunClick = useCallback( () => {
+  const handleRunClick = useCallback(() => {
     if (!script) {
       return;
     };
@@ -86,14 +89,14 @@ export function SqlEditor(props: SqlEditorProps) {
     }
   }, [script, params, currentTab]);
 
-  const handleHistoryClick = useCallback( () => {
+  const handleHistoryClick = useCallback(() => {
     if (currentTab === 'DATA') {
       setPrevScript(script);
     }
     setCurrentTab(currentTab === 'HISTORY' ? 'DATA' : 'HISTORY');
   }, [script, currentTab]);
 
-  const handleUndoClick = useCallback( () => {
+  const handleUndoClick = useCallback(() => {
     setScript(prevScript);
     setPrevScript('');
   }, [prevScript]);
@@ -111,17 +114,17 @@ export function SqlEditor(props: SqlEditorProps) {
     const newParams: Param[] = [];
 
     for (const name of paramNames) {
-      if (!newParams.find( ([n]) => n === name )) {
-        const p = params?.find( ([n]) => n === name );
+      if (!newParams.find(([n]) => n === name)) {
+        const p = params?.find(([n]) => n === name);
         if (!p) {
-          newParams.push([name, ''])
+          newParams.push([name, '']);
         } else {
           newParams.push(p);
         }
       }
     }
 
-    const sorted = newParams.sort( (a, b) => a[0].localeCompare(b[0]) );
+    const sorted = newParams.sort((a, b) => a[0].localeCompare(b[0]));
 
     if (JSON.stringify(sorted) !== JSON.stringify(params)) {
       setParams(sorted);
@@ -163,7 +166,7 @@ export function SqlEditor(props: SqlEditorProps) {
           <StyledSplitPane preferredSize="25%" minSize={400}>
             <Stack height="100%" sx={{ borderRight: '1px solid silver' }}>
               <textarea
-                className={styles['input']}
+                className={styles.input}
                 spellCheck={false}
                 value={script}
                 onChange={e => setScript(e.target.value)}
@@ -171,8 +174,8 @@ export function SqlEditor(props: SqlEditorProps) {
               {
                 params
                 &&
-                <Box sx={{ borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
-                  <table className={styles['params']}>
+                <Box sx={{ color: mode === 'dark' ? 'white' : '', borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
+                  <table className={styles.params}>
                     <thead>
                       <tr><th>Параметр</th><th>Значение</th></tr>
                     </thead>
@@ -182,11 +185,19 @@ export function SqlEditor(props: SqlEditorProps) {
                           <tr key={name}>
                             <td>{name}</td>
                             <td>
-                              <input type="text" value={value} onChange={ e => {
-                                const newParams = [...params];
-                                newParams[idx] = [name, e.target?.value ?? ''];
-                                setParams(newParams);
-                              } } />
+                              <input
+                                style={{
+                                  background: mode === 'dark' ? '#616161' : '',
+                                  color: mode === 'dark' ? 'white' : ''
+                                }}
+                                type="text"
+                                value={value}
+                                onChange={e => {
+                                  const newParams = [...params];
+                                  newParams[idx] = [name, e.target?.value ?? ''];
+                                  setParams(newParams);
+                                }}
+                              />
                             </td>
                           </tr>
                       )}

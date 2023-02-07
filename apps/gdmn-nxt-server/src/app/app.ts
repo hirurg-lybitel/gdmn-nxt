@@ -62,14 +62,17 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
   }
 };
 
-export const getGedeminUser = async (userName: string): Promise<{ id: number, userName: string, contactkey: number } | undefined> => {
+export const getGedeminUser = async (userName: string): Promise<{ id: number, userName: string, contactkey: number, rank: string } | undefined> => {
   const query = `
     SELECT
       u.id,
       u.name,
-      u.contactkey
+      u.contactkey,
+      p.RANK
     FROM
       gd_user u
+      JOIN gd_contact c ON c.id = u.contactkey
+      JOIN gd_people p ON p.contactkey = c.id
     WHERE UPPER(u.name) = ?
   `;
 
@@ -83,7 +86,8 @@ export const getGedeminUser = async (userName: string): Promise<{ id: number, us
         return {
           id: data[0]['ID'],
           userName,
-          contactkey: data[0]['CONTACTKEY']
+          contactkey: data[0]['CONTACTKEY'],
+          rank: data[0]['RANK'],
         };
       } else if (!data.length) {
         return undefined;

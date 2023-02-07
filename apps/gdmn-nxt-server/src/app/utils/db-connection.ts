@@ -25,7 +25,7 @@ const semaphore = new Semaphore('dbSessions');
 
 // TODO: время жизни сессии вынести с настройки
 /** Minimal time of life of open unused attachment */
-const minTimeOfLife = 1 * 60 * 1000;
+const minTimeOfLife = 1 * 60 * 100;
 
 const releaseSessions = () => {
   const t = new Date().getTime();
@@ -34,11 +34,19 @@ const releaseSessions = () => {
       const { lock, attachment, readTransaction, touched } = s;
       if (!lock && (t - touched) > minTimeOfLife) {
         if (readTransaction?.isValid) {
-          await readTransaction.commit();
+          try {
+            await readTransaction.commit();
+          } catch (error) {
+            console.error('ReadTransaction commit', error);
+          };
         }
 
         if (attachment.isValid) {
-          await attachment.disconnect();
+          try {
+            await attachment.disconnect();
+          } catch (error) {
+            console.error('Attachment disconnect', error);
+          };
         }
       }
     }
@@ -208,6 +216,8 @@ export const acquireReadTransaction = async (sessionId: string) => {
       released = true;
       dbSession.lock -= 1;
       dbSession.touched = new Date().getTime();
+    } catch (error) {
+      console.log('releaseReadTransaction', error);
     } finally {
       semaphore.release();
     }

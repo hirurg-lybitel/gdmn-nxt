@@ -1,7 +1,8 @@
 import express from 'express';
-import chartsData from '../handlers/chartsData';
+import * as chartsData from '../handlers/charts';
 
 const router = express.Router();
 router.get('/charts/sumbyperiod', chartsData.getSumByPeriod);
+router.get('/charts/businessDirection', chartsData.getBusinessDirection);
 
 export default router;

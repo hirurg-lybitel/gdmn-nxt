@@ -34,8 +34,11 @@ export interface ICustomer extends IContactWithID {
   LABELS?: ILabel[];
   CONTRACTS?: ICustomerContractWithID[];
   JOBWORKS?: IWorkType[];
-  DEPARTMETNS?: IContactWithID[];
+  DEPARTMENTS?: IContactWithID[];
   TAXID?: string;
+  FULLNAME?: string;
+  POSTADDRESS?: string;
+  BUSINESSPROCESSES?: IBusinessProcess[];
 };
 
 interface IMapOfArrays {
@@ -46,6 +49,8 @@ export interface ICustomerCross {
   departments: IMapOfArrays,
   contracts: IMapOfArrays,
   jobWorks: IMapOfArrays,
+  persons: IMapOfArrays,
+  // businessProcesses: IMapOfArrays,
 };
 
 export interface ICustomerContract extends IWithID {
@@ -63,7 +68,7 @@ export interface IDeal extends IWithID {
   CONTACT?: IContactWithID;
   PERFORMER?: IContactWithID;
   CREATOR?: IContactWithID;
-  USR$SOURCE?: string;
+  SOURCE?: IDealSource;
   USR$DEADLINE?: Date;
   USR$CONTACTKEY?: number;
   USR$DISABLED?: boolean;
@@ -73,6 +78,13 @@ export interface IDeal extends IWithID {
   DENYREASON?: IDenyReason;
   DENIED?: boolean;
   COMMENT?: string;
+  REQUESTNUMBER?: string;
+  PRODUCTNAME?: string;
+  CONTACT_NAME?: string;
+  CONTACT_EMAIL?: string;
+  CONTACT_PHONE?: string;
+  CREATIONDATE?: Date;
+  DESCRIPTION?: string;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -81,6 +93,7 @@ export interface IKanbanCard extends IWithID {
   USR$DEALKEY?: number;
   DEAL?: IDeal;
   TASKS?: IKanbanTask[];
+  USR$ISREAD?: boolean;
 };
 
 export interface IKanbanColumn extends IWithID {
@@ -117,6 +130,7 @@ export interface IActCompletion extends IWithID {
   DEPT_NAME: string;
   JOB_NUMBER: string;
   USR$SUMNCU: number;
+  JOBWORKNAME?: string;
 };
 
 export interface IBankStatement extends IWithID {
@@ -131,6 +145,16 @@ export interface IBankStatement extends IWithID {
 export interface IChartSumByperiod {
   ONDATE: Date;
   AMOUNT: number;
+};
+
+export interface IChartBusinessProcesses {
+  name: string;
+  amount: number;
+}
+export interface IChartBusinessDirection {
+  name: string;
+  amount: number;
+  businessProcesses: IChartBusinessProcesses[]
 };
 
 export interface IPhone extends IWithID {
@@ -206,3 +230,11 @@ export interface IPermissionByUser {
 export interface IDenyReason extends IWithID {
   NAME: string;
 };
+
+export interface IBusinessProcess extends IWithID {
+  NAME: string
+}
+
+export interface IDealSource extends IWithID {
+  NAME: string;
+}

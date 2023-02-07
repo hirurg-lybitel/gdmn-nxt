@@ -11,7 +11,6 @@ import {
   Slide,
   Stack,
   TextField,
-  createFilterOptions,
   Theme,
   Box,
   Divider,
@@ -22,16 +21,17 @@ import {
   StepLabel,
   Tab,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Paper
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
-import { ErrorMessage, Form, FormikProvider, getIn, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IDeal, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { ICustomer } from '@gsbelarus/util-api-types';
@@ -39,16 +39,26 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { DesktopDatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import filterOptions from '../../filter-options';
+import filterOptions from '../../helpers/filter-options';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
+// import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
+import AlarmIcon from '@mui/icons-material/Alarm';
+import SnoozeIcon from '@mui/icons-material/Snooze';
+import ClockIcon from '@mui/icons-material/AccessTime';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { DealSourcesSelect } from './components/deal-sources-select';
+import { CustomerSelect } from './components/customer-select';
+import styles from './kanban-edit-card.module.less';
+import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
+import { DenyReasonsSelect } from './components/deny-reasons-select';
+import { TabDescription } from './components/tab-descrption';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -65,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     maxWidth: '100%',
     minWidth: 400,
     borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
+    borderBottomRightRadius: 0
   },
   accordionTitle: {
     width: '33%',
@@ -95,12 +105,6 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-// const filterOptions = createFilterOptions({
-//   matchFrom: 'any',
-//   limit: 100,
-//   stringify: (option: ICustomer) => option.NAME,
-// });
-
 export interface KanbanEditCardProps {
   open: boolean;
   currentStage?: IKanbanColumn;
@@ -118,16 +122,16 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const classes = useStyles();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState('');
   const [tabIndex, setTabIndex] = useState('1');
   const user = useSelector<RootState, UserState>(state => state.user);
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
-  const { data, isFetching: customerFetching } = useGetCustomersQuery();
-  const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
+  const { isFetching: customerFetching } = useGetCustomersQuery();
   const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
-  const { data: denyReasons, isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
+  const { isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
 
   const refComment = useRef<null | HTMLDivElement>(null);
 
@@ -135,11 +139,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     refComment && refComment.current && refComment.current.scrollIntoView({ behavior: 'smooth' });
   }, [refComment.current]);
 
-
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
-  // const allCustomers = customers as ICustomer[];
 
   const handleChangeAccordion = (panel: string) => (event: any, newExpanded: any) => {
     if (newExpanded) setExpanded(panel);
@@ -180,7 +182,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
       PERFORMER: card?.DEAL?.PERFORMER,
       CONTACT: card?.DEAL?.CONTACT,
-      COMMENT: card?.DEAL?.COMMENT || ''
+      COMMENT: card?.DEAL?.COMMENT || '',
+      CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
     },
     TASKS: card?.TASKS || undefined,
   };
@@ -198,7 +201,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         .shape({
           USR$NAME: yup.string()
             .required('Не указано наименование')
-            .max(20, 'Слишком длинное наименование'),
+            .max(80, 'Слишком длинное наименование'),
           CONTACT: yup.object()
             .nullable()
             .required('Не указан клиент'),
@@ -207,12 +210,20 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .required('Не указан создатель'),
           DEPARTMENT: yup.object()
             .nullable()
-            .required('Не указан отдел')
-            // .shape({
-            //   ID: yup.number()
-            //     .nullable()
-            //     .required('Не указан отдел 2')
-            // })
+            .required('Не указан отдел'),
+          CONTACT_NAME: yup.string()
+            .nullable()
+            .max(80, 'Слишком длинное имя'),
+          CONTACT_EMAIL: yup.string()
+            .nullable()
+            .matches(/@./, 'Адрес электрочнной почты должен содержать символы @ и .')
+            .max(40, 'Слишком длинный email'),
+          CONTACT_PHONE: yup.string().nullable()
+            .max(40, 'Слишком длинный номер'),
+          REQUESTNUMBER: yup.string().nullable()
+            .max(20, 'Слишком длинный номер'),
+          PRODUCTNAME: yup.string().nullable()
+            .max(180, 'Слишком длинное наименование'),
         })
     }),
     onSubmit: (values) => {
@@ -237,6 +248,102 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     setConfirmOpen(false);
   }, []);
 
+  const KanbanRequestInfo = useMemo(() => {
+    if ((getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))) ||
+        (getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))) ||
+        (getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))) ||
+        (getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))) ||
+        (getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE')))) {
+      setTabIndex('2');
+    };
+
+    return (
+      <Stack flex={1} spacing={3}>
+        <TextField
+          label="Продукция"
+          type="text"
+          name="DEAL.PRODUCTNAME"
+          onChange={formik.handleChange}
+          value={formik.values.DEAL?.PRODUCTNAME || ''}
+          error={getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))}
+          helperText={getIn(formik.touched, 'DEAL.PRODUCTNAME') && getIn(formik.errors, 'DEAL.PRODUCTNAME')}
+        />
+        <Stack direction={'row'} spacing={3}>
+          <Stack direction={'column'} flex={1}>
+            <TextField
+              label="Номер заявки"
+              type="text"
+              name="DEAL.REQUESTNUMBER"
+              onChange={formik.handleChange}
+              value={formik.values.DEAL?.REQUESTNUMBER || ''}
+              error={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))}
+              helperText={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && getIn(formik.errors, 'DEAL.REQUESTNUMBER')}
+            />
+          </Stack>
+          <Stack direction="column" spacing={3} width={150}>
+            <DesktopDatePicker
+              label="Дата"
+              value={formik.values.DEAL?.CREATIONDATE}
+              inputFormat="dd.MM.yyyy"
+              onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
+              renderInput={(params) => <TextField {...params} fullWidth />}
+            />
+            <TimePicker
+              label="Время"
+              value={formik.values.DEAL?.CREATIONDATE}
+              onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </Stack>
+        </Stack>
+        <Divider />
+        <TextField
+          label="Заявитель"
+          type="text"
+          name="DEAL.CONTACT_NAME"
+          onChange={formik.handleChange}
+          value={formik.values.DEAL?.CONTACT_NAME || ''}
+          error={getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))}
+          helperText={getIn(formik.touched, 'DEAL.CONTACT_NAME') && getIn(formik.errors, 'DEAL.CONTACT_NAME')}
+        />
+        <Stack flex={1} spacing={3} direction={{ sm: 'column', md: 'row', lg: 'row' }}>
+          <TextField
+            label="Email"
+            type="email"
+            fullWidth
+            name="DEAL.CONTACT_EMAIL"
+            onChange={formik.handleChange}
+            value={formik.values.DEAL?.CONTACT_EMAIL || ''}
+            error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
+            helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}
+          />
+          <TextField
+            label="Телефон"
+            type="text"
+            fullWidth
+            name="DEAL.CONTACT_PHONE"
+            onChange={formik.handleChange}
+            value={formik.values.DEAL?.CONTACT_PHONE || ''}
+            error={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE'))}
+            helperText={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && getIn(formik.errors, 'DEAL.CONTACT_PHONE')}
+          />
+        </Stack>
+      </Stack>
+    );
+  }, [formik.values, formik.touched, formik.errors]);
+
+
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={deleting ? 'Удаление сделки' : 'Сохранение сделки'}
+      text="Вы уверены, что хотите продолжить?"
+      dangerous={deleting}
+      confirmClick={handleConfirmOkClick}
+      cancelClick={handleConfirmCancelClick}
+    />,
+  [confirmOpen, deleting, handleConfirmOkClick, handleConfirmCancelClick]);
+
   return (
     <Dialog
       open={open}
@@ -247,7 +354,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       onClose={onClose}
     >
       <DialogTitle>
-        {formik.values.ID > 0 ? `Редактирование ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
+        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
@@ -270,8 +377,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                   <Box>
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Сведения" value="1" />
-                      <Tab label="Задачи" value="2" />
-                      <Tab label="Хронология" value="3" />
+                      <Tab label="Заявка" value="2" />
+                      <Tab label="Задачи" value="3" />
+                      <Tab label="Хронология" value="4" />
+                      <Tab label="Описание" value="5" />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -280,6 +389,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <TextField
                         label="Наименование"
                         type="text"
+                        multiline
+                        minRows={1}
                         required
                         fullWidth
                         autoFocus
@@ -296,86 +407,56 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         helperText={getIn(formik.touched, 'DEAL.USR$NAME') && getIn(formik.errors, 'DEAL.USR$NAME')}
                       />
                       <Stack direction={matchDownLg ? 'column' : 'row'} spacing={3}>
-                        <Autocomplete
-                          options={customers || []}
-                          fullWidth
-                          getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions(50, 'NAME')}
-                          value={customers?.find(el => el.ID === formik.values.DEAL?.CONTACT?.ID) || null}
-                          loading={customerFetching}
-                          loadingText="Загрузка данных..."
-                          // onOpen={formik.handleBlur}
-                          onChange={(event, value) => {
-                            formik.setFieldValue('DEAL.CONTACT', value);
-                          }}
-                          renderOption={(props, option) => {
-                            return (
-                              <li {...props} key={option.ID}>
-                                {option.NAME}
-                              </li>
-                            );
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Клиент"
-                              placeholder="Выберите клиента"
-                              required
-                              name="DEAL.CONTACT"
-                              error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
-                              helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
-                            />
-                          )}
-                        />
-                        <TextField
-                          label="Источник"
-                          fullWidth
-                          type="text"
-                          name="DEAL.USR$SOURCE"
-                          value={formik.values.DEAL?.USR$SOURCE || ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            formik.setFieldValue(
-                              'DEAL',
-                              { ...formik.values.DEAL, USR$SOURCE: value ? value : null }
-                            );
-                          }}
-                        />
-                      </Stack>
-                      <Stack direction="row" spacing={3}>
-                        <TextField
-                          label="Сумма"
-                          type="number"
-                          name="DEAL.USR$AMOUNT"
-                          fullWidth
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
-                          }}
-                          value={formik.values.DEAL?.USR$AMOUNT || ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            formik.setFieldValue(
-                              'DEAL',
-                              { ...formik.values.DEAL, USR$AMOUNT: value ? value : null }
-                            );
-                          }}
-                          placeholder="0.00"
-                        />
-                        <DesktopDatePicker
-                          label="Срок"
-                          value={formik.values.DEAL?.USR$DEADLINE || null}
-                          // mask="__.__.____"
-                          inputFormat="dd/MM/yyyy"
-                          onChange={(value) => {
-                            formik.setFieldValue(
-                              'DEAL',
-                              { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
-                            );
-                          }}
-                          renderInput={(params) => <TextField {...params} fullWidth/>}
-                        />
-                      </Stack>
+                        <Stack direction="column" spacing={3} flex={1}>
+                          <CustomerSelect formik={formik} />
+                          <DealSourcesSelect formik={formik} />
+                        </Stack>
+                        <Stack
+                          spacing={3}
+                          {...(matchDownLg
+                            ? {
+                              direction: 'row',
+                              flex: 1
+                            }
+                            : {
+                              width: 150
+                            })
+                          }
+                        >
+                          <TextField
+                            label="Сумма"
+                            type="number"
+                            name="DEAL.USR$AMOUNT"
+                            fullWidth
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
+                            }}
+                            value={formik.values.DEAL?.USR$AMOUNT || ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              formik.setFieldValue(
+                                'DEAL',
+                                { ...formik.values.DEAL, USR$AMOUNT: value ? value : null }
+                              );
+                            }}
+                            placeholder="0.00"
+                          />
+                          <DesktopDatePicker
+                            label="Срок"
+                            value={formik.values.DEAL?.USR$DEADLINE || null}
+                            // mask="__.__.____"
+                            inputFormat="dd.MM.yyyy"
+                            onChange={(value) => {
+                              formik.setFieldValue(
+                                'DEAL',
+                                { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
+                              );
+                            }}
+                            renderInput={(params) => <TextField {...params} fullWidth/>}
+                          />
 
+                        </Stack>
+                      </Stack>
                       <Divider variant="middle" />
                       <Stack direction={matchDownMd ? 'column' : 'column'} spacing={3}>
                         <Autocomplete
@@ -527,21 +608,27 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               />
                               : <></>
                             }
-                            {(formik.values.USR$MASTERKEY === stages[3].ID || formik.values.USR$MASTERKEY === stages[4].ID) ?
+                            {/* {(formik.values.USR$MASTERKEY === stages[3].ID || formik.values.USR$MASTERKEY === stages[4].ID) ? */}
+                            {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
                                     checked={formik.values.DEAL?.DENIED}
                                     onChange={(e) => {
-                                      const value = e.target.checked;
+                                      const checked = e.target.checked;
                                       formik.setFieldValue(
                                         'DEAL',
-                                        { ...formik.values.DEAL, DENIED: value }
+                                        { ...formik.values.DEAL, DENIED: checked }
                                       );
-                                      formik.setFieldValue(
-                                        'USR$MASTERKEY',
-                                        value ? stages[4].ID : stages[3].ID
-                                      );
+                                      const newMasterKey = (() => {
+                                        if (checked) return stages[4].ID;
+                                        if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
+                                        if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
+                                        if (formik.values.DEAL?.PERFORMER) return stages[1].ID;
+                                        return stages[0].ID;
+                                      })();
+                                      formik.setFieldValue('USR$MASTERKEY', newMasterKey);
+                                      if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
                                     }}
                                   />
                                 }
@@ -555,39 +642,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
                         {formik.values.DEAL?.DENIED &&
                           <Stack flex={1} spacing={3}>
-                            <Autocomplete
-                              options={denyReasons || []}
-                              getOptionLabel={option => option.NAME}
-                              value={denyReasons?.find(el => el.ID === formik.values.DEAL?.DENYREASON?.ID) || null}
-                              loading={denyReasonsIsFetching}
-                              loadingText="Загрузка данных..."
-                              // onOpen={formik.handleBlur}
-                              onChange={(event, value) => {
-                                formik.setFieldValue(
-                                  'DEAL',
-                                  { ...formik.values.DEAL, DENYREASON: value ? value : null }
-                                );
-                              }}
-                              renderOption={(props, option) => {
-                                return (
-                                  <li {...props} key={option.ID}>
-                                    {option.NAME}
-                                  </li>
-                                );
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Причина отказа"
-                                  autoFocus
-                                  required
-                                  placeholder="Выберите причину отказа"
-                                  name="DEAL.DENYREASON"
-                                  error={getIn(formik.touched, 'DEAL.DENYREASON') && Boolean(getIn(formik.errors, 'DEAL.DENYREASON'))}
-                                  helperText={getIn(formik.touched, 'DEAL.DENYREASON') && getIn(formik.errors, 'DEAL.DENYREASON')}
-                                />
-                              )}
-                            />
+                            <DenyReasonsSelect formik={formik} />
                             <TextField
                               label="Комментарий"
                               ref={refComment}
@@ -628,9 +683,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </Stack>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
-                    <KanbanTasks card={card} />
+                    {KanbanRequestInfo}
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''}>
+                    <KanbanTasks card={card} />
+                  </TabPanel>
+                  <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''}>
                     <CustomizedCard
                       borders
                       style={{
@@ -647,20 +705,25 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </CustomizedCard>
 
                   </TabPanel>
+                  <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''}>
+                    <TabDescription formik={formik} />
+                  </TabPanel>
                 </TabContext>
               </Stack>
             </Form>
           </FormikProvider>
         </PerfectScrollbar>
       </DialogContent>
-      <DialogActions style={{ display: 'flex' }}>
+      <DialogActions className={styles.DialogActions}>
         <PermissionsGate actionCode={4}>
-          <IconButton onClick={handleDeleteClick} size="large" >
-            <DeleteIcon />
-          </IconButton>
+          {
+            (card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
+            <IconButton onClick={handleDeleteClick} size="small" hidden>
+              <DeleteIcon />
+            </IconButton>
+          }
         </PermissionsGate>
         <Box flex={1} />
-        {/* <Button variant="outlined" color="error" onClick={handleDeleteClick}>Удалить</Button> */}
         <Button
           className={classes.button}
           onClick={handleCancelClick}
@@ -671,20 +734,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             form="mainForm"
             type="submit"
             variant="contained"
-            // onClick={() => {
-            //   setDeleting(false);
-            //   setConfirmOpen(formik.isValid);
-            // }}
+            disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching}
           >Сохранить</Button>
         </PermissionsGate>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        title={deleting ? 'Удаление' : 'Сохранение'}
-        text="Вы уверены, что хотите продолжить?"
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
+      {memoConfirmDialog}
+      {/* {memoAddDealsSource} */}
     </Dialog>
   );
 }

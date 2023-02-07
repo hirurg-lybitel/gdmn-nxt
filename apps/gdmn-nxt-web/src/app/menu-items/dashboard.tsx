@@ -1,5 +1,5 @@
 import HomeIcon from '@mui/icons-material/Home';
-import WorkIcon from '@mui/icons-material/Work';
+import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import MapIcon from '@mui/icons-material/Map';
 import { IMenuItem } from '.';
 
@@ -9,26 +9,26 @@ const dashboard: IMenuItem = {
   type: 'group',
   children: [
     {
-      id: 'dashboard',
+      id: 'overview',
       title: 'Обзор',
       type: 'item',
-      url: 'dashboard',
+      url: 'dashboard/overview',
       icon: <HomeIcon color="secondary" />
     },
     {
-      id: 'deals',
-      title: 'Сделки',
+      id: 'analytics',
+      title: 'Аналитика',
       type: 'item',
-      url: 'dashboard/deals',
-      icon: <WorkIcon color="secondary" />
+      url: 'dashboard/analytics',
+      icon: <LeaderboardRoundedIcon color="secondary" />
     },
-    {
-      id: 'map',
-      title: 'Карта',
-      type: 'item',
-      url: 'dashboard/map',
-      icon: <MapIcon color="secondary" />
-    },
+    // {
+    //   id: 'map',
+    //   title: 'Карта',
+    //   type: 'item',
+    //   url: 'dashboard/map',
+    //   icon: <MapIcon color="secondary" />
+    // },
   ]
 };
 

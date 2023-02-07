@@ -2,7 +2,7 @@ import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { importedModels } from '../models';
 import { resultError } from '../responseMessages';
-import { commitTransaction, getReadTransaction, releaseReadTransaction, startTransaction } from '../utils/db-connection';
+import { commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
 
 const get: RequestHandler = async (req, res) => {
   const cardId = parseInt(req.params.cardId);
@@ -77,7 +77,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const add: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
 
   const { erModelNoAdapters } = await importedModels;
@@ -143,7 +143,7 @@ const add: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await commitTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   };
 };
 

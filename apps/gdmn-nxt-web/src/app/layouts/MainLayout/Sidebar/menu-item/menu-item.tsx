@@ -2,7 +2,7 @@ import { ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@
 import { makeStyles } from '@mui/styles';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
-import { ForwardedRef, forwardRef } from 'react';
+import { ForwardedRef, forwardRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
@@ -26,13 +26,23 @@ const useStyles = makeStyles((theme: Theme) => ({
 export interface MenuItemProps {
   item: any;
   level?: number;
+  isOpen?:boolean
+  open?:()=>void;
 };
 
+
 export function MenuItem(props: MenuItemProps) {
-  const { item, level = 0 } = props;
+  const { item, level = 0, isOpen, open } = props;
+  const settings = useSelector((state: RootState) => state.settings);
+  useEffect(()=>{
+    if (settings.activeMenuId === item.id && isOpen) {
+      open && open();
+    }
+  }, []);
 
   const classes = useStyles();
   const dispatch = useDispatch();
+
 
   const itemIcon = item?.icon ||
     (level > 1
@@ -49,7 +59,6 @@ export function MenuItem(props: MenuItemProps) {
     component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`${item.url}`} target="_self" />)
   };
 
-  const settings = useSelector((state: RootState) => state.settings);
 
   const handleItemOnClick = () => {
     dispatch(setActiveMenu(item.id));

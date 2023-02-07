@@ -73,7 +73,8 @@ export function LabelMarker(props: LabelMarkerProps) {
       style={{
         color: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`,
         backgroundColor: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${backgroundAlpha})`,
-        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`
+        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`,
+        // width: 'min-content'
       }}
     >
       {name || 'Пример'}

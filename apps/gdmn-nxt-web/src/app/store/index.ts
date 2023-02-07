@@ -1,3 +1,4 @@
+import { faqApi } from './../features/FAQ/faqApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
@@ -29,6 +30,9 @@ import { labelsApi } from '../features/labels';
 import { permissionsApi } from '../features/permissions';
 import { systemUsers } from '../features/systemUsers';
 import { topEarningApi } from '../features/topEarning';
+import { businessProcessesApi } from '../features/business-processes';
+import { profileSettingsApi } from '../features/profileSettings';
+import { kanbanCatalogsApi } from '../features/kanban/kanbanCatalogsApi';
 
 export const store = configureStore({
   reducer: {
@@ -61,9 +65,14 @@ export const store = configureStore({
     [labelsApi.reducerPath]: labelsApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
     [systemUsers.reducerPath]: systemUsers.reducer,
-    [topEarningApi.reducerPath]: topEarningApi.reducer
+    [topEarningApi.reducerPath]: topEarningApi.reducer,
+    [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
+    [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
+    [faqApi.reducerPath]: faqApi.reducer,
+    [kanbanCatalogsApi.reducerPath]: kanbanCatalogsApi.reducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
+    .concat(errorMiddleware)
     .concat(contactApi.middleware)
     .concat(accountApi.middleware)
     .concat(labelsApi.middleware)
@@ -86,7 +95,10 @@ export const store = configureStore({
     .concat(permissionsApi.middleware)
     .concat(systemUsers.middleware)
     .concat(topEarningApi.middleware)
-    .concat(errorMiddleware),
+    .concat(businessProcessesApi.middleware)
+    .concat(profileSettingsApi.middleware)
+    .concat(faqApi.middleware)
+    .concat(kanbanCatalogsApi.middleware),
 });
 
 setupListeners(store.dispatch);

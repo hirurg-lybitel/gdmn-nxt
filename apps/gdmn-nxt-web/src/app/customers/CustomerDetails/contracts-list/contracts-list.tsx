@@ -1,4 +1,4 @@
-import { Box, Button, Stack } from '@mui/material';
+import { Box, Button, Stack, Theme } from '@mui/material';
 import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetContractsListQuery } from '../../../features/contracts-list/contractsListApi';
@@ -7,7 +7,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import CustomNoRowsOverlay from '../../../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
 import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   dataGrid: {
     border: 'none',
     '& ::-webkit-scrollbar': {
@@ -28,6 +28,9 @@ const useStyles = makeStyles(() => ({
     '& ::-webkit-scrollbar-thumb:hover': {
       backgroundColor: '#999',
     },
+    '& .isActive--false': {
+      backgroundColor: theme.color.red[50]
+    }
   },
 }));
 
@@ -42,23 +45,23 @@ export function ContractsList(props: ContractsListProps) {
 
   const columns: GridColDef[] = [
     { field: 'NUMBER', headerName: 'Номер', flex: 1, minWidth: 100 },
-    { field: 'DOCUMENTDATE', headerName: 'Дата', flex: 1, minWidth: 100,
+    { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100, type: 'date',
       renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
-    { field: 'DATEBEGIN', headerName: 'Дата начала', flex: 1, minWidth: 100,
+    { field: 'DATEBEGIN', headerName: 'Дата начала', width: 130, type: 'date',
       renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
-    { field: 'DATEEND', headerName: 'Дата окончания', flex: 1, minWidth: 100,
+    { field: 'DATEEND', headerName: 'Дата окончания', width: 130, type: 'date',
       renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
-    { field: 'DEPT_NAME', headerName: 'Отдел', flex: 1, minWidth: 100 },
-    { field: 'JOB_NUMBER', headerName: 'Заказ', flex: 1, minWidth: 100 },
-    { field: 'SUMNCU', headerName: 'Сумма', flex: 1, minWidth: 100,
+    { field: 'DEPT_NAME', headerName: 'Отдел', width: 70 },
+    { field: 'JOB_NUMBER', headerName: 'Заказ', width: 70 },
+    { field: 'SUMNCU', headerName: 'Сумма', width: 70, align: 'right',
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-    { field: 'SUMCURNCU', headerName: 'Сумма вал.', flex: 1, minWidth: 100,
+    { field: 'SUMCURNCU', headerName: 'Сумма вал.', width: 100, align: 'right',
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
     { field: 'ISACTIVE', headerName: 'Действующий', type: 'boolean', width: 120 },
-    { field: 'ISBUDGET', headerName: 'Бюджетный', type: 'boolean', width: 120 },
+    { field: 'ISBUDGET', headerName: 'Бюджетный', type: 'boolean', width: 100 },
   ];
 
   return (
@@ -67,14 +70,15 @@ export function ContractsList(props: ContractsListProps) {
       flex="1"
       display="flex"
       spacing={1}
+      p={3}
     >
-      <Box>
+      {/* <Box>
         <Button
           onClick={refetch}
           disabled={contractsIsFetching}
           startIcon={<RefreshIcon/>}
         >Обновить</Button>
-      </Box>
+      </Box> */}
       <CustomizedCard
         borders
         style={{
@@ -83,6 +87,7 @@ export function ContractsList(props: ContractsListProps) {
       >
         <DataGridPro
           className={classes.dataGrid}
+          getRowClassName={({row}) => `isActive--${row.ISACTIVE}`}
           localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
           rows={contracts || []}
           getRowId={row => row.ID}

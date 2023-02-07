@@ -4,7 +4,7 @@ import { ResultSet } from "node-firebird-driver-native";
 import { importModels } from "../er/er-utils";
 import { resultError } from "../responseMessages";
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from "../utils/db-connection";
-import { genId } from "../utils/genId";
+import { genId } from '../utils/genId';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -61,7 +61,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -115,7 +115,6 @@ const upsert: RequestHandler = async (req, res) => {
 
 
     const row = await attachment.executeSingleton(transaction, sql, paramsValues);
-    await transaction.commit();
 
     const result: IRequestResult<{ columns: IKanbanColumn[] }> = {
       queries: {
@@ -128,13 +127,13 @@ const upsert: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   }
 };
 
 const remove: RequestHandler = async(req, res) => {
   const { id } = req.params;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
@@ -164,17 +163,16 @@ const remove: RequestHandler = async(req, res) => {
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
-    await transaction.commit();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
-    }
+    };
 
     return res.status(200).json({ 'id': id });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction(res.statusCode === 200);
   }
 };
 

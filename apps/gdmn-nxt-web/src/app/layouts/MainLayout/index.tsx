@@ -7,13 +7,15 @@ import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
-import { setActiveMenu, toggleMenu } from '../../store/settingsSlice'
+import { setActiveMenu, toggleMenu } from '../../store/settingsSlice';
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
+import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
+import { config } from '@gdmn-nxt/config';
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'})<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
@@ -57,7 +59,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
 
 interface IMenuItem {
   type: 'item';
-  Icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  Icon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string; };
   caption: string;
   onClick: () => void;
 };
@@ -126,7 +128,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
 export const MainLayout = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  const user = useSelector<RootState, UserState>( state => state.user );
+  const user = useSelector<RootState, UserState>(state => state.user);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
 
   const { errorMessage } = useSelector((state: RootState) => state.error);
@@ -136,10 +138,19 @@ export const MainLayout = () => {
   const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
 
   // const location = useLocation();
-
   useEffect(() => {
     const menuID = activeMenuId === '' ? 'dashboard' : activeMenuId;
     dispatch(setActiveMenu(menuID));
+
+    setSocketClient({
+      url: `http://${config.host}:${config.notificationPort}`,
+      userId: user.userProfile?.id || -1
+    });
+
+    return () => {
+      socketClient.removeAllListeners();
+      socketClient.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -147,7 +158,6 @@ export const MainLayout = () => {
       setOpenSnackBar(true);
     }
   }, [errorMessage]);
-
 
   const handleDrawerToggle = () => {
     dispatch(toggleMenu(!menuOpened));
@@ -188,40 +198,13 @@ export const MainLayout = () => {
           transition: menuOpened ? theme.transitions.create('width') : 'none'
         }}
       >
-        <Toolbar>
-        {/* <ButtonBase disableRipple component={Link} to={config.defaultPath}> */}
-        {/* </ButtonBase>           */}
-          {/* <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            // onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
-            onClick={handleDrawerToggle}
-          >
-            <MenuIcon />
-          </IconButton>
-          <ButtonBase disableRipple component={Link} to={'/'} >
-            <BelgissLogo />
-          </ButtonBase>
-          <Box sx={{ flexGrow: 1 }} /> */}
-          {/* <Typography variant="h1" component="div" sx={{ ...theme.menu, flexGrow: 1 }}>
-            Портал БелГИСС
-          </Typography> */}
-
+        <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
           <Header onDrawerToggle={handleDrawerToggle} />
-          {/* <IconButton
-            size="large"
-            onClick={ (event: any) => setAnchorProfileEl(event.currentTarget) }
-          >
-            <Avatar />
-          </IconButton> */}
         </Toolbar>
       </AppBar>
       <CustomMenu
         anchorEl={anchorProfileEl}
-        handleClose={ () => setAnchorProfileEl(null) }
+        handleClose={() => setAnchorProfileEl(null)}
         items={profileMenuItems}
       />
       <Sidebar

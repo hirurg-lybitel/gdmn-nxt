@@ -1,5 +1,6 @@
 import { ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
+import { resultError } from './responseMessages';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from './utils/db-connection';
 
 export const getLabelsContact: RequestHandler = async (req, res) => {
@@ -71,7 +72,7 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
   if (labels.length === 0) {
     return res.status(400).send({ 'errorMessage': 'Пустой набор входящих данных' });
   }
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
@@ -113,8 +114,6 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
 
     const records = await Promise.all(unresolvedPromises);
 
-    await transaction.commit();
-
     const _schema = { };
     const result: IRequestResult = {
       queries: {
@@ -125,15 +124,15 @@ export const addLabelsContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error.message });
+    return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   };
 };
 
 export const deleteLabelsContact: RequestHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     await attachment.execute(
@@ -142,12 +141,10 @@ export const deleteLabelsContact: RequestHandler = async (req, res) => {
       [contactId]
     );
 
-    await transaction.commit();
-
     return res.status(204).send();
   } catch (error) {
-    return res.status(500).send({ 'errorMessage': error.message });
+    return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
