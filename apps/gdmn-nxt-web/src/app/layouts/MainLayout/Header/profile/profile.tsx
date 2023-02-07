@@ -31,6 +31,7 @@ import Logout from '@mui/icons-material/Logout';
 import { Link } from 'react-router-dom';
 import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
+import { setStyleMode } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -101,7 +102,7 @@ export function Profile(props: ProfileProps) {
   const handleSettingsClick = () => {
     dispatch(setActiveMenu('settings'));
     handleClose();
-  }
+  };
 
   const welcomeText = () => {
     const date = new Date();
@@ -130,6 +131,11 @@ export function Profile(props: ProfileProps) {
         to="preferences/settings"
         target="_self"
       />)
+  };
+
+  const logout = async () => {
+    await dispatch(logoutUser());
+    dispatch(setStyleMode('light'));
   };
 
   return (
@@ -201,7 +207,9 @@ export function Profile(props: ProfileProps) {
                     </ListItem>
                     <Divider />
                     <ListItem disablePadding>
-                      <ListItemButton onClick={() => dispatch(logoutUser())}>
+                      <ListItemButton
+                        onClick={logout}
+                      >
                         <ListItemIcon className={classes.listItemIcon}>
                           <Logout />
                         </ListItemIcon>

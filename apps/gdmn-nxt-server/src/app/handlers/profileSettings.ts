@@ -14,7 +14,7 @@ const get: RequestHandler = async (req, res) => {
   try {
     const sqlResult = await fetchAsObject(`
       SELECT
-        p.RANK, ps.USR$AVATAR as AVATAR_BLOB
+        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as MODE
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
@@ -24,14 +24,13 @@ const get: RequestHandler = async (req, res) => {
       if (r['AVATAR_BLOB'] !== null && typeof r['AVATAR_BLOB'] === 'object') {
         const readStream = await attachment.openBlob(transaction, r['AVATAR_BLOB']);
         const blobLength = await readStream.length;
-				const resultBuffer = Buffer.alloc(blobLength);
+        const resultBuffer = Buffer.alloc(blobLength);
 
         let size = 0;
-				let n: number;
-				while (size < blobLength && (n = await readStream.read(resultBuffer.subarray(size))) > 0)
-					size += n;
+        let n: number;
+        while (size < blobLength && (n = await readStream.read(resultBuffer.subarray(size))) > 0) size += n;
 
-				await readStream.close();
+        await readStream.close();
 
         const blob2String = resultBuffer.toString();
         r['AVATAR'] = bin2String(blob2String.split(','));
@@ -44,6 +43,7 @@ const get: RequestHandler = async (req, res) => {
       _params: [{ userId }],
       _schema: {}
     };
+    res.cookie('mode', result.queries.settings.MODE);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
@@ -59,7 +59,7 @@ const set: RequestHandler = async (req, res) => {
 
   const userId = parseIntDef(req.params.userId, -1);
 
-  const { AVATAR: avatar } = req.body;
+  const { AVATAR: avatar, MODE: mode } = req.body;
 
   try {
     const charArray = string2Bin(avatar);
@@ -70,11 +70,11 @@ const set: RequestHandler = async (req, res) => {
     await blob.close();
 
     const sqlResult = await fetchAsObject(`
-      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR)
-      VALUES(:userId, :avatar)
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE)
+      VALUES(:userId, :avatar, :mode)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
-    { userId, avatar: blob});
+    { userId, avatar: blob, mode });
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },
@@ -87,7 +87,6 @@ const set: RequestHandler = async (req, res) => {
   } finally {
     await releaseTransaction(res.statusCode === 200);
   }
-
 };
 
 export default { get, set };

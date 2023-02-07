@@ -5,57 +5,65 @@ import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Popper, Typography } from '@mui/material';
 import CustomizedCard from '../customized-card/customized-card';
-
-const defaultTheme = ({ hideHeaderSeparator }: IStyledGridProps) => ({
-  border: 'none',
-  padding: '0px',
-  flex: 1,
-  '& .MuiDataGrid-cell': {
-    paddingLeft: '24px',
-    paddingRight: '24px',
-  },
-  '& .MuiDataGrid-cell:focus-within': {
-    outline: 'none !important',
-  },
-  '& .MuiDataGrid-columnHeader': {
-    paddingLeft: '24px',
-    paddingRight: '24px'
-  },
-  '& .MuiDataGrid-columnHeader:focus-within': {
-    outline: 'none !important',
-  },
-  '& ::-webkit-scrollbar': {
-    width: '6px',
-    height: '6px',
-    backgroundColor: 'transparent',
-    borderRadius: '6px',
-    // transition: 'background-color 5s linear, width 5s ease-in-out',
-  },
-  '& ::-webkit-scrollbar:hover': {
-    backgroundColor: '#f0f0f0',
-  },
-  '& ::-webkit-scrollbar-thumb': {
-    position: 'absolute',
-    right: 10,
-    borderRadius: '6px',
-    backgroundColor: 'rgba(170, 170, 170, 0.5)',
-  },
-  '& ::-webkit-scrollbar-thumb:hover': {
-    backgroundColor: '#999',
-  },
-  '& > .MuiDataGrid-columnSeparator': {
-    visibility: 'hidden',
-  },
-  '& .MuiDataGrid-iconSeparator': {
-    ...(hideHeaderSeparator && { display: 'none' })
-  },
-});
+import { theme } from '../../../theme';
+import { useTheme } from '@mui/material/styles';
 
 interface IStyledGridProps extends DataGridProProps{
   hideHeaderSeparator?: boolean;
 }
 
 export default function StyledGrid(props: IStyledGridProps) {
+  const theme = useTheme();
+  const defaultTheme = ({ hideHeaderSeparator }: IStyledGridProps) => ({
+    border: 'none',
+    padding: '0px',
+    flex: 1,
+    '& .MuiDataGrid-cell': {
+      paddingLeft: '24px',
+      paddingRight: '24px',
+    },
+    '& .MuiDataGrid-columnHeader:focus-within': {
+      outline: 'none !important',
+    },
+    '& .MuiDataGrid-cell:focus-within': {
+      outline: 'none !important',
+    },
+    '& .MuiDataGrid-columnHeader': {
+      paddingLeft: '24px',
+      paddingRight: '24px'
+    },
+    '& ::-webkit-scrollbar': {
+      width: '6px',
+      height: '6px',
+      backgroundColor: 'transparent',
+      borderRadius: '6px',
+      // transition: 'background-color 5s linear, width 5s ease-in-out',
+    },
+    '& ::-webkit-scrollbar:hover': {
+      backgroundColor: '#f0f0f0',
+    },
+    '& ::-webkit-scrollbar-thumb': {
+      position: 'absolute',
+      right: 10,
+      borderRadius: '6px',
+      backgroundColor: 'rgba(170, 170, 170, 0.5)',
+    },
+    '& ::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: '#999',
+    },
+    '& > .MuiDataGrid-columnSeparator': {
+      visibility: 'hidden',
+    },
+    '& .MuiDataGrid-iconSeparator': {
+      ...(hideHeaderSeparator && { display: 'none' })
+    },
+    '& .MuiDataGrid-pinnedColumnHeaders': {
+      background: theme.palette.background.paper
+    },
+    '& .MuiDataGrid-pinnedColumns': {
+      background: theme.palette.background.paper
+    }
+  });
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}

@@ -3,7 +3,7 @@ import styles from './business-direction-compare.module.less';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import Chart from 'react-apexcharts';
-import { Box, Grid, TextField } from '@mui/material';
+import { Box, Grid, Stack, TextField, useTheme } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
@@ -86,85 +86,6 @@ const titleFormatter = (message: string) => (seriesName: string) => `
     <span>${seriesName === noDataLabel ? message : seriesName}</span>
   </div>`;
 
-
-const chartOptionsBarDefault: ApexCharts.ApexOptions = {
-  chart: {
-    id: 'column-bar',
-    stacked: false,
-    toolbar: {
-      show: false,
-    },
-    zoom: {
-      enabled: false
-    }
-  },
-  title: {
-    text: 'Сравнение бизнес-процессов и направлений',
-    align: 'center',
-    style: {
-      fontSize: '1.2em',
-      fontWeight: 700
-    },
-    offsetY: 20
-  },
-  noData: {
-    text: 'Нет данных',
-    align: 'center',
-    verticalAlign: 'middle',
-    style: {
-      fontSize: '20px',
-    }
-  },
-  tooltip: {
-    theme: 'light',
-    x: {
-      formatter(value, opts) {
-        return `
-        <div class="${styles['bar-tooltip-label']}">
-          <span>${value.toLocaleString()}</span>
-        </div>`;
-      },
-    },
-  },
-  xaxis: {
-    labels: {
-      formatter: (value) => (
-        isNaN(Number(value)) ? value : Number(value).toLocaleString()
-      )
-    }
-  },
-  yaxis: {
-    labels: {
-      style: {
-        // fontSize: '12px'
-      },
-      formatter: (value) => (
-        value.toLocaleString()
-      )
-    }
-  },
-  legend: {
-    fontSize: '15px',
-    fontFamily: '\'Roboto\', sans-serif',
-    offsetY: 5,
-    // labels: {
-    //   colors: theme.color.grey[500],
-    // },
-    markers: {
-      width: 16,
-      height: 16,
-      radius: 5
-    },
-    itemMargin: {
-      horizontal: 15,
-      vertical: 8
-    }
-  },
-  dataLabels: {
-    enabled: false
-  },
-};
-
 interface IInitState {
   datesLeft: DateRange<Date>;
   dateRight: DateRange<Date>;
@@ -183,6 +104,7 @@ const initState: IInitState = {
   ],
 };
 
+
 /* eslint-disable-next-line */
 export interface BusinessDirectionCompareProps {}
 
@@ -192,6 +114,8 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
 
   const [datesLeft, setDatesLeft] = useState<DateRange<Date>>(initState.datesLeft);
   const [datesRight, setDatesRight] = useState<DateRange<Date>>(initState.dateRight);
+
+  const theme = useTheme();
 
   const analyticsDataParamsLeft: IChartFilter = useMemo(() => ({
     dateBegin: datesLeft[0]?.getTime() || 0,
@@ -214,6 +138,83 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     setSelectedRightMasterSeriesId(options.selectedDataPoints[0].length !== 0 ? options.dataPointIndex : -1);
   }, []);
 
+
+  const chartOptionsBarDefault: ApexCharts.ApexOptions = {
+  	chart: {
+  	id: 'column-bar',
+  	stacked: false,
+  	toolbar: {
+  	  show: false,
+  	  },
+  	  zoom: {
+  	    enabled: false
+  	  }
+  	},
+    title: {
+      text: 'Сравнение бизнес-процессов и направлений',
+      align: 'center',
+      style: {
+        fontSize: '1.2em',
+        fontWeight: 700,
+        color: theme.textColor
+      },
+      offsetY: 20
+    },
+  	noData: {
+  	text: 'Нет данных',
+  	align: 'center',
+  	verticalAlign: 'middle',
+  	style: {
+  	color: theme.textColor,
+  	fontSize: '20px',
+  	}
+  	},
+  	tooltip: {
+  	theme: theme.palette.mode,
+  	x: {
+  	formatter(value, opts) {
+  	return `
+  	<div class="${styles['bar-tooltip-label']}">
+  	<span>${value}</span>
+  	</div>`;
+  	},
+  	},
+  	},
+  	xaxis: {
+  	labels: {
+  	formatter: (value) => (
+  	isNaN(Number(value)) ? value : Number(value).toLocaleString()
+  	)
+  	}
+  	},
+  	yaxis: {
+  	labels: {
+  	formatter: (value) => (
+  	value.toLocaleString()
+  	)
+  	}
+  	},
+  	legend: {
+  	fontSize: '15px',
+  	fontFamily: '\'Roboto\', sans-serif',
+  	offsetY: 5,
+  	labels: {
+  	colors: theme.textColor,
+  	},
+  	markers: {
+  	width: 16,
+  	height: 16,
+  	radius: 5
+  	},
+  	itemMargin: {
+  	horizontal: 15,
+  	vertical: 8
+  	}
+  	},
+  	dataLabels: {
+  	enabled: false
+  	},
+  };
 
   const chartOptionsLeft = useMemo(() => {
     return {
@@ -300,27 +301,31 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     series: [
       {
         name: 'Период 1',
-        data: selectedLeftMasterSeriesId >= 0
+        data: (selectedLeftMasterSeriesId >= 0
           ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => d.amount)
-          : dataLeft?.map(d => d.amount)
+          : dataLeft?.map(d => d.amount)) || []
 
       },
       {
         name: 'Период 2',
-        data: selectedLeftMasterSeriesId >= 0
+        data: (selectedLeftMasterSeriesId >= 0
           ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => dataRight[selectedLeftMasterSeriesId]?.businessProcesses?.find(dr => dr.name === d.name)?.amount || 0)
-          : dataLeft?.map(d => dataRight.find(dr => dr.name === d.name)?.amount || 0)
+          : dataLeft?.map(d => dataRight.find(dr => dr.name === d.name)?.amount || 0)) || []
       }
     ],
     xaxis: {
       ...chartOptionsBarDefault.xaxis,
-      categories: selectedLeftMasterSeriesId >= 0
+      categories: (selectedLeftMasterSeriesId >= 0
         ? dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(({ name }) => name)
-        : dataLeft?.map(({ name }) => name) || ['Нет данных'],
+        : dataLeft?.map(({ name }) => name) || ['Нет данных']) || [],
       labels: {
         hideOverlappingLabels: false,
         trim: true,
-        rotate: 0
+        rotate: 0,
+        otate: 0,
+        style: {
+          colors: theme.textColor
+        }
       },
     }
   }), [dataLeft, dataRight, selectedLeftMasterSeriesId]);

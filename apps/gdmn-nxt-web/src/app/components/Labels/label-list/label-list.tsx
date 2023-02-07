@@ -70,7 +70,7 @@ export function LabelList(props: LabelListProps) {
               style={{
                 maxHeight: 'calc(100vh - 185px)',
               }}
-            >
+              >
               {labels?.map((label, idx) =>
                 <div key={label.ID}>
                   {idx !== 0 ? <Divider /> : <></>}

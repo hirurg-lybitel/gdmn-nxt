@@ -32,7 +32,6 @@ import { systemUsers } from '../features/systemUsers';
 import { topEarningApi } from '../features/topEarning';
 import { businessProcessesApi } from '../features/business-processes';
 import { profileSettingsApi } from '../features/profileSettings';
-import faqReducer from '../features/FAQ/faqSlice';
 import { kanbanCatalogsApi } from '../features/kanban/kanbanCatalogsApi';
 
 export const store = configureStore({
@@ -45,7 +44,6 @@ export const store = configureStore({
     nlp: nlpReducer,
     customers: customersReducer,
     customersHierarchy: hierarchyReducer,
-    _faq: faqReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,

@@ -206,7 +206,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         id: -1,
         fieldName: 'Сделка',
         oldValue: '',
-        newValue: (newCard as any)['DEAL']['USR$NAME'] || ''
+        newValue: (newCard as any).DEAL.USR$NAME || ''
       });
 
       addCard(newCard);
