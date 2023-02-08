@@ -163,18 +163,14 @@ export default function FAQ() {
                             <AccordionSummary
                               expandIcon={<ExpandMoreIcon />}
                             >
-                              <Typography variant="h4">
-                                <ReactMarkdown>
-                                  {item.USR$QUESTION}
-                                </ReactMarkdown>
-                              </Typography>
+                              <ReactMarkdown>
+                                {item.USR$QUESTION}
+                              </ReactMarkdown>
                             </AccordionSummary>
                             <AccordionDetails style={{ background: 'rgba(0, 0, 0, 0.1)', borderRadius: '12px 12px 0 0' }}>
-                              <Typography variant="body1">
-                                <ReactMarkdown >
-                                  {item.USR$ANSWER}
-                                </ReactMarkdown>
-                              </Typography>
+                              <ReactMarkdown >
+                                {item.USR$ANSWER}
+                              </ReactMarkdown>
                             </AccordionDetails>
                           </Accordion>
                           <PermissionsGate actionCode={12}>
