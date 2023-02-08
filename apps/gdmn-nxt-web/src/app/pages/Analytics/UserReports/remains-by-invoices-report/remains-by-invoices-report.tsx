@@ -1,6 +1,9 @@
+import { ColorMode } from '@gsbelarus/util-api-types';
 import { Grid, Typography } from '@mui/material';
 import { CircularIndeterminate } from 'apps/gdmn-nxt-web/src/app/components/helpers/circular-indeterminate/circular-indeterminate';
 import { useGetRemainsInvoicesQuery } from 'apps/gdmn-nxt-web/src/app/features/remains-by-invoices/remainsInvoicesApi';
+import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import { useSelector } from 'react-redux';
 import styles from './remains-by-invoices-report.module.less';
 
 export interface RemainsByInvoicesReportProps {
@@ -11,6 +14,8 @@ export function RemainsByInvoicesReport(props: RemainsByInvoicesReportProps) {
   const { onDate } = props;
   const { data, isFetching } = useGetRemainsInvoicesQuery({ onDate });
 
+  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+
   const groupSumsMap = new Map<string, number>();
   for (const { CODE, SALDOCURR } of data || []) {
     groupSumsMap.set(CODE, (groupSumsMap.get(CODE) || 0) + SALDOCURR);
@@ -18,12 +23,11 @@ export function RemainsByInvoicesReport(props: RemainsByInvoicesReportProps) {
 
   const groupSums = Object.fromEntries([...groupSumsMap]);
 
-
   return (
     <>
       {data
         ? <><Grid container className={styles['table']} >
-          <Grid container item className={styles['header']}>
+          <Grid container item className={`${styles['header']} ${colorMode === ColorMode.Dark ? styles['headerDark'] : ''}`}>
             <Grid item xs={8}>
               <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} variant="h4">Расчётный счёт</Typography>
             </Grid>

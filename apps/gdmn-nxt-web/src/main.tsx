@@ -60,6 +60,7 @@ import { join } from 'path';
 import { useGetProfileSettingsQuery } from './app/features/profileSettings';
 import DealSources from './app/pages/Managment/dealsCatalogs/deal-sources/deal-sources';
 import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-reasons';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 registerMUI();
 
@@ -83,7 +84,7 @@ const Main = () => {
     if (!themeType || themeType !== 'dark') {
       return;
     }
-    dispatch(setStyleMode('dark'));
+    dispatch(setStyleMode(ColorMode.Dark));
   }, [themeType]);
 
   const pathName:string[] = window.location.pathname.split('/');

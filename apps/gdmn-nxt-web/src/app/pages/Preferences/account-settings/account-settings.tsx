@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface AccountSettingsProps {}
@@ -82,10 +83,10 @@ export function AccountSettings(props: AccountSettingsProps) {
       return;
     }
     if (event.target.checked) {
-      dispatch(setStyleMode('dark'));
+      dispatch(setStyleMode(ColorMode.Dark));
       addOrUpdateTheme('dark');
     } else {
-      dispatch(setStyleMode('light'));
+      dispatch(setStyleMode(ColorMode.Light));
       addOrUpdateTheme('light');
     }
   };
