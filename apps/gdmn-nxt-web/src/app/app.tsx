@@ -15,8 +15,6 @@ import { CircularIndeterminate } from './components/helpers/circular-indetermina
 import { useGetCustomersQuery } from './features/customer/customerApi_new';
 import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
 import { InitData } from './store/initData';
-import { useGetProfileSettingsQuery } from './features/profileSettings';
-import { setStyleMode } from './store/settingsSlice';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -38,17 +36,7 @@ const post = (url: string, data: Object) => query({ method: 'post', url, baseURL
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage, userProfile } = useSelector<RootState, UserState>(state => state.user);
-  const userId = userProfile?.id;
-  const { data: settings, isLoading } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
-  const themeType = settings?.MODE;
-
-  useEffect(()=>{
-    if (!themeType || themeType !== 'dark') {
-      return;
-    }
-    dispatch(setStyleMode('dark'));
-  }, [themeType]);
+  const { loginStage } = useSelector<RootState, UserState>(state => state.user);
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
@@ -86,17 +74,10 @@ function App() {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
   }, [loginStage]);
 
-  const themeSet = () => {
-    if (!themeType || themeType !== 'dark') {
-      return;
-    }
-    dispatch(setStyleMode('dark'));
-  };
-
   const result =
     <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
       {
-        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' || !themeType ?
+        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
           <Stack spacing={2}>
             <CircularIndeterminate open={true} size={100} />
             <Typography variant="overline" color="gray" align="center">
@@ -104,7 +85,7 @@ function App() {
             </Typography>
           </Stack>
           : loginStage === 'SELECT_MODE' ?
-            themeSet()
+            <></>
             // dispatch(signInEmployee())
             // <SelectMode
             //   employeeModeSelected={ () => dispatch(signInEmployee()) }
