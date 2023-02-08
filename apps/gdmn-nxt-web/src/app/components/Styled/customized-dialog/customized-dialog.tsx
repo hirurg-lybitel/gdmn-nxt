@@ -21,7 +21,7 @@ const useStyles = makeStyles<Theme, StyleProps>((theme) => ({
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     '& .MuiDialogActions-root': {
-      padding: '12px 24px 12px 16px'
+      padding: '12px 24px 12px 16px !important' 
     }
   },
 }));

@@ -133,7 +133,7 @@ export default function FAQ() {
             title={
               <div className={style.title}>
                 <Typography variant="h3">
-                  Часто задаваемые вопросы
+                  База знаний
                 </Typography>
                 <PermissionsGate actionCode={11}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>

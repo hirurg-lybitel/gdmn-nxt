@@ -4,10 +4,12 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-import { IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 
 /* eslint-disable-next-line */
@@ -27,6 +29,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const { onAdd, onEdit, onDelete } = props;
 
   const theme = useTheme();
+  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
 
@@ -157,12 +160,14 @@ export function KanbanCard(props: KanbanCardProps) {
 
     return (
       <CustomizedCard
-        borders
+        borders={colorMode === ColorMode.Light}
+        // boxShadows
         key={card.ID}
         style={{
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
+          backgroundColor: colorMode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
           ...(card?.USR$ISREAD || false
             ? {}
             : {
@@ -247,80 +252,6 @@ export function KanbanCard(props: KanbanCardProps) {
       {memoEditCard}
       {memoCopyCard}
     </>
-  );
-
-  return (
-    <div>
-      <CustomizedCard
-        borders
-        key={card.ID}
-        style={{
-          width: '100%',
-          textOverflow: 'ellipsis',
-          padding: 5,
-          ...(snapshot.isDragging
-            ? {
-              opacity: 0.7,
-              border: `solid ${theme.menu?.backgroundColor}`
-            }
-            : {
-              borderLeft: `solid ${theme.menu?.backgroundColor}`,
-            }
-          )
-        }}
-        sx={{
-          '&:hover .actions': {
-            display: 'inline',
-            position: 'absolute',
-            right: 0,
-          }
-        }}
-        onDoubleClick={() => setEditCard(true)}
-      >
-        <Stack direction="column" spacing={1}>
-          <Stack
-            direction="row"
-            style={{ position: 'relative' }}
-          >
-            <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <PermissionsGate actionCode={2}>
-              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-                ?
-                <div
-                  className="actions"
-                  hidden
-                >
-                  <IconButton size="small" onClick={() => setCopyCard(true)}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </div>
-                : null}
-            </PermissionsGate>
-          </Stack>
-          <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
-          <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
-          {TaskStatus}
-        </Stack>
-      </CustomizedCard>
-      <KanbanEditCard
-        open={editCard}
-        card={card}
-        currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
-        stages={columns}
-        onSubmit={cardHandlers.handleSubmit}
-        onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
-      />
-      <KanbanEditCard
-        open={copyCard}
-        card={{ ...card, ID: -1, DEAL: { ...card.DEAL, ID: -1, USR$NAME: '' } }}
-        currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
-        stages={columns}
-        onSubmit={cardHandlers.handleSubmit}
-        onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
-      />
-    </div>
   );
 }
 

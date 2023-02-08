@@ -10,8 +10,10 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 
 export interface KanbanColumnProps {
@@ -32,6 +34,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const { onEdit, onDelete, onAddCard } = props;
 
   const theme = useTheme();
+  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
 
   const [upsertCard, setUpsertCard] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -205,7 +208,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         {header()}
       </Box>
       <CustomizedCard
-        // borders
+        borders={colorMode === ColorMode.Light}
         style={{
           // minWidth: '250px',
           // maxWidth: '400px',
@@ -225,12 +228,6 @@ export function KanbanColumn(props: KanbanColumnProps) {
             }),
         }}
       >
-        {/* <CardHeader
-          sx={{ height: 10 }}
-          title={header()}
-          {...provided.dragHandleProps}
-        /> */}
-        {/* <Divider /> */}
         <CardContent
           style={{
             flex: 1,

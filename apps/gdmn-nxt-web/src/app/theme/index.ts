@@ -1,3 +1,4 @@
+import { ColorMode } from '@gsbelarus/util-api-types';
 import { colors } from '@mui/material';
 import * as locales from '@mui/material/locale';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
@@ -24,7 +25,7 @@ declare module '@mui/material/styles' {
 };
 
 export const theme = (customization: ICustomization) => {
-  const themeOption = (customization.mode === 'light'
+  const themeOption = (customization.mode === ColorMode.Light
     ? {
       backgroundColor: colors.grey[100],
       backgroundDefault: colors.blue[300],
@@ -106,7 +107,7 @@ export const theme = (customization: ICustomization) => {
   const themes = createTheme(themeOptions, locales.ruRU);
   themes.typography = { ...themes.typography, ...themeTypography(themeOptions) };
   themes.components = { ...locales.ruRU.components, ...componentStyleOverrides(themeOptions) };
-  themes.shadows[1] = themeOption.customization.mode === 'dark'
+  themes.shadows[1] = themeOption.customization.mode === ColorMode.Dark
     ? '0px 4px 20px rgba(100, 110, 120, 0.3)'
     : '0px 4px 20px rgba(170, 180, 190, 0.3)';
 
