@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
 import { Button, Divider, Typography, Stack } from '@mui/material';
@@ -15,6 +15,8 @@ import { CircularIndeterminate } from './components/helpers/circular-indetermina
 import { useGetCustomersQuery } from './features/customer/customerApi_new';
 import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
 import { InitData } from './store/initData';
+import { useGetProfileSettingsQuery } from './features/profileSettings';
+import { setStyleMode } from './store/settingsSlice';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -36,7 +38,18 @@ const post = (url: string, data: Object) => query({ method: 'post', url, baseURL
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage } = useSelector<RootState, UserState>(state => state.user);
+
+  const { loginStage, userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const userId = userProfile?.id;
+  const { data: settings, isLoading } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
+  const themeType = settings?.MODE;
+
+  useEffect(()=>{
+    if (!themeType || themeType !== 'dark') {
+      return;
+    }
+    dispatch(setStyleMode('dark'));
+  }, [themeType]);
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
@@ -66,9 +79,16 @@ function App() {
               }
             });
           break;
+        case 'OTHER_LOADINGS':
+          if (themeType) {
+          } else {
+            return;
+          }
+          dispatch(renderApp());
+          break;
       }
     })();
-  }, [loginStage]);
+  }, [loginStage, themeType]);
 
   useEffect(() => {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
@@ -77,7 +97,7 @@ function App() {
   const result =
     <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
       {
-        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
+        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' || loginStage === 'OTHER_LOADINGS' ?
           <Stack spacing={2}>
             <CircularIndeterminate open={true} size={100} />
             <Typography variant="overline" color="gray" align="center">

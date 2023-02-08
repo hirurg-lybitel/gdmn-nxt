@@ -72,19 +72,18 @@ const Main = () => {
   const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
   const themeStyles = useTheme();
   const user = useSelector<RootState, UserState>(state => state.user);
-  const userId = user.userProfile?.id;
-  const { data: Profilesettings, isFetching } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
-  const themeType = Profilesettings?.MODE;
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
+  const mode = document.cookie.split('mode=')?.[1];
   useEffect(()=>{
-    if (!themeType || themeType !== 'dark') {
-      return;
+    if (mode === 'dark') {
+      dispatch(setStyleMode('dark'));
+    } else {
+      dispatch(setStyleMode('light'));
     }
-    dispatch(setStyleMode('dark'));
-  }, [themeType]);
+  }, [mode]);
 
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
