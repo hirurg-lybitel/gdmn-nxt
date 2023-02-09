@@ -139,9 +139,6 @@ export const MainLayout = () => {
 
   // const location = useLocation();
   useEffect(() => {
-    const menuID = activeMenuId === '' ? 'dashboard' : activeMenuId;
-    dispatch(setActiveMenu(menuID));
-
     setSocketClient({
       url: `http://${config.host}:${config.notificationPort}`,
       userId: user.userProfile?.id || -1

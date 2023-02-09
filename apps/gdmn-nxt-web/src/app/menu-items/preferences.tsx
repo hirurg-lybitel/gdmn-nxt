@@ -28,19 +28,20 @@ const preferences: IMenuItem = {
       id: 'permissions',
       title: 'Настройка прав',
       type: 'collapse',
-      checkAction: 8,
       icon: <AdminPanelSettingsIcon color="secondary" />,
       children: [
         {
           id: 'permissions-view',
           title: 'Действия',
           type: 'item',
+          checkAction: 8,
           url: 'preferences/permissions/list'
         },
         {
           id: 'permissions-usergroups',
           title: 'Группы пользователей',
           type: 'item',
+          checkAction: 8,
           url: 'preferences/permissions/usergroups'
         }
       ]

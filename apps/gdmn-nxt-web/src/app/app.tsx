@@ -17,6 +17,12 @@ import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
 import { InitData } from './store/initData';
 import { useGetProfileSettingsQuery } from './features/profileSettings';
 import { setStyleMode } from './store/settingsSlice';
+import { setPageIdFound } from './store/settingsSlice';
+import { setActiveMenu } from './store/settingsSlice';
+import menuItems from './menu-items';
+import { IMenuItem } from './menu-items';
+import { useGetPermissionByUserQuery } from './features/permissions';
+import { useState } from 'react';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -55,6 +61,52 @@ function App() {
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
 
+  const appSettings = useSelector((state: RootState) => state.settings);
+  const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
+  const [actionCode, setActionCode] = useState<number>(-3);
+  const { data: permissions, isFetching } = useGetPermissionByUserQuery(
+    { actionCode, userID: userProfile?.id || -1 }, { skip: !userProfile?.id || actionCode < 1 }
+  );
+
+  const pathName:string[] = window.location.pathname.split('/');
+  pathName.splice(0, 1);
+  // Поиск и установка id страницы, который соответствует url, в state
+  useEffect(() => {
+    if (pageIdFound) {
+      return;
+    }
+    const flatMenuItems = (items: IMenuItem[]): IMenuItem[] =>
+      items.map(item =>
+        item.type === 'item'
+          ? item
+          : flatMenuItems(item.children || [])).flatMap(el => el);
+
+    const flattedMenuItems = flatMenuItems(menuItems.items);
+    const path = (pathName.filter((pathItem, index) => index !== 0 && pathItem)).join('/');
+    const page = (flattedMenuItems.find(item => item.url === path));
+    if (page) {
+      if (page.checkAction) {
+        if (actionCode < 1) {
+          setActionCode(page.checkAction);
+        }
+        if (!permissions) {
+          return;
+        }
+        if (permissions?.MODE === 1) {
+          dispatch(setActiveMenu(page.id));
+        } else {
+          window.location.href = window.location.origin + '/employee/dashboard/overview';
+        }
+      } else {
+        dispatch(setActiveMenu(page.id));
+      }
+    } else {
+      dispatch(setActiveMenu('dashboard'));
+    }
+
+    dispatch(setPageIdFound(true));
+  }, [appSettings, permissions]);
+
   useEffect(() => {
     (async function () {
       switch (loginStage) {
@@ -81,14 +133,14 @@ function App() {
             });
           break;
         case 'OTHER_LOADINGS':
-          if (!themeType) {
+          if (!themeType || !pageIdFound) {
             return;
           }
           dispatch(renderApp());
           break;
       }
     })();
-  }, [loginStage, themeType]);
+  }, [loginStage, themeType, pageIdFound]);
 
   useEffect(() => {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
