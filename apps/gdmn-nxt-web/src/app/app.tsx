@@ -23,6 +23,7 @@ import menuItems from './menu-items';
 import { IMenuItem } from './menu-items';
 import { useGetPermissionByUserQuery } from './features/permissions';
 import { useState } from 'react';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -55,7 +56,7 @@ function App() {
     if (!themeType || themeType !== 'dark') {
       return;
     }
-    dispatch(setStyleMode('dark'));
+    dispatch(setStyleMode(ColorMode.Dark));
   }, [themeType]);
 
   /** Загрузка данных на фоне во время авторизации  */

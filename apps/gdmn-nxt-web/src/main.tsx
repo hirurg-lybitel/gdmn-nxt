@@ -74,42 +74,9 @@ const Main = () => {
   const themeStyles = useTheme();
   const user = useSelector<RootState, UserState>(state => state.user);
   const [actionCode, setActionCode] = useState<number>(-3);
-  const { data, isFetching } = useGetPermissionByUserQuery(
-    { actionCode, userID: user.userProfile?.id || -1 }, { skip: !user.userProfile?.id || actionCode < 1 }
-  );
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
-
-  useEffect(()=>{
-    if (!themeType || themeType !== 'dark') {
-      return;
-    }
-    dispatch(setStyleMode('dark'));
-  }, [themeType]);
-
-  const pathName:string[] = window.location.pathname.split('/');
-  pathName.splice(0, 1);
-  // Поиск и установка id страницы, который соответствует url, в state
-  useEffect(() => {
-    if (pageIdFound || settings.activeMenuId === '' || pathName.length < 2) {
-      return;
-    }
-    const flatMenuItems = (items: IMenuItem[]): IMenuItem[] =>
-      items.map(item =>
-        item.type === 'item'
-          ? item
-          : flatMenuItems(item.children || [])).flatMap(el => el);
-
-    const flattedMenuItems = flatMenuItems(menuItems.items);
-    const path = (pathName.filter((pathItem, index) => index !== 0 && pathItem)).join('/');
-    const pageId = (flattedMenuItems.find(item => item.url === path))?.id;
-    if (!pageId) {
-      return;
-    }
-    dispatch(setPageIdFound(true));
-    dispatch(setActiveMenu(pageId));
-  }, [settings]);
 
   return (
     <div style={{ background: settings.customization.mode === 'dark' ? '#424242' : '', height: '100%' }}>
