@@ -93,3 +93,8 @@ export interface IProfileSettings {
   RANK?: string;
   MODE?: string;
 }
+
+export enum ColorMode {
+  Light = 'light',
+  Dark = 'dark',
+}

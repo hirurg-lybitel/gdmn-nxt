@@ -56,7 +56,7 @@ const preferences: IMenuItem = {
     },
     {
       id: 'faq',
-      title: 'Часто задаваемые вопросы',
+      title: 'База знаний',
       type: 'item',
       url: 'preferences/faq',
       icon: <HelpIcon color="secondary" />

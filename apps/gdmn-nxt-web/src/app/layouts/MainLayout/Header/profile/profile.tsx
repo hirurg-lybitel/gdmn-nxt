@@ -32,6 +32,7 @@ import { Link } from 'react-router-dom';
 import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { setStyleMode } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -135,7 +136,7 @@ export function Profile(props: ProfileProps) {
 
   const logout = async () => {
     await dispatch(logoutUser());
-    dispatch(setStyleMode('light'));
+    dispatch(setStyleMode(ColorMode.Light));
   };
 
   return (

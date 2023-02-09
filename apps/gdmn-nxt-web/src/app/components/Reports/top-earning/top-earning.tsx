@@ -1,7 +1,10 @@
+import { ColorMode } from '@gsbelarus/util-api-types';
 import { Box, Grid, Typography } from '@mui/material';
 import { DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useGetTopEarningQuery } from '../../../features/topEarning';
+import { RootState } from '../../../store';
 import { CircularIndeterminate } from '../../helpers/circular-indeterminate/circular-indeterminate';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import styles from './top-earning.module.less';
@@ -22,6 +25,8 @@ export interface TopEarningProps {
 export function TopEarning({params}: TopEarningProps) {
   const [getTopEarning, {data, isLoading, isSuccess}] = useGetTopEarningQuery();
 
+  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+
   useEffect(() => {
     params && getTopEarning(params);
   }, [params]);
@@ -34,7 +39,7 @@ export function TopEarning({params}: TopEarningProps) {
     <>
       {data
         ? <><Grid container className={styles['table']} >
-          <Grid container item className={styles['header']}>
+          <Grid container item className={`${styles['header']} ${colorMode === ColorMode.Dark ? styles['headerDark'] : ''}`}>
             <Grid item xs={9}>
               <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} variant="h4">Наименование</Typography>
             </Grid>
