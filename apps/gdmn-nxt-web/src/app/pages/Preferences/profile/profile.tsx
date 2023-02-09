@@ -1,6 +1,6 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Box, Button, CardActions, CardContent, CardHeader, Divider, Fab, Skeleton, Stack, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, CardActions, CardContent, CardHeader, Divider, Fab, Skeleton, Stack, TextField, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
@@ -52,13 +52,11 @@ export function Profile(props: ProfileProps) {
           <Box position="relative">
             {isLoading
               ? <Skeleton variant="circular" height={300} width={300} />
-              : <img
+              : <Avatar
                 className={styles.image}
                 src={image}
                 alt="Нет фото"
-                width={300}
-                height={300}
-                />}
+              />}
             <Box position="absolute" top={250}>
               <label htmlFor="contained-button-file">
                 <Fab component="span" color="primary">
