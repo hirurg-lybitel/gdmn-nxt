@@ -135,10 +135,9 @@ export default function FAQ() {
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                <PermissionsGate actionCode={11}>
+                {/* <PermissionsGate actionCode={11}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate>
-
+                </PermissionsGate> */}
               </div>
             }
           />
@@ -166,14 +165,22 @@ export default function FAQ() {
                               <ReactMarkdown>
                                 {item.USR$QUESTION}
                               </ReactMarkdown>
+                              <Typography variant="h4">
+                                {/* {item.USR$QUESTION} */}
+                                <ReactMarkdown>
+                                  {item.USR$QUESTION}
+                                </ReactMarkdown>
+                              </Typography>
                             </AccordionSummary>
-                            <AccordionDetails style={{ background: 'rgba(0, 0, 0, 0.1)', borderRadius: '12px 12px 0 0' }}>
-                              <ReactMarkdown >
-                                {item.USR$ANSWER}
-                              </ReactMarkdown>
+                            <AccordionDetails className={style.details}>
+                              <Typography variant="body1" component="div">
+                                <ReactMarkdown >
+                                  {item.USR$ANSWER}
+                                </ReactMarkdown>
+                              </Typography>
                             </AccordionDetails>
                           </Accordion>
-                          <PermissionsGate actionCode={12}>
+                          {/* <PermissionsGate actionCode={12}>
                             <IconButton
                               color="primary"
                               disabled={editFaqObj.isLoading || isFetching}
@@ -192,7 +199,7 @@ export default function FAQ() {
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate>
+                          </PermissionsGate> */}
                         </div>
                       </div>
                     )
