@@ -76,15 +76,6 @@ const Main = () => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
-  const mode = document.cookie.split('mode=')?.[1];
-  useEffect(()=>{
-    if (mode === 'dark') {
-      dispatch(setStyleMode('dark'));
-    } else {
-      dispatch(setStyleMode('light'));
-    }
-  }, [mode]);
-
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
   // Поиск и установка id страницы, который соответствует url, в state
