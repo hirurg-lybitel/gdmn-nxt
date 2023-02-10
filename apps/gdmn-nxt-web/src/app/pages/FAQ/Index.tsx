@@ -135,9 +135,9 @@ export default function FAQ() {
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                {/* <PermissionsGate actionCode={11}>
+                <PermissionsGate actionCode={11}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate> */}
+                </PermissionsGate>
               </div>
             }
           />
@@ -162,9 +162,6 @@ export default function FAQ() {
                             <AccordionSummary
                               expandIcon={<ExpandMoreIcon />}
                             >
-                              <ReactMarkdown>
-                                {item.USR$QUESTION}
-                              </ReactMarkdown>
                               <Typography variant="h4">
                                 {/* {item.USR$QUESTION} */}
                                 <ReactMarkdown>
@@ -180,7 +177,7 @@ export default function FAQ() {
                               </Typography>
                             </AccordionDetails>
                           </Accordion>
-                          {/* <PermissionsGate actionCode={12}>
+                          <PermissionsGate actionCode={12}>
                             <IconButton
                               color="primary"
                               disabled={editFaqObj.isLoading || isFetching}
@@ -199,7 +196,7 @@ export default function FAQ() {
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate> */}
+                          </PermissionsGate>
                         </div>
                       </div>
                     )

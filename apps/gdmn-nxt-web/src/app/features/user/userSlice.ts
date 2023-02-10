@@ -12,7 +12,7 @@ export type LoginStage =
   'LAUNCHING' // the application is launching
   | 'QUERY_LOGIN' // we are in the process of querying server for saved session
   | 'SELECT_MODE' // choose between belgiss employee and customer mode
-  | 'OTHER_LOADINGS'
+  | 'OTHER_LOADINGS' // processes after getting the user id, but before rendering the app
   | 'CUSTOMER' //
   | 'EMPLOYEE' //
   | 'SIGN_IN_EMPLOYEE' // show sign-in or sign-up screen for an employee
