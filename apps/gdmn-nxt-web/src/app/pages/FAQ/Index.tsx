@@ -3,7 +3,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress } from '@mui/material';
+import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress, Skeleton } from '@mui/material';
 import style from './faq.module.less';
 import * as React from 'react';
 import { useState, useCallback, useMemo } from 'react';
@@ -19,15 +19,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  accordion: {
-    width: '100%',
-    '& .MuiSvgIcon-root': {
-      color: theme.palette.primary.main
-    }
-  }
-}));
-
 
 export default function FAQ() {
   const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
@@ -38,7 +29,7 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
-  const classes = useStyles();
+
 
   const addFaqHandler = (question:string, answer:string) => {
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
@@ -103,34 +94,73 @@ export default function FAQ() {
 
   const theme = useTheme();
 
-  if (isFetching) {
-    return (
-      <div className={style.preloadevBody}>
-        <CircularProgress size={100} />
-      </div>
-    );
-  }
+  // if (isFetching) {
+  //   return (
+  //     <div className={style.preloadevBody}>
+  //       <CircularProgress size={100} />
+  //     </div>
+  //   );
+  // }
+
+  const skeletonItems = (count:number):fullFaq[] => {
+    const skeletonFaqItems:fullFaq[] = [];
+
+    for (let i = 0; i < count; i++) {
+      skeletonFaqItems.push(
+        {
+          USR$QUESTION: '',
+          USR$ANSWER: '',
+          ID: i
+        }
+      );
+    }
+
+    return skeletonFaqItems;
+  };
+
+  const skeletonFaqsCount:fullFaq[] = skeletonItems(10);
+
+  const useStyles = makeStyles((theme: Theme) => ({
+    accordion: {
+      width: '100%',
+      '& .MuiSvgIcon-root': {
+        color: theme.palette.primary.main
+      }
+    },
+    scrollBar: {
+      pointerEvents: isFetching ? 'none' : 'auto',
+      paddingRight: '10px',
+      transition: '0s !important'
+    }
+  }));
+  const classes = useStyles();
 
   return (
     <>
-      {memoConfirmDialog}
-      <Popup
-        close={handleCloseEditPopup}
-        isOpened={isOpenedEditPopup}
-        isAddPopup={false}
-        faq={faq}
-        editFaq={editFaqHandler}
-      />
-      <Popup
-        close={handleCloseAddPopup}
-        isOpened={isOpenedAddPopup}
-        isAddPopup={true}
-        addFaq={addFaqHandler}
-      />
+      {!isFetching &&
+        <>
+          {memoConfirmDialog}
+          <Popup
+            close={handleCloseEditPopup}
+            isOpened={isOpenedEditPopup}
+            isAddPopup={false}
+            faq={faq}
+            editFaq={editFaqHandler}
+          />
+          <Popup
+            close={handleCloseAddPopup}
+            isOpened={isOpenedAddPopup}
+            isAddPopup={true}
+            addFaq={addFaqHandler}
+          />
+        </>
+      }
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
           <CardHeader
-            title={
+            title={isFetching ?
+              <Skeleton variant="rectangular" height={'36px'}/>
+              :
               <div className={style.title}>
                 <Typography variant="h3">
                   База знаний
@@ -143,17 +173,18 @@ export default function FAQ() {
           />
           <Divider />
           <CardContent className={style.scrollBarContainer}>
-            {isLoading
-              ? <div className={style.preloadevBody}>
-                <CircularProgress size={100} />
-              </div>
-              : <PerfectScrollbar className={style.scrollBar}>
-                <Grid item xs={12}>
-                  {
-                    faqs?.map(item =>
-                      <div key={item.ID}>
-                        {faqs?.indexOf(item) !== 0 && <Divider/>}
-                        <div className={style.faqList}>
+            <PerfectScrollbar className={classes.scrollBar} >
+              <Grid item xs={12}>
+                {(isFetching ? skeletonFaqsCount : faqs)?.map(item =>
+                  <div key={item.ID}>
+                    {(isFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
+                    <div className={style.faqList}>
+                      {isFetching ?
+                        <div style={{ margin: '20px', width: '100%' }}>
+                          <Skeleton variant="text" width={'100%'} height={'40px'} />
+                        </div>
+                        :
+                        <>
                           <Accordion
                             expanded={expanded === `panel${item.ID}`}
                             onChange={handleChange(`panel${item.ID}`)}
@@ -177,6 +208,10 @@ export default function FAQ() {
                               </Typography>
                             </AccordionDetails>
                           </Accordion>
+                        </>
+                      }
+                      {!isFetching &&
+                        <>
                           <PermissionsGate actionCode={12}>
                             <IconButton
                               color="primary"
@@ -197,13 +232,14 @@ export default function FAQ() {
                               <DeleteIcon />
                             </IconButton>
                           </PermissionsGate>
-                        </div>
-                      </div>
-                    )
-                  }
-                </Grid>
-              </PerfectScrollbar>
-            }
+                        </>
+                      }
+                    </div>
+                  </div>
+                )
+                }
+              </Grid>
+            </PerfectScrollbar>
           </CardContent>
         </CustomizedCard>
 
