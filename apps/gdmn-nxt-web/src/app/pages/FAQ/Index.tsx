@@ -102,7 +102,7 @@ export default function FAQ() {
   //   );
   // }
 
-  const skeletonItems = (count:number):fullFaq[] => {
+  const skeletonItems = useMemo(() =>(count:number):fullFaq[] => {
     const skeletonFaqItems:fullFaq[] = [];
 
     for (let i = 0; i < count; i++) {
@@ -116,7 +116,7 @@ export default function FAQ() {
     }
 
     return skeletonFaqItems;
-  };
+  }, []);
 
   const skeletonFaqsCount:fullFaq[] = skeletonItems(10);
 
