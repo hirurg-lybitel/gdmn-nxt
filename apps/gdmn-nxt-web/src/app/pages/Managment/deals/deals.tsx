@@ -8,7 +8,7 @@ import { CircularIndeterminate } from '../../../components/helpers/circular-inde
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
@@ -254,17 +254,9 @@ export function Deals(props: DealsProps) {
   }
   , [kanbanFilter.deadline, tabNo, filteringData, columnsIsFetching]);
 
-  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} />, [columns]);
+  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={isLoading} />, [columns]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} />, [columns]);
-
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <CircularIndeterminate open={isLoading} size={100} />
-      </div>
-    );
-  }
+  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={isLoading} />, [columns]);
 
   return (
     <Stack
@@ -273,7 +265,14 @@ export function Deals(props: DealsProps) {
         width: '100%'
       }}
     >
-      {Header}
+      {isLoading
+        ?
+        <div>
+          <Skeleton variant="rectangular" height={'70px'} style={{ borderRadius: '12px 12px 0 0' }}/>
+          <Skeleton variant="rectangular" height={'40px'} width={'235px'} style={{ borderRadius: '0 0 12px 12px' }}/>
+        </div>
+        : Header
+      }
       {DealsFilterMemo}
       <div className={styles.dataContainer}>
         {(() => {

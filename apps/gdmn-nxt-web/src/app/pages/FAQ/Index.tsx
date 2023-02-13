@@ -104,14 +104,10 @@ export default function FAQ() {
 
   const skeletonItems = useMemo(() =>(count:number):fullFaq[] => {
     const skeletonFaqItems:fullFaq[] = [];
-
+    const skeletonFaqItem = {} as fullFaq;
     for (let i = 0; i < count; i++) {
       skeletonFaqItems.push(
-        {
-          USR$QUESTION: '',
-          USR$ANSWER: '',
-          ID: i
-        }
+        { ...skeletonFaqItem, ID: i }
       );
     }
 
@@ -175,8 +171,10 @@ export default function FAQ() {
           <CardContent className={style.scrollBarContainer}>
             <PerfectScrollbar className={classes.scrollBar} >
               <Grid item xs={12}>
-                {(isFetching ? skeletonFaqsCount : faqs)?.map(item =>
+                {(isFetching ? skeletonFaqsCount : faqs).map(item =>
+
                   <div key={item.ID}>
+                    {console.log(item.ID)}
                     {(isFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
                     <div className={style.faqList}>
                       {isFetching ?

@@ -6,10 +6,17 @@ export interface ChartSkeletonProps {}
 export function ChartSkeleton(props: ChartSkeletonProps) {
   return (
     <>
-      <Skeleton variant="rectangular" height={'70px'} style={{ marginBottom: '10px' }} />
-      <Skeleton variant="rectangular" height={'65px'} style={{ marginBottom: '30px' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Skeleton variant="text" height={'40px'} width={'180px'} />
+        <Skeleton variant="rectangular" height={'60px'} width={'100px'} style={{ borderRadius: '12px' }} />
+      </div>
+      <div style={{ display: 'flex', marginBottom: '40px' }}>
+        <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ marginLeft: '10px', borderRadius: '12px' }}/>
+        <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ marginLeft: '10px', borderRadius: '12px' }}/>
+        <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ marginLeft: '10px', borderRadius: '12px' }}/>
+      </div>
       <Skeleton variant="rectangular" height={'70%'} />
-      <Skeleton variant="rectangular" height={'70px'}/>
+      <Skeleton variant="rectangular" height={'80px'} style={{ borderRadius: '12px' }}/>
     </>
   );
 }

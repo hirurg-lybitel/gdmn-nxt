@@ -18,11 +18,12 @@ import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
 
 export interface KanbanListProps {
-  columns?: IKanbanColumn[];
+  columns?: IKanbanColumn[],
+  isLoading:boolean
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [] } = props;
+  const { columns = [], isLoading } = props;
 
   const changes = useRef<IChanges[]>([]);
   const [addCard, setAddCard] = useState(false);
@@ -320,7 +321,7 @@ export function KanbanList(props: KanbanListProps) {
     >
       <StyledGrid
         treeData
-        // loading={insertIsLoading || updateIsLoading || deleteIsLoading}
+        loading={insertIsLoading || updateIsLoading || deleteIsLoading || isLoading}
         rows={rows || []}
         columns={cols}
         getTreeDataPath={getTreeDataPath}
