@@ -134,7 +134,7 @@ function App() {
             });
           break;
         case 'OTHER_LOADINGS':
-          if (!themeType || !pageIdFound) {
+          if (!themeType || !pageIdFound || !isLoading) {
             return;
           }
           dispatch(renderApp());
