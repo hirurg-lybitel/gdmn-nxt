@@ -53,10 +53,14 @@ function App() {
 
   const mode = document.cookie.split('mode=')?.[1];
   useEffect(()=>{
-    if (!themeType || themeType !== 'dark') {
+    if (!themeType) {
       return;
     }
-    dispatch(setStyleMode(ColorMode.Dark));
+    if (themeType === 'dark') {
+      dispatch(setStyleMode(ColorMode.Dark));
+    } else {
+      dispatch(setStyleMode(ColorMode.Light));
+    }
   }, [themeType]);
 
   /** Загрузка данных на фоне во время авторизации  */
@@ -134,7 +138,7 @@ function App() {
             });
           break;
         case 'OTHER_LOADINGS':
-          if (!themeType || !pageIdFound || isFetching) {
+          if (!themeType || !pageIdFound) {
             return;
           }
           dispatch(renderApp());
