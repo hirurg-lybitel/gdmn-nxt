@@ -1,7 +1,7 @@
 import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { Box, Button, ButtonProps, Chip, IconButton, Stack, Typography } from '@mui/material';
 import { DataGridProProps, GridActionsCellItem, GridColDef, GridColumns, gridFilteredDescendantCountLookupSelector, GridRenderCellParams, GridRowId, GridRowParams, GridRowProps, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
@@ -15,6 +15,8 @@ import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[],
@@ -146,10 +148,38 @@ export function KanbanList(props: KanbanListProps) {
     setEditCard(true);
   };
 
+  const handleCardDelete = (id: any): any => () => {
+    setCard(id);
+    setConfirmOpen(true);
+  };
+
   const handleCardAdd = (columnId: number): any => () => {
     setColumn(columns.find(c => c.ID === columnId));
     setAddCard(true);
   };
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleConfirmCancelClick = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
+
+  const handleConfirmOkClick = useCallback(() => {
+    setConfirmOpen(false);
+    card && onDelete(card);
+  }, [card]);
+
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={'Удаление причины отказа'}
+      text="Вы уверены, что хотите продолжить?"
+      dangerous={true}
+      confirmClick={handleConfirmOkClick}
+      cancelClick={handleConfirmCancelClick}
+    />
+  , [confirmOpen]);
+
 
   const cols: GridColumns = [
     { field: 'USR$NAME', headerName: 'Сделка', flex: 0.5, minWidth: 150,
@@ -185,7 +215,17 @@ export function KanbanList(props: KanbanListProps) {
       resizable: false,
       getActions: (params: GridRowParams) => [
         Object.keys(params.row).length > 0
-          ? <GridActionsCellItem key={1} icon={<EditIcon />} onClick={handleCardEdit(params.row)} label="Edit" color="primary" />
+          ?
+          <div>
+            {permissionData?.[3].MODE === 1 &&
+                <IconButton onClick={handleCardDelete(params.row)} size="small" hidden>
+                  <DeleteIcon color="primary" />
+                </IconButton>
+            }
+            {permissionData?.[2].MODE === 1 &&
+            <GridActionsCellItem key={1} icon={<EditIcon />} onClick={handleCardEdit(params.row)} label="Edit" color="primary" />
+            }
+          </div>
           : <></>
       ]
     }
@@ -201,21 +241,21 @@ export function KanbanList(props: KanbanListProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
-        permissionData={permissionData}
       />
     );
   }, [editCard]);
 
   const memoAddCard = useMemo(() => {
-    return <KanbanEditCard
-      open={addCard}
-      currentStage={column}
-      stages={columns}
-      onSubmit={cardHandlers.handleSubmit}
-      onCancelClick={cardHandlers.handleCancel}
-      onClose={cardHandlers.handleClose}
-      permissionData={permissionData}
-           />;
+    return (
+      <KanbanEditCard
+        open={addCard}
+        currentStage={column}
+        stages={columns}
+        onSubmit={cardHandlers.handleSubmit}
+        onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
+      />
+    );
   }, [addCard]);
 
 
@@ -321,6 +361,7 @@ export function KanbanList(props: KanbanListProps) {
         marginTop: 45
       }}
     >
+      {memoConfirmDialog}
       <StyledGrid
         treeData
         loading={insertIsLoading || updateIsLoading || deleteIsLoading || isLoading}

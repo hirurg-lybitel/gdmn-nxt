@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import App from "../App";
+import App from "../app";
 import MinimalLayout from "../layouts/MinimalLayout";
 import NotFound from "../pages/NotFound";
 

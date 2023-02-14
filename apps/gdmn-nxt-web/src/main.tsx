@@ -17,7 +17,7 @@ import { CustomersList } from './app/pages/Customers/customers-list/customers-li
 import { Dashboard } from './app/pages/Dashboard/dashboard/dashboard';
 import { OrderList } from './app/pages/Customers/order-list/order-list';
 import { ErModel } from './app/er-model/er-model';
-import App from './app/App';
+import App from './app/app';
 import CustomerHomePage from './app/customer-home-page/customer-home-page';
 
 import '@fontsource/roboto/300.css';

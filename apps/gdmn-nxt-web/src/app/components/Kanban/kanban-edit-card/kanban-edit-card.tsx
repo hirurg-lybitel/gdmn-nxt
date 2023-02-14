@@ -113,7 +113,7 @@ export interface KanbanEditCardProps {
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: () => void;
   onClose: (e: any, r: string) => void;
-  permissionData: IPermissionByUser[] | undefined
+  permissionData?: IPermissionByUser[] | undefined
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
