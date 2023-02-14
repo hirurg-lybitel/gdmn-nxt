@@ -15,9 +15,10 @@ import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import { Box } from '@mui/system';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { usePermissions } from '../../../features/common/usePermissions';
 
 export interface IChanges {
   id: number;
@@ -178,6 +179,13 @@ export function Deals(props: DealsProps) {
     />,
   [openFilters, filteringData]);
 
+  const [isFetching1, data1] = usePermissions(1);
+  const [isFetching2, data2] = usePermissions(2);
+  const [isFetching3, data3] = usePermissions(3);
+  const [isFetching4, data4] = usePermissions(4);
+
+  const componentIsFetching = isLoading || isFetching1 || isFetching2 || isFetching3 || isFetching4;
+  const permissionData:IPermissionByUser[] | undefined = !data1 || !data2 || !data3 || !data4 ? undefined : [data1, data2, data3, data4];
   const Header = useMemo(() => {
     return (
       <>
@@ -254,9 +262,9 @@ export function Deals(props: DealsProps) {
   }
   , [kanbanFilter.deadline, tabNo, filteringData, columnsIsFetching]);
 
-  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={isLoading} />, [columns]);
+  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} permissionData={permissionData} />, [columns, permissionData]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={isLoading} />, [columns]);
+  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={componentIsFetching} permissionData={permissionData}/>, [columns, permissionData]);
 
   return (
     <Stack
@@ -265,7 +273,7 @@ export function Deals(props: DealsProps) {
         width: '100%'
       }}
     >
-      {isLoading
+      {componentIsFetching
         ?
         <div>
           <Skeleton variant="rectangular" height={'70px'} style={{ borderRadius: '12px 12px 0 0' }}/>

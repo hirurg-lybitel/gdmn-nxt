@@ -7,15 +7,14 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './label-list.module.less';
 import { useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
-import { ILabel } from '@gsbelarus/util-api-types';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { usePermissions } from '../../../features/common/usePermissions';
 
 const ItemSkeleton = () => {
   return (
-    <Stack direction="row" spacing={6} height={70} p={2} alignItems="center">
+    <Stack direction="row" spacing={6} height={68.5} p={2} alignItems="center">
       <Skeleton variant="rectangular" width={60} height={20} style={{ borderRadius: '12px' }} />
-      <Skeleton variant="text" height={10} width="90%" />
-      <Skeleton variant="text" height={10} width="5%" />
+      <Skeleton variant="text" height={30} width={'100%'} />
     </Stack>
   );
 };
@@ -39,17 +38,23 @@ export function LabelList(props: LabelListProps) {
     setOpenEditForm(false);
   };
 
+  const [isFetching5, data5] = usePermissions(5);
+  const [isFetching6, data6] = usePermissions(6);
+  const [isFetching7, data7] = usePermissions(7);
+
+  const componentIsFetching = dataIsFetching || isFetching5 || isFetching6 || isFetching7 || dataIsFetching;
+
+  const permissionData:IPermissionByUser[] | undefined = (!data5 || !data6 || !data7) ? undefined : [data5, data6, data7];
+
   return (
     <Stack flex={1}>
       <CustomizedCard
         borders
       >
-        <CardHeader title={<Typography variant="h3">Метки</Typography>} />
-        <Divider />
-        <CardContent style={{ padding: 0 }}>
-          <PermissionsGate actionCode={5}>
-            <Stack direction="row" p={3}>
-              <Box flex={1} />
+        <CardHeader
+          title={componentIsFetching ? <Skeleton variant="rectangular" height={'36px'}/> : <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h3">Метки</Typography>
+            {permissionData?.[0].MODE === 1 &&
               <Button
                 variant="contained"
                 disabled={dataIsFetching}
@@ -57,24 +62,27 @@ export function LabelList(props: LabelListProps) {
               >
                 Добавить
               </Button>
-            </Stack>
-            <Divider />
-          </PermissionsGate>
-          {dataIsLoading
-            ? [...Array(5)].map((el, idx) =>
+            }
+          </div>}
+        />
+        <CardContent style={{ padding: 0 }}>
+          <Divider />
+          {componentIsFetching
+            ? [...Array(10)].map((el, idx) =>
               <div key={idx}>
                 {idx !== 0 ? <Divider /> : <></>}
                 <ItemSkeleton />
               </div>)
-            : <PerfectScrollbar
+            :
+            <PerfectScrollbar
               style={{
                 maxHeight: 'calc(100vh - 185px)',
               }}
-              >
+            >
               {labels?.map((label, idx) =>
                 <div key={label.ID}>
                   {idx !== 0 ? <Divider /> : <></>}
-                  <LabelListItem data={label} />
+                  <LabelListItem data={label} permissionData={permissionData} />
                 </div>) || <></>}
             </PerfectScrollbar>
           }

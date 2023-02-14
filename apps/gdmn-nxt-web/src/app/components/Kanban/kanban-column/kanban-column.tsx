@@ -10,8 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { ColorMode, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 
@@ -27,10 +26,11 @@ export interface KanbanColumnProps {
   onEdit: (newColumn: IKanbanColumn) => void;
   onDelete: (column: IKanbanColumn) => void;
   onAddCard: (card: IKanbanCard) => void;
+  permissionData: IPermissionByUser[] | undefined
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
-  const { provided, dragSnapshot, dropSnapshot, isFetching } = props;
+  const { provided, dragSnapshot, dropSnapshot, isFetching, permissionData } = props;
   const { children, item, columns } = props;
   const { onEdit, onDelete, onAddCard } = props;
 
@@ -131,22 +131,25 @@ export function KanbanColumn(props: KanbanColumnProps) {
             //   autoFocus
             // />
             ? <>
-              {isFetching ? <Skeleton variant="text" /> : <TextField
-                value={titleText}
-                variant="standard"
-                onChange={(e) => setTitleText(e.target.value)}
-                onBlur={(e) => onBlur(e)}
-                autoFocus
-                fullWidth
-                                                          />
+              {isFetching ? <Skeleton variant="text" />
+                :
+                <TextField
+                  value={titleText}
+                  variant="standard"
+                  onChange={(e) => setTitleText(e.target.value)}
+                  onBlur={(e) => onBlur(e)}
+                  autoFocus
+                  fullWidth
+                />
               }
             </>
-            : <Stack
+            :
+            <Stack
               className="title"
               direction="row"
               alignItems="center"
               spacing={1}
-              >
+            >
               {isFetching ? <Skeleton variant="text" width={'80%'} /> :
                 <TextField
                   value={item.USR$NAME}
@@ -199,14 +202,17 @@ export function KanbanColumn(props: KanbanColumnProps) {
   };
 
   const memoAddCard = useMemo(() => {
-    return <KanbanEditCard
-      open={upsertCard}
-      currentStage={item}
-      stages={columns}
-      onSubmit={cardHandlers.handleSubmit}
-      onCancelClick={cardHandlers.handleCancel}
-      onClose={cardHandlers.handleClose}
-           />;
+    return (
+      <KanbanEditCard
+        open={upsertCard}
+        currentStage={item}
+        stages={columns}
+        onSubmit={cardHandlers.handleSubmit}
+        onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
+        permissionData={permissionData}
+      />
+    );
   }, [upsertCard]);
 
   return (
@@ -270,11 +276,9 @@ export function KanbanColumn(props: KanbanColumnProps) {
               </PerfectScrollbar>
             </CardContent>
             <CardActions>
-              <PermissionsGate actionCode={1}>
-                {item.USR$INDEX === 0
-                  ? <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
-                  : <></>}
-              </PermissionsGate>
+              {permissionData?.[0]?.MODE === 1 && item.USR$INDEX === 0 &&
+                <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
+              }
             </CardActions>
           </CustomizedCard>
           {memoAddCard}

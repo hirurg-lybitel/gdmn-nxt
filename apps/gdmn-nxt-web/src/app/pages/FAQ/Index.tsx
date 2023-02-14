@@ -14,10 +14,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
 import { useTheme, Theme } from '@mui/material/styles';
-import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
+import { usePermissions } from '../../features/common/usePermissions';
 
 
 export default function FAQ() {
@@ -29,7 +29,10 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
-
+  const [isFetching11, data11] = usePermissions(11);
+  const [isFetching12, data12] = usePermissions(12);
+  const [isFetching13, data13] = usePermissions(13);
+  const componentIsFetching = isFetching || isFetching11 || isFetching12 || isFetching13;
 
   const addFaqHandler = (question:string, answer:string) => {
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
@@ -94,7 +97,7 @@ export default function FAQ() {
 
   const theme = useTheme();
 
-  // if (isFetching) {
+  // if (componentIsFetching) {
   //   return (
   //     <div className={style.preloadevBody}>
   //       <CircularProgress size={100} />
@@ -124,7 +127,7 @@ export default function FAQ() {
       }
     },
     scrollBar: {
-      pointerEvents: isFetching ? 'none' : 'auto',
+      pointerEvents: componentIsFetching ? 'none' : 'auto',
       paddingRight: '10px',
       transition: '0s !important'
     }
@@ -133,7 +136,7 @@ export default function FAQ() {
 
   return (
     <>
-      {!isFetching &&
+      {!componentIsFetching &&
         <>
           {memoConfirmDialog}
           <Popup
@@ -154,16 +157,16 @@ export default function FAQ() {
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
           <CardHeader
-            title={isFetching ?
+            title={componentIsFetching ?
               <Skeleton variant="rectangular" height={'36px'}/>
               :
               <div className={style.title}>
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                <PermissionsGate actionCode={11}>
+                {data11?.MODE === 1 &&
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate>
+                }
               </div>
             }
           />
@@ -171,12 +174,12 @@ export default function FAQ() {
           <CardContent className={style.scrollBarContainer}>
             <PerfectScrollbar className={classes.scrollBar} >
               <Grid item xs={12}>
-                {(isFetching ? skeletonFaqsCount : faqs).map(item =>
+                {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
 
                   <div key={item.ID}>
-                    {(isFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
+                    {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
                     <div className={style.faqList}>
-                      {isFetching ?
+                      {componentIsFetching ?
                         <div style={{ margin: '20px', width: '100%' }}>
                           <Skeleton variant="text" width={'100%'} height={'40px'} />
                         </div>
@@ -207,28 +210,28 @@ export default function FAQ() {
                           </Accordion>
                         </>
                       }
-                      {!isFetching &&
+                      {!componentIsFetching &&
                         <>
-                          <PermissionsGate actionCode={12}>
+                          {data12?.MODE === 1 &&
                             <IconButton
                               color="primary"
-                              disabled={editFaqObj.isLoading || isFetching}
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                               style={{ marginTop: '20px' }}
                               onClick={handleOpenEditPopup(item)}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                          </PermissionsGate>
-                          <PermissionsGate actionCode={13}>
+                          }
+                          {data13?.MODE === 1 &&
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}
-                              disabled={deleteFaqObj.isLoading || isFetching}
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                               onClick={handleDeleteClick(item)}
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate>
+                          }
                         </>
                       }
                     </div>

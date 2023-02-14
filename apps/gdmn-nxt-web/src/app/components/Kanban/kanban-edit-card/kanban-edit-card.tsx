@@ -31,7 +31,7 @@ import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { ICustomer } from '@gsbelarus/util-api-types';
@@ -47,7 +47,6 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import filterOptions from '../../helpers/filter-options';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 // import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
 import AlarmIcon from '@mui/icons-material/Alarm';
 import SnoozeIcon from '@mui/icons-material/Snooze';
@@ -59,6 +58,7 @@ import styles from './kanban-edit-card.module.less';
 import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import { DenyReasonsSelect } from './components/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -113,10 +113,11 @@ export interface KanbanEditCardProps {
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: () => void;
   onClose: (e: any, r: string) => void;
+  permissionData: IPermissionByUser[] | undefined
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
-  const { open, currentStage, card, stages } = props;
+  const { open, currentStage, card, stages, permissionData } = props;
   const { onSubmit, onCancelClick, onClose } = props;
 
   const classes = useStyles();
@@ -715,19 +716,18 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        <PermissionsGate actionCode={4}>
-          {
-            (card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
+        {permissionData?.[3].MODE === 1 &&
+        (card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
             <IconButton onClick={handleDeleteClick} size="small" hidden>
               <DeleteIcon />
             </IconButton>
-          }
-        </PermissionsGate>
+        }
         <Box flex={1} />
         <Button
           className={classes.button}
           onClick={handleCancelClick}
         >Отменить</Button>
+        {/* {formik.values.ID > 0 ? permissionData?.[2].MODE : permissionData?.[0].MODE === 1 && */}
         <PermissionsGate actionCode={formik.values.ID > 0 ? 3 : 1}>
           <Button
             className={classes.button}

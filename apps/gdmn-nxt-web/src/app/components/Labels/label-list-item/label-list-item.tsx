@@ -1,4 +1,4 @@
-import { ILabel } from '@gsbelarus/util-api-types';
+import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { Box, Divider, Grid, IconButton } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -9,10 +9,10 @@ import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } f
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 export interface LabelListItemProps {
   data: ILabel;
+  permissionData:IPermissionByUser[] | undefined
 }
 
 const labelStyle: CSSProperties = {
@@ -49,7 +49,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export function LabelListItem(props: LabelListItemProps) {
-  const { data } = props;
+  const { data, permissionData } = props;
   const { ID } = data;
 
   const [openEditForm, setOpenEditForm] = useState(false);
@@ -166,16 +166,16 @@ export function LabelListItem(props: LabelListItemProps) {
         </Grid>
         <Grid item xs={2} md={1}>
           <Box display={'inline-flex'} width="100%" justifyContent={'center'}>
-            <PermissionsGate actionCode={6}>
+            {permissionData?.[1].MODE === 1 &&
               <IconButton onClick={handleEditClick}>
                 <EditOutlinedIcon fontSize="small" color="primary" />
               </IconButton>
-            </PermissionsGate>
-            <PermissionsGate actionCode={7}>
+            }
+            {permissionData?.[2].MODE === 1 &&
               <IconButton onClick={handleDeleteClick}>
                 <DeleteForeverIcon fontSize="small" color="primary" />
               </IconButton>
-            </PermissionsGate>
+            }
           </Box>
         </Grid>
       </Grid>

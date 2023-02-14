@@ -1,5 +1,4 @@
 import { Divider, List, Typography } from '@mui/material';
-import PermissionsGate from 'apps/gdmn-nxt-web/src/app/components/Permissions/permission-gate/permission-gate';
 import MenuCollapse from '../menu-collapse/menu-collapse';
 import MenuItem from '../menu-item/menu-item';
 import './menu-group.module.less';

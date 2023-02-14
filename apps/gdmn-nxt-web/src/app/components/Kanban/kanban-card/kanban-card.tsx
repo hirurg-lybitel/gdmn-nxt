@@ -4,10 +4,9 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, IPermissionByUser } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 
@@ -20,11 +19,12 @@ export interface KanbanCardProps {
   onAdd: (card: IKanbanCard) => void;
   onEdit: (card: IKanbanCard) => void;
   onDelete: (card: IKanbanCard) => void;
+  permissionData: IPermissionByUser[] | undefined
 };
 
 
 export function KanbanCard(props: KanbanCardProps) {
-  const { snapshot } = props;
+  const { snapshot, permissionData } = props;
   const { card, columns } = props;
   const { onAdd, onEdit, onDelete } = props;
 
@@ -118,6 +118,7 @@ export function KanbanCard(props: KanbanCardProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
+        permissionData={permissionData}
       />
     );
   }, [editCard]);
@@ -132,6 +133,7 @@ export function KanbanCard(props: KanbanCardProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
+        permissionData={permissionData}
       />
     );
   }, [copyCard]);
@@ -216,19 +218,18 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <PermissionsGate actionCode={2}>
-              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-                ?
-                <div
-                  className="actions"
-                  hidden
-                >
-                  <IconButton size="small" onClick={() => setCopyCard(true)}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </div>
-                : null}
-            </PermissionsGate>
+            {permissionData?.[1]?.MODE === 1 && columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+              ?
+              <div
+                className="actions"
+                hidden
+              >
+                <IconButton size="small" onClick={() => setCopyCard(true)}>
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </div>
+              : null
+            }
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">

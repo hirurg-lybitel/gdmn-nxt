@@ -5,7 +5,7 @@ import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import {
   useAddCardMutation,
   useAddColumnMutation,
@@ -25,6 +25,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 import { useMemo } from 'react';
+import { usePermissions } from '../../../features/common/usePermissions';
 
 // export interface IChanges {
 //   id: number;
@@ -34,11 +35,12 @@ import { useMemo } from 'react';
 // };
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
-  isLoading: boolean
+  isLoading: boolean,
+  permissionData: IPermissionByUser[] | undefined
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {
-  const { columns = [], isLoading } = props;
+  const { columns = [], isLoading, permissionData } = props;
 
   const user = useSelector<RootState, UserState>(state => state.user);
   const [updateColumn] = useUpdateColumnMutation();
@@ -404,6 +406,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   onDelete={columnHandlers.handleTitleDelete}
                                   onAddCard={cardHandlers.handleAddCard}
                                   isFetching={isLoading}
+                                  permissionData={permissionData}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
@@ -423,7 +426,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onAdd={cardHandlers.handleAddCard}
                                                 onEdit={cardHandlers.handleEditCard}
                                                 onDelete={cardHandlers.handleDeleteCard}
-
+                                                permissionData={permissionData}
                                               />
                                             </Box>
                                           )}

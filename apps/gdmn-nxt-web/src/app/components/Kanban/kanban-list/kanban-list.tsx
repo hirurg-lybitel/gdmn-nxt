@@ -1,4 +1,4 @@
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { Box, Button, ButtonProps, Chip, IconButton, Stack, Typography } from '@mui/material';
 import { DataGridProProps, GridActionsCellItem, GridColDef, GridColumns, gridFilteredDescendantCountLookupSelector, GridRenderCellParams, GridRowId, GridRowParams, GridRowProps, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -11,7 +11,6 @@ import { useAddCardMutation, useAddHistoryMutation, useDeleteCardMutation, useUp
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
@@ -19,11 +18,12 @@ import { useSelector } from 'react-redux';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[],
-  isLoading:boolean
+  isLoading:boolean,
+  permissionData: IPermissionByUser[] | undefined
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], isLoading } = props;
+  const { columns = [], isLoading, permissionData } = props;
 
   const changes = useRef<IChanges[]>([]);
   const [addCard, setAddCard] = useState(false);
@@ -201,6 +201,7 @@ export function KanbanList(props: KanbanListProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
+        permissionData={permissionData}
       />
     );
   }, [editCard]);
@@ -213,7 +214,8 @@ export function KanbanList(props: KanbanListProps) {
       onSubmit={cardHandlers.handleSubmit}
       onCancelClick={cardHandlers.handleCancel}
       onClose={cardHandlers.handleClose}
-    />;
+      permissionData={permissionData}
+           />;
   }, [addCard]);
 
 
@@ -256,20 +258,20 @@ export function KanbanList(props: KanbanListProps) {
         <div>
           {filteredDescendantCount > 0 ? (
             <Stack direction="row" alignItems="center">
-              <PermissionsGate actionCode={1}>
-                <IconButton
-                  onClick={handleCardAdd(value)}
-                  color="primary"
-                  size="small"
-                  {...(() => column?.USR$INDEX !== 0
-                    ? {
-                      disabled: true
-                    }
-                    : {})()}
-                >
-                  <AddCircleIcon />
-                </IconButton>
-              </PermissionsGate>
+              {permissionData?.[0].MODE === 1 &&
+               <IconButton
+                 onClick={handleCardAdd(value)}
+                 color="primary"
+                 size="small"
+                 {...(() => column?.USR$INDEX !== 0
+                   ? {
+                     disabled: true
+                   }
+                   : {})()}
+               >
+                 <AddCircleIcon />
+               </IconButton>
+              }
 
               <IconButton
                 onClick={handleClick}

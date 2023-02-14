@@ -21,11 +21,10 @@ export interface PermissionsGateProps {
   actionCode: number;
   scopes?: any[],
   disableDefault?: boolean,
-  mode?: boolean | number
 }
 
 export function PermissionsGate(props: PermissionsGateProps) {
-  const { children, scopes, actionCode = -1, disableDefault = true, mode } = props;
+  const { children, scopes, actionCode = -1, disableDefault = true } = props;
   // const { role } = useGetRole();
   const role = '1';
 
@@ -46,9 +45,6 @@ export function PermissionsGate(props: PermissionsGateProps) {
   if (actionCode < 0) return <>{children}</>;
 
   const permissionGranted = (() => {
-    if (mode && mode === 1) {
-      return data?.MODE === 1;
-    }
     if (isFetching) {
       if (!disableDefault) return true;
       return false;
@@ -58,7 +54,22 @@ export function PermissionsGate(props: PermissionsGateProps) {
 
   if (!permissionGranted) {
     return (
-      <></>
+      <Tooltip title={<Typography variant="body1">У вас нет прав на это</Typography>} >
+        <div style={{ position: 'relative' }}>
+          {children}
+          <div
+            style={{
+              display: 'block',
+              zIndex: 99,
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+        </div>
+      </Tooltip>
     );
   };
 
