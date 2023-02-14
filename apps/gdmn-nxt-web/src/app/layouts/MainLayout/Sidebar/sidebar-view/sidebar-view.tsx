@@ -5,9 +5,11 @@ import MenuList from '../menu-list/menu-list';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { makeStyles } from '@mui/styles';
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import { IPermissionByUser } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface SidebarProps {
+  menuPermissions?: IPermissionByUser[]
   open: boolean;
   onToogle: () => void;
   window?: any;
@@ -29,7 +31,7 @@ const useStyles = makeStyles(() => ({
 
 
 export function Sidebar(props: SidebarProps) {
-  const { open, onToogle, window } = props;
+  const { open, onToogle, window, menuPermissions } = props;
   const theme = useTheme();
 
   const classes = useStyles();
@@ -45,12 +47,12 @@ export function Sidebar(props: SidebarProps) {
             height: matchDownMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
           }}
         >
-          <MenuList />
+          <MenuList menuPermissions={menuPermissions} />
         </PerfectScrollbar>
       </BrowserView>
       <MobileView>
         <Box sx={{ px: 2 }}>
-          <MenuList />
+          <MenuList menuPermissions={menuPermissions} />
         </Box>
       </MobileView>
     </>

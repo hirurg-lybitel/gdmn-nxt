@@ -17,7 +17,7 @@ import { CustomersList } from './app/pages/Customers/customers-list/customers-li
 import { Dashboard } from './app/pages/Dashboard/dashboard/dashboard';
 import { OrderList } from './app/pages/Customers/order-list/order-list';
 import { ErModel } from './app/er-model/er-model';
-import App from './app/app';
+import App from './app/App';
 import CustomerHomePage from './app/customer-home-page/customer-home-page';
 
 import '@fontsource/roboto/300.css';
@@ -60,7 +60,8 @@ import { join } from 'path';
 import { useGetProfileSettingsQuery } from './app/features/profileSettings';
 import DealSources from './app/pages/Managment/dealsCatalogs/deal-sources/deal-sources';
 import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-reasons';
-import { ColorMode } from '@gsbelarus/util-api-types';
+import { ColorMode, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { usePermissions } from './app/features/common/usePermissions';
 
 registerMUI();
 
@@ -70,10 +71,10 @@ const Main = () => {
   const loginStage = useSelector<RootState, LoginStage>(state => state.user.loginStage);
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
-  const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
-  const themeStyles = useTheme();
-  const user = useSelector<RootState, UserState>(state => state.user);
-  const [actionCode, setActionCode] = useState<number>(-3);
+  const [isFetchingNotification, notificationPermission] = usePermissions(8);
+  const [isFetchingPermissions, permissionsPermission] = usePermissions(10);
+  const menuPermissions:IPermissionByUser[] | undefined = !notificationPermission || !permissionsPermission
+    ? undefined : [notificationPermission, permissionsPermission];
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
@@ -95,7 +96,7 @@ const Main = () => {
                       {
                         loginStage === 'EMPLOYEE' ?
                           <Routes>
-                            <Route path="/employee" element={<MainLayout />}>
+                            <Route path="/employee" element={<MainLayout menuPermissions = {menuPermissions}/>}>
                               <Route path="" element={<Navigate to="dashboard/overview" />} />
                               <Route path="dashboard">
                                 <Route path="" element={<Navigate to="overview" />} />
@@ -161,7 +162,7 @@ const Main = () => {
                               <Route path="/" element={<Navigate to="/customer" />} />
                               <Route path="*" element={<NotFound/>} />
                             </Routes>
-                            : <App />
+                            : <App forWait={isFetchingNotification || isFetchingPermissions} />
                       }</>
                   }
                 </SnackbarProvider>

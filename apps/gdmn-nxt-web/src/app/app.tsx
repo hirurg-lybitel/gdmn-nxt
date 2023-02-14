@@ -43,15 +43,18 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
 
-function App() {
-  const dispatch = useDispatch<AppDispatch>();
+export interface AppProps {
+  forWait?:boolean
+}
 
+export default function App(props: AppProps) {
+  const { forWait } = props;
+  const dispatch = useDispatch<AppDispatch>();
   const { loginStage, userProfile } = useSelector<RootState, UserState>(state => state.user);
   const userId = userProfile?.id;
   const { data: settings, isLoading } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
   const themeType = settings?.MODE;
 
-  const mode = document.cookie.split('mode=')?.[1];
   useEffect(()=>{
     if (!themeType) {
       return;
@@ -141,11 +144,14 @@ function App() {
           if (!themeType || !pageIdFound) {
             return;
           }
+          if (forWait) {
+            return;
+          }
           dispatch(renderApp());
           break;
       }
     })();
-  }, [loginStage, themeType, pageIdFound]);
+  }, [loginStage, themeType, pageIdFound, forWait]);
 
   useEffect(() => {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
@@ -193,5 +199,3 @@ function App() {
 
   return result;
 };
-
-export default App;

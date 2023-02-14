@@ -174,7 +174,6 @@ export default function FAQ() {
                 {(isFetching ? skeletonFaqsCount : faqs).map(item =>
 
                   <div key={item.ID}>
-                    {console.log(item.ID)}
                     {(isFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
                     <div className={style.faqList}>
                       {isFetching ?

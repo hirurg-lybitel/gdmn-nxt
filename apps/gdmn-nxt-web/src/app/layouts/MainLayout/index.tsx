@@ -14,6 +14,7 @@ import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
 import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
 import { config } from '@gdmn-nxt/config';
+import { IPermissionByUser } from '@gsbelarus/util-api-types';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -125,7 +126,12 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     )}
   </Menu>;
 
-export const MainLayout = () => {
+interface MainLayoutProps{
+  menuPermissions?: IPermissionByUser[]
+}
+
+export const MainLayout = (props:MainLayoutProps) => {
+  const { menuPermissions } = props;
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -205,6 +211,7 @@ export const MainLayout = () => {
         items={profileMenuItems}
       />
       <Sidebar
+        menuPermissions={menuPermissions}
         open={menuOpened}
         onToogle={handleDrawerToggle}
       />
