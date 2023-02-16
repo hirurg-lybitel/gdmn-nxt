@@ -86,7 +86,7 @@ export function LabelList(props: LabelListProps) {
             <PermissionsGate actionCode={Action.CreateLabel}>
               <Button
                 variant="contained"
-                disabled={addIsLoading  }
+                disabled={addIsLoading}
                 onClick={() => setOpenEditForm(true)}
               >
                 Добавить
