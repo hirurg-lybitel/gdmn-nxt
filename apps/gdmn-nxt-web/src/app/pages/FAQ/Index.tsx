@@ -18,6 +18,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
 import { usePermissions } from '../../features/common/usePermissions';
+import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
+import { Action } from '../../features/permissions';
 
 
 export default function FAQ() {
@@ -29,9 +31,9 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
-  const [isFetching11, data11] = usePermissions(11);
-  const [isFetching12, data12] = usePermissions(12);
-  const [isFetching13, data13] = usePermissions(13);
+  const [isFetching11] = usePermissions(11);
+  const [isFetching12] = usePermissions(12);
+  const [isFetching13] = usePermissions(13);
   const componentIsFetching = isFetching || isFetching11 || isFetching12 || isFetching13;
 
   const addFaqHandler = (question:string, answer:string) => {
@@ -164,9 +166,9 @@ export default function FAQ() {
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                {data11?.MODE === 1 &&
+                <PermissionsGate actionCode={Action.CreateFAQ}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                }
+                </PermissionsGate>
               </div>
             }
           />
@@ -212,7 +214,7 @@ export default function FAQ() {
                       }
                       {!componentIsFetching &&
                         <>
-                          {data12?.MODE === 1 &&
+                          <PermissionsGate actionCode={Action.EditFAQ}>
                             <IconButton
                               color="primary"
                               disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
@@ -221,8 +223,8 @@ export default function FAQ() {
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                          }
-                          {data13?.MODE === 1 &&
+                          </PermissionsGate>
+                          <PermissionsGate actionCode={Action.DeleteFAQ}>
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}
@@ -231,7 +233,7 @@ export default function FAQ() {
                             >
                               <DeleteIcon />
                             </IconButton>
-                          }
+                          </PermissionsGate>
                         </>
                       }
                     </div>

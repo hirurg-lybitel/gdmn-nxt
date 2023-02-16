@@ -9,10 +9,11 @@ import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } f
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '../../../features/permissions';
 
 export interface LabelListItemProps {
   data: ILabel;
-  permissionData:IPermissionByUser[] | undefined
 }
 
 const labelStyle: CSSProperties = {
@@ -49,7 +50,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export function LabelListItem(props: LabelListItemProps) {
-  const { data, permissionData } = props;
+  const { data } = props;
   const { ID } = data;
 
   const [openEditForm, setOpenEditForm] = useState(false);
@@ -166,16 +167,16 @@ export function LabelListItem(props: LabelListItemProps) {
         </Grid>
         <Grid item xs={2} md={1}>
           <Box display={'inline-flex'} width="100%" justifyContent={'center'}>
-            {permissionData?.[1].MODE === 1 &&
+            <PermissionsGate actionCode={Action.EditLabel}>
               <IconButton onClick={handleEditClick}>
                 <EditOutlinedIcon fontSize="small" color="primary" />
               </IconButton>
-            }
-            {permissionData?.[2].MODE === 1 &&
+            </PermissionsGate>
+            <PermissionsGate actionCode={Action.DeleteLabel}>
               <IconButton onClick={handleDeleteClick}>
                 <DeleteForeverIcon fontSize="small" color="primary" />
               </IconButton>
-            }
+            </PermissionsGate>
           </Box>
         </Grid>
       </Grid>

@@ -21,10 +21,11 @@ export interface PermissionsGateProps {
   actionCode: number;
   scopes?: any[],
   disableDefault?: boolean,
+  show?: boolean
 }
 
 export function PermissionsGate(props: PermissionsGateProps) {
-  const { children, scopes, actionCode = -1, disableDefault = true } = props;
+  const { children, scopes, actionCode = -1, disableDefault = true, show = false } = props;
   // const { role } = useGetRole();
   const role = '1';
 
@@ -53,6 +54,9 @@ export function PermissionsGate(props: PermissionsGateProps) {
   })();
 
   if (!permissionGranted) {
+    if (!show) {
+      return (<></>);
+    }
     return (
       <Tooltip title={<Typography variant="body1">У вас нет прав на это</Typography>} >
         <div style={{ position: 'relative' }}>

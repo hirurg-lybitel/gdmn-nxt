@@ -36,11 +36,10 @@ import { usePermissions } from '../../../features/common/usePermissions';
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
   isLoading: boolean,
-  permissionData: IPermissionByUser[] | undefined
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {
-  const { columns = [], isLoading, permissionData } = props;
+  const { columns = [], isLoading } = props;
 
   const user = useSelector<RootState, UserState>(state => state.user);
   const [updateColumn] = useUpdateColumnMutation();
@@ -406,7 +405,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   onDelete={columnHandlers.handleTitleDelete}
                                   onAddCard={cardHandlers.handleAddCard}
                                   isFetching={isLoading}
-                                  permissionData={permissionData}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
@@ -426,7 +424,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onAdd={cardHandlers.handleAddCard}
                                                 onEdit={cardHandlers.handleEditCard}
                                                 onDelete={cardHandlers.handleDeleteCard}
-                                                permissionData={permissionData}
                                               />
                                             </Box>
                                           )}

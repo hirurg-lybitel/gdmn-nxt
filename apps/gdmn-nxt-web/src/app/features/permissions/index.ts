@@ -20,6 +20,26 @@ type IUsersRequestResult = IRequestResult<{ users: IUser[]}>;
 
 type IPermissionByUserRequestResult = IRequestResult<{ action: IPermissionByUser}>;
 
+export enum Action {
+  CreateDeal = 1,
+  EditDeal = 3,
+  DeleteDeal = 4,
+  CopyDeal = 2,
+  ShowAllDeals = 9,
+  CreateLabel = 5,
+  EditLabel = 6,
+  DeleteLabel = 7,
+  PermissionsSettings = 8,
+  NotificationCenter = 10,
+  CreateFAQ = 11,
+  EditFAQ = 12,
+  DeleteFAQ = 13
+}
+
+const SetActions = (num:number) => {
+  const { data } = useGetActionsQuery();
+};
+
 export const permissionsApi = createApi({
   reducerPath: 'permissions',
   tagTypes: ['Matrix', 'Actions', 'UserGroups', 'Users', 'ActionByUser'],

@@ -17,15 +17,16 @@ import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '../../../features/permissions';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[],
   isLoading:boolean,
-  permissionData: IPermissionByUser[] | undefined
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], isLoading, permissionData } = props;
+  const { columns = [], isLoading } = props;
 
   const changes = useRef<IChanges[]>([]);
   const [addCard, setAddCard] = useState(false);
@@ -216,16 +217,16 @@ export function KanbanList(props: KanbanListProps) {
       getActions: (params: GridRowParams) => [
         Object.keys(params.row).length > 0
           ?
-          <div>
-            {permissionData?.[3].MODE === 1 &&
-                <IconButton onClick={handleCardDelete(params.row)} size="small" hidden>
-                  <DeleteIcon color="primary" />
-                </IconButton>
-            }
-            {permissionData?.[2].MODE === 1 &&
-            <GridActionsCellItem key={1} icon={<EditIcon />} onClick={handleCardEdit(params.row)} label="Edit" color="primary" />
-            }
-          </div>
+          <>
+            <PermissionsGate actionCode={Action.DeleteDeal}>
+              <IconButton onClick={handleCardDelete(params.row)} size="small" hidden>
+                <DeleteIcon color="primary" />
+              </IconButton>
+            </PermissionsGate>
+            <PermissionsGate actionCode={Action.EditDeal}>
+              <GridActionsCellItem key={1} icon={<EditIcon />} onClick={handleCardEdit(params.row)} label="Edit" color="primary" />
+            </PermissionsGate>
+          </>
           : <></>
       ]
     }
@@ -298,20 +299,21 @@ export function KanbanList(props: KanbanListProps) {
         <div>
           {filteredDescendantCount > 0 ? (
             <Stack direction="row" alignItems="center">
-              {permissionData?.[0].MODE === 1 &&
-               <IconButton
-                 onClick={handleCardAdd(value)}
-                 color="primary"
-                 size="small"
-                 {...(() => column?.USR$INDEX !== 0
-                   ? {
-                     disabled: true
-                   }
-                   : {})()}
-               >
-                 <AddCircleIcon />
-               </IconButton>
-              }
+              <PermissionsGate actionCode={Action.CreateDeal} >
+                <IconButton
+                  onClick={handleCardAdd(value)}
+                  color="primary"
+                  size="small"
+                  {...(() => column?.USR$INDEX !== 0
+                    ? {
+                      disabled: true
+                    }
+                    : {})()}
+                >
+                  <AddCircleIcon />
+                </IconButton>
+              </PermissionsGate>
+
 
               <IconButton
                 onClick={handleClick}

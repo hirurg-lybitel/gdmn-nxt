@@ -9,6 +9,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '../../../features/permissions';
 
 
 /* eslint-disable-next-line */
@@ -19,12 +21,11 @@ export interface KanbanCardProps {
   onAdd: (card: IKanbanCard) => void;
   onEdit: (card: IKanbanCard) => void;
   onDelete: (card: IKanbanCard) => void;
-  permissionData: IPermissionByUser[] | undefined
 };
 
 
 export function KanbanCard(props: KanbanCardProps) {
-  const { snapshot, permissionData } = props;
+  const { snapshot } = props;
   const { card, columns } = props;
   const { onAdd, onEdit, onDelete } = props;
 
@@ -118,7 +119,6 @@ export function KanbanCard(props: KanbanCardProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
-        permissionData={permissionData}
       />
     );
   }, [editCard]);
@@ -133,7 +133,6 @@ export function KanbanCard(props: KanbanCardProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
-        permissionData={permissionData}
       />
     );
   }, [copyCard]);
@@ -218,18 +217,20 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            {permissionData?.[1]?.MODE === 1 && columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-              ?
-              <div
-                className="actions"
-                hidden
-              >
-                <IconButton size="small" onClick={() => setCopyCard(true)}>
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
-              </div>
-              : null
-            }
+            <PermissionsGate actionCode={Action.CopyDeal}>
+              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+                ?
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton size="small" onClick={() => setCopyCard(true)}>
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+                : null
+              }
+            </PermissionsGate>
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">

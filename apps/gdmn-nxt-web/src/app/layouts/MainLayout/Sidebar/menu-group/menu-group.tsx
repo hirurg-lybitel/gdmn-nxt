@@ -3,38 +3,26 @@ import MenuCollapse from '../menu-collapse/menu-collapse';
 import MenuItem from '../menu-item/menu-item';
 import './menu-group.module.less';
 import { IPermissionByUser } from '@gsbelarus/util-api-types';
+import PermissionsGate from 'apps/gdmn-nxt-web/src/app/components/Permissions/permission-gate/permission-gate';
 
 export interface MenuGroupProps {
   item: any,
-  menuPermissions?: IPermissionByUser[]
 }
 
 export function MenuGroup(props: MenuGroupProps) {
-  const { item, menuPermissions } = props;
+  const { item } = props;
 
   const items = item.children?.map((menu: any) => {
     switch (menu.type) {
       case 'collapse':
-        if (menu.checkAction) {
-          if (menuPermissions?.find(menuItem => menuItem.CODE === menu.checkAction)?.MODE === 1) {
-            return <MenuCollapse key={menu.id} menu={menu} level={1} />;
-          } else {
-            return null;
-          }
-        } else {
-          return <MenuCollapse key={menu.id} menu={menu} level={1} />;
-        }
+        return <PermissionsGate key={menu.id} actionCode={menu.checkAction} show={true} >
+          <MenuCollapse menu={menu} level={1} />
+        </PermissionsGate>;
         break;
       case 'item':
-        if (menu.checkAction) {
-          if (menuPermissions?.find(menuItem => menuItem.CODE === menu.checkAction)?.MODE === 1) {
-            return <MenuItem key={menu.id} item={menu} level={1} />;
-          } else {
-            return null;
-          }
-        } else {
-          return <MenuItem key={menu.id} item={menu} level={1} />;
-        }
+        return <PermissionsGate key={menu.id} actionCode={menu.checkAction} show={true}>
+          <MenuItem key={menu.id} item={menu} level={1} />
+        </PermissionsGate>;
         break;
       default:
         return (

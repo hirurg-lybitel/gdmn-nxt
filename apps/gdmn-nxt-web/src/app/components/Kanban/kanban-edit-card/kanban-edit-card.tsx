@@ -59,6 +59,7 @@ import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsA
 import { DenyReasonsSelect } from './components/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '../../../features/permissions';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -113,11 +114,10 @@ export interface KanbanEditCardProps {
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: () => void;
   onClose: (e: any, r: string) => void;
-  permissionData?: IPermissionByUser[] | undefined
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
-  const { open, currentStage, card, stages, permissionData } = props;
+  const { open, currentStage, card, stages } = props;
   const { onSubmit, onCancelClick, onClose } = props;
 
   const classes = useStyles();
@@ -716,19 +716,19 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        {permissionData?.[3].MODE === 1 &&
-        (card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
+        <PermissionsGate actionCode={Action.DeleteDeal}>
+          {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
             <IconButton onClick={handleDeleteClick} size="small" hidden>
               <DeleteIcon />
             </IconButton>
-        }
+          }
+        </PermissionsGate>
         <Box flex={1} />
         <Button
           className={classes.button}
           onClick={handleCancelClick}
         >Отменить</Button>
-        {/* {formik.values.ID > 0 ? permissionData?.[2].MODE : permissionData?.[0].MODE === 1 && */}
-        <PermissionsGate actionCode={formik.values.ID > 0 ? 3 : 1}>
+        <PermissionsGate actionCode={formik.values.ID > 0 ? Action.EditDeal : Action.CreateDeal} show={true}>
           <Button
             className={classes.button}
             form="mainForm"

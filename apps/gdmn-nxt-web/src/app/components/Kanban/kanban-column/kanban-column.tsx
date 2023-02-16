@@ -13,6 +13,8 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ColorMode, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '../../../features/permissions';
 
 
 export interface KanbanColumnProps {
@@ -26,11 +28,10 @@ export interface KanbanColumnProps {
   onEdit: (newColumn: IKanbanColumn) => void;
   onDelete: (column: IKanbanColumn) => void;
   onAddCard: (card: IKanbanCard) => void;
-  permissionData: IPermissionByUser[] | undefined
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
-  const { provided, dragSnapshot, dropSnapshot, isFetching, permissionData } = props;
+  const { provided, dragSnapshot, dropSnapshot, isFetching } = props;
   const { children, item, columns } = props;
   const { onEdit, onDelete, onAddCard } = props;
 
@@ -210,7 +211,6 @@ export function KanbanColumn(props: KanbanColumnProps) {
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
         onClose={cardHandlers.handleClose}
-        permissionData={permissionData}
       />
     );
   }, [upsertCard]);
@@ -276,9 +276,11 @@ export function KanbanColumn(props: KanbanColumnProps) {
               </PerfectScrollbar>
             </CardContent>
             <CardActions>
-              {permissionData?.[0]?.MODE === 1 && item.USR$INDEX === 0 &&
+              <PermissionsGate actionCode={Action.CreateDeal}>
+                {item.USR$INDEX === 0 &&
                 <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
-              }
+                }
+              </PermissionsGate>
             </CardActions>
           </CustomizedCard>
           {memoAddCard}

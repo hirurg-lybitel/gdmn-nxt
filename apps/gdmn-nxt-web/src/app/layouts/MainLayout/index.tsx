@@ -127,11 +127,9 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
   </Menu>;
 
 interface MainLayoutProps{
-  menuPermissions?: IPermissionByUser[]
 }
 
 export const MainLayout = (props:MainLayoutProps) => {
-  const { menuPermissions } = props;
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -211,7 +209,6 @@ export const MainLayout = (props:MainLayoutProps) => {
         items={profileMenuItems}
       />
       <Sidebar
-        menuPermissions={menuPermissions}
         open={menuOpened}
         onToogle={handleDrawerToggle}
       />

@@ -73,12 +73,9 @@ const Main = () => {
   const settings = useSelector((state: RootState) => state.settings);
   const [isFetchingNotification, notificationPermission] = usePermissions(8);
   const [isFetchingPermissions, permissionsPermission] = usePermissions(10);
-  const menuPermissions:IPermissionByUser[] | undefined = !notificationPermission || !permissionsPermission
-    ? undefined : [notificationPermission, permissionsPermission];
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
-
   return (
     <div style={{ background: settings.customization.mode === 'dark' ? '#424242' : '', height: '100%' }}>
       <BrowserRouter>
@@ -96,7 +93,7 @@ const Main = () => {
                       {
                         loginStage === 'EMPLOYEE' ?
                           <Routes>
-                            <Route path="/employee" element={<MainLayout menuPermissions = {menuPermissions}/>}>
+                            <Route path="/employee" element={<MainLayout/>}>
                               <Route path="" element={<Navigate to="dashboard/overview" />} />
                               <Route path="dashboard">
                                 <Route path="" element={<Navigate to="overview" />} />

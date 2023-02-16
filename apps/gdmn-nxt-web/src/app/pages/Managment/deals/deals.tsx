@@ -179,13 +179,12 @@ export function Deals(props: DealsProps) {
     />,
   [openFilters, filteringData]);
 
-  const [isFetching1, data1] = usePermissions(1);
-  const [isFetching2, data2] = usePermissions(2);
-  const [isFetching3, data3] = usePermissions(3);
-  const [isFetching4, data4] = usePermissions(4);
+  const [isFetching1] = usePermissions(1);
+  const [isFetching2] = usePermissions(2);
+  const [isFetching3] = usePermissions(3);
+  const [isFetching4] = usePermissions(4);
 
   const componentIsFetching = isLoading || isFetching1 || isFetching2 || isFetching3 || isFetching4;
-  const permissionData:IPermissionByUser[] | undefined = !data1 || !data2 || !data3 || !data4 ? undefined : [data1, data2, data3, data4];
   const Header = useMemo(() => {
     return (
       <>
@@ -262,9 +261,9 @@ export function Deals(props: DealsProps) {
   }
   , [kanbanFilter.deadline, tabNo, filteringData, columnsIsFetching]);
 
-  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} permissionData={permissionData} />, [columns, permissionData]);
+  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={componentIsFetching} permissionData={permissionData}/>, [columns, permissionData]);
+  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
   return (
     <Stack

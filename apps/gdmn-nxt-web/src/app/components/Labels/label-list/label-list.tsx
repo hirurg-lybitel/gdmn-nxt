@@ -9,6 +9,8 @@ import { useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { usePermissions } from '../../../features/common/usePermissions';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '../../../features/permissions';
 
 const ItemSkeleton = () => {
   return (
@@ -44,8 +46,6 @@ export function LabelList(props: LabelListProps) {
 
   const componentIsFetching = dataIsFetching || isFetching5 || isFetching6 || isFetching7 || dataIsFetching;
 
-  const permissionData:IPermissionByUser[] | undefined = (!data5 || !data6 || !data7) ? undefined : [data5, data6, data7];
-
   return (
     <Stack flex={1}>
       <CustomizedCard
@@ -54,7 +54,7 @@ export function LabelList(props: LabelListProps) {
         <CardHeader
           title={componentIsFetching ? <Skeleton variant="rectangular" height={'36px'}/> : <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h3">Метки</Typography>
-            {permissionData?.[0].MODE === 1 &&
+            <PermissionsGate actionCode={Action.CreateLabel}>
               <Button
                 variant="contained"
                 disabled={dataIsFetching}
@@ -62,7 +62,7 @@ export function LabelList(props: LabelListProps) {
               >
                 Добавить
               </Button>
-            }
+            </PermissionsGate>
           </div>}
         />
         <CardContent style={{ padding: 0 }}>
@@ -82,7 +82,7 @@ export function LabelList(props: LabelListProps) {
               {labels?.map((label, idx) =>
                 <div key={label.ID}>
                   {idx !== 0 ? <Divider /> : <></>}
-                  <LabelListItem data={label} permissionData={permissionData} />
+                  <LabelListItem data={label} />
                 </div>) || <></>}
             </PerfectScrollbar>
           }
