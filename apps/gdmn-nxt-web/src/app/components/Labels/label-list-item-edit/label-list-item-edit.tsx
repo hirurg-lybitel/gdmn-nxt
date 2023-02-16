@@ -49,7 +49,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       width: '120px',
     },
     piker: {
-
       position: 'absolute',
       zIndex: '1400 !important',
       right: '10px',
@@ -68,6 +67,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       }
     }
   }));
+
   const classes = useStyles();
   const { open, label } = props;
   const { onSubmit, onCancelClick } = props;
@@ -120,7 +120,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     setConfirmOpen(false);
   }, []);
 
-  const [colorLabel, setColorLabel] = useState('grey');
+  const [colorLabel, setColorLabel] = useState(label?.USR$COLOR || 'grey');
 
   const handleChange = (color:any) => {
     setColorLabel(color.hex);

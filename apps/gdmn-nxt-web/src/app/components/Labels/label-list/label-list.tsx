@@ -1,4 +1,5 @@
 import { Box, Button, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { useAddLabelMutation, useGetLabelsQuery } from 'apps/gdmn-nxt-web/src/app/features/labels';
 import LabelListItem from '../label-list-item/label-list-item';
@@ -28,7 +29,7 @@ export function LabelList(props: LabelListProps) {
   const { data: labels, isFetching: dataIsFetching, isLoading: dataIsLoading } = useGetLabelsQuery(undefined, { refetchOnMountOrArgChange: true });
 
   const [openEditForm, setOpenEditForm] = useState(false);
-  const [addLabel] = useAddLabelMutation();
+  const [addLabel, { isLoading: addIsLoading }] = useAddLabelMutation();
 
   const handleOnSubmit = (label: ILabel) => {
     setOpenEditForm(false);
@@ -46,10 +47,38 @@ export function LabelList(props: LabelListProps) {
 
   const componentIsFetching = dataIsFetching || isFetching5 || isFetching6 || isFetching7 || dataIsFetching;
 
+  const useStyles = makeStyles(() => ({
+    body: {
+      position: 'relative',
+      maxHeight: '100%',
+      minWidth: '100%',
+      border: 'none',
+      overflowWrap: 'normal',
+    },
+    scrollBarContainer: {
+      paddingBottom: '20px',
+      borderRadius: '12px',
+      position: 'absolute',
+      right: '1px',
+      left: '1px',
+      bottom: '0',
+      top: '80px',
+    },
+    scrollBar: {
+      pointerEvents: componentIsFetching ? 'none' : 'auto',
+      paddingRight: '10px',
+      transition: '0s !important'
+    }
+  }));
+  const classes = useStyles();
+
   return (
-    <Stack flex={1}>
+    <div
+      className={classes.body}
+    >
       <CustomizedCard
         borders
+        style={{ height: '100%' }}
       >
         <CardHeader
           title={componentIsFetching ? <Skeleton variant="rectangular" height={'36px'}/> : <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -57,7 +86,7 @@ export function LabelList(props: LabelListProps) {
             <PermissionsGate actionCode={Action.CreateLabel}>
               <Button
                 variant="contained"
-                disabled={dataIsFetching}
+                disabled={addIsLoading  }
                 onClick={() => setOpenEditForm(true)}
               >
                 Добавить
@@ -65,27 +94,24 @@ export function LabelList(props: LabelListProps) {
             </PermissionsGate>
           </div>}
         />
-        <CardContent style={{ padding: 0 }}>
-          <Divider />
-          {componentIsFetching
-            ? [...Array(10)].map((el, idx) =>
-              <div key={idx}>
-                {idx !== 0 ? <Divider /> : <></>}
-                <ItemSkeleton />
-              </div>)
-            :
-            <PerfectScrollbar
-              style={{
-                maxHeight: 'calc(100vh - 185px)',
-              }}
-            >
-              {labels?.map((label, idx) =>
+        <Divider />
+        <CardContent className={classes.scrollBarContainer}>
+          <PerfectScrollbar className={classes.scrollBar}>
+            {componentIsFetching
+              ? [...Array(10)].map((el, idx) =>
+                <div key={idx}>
+                  {idx !== 0 ? <Divider /> : <></>}
+                  <ItemSkeleton />
+                </div>)
+              :
+              labels?.map((label, idx) =>
                 <div key={label.ID}>
                   {idx !== 0 ? <Divider /> : <></>}
                   <LabelListItem data={label} />
-                </div>) || <></>}
-            </PerfectScrollbar>
-          }
+                </div>) || <></>
+
+            }
+          </PerfectScrollbar>
           <LabelListItemEdit
             open={openEditForm}
             onSubmit={handleOnSubmit}
@@ -93,7 +119,7 @@ export function LabelList(props: LabelListProps) {
           />
         </CardContent>
       </CustomizedCard>
-    </Stack>
+    </div>
   );
 }
 
