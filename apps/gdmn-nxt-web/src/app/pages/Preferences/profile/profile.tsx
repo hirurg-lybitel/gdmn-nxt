@@ -49,7 +49,7 @@ export function Profile(props: ProfileProps) {
     setSettings({
       userId: userProfile?.id || -1,
       body: {
-        AVATAR: '',
+        AVATAR: null,
         MODE: settings?.MODE || ''
       }
     });

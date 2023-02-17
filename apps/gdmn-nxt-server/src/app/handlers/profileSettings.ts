@@ -21,7 +21,9 @@ const get: RequestHandler = async (req, res) => {
       WHERE u.ID = :userId`, { userId });
 
     for (const r of sqlResult) {
+      // eslint-disable-next-line dot-notation
       if (r['AVATAR_BLOB'] !== null && typeof r['AVATAR_BLOB'] === 'object') {
+        // eslint-disable-next-line dot-notation
         const readStream = await attachment.openBlob(transaction, r['AVATAR_BLOB']);
         const blobLength = await readStream.length;
         const resultBuffer = Buffer.alloc(blobLength);
@@ -33,8 +35,10 @@ const get: RequestHandler = async (req, res) => {
         await readStream.close();
 
         const blob2String = resultBuffer.toString();
+        // eslint-disable-next-line dot-notation
         r['AVATAR'] = bin2String(blob2String.split(','));
       };
+      // eslint-disable-next-line dot-notation
       delete r['AVATAR_BLOB'];
     };
 
@@ -62,13 +66,12 @@ const set: RequestHandler = async (req, res) => {
   const { AVATAR: avatar, MODE: mode } = req.body;
 
   try {
-    const charArray = string2Bin(avatar);
-    const charArrayString = charArray.toString();
-    const blobBuffer = Buffer.alloc(charArrayString.length, charArrayString);
+    console.log('qwe');
+    const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
+    const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString.length : 0, charArrayString);
     const blob = await attachment.createBlob(transaction);
     await blob.write(blobBuffer);
     await blob.close();
-
     const sqlResult = await fetchAsObject(`
       UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE)
       VALUES(:userId, :avatar, :mode)

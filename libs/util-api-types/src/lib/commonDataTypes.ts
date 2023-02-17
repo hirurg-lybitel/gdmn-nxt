@@ -89,7 +89,7 @@ export interface IResultError {
 export type IEmployee = IContactWithID;
 
 export interface IProfileSettings {
-  AVATAR?: string;
+  AVATAR?: string | null;
   RANK?: string;
   MODE?: string;
 }

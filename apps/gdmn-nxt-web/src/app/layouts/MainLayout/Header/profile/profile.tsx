@@ -145,7 +145,7 @@ export function Profile(props: ProfileProps) {
         size="large"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
-        <Avatar src={settings?.AVATAR} />
+        <Avatar src={settings?.AVATAR || undefined} />
       </IconButton>
       <Popper
         className={classes.popper}
