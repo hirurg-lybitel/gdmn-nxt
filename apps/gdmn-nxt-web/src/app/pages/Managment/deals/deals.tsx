@@ -159,10 +159,13 @@ export function Deals(props: DealsProps) {
       }
       setOpenFilters(false);
     },
-    filterClear: async () => {
+    filterClear: () => {
       dispatch(clearFilterData());
 
       setFilteringData({});
+    },
+    lastFilter: () => {
+      setFilteringData(filtersStorage.lastFilterData.deals);
     },
     filteringDataChange: async(newValue: IFilteringData) => {
       setFilteringData(newValue);
@@ -176,6 +179,7 @@ export function Deals(props: DealsProps) {
       onClose={filterHandlers.filterClose}
       onFilteringDataChange={filterHandlers.filteringDataChange}
       onFilterClear={filterHandlers.filterClear}
+      onLastFilter={filterHandlers.lastFilter}
     />,
   [openFilters, filteringData]);
 

@@ -5,11 +5,13 @@ import { IFilteringData } from '../customers/customers-filter/customers-filter';
 export interface IFiltersState {
   filterModels: { [key: string]: GridFilterModel | undefined };
   filterData: { [key: string]: IFilteringData };
+  lastFilterData: { [key: string]: IFilteringData }
 };
 
 const initialState: IFiltersState = {
   filterModels: {},
-  filterData: {}
+  filterData: {},
+  lastFilterData: {}
 };
 
 export const filtersSlice = createSlice({
@@ -23,7 +25,7 @@ export const filtersSlice = createSlice({
       return { ...state, filterModels: { ...state.filterModels, ...action.payload } };
     },
     clearFilterData: (state) => {
-      return { ...state, filterData: {} };
+      return { ...state, filterData: {}, lastFilterData: state.filterData };
     }
   }
 });

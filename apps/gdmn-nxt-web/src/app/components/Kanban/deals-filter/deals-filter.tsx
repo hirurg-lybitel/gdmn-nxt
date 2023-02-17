@@ -21,6 +21,7 @@ export interface DealsFilterProps {
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
   onFilterClear: () => void;
+  onLastFilter: () => void;
 }
 
 export function DealsFilter(props: DealsFilterProps) {
@@ -30,7 +31,8 @@ export function DealsFilter(props: DealsFilterProps) {
     onClose,
     filteringData,
     onFilteringDataChange,
-    onFilterClear
+    onFilterClear,
+    onLastFilter
   } = props;
 
   const { data, isFetching: customerFetching } = useGetCustomersQuery();
@@ -129,6 +131,13 @@ export function DealsFilter(props: DealsFilterProps) {
           <Button
             variant="contained"
             fullWidth
+            onClick={onLastFilter}
+          >
+            Последний фильтр
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth
             onClick={() => {
               onFilterClear();
               onClose && onClose({}, 'backdropClick');
@@ -152,7 +161,7 @@ export function DealsFilter(props: DealsFilterProps) {
   );
 
   return (
-    <div className={styles['container']}>
+    <div className={styles.container}>
       <h1>Welcome to DealsFilter!</h1>
     </div>
   );
