@@ -24,12 +24,12 @@ export const profileSettingsApi = createApi({
             : [{ type: 'settings', id: 'LIST' }]
     }),
     setProfileSettings: builder.mutation<IProfileSettings, { userId: number, body: Partial<IProfileSettings>}>({
-      query({userId, body}) {
+      query({ userId, body }) {
         return {
           url: `profile-settings/userId/${userId}`,
           method: 'PUT',
           body: body
-        }
+        };
       },
       invalidatesTags: (result, error) =>
         result
