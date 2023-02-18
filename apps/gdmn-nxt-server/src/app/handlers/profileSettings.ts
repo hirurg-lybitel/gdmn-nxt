@@ -66,7 +66,6 @@ const set: RequestHandler = async (req, res) => {
   const { AVATAR: avatar, MODE: mode } = req.body;
 
   try {
-    console.log('qwe');
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
     const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString.length : 0, charArrayString);
     const blob = await attachment.createBlob(transaction);
