@@ -45,4 +45,12 @@ apps/gdmn-nxt-server/db/*.json
 .env
 
 openssl/*
-.yarn
+
+# Yarn
+.yarn/*
+.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
