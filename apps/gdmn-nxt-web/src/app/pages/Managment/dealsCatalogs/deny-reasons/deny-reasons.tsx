@@ -29,7 +29,7 @@ export function DenyReasons(props: DenyReasonsProps) {
     setUpsertDenyReason(true);
   }, []);
 
-  const handleEditSource = useCallback((denyReason) => () => {
+  const handleEditSource = useCallback((denyReason?: IDenyReason) => () => {
     setDenyReason(denyReason);
     setUpsertDenyReason(true);
   }, []);

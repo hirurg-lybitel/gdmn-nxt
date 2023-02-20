@@ -1,6 +1,5 @@
 import { DateRangePicker, DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
-import { Autocomplete, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
-import { Box, useTheme } from '@mui/system';
+import { Autocomplete, Box, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { IContactWithLabels, ICustomer } from '@gsbelarus/util-api-types';
 import ReconciliationStatement from '../../../reconciliation-statement/reconciliation-statement';

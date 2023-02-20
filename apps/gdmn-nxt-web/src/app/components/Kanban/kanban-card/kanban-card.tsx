@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
-import { DraggableStateSnapshot } from 'react-beautiful-dnd';
+import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';

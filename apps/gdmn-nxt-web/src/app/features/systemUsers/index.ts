@@ -12,7 +12,7 @@ export const systemUsers = createApi({
   tagTypes: ['Users'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getUsers: builder.query<UsersResponse, void>({
+    getUsers: builder.query<IUser[], void>({
       query: () => 'system/users',
       transformResponse: (response: IUsersRequestResult) => response.queries?.users || [],
       providesTags: (result) =>

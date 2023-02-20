@@ -45,3 +45,4 @@ apps/gdmn-nxt-server/db/*.json
 .env
 
 openssl/*
+.yarn

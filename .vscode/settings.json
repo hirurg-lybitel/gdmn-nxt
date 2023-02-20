@@ -4,7 +4,7 @@
     "typescript.format.insertSpaceAfterCommaDelimiter": true,
     "typescript.format.semicolons": "insert",
     "workbench.editor.wrapTabs": true,
-    "files.autoSave": "onFocusChange",
+    "files.autoSave": "afterDelay",
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
     },

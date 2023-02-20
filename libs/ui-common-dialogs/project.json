@@ -1,0 +1,53 @@
+{
+  "name": "ui-common-dialogs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui-common-dialogs/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nrwl/rollup:rollup",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/ui-common-dialogs",
+        "tsConfig": "libs/ui-common-dialogs/tsconfig.lib.json",
+        "project": "libs/ui-common-dialogs/package.json",
+        "entryFile": "libs/ui-common-dialogs/src/index.ts",
+        "external": [
+          "react/jsx-runtime"
+        ],
+        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+        "assets": [
+          {
+            "glob": "libs/ui-common-dialogs/README.md",
+            "input": ".",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "libs/ui-common-dialogs/**/*.{ts,tsx,js,jsx}"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/ui-common-dialogs"
+      ],
+      "options": {
+        "jestConfig": "libs/ui-common-dialogs/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

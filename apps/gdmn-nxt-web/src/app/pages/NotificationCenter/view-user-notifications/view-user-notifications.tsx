@@ -5,7 +5,7 @@ import NotificationList from '../../../layouts/MainLayout/Header/NotificationSec
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './view-user-notifications.module.less';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import CustomNoData from '../../../components/Styled/Icons/CustomNoData';
@@ -18,7 +18,7 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const { data: users = [], isFetching: usersIsFetching } = useGetUsersQuery();
 
-  const handleUserChange = useCallback((e, value: IUser | null) => {
+  const handleUserChange = useCallback((e: any, value: IUser | null) => {
     setSelectedUser(value);
   }, []);
 
@@ -61,7 +61,7 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
           fullWidth
           loading={usersIsFetching}
           loadingText="Загрузка данных..."
-          getOptionLabel={option => option.NAME}
+          getOptionLabel={option => option?.NAME || ''}
           renderInput={(params) => (
             <TextField
               {...params}

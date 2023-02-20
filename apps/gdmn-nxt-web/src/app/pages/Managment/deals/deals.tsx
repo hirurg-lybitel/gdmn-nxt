@@ -8,12 +8,11 @@ import { CircularIndeterminate } from '../../../components/helpers/circular-inde
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Stack, TextField, Tooltip, Box } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import { Box } from '@mui/system';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
 import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';

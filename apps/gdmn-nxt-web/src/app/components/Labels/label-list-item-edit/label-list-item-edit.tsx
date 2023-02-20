@@ -12,6 +12,42 @@ import LabelMarker from '../label-marker/label-marker';
 import { useTheme } from '@mui/material/styles';
 import { useOutsideClick } from '../../../features/common/useOutsideClick';
 
+const useStyles = makeStyles((theme: Theme) => ({
+  dialog: {
+    position: 'absolute',
+    right: 0,
+    margin: 0,
+    height: '100%',
+    maxHeight: '100%',
+    width: '30vw',
+    minWidth: 330,
+    maxWidth: '100%',
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0
+  },
+  button: {
+    width: '120px',
+  },
+  piker: {
+
+    position: 'absolute',
+    zIndex: '1400 !important',
+    right: '10px',
+    moveTop: '10px',
+    top: 'top - 50px',
+    '& .sketch-picker ': {
+      backgroundColor: `${theme.mainContent.backgroundColor} !important`,
+      color: `${theme.textColor} !important`
+    },
+    '& .sketch-picker label': {
+      color: `${theme.textColor} !important`
+    },
+    '& .saturation-white div': {
+      pointerEvent: 'none !important',
+      cursor: 'pointer !important'
+    }
+  }
+}));
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -32,42 +68,6 @@ export interface LabelListItemEditProps {
 export function LabelListItemEdit(props: LabelListItemEditProps) {
   const theme = useTheme();
 
-  const useStyles = makeStyles(() => ({
-    dialog: {
-      position: 'absolute',
-      right: 0,
-      margin: 0,
-      height: '100%',
-      maxHeight: '100%',
-      width: '30vw',
-      minWidth: 330,
-      maxWidth: '100%',
-      borderTopRightRadius: 0,
-      borderBottomRightRadius: 0
-    },
-    button: {
-      width: '120px',
-    },
-    piker: {
-
-      position: 'absolute',
-      zIndex: '1400 !important',
-      right: '10px',
-      moveTop: '10px',
-      top: 'top - 50px',
-      '& .sketch-picker ': {
-        backgroundColor: `${theme.mainContent.backgroundColor} !important`,
-        color: `${theme.textColor} !important`
-      },
-      '& .sketch-picker label': {
-        color: `${theme.textColor} !important`
-      },
-      '& .saturation-white div': {
-        pointerEvent: 'none !important',
-        cursor: 'pointer !important'
-      }
-    }
-  }));
   const classes = useStyles();
   const { open, label } = props;
   const { onSubmit, onCancelClick } = props;
@@ -173,15 +173,17 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                   />
                   {selectColor &&
                   <div className={classes.piker}>
-                    <SketchPicker
-                      color={colorLabel}
-                      onChange= {(color) => {
-                        setColorLabel(color.hex);
-                      }}
-                      onChangeComplete={(color)=>{
-                        formik.setFieldValue('USR$COLOR', color.hex);
-                      }}
-                    />
+                    <>
+                      <SketchPicker
+                        color={colorLabel}
+                        onChange= {(color) => {
+                          setColorLabel(color.hex);
+                        }}
+                        onChangeComplete={(color)=>{
+                          formik.setFieldValue('USR$COLOR', color.hex);
+                        }}
+                      />
+                    </>
                   </div>
                   }
                 </Stack>

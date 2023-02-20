@@ -1,15 +1,16 @@
-module.exports = {
+/* eslint-disable */
+export default {
   displayName: 'util-useful',
   preset: '../../jest.preset.js',
   globals: {
     'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
-    },
+      tsconfig: '<rootDir>/tsconfig.spec.json'
+    }
   },
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]sx?$': 'ts-jest',
+    '^.+\\.[tj]sx?$': 'ts-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/libs/util-useful',
+  coverageDirectory: '../../coverage/libs/util-useful'
 };
