@@ -1,11 +1,9 @@
-import { useTheme } from '@mui/system';
 import { Button, Card, CardActions, CardContent, CardMedia, Grid, Typography } from '@mui/material';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 // import sdfs from '../../../assets/'
 // 404
 
 export default function NotFound() {
-  const theme = useTheme();
   return (
     <Grid
       container

@@ -1,7 +1,6 @@
 import { Card } from '@mui/material';
-import { styled } from '@mui/system';
 import './customized-card.module.less';
-import { Theme } from '@mui/material/styles';
+import { styled, Theme } from '@mui/material/styles';
 
 interface ICustomizedCardProps {
   theme?: Theme

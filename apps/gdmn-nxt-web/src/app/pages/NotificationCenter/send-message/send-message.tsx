@@ -1,7 +1,7 @@
 import styles from './send-message.module.less';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Alert, AlertColor, Autocomplete, Box, Button, CardActions, Checkbox, Chip, Divider, FormControlLabel, IconButton, InputBase, Slide, Snackbar, Stack, Tab, TextField } from '@mui/material';
-import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import SendIcon from '@mui/icons-material/Send';
 import InfoIcon from '@mui/icons-material/Info';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -14,7 +14,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { socketClient } from '@gdmn-nxt/socket';
 import CloseIcon from '@mui/icons-material/Close';
-import { useSnackbar } from 'notistack';
+import { SnackbarKey, useSnackbar } from 'notistack';
 
 /* eslint-disable-next-line */
 export interface SendMessageProps {}
@@ -28,11 +28,11 @@ export function SendMessage(props: SendMessageProps) {
 
   const { data: users = [], isFetching: usersIsFetching } = useGetUsersQuery();
 
-  const handleTabsChange = useCallback((e, newindex: string) => {
+  const handleTabsChange = useCallback((e: any, newindex: string) => {
     setTabIndex(newindex);
   }, []);
 
-  const handleUsersChange = useCallback((e, value) => {
+  const handleUsersChange = useCallback((e: ChangeEvent<HTMLSelectElement | any>, value: IUser[]) => {
     e.target.classList.remove('Mui-focused');
     setSelectedUsers(value);
   }, []);
@@ -41,14 +41,14 @@ export function SendMessage(props: SendMessageProps) {
     setMessage(e?.target?.value || '');
   }, []);
 
-  const handleCloseAlert = useCallback((snackbarId: number) => () => closeSnackbar(snackbarId), []);
+  const handleCloseAlert = useCallback((snackbarId: SnackbarKey) => () => closeSnackbar(snackbarId), []);
 
   const handleSend = useCallback(() => {
     socketClient?.emit('sendMessageToUsers_request', message, allUser ? users.map(u => u.ID) : selectedUsers.map(u => u.ID));
   }, [message, users, selectedUsers, allUser]);
 
 
-  const alertAction = (snackbarId: number) => (
+  const alertAction = (snackbarId: SnackbarKey) => (
     <Fragment>
       <IconButton
         size="small"

@@ -1,6 +1,5 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
-import { CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';

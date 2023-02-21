@@ -1,0 +1,60 @@
+{
+  "name": "gdmn-nxt-server",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/gdmn-nxt-server/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/gdmn-nxt-server",
+        "main": "apps/gdmn-nxt-server/src/main.ts",
+        "tsConfig": "apps/gdmn-nxt-server/tsconfig.app.json",
+        "assets": ["apps/gdmn-nxt-server/src/assets"],
+        "target": "node",
+        "compiler": "tsc"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/gdmn-nxt-server/src/environments/environment.ts",
+              "with": "apps/gdmn-nxt-server/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/node:node",
+      "options": {
+        "buildTarget": "gdmn-nxt-server:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "gdmn-nxt-server:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/gdmn-nxt-server/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/gdmn-nxt-server"],
+      "options": {
+        "jestConfig": "apps/gdmn-nxt-server/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

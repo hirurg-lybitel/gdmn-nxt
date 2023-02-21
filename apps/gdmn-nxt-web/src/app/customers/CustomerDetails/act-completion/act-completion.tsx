@@ -1,6 +1,5 @@
-import { Button, Stack } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Box } from '@mui/system';
 import { DataGridPro, GridColDef, ruRU } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetActCompletionQuery } from '../../../features/act-completion/actCompletionApi';

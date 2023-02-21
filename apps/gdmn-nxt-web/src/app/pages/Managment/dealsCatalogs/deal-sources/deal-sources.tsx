@@ -29,7 +29,7 @@ export function DealSources(props: DealSourcesProps) {
     setUpsertSource(true);
   }, []);
 
-  const handleEditSource = useCallback((dealSource) => () => {
+  const handleEditSource = useCallback((dealSource?: IDealSource) => () => {
     setDealSource(dealSource);
     setUpsertSource(true);
   }, []);

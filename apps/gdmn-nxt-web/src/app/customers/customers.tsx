@@ -35,7 +35,6 @@ import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetDepartmentsQuery } from '../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
 import { useGetBusinessProcessesQuery } from '../features/business-processes';
-import { maxWidth } from '@mui/system';
 import style from './customers.module.less';
 import DataField from './dataField/DataField';
 
