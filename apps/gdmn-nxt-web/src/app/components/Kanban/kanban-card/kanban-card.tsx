@@ -10,7 +10,7 @@ import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '../../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 
 
 /* eslint-disable-next-line */

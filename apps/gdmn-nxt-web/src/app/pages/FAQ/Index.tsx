@@ -19,7 +19,7 @@ import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
 import { usePermissions } from '../../features/common/usePermissions';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
-import { Action } from '../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 
 
 export default function FAQ() {

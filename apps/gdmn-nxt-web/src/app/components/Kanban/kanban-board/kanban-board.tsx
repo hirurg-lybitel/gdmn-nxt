@@ -374,7 +374,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                 flex={1}
               >
                 {(isLoading ? skeletonCount : columns).map((column: IKanbanColumn, index) => (
-                  <Draggable key={column.ID || 1} draggableId={column.ID?.toString()} index={index}>
+                  <Draggable key={column.ID} draggableId={column.ID.toString()} index={index}>
                     {(provided, snapshot) => {
                       const dragProvided: DraggableProvided = provided;
                       const dragSnapshot = snapshot;

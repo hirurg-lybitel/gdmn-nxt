@@ -14,7 +14,7 @@ import { ColorMode, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbel
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '../../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 
 
 export interface KanbanColumnProps {

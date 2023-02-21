@@ -11,7 +11,7 @@ import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { usePermissions } from '../../../features/common/usePermissions';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '../../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 
 const ItemSkeleton = () => {
   return (

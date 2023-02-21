@@ -59,7 +59,7 @@ import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsA
 import { DenyReasonsSelect } from './components/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '../../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 
 
 const useStyles = makeStyles((theme: Theme) => ({

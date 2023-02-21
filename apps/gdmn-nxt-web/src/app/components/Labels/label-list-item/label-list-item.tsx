@@ -10,7 +10,7 @@ import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '../../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 

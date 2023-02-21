@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '../../../features/permissions';
+import { Action } from '@gsbelarus/util-api-types';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[],
