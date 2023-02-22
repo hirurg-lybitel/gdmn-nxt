@@ -61,13 +61,13 @@ export function SendMessage(props: SendMessageProps) {
   );
 
   useEffect(() => {
-    socketClient.on('sendMessageToUsers_response', (status, statusText) => {
+    socketClient?.on('sendMessageToUsers_response', (status, statusText) => {
       if (status === 200) {
         setMessage('');
       };
       enqueueSnackbar(statusText, { variant: status === 200 ? 'success' : 'error', action: alertAction });
     });
-  }, []);
+  }, [socketClient]);
 
 
   return (

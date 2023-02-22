@@ -21,6 +21,14 @@ import { usePermissions } from '../../features/common/usePermissions';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
 import { Action } from '@gsbelarus/util-api-types';
 
+const useStyles = makeStyles((theme: Theme) => ({
+  accordion: {
+    width: '100%',
+    '& .MuiSvgIcon-root': {
+      color: theme.palette.primary.main
+    }
+  },
+}));
 
 export default function FAQ() {
   const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
@@ -121,19 +129,7 @@ export default function FAQ() {
 
   const skeletonFaqsCount:fullFaq[] = skeletonItems(10);
 
-  const useStyles = makeStyles((theme: Theme) => ({
-    accordion: {
-      width: '100%',
-      '& .MuiSvgIcon-root': {
-        color: theme.palette.primary.main
-      }
-    },
-    scrollBar: {
-      pointerEvents: componentIsFetching ? 'none' : 'auto',
-      paddingRight: '10px',
-      transition: '0s !important'
-    }
-  }));
+
   const classes = useStyles();
 
   return (
@@ -174,7 +170,7 @@ export default function FAQ() {
           />
           <Divider />
           <CardContent className={style.scrollBarContainer}>
-            <PerfectScrollbar className={classes.scrollBar} >
+            <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
               <Grid item xs={12}>
                 {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
 

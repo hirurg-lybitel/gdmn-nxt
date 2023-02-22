@@ -5,8 +5,6 @@ const router = express.Router();
 
 router.get('/', perm.getCross);
 router.put('/', perm.upsertCross);
-router.get('/actions', perm.getActions);
-router.get('/actions/:actionCode/byUser/:userID', perm.getPermissionByUser);
 router.get('/userGroups', perm.getUserGroups);
 router.post('/userGroups', perm.upsertGroup);
 router.put('/userGroups/:id', perm.upsertGroup);

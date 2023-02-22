@@ -22,6 +22,25 @@ const ItemSkeleton = () => {
   );
 };
 
+const useStyles = makeStyles(() => ({
+  body: {
+    position: 'relative',
+    maxHeight: '100%',
+    minWidth: '100%',
+    border: 'none',
+    overflowWrap: 'normal',
+  },
+  scrollBarContainer: {
+    paddingBottom: '20px',
+    borderRadius: '12px',
+    position: 'absolute',
+    right: '1px',
+    left: '1px',
+    bottom: '0',
+    top: '80px',
+  }
+}));
+
 /* eslint-disable-next-line */
 export interface LabelListProps {}
 
@@ -47,29 +66,6 @@ export function LabelList(props: LabelListProps) {
 
   const componentIsFetching = dataIsFetching || isFetching5 || isFetching6 || isFetching7 || dataIsFetching;
 
-  const useStyles = makeStyles(() => ({
-    body: {
-      position: 'relative',
-      maxHeight: '100%',
-      minWidth: '100%',
-      border: 'none',
-      overflowWrap: 'normal',
-    },
-    scrollBarContainer: {
-      paddingBottom: '20px',
-      borderRadius: '12px',
-      position: 'absolute',
-      right: '1px',
-      left: '1px',
-      bottom: '0',
-      top: '80px',
-    },
-    scrollBar: {
-      pointerEvents: componentIsFetching ? 'none' : 'auto',
-      paddingRight: '10px',
-      transition: '0s !important'
-    }
-  }));
   const classes = useStyles();
 
   return (
@@ -96,7 +92,7 @@ export function LabelList(props: LabelListProps) {
         />
         <Divider />
         <CardContent className={classes.scrollBarContainer}>
-          <PerfectScrollbar className={classes.scrollBar}>
+          <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }}>
             {componentIsFetching
               ? [...Array(10)].map((el, idx) =>
                 <div key={idx}>
