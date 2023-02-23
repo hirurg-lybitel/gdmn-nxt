@@ -63,6 +63,7 @@ const port = (() => {
 
 app.use(cors({
   credentials: true,
+  secure: 'httpOnly',
   origin: `http://${host}:${process.env.NODE_ENV === 'development' ? '4201' : '80'}` // 'http://localhost:80'
 }));
 
