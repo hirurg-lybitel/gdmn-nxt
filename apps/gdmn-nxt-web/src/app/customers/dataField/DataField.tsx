@@ -1,5 +1,5 @@
 import { Chip, Box } from '@mui/material';
-import style from './datafield.module.less';
+import style from './dataField.module.less';
 
 interface DataFieldProps {
     name: string;

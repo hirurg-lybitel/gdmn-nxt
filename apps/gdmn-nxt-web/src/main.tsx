@@ -37,7 +37,7 @@ import { SqlEditor } from './app/components/System/sql-editor/sql-editor';
 import CustomersMap from './app/customers/customers-map/customers-map';
 import RemainsByInvoices from './app/pages/Analytics/UserReports/remains-by-invoices/remains-by-invoices';
 import Labels from './app/pages/Managment/Lables';
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ruLocale from 'date-fns/locale/ru';
 import PermissionsList from './app/pages/Permissions/permissions-list/permissions-list';

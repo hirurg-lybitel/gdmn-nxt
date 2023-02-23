@@ -39,7 +39,7 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers-pro';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
