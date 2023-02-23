@@ -1,11 +1,10 @@
 import { resultError } from 'apps/gdmn-nxt-server/src/app/responseMessages';
-import { decrypt } from '../../cypher';
 import { getReadTransaction, releaseReadTransaction } from '../utils/db-connection';
 
 export const checkPermissionsMW = (actionCode:number) => async (req, res, next) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
   if (isNaN(actionCode)) console.log('mustAuthWithPermissions: Поле "actionCode" не указано или неверного типа');
-  const userID = Number(decrypt(req.cookies.userId));
+  const userID = req.cookies.userId;
   if (isNaN(userID)) console.log('mustAuthWithPermissions: Поле "userID" не указано или неверного типа');
   try {
     const _schema = {};
