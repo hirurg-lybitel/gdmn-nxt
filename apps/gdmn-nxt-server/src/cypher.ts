@@ -11,6 +11,9 @@ export function encrypt(text:string) {
 
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
+  console.log(iv);
+  console.log(encrypted);
+  console.log(`${encrypted}:${iv}`);
   return `${encrypted}:${iv}`;
 }
 
