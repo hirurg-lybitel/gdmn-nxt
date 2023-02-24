@@ -35,12 +35,14 @@ const preferences: IMenuItem = {
           id: 'permissions-view',
           title: 'Действия',
           type: 'item',
+          checkAction: 8,
           url: 'preferences/permissions/list'
         },
         {
           id: 'permissions-usergroups',
           title: 'Группы пользователей',
           type: 'item',
+          checkAction: 8,
           url: 'preferences/permissions/usergroups'
         }
       ]

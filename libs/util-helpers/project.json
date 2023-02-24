@@ -1,0 +1,35 @@
+{
+  "name": "util-helpers",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util-helpers/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/util-helpers/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/util-helpers"],
+      "options": {
+        "jestConfig": "libs/util-helpers/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/util-helpers",
+        "tsConfig": "libs/util-helpers/tsconfig.lib.json",
+        "packageJson": "libs/util-helpers/package.json",
+        "main": "libs/util-helpers/src/index.ts",
+        "assets": ["libs/util-helpers/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

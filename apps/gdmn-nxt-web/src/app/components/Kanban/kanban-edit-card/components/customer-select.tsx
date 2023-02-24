@@ -3,7 +3,7 @@ import { Autocomplete, Button, IconButton, TextField } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { FormikProps, getIn } from 'formik';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { HTMLAttributes, useCallback, useEffect, useMemo, useState } from 'react';
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
 import filterOptions from '../../../helpers/filter-options';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
@@ -54,7 +54,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
       <Button
         startIcon={<AddCircleRoundedIcon />}
         onClick={handleAddCustomer}
-      >Создать источник</Button>
+      >Создать клиента</Button>
     </div>,
   []);
 
@@ -72,7 +72,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
       <Autocomplete
         fullWidth
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
-        getOptionLabel={useCallback(option => option.NAME, [])}
+        getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions(50, 'NAME')}
         loading={customersIsFetching || insertCustomerIsLoading}
         {...(insertCustomerIsLoading
@@ -89,7 +89,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
         onChange={(event, value) => {
           formik.setFieldValue('DEAL.CONTACT', value);
         }}
-        renderOption={useCallback((props, option) => {
+        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer) => {
           return (
             <li {...props} key={option.ID} style={{ display: 'flex' }}>
               <div style={{ flex: 1, display: 'flex' }}>

@@ -1,0 +1,35 @@
+{
+  "name": "util-useful",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util-useful/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/util-useful/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/util-useful"],
+      "options": {
+        "jestConfig": "libs/util-useful/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/util-useful",
+        "tsConfig": "libs/util-useful/tsconfig.lib.json",
+        "packageJson": "libs/util-useful/package.json",
+        "main": "libs/util-useful/src/index.ts",
+        "assets": ["libs/util-useful/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

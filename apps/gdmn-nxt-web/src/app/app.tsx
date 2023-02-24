@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
 import { useEffect } from 'react';
 import { baseUrl } from './const';
 import { Button, Divider, Typography, Stack } from '@mui/material';
@@ -15,6 +15,15 @@ import { CircularIndeterminate } from './components/helpers/circular-indetermina
 import { useGetCustomersQuery } from './features/customer/customerApi_new';
 import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
 import { InitData } from './store/initData';
+import { useGetProfileSettingsQuery } from './features/profileSettings';
+import { setStyleMode } from './store/settingsSlice';
+import { setPageIdFound } from './store/settingsSlice';
+import { setActiveMenu } from './store/settingsSlice';
+import menuItems from './menu-items';
+import { IMenuItem } from './menu-items';
+import { useGetPermissionByUserQuery } from './features/permissions';
+import { useState } from 'react';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -34,12 +43,77 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
 
-function App() {
+export interface AppProps {
+  forWait?:boolean
+}
+
+export default function App(props: AppProps) {
+  const { forWait } = props;
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage } = useSelector<RootState, UserState>(state => state.user);
+  const { loginStage, userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const userId = userProfile?.id;
+  const { data: settings, isLoading } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
+  const themeType = settings?.MODE;
+
+  useEffect(()=>{
+    if (!themeType) {
+      return;
+    }
+    if (themeType === 'dark') {
+      dispatch(setStyleMode(ColorMode.Dark));
+    } else {
+      dispatch(setStyleMode(ColorMode.Light));
+    }
+  }, [themeType]);
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
+
+  const appSettings = useSelector((state: RootState) => state.settings);
+  const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
+  const [actionCode, setActionCode] = useState<number>(-3);
+  const { data: permissions, isFetching } = useGetPermissionByUserQuery(
+    { actionCode, userID: userProfile?.id || -1 }, { skip: !userProfile?.id || actionCode < 1 }
+  );
+
+  const pathName:string[] = window.location.pathname.split('/');
+  pathName.splice(0, 1);
+  // Поиск и установка id страницы, который соответствует url, в state
+  useEffect(() => {
+    if (pageIdFound) {
+      return;
+    }
+    const flatMenuItems = (items: IMenuItem[]): IMenuItem[] =>
+      items.map(item =>
+        item.type === 'item'
+          ? item
+          : flatMenuItems(item.children || [])).flatMap(el => el);
+
+    const flattedMenuItems = flatMenuItems(menuItems.items);
+    const path = (pathName.filter((pathItem, index) => index !== 0 && pathItem)).join('/');
+    const page = (flattedMenuItems.find(item => item.url === path));
+    if (page) {
+      if (page.checkAction) {
+        if (actionCode < 1) {
+          setActionCode(page.checkAction);
+        }
+        if (!permissions) {
+          return;
+        }
+        if (permissions?.MODE === 1) {
+          dispatch(setActiveMenu(page.id));
+        } else {
+          window.location.href = window.location.origin + '/employee/dashboard/overview';
+        }
+      } else {
+        dispatch(setActiveMenu(page.id));
+      }
+    } else {
+      dispatch(setActiveMenu('dashboard'));
+    }
+
+    dispatch(setPageIdFound(true));
+  }, [appSettings, permissions]);
 
   useEffect(() => {
     (async function () {
@@ -66,9 +140,18 @@ function App() {
               }
             });
           break;
+        case 'OTHER_LOADINGS':
+          if (!themeType || !pageIdFound) {
+            return;
+          }
+          if (forWait) {
+            return;
+          }
+          dispatch(renderApp());
+          break;
       }
     })();
-  }, [loginStage]);
+  }, [loginStage, themeType, pageIdFound, forWait]);
 
   useEffect(() => {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
@@ -77,7 +160,7 @@ function App() {
   const result =
     <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
       {
-        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' ?
+        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' || loginStage === 'OTHER_LOADINGS' ?
           <Stack spacing={2}>
             <CircularIndeterminate open={true} size={100} />
             <Typography variant="overline" color="gray" align="center">
@@ -116,5 +199,3 @@ function App() {
 
   return result;
 };
-
-export default App;

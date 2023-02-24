@@ -12,9 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { DesktopDatePicker, LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import ruLocale from 'date-fns/locale/ru';
+import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers-pro';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 

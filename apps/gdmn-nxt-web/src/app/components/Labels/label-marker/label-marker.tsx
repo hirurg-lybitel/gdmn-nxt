@@ -34,7 +34,7 @@ function RGBToHSL(r: number, g: number, b: number) {
   // Find greatest and smallest channel values
   const cmin = Math.min(r, g, b),
     cmax = Math.max(r, g, b),
-    delta = cmax - cmin
+    delta = cmax - cmin;
   let h = 0,
     s = 0,
     l = 0;
@@ -69,11 +69,11 @@ export function LabelMarker(props: LabelMarkerProps) {
 
   return (
     <div
-      className={styles['label']}
+      className={styles.label}
       style={{
         color: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`,
         backgroundColor: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${backgroundAlpha})`,
-        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`,
+        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word'
         // width: 'min-content'
       }}
     >

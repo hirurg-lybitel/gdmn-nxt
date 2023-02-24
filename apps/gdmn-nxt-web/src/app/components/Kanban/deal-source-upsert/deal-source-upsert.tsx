@@ -88,7 +88,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={deleting ? 'Удаление причины отказа' : 'Сохранение'}
+      title={deleting ? 'Удаление источника заявок' : 'Сохранение'}
       text="Вы уверены, что хотите продолжить?"
       dangerous={deleting}
       confirmClick={handleConfirmOkClick(deleting)}
@@ -103,7 +103,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
       width={500}
     >
       <DialogTitle>
-        {dealSource ? `Редактирование: ${dealSource.NAME}` : 'Добавление причины отказа'}
+        {dealSource ? `Редактирование: ${dealSource.NAME}` : 'Добавление источника заявок'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>

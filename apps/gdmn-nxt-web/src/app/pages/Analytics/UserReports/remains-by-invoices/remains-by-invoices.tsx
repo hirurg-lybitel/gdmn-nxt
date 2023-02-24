@@ -1,5 +1,5 @@
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, TextField, Typography } from '@mui/material';
-import { DesktopDatePicker } from '@mui/x-date-pickers';
+import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './remains-by-invoices.module.less';
 import { useState } from 'react';
@@ -46,12 +46,12 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
         <CardHeader title={<Typography variant="h3">Остатки по расчётным счетам</Typography>} />
         <Divider />
         <CardContent>
-            <DesktopDatePicker
-              label="На дату"
-              value={onDate}
-              onChange={handleChange}
-              renderInput={(params) => <TextField {...params} />}
-            />
+          <DesktopDatePicker
+            label="На дату"
+            value={onDate}
+            onChange={handleChange}
+            renderInput={(params) => <TextField {...params} />}
+          />
         </CardContent>
         <Divider />
         <CardActions style={{ padding: '16px' }}>

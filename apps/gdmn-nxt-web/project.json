@@ -1,0 +1,93 @@
+{
+  "name": "gdmn-nxt-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/gdmn-nxt-web/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/gdmn-nxt-web",
+        "index": "apps/gdmn-nxt-web/src/index.html",
+        "baseHref": "/",
+        "main": "apps/gdmn-nxt-web/src/main.tsx",
+        "polyfills": "apps/gdmn-nxt-web/src/polyfills.ts",
+        "tsConfig": "apps/gdmn-nxt-web/tsconfig.app.json",
+        "assets": [
+          "apps/gdmn-nxt-web/src/favicon.ico",
+          "apps/gdmn-nxt-web/src/assets"
+        ],
+        "styles": ["apps/gdmn-nxt-web/src/styles.less"],
+        "scripts": [],
+        "webpackConfig": "@nrwl/react/plugins/webpack"
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/gdmn-nxt-web/src/environments/environment.ts",
+              "with": "apps/gdmn-nxt-web/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "extractCss": true,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false,
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            }
+          ]
+        },
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nrwl/webpack:dev-server",
+      "options": {
+        "buildTarget": "gdmn-nxt-web:build",
+        "hmr": true,
+        "proxyConfig": "apps/gdmn-nxt-web/proxy.conf.json",
+        "port": 4201
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "gdmn-nxt-web:build:production",
+          "hmr": false
+        },
+        "development": {
+          "buildTarget": "gdmn-nxt-web:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/gdmn-nxt-web/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/gdmn-nxt-web"],
+      "options": {
+        "jestConfig": "apps/gdmn-nxt-web/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

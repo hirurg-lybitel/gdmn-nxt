@@ -8,16 +8,16 @@ import { CircularIndeterminate } from '../../../components/helpers/circular-inde
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import { Box } from '@mui/system';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { usePermissions } from '../../../features/common/usePermissions';
 
 export interface IChanges {
   id: number;
@@ -158,10 +158,13 @@ export function Deals(props: DealsProps) {
       }
       setOpenFilters(false);
     },
-    filterClear: async () => {
+    filterClear: () => {
       dispatch(clearFilterData());
 
       setFilteringData({});
+    },
+    lastFilter: () => {
+      setFilteringData(filtersStorage.lastFilterData.deals);
     },
     filteringDataChange: async(newValue: IFilteringData) => {
       setFilteringData(newValue);
@@ -175,9 +178,16 @@ export function Deals(props: DealsProps) {
       onClose={filterHandlers.filterClose}
       onFilteringDataChange={filterHandlers.filteringDataChange}
       onFilterClear={filterHandlers.filterClear}
+      onLastFilter={filterHandlers.lastFilter}
     />,
   [openFilters, filteringData]);
 
+  const [isFetching1] = usePermissions(1);
+  const [isFetching2] = usePermissions(2);
+  const [isFetching3] = usePermissions(3);
+  const [isFetching4] = usePermissions(4);
+
+  const componentIsFetching = isLoading || isFetching1 || isFetching2 || isFetching3 || isFetching4;
   const Header = useMemo(() => {
     return (
       <>
@@ -254,17 +264,9 @@ export function Deals(props: DealsProps) {
   }
   , [kanbanFilter.deadline, tabNo, filteringData, columnsIsFetching]);
 
-  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} />, [columns]);
+  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} />, [columns]);
-
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <CircularIndeterminate open={isLoading} size={100} />
-      </div>
-    );
-  }
+  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
   return (
     <Stack
@@ -273,7 +275,14 @@ export function Deals(props: DealsProps) {
         width: '100%'
       }}
     >
-      {Header}
+      {componentIsFetching
+        ?
+        <div>
+          <Skeleton variant="rectangular" height={'70px'} style={{ borderRadius: '12px 12px 0 0' }}/>
+          <Skeleton variant="rectangular" height={'40px'} width={'235px'} style={{ borderRadius: '0 0 12px 12px' }}/>
+        </div>
+        : Header
+      }
       {DealsFilterMemo}
       <div className={styles.dataContainer}>
         {(() => {

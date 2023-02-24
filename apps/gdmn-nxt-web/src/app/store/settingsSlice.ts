@@ -2,12 +2,12 @@ import { ColorMode } from '@gsbelarus/util-api-types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ICustomization {
-  mode: ColorMode,
+  mode: ColorMode | undefined,
 }
 
 const initCustomization: ICustomization = {
-  mode: ColorMode.Light
-}
+  mode: undefined
+};
 
 interface ISettingsState {
   menuOpened: boolean;

@@ -2,10 +2,12 @@ import { Typography } from '@mui/material';
 import menuItems from '../../../../menu-items';
 import MenuGroup from '../menu-group/menu-group';
 import './menu-list.module.less';
+import { IPermissionByUser } from '@gsbelarus/util-api-types';
 
 
 /* eslint-disable-next-line */
-export interface MenuListProps {}
+export interface MenuListProps {
+}
 
 export function MenuList(props: MenuListProps) {
   const navItems = menuItems.items.map((item) => {

@@ -14,6 +14,7 @@ import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
 import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
 import { config } from '@gdmn-nxt/config';
+import { IPermissionByUser } from '@gsbelarus/util-api-types';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -125,7 +126,10 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
     )}
   </Menu>;
 
-export const MainLayout = () => {
+interface MainLayoutProps{
+}
+
+export const MainLayout = (props:MainLayoutProps) => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -139,9 +143,6 @@ export const MainLayout = () => {
 
   // const location = useLocation();
   useEffect(() => {
-    const menuID = activeMenuId === '' ? 'dashboard' : activeMenuId;
-    dispatch(setActiveMenu(menuID));
-
     setSocketClient({
       url: `http://${config.host}:${config.notificationPort}`,
       userId: user.userProfile?.id || -1

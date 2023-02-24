@@ -238,3 +238,19 @@ export interface IBusinessProcess extends IWithID {
 export interface IDealSource extends IWithID {
   NAME: string;
 }
+
+export enum Action {
+  CreateDeal = 1,
+  EditDeal = 3,
+  DeleteDeal = 4,
+  CopyDeal = 2,
+  ShowAllDeals = 9,
+  CreateLabel = 5,
+  EditLabel = 6,
+  DeleteLabel = 7,
+  PermissionsSettings = 8,
+  NotificationCenter = 10,
+  CreateFAQ = 11,
+  EditFAQ = 12,
+  DeleteFAQ = 13
+}

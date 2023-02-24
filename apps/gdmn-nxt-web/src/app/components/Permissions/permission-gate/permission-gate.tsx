@@ -20,17 +20,21 @@ export interface PermissionsGateProps {
   children: ReactNode;
   actionCode: number;
   scopes?: any[],
-  disableDefault?: boolean;
+  disableDefault?: boolean,
+  show?: boolean
 }
 
 export function PermissionsGate(props: PermissionsGateProps) {
-  const { children, scopes, actionCode = -1, disableDefault = true } = props;
+  const { children, scopes, actionCode = -1, disableDefault = true, show = false } = props;
   // const { role } = useGetRole();
   const role = '1';
 
   const user = useSelector<RootState, UserState>(state => state.user);
 
-  const { data, isFetching } = useGetPermissionByUserQuery({ actionCode, userID: user.userProfile?.id || -1 });
+  const { data, isFetching } = useGetPermissionByUserQuery(
+    { actionCode, userID: user.userProfile?.id || -1 },
+    { skip: !user.userProfile?.id }
+  );
 
   // console.log('data', isFetching, actionCode, user.userProfile?.id || -1, data);
   // const permissions = PERMISSIONS[role];
@@ -50,6 +54,9 @@ export function PermissionsGate(props: PermissionsGateProps) {
   })();
 
   if (!permissionGranted) {
+    if (!show) {
+      return (<></>);
+    }
     return (
       <Tooltip title={<Typography variant="body1">У вас нет прав на это</Typography>} >
         <div style={{ position: 'relative' }}>

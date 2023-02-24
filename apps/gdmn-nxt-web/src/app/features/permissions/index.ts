@@ -20,6 +20,10 @@ type IUsersRequestResult = IRequestResult<{ users: IUser[]}>;
 
 type IPermissionByUserRequestResult = IRequestResult<{ action: IPermissionByUser}>;
 
+const SetActions = (num:number) => {
+  const { data } = useGetActionsQuery();
+};
+
 export const permissionsApi = createApi({
   reducerPath: 'permissions',
   tagTypes: ['Matrix', 'Actions', 'UserGroups', 'Users', 'ActionByUser'],

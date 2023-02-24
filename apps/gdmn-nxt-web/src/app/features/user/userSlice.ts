@@ -9,17 +9,19 @@ export const logoutUser = createAsyncThunk(
 );
 
 export type LoginStage =
-  'LAUNCHING'                   // the application is launching
-  | 'QUERY_LOGIN'               // we are in the process of querying server for saved session
-  | 'SELECT_MODE'               // choose between belgiss employee and customer mode
-  | 'CUSTOMER'                  //
-  | 'EMPLOYEE'                  //
-  | 'SIGN_IN_EMPLOYEE'          // show sign-in or sign-up screen for an employee
-  | 'SIGN_IN_CUSTOMER'          // show sign-in or sign-up screen for a customer
+  'LAUNCHING'                  // the application is launching
+  | 'QUERY_LOGIN'              // we are in the process of querying server for saved session
+  | 'SELECT_MODE'              // choose between belgiss employee and customer mode
+  | 'OTHER_LOADINGS'           // processes after getting the user id, but before rendering the app
+  | 'CUSTOMER'                 //
+  | 'EMPLOYEE'                 //
+  | 'SIGN_IN_EMPLOYEE'         // show sign-in or sign-up screen for an employee
+  | 'SIGN_IN_CUSTOMER'         // show sign-in or sign-up screen for a customer
   | 'CREATE_CUSTOMER_ACCOUNT';
 
 export interface UserState {
   loginStage: LoginStage;
+  userType?:'CUSTOMER' | 'EMPLOYEE'
   userProfile?: IUserProfile;
   gedeminUser?: boolean;
 };
@@ -37,12 +39,19 @@ export const userSlice = createSlice({
     signInEmployee: () => ({ loginStage: 'SIGN_IN_EMPLOYEE' } as UserState),
     signInCustomer: () => ({ loginStage: 'SIGN_IN_CUSTOMER' } as UserState),
     createCustomerAccount: () => ({ loginStage: 'CREATE_CUSTOMER_ACCOUNT' } as UserState),
-    signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
-    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CUSTOMER', userProfile: action.payload } as UserState)
+    signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({
+      loginStage: 'OTHER_LOADINGS', userType: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true
+    } as UserState),
+    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({
+      loginStage: 'OTHER_LOADINGS', userType: 'CUSTOMER', userProfile: action.payload
+    } as UserState),
+    renderApp: (state) => {
+      state.loginStage = state.userType || 'CUSTOMER';
+    }
   },
   extraReducers: (builder) => {
-    builder.addCase(logoutUser.fulfilled, () => ({ loginStage: 'SELECT_MODE'}) )
-  },  
+    builder.addCase(logoutUser.fulfilled, () => ({ loginStage: 'SELECT_MODE' }));
+  },
 });
 
 // Action creators are generated for each case reducer function
@@ -54,6 +63,7 @@ export const {
   signedInEmployee,
   signedInCustomer,
   createCustomerAccount,
+  renderApp
 } = userSlice.actions;
 
 export default userSlice.reducer;

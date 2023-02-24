@@ -88,7 +88,7 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={deleting ? 'Удаление источника' : 'Сохранение'}
+      title={deleting ? 'Удаление причины отказа' : 'Сохранение'}
       text="Вы уверены, что хотите продолжить?"
       dangerous={deleting}
       confirmClick={handleConfirmOkClick(deleting)}
@@ -103,7 +103,7 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
       width={500}
     >
       <DialogTitle>
-        {denyReason ? `Редактирование: ${denyReason.NAME}` : 'Добавление источника'}
+        {denyReason ? `Редактирование: ${denyReason.NAME}` : 'Добавление причины отказа'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>

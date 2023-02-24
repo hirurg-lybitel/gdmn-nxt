@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
-import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+// import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from '@hello-pangea/dnd';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import {
   useAddCardMutation,
   useAddColumnMutation,
@@ -24,6 +25,8 @@ import { setError } from '../../../features/error-slice/error-slice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
+import { useMemo } from 'react';
+import { usePermissions } from '../../../features/common/usePermissions';
 
 // export interface IChanges {
 //   id: number;
@@ -33,10 +36,11 @@ import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 // };
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
+  isLoading: boolean,
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {
-  const { columns = [] } = props;
+  const { columns = [], isLoading } = props;
 
   const user = useSelector<RootState, UserState>(state => state.user);
   const [updateColumn] = useUpdateColumnMutation();
@@ -68,7 +72,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
   // }, [inColumns]);
 
   useEffect(()=>{
-    if ((updateCardSuccess) && changes.current.length > 0) {
+    if ((updateCardSuccess) && changes.current?.length > 0) {
       changes.current.forEach(item =>
         addHistory({
           ID: -1,
@@ -172,7 +176,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
     handleAdd: async () => {
       const newColumn: IKanbanColumn = {
         ID: -1,
-        USR$INDEX: columns.length + 1,
+        USR$INDEX: columns?.length + 1,
         USR$NAME: 'Новая группа',
         CARDS: []
       };
@@ -185,8 +189,8 @@ export function KanbanBoard(props: KanbanBoardProps) {
       updateCard(newCard);
 
       let oldCard: IKanbanCard = newCard;
-      columns.every(column => {
-        const value = column.CARDS.find(card => card.ID === newCard.ID);
+      columns?.every(column => {
+        const value = column?.CARDS.find(card => card.ID === newCard.ID);
 
         if (value) {
           oldCard = value;
@@ -230,7 +234,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
       return;
     };
 
-    let newColumns: IKanbanColumn[] = columns;
+    let newColumns: IKanbanColumn[] = columns || [] as IKanbanColumn[];
 
     if (result.type === 'board') {
       newColumns = reorder(
@@ -334,12 +338,26 @@ export function KanbanBoard(props: KanbanBoardProps) {
   //   );
   // }
 
+  const skeletonItems = useMemo(() =>(count:number):IKanbanColumn[] => {
+    const skeletonFaqItems:IKanbanColumn[] = [];
+    const skeletonFaqItem = {} as IKanbanColumn;
+    for (let i = 0; i < count; i++) {
+      skeletonFaqItems.push(
+        { ...skeletonFaqItem, ID: -i - 1 }
+      );
+    }
+
+    return skeletonFaqItems;
+  }, []);
+
+  const skeletonCount:IKanbanColumn[] = skeletonItems(5);
 
   return (
     <PerfectScrollbar
       style={{
         display: 'flex',
-        paddingBottom: '10px'
+        paddingBottom: '10px',
+        pointerEvents: isLoading ? 'none' : 'auto'
       }}
     >
       <Box display="flex" flex={1}>
@@ -355,7 +373,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                 overflow="auto"
                 flex={1}
               >
-                {columns.map((column: IKanbanColumn, index) => (
+                {(isLoading ? skeletonCount : columns).map((column: IKanbanColumn, index) => (
                   <Draggable key={column.ID} draggableId={column.ID.toString()} index={index}>
                     {(provided, snapshot) => {
                       const dragProvided: DraggableProvided = provided;
@@ -381,17 +399,18 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   provided={dragProvided}
                                   dragSnapshot={dragSnapshot}
                                   dropSnapshot={snapshot}
-                                  key={column.ID}
-                                  item={column}
-                                  columns={columns}
+                                  key={column.ID || 1}
+                                  item={column || {} as IKanbanColumn}
+                                  columns={columns || [] as IKanbanColumn[]}
                                   onEdit={columnHandlers.handleTitleEdit}
                                   onDelete={columnHandlers.handleTitleDelete}
                                   onAddCard={cardHandlers.handleAddCard}
+                                  isFetching={isLoading}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
                                       return (
-                                        <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column.ID * 10).toString()} index={index}>
+                                        <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column?.ID * 10)?.toString()} index={index}>
                                           {(provided, snapshot) => (
                                             <Box
                                               ref={provided.innerRef}
@@ -406,7 +425,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onAdd={cardHandlers.handleAddCard}
                                                 onEdit={cardHandlers.handleEditCard}
                                                 onDelete={cardHandlers.handleDeleteCard}
-
                                               />
                                             </Box>
                                           )}

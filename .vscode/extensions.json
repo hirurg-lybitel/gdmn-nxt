@@ -3,6 +3,14 @@
     "nrwl.angular-console",
     "esbenp.prettier-vscode",
     "firsttris.vscode-jest-runner",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "ms-vscode-remote.remote-containers",
+    "ms-azuretools.vscode-docker",
+    "editorconfig.editorconfig",
+    "ritwickdey.liveserver",
+    "ms-vsliveshare.vsliveshare",
+    "pkief.material-icon-theme",
+    "sonarsource.sonarlint-vscode",
+    "github.vscode-pull-request-github"
   ]
 }

@@ -3,7 +3,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress } from '@mui/material';
+import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress, Skeleton } from '@mui/material';
 import style from './faq.module.less';
 import * as React from 'react';
 import { useState, useCallback, useMemo } from 'react';
@@ -14,10 +14,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
 import { useTheme, Theme } from '@mui/material/styles';
-import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
+import { usePermissions } from '../../features/common/usePermissions';
+import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
+import { Action } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -25,9 +27,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     '& .MuiSvgIcon-root': {
       color: theme.palette.primary.main
     }
-  }
+  },
 }));
-
 
 export default function FAQ() {
   const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
@@ -38,7 +39,10 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
-  const classes = useStyles();
+  const [isFetching11] = usePermissions(11);
+  const [isFetching12] = usePermissions(12);
+  const [isFetching13] = usePermissions(13);
+  const componentIsFetching = isFetching || isFetching11 || isFetching12 || isFetching13;
 
   const addFaqHandler = (question:string, answer:string) => {
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
@@ -103,57 +107,82 @@ export default function FAQ() {
 
   const theme = useTheme();
 
-  if (isFetching) {
-    return (
-      <div className={style.preloadevBody}>
-        <CircularProgress size={100} />
-      </div>
-    );
-  }
+  // if (componentIsFetching) {
+  //   return (
+  //     <div className={style.preloadevBody}>
+  //       <CircularProgress size={100} />
+  //     </div>
+  //   );
+  // }
+
+  const skeletonItems = useMemo(() =>(count:number):fullFaq[] => {
+    const skeletonFaqItems:fullFaq[] = [];
+    const skeletonFaqItem = {} as fullFaq;
+    for (let i = 0; i < count; i++) {
+      skeletonFaqItems.push(
+        { ...skeletonFaqItem, ID: i }
+      );
+    }
+
+    return skeletonFaqItems;
+  }, []);
+
+  const skeletonFaqsCount:fullFaq[] = skeletonItems(10);
+
+
+  const classes = useStyles();
 
   return (
     <>
-      {memoConfirmDialog}
-      <Popup
-        close={handleCloseEditPopup}
-        isOpened={isOpenedEditPopup}
-        isAddPopup={false}
-        faq={faq}
-        editFaq={editFaqHandler}
-      />
-      <Popup
-        close={handleCloseAddPopup}
-        isOpened={isOpenedAddPopup}
-        isAddPopup={true}
-        addFaq={addFaqHandler}
-      />
+      {!componentIsFetching &&
+        <>
+          {memoConfirmDialog}
+          <Popup
+            close={handleCloseEditPopup}
+            isOpened={isOpenedEditPopup}
+            isAddPopup={false}
+            faq={faq}
+            editFaq={editFaqHandler}
+          />
+          <Popup
+            close={handleCloseAddPopup}
+            isOpened={isOpenedAddPopup}
+            isAddPopup={true}
+            addFaq={addFaqHandler}
+          />
+        </>
+      }
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
           <CardHeader
-            title={
+            title={componentIsFetching ?
+              <Skeleton variant="rectangular" height={'36px'}/>
+              :
               <div className={style.title}>
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                {/* <PermissionsGate actionCode={11}>
+                <PermissionsGate actionCode={Action.CreateFAQ}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate> */}
+                </PermissionsGate>
               </div>
             }
           />
           <Divider />
           <CardContent className={style.scrollBarContainer}>
-            {isLoading
-              ? <div className={style.preloadevBody}>
-                <CircularProgress size={100} />
-              </div>
-              : <PerfectScrollbar className={style.scrollBar}>
-                <Grid item xs={12}>
-                  {
-                    faqs?.map(item =>
-                      <div key={item.ID}>
-                        {faqs?.indexOf(item) !== 0 && <Divider/>}
-                        <div className={style.faqList}>
+            <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
+              <Grid item xs={12}>
+                {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
+
+                  <div key={item.ID}>
+                    {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
+                    <div className={style.faqList}>
+                      {componentIsFetching ?
+                        <div style={{ margin: '20px', width: '100%' }}>
+                          <Skeleton variant="text" width={'100%'} height={'40px'} />
+                        </div>
+                        :
+                        <>
                           <Accordion
                             expanded={expanded === `panel${item.ID}`}
                             onChange={handleChange(`panel${item.ID}`)}
@@ -169,7 +198,7 @@ export default function FAQ() {
                                 </ReactMarkdown>
                               </Typography>
                             </AccordionSummary>
-                            <AccordionDetails className={style['details']}>
+                            <AccordionDetails className={style.details}>
                               <Typography variant="body1" component="div">
                                 <ReactMarkdown >
                                   {item.USR$ANSWER}
@@ -177,33 +206,38 @@ export default function FAQ() {
                               </Typography>
                             </AccordionDetails>
                           </Accordion>
-                          {/* <PermissionsGate actionCode={12}>
+                        </>
+                      }
+                      {!componentIsFetching &&
+                        <>
+                          <PermissionsGate actionCode={Action.EditFAQ}>
                             <IconButton
                               color="primary"
-                              disabled={editFaqObj.isLoading || isFetching}
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                               style={{ marginTop: '20px' }}
                               onClick={handleOpenEditPopup(item)}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </PermissionsGate>
-                          <PermissionsGate actionCode={13}>
+                          <PermissionsGate actionCode={Action.DeleteFAQ}>
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}
-                              disabled={deleteFaqObj.isLoading || isFetching}
+                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                               onClick={handleDeleteClick(item)}
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate> */}
-                        </div>
-                      </div>
-                    )
-                  }
-                </Grid>
-              </PerfectScrollbar>
-            }
+                          </PermissionsGate>
+                        </>
+                      }
+                    </div>
+                  </div>
+                )
+                }
+              </Grid>
+            </PerfectScrollbar>
           </CardContent>
         </CustomizedCard>
 

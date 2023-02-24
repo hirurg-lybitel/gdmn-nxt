@@ -31,7 +31,7 @@ import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { ICustomer } from '@gsbelarus/util-api-types';
@@ -39,7 +39,7 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers';
+import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers-pro';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
@@ -47,7 +47,6 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import filterOptions from '../../helpers/filter-options';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 // import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
 import AlarmIcon from '@mui/icons-material/Alarm';
 import SnoozeIcon from '@mui/icons-material/Snooze';
@@ -59,6 +58,8 @@ import styles from './kanban-edit-card.module.less';
 import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import { DenyReasonsSelect } from './components/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '@gsbelarus/util-api-types';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -715,9 +716,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        <PermissionsGate actionCode={4}>
-          {
-            (card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
+        <PermissionsGate actionCode={Action.DeleteDeal}>
+          {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
             <IconButton onClick={handleDeleteClick} size="small" hidden>
               <DeleteIcon />
             </IconButton>
@@ -728,7 +728,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           className={classes.button}
           onClick={handleCancelClick}
         >Отменить</Button>
-        <PermissionsGate actionCode={formik.values.ID > 0 ? 3 : 1}>
+        <PermissionsGate actionCode={formik.values.ID > 0 ? Action.EditDeal : Action.CreateDeal} show={true}>
           <Button
             className={classes.button}
             form="mainForm"

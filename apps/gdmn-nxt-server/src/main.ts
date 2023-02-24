@@ -29,6 +29,9 @@ import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
 import { Notifications } from './app/routes/notifications';
 import faqRouter from './app/routes/faqRouter';
+import cookieParser from 'cookie-parser';
+import RateLimit from 'express-rate-limit';
+
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -62,6 +65,7 @@ const port = (() => {
 
 app.use(cors({
   credentials: true,
+  secure: 'httpOnly',
   origin: `http://${host}:${process.env.NODE_ENV === 'development' ? '4201' : '80'}` // 'http://localhost:80'
 }));
 
@@ -70,11 +74,16 @@ const path = require('path');
 app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
-
 const apiRoot = {
   v1: '/api/v1',
   v2: '/api/v2'
 };
+
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 100
+});
+app.use(limiter);
 
 interface IBaseUser {
   userName: string;
@@ -188,6 +197,7 @@ const middlewares = [
       maxAge: 24 * 60 * 60 * 1000
     }
   }),
+  cookieParser(),
   passport.initialize(),
   passport.session()
 ];
@@ -203,10 +213,12 @@ app.get('/test', (req, res) => {
 });
 
 app.get('/user', (req, res) => {
-  req.isAuthenticated() ?
-    res.json(req.user)
-    :
+  if (req.isAuthenticated()) {
+    res.cookie('userId', req.user?.['id']);
+    res.json(req.user);
+  } else {
     res.json({ success: false });
+  }
 });
 
 app.route('/user/signin')
@@ -246,20 +258,15 @@ app.get('/logout', (req, res) => {
 
 const router = express.Router();
 
-/*
 router.use(
   (req, res, next) => {
-    console.log('123');
-    if (req.isAuthenticated()) {
-      console.log('123-OK');
-      return next();
-    } else {
-      console.log('123-BAD');
-      return res.sendStatus(403);
+    if (!req.isAuthenticated()) {
+      return res.send('Not authenticated!');
     }
+    next();
   }
 );
-*/
+
 
 router.get('/test', (req, res) => {
   if (req.isAuthenticated()) {

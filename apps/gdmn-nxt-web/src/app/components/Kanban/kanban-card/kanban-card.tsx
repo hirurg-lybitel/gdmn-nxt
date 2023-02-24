@@ -3,13 +3,14 @@ import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
-import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
+import { DraggableStateSnapshot } from '@hello-pangea/dnd';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, IPermissionByUser } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '@gsbelarus/util-api-types';
 
 
 /* eslint-disable-next-line */
@@ -216,7 +217,7 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <PermissionsGate actionCode={2}>
+            <PermissionsGate actionCode={Action.CopyDeal}>
               {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
                 ?
                 <div
@@ -227,7 +228,8 @@ export function KanbanCard(props: KanbanCardProps) {
                     <ContentCopyIcon fontSize="small" />
                   </IconButton>
                 </div>
-                : null}
+                : null
+              }
             </PermissionsGate>
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>

@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '../../../store';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
+import CustomLoadingOverlay from '../../Styled/styled-grid/DataGridProOverlay/CustomLoadingOverlay';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {
@@ -331,7 +332,8 @@ export function KanbanTasks(props: KanbanTasksProps) {
           rowsPerPageOptions={[20]}
           pageSize={20}
           components={{
-            NoRowsOverlay: CustomNoRowsOverlay
+            NoRowsOverlay: CustomNoRowsOverlay,
+            LoadingOverlay: CustomLoadingOverlay,
           }}
           onRowDoubleClick={handleTaskEdit}
           hideFooter

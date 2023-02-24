@@ -2,7 +2,6 @@ import { ColorMode } from '@gsbelarus/util-api-types';
 import { colors } from '@mui/material';
 import * as locales from '@mui/material/locale';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
-import { breakpoints } from '@mui/system';
 import { ICustomization } from '../store/settingsSlice';
 import componentStyleOverrides from './componentStyleOverrides';
 import { styledTheme } from './styles';

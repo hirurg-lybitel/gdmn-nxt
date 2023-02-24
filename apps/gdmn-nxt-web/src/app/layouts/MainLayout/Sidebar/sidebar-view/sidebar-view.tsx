@@ -5,6 +5,7 @@ import MenuList from '../menu-list/menu-list';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { makeStyles } from '@mui/styles';
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import { IPermissionByUser } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface SidebarProps {

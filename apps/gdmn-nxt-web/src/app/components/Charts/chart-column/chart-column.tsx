@@ -2,12 +2,11 @@ import './chart-column.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Autocomplete, Checkbox, createFilterOptions, Grid, MenuItem, Stack, TextField, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Checkbox, createFilterOptions, Grid, MenuItem, Stack, TextField, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { IChartFilter, useGetSumByPeriodQuery } from '../../../features/charts/chartDataApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
-import { Box } from '@mui/system';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import ChartSkeleton from '../chart-skeleton/chart-skeleton';
@@ -277,7 +276,7 @@ export function ChartColumn(props: ChartColumnProps) {
         [theme.breakpoints.up('xl')]: {
           minHeight: 'calc(100vh - 300px)',
         },
-        maxHeight: 'calc(100vh - 130px)'
+        maxHeight: 'calc(100vh - 130px)',
       })}
     >
       <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
@@ -285,31 +284,33 @@ export function ChartColumn(props: ChartColumnProps) {
           ? <ChartSkeleton />
           : <>
             <Stack direction="row" spacing={1}>
-              <Typography
-                variant="h1"
-                onClick={() => {
-                  analyticsDataRefetch();
-                  departmentsRefetch();
-                }}
-              >
+              <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography
+                  variant="h1"
+                  onClick={() => {
+                    analyticsDataRefetch();
+                    departmentsRefetch();
+                  }}
+                >
                 Продажи за период
-              </Typography>
-              <Box flex={1} />
+                </Typography>
 
-              <TextField
-                style={{
-                  width: '100px'
-                }}
-                select
-                value={periodType?.value}
-                onChange={(e) => setPeriodType(periods.find(el => el.value === e.target.value))}
-              >
-                {periods.map((option: IPeriodType) => (
-                  <MenuItem key={option.id} value={option.value}>
-                    {option.value}
-                  </MenuItem>
-                ))}
-              </TextField>
+                <TextField
+                  style={{
+                    width: '100px'
+                  }}
+                  select
+                  value={periodType?.value}
+                  onChange={(e) => setPeriodType(periods.find(el => el.value === e.target.value))}
+                >
+                  {periods.map((option: IPeriodType) => (
+                    <MenuItem key={option.id} value={option.value}>
+                      {option.value}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </div>
+
             </Stack>
             <Grid
               container

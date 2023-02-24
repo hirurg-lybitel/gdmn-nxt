@@ -1,4 +1,4 @@
-import { ILabel } from '@gsbelarus/util-api-types';
+import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { Box, Divider, Grid, IconButton } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -10,6 +10,9 @@ import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { Action } from '@gsbelarus/util-api-types';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 export interface LabelListItemProps {
   data: ILabel;
@@ -55,9 +58,8 @@ export function LabelListItem(props: LabelListItemProps) {
   const [openEditForm, setOpenEditForm] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const [deleteLabel] = useDeleteLabelMutation();
-  const [addLabel] = useAddLabelMutation();
-  const [updateLabel] = useUpdateLabelMutation();
+  const [deleteLabel, { isLoading: deleteIsLoading }] = useDeleteLabelMutation();
+  const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
 
   const classes = useStyles();
 
@@ -77,8 +79,6 @@ export function LabelListItem(props: LabelListItemProps) {
       updateLabel(label);
       return;
     };
-
-    addLabel(label);
   };
 
   const handleCancelClick = useCallback(() => {
@@ -156,7 +156,7 @@ export function LabelListItem(props: LabelListItemProps) {
   const borderAlpha = 0.3;
 
   return (
-    <Box className={styles['Box-row']}>
+    <Box style={{ padding: '20px 0px' }}>
       <Grid container alignItems="center">
         <Grid item xs={4} paddingLeft={2} paddingRight={2}>
           <LabelMarker label={data} />
@@ -165,15 +165,23 @@ export function LabelListItem(props: LabelListItemProps) {
           {data.USR$DESCRIPTION}
         </Grid>
         <Grid item xs={2} md={1}>
-          <Box display={'inline-flex'} width="100%" justifyContent={'center'}>
-            <PermissionsGate actionCode={6}>
-              <IconButton onClick={handleEditClick}>
-                <EditOutlinedIcon fontSize="small" color="primary" />
+          <Box display={'inline-flex'} width="100%" justifyContent={'center'} style={{ marginRight: 0 }}>
+            <PermissionsGate actionCode={Action.EditLabel}>
+              <IconButton
+                disabled={editIsLoading || deleteIsLoading}
+                color="primary"
+                onClick={handleEditClick}
+              >
+                <EditIcon fontSize="small" />
               </IconButton>
             </PermissionsGate>
-            <PermissionsGate actionCode={7}>
-              <IconButton onClick={handleDeleteClick}>
-                <DeleteForeverIcon fontSize="small" color="primary" />
+            <PermissionsGate actionCode={Action.DeleteLabel}>
+              <IconButton
+                disabled={editIsLoading || deleteIsLoading}
+                color="primary"
+                onClick={handleDeleteClick}
+              >
+                <DeleteIcon />
               </IconButton>
             </PermissionsGate>
           </Box>

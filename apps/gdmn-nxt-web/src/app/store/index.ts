@@ -35,6 +35,7 @@ import { profileSettingsApi } from '../features/profileSettings';
 import { kanbanCatalogsApi } from '../features/kanban/kanbanCatalogsApi';
 
 export const store = configureStore({
+  devTools: process.env.NODE_ENV === 'development',
   reducer: {
     viewForms: viewFormsReducer,
     settings: settingsReducer,
