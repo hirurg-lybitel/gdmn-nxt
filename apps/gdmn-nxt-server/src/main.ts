@@ -81,7 +81,7 @@ const apiRoot = {
 
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 5
+  max: 100
 });
 app.use(limiter);
 
