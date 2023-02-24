@@ -30,6 +30,8 @@ import profileSettingsRouter from './app/routes/profileSettings';
 import { Notifications } from './app/routes/notifications';
 import faqRouter from './app/routes/faqRouter';
 import cookieParser from 'cookie-parser';
+import RateLimit from 'express-rate-limit';
+
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -76,6 +78,12 @@ const apiRoot = {
   v1: '/api/v1',
   v2: '/api/v2'
 };
+
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 5
+});
+app.use(limiter);
 
 interface IBaseUser {
   userName: string;
@@ -206,7 +214,6 @@ app.get('/test', (req, res) => {
 
 app.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
-    // eslint-disable-next-line dot-notation
     res.cookie('userId', req.user?.['id']);
     res.json(req.user);
   } else {
