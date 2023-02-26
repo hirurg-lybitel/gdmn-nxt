@@ -260,7 +260,7 @@ const Main = () => {
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       ) : (
-                        <App />
+                        <App forWait={isFetchingNotification || isFetchingPermissions} />
                       )}
                     </>
                   }
