@@ -37,6 +37,8 @@ export function KanbanList(props: KanbanListProps) {
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
   const [addHistory] = useAddHistoryMutation();
+  const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
+  const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
   const user = useSelector<RootState, UserState>(state => state.user);
 
   useEffect(()=>{
@@ -70,10 +72,27 @@ export function KanbanList(props: KanbanListProps) {
           USR$USERKEY: user.userProfile?.id || -1
         })
       );
-
+      if (lastCardShouldClear) {
+        setLastCardShouldClear(false);
+      } else {
+        setLastAddedCard(addedCard[0]);
+      }
       changes.current = [];
     };
   }, [addCardSuccess, addedCard]);
+
+  const lastCard = useMemo(()=>{
+    if (!lastAddedCard) return undefined;
+    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === lastAddedCard?.ID);
+    return cards;
+  }, [columns, lastAddedCard]);
+
+  const clearLastCard = (isAdd?:boolean) => {
+    if (isAdd) {
+      setLastCardShouldClear(true);
+    }
+    setLastAddedCard(undefined);
+  };
 
   const onEditCard = async (newCard: IKanbanCard) => {
     updateCard(newCard);
@@ -104,13 +123,12 @@ export function KanbanList(props: KanbanListProps) {
       oldValue: '',
       newValue: (newCard as any).DEAL.USR$NAME || ''
     });
-
     insertCard(newCard);
   };
 
   const cardHandlers = {
 
-    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
       if (deleting) {
         onDelete(card);
       } else {
@@ -118,14 +136,22 @@ export function KanbanList(props: KanbanListProps) {
           onEditCard(card);
         };
         if (!card.ID) {
+          if (close || close === undefined) {
+            editCard && setEditCard(false);
+            addCard && setAddCard(false);
+            clearLastCard(true);
+          }
           onAddCard(card);
         }
       };
-
-      editCard && setEditCard(false);
-      addCard && setAddCard(false);
+      if (close || close === undefined) {
+        clearLastCard();
+        editCard && setEditCard(false);
+        addCard && setAddCard(false);
+      }
     },
-    handleCancel: async () => {
+    handleCancel: async (isFetching?:boolean) => {
+      clearLastCard(!!isFetching);
       editCard && setEditCard(false);
       addCard && setAddCard(false);
     },
@@ -250,6 +276,7 @@ export function KanbanList(props: KanbanListProps) {
     return (
       <KanbanEditCard
         open={addCard}
+        card={lastCard}
         currentStage={column}
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
@@ -257,7 +284,7 @@ export function KanbanList(props: KanbanListProps) {
         onClose={cardHandlers.handleClose}
       />
     );
-  }, [addCard]);
+  }, [addCard, lastCard]);
 
 
   const isNavigationKey = (key: string) =>
