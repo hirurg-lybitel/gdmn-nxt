@@ -21,13 +21,16 @@ export interface KanbanCardProps {
   onAdd: (card: IKanbanCard) => void;
   onEdit: (card: IKanbanCard) => void;
   onDelete: (card: IKanbanCard) => void;
+  addIsFetching?:boolean;
+  lastCard?:IKanbanCard
+  clearLastCard:(isAdd?:boolean)=>void
 };
 
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
-  const { card, columns } = props;
-  const { onAdd, onEdit, onDelete } = props;
+  const { card, columns, lastCard, addIsFetching } = props;
+  const { onAdd, onEdit, onDelete, clearLastCard } = props;
 
   const theme = useTheme();
   const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
@@ -35,27 +38,29 @@ export function KanbanCard(props: KanbanCardProps) {
   const [copyCard, setCopyCard] = useState(false);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
-      if (!card.ID) {
-        if (!copyCard) return;
-
-        onAdd(card);
-
-        copyCard && setCopyCard(false);
-
-        return;
-      };
-
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
       if (deleting) {
         onDelete(card);
         setEditCard(false);
         return;
       };
-
-      onEdit(card);
-      setEditCard(false);
+      if (card.ID && !deleting) {
+        onEdit(card);
+        copyCard && setCopyCard(false);
+        setEditCard(false);
+        clearLastCard();
+        return;
+      } else {
+        onAdd(card);
+        if (close || close === undefined) {
+          copyCard && setCopyCard(false);
+          clearLastCard(true);
+        }
+        return;
+      }
     },
-    handleCancel: async () => {
+    handleCancel: async (isFetching?:boolean) => {
+      clearLastCard(isFetching);
       editCard && setEditCard(false);
       copyCard && setCopyCard(false);
     },
@@ -127,7 +132,7 @@ export function KanbanCard(props: KanbanCardProps) {
     return (
       <KanbanEditCard
         open={copyCard}
-        card={{ ...card, ID: -1, DEAL: { ...card.DEAL, ID: -1, USR$NAME: '' } }}
+        card={lastCard || { ...card, ID: -1, DEAL: { ...card.DEAL, ID: -1, USR$NAME: undefined } }}
         currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
@@ -135,7 +140,7 @@ export function KanbanCard(props: KanbanCardProps) {
         onClose={cardHandlers.handleClose}
       />
     );
-  }, [copyCard]);
+  }, [copyCard, lastCard]);
 
   const getDayDiff = useCallback((startDate: Date, endDate: Date) => {
     const msInDay = 24 * 60 * 60 * 1000;
@@ -224,7 +229,7 @@ export function KanbanCard(props: KanbanCardProps) {
                   className="actions"
                   hidden
                 >
-                  <IconButton size="small" onClick={() => setCopyCard(true)}>
+                  <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
                     <ContentCopyIcon fontSize="small" />
                   </IconButton>
                 </div>
@@ -246,7 +251,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging]);
+  }, [card, snapshot.isDragging, addIsFetching]);
 
   return (
     <>

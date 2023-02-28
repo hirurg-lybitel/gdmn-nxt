@@ -175,7 +175,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   };
 
   const initValue: IKanbanCard = {
-    ID: card?.ID || 0,
+    ID: card?.ID === -1 ? 0 : card?.ID || 0,
     USR$MASTERKEY: card?.USR$MASTERKEY || currentStage?.ID || 0,
     USR$INDEX: card?.USR$INDEX || currentStage?.CARDS?.length || 0,
     USR$DEALKEY: card?.USR$DEALKEY || -1,
@@ -200,7 +200,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   };
 
   useEffect(()=>{
-    if (card && addTasks) {
+    if (card && card?.ID !== -1 && addTasks) {
       formik.resetForm();
       setTabIndex('3');
       setIsFetchingCard(false);
@@ -267,6 +267,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     if (addTasks) {
       setIsFetchingCard(true);
     }
+    setTabIndex('1');
     onSubmit(formik.values, deleting, !addTasks);
   }, [formik.values, deleting, addTasks]);
 
@@ -404,7 +405,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Сведения" value="1" />
                       <Tab label="Заявка" value="2" />
-                      <Tab label="Задачи" value="3" disabled={!card} />
+                      <Tab label="Задачи" value="3" disabled={!formik.values.ID} />
                       <Tab label="Хронология" value="4" />
                       <Tab label="Описание" value="5" />
                     </TabList>

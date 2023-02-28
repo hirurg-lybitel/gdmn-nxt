@@ -50,20 +50,20 @@ export function KanbanColumn(props: KanbanColumnProps) {
     handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
       if (deleting) {
         onDeleteCard(card);
+        setUpsertCard(false);
+        clearLastCard();
       };
 
       if (card.ID && !deleting) {
         onEditCard(card);
+        setUpsertCard(false);
+        clearLastCard();
       } else {
+        onAddCard(card);
         if (close || close === undefined) {
           setUpsertCard(false);
           clearLastCard(true);
         }
-        onAddCard(card);
-      }
-      if (close || close === undefined) {
-        setUpsertCard(false);
-        clearLastCard();
       }
     },
     handleCancel: async (isFetching?:boolean) => {

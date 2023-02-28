@@ -50,7 +50,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [addCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: isLoadingAddCard }] = useAddCardMutation();
   const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
   const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
-  const [updateCard, { isSuccess: updateCardSuccess }] = useUpdateCardMutation();
+  const [updateCard, { isSuccess: updateCardSuccess, isLoading: isLoadingEditCard }] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
   const [reorderCard] = useReorderCardsMutation();
 
@@ -449,6 +449,9 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onAdd={cardHandlers.handleAddCard}
                                                 onEdit={cardHandlers.handleEditCard}
                                                 onDelete={cardHandlers.handleDeleteCard}
+                                                addIsFetching={isLoadingAddCard || isLoadingEditCard}
+                                                lastCard={lastCard}
+                                                clearLastCard={clearLastCard}
                                               />
                                             </Box>
                                           )}
