@@ -210,7 +210,6 @@ export function KanbanColumn(props: KanbanColumnProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
       />
     );
   }, [upsertCard]);

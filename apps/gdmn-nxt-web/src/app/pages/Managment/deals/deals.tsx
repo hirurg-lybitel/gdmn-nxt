@@ -14,7 +14,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { Action, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { usePermissions } from '../../../features/common/usePermissions';
@@ -182,12 +182,12 @@ export function Deals(props: DealsProps) {
     />,
   [openFilters, filteringData]);
 
-  const [isFetching1] = usePermissions(1);
-  const [isFetching2] = usePermissions(2);
-  const [isFetching3] = usePermissions(3);
-  const [isFetching4] = usePermissions(4);
+  const [createDealIsFetching] = usePermissions(Action.CreateDeal);
+  const [copyDealIsFetching] = usePermissions(Action.CopyDeal);
+  const [editDealIsFetching] = usePermissions(Action.EditDeal);
+  const [deleteDealIsFetching] = usePermissions(Action.DeleteDeal);
 
-  const componentIsFetching = isLoading || isFetching1 || isFetching2 || isFetching3 || isFetching4;
+  const componentIsFetching = isLoading || createDealIsFetching || copyDealIsFetching || editDealIsFetching || deleteDealIsFetching;
   const Header = useMemo(() => {
     return (
       <>
@@ -266,7 +266,7 @@ export function Deals(props: DealsProps) {
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
+  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} />, [columns, componentIsFetching]);
 
   return (
     <Stack
