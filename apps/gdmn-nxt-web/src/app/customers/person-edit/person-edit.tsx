@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   Slide,
   Stack,
@@ -19,7 +18,6 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { customersSelectors } from '../../features/customer/customerSlice';
 import { RootState } from '../../store';
 import * as yup from 'yup';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -84,9 +82,6 @@ export function PersonEdit(props: PersonEditProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const allCustomers = useSelector(customersSelectors.selectAll);
-  const { error: customersError, loading: customersLoading } = useSelector((state: RootState) => state.customers);
-
   const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery();
 
   const initValue: IContactPerson = {
@@ -109,7 +104,9 @@ export function PersonEdit(props: PersonEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string().required('Не указано имя').max(80, 'Слишком длинное имя'),
+      NAME: yup.string()
+        .required('Не указано имя')
+        .max(80, 'Слишком длинное имя'),
       USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
     }),
     onSubmit: (values) => {
@@ -176,8 +173,6 @@ export function PersonEdit(props: PersonEditProps) {
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
   }, []);
-
-  // console.log('formik.errors.NAME', formik.errors.NAME);
 
   return (
     <Dialog
