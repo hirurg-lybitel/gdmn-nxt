@@ -187,7 +187,7 @@ export function Deals(props: DealsProps) {
   const [isFetching3] = usePermissions(3);
   const [isFetching4] = usePermissions(4);
 
-  const componentIsFetching = isLoading || isFetching1 || isFetching2 || isFetching3 || isFetching4 || columnsIsFetching;
+  const componentIsFetching = isLoading || isFetching1 || isFetching2 || isFetching3 || isFetching4;
   const Header = useMemo(() => {
     return (
       <>
