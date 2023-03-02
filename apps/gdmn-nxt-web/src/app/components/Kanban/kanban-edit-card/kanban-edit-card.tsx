@@ -592,7 +592,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <Stack direction="row" spacing={3}>
                         <Stack>
                           <Stack direction="row" spacing={3}>
-                            {(formik.values.USR$MASTERKEY === stages[1].ID || formik.values.USR$MASTERKEY === stages[2].ID) ?
+                            {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
@@ -613,7 +613,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 label="В работе"
                               />
                               : <></>}
-                            {(formik.values.USR$MASTERKEY === stages[2].ID || formik.values.USR$MASTERKEY === stages[3].ID) ?
+                            {(formik.values.USR$MASTERKEY === stages[2]?.ID || formik.values.USR$MASTERKEY === stages[3]?.ID) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
