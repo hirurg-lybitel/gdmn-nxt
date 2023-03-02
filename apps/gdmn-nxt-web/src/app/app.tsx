@@ -56,7 +56,7 @@ export default function App(props: AppProps) {
   const themeType = settings?.MODE;
 
   useEffect(()=>{
-    if (!themeType) {
+    if (themeType === undefined) {
       return;
     }
     if (themeType === 'dark') {
@@ -141,7 +141,7 @@ export default function App(props: AppProps) {
             });
           break;
         case 'OTHER_LOADINGS':
-          if (!themeType || !pageIdFound) {
+          if (themeType === undefined || !pageIdFound) {
             return;
           }
           if (forWait) {
