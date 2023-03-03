@@ -174,7 +174,7 @@ export const GridCellExpand = memo(function GridCellExpand(props: GridCellExpand
           anchorEl={anchorEl}
           style={{
             width,
-            // marginLeft: -17
+            marginLeft: -17
           }}
         >
           <CustomizedCard

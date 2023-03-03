@@ -1,8 +1,8 @@
-import { DataGridPro, GridColDef, ruRU, GridFilterModel, GridSortModel } from '@mui/x-data-grid-pro';
+import { DataGridPro, GridColDef, ruRU, GridFilterItem, GridFilterInputValueProps, GridFilterModel, GridFilterOperator, GridSortModel } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Chip, Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
+import { Chip, Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, TextField } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -111,6 +111,10 @@ export function Customers(props: CustomersProps) {
     setFilterModel(filtersStorage.filterModels.customers);
     setFilteringData(filtersStorage.filterData.customers);
   }, []);
+
+  const { error: customersError, loading: customersLoading } = useSelector(
+    (state: RootState) => state.customers
+  );
 
   const { data: customersCross } = useGetCustomersCrossQuery();
   const {
@@ -295,11 +299,16 @@ export function Customers(props: CustomersProps) {
   }, [filterModel, filteringData]);
 
   useEffect(() => {
+    if (customersError) {
+      setSnackBarMessage(customersError.toString());
+      setOpenSnackBar(true);
+    }
+
     if (errorMessage) {
       setSnackBarMessage(errorMessage);
       setOpenSnackBar(true);
     }
-  }, [errorMessage]);
+  }, [customersError, errorMessage]);
 
   /** Close snackbar manually */
   const handleSnackBarClose = (

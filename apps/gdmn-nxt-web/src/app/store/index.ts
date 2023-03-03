@@ -6,6 +6,7 @@ import { contactApi } from '../features/contact/contactApi';
 import { reconciliationStatementApi } from '../features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from '../features/user/userSlice';
 import nlpReducer from '../features/nlp/nlpSlice';
+import { customersReducer, hierarchyReducer } from '../features/customer/customerSlice';
 import { contactGroupApi } from '../features/contact/contactGroupApi';
 import { errorMiddleware } from '../features/error-slice/errorMiddleware';
 import errorReducer from '../features/error-slice/error-slice';
@@ -42,6 +43,8 @@ export const store = configureStore({
     error: errorReducer,
     user: userReducer,
     nlp: nlpReducer,
+    customers: customersReducer,
+    customersHierarchy: hierarchyReducer,
     [contactApi.reducerPath]: contactApi.reducer,
     [accountApi.reducerPath]: accountApi.reducer,
     [labelsApi.reducerPath]: labelsApi.reducer,

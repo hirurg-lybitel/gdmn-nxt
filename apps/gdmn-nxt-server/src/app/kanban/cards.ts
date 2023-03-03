@@ -240,11 +240,11 @@ const upsert: RequestHandler = async (req, res) => {
 };
 
 const remove: RequestHandler = async(req, res) => {
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+
   const { id } = req.params;
 
   if (isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
-
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {

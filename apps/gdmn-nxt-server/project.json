@@ -37,9 +37,6 @@
       "configurations": {
         "production": {
           "buildTarget": "gdmn-nxt-server:build:production"
-        },
-        "development": {
-          "buildTarget": "gdmn-nxt-server:build:development"
         }
       }
     },

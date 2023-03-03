@@ -227,6 +227,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         card={lastCard}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
+        onClose={cardHandlers.handleClose}
       />
     );
   }, [upsertCard, lastCard]);

@@ -229,7 +229,6 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           </Box> */}
           <TextField
             label="Пользователь"
-            sx={{ input: { color: 'black' } }}
             value={userName}
             error={authResult?.result === 'UNKNOWN_USER'}
             helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
@@ -248,7 +247,6 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           />
           <TextField
             label="Пароль"
-            sx={{ input: { color: 'black' } }}
             type={passwordVisible ? 'text' : 'password'}
             value={password}
             error={authResult?.result === 'INVALID_PASSWORD'}

@@ -13,8 +13,12 @@ import {
   TextField,
   Box,
   Slide,
+  Accordion,
+  AccordionSummary,
   Typography,
-  Tab
+  AccordionDetails,
+  Tab,
+  Chip
 } from '@mui/material';
 import {
   Theme
@@ -22,22 +26,26 @@ import {
 import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
-import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactWithLabels, ICustomer, ILabel, ILabelsContact } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
+import { useSelector } from 'react-redux';
+import { hierarchySelectors } from '../../features/customer/customerSlice';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
 import { TransitionProps } from '@mui/material/transitions';
+import CustomizedCard from '../../components/Styled/customized-card/customized-card';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ContactPersonList from '../contact-person-list/contact-person-list';
 import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
-import ContactPersonList from '../contact-person-list/contact-person-list';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
