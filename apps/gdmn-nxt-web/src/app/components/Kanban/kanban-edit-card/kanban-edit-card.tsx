@@ -113,7 +113,6 @@ export interface KanbanEditCardProps {
   stages: IKanbanColumn[];
   onSubmit: (arg1: IKanbanCard, arg2: boolean, arg3?:boolean) => void;
   onCancelClick: (isFetching?:boolean) => void;
-  onClose: (e: any, r: string) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
