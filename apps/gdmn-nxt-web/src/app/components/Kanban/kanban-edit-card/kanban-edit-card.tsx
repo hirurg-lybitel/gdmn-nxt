@@ -118,7 +118,7 @@ export interface KanbanEditCardProps {
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
   const { open, currentStage, card, stages } = props;
-  const { onSubmit, onCancelClick, onClose } = props;
+  const { onSubmit, onCancelClick } = props;
 
   const classes = useStyles();
 
@@ -168,6 +168,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     if (isFetchingCard) {
       setIsFetchingCard(false);
     }
+  };
+
+  const handleOnClose = (e: any, reason: string) => {
+    if (reason !== 'backdropClick') return;
+    handleCancelClick();
   };
 
   const handleTabsChange = (event: any, newindex: string) => {
@@ -378,7 +383,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       classes={{
         paper: classes.dialog
       }}
-      onClose={onClose}
+      onClose={handleOnClose}
     >
       <DialogTitle>
         {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
@@ -596,7 +601,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               <FormControlLabel
                                 control={
                                   <Checkbox
-                                    checked={formik.values.DEAL?.USR$READYTOWORK}
+                                    checked={formik.values.DEAL?.USR$READYTOWORK || false}
                                     onChange={(e) => {
                                       const value = e.target.checked;
                                       formik.setFieldValue(
@@ -617,7 +622,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               <FormControlLabel
                                 control={
                                   <Checkbox
-                                    checked={formik.values.DEAL?.USR$DONE}
+                                    checked={formik.values.DEAL?.USR$DONE || false}
                                     onChange={(e) => {
                                       const value = e.target.checked;
                                       formik.setFieldValue(
@@ -635,12 +640,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               />
                               : <></>
                             }
-                            {/* {(formik.values.USR$MASTERKEY === stages[3].ID || formik.values.USR$MASTERKEY === stages[4].ID) ? */}
                             {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
-                                    checked={formik.values.DEAL?.DENIED}
+                                    checked={formik.values.DEAL?.DENIED || false}
                                     onChange={(e) => {
                                       const checked = e.target.checked;
                                       formik.setFieldValue(

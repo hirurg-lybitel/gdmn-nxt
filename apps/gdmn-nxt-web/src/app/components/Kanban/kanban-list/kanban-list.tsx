@@ -1,7 +1,7 @@
-import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
-import { Box, Button, ButtonProps, Chip, IconButton, Stack, Typography } from '@mui/material';
-import { DataGridProProps, GridActionsCellItem, GridColDef, GridColumns, gridFilteredDescendantCountLookupSelector, GridRenderCellParams, GridRowId, GridRowParams, GridRowProps, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { Box, ButtonProps, Chip, IconButton, Stack } from '@mui/material';
+import { DataGridProProps, GridActionsCellItem, GridColumns, gridFilteredDescendantCountLookupSelector, GridRenderCellParams, GridRowParams, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
@@ -15,18 +15,15 @@ import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { Action } from '@gsbelarus/util-api-types';
 
 export interface KanbanListProps {
-  columns?: IKanbanColumn[],
-  isLoading:boolean,
+  columns?: IKanbanColumn[]
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], isLoading } = props;
+  const { columns = [] } = props;
 
   const changes = useRef<IChanges[]>([]);
   const [addCard, setAddCard] = useState(false);
@@ -40,6 +37,7 @@ export function KanbanList(props: KanbanListProps) {
   const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
   const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
   const user = useSelector<RootState, UserState>(state => state.user);
+  const [deletingCardIDs, setDeletingCardIDs] = useState<number[]>([]);
 
   useEffect(()=>{
     if ((updateCardSuccess) && changes.current.length > 0) {
@@ -112,8 +110,9 @@ export function KanbanList(props: KanbanListProps) {
     changes.current = compareCards(columns, newCard, oldCard);
   };
 
-  const onDelete = async (deletinCard: IKanbanCard) => {
-    deleteCard(deletinCard.ID);
+  const onDelete = async (deletingCard: IKanbanCard) => {
+    deleteCard(deletingCard.ID);
+    setDeletingCardIDs(prev => prev.concat(deletingCard.ID));
   };
 
   const onAddCard = async (newCard: IKanbanCard) => {
@@ -163,50 +162,25 @@ export function KanbanList(props: KanbanListProps) {
     },
   };
 
-
-  const rows = (() => {
+  const rows = useMemo(() => {
     const newRows: any[] = [];
-    columns?.forEach(col => col.CARDS.forEach(card => newRows.push({ ...card, ...card.DEAL, ID: card.ID, hierarchy: [col.ID, card.ID] })));
+    columns?.forEach(col => col.CARDS.forEach(card => {
+      if (!deletingCardIDs.includes(card.ID)) {
+        newRows.push({ ...card, ...card.DEAL, ID: card.ID, hierarchy: [col.ID, card.ID] });
+      }
+    }));
     return newRows;
-  })();
+  }, [columns, deletingCardIDs]);
 
   const handleCardEdit = (id: any): any => () => {
     setCard(id);
     setEditCard(true);
   };
 
-  const handleCardDelete = (id: any): any => () => {
-    setCard(id);
-    setConfirmOpen(true);
-  };
-
   const handleCardAdd = (columnId: number): any => () => {
     setColumn(columns.find(c => c.ID === columnId));
     setAddCard(true);
   };
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    card && onDelete(card);
-  }, [card]);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={'Удаление причины отказа'}
-      text="Вы уверены, что хотите продолжить?"
-      dangerous={true}
-      confirmClick={handleConfirmOkClick}
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen]);
-
 
   const cols: GridColumns = [
     { field: 'USR$NAME', headerName: 'Сделка', flex: 0.5, minWidth: 150,
@@ -242,13 +216,7 @@ export function KanbanList(props: KanbanListProps) {
       resizable: false,
       getActions: (params: GridRowParams) => [
         Object.keys(params.row).length > 0
-          ?
-          <>
-            <PermissionsGate actionCode={Action.DeleteDeal}>
-              <IconButton onClick={handleCardDelete(params.row)} size="small" hidden>
-                <DeleteIcon color="primary" />
-              </IconButton>
-            </PermissionsGate>
+          ? <>
             <PermissionsGate actionCode={Action.EditDeal}>
               <GridActionsCellItem key={1} icon={<EditIcon />} onClick={handleCardEdit(params.row)} label="Edit" color="primary" />
             </PermissionsGate>
@@ -267,7 +235,6 @@ export function KanbanList(props: KanbanListProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
       />
     );
   }, [editCard]);
@@ -281,7 +248,6 @@ export function KanbanList(props: KanbanListProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
       />
     );
   }, [addCard, lastCard]);
@@ -381,7 +347,6 @@ export function KanbanList(props: KanbanListProps) {
     return row?.hierarchy || [];
   };
 
-
   return (
     <CustomizedCard
       borders
@@ -390,10 +355,8 @@ export function KanbanList(props: KanbanListProps) {
         marginTop: 45
       }}
     >
-      {memoConfirmDialog}
       <StyledGrid
         treeData
-        loading={insertIsLoading || updateIsLoading || deleteIsLoading || isLoading}
         rows={rows || []}
         columns={cols}
         getTreeDataPath={getTreeDataPath}
