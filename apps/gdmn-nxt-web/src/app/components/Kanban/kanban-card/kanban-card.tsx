@@ -123,7 +123,6 @@ export function KanbanCard(props: KanbanCardProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
       />
     );
   }, [editCard]);
@@ -137,7 +136,6 @@ export function KanbanCard(props: KanbanCardProps) {
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
-        onClose={cardHandlers.handleClose}
       />
     );
   }, [copyCard, lastCard]);
