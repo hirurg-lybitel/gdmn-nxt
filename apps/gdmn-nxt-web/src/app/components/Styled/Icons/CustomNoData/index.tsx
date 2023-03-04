@@ -1,3 +1,4 @@
+import { ColorMode } from '@gsbelarus/util-api-types';
 import { Box, Typography, Theme } from '@mui/material';
 
 export default function CustomNoData() {
@@ -8,26 +9,26 @@ export default function CustomNoData() {
         flexDirection: 'column',
         backgroundColor: theme.palette.background.paper,
         '& .ant-empty-img-1': {
-          fill: theme.palette.mode === 'light' ? '#aeb8c2' : '#262626',
+          fill: theme.palette.mode === ColorMode.Light ? '#aeb8c2' : '#262626',
         },
         '& .ant-empty-img-2': {
-          fill: theme.palette.mode === 'light' ? '#f5f5f7' : '#595959',
+          fill: theme.palette.mode === ColorMode.Light ? '#f5f5f7' : '#595959',
         },
         '& .ant-empty-img-3': {
-          fill: theme.palette.mode === 'light' ? '#f5f5f7' : '#434343',
+          fill: theme.palette.mode === ColorMode.Light ? '#f5f5f7' : '#434343',
         },
         '& .ant-empty-img-4': {
-          fill: theme.palette.mode === 'light' ? '#dce0e6' : '#333333',
+          fill: theme.palette.mode === ColorMode.Light ? '#dce0e6' : '#333333',
         },
         '& .ant-empty-img-5': {
-          fill: theme.palette.mode === 'light' ? '#dce0e6' : '#595959',
+          fill: theme.palette.mode === ColorMode.Light ? '#dce0e6' : '#595959',
         },
         '& .ant-empty-img-ellipse': {
-          fillOpacity: theme.palette.mode === 'light' ? '1' : '0.08',
-          fill: theme.palette.mode === 'light' ? '#f5f5f5' : '#fff',
+          fillOpacity: theme.palette.mode === ColorMode.Light ? '1' : '0.08',
+          fill: theme.palette.mode === ColorMode.Light ? '#f5f5f5' : '#fff',
         },
         '& .ant-empty-img-g': {
-          fill: theme.palette.mode === 'light' ? '#fff' : '#333333',
+          fill: theme.palette.mode === ColorMode.Light ? '#fff' : '#333333',
         },
       })}
     >

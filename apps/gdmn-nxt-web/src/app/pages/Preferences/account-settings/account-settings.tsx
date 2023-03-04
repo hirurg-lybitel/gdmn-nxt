@@ -2,7 +2,7 @@ import style from './account-settings.module.less';
 import { Switch, CardHeader, CardContent, Typography, Divider, FormControlLabel, FormGroup } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { styled } from '@mui/material/styles';
-import { setStyleMode } from '../../../store/settingsSlice';
+import { setColorMode } from '../../../store/settingsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
@@ -30,12 +30,12 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
       },
       '& + .MuiSwitch-track': {
         opacity: 1,
-        backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+        backgroundColor: theme.palette.mode === ColorMode.Dark ? '#8796A5' : '#aab4be',
       },
     },
   },
   '& .MuiSwitch-thumb': {
-    backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
+    backgroundColor: theme.palette.mode === ColorMode.Dark ? '#003892' : '#001e3c',
     width: 32,
     height: 32,
     '&:before': {
@@ -54,7 +54,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   },
   '& .MuiSwitch-track': {
     opacity: 1,
-    backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+    backgroundColor: theme.palette.mode === ColorMode.Dark ? '#8796A5' : '#aab4be',
     borderRadius: 20 / 2,
   },
 }));
@@ -63,10 +63,10 @@ export function AccountSettings(props: AccountSettingsProps) {
   const dispatch = useDispatch();
   const user = useSelector<RootState, UserState>(state => state.user);
   const userId = user.userProfile?.id;
-  const theme = useSelector((state: RootState) => state.settings.customization.mode);
+  const theme = useSelector((state: RootState) => state.settings.customization.colorMode);
   const { data: settings, isFetching } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
   const [setSettings, { isLoading: editOrAddIsLoading }] = useSetProfileSettingsMutation();
-  const addOrUpdateTheme = (typeTheme:string) => {
+  const addOrUpdateTheme = (typeTheme: ColorMode) => {
     if (!userId) {
       return;
     }
@@ -74,7 +74,7 @@ export function AccountSettings(props: AccountSettingsProps) {
       userId,
       body: {
         AVATAR: settings?.AVATAR || '',
-        MODE: typeTheme || ''
+        COLORMODE: typeTheme
       }
     });
   };
@@ -83,11 +83,11 @@ export function AccountSettings(props: AccountSettingsProps) {
       return;
     }
     if (event.target.checked) {
-      dispatch(setStyleMode(ColorMode.Dark));
-      addOrUpdateTheme('dark');
+      dispatch(setColorMode(ColorMode.Dark));
+      addOrUpdateTheme(ColorMode.Dark);
     } else {
-      dispatch(setStyleMode(ColorMode.Light));
-      addOrUpdateTheme('light');
+      dispatch(setColorMode(ColorMode.Light));
+      addOrUpdateTheme(ColorMode.Light);
     }
   };
 
@@ -109,11 +109,11 @@ export function AccountSettings(props: AccountSettingsProps) {
             control={
               <MaterialUISwitch
                 disabled={editOrAddIsLoading}
-                checked={theme === 'dark'}
+                checked={theme === ColorMode.Dark}
                 onChange={handleChange}
                 sx={{ m: 1 }}
               />}
-            label={theme === 'dark' ? 'Темная тема' : 'Светлая тема'}
+            label={theme === ColorMode.Dark ? 'Темная тема' : 'Светлая тема'}
           />
         </FormGroup>
       </CardContent>

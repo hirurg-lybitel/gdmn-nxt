@@ -2,11 +2,11 @@ import { ColorMode } from '@gsbelarus/util-api-types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ICustomization {
-  mode: ColorMode,
+  colorMode: ColorMode,
 }
 
 const initCustomization: ICustomization = {
-  mode: ColorMode.Light
+  colorMode: ColorMode.Light
 };
 
 interface ISettingsState {
@@ -32,8 +32,8 @@ export const settingsSlice = createSlice({
         { ...state, menuOpened: action.payload }
       );
     },
-    setStyleMode: (state, action: PayloadAction<ColorMode>) => {
-      return ({ ...state, customization: { ...state.customization, mode: action.payload } });
+    setColorMode: (state, action: PayloadAction<ColorMode>) => {
+      return ({ ...state, customization: { ...state.customization, colorMode: action.payload } });
     },
     setActiveMenu: (state, action: PayloadAction<string>) => {
       return (
@@ -50,7 +50,7 @@ export const settingsSlice = createSlice({
 
 export const {
   toggleMenu,
-  setStyleMode,
+  setColorMode,
   setActiveMenu,
   setPageIdFound
 } = settingsSlice.actions;

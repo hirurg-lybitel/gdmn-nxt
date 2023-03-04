@@ -266,7 +266,7 @@ export function Deals(props: DealsProps) {
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} isLoading={componentIsFetching || columnsIsFetching} />, [columns, componentIsFetching, columnsIsFetching]);
+  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} />, [columns]);
 
   return (
     <Stack

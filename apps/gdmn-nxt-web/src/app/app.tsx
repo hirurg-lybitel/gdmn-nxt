@@ -1,29 +1,21 @@
 import { SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
-import { IAuthResult } from '@gsbelarus/util-api-types';
+import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
-import { useEffect } from 'react';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
+import { useEffect, useMemo, useState } from 'react';
 import { baseUrl } from './const';
-import { Button, Divider, Typography, Stack } from '@mui/material';
-import { SelectMode } from './select-mode/select-mode';
+import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
-import { useGetCustomersQuery } from './features/customer/customerApi_new';
-import { useGetKanbanDealsQuery } from './features/kanban/kanbanApi';
 import { InitData } from './store/initData';
-import { useGetProfileSettingsQuery } from './features/profileSettings';
-import { setStyleMode } from './store/settingsSlice';
-import { setPageIdFound } from './store/settingsSlice';
-import { setActiveMenu } from './store/settingsSlice';
-import menuItems from './menu-items';
-import { IMenuItem } from './menu-items';
+import { setColorMode, setPageIdFound, setActiveMenu } from './store/settingsSlice';
+import menuItems, { IMenuItem } from './menu-items';
 import { useGetPermissionByUserQuery } from './features/permissions';
-import { useState } from 'react';
-import { ColorMode } from '@gsbelarus/util-api-types';
+import { getCookie } from './features/common/getCookie';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -43,28 +35,11 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
 
-export interface AppProps {
-  forWait?:boolean
-}
+export interface AppProps {}
 
 export default function App(props: AppProps) {
-  const { forWait } = props;
   const dispatch = useDispatch<AppDispatch>();
   const { loginStage, userProfile } = useSelector<RootState, UserState>(state => state.user);
-  const userId = userProfile?.id;
-  const { data: settings, isLoading } = useGetProfileSettingsQuery(userId || -1, { skip: !userId });
-  const themeType = settings?.MODE;
-
-  useEffect(()=>{
-    if (themeType === undefined) {
-      return;
-    }
-    if (themeType === 'dark') {
-      dispatch(setStyleMode(ColorMode.Dark));
-    } else {
-      dispatch(setStyleMode(ColorMode.Light));
-    }
-  }, [themeType]);
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
@@ -72,7 +47,7 @@ export default function App(props: AppProps) {
   const appSettings = useSelector((state: RootState) => state.settings);
   const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
   const [actionCode, setActionCode] = useState<number>(-3);
-  const { data: permissions, isFetching } = useGetPermissionByUserQuery(
+  const { data: permissions } = useGetPermissionByUserQuery(
     { actionCode, userID: userProfile?.id || -1 }, { skip: !userProfile?.id || actionCode < 1 }
   );
 
@@ -115,9 +90,16 @@ export default function App(props: AppProps) {
     dispatch(setPageIdFound(true));
   }, [appSettings, permissions]);
 
+
+  type User = IUserProfile & UserState;
+  const [user, setUser] = useState<User>();
+
   useEffect(() => {
     (async function () {
       switch (loginStage) {
+        case 'SELECT_MODE':
+          dispatch(setColorMode(ColorMode.Light));
+          break;
         case 'LAUNCHING':
           // приложение загружается
           // здесь мы можем разместить код, который еще
@@ -125,76 +107,142 @@ export default function App(props: AppProps) {
           dispatch(queryLogin());
           break;
 
-        case 'QUERY_LOGIN':
-          await fetch(`${baseUrl}user`, { method: 'GET', credentials: 'include' })
-            .then(response => response.json())
-            .then(data => {
-              if (data.userName) {
-                if (data.gedeminUser) {
-                  dispatch(signedInEmployee({ ...data }));
-                } else {
-                  dispatch(signedInCustomer({ userName: data.userName, id: data.id, contactkey: data.contactkey }));
-                }
-              } else {
-                dispatch(selectMode());
-              }
-            });
-          break;
-        case 'OTHER_LOADINGS':
-          if (themeType === undefined || !pageIdFound) {
+        case 'QUERY_LOGIN': {
+          const response = await fetch(`${baseUrl}user`, { method: 'GET', credentials: 'include' });
+          const data = await response.json();
+
+          if (!data.userName) {
+            dispatch(selectMode());
             return;
           }
-          if (forWait) {
-            return;
+
+          setUser(data);
+
+          const colorMode = getCookie('color-mode');
+          switch (colorMode) {
+            case ColorMode.Dark:
+              dispatch(setColorMode(ColorMode.Dark));
+              break;
+            case ColorMode.Light:
+              dispatch(setColorMode(ColorMode.Light));
+              break;
+            default:
+              dispatch(setColorMode(ColorMode.Light));
+              break;
           }
-          dispatch(renderApp());
           break;
+        }
       }
     })();
-  }, [loginStage, themeType, pageIdFound, forWait]);
+  }, [loginStage, pageIdFound]);
+
+  /** Wait for new color mod was applied */
+  const theme = useTheme();
+  useEffect(() => {
+    if (loginStage === 'QUERY_LOGIN' &&
+        theme.palette.mode === getCookie('color-mode') &&
+        !!user)
+    {
+      if (user.gedeminUser) {
+        dispatch(signedInEmployee({ ...user }));
+      } else {
+        dispatch(signedInCustomer({ userName: user.userName, id: user.id, contactkey: user.contactkey }));
+      }
+    }
+  }, [loginStage, theme.palette.mode, user]);
+
 
   useEffect(() => {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
   }, [loginStage]);
 
-  const result =
-    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
-      {
-        loginStage === 'QUERY_LOGIN' || loginStage === 'LAUNCHING' || loginStage === 'OTHER_LOADINGS' ?
+
+  const handleSignIn = async () => {
+    const response = await fetch(`${baseUrl}user`, { method: 'GET', credentials: 'include' });
+    const data = await response.json();
+
+    if (!data.userName) {
+      dispatch(selectMode());
+      return;
+    }
+
+    setUser(data);
+
+    const colorMode = getCookie('color-mode');
+    switch (colorMode) {
+      case ColorMode.Dark:
+        dispatch(setColorMode(ColorMode.Dark));
+        break;
+      case ColorMode.Light:
+        dispatch(setColorMode(ColorMode.Light));
+        break;
+      default:
+        dispatch(setColorMode(ColorMode.Light));
+        break;
+    }
+
+    dispatch(queryLogin());
+  };
+
+  const renderLoginStage = useMemo(() => {
+    switch (loginStage) {
+      case 'LAUNCHING':
+        return (
           <Stack spacing={2}>
             <CircularIndeterminate open={true} size={100} />
             <Typography variant="overline" color="gray" align="center">
               подключение
             </Typography>
           </Stack>
-          : loginStage === 'SELECT_MODE' ?
-            <></>
-            // dispatch(signInEmployee())
-            // <SelectMode
-            //   employeeModeSelected={ () => dispatch(signInEmployee()) }
-            //   customerModeSelected={ () => dispatch(signInCustomer()) }
-            // />
-            : loginStage === 'CUSTOMER' ? <Navigate to="/customer" />
-              : loginStage === 'EMPLOYEE' ? <Navigate to="/employee/dashboard" />
-                : loginStage === 'CREATE_CUSTOMER_ACCOUNT' ? <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />
-                  : loginStage === 'SIGN_IN_EMPLOYEE' ?
-                    <SignInSignUp
-                      checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
-                      // bottomDecorator={ () => <Typography align="center">Вернуться в<Button onClick={ () => dispatch(selectMode()) }>начало</Button></Typography> }
-                    />
-                    :
-                    <SignInSignUp
-                      checkCredentials={(userName, password) => post('user/signin', { userName, password })}
-                      newPassword={(email) => post('user/forgot-password', { email })}
-                      bottomDecorator={() =>
-                        <Stack direction="column">
-                          <Typography align="center">Создать новую<Button onClick={() => dispatch(createCustomerAccount())}>учетную запись</Button></Typography>
-                          <Divider />
-                          <Typography align="center">Вернуться в<Button onClick={() => dispatch(selectMode())}>начало</Button></Typography>
-                        </Stack>
-                      }
-                    />
-      }
+        );
+      case 'SELECT_MODE':
+        return <></>;
+      case 'CUSTOMER':
+        return <Navigate to="/customer" />;
+      case 'EMPLOYEE':
+        return <Navigate to="/employee/dashboard" />;
+      case 'CREATE_CUSTOMER_ACCOUNT':
+        return <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />;
+      case 'SIGN_IN_EMPLOYEE':
+        return (
+          <SignInSignUp
+            checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
+            onSignIn={handleSignIn}
+          />
+        );
+      case 'SIGN_IN_CUSTOMER':
+        return (
+          <SignInSignUp
+            checkCredentials={(userName, password) => post('user/signin', { userName, password })}
+            newPassword={(email) => post('user/forgot-password', { email })}
+            onSignIn={handleSignIn}
+            bottomDecorator={() =>
+              <Stack direction="column">
+                <Typography align="center">
+                  Создать новую
+                  <Button onClick={() => dispatch(createCustomerAccount())}>
+                    учетную запись
+                  </Button>
+                </Typography>
+                <Divider />
+                <Typography align="center">
+                  Вернуться в
+                  <Button onClick={() => dispatch(selectMode())}>
+                    начало
+                  </Button>
+                </Typography>
+              </Stack>
+            }
+          />
+        );
+      default:
+        return <></>;
+    }
+  }, [loginStage]);
+
+  const result =
+    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
+      {renderLoginStage}
     </Stack>;
 
   return result;

@@ -33,7 +33,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const { onAdd, onEdit, onDelete, clearLastCard } = props;
 
   const theme = useTheme();
-  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+  const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
 

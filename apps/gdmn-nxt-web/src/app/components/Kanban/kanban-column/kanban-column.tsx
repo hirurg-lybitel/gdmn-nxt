@@ -41,7 +41,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const { onEdit, onDelete, onEditCard, onAddCard, clearLastCard, onDeleteCard } = props;
 
   const theme = useTheme();
-  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+  const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
   const [upsertCard, setUpsertCard] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
