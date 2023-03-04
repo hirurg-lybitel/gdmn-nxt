@@ -19,12 +19,11 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { Action } from '@gsbelarus/util-api-types';
 
 export interface KanbanListProps {
-  isLoading:boolean,
   columns?: IKanbanColumn[]
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], isLoading } = props;
+  const { columns = [] } = props;
 
   const changes = useRef<IChanges[]>([]);
   const [addCard, setAddCard] = useState(false);
