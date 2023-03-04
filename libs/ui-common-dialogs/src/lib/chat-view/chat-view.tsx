@@ -1,4 +1,4 @@
-import { NLPDialog } from '@gsbelarus/util-api-types';
+import { ColorMode, NLPDialog } from '@gsbelarus/util-api-types';
 import { forwardRef, Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import styles from './chat-view.module.less';
 
@@ -85,7 +85,7 @@ export function ChatView({ nlpDialog, push }: ChatViewProps) {
 
     return (
       <textarea
-        className={mode === 'dark' ? styles.NLPInputDark : styles.NLPInput}
+        className={mode === ColorMode.Dark ? styles.NLPInputDark : styles.NLPInput}
         spellCheck={false}
         value={text}
         onKeyPress={onInputPressEnter}

@@ -5,7 +5,7 @@ import passport from 'passport';
 import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { authResult } from '@gsbelarus/util-api-types';
+import { authResult, ColorMode } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
 import { upsertAccount, getAccounts } from './app/accounts';
 import contactGroups from './app/contactGrops';
@@ -215,6 +215,7 @@ app.get('/test', (req, res) => {
 app.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
     res.cookie('userId', req.user?.['id']);
+    res.cookie('color-mode', req.user?.['colorMode'] || ColorMode.Light);
     res.json(req.user);
   } else {
     res.json({ success: false });

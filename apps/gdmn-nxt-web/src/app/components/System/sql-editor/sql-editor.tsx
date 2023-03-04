@@ -14,6 +14,7 @@ import { StyledSplit, StyledSplitPane } from '../../Styled/styled-split/styled-s
 import { DGrid } from './dgrid';
 import { RootState } from '../../../store';
 import { useSelector } from 'react-redux';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 interface IHistoryProps {
   onSelectScript: (script: string) => void;
@@ -72,7 +73,7 @@ export function SqlEditor(props: SqlEditorProps) {
   const [params, setParams] = useState<Param[] | undefined>();
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
   const [prevScript, setPrevScript] = useState('');
-  const mode = useSelector((state: RootState) => state.settings.customization.mode);
+  const mode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
   const handleRunClick = useCallback(() => {
     if (!script) {
@@ -174,7 +175,7 @@ export function SqlEditor(props: SqlEditorProps) {
               {
                 params
                 &&
-                <Box sx={{ color: mode === 'dark' ? 'white' : '', borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
+                <Box sx={{ color: mode === ColorMode.Dark ? 'white' : '', borderTop: '1px solid silver', padding: 1, overflowY: 'scroll' }}>
                   <table className={styles.params}>
                     <thead>
                       <tr><th>Параметр</th><th>Значение</th></tr>
@@ -187,8 +188,8 @@ export function SqlEditor(props: SqlEditorProps) {
                             <td>
                               <input
                                 style={{
-                                  background: mode === 'dark' ? '#616161' : '',
-                                  color: mode === 'dark' ? 'white' : ''
+                                  background: mode === ColorMode.Dark ? '#616161' : '',
+                                  color: mode === ColorMode.Dark ? 'white' : ''
                                 }}
                                 type="text"
                                 value={value}

@@ -6,6 +6,7 @@ import PaginationItem from '@mui/material/PaginationItem';
 import { darken, lighten } from '@mui/material/styles';
 import { createSvgIcon } from '@mui/material';
 import { createElement } from 'react';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 export const gridComponents = {
   Pagination: CustomPagination,
@@ -13,13 +14,13 @@ export const gridComponents = {
 };
 
 const getBackgroundColor = (color: string, mode: string) =>
-  mode === 'dark' ? darken(color, 0.8) : lighten(color, 0.8);
+  mode === ColorMode.Dark ? darken(color, 0.8) : lighten(color, 0.8);
 
 const getSelectedBackgroundColor = (color: string, mode: string) =>
-  mode === 'dark' ? darken(color, 0.6) : lighten(color, 0.6);
+  mode === ColorMode.Dark ? darken(color, 0.6) : lighten(color, 0.6);
 
 const getHoverBackgroundColor = (color: string, mode: string) =>
-  mode === 'dark' ? darken(color, 0.4) : lighten(color, 0.4);
+  mode === ColorMode.Dark ? darken(color, 0.4) : lighten(color, 0.4);
 
 function customCheckbox(theme: Theme) {
   return {

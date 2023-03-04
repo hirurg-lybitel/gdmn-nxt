@@ -14,7 +14,7 @@ export function RemainsByInvoicesReport(props: RemainsByInvoicesReportProps) {
   const { onDate } = props;
   const { data, isFetching } = useGetRemainsInvoicesQuery({ onDate });
 
-  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+  const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
   const groupSumsMap = new Map<string, number>();
   for (const { CODE, SALDOCURR } of data || []) {

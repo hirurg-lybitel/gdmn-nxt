@@ -34,7 +34,7 @@ export function Profile(props: ProfileProps) {
         userId: userProfile?.id || -1,
         body: {
           AVATAR: reader.result?.toString() || '',
-          MODE: settings?.MODE || ''
+          COLORMODE: settings?.COLORMODE
         }
       });
     };
@@ -50,7 +50,7 @@ export function Profile(props: ProfileProps) {
       userId: userProfile?.id || -1,
       body: {
         AVATAR: null,
-        MODE: settings?.MODE || ''
+        COLORMODE: settings?.COLORMODE
       }
     });
   };

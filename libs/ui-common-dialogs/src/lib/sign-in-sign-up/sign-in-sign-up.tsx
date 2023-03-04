@@ -39,6 +39,7 @@ export interface SignInSignUpProps {
   newPassword?: (email: string) => Promise<IAuthResult>;
   topDecorator?: (stage?: Stage) => JSX.Element;
   bottomDecorator?: (stage?: Stage) => JSX.Element;
+  onSignIn: () => void;
 };
 
 type State = {
@@ -99,12 +100,13 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator }: SignInSignUpProps) {
+export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator, onSignIn }: SignInSignUpProps) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
   const classes = useStyles();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [launching, setLaunching] = useState(false);
 
   const waitAndDispatch = (fn: () => Promise<IAuthResult>) => () => {
     dispatch({ type: 'SET_WAITING' });
@@ -112,10 +114,12 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
   };
 
   const doSignIn = () => {
+    setLaunching(true);
     checkCredentials(userName, password).then(r => {
       dispatch({ type: 'SET_AUTHRESULT', authResult: r });
       if (r.result === 'SUCCESS') {
-        location.reload();
+        onSignIn();
+        // location.reload();
       }
     });
   };
@@ -277,10 +281,10 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           />
           <Button
             variant="contained"
-            disabled={waiting || !userName || !password || !!authResult}
+            disabled={waiting || !userName || !password || !!authResult || launching}
             onClick={doSignIn}
           >
-          Войти
+            {launching ? 'Входим...' : 'Войти'}
           </Button>
           {
             newPassword

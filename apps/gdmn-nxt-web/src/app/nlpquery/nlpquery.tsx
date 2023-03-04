@@ -1,4 +1,4 @@
-import { INLPToken, Language } from '@gsbelarus/util-api-types';
+import { ColorMode, INLPToken, Language } from '@gsbelarus/util-api-types';
 import Grid from '@mui/material/Grid/Grid';
 import Stack from '@mui/material/Stack/Stack';
 import { useEffect, useState } from 'react';
@@ -63,12 +63,12 @@ export function NLPQuery(props: NLPQueryProps) {
     }
     return c.map((m, idx) => m ? <td key={m[0]}><span>{m[0]}{':'}</span>{m[1]}</td> : <td key={idx}>&nbsp;</td>);
   };
-  const mode = useSelector((state: RootState) => state.settings.customization.mode);
+  const mode = useSelector((state: RootState) => state.settings.customization.colorMode);
   return (
     <Grid container height="100%" columnSpacing={0}>
       <Grid item xs={8}>
         <div className={styles.middle_container}>
-          <div className={mode === 'dark' ? styles.tree_headDark : styles.tree_head}>
+          <div className={mode === ColorMode.Dark ? styles.tree_headDark : styles.tree_head}>
             <Stack width="100%" direction="row" flexWrap="wrap" gap={1} paddingTop={1}>
               {data?.sents?.flatMap (
                 sent => sent.tokens.map(t =>
