@@ -25,39 +25,55 @@ export interface KanbanColumnProps {
   children: JSX.Element[];
   item: IKanbanColumn;
   isFetching: boolean,
+  addIsFetching:boolean,
+  lastCard?:IKanbanCard
   onEdit: (newColumn: IKanbanColumn) => void;
   onDelete: (column: IKanbanColumn) => void;
+  onEditCard: (newColumn: IKanbanCard) => void;
+  onDeleteCard: (card:IKanbanCard) => void;
   onAddCard: (card: IKanbanCard) => void;
+  clearLastCard: (arg1?:boolean) => void;
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
-  const { provided, dragSnapshot, dropSnapshot, isFetching } = props;
-  const { children, item, columns } = props;
-  const { onEdit, onDelete, onAddCard } = props;
+  const { provided, dragSnapshot, dropSnapshot, isFetching, addIsFetching } = props;
+  const { children, item, columns, lastCard } = props;
+  const { onEdit, onDelete, onEditCard, onAddCard, clearLastCard, onDeleteCard } = props;
 
   const theme = useTheme();
-  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+  const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
   const [upsertCard, setUpsertCard] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
       if (deleting) {
-        return;
+        onDeleteCard(card);
+        setUpsertCard(false);
+        clearLastCard();
       };
 
-      if (card.ID) {
-        return;
-      };
-
-      onAddCard(card);
-
+      if (card.ID && !deleting) {
+        onEditCard(card);
+        setUpsertCard(false);
+        clearLastCard();
+      } else {
+        onAddCard(card);
+        if (close || close === undefined) {
+          setUpsertCard(false);
+          clearLastCard(true);
+        }
+      }
+    },
+    handleCancel: async (isFetching?:boolean) => {
+      clearLastCard(isFetching);
       setUpsertCard(false);
     },
-    handleCancel: async () => setUpsertCard(false),
     handleClose: async (e: any, reason: string) => {
-      if (reason === 'backdropClick') setUpsertCard(false);
+      if (reason === 'backdropClick') {
+        setUpsertCard(false);
+      }
     },
   };
 
@@ -208,11 +224,12 @@ export function KanbanColumn(props: KanbanColumnProps) {
         open={upsertCard}
         currentStage={item}
         stages={columns}
+        card={lastCard}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [upsertCard]);
+  }, [upsertCard, lastCard]);
 
   return (
     <Box
@@ -277,7 +294,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             <CardActions>
               <PermissionsGate actionCode={Action.CreateDeal}>
                 {item.USR$INDEX === 0 &&
-                <Button onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
+                <Button disabled={addIsFetching} onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
                 }
               </PermissionsGate>
             </CardActions>

@@ -25,7 +25,7 @@ export interface TopEarningProps {
 export function TopEarning({params}: TopEarningProps) {
   const [getTopEarning, {data, isLoading, isSuccess}] = useGetTopEarningQuery();
 
-  const colorMode = useSelector((state: RootState) => state.settings.customization.mode);
+  const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
   useEffect(() => {
     params && getTopEarning(params);

@@ -49,28 +49,15 @@ import NotificationCenter from './app/pages/NotificationCenter/notification-cent
 import FAQ from './app/pages/FAQ/Index';
 import { SnackbarProvider } from 'notistack';
 import NotFound from './app/pages/NotFound';
-import menuItems from './app/menu-items';
-import {
-  setActiveMenu,
-  setPageIdFound,
-  setStyleMode
-} from './app/store/settingsSlice';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
-import { IMenuItem } from './app/menu-items';
 import { useState } from 'react';
-import { UserState } from './app/features/user/userSlice';
-import { userInfo } from 'os';
-import { join } from 'path';
-import { useGetProfileSettingsQuery } from './app/features/profileSettings';
 import DealSources from './app/pages/Managment/dealsCatalogs/deal-sources/deal-sources';
 import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-reasons';
-import { ColorMode, IPermissionByUser } from '@gsbelarus/util-api-types';
-import { usePermissions } from './app/features/common/usePermissions';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 registerMUI();
 
 const Main = () => {
-  const dispatch = useDispatch();
   const customization = useSelector(
     (state: RootState) => state.settings.customization
   );
@@ -79,15 +66,15 @@ const Main = () => {
   );
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
-  const [isFetchingNotification, notificationPermission] = usePermissions(8);
-  const [isFetchingPermissions, permissionsPermission] = usePermissions(10);
+
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
+
   return (
     <div
       style={{
-        background: settings.customization.mode === 'dark' ? '#424242' : '',
+        background: settings.customization.colorMode === ColorMode.Dark ? '#424242' : '',
         height: '100%'
       }}
     >

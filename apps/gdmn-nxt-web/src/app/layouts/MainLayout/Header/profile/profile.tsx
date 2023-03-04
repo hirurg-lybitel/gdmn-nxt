@@ -31,8 +31,6 @@ import Logout from '@mui/icons-material/Logout';
 import { Link } from 'react-router-dom';
 import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
-import { setStyleMode } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
-import { ColorMode } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -70,7 +68,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-/* eslint-disable-next-line */
 export interface ProfileProps {}
 
 export function Profile(props: ProfileProps) {
@@ -134,9 +131,8 @@ export function Profile(props: ProfileProps) {
       />)
   };
 
-  const logout = async () => {
-    await dispatch(logoutUser());
-    dispatch(setStyleMode(ColorMode.Light));
+  const logout = () => {
+    dispatch(logoutUser());
   };
 
   return (

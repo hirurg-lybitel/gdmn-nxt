@@ -1,6 +1,6 @@
 import './kanban-board.module.less';
 import { Box, Button, Stack } from '@mui/material';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
@@ -26,7 +26,6 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
 import { useMemo } from 'react';
-import { usePermissions } from '../../../features/common/usePermissions';
 
 // export interface IChanges {
 //   id: number;
@@ -48,8 +47,10 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [deleteColumn] = useDeleteColumnMutation();
   const [reorderColumn] = useReorderColumnsMutation();
 
-  const [addCard, { isSuccess: addCardSuccess, data: addedCard }] = useAddCardMutation();
-  const [updateCard, { isSuccess: updateCardSuccess }] = useUpdateCardMutation();
+  const [addCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: isLoadingAddCard }] = useAddCardMutation();
+  const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
+  const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
+  const [updateCard, { isSuccess: updateCardSuccess, isLoading: isLoadingEditCard }] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
   const [reorderCard] = useReorderCardsMutation();
 
@@ -102,6 +103,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
           USR$USERKEY: user.userProfile?.id || -1
         })
       );
+      if (lastCardShouldClear) {
+        setLastCardShouldClear(false);
+      } else {
+        setLastAddedCard(addedCard[0]);
+      }
 
       changes.current = [];
     };
@@ -350,6 +356,19 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return skeletonFaqItems;
   }, []);
 
+  const lastCard = useMemo(()=>{
+    if (!lastAddedCard) return undefined;
+    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === lastAddedCard?.ID);
+    return cards;
+  }, [columns, lastAddedCard]);
+
+  const clearLastCard = (isAdd?:boolean) => {
+    if (isAdd) {
+      setLastCardShouldClear(true);
+    }
+    setLastAddedCard(undefined);
+  };
+
   const skeletonCount:IKanbanColumn[] = skeletonItems(5);
 
   return (
@@ -403,9 +422,14 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   item={column || {} as IKanbanColumn}
                                   columns={columns || [] as IKanbanColumn[]}
                                   onEdit={columnHandlers.handleTitleEdit}
+                                  onEditCard={cardHandlers.handleEditCard}
                                   onDelete={columnHandlers.handleTitleDelete}
+                                  onDeleteCard={cardHandlers.handleDeleteCard}
                                   onAddCard={cardHandlers.handleAddCard}
                                   isFetching={isLoading}
+                                  addIsFetching={isLoadingAddCard}
+                                  lastCard={lastCard}
+                                  clearLastCard={clearLastCard}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
@@ -425,6 +449,9 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onAdd={cardHandlers.handleAddCard}
                                                 onEdit={cardHandlers.handleEditCard}
                                                 onDelete={cardHandlers.handleDeleteCard}
+                                                addIsFetching={isLoadingAddCard || isLoadingEditCard}
+                                                lastCard={lastCard}
+                                                clearLastCard={clearLastCard}
                                               />
                                             </Box>
                                           )}

@@ -1,3 +1,4 @@
+import { ColorMode } from '@gsbelarus/util-api-types';
 import { Box, LinearProgress, linearProgressClasses, useTheme } from '@mui/material';
 import { styled } from '@mui/styles';
 import styles from './linear-indeterminate.module.less';
@@ -17,7 +18,7 @@ export function LinearIndeterminate(props: LinearIndeterminateProps) {
     height: size,
     borderRadius: theme.mainContent.borderRadius,
     [`&.${linearProgressClasses.colorPrimary}`]: {
-      backgroundColor: theme.palette.primary.main[theme.palette.mode === 'light' ? 200 : 800],
+      backgroundColor: theme.palette.primary.main[theme.palette.mode === ColorMode.Light ? 200 : 800],
     },
     [`& .${linearProgressClasses.bar}`]: {
       borderRadius: 5,

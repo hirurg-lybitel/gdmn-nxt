@@ -111,8 +111,8 @@ export interface KanbanEditCardProps {
   currentStage?: IKanbanColumn;
   card?: IKanbanCard;
   stages: IKanbanColumn[];
-  onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
-  onCancelClick: () => void;
+  onSubmit: (arg1: IKanbanCard, arg2: boolean, arg3?:boolean) => void;
+  onCancelClick: (isFetching?:boolean) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
@@ -122,6 +122,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const classes = useStyles();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [addTasks, setAddTasks] = useState(false);
+  const [isFetchingCard, setIsFetchingCard] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState('');
@@ -149,14 +151,22 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   };
 
   const handleDeleteClick = () => {
+    setAddTasks(false);
+    formik.resetForm();
+    setTabIndex('1');
     setDeleting(true);
     setConfirmOpen(true);
   };
 
   const handleCancelClick = () => {
+    setAddTasks(false);
     setDeleting(false);
     formik.resetForm();
-    onCancelClick();
+    setTabIndex('1');
+    onCancelClick(isFetchingCard);
+    if (isFetchingCard) {
+      setIsFetchingCard(false);
+    }
   };
 
   const handleOnClose = (e: any, reason: string) => {
@@ -169,7 +179,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   };
 
   const initValue: IKanbanCard = {
-    ID: card?.ID || 0,
+    ID: card?.ID === -1 ? 0 : card?.ID || 0,
     USR$MASTERKEY: card?.USR$MASTERKEY || currentStage?.ID || 0,
     USR$INDEX: card?.USR$INDEX || currentStage?.CARDS?.length || 0,
     USR$DEALKEY: card?.USR$DEALKEY || -1,
@@ -192,6 +202,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     },
     TASKS: card?.TASKS || undefined,
   };
+
+  useEffect(()=>{
+    if (card && card?.ID !== -1 && addTasks) {
+      formik.resetForm();
+      setTabIndex('3');
+      setIsFetchingCard(false);
+    }
+  }, [card, addTasks]);
 
   const formik = useFormik<IKanbanCard>({
     enableReinitialize: true,
@@ -239,16 +257,23 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       };
       setConfirmOpen(false);
     },
-    onReset: () => {
-      setTabIndex('1');
-    }
+    // onReset: () => {
+    //   if (addTasks) {
+    //     setTabIndex('3');
+    //   } else {
+    //     setTabIndex('1');
+    //   }
+    // }
   });
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onSubmit(formik.values, deleting);
-    formik.resetForm();
-  }, [formik.values, deleting]);
+    if (addTasks) {
+      setIsFetchingCard(true);
+    }
+    setTabIndex('1');
+    onSubmit(formik.values, deleting, !addTasks);
+  }, [formik.values, deleting, addTasks]);
 
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
@@ -384,7 +409,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Сведения" value="1" />
                       <Tab label="Заявка" value="2" />
-                      <Tab label="Задачи" value="3" />
+                      <Tab label="Задачи" value="3" disabled={!formik.values.ID} />
                       <Tab label="Хронология" value="4" />
                       <Tab label="Описание" value="5" />
                     </TabList>
@@ -571,7 +596,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <Stack direction="row" spacing={3}>
                         <Stack>
                           <Stack direction="row" spacing={3}>
-                            {(formik.values.USR$MASTERKEY === stages[1].ID || formik.values.USR$MASTERKEY === stages[2].ID) ?
+                            {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
@@ -592,7 +617,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 label="В работе"
                               />
                               : <></>}
-                            {(formik.values.USR$MASTERKEY === stages[2].ID || formik.values.USR$MASTERKEY === stages[3].ID) ?
+                            {(formik.values.USR$MASTERKEY === stages[2]?.ID || formik.values.USR$MASTERKEY === stages[3]?.ID) ?
                               <FormControlLabel
                                 control={
                                   <Checkbox
@@ -727,6 +752,19 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             </IconButton>
           }
         </PermissionsGate>
+        {!formik.values.ID &&
+          <PermissionsGate actionCode={Action.CreateDeal} show={true}>
+            <Button
+              form="mainForm"
+              type="submit"
+              variant="contained"
+              onClick={()=>{
+                setAddTasks(true);
+              }}
+              disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching || isFetchingCard}
+            >Добавить задачи</Button>
+          </PermissionsGate>
+        }
         <Box flex={1} />
         <Button
           className={classes.button}
@@ -738,7 +776,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             form="mainForm"
             type="submit"
             variant="contained"
-            disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching}
+            onClick={()=>{
+              setAddTasks(false);
+            }}
+            disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching || isFetchingCard}
           >Сохранить</Button>
         </PermissionsGate>
       </DialogActions>

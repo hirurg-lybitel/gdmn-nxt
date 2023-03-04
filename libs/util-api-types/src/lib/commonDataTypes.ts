@@ -91,10 +91,18 @@ export type IEmployee = IContactWithID;
 export interface IProfileSettings {
   AVATAR?: string | null;
   RANK?: string;
-  MODE?: string;
+  COLORMODE?: ColorMode;
 }
 
 export enum ColorMode {
   Light = 'light',
   Dark = 'dark',
+}
+
+export type GedeminUser = {
+  id: number;
+  userName: string;
+  contactkey: number;
+  rank?: string;
+  colorMode?: ColorMode
 }

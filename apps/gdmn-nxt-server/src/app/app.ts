@@ -1,4 +1,4 @@
-import { IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
+import { ColorMode, GedeminUser, IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
 import { getReadTransaction, releaseReadTransaction } from './utils/db-connection';
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
@@ -62,17 +62,19 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
   }
 };
 
-export const getGedeminUser = async (userName: string): Promise<{ id: number, userName: string, contactkey: number, rank: string } | undefined> => {
+export const getGedeminUser = async (userName: string): Promise<GedeminUser | undefined> => {
   const query = `
     SELECT
       u.id,
       u.name,
       u.contactkey,
-      p.RANK
+      p.RANK,
+      ps.USR$MODE as ColorMode
     FROM
       gd_user u
       JOIN gd_contact c ON c.id = u.contactkey
       JOIN gd_people p ON p.contactkey = c.id
+      LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
     WHERE UPPER(u.name) = ?
   `;
 
@@ -88,6 +90,7 @@ export const getGedeminUser = async (userName: string): Promise<{ id: number, us
           userName,
           contactkey: data[0]['CONTACTKEY'],
           rank: data[0]['RANK'],
+          colorMode: data[0]['COLORMODE'],
         };
       } else if (!data.length) {
         return undefined;

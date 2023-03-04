@@ -3,6 +3,7 @@ import { gdmnTheme } from '../theme/gdmn-theme';
 import styles from './main-toolbar.module.less';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 interface ITBButtonProps {
   type: 'SMALL' | 'LARGE';
@@ -14,7 +15,7 @@ interface ITBButtonProps {
 };
 
 export const TBButton = ({ type, imgSrc, caption, disabled, selected, onClick }: ITBButtonProps) => {
-  const mode = useSelector((state: RootState) => state.settings.customization.mode);
+  const mode = useSelector((state: RootState) => state.settings.customization.colorMode);
   return (
     <td>
       {
@@ -28,7 +29,7 @@ export const TBButton = ({ type, imgSrc, caption, disabled, selected, onClick }:
               fontSize: gdmnTheme.typography.smallUI.fontSize,
               filter: disabled ? 'grayscale(100%) opacity(50%)' : 'none',
               border: selected ? '1px solid gray' : '1px solid transparent',
-              backgroundColor: mode === 'dark' ? selected ? '#616161' : '#424242' : selected ? 'silver' : 'none',
+              backgroundColor: mode === ColorMode.Dark ? selected ? '#616161' : '#424242' : selected ? 'silver' : 'none',
               borderRadius: selected ? '4px' : 'none',
               padding: '4px',
             }}
@@ -46,10 +47,10 @@ export const TBButton = ({ type, imgSrc, caption, disabled, selected, onClick }:
               fontSize: gdmnTheme.typography.smallUI.fontSize,
               filter: disabled ? 'grayscale(100%) opacity(50%)' : 'none',
               border: selected ? '1px solid gray' : '1px solid transparent',
-              backgroundColor: mode === 'dark' ? selected ? '#616161' : '#424242' : selected ? 'silver' : 'none',
+              backgroundColor: mode === ColorMode.Dark ? selected ? '#616161' : '#424242' : selected ? 'silver' : 'none',
               borderRadius: selected ? '4px' : 'none',
               padding: '4px',
-              color: mode === 'dark' ? 'white' : ''
+              color: mode === ColorMode.Dark ? 'white' : ''
             }}
           >
             <Stack
@@ -77,12 +78,12 @@ export interface MainToolbarProps {
 };
 
 export function MainToolbar({ children }: MainToolbarProps) {
-  const mode = useSelector((state: RootState) => state.settings.customization.mode);
+  const mode = useSelector((state: RootState) => state.settings.customization.colorMode);
   return (
     <div
       style={{
         width: '100%',
-        backgroundColor: mode === 'dark' ? '#424242' : gdmnTheme.palette.grey['200'],
+        backgroundColor: mode === ColorMode.Dark ? '#424242' : gdmnTheme.palette.grey['200'],
         paddingLeft: 8,
         paddingRight: 8,
         paddingBottom: 6,
@@ -96,7 +97,7 @@ export function MainToolbar({ children }: MainToolbarProps) {
           width: '100%',
           height: 74,
           padding: 6,
-          backgroundColor: mode === 'dark' ? '#424242' : gdmnTheme.palette.grey['100'],
+          backgroundColor: mode === ColorMode.Dark ? '#424242' : gdmnTheme.palette.grey['100'],
           borderColor: gdmnTheme.palette.grey['400'],
           borderStyle: 'solid',
           borderWidth: 1,
