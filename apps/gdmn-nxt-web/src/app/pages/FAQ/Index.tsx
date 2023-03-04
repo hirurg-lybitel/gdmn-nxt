@@ -162,9 +162,9 @@ export default function FAQ() {
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                <PermissionsGate actionCode={Action.CreateFAQ}>
+                {/* <PermissionsGate actionCode={Action.CreateFAQ}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate>
+                </PermissionsGate> */}
               </div>
             }
           />
@@ -210,7 +210,7 @@ export default function FAQ() {
                       }
                       {!componentIsFetching &&
                         <>
-                          <PermissionsGate actionCode={Action.EditFAQ}>
+                          {/* <PermissionsGate actionCode={Action.EditFAQ}>
                             <IconButton
                               color="primary"
                               disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
@@ -229,7 +229,7 @@ export default function FAQ() {
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate>
+                          </PermissionsGate> */}
                         </>
                       }
                     </div>
