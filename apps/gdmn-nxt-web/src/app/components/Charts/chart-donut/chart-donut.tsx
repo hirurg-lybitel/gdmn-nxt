@@ -2,16 +2,25 @@ import './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, Typography, useMediaQuery, useTheme, Theme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import ChartSkeleton from '../chart-skeleton/chart-skeleton';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles((theme:Theme) => ({
+  donut: {
+    '& .apexcharts-datalabel-value': {
+      fill: theme.palette.text.primary,
+    }
+  }
+}));
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
 
 export function ChartDonut(props: ChartDonutProps) {
   const theme = useTheme();
-
+  const classes = useStyles()
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({ userId: -1 });
@@ -52,8 +61,9 @@ export function ChartDonut(props: ChartDonutProps) {
         offsetY: 2,
       },
       labels: {
-        colors: theme.color.grey[500],
+        colors: theme.palette.text.primary,
       },
+      
     },
     grid: {
       show: true,
@@ -64,6 +74,7 @@ export function ChartDonut(props: ChartDonutProps) {
     dataLabels: {
       style: {
         fontSize: '1em',
+
       }
     },
     plotOptions: {
@@ -82,12 +93,14 @@ export function ChartDonut(props: ChartDonutProps) {
           }
         }
       }
-    }
+    },
   };
 
   const chartData: ApexCharts.ApexOptions = {
     series: series
   };
+
+
 
   return (
     <CustomizedCard
@@ -110,10 +123,10 @@ export function ChartDonut(props: ChartDonutProps) {
           ? <ChartSkeleton />
           : <>
             <Typography variant="h1">Статус сделок</Typography>
-            <Box flex={1} style={{ color: 'black' }}>
+            <Box flex={1} >
               <Chart
                 type="donut"
-                height="100%"
+                height="100%"className={classes.donut}
                 options={chartOptions}
                 {...chartData}
               />
