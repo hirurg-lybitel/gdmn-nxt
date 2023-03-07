@@ -103,11 +103,6 @@ export function ChartColumn(props: ChartColumnProps) {
 
   const ref = useRef<HTMLDivElement>(null);
   const ref2 = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number | undefined>(0);
-
-  useEffect(() => {
-    setWidth((ref2?.current?.clientWidth || 0) - 30);
-  }, [ref2?.current?.clientWidth]);
 
   const changeChartFilter = (key: string, value: any[]) => {
     const newChartFilter = { ...chartFilter };
@@ -317,7 +312,7 @@ export function ChartColumn(props: ChartColumnProps) {
               spacing={1}
               ref={ref}
               style={{
-                width: width || '100%'
+                width: '100%'
               }}
             >
               <Grid item xs={4}>
