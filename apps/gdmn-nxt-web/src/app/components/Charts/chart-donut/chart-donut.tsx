@@ -15,7 +15,7 @@ const ChartSkeleton = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',marginBottom: '49px' }}>
         <Skeleton variant="text" height={'30px'} width={'135px'} />
       </div>
-      <div style={{ display: 'flex', marginBottom: '35px', flexDirection:'column', marginLeft:'15px' }}>
+      <div style={{ display: 'flex', marginBottom: '35px', flexDirection:'column' }}>
         <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
         <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
         <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
@@ -131,14 +131,14 @@ export function ChartDonut(props: ChartDonutProps) {
         maxHeight: 'calc(100vh - 130px)'
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%', paddingLeft: stagesIsLoading ? '15.8px' : 0 }}>
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
-            <Typography variant="h1">Статус сделок</Typography>
+            <Typography variant="h1" style={{paddingLeft:'15.8px'}}>Статус сделок</Typography>
             <Box flex={1} >
               <Chart
-              
+                style={{paddingLeft:'1px'}}
                 type="donut"
                 height="100%"
                 options={chartOptions}

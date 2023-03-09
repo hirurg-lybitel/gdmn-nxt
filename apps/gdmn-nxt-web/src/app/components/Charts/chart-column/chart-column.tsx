@@ -22,7 +22,7 @@ const ChartSkeleton = () => {
         <Skeleton variant="rectangular" height={'60px'} width={'100px'} style={{ borderRadius: '12px' }} />
       </div>
       <div style={{ display: 'flex', marginBottom: '40px' }}>
-        <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ marginLeft: '10px', borderRadius: '12px' }}/>
+        <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ borderRadius: '12px' }}/>
         <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ marginLeft: '10px', borderRadius: '12px' }}/>
         <Skeleton variant="rectangular" height={'60px'} width={'100%'} style={{ marginLeft: '10px', borderRadius: '12px' }}/>
       </div>
@@ -235,7 +235,7 @@ export function ChartColumn(props: ChartColumnProps) {
           value.toLocaleString()
         ),
         style: {
-          colors: theme.textColor
+          colors: theme.textColor,
         }
       }
     },
@@ -293,13 +293,14 @@ export function ChartColumn(props: ChartColumnProps) {
         maxHeight: 'calc(100vh - 130px)',
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%', paddingLeft: analyticsDataIsLoading ? '15.8px' : 0  }} >
         {analyticsDataIsLoading
-          ? <ChartSkeleton />
+          ? <ChartSkeleton /> 
           : <>
             <Stack direction="row" spacing={1}>
               <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography
+                  style={{paddingLeft:'15.8px'}}
                   variant="h1"
                   onClick={() => {
                     analyticsDataRefetch();
@@ -334,7 +335,7 @@ export function ChartColumn(props: ChartColumnProps) {
                 width: '100%'
               }}
             >
-              <Grid item xs={4}>
+              <Grid item xs={4} style={{paddingLeft:'15.8px'}}>
                 <Autocomplete
                   multiple
                   filterOptions={filterOptions(50, 'NAME')}
@@ -429,7 +430,8 @@ export function ChartColumn(props: ChartColumnProps) {
                 type="bar"
               />
             </Box>
-            <Autocomplete
+            <Autocomplete 
+              style={{paddingLeft:'15.8px'}}
               multiple
               disableCloseOnSelect
               options={[...years].sort((a, b) => b - a) || []}
