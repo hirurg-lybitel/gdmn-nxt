@@ -1,26 +1,40 @@
-import './chart-donut.module.less';
+import style from './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, Stack, Typography, useMediaQuery, useTheme, Theme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import ChartSkeleton from '../chart-skeleton/chart-skeleton';
 import { makeStyles } from '@mui/styles';
+import { Skeleton } from '@mui/material';
+import { useState } from 'react'
 
-const useStyles = makeStyles((theme:Theme) => ({
-  donut: {
-    '& .apexcharts-datalabel-value': {
-      fill: theme.palette.text.primary,
-    }
-  }
-}));
+const ChartSkeleton = () => {
+  return(
+    <div style={{display:'flex', height:'100%'}}>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',marginBottom: '49px' }}>
+        <Skeleton variant="text" height={'30px'} width={'135px'} />
+      </div>
+      <div style={{ display: 'flex', marginBottom: '35px', flexDirection:'column', marginLeft:'15px' }}>
+        <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
+        <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
+        <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
+        <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
+        <Skeleton variant="text" height={'40px'} width={'180px'} style={{marginBottom:'5px'}} />
+      </div>
+    </div>
+    <div style={{width: '100%',height: '100%',padding: '55px 10px 60px 45px'}}>
+        <Skeleton variant="rectangular" width={'100%'} height={'100%'}/>
+    </div>
+    </div>
+  )
+}
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
 
 export function ChartDonut(props: ChartDonutProps) {
   const theme = useTheme();
-  const classes = useStyles()
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({ userId: -1 });
@@ -88,7 +102,8 @@ export function ChartDonut(props: ChartDonutProps) {
             },
             value: {
               show: true,
-              fontSize: '1.5em'
+              fontSize: '1.5em',
+              color: theme.palette.text.primary
             }
           }
         }
@@ -99,8 +114,6 @@ export function ChartDonut(props: ChartDonutProps) {
   const chartData: ApexCharts.ApexOptions = {
     series: series
   };
-
-
 
   return (
     <CustomizedCard
@@ -125,8 +138,9 @@ export function ChartDonut(props: ChartDonutProps) {
             <Typography variant="h1">Статус сделок</Typography>
             <Box flex={1} >
               <Chart
+              
                 type="donut"
-                height="100%"className={classes.donut}
+                height="100%"
                 options={chartOptions}
                 {...chartData}
               />
