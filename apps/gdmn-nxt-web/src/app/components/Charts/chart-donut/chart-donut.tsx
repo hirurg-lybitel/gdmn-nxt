@@ -131,14 +131,15 @@ export function ChartDonut(props: ChartDonutProps) {
         maxHeight: 'calc(100vh - 130px)'
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%', paddingLeft: stagesIsLoading ? '15.8px' : 0 }}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" 
+          style={{ maxWidth: '100%', padding: stagesIsLoading ? '15.8px 15.8px' : '15.8px 0' }}
+      >
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
             <Typography variant="h1" style={{paddingLeft:'15.8px'}}>Статус сделок</Typography>
-            <Box flex={1} >
+            <Box flex={1} style={{color:'black', paddingLeft:'1px', paddingRight:'5px'}} >
               <Chart
-                style={{paddingLeft:'1px'}}
                 type="donut"
                 height="100%"
                 options={chartOptions}
