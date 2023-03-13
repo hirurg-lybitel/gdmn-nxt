@@ -16,7 +16,7 @@ import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
 import { Action, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, IActiveKanbanDealsFilter, saveFilterData, setActiveKanbanDealsFilter } from '../../../store/filtersSlice';
 import { usePermissions } from '../../../features/common/usePermissions';
 
 export interface IChanges {
@@ -25,38 +25,6 @@ export interface IChanges {
   oldValue: string | number | undefined;
   newValue: string | number | undefined;
 };
-
-interface IKanbanFilter {
-  [key: string]: any;
-};
-
-const cardDateFilter = [
-  {
-    ID: 1,
-    name: 'Только активные'
-  },
-  {
-    ID: 2,
-    name: 'Срок сегодня'
-  },
-  {
-    ID: 3,
-    name: 'Срок завтра'
-  },
-  {
-    ID: 4,
-    name: 'Срок просрочен'
-  },
-  {
-    ID: 5,
-    name: 'Без срока'
-  },
-  {
-    ID: 6,
-    name: 'Все сделки'
-  },
-
-];
 
 export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IKanbanCard) => {
   const changesArr: IChanges[] = [];
@@ -114,19 +82,20 @@ export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IK
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
-  const [kanbanFilter, setKanbanFilter] = useState<IKanbanFilter>({ deadline: cardDateFilter[5] });
   const [tabNo, setTabNo] = useState(0);
   const [openFilters, setOpenFilters] = useState(false);
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
 
   const dispatch = useDispatch();
   const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+  const kanbanFilter = filtersStorage.activeKanbanDealsFilter;
+  const cardDateFilter = filtersStorage.kanbanDealsFilter.dateFilter;
   const user = useSelector<RootState, UserState>(state => state.user);
 
   const { data: columns, isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanDealsQuery({
     userId: user.userProfile?.id || -1,
     filter: {
-      deadline: kanbanFilter.deadline?.ID,
+      deadline: kanbanFilter.deadline.ID,
       ...filteringData,
     }
   });
@@ -202,9 +171,9 @@ export function Deals(props: DealsProps) {
             options={cardDateFilter}
             disableClearable
             getOptionLabel={option => option.name}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
+            isOptionEqualToValue={(option, value) => option.ID === value.ID}
             value={kanbanFilter.deadline || null}
-            onChange={(e, value) => setKanbanFilter({ deadline: value })}
+            onChange={(e, value) => dispatch(setActiveKanbanDealsFilter({ ...kanbanFilter, deadline: value }))}
             renderOption={(props, option, { selected }) => (
               <li {...props} key={option.ID}>
                 {option.name}
