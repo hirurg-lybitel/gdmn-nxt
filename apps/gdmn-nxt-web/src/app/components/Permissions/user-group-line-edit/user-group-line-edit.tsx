@@ -1,5 +1,5 @@
 import { IUserGroupLine } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -8,7 +8,6 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import * as yup from 'yup';
 import styles from './user-group-line-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import filterOptions from '../../helpers/filter-options';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -87,6 +86,13 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
     setConfirmOpen(false);
   }, []);
 
+  console.log(users)
+
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    stringify: (option:any) => option.NAME + option.CONTACT.NAME
+  });
+
   return (
     <Dialog
       open={open}
@@ -104,7 +110,7 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
               <Autocomplete
                 options={users || []}
                 getOptionLabel={option => option.NAME}
-                filterOptions={filterOptions(30, 'NAME')}
+                filterOptions={filterOptions}
                 value={users?.find(el => el.ID === formik.values.USER?.ID) || null}
                 loading={usersIsFetching}
                 loadingText="Загрузка данных..."
