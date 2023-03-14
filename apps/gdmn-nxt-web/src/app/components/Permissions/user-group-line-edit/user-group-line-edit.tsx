@@ -70,11 +70,7 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
       USER: yup.object().required('Не выбран пользователь'),
     }),
     onSubmit: (value) => {
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      setConfirmOpen(true);
     }
   });
 
@@ -153,18 +149,15 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
           variant="text"
           color="primary"
         >
-            Отменить
+          Отменить
         </Button>
         <Button
           className={classes.button}
-          type={!formik.isValid ? 'submit' : 'button'}
+          type={'submit'}
           form="mainForm"
-          onClick={() => {
-            setConfirmOpen(formik.isValid);
-          }}
           variant="contained"
         >
-            Сохранить
+          Сохранить
         </Button>
       </DialogActions>
       <ConfirmDialog
