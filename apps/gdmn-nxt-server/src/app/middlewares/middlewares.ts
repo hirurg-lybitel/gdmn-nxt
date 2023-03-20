@@ -34,7 +34,7 @@ export const checkPermissionsMW = (actionCode:number) => async (req, res, next) 
     const result = {
       ...Object.fromEntries([await Promise.resolve(execQuery(query))])
     };
-    if (result.action.MODE !== 1) return res.status(403).send(resultError('you don\'t have the rights to do this'));
+    if (result.action.MODE !== 1) return res.status(403).send(resultError('У вас нет прав для этого'));
     next();
   } catch (error) {
     return res.status(500).send(resultError(error.message));
