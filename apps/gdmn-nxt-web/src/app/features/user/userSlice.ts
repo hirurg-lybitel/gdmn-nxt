@@ -39,8 +39,9 @@ export const userSlice = createSlice({
     signInEmployee: () => ({ loginStage: 'SIGN_IN_EMPLOYEE' } as UserState),
     signInCustomer: () => ({ loginStage: 'SIGN_IN_CUSTOMER' } as UserState),
     createCustomerAccount: () => ({ loginStage: 'CREATE_CUSTOMER_ACCOUNT' } as UserState),
-    signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
-    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CUSTOMER', userProfile: action.payload } as UserState),
+    signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
+    signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'CUSTOMER', userProfile: action.payload } as UserState),
+    renderApp: (state) => { state.loginStage = state.userType || 'CUSTOMER'}
   },
   extraReducers: (builder) => {
     builder.addCase(logoutUser.fulfilled, () => ({ loginStage: 'SELECT_MODE' }));
@@ -56,6 +57,7 @@ export const {
   signedInEmployee,
   signedInCustomer,
   createCustomerAccount,
+  renderApp
 } = userSlice.actions;
 
 export default userSlice.reducer;

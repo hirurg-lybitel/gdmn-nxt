@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrl } from './const';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
@@ -16,6 +16,7 @@ import { setColorMode, setPageIdFound, setActiveMenu } from './store/settingsSli
 import menuItems, { IMenuItem } from './menu-items';
 import { useGetPermissionByUserQuery } from './features/permissions';
 import { getCookie } from './features/common/getCookie';
+import { usePermissions } from './features/common/usePermissions';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -50,6 +51,8 @@ export default function App(props: AppProps) {
   const { data: permissions } = useGetPermissionByUserQuery(
     { actionCode, userID: userProfile?.id || -1 }, { skip: !userProfile?.id || actionCode < 1 }
   );
+  const [isFetchingNotification, notificationPermission] = usePermissions(8);
+  const [isFetchingPermissions, permissionsPermission] = usePermissions(10);
 
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
@@ -88,7 +91,7 @@ export default function App(props: AppProps) {
     }
 
     dispatch(setPageIdFound(true));
-  }, [appSettings, permissions]);
+  }, [appSettings, permissions, pageIdFound]);
 
 
   type User = IUserProfile & UserState;
@@ -129,8 +132,15 @@ export default function App(props: AppProps) {
             default:
               dispatch(setColorMode(ColorMode.Light));
               break;
+        }
+        break;
+        }
+        case 'OTHER_LOADINGS': {
+          if(!pageIdFound){
+            return
           }
-          break;
+          dispatch(renderApp())
+          break
         }
       }
     })();
@@ -160,7 +170,7 @@ export default function App(props: AppProps) {
   const handleSignIn = async () => {
     const response = await fetch(`${baseUrl}user`, { method: 'GET', credentials: 'include' });
     const data = await response.json();
-
+    dispatch(setPageIdFound(false));
     if (!data.userName) {
       dispatch(selectMode());
       return;
@@ -184,19 +194,25 @@ export default function App(props: AppProps) {
     dispatch(queryLogin());
   };
 
+  const loadingPage = useMemo(() => {
+    return(
+      <Stack spacing={2}>
+        <CircularIndeterminate open={true} size={100} />
+        <Typography variant="overline" color="gray" align="center">
+          подключение
+        </Typography>
+      </Stack>
+    )
+  },[])
+
   const renderLoginStage = useMemo(() => {
     switch (loginStage) {
       case 'LAUNCHING':
-        return (
-          <Stack spacing={2}>
-            <CircularIndeterminate open={true} size={100} />
-            <Typography variant="overline" color="gray" align="center">
-              подключение
-            </Typography>
-          </Stack>
-        );
+        return loadingPage;
+      case 'OTHER_LOADINGS':
+        return loadingPage;
       case 'SELECT_MODE':
-        return <></>;
+        return loadingPage;
       case 'CUSTOMER':
         return <Navigate to="/customer" />;
       case 'EMPLOYEE':
@@ -236,7 +252,7 @@ export default function App(props: AppProps) {
           />
         );
       default:
-        return <></>;
+        return loadingPage;
     }
   }, [loginStage]);
 
