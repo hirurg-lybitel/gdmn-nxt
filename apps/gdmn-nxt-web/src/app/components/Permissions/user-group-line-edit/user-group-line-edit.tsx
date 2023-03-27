@@ -86,8 +86,6 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
     setConfirmOpen(false);
   }, []);
 
-  console.log(users)
-
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
     stringify: (option:any) => option.NAME + option.CONTACT.NAME
