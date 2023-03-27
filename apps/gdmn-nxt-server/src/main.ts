@@ -235,11 +235,9 @@ router.get('/user', (req, res) => {
 
 router.route('/user/signin')
   .post(
-    passport.authenticate('local', {  failureMessage: 'asdasd'  }),
+    passport.authenticate('local'),
     (req, res) => {
-      console.log('13')
       const { userName } = req.body;
-
       return res.json(authResult(
         'SUCCESS',
         `Вы вошли как ${userName}.`
