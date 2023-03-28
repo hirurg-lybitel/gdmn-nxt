@@ -1,17 +1,16 @@
-import './chart-donut.module.less';
+import style from './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, Typography, useMediaQuery, useTheme, Theme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import ChartSkeleton from '../chart-skeleton/chart-skeleton';
+import ChartSkeleton from './chart-skeleton';
 
 /* eslint-disable-next-line */
 export interface ChartDonutProps {}
 
 export function ChartDonut(props: ChartDonutProps) {
   const theme = useTheme();
-
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({ userId: -1 });
@@ -52,8 +51,9 @@ export function ChartDonut(props: ChartDonutProps) {
         offsetY: 2,
       },
       labels: {
-        colors: theme.color.grey[500],
+        colors: theme.palette.text.primary,
       },
+
     },
     grid: {
       show: true,
@@ -64,6 +64,7 @@ export function ChartDonut(props: ChartDonutProps) {
     dataLabels: {
       style: {
         fontSize: '1em',
+
       }
     },
     plotOptions: {
@@ -77,12 +78,13 @@ export function ChartDonut(props: ChartDonutProps) {
             },
             value: {
               show: true,
-              fontSize: '1.5em'
+              fontSize: '1.5em',
+              color: theme.palette.text.primary
             }
           }
         }
       }
-    }
+    },
   };
 
   const chartData: ApexCharts.ApexOptions = {
@@ -105,12 +107,14 @@ export function ChartDonut(props: ChartDonutProps) {
         maxHeight: 'calc(100vh - 130px)'
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex"
+          style={{ maxWidth: '100%', padding: stagesIsLoading ? '15.8px 15.8px' : '15.8px 0' }}
+      >
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
-            <Typography variant="h1">Статус сделок</Typography>
-            <Box flex={1} style={{ color: 'black' }}>
+            <Typography variant="h1" style={{paddingLeft:'15.8px'}}>Статус сделок</Typography>
+            <Box flex={1} style={{color:'black', paddingLeft:'1px', paddingRight:'5px'}} >
               <Chart
                 type="donut"
                 height="100%"

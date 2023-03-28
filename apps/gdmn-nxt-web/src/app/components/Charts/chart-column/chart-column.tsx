@@ -9,10 +9,11 @@ import { useGetDepartmentsQuery } from '../../../features/departments/department
 import { IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import ChartSkeleton from '../chart-skeleton/chart-skeleton';
 import LinearIndeterminate from '../../linear-indeterminate/linear-indeterminate';
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
+import ChartSkeleton from './chart-skeleton';
+
 interface IPeriodType {
   id: number;
   value: string;
@@ -103,11 +104,6 @@ export function ChartColumn(props: ChartColumnProps) {
 
   const ref = useRef<HTMLDivElement>(null);
   const ref2 = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number | undefined>(0);
-
-  useEffect(() => {
-    setWidth((ref2?.current?.clientWidth || 0) - 30);
-  }, [ref2?.current?.clientWidth]);
 
   const changeChartFilter = (key: string, value: any[]) => {
     const newChartFilter = { ...chartFilter };
@@ -221,7 +217,7 @@ export function ChartColumn(props: ChartColumnProps) {
           value.toLocaleString()
         ),
         style: {
-          colors: theme.textColor
+          colors: theme.textColor,
         }
       }
     },
@@ -279,13 +275,14 @@ export function ChartColumn(props: ChartColumnProps) {
         maxHeight: 'calc(100vh - 130px)',
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%' }}>
+      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%', padding: analyticsDataIsLoading ? '15.8px 15.8px' : '15.8px 0'  }} >
         {analyticsDataIsLoading
           ? <ChartSkeleton />
           : <>
             <Stack direction="row" spacing={1}>
-              <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
+                  style={{paddingLeft:'15.8px'}}
                   variant="h1"
                   onClick={() => {
                     analyticsDataRefetch();
@@ -297,7 +294,8 @@ export function ChartColumn(props: ChartColumnProps) {
 
                 <TextField
                   style={{
-                    width: '100px'
+                    width: '100px',
+                    marginRight:'15.8px'
                   }}
                   select
                   value={periodType?.value}
@@ -317,7 +315,9 @@ export function ChartColumn(props: ChartColumnProps) {
               spacing={1}
               ref={ref}
               style={{
-                width: width || '100%'
+                width: '100%',
+                paddingRight:'15.8px',
+                paddingLeft:'7.8px'
               }}
             >
               <Grid item xs={4}>
@@ -407,7 +407,7 @@ export function ChartColumn(props: ChartColumnProps) {
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Box flex={1} style={{ color: 'black' }}>
+            <Box flex={1} style={{ color: 'black', paddingRight:'6px ' }}>
               <Chart
                 options={chartOptions}
                 series={chartData.series}
@@ -416,6 +416,7 @@ export function ChartColumn(props: ChartColumnProps) {
               />
             </Box>
             <Autocomplete
+              style={{paddingLeft:'15.8px', paddingRight:'15.8px'}}
               multiple
               disableCloseOnSelect
               options={[...years].sort((a, b) => b - a) || []}
