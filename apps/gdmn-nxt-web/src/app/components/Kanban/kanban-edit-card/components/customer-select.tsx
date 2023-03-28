@@ -41,11 +41,13 @@ export function CustomerSelect(props: CustomerSelectProps) {
   }, []);
 
   const handleSubmitCustomer = useCallback((customer: ICustomer) => {
-    editingCustomer
-      ? insertCustomer(customer)
-      : updateCustomer(customer);
+    if(!editingCustomer){
+      insertCustomer(customer)
+    }else{
+      updateCustomer(customer)
+    }
     setAddCustomer(false);
-  }, []);
+  }, [editingCustomer]);
 
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
@@ -65,7 +67,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
       customer={editingCustomer}
       onCancelClick={handleCancelCustomer}
       onSubmit={handleSubmitCustomer}
-    />, [addCustomer]);
+    />, [addCustomer,editingCustomer]);
 
   return (
     <>
