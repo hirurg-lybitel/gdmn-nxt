@@ -188,7 +188,7 @@ export function KanbanList(props: KanbanListProps) {
     },
     {
       field: 'CONTACT',
-      headerName: 'Сотрудник',
+      headerName: 'Клиент',
       flex: 1,
       minWidth: 200,
       sortComparator: (a, b) => ('' + a?.NAME || '').localeCompare(b?.NAME || ''),

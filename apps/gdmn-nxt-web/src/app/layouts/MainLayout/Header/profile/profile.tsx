@@ -39,8 +39,6 @@ const useStyles = makeStyles((theme: Theme) => ({
       top: 0,
       left: 0,
       marginTop: '-0.71em',
-      marginLeft: 4,
-      marginRight: 4,
       '&::before': {
         transformOrigin: '0 100%'
       }
