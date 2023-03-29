@@ -3,7 +3,6 @@ import perm from '../../handlers/permissions';
 
 const router = express.Router();
 
-router.get('/', perm.getCross);
 router.put('/', perm.upsertCross);
 router.get('/userGroups', perm.getUserGroups);
 router.post('/userGroups', perm.upsertGroup);

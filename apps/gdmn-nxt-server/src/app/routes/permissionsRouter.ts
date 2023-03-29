@@ -7,6 +7,7 @@ import perm from '../handlers/permissions';
 const router = express.Router();
 router.get('/permissions/actions', perm.getActions);
 router.get('/permissions/actions/:actionCode/byUser/:userID', perm.getPermissionByUser);
+router.get('/permissions', perm.getCross);
 router.use('/permissions', checkPermissionsMW(Action.PermissionsSettings), permApi);
 
 
