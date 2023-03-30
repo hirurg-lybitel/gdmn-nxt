@@ -4,6 +4,7 @@ import { importedModels } from '../models';
 import { resultError } from '../responseMessages';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
 import { genId } from '../utils/genId';
+import { permissionsActionsCache, updatePermissonsCache } from '../middlewares/permissionMiddleware';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
@@ -138,11 +139,11 @@ const upsertCross: RequestHandler = async (req, res) => {
       },
       _schema
     };
-
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
+    updatePermissonsCache(req)
     await releaseTransaction(res.statusCode === 200);
   }
 };
@@ -261,6 +262,7 @@ const upsertGroup: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
+    updatePermissonsCache(req)
     await releaseTransaction(res.statusCode === 200);
   };
 };
@@ -312,6 +314,7 @@ const removeGroup: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
+    updatePermissonsCache(req)
     await releaseTransaction();
   };
 };
@@ -614,59 +617,20 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
+    updatePermissonsCache(req)
     await releaseTransaction(res.statusCode === 200);
   };
 };
 
 const getPermissionByUser: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
-
   const actionCode = parseInt(req.params.actionCode);
-  if (isNaN(actionCode)) return res.status(422).send(resultError('Поле "actionCode" не указано или неверного типа'));
-
-  const userID = parseInt(req.params.userID);
-  if (isNaN(userID)) return res.status(422).send(resultError('Поле "userID" не указано или неверного типа'));
-
+  if (isNaN(actionCode) || actionCode < 0) return res.status(422).send(resultError('Поле "actionCode" не указано или неверного типа'));
   try {
-    const _schema = {};
-
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      // const data = await attachment.executeSingletonAsObject(transaction, query, params);
-      // return [name, data];
-
-      const rs = await attachment.executeQuery(transaction, query, params);
-      const data = await rs.fetchAsObject();
-      await rs.close();
-
-      return [name, data[0]];
-    };
-
-    const query = {
-      name: 'action',
-      query: `
-        SELECT cr.USR$MODE MODE, act.USR$CODE CODE
-        FROM USR$CRM_PERMISSIONS_CROSS cr
-          JOIN USR$CRM_PERMISSIONS_ACTIONS act ON act.ID = cr.USR$ACTIONKEY
-          JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = cr.USR$GROUPKEY
-          JOIN USR$CRM_PERMISSIONS_UG_LINES line ON line.USR$GROUPKEY = ug.ID
-        WHERE
-          act.USR$CODE = ?
-          AND line.USR$USERKEY = ?
-        ROWS 1`,
-      params: [actionCode, userID]
-    };
-
-    // const action = await Promise.resolve(execQuery(query));
-
-    const result: IRequestResult = {
-      queries: {
-        ...Object.fromEntries([await Promise.resolve(execQuery(query))])
-      },
-      _params: [{ actionCode, userID }],
-      _schema
-    };
-
-    return res.status(200).send(result);
+    if(!permissionsActionsCache.get(actionCode)){
+      const result = await updatePermissonsCache(req)
+      if(!result.result) return res.status(500).send(resultError(result.message));
+    }
+    return res.status(200).json({CODE:actionCode,MODE:permissionsActionsCache.get(actionCode)});
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {

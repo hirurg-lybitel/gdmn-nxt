@@ -33,7 +33,7 @@ export function PermissionsGate(props: PermissionsGateProps) {
 
   const { data, isFetching } = useGetPermissionByUserQuery(
     { actionCode, userID: user.userProfile?.id || -1 },
-    { skip: !user.userProfile?.id }
+    { skip: !user.userProfile?.id || actionCode < 0 }
   );
 
   // console.log('data', isFetching, actionCode, user.userProfile?.id || -1, data);

@@ -162,9 +162,9 @@ export default function FAQ() {
                 <Typography variant="h3">
                   База знаний
                 </Typography>
-                {/* <PermissionsGate actionCode={Action.CreateFAQ}>
+                <PermissionsGate actionCode={Action.CreateFAQ}>
                   <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate> */}
+                </PermissionsGate>
               </div>
             }
           />

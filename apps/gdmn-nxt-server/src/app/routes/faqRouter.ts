@@ -1,5 +1,5 @@
 import { Action } from '@gsbelarus/util-api-types';
-import { checkPermissionsMW } from './../middlewares/middlewares';
+import { checkPermissionsMW } from '../middlewares/permissionMiddleware';
 import express from 'express';
 import faq from '../handlers/faq';
 

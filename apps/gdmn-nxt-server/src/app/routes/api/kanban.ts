@@ -1,5 +1,5 @@
 import { Action } from './../../../../../../libs/util-api-types/src/lib/crmDataTypes';
-import { checkPermissionsMW } from './../../middlewares/middlewares';
+import { checkPermissionsMW } from '../../middlewares/permissionMiddleware';
 import express from 'express';
 import cards from '../../kanban/cards';
 import columns from '../../kanban/columns';
