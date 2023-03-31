@@ -2,13 +2,12 @@ import { Action } from './../../../../../libs/util-api-types/src/lib/crmDataType
 import { checkPermissionsMW } from '../middlewares/permissionMiddleware';
 import express from 'express';
 import permApi from './api/permissions';
-import perm from '../handlers/permissions';
+import permApiWithPermissions from './api/permissionsWithPermissions'
+import { pathsWithPermissons } from '../pathsWithPermissons';
 
 const router = express.Router();
-router.get('/permissions/actions', perm.getActions);
-router.get('/permissions/actions/:actionCode/byUser/:userID', perm.getPermissionByUser);
-router.get('/permissions', perm.getCross);
-router.use('/permissions', checkPermissionsMW(Action.PermissionsSettings), permApi);
 
+router.use(pathsWithPermissons.permissions, permApi);
+router.use(pathsWithPermissons.permissions, checkPermissionsMW, permApiWithPermissions);
 
 export default router;

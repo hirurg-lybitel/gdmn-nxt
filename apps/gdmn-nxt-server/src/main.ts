@@ -206,7 +206,9 @@ app.use(middlewares);
 
 const router = express.Router();
 
-app.use(apiRoot.v1, router);
+export const useedApi = apiRoot.v1
+
+app.use(useedApi, router);
 
 // app.get('/test', (req, res) => {
 //   if (req.isAuthenticated()) {

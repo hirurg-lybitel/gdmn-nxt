@@ -1,6 +1,9 @@
 import { resultError } from 'apps/gdmn-nxt-server/src/app/responseMessages';
 import { getReadTransaction, releaseReadTransaction } from '../utils/db-connection';
 import NodeCache from 'node-cache';
+import { useedApi } from '../../main';
+import { pathsWithPermissons } from '../pathsWithPermissons';
+import { Action } from '@gsbelarus/util-api-types';
 
 export const permissionsActionsCache = new NodeCache()
 
@@ -35,7 +38,64 @@ export const updatePermissonsCache = async (req:any) => {
   }
 }
 
-export const checkPermissionsMW = (actionCode:number) => async (req, res, next) => {
+type routerName = 'faq' | 'labels' | 'kanban' | 'permissons'
+interface codesMas {
+  get:number,
+  post:number,
+  put: number,
+  delete:number
+}
+
+const createCodesMas = (g:number,p:number,u:number,d:number):codesMas => ({
+  get:g,
+  post:p,
+  put:u,
+  delete:d
+})
+
+const baseSwitch = (method:string,routerName:routerName):number => {
+  const codes:codesMas = (():codesMas=>{
+    switch(routerName){
+      case 'faq': return createCodesMas(-1,Action.CreateFAQ,Action.EditFAQ,Action.DeleteFAQ)
+      case 'kanban': return createCodesMas(-1,Action.CreateDeal,Action.EditDeal,Action.DeleteDeal)
+      case 'labels': return createCodesMas(-1,Action.CreateLabel,Action.EditLabel,Action.DeleteLabel)
+      case 'permissons': return createCodesMas(Action.PermissionsSettings,Action.PermissionsSettings,Action.PermissionsSettings,Action.PermissionsSettings)
+      default: return undefined
+    }
+  })()
+  switch(method){
+    case 'GET': return (codes.get < 0 ? undefined : codes.get)
+    case 'POST': return (codes.post < 0 ? undefined : codes.post)
+    case "PUT": return (codes.put < 0 ? undefined : codes.put)
+    case "DELETE": return (codes.delete < 0 ? undefined : codes.delete)
+    default: return undefined
+  }
+}
+
+export const checkPermissionsMW = async (req, res, next) => {
+  const firstPartOfPath = '/' + req.originalUrl.split(useedApi)[1].split('/')[1]
+  const endpointPath = req.originalUrl.split(useedApi)[1]
+  const actionCode = (():number => {
+    switch(firstPartOfPath){
+      case pathsWithPermissons.faq: switch(endpointPath){
+        // case 'some path': return Actions.SomeAction
+        default: return baseSwitch(req.method,'faq')
+      }
+      case pathsWithPermissons.labels: switch(endpointPath){
+        // case 'some path': return Actions.SomeAction
+        default: return baseSwitch(req.method,'labels')
+      }
+      case pathsWithPermissons.permissions: switch(endpointPath){
+        // case 'some path': return Actions.SomeAction
+        default: return baseSwitch(req.method,'permissons')
+      }
+      case pathsWithPermissons.kanban: switch(endpointPath){
+        // case 'some path': return Actions.SomeAction
+        default: return baseSwitch(req.method,'kanban')
+      }
+      default: undefined
+    }
+  })()
   if (isNaN(actionCode)) return res.status(500).send(resultError('mustAuthWithPermissions: Поле "actionCode" не указано или неверного типа'));
   try {
     if(!permissionsActionsCache.get(actionCode)){

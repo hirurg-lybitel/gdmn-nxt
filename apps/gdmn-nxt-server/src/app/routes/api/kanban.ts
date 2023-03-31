@@ -24,9 +24,6 @@ router.delete('/columns/:id', columns.remove);
 
 router.get('/cards', cards.get);
 router.get('/cards/:id', cards.get);
-router.post('/cards', checkPermissionsMW(Action.CreateDeal), cards.upsert);
-router.put('/cards/:id', checkPermissionsMW(Action.EditDeal), cards.upsert);
-router.delete('/cards/:id', checkPermissionsMW(Action.DeleteDeal), cards.remove);
 
 router.get('/history', history.get);
 router.get('/history/:cardId', history.get);
