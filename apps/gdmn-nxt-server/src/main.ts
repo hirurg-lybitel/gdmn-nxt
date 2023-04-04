@@ -27,10 +27,11 @@ import labelsRouter from './app/routes/labelsRouter';
 import permissionsRouter from './app/routes/permissionsRouter';
 import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
-import { Notifications } from './app/routes/notifications';
 import faqRouter from './app/routes/faqRouter';
 import cookieParser from 'cookie-parser';
 import RateLimit from 'express-rate-limit';
+import { Notifications } from './app/routes/socket/notifications';
+import { StreamingUpdate } from './app/routes/socket/streamingUpdate';
 
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -285,6 +286,9 @@ router.use(
 //     return res.send('from router: Not authenticated!');
 //   }
 // });
+
+/** Streaming updates module */
+StreamingUpdate();
 
 /** Notifications module */
 Notifications({ router });

@@ -30,10 +30,10 @@ export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IK
   const changesArr: IChanges[] = [];
 
   const deal = newCard.DEAL;
-  const contact = newCard.DEAL.CONTACT || {};
-  const performer = newCard.DEAL.PERFORMER || {};
+  const contact = newCard.DEAL?.CONTACT || {};
+  const performer = newCard.DEAL?.PERFORMER || {};
 
-  if ((deal.USR$AMOUNT || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
+  if ((deal?.USR$AMOUNT || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Сумма',
@@ -49,7 +49,7 @@ export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IK
       newValue: contact.NAME
     });
   };
-  if (deal.USR$NAME !== oldCard.DEAL?.USR$NAME) {
+  if (deal?.USR$NAME !== oldCard.DEAL?.USR$NAME) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Наименование',
@@ -92,7 +92,7 @@ export function Deals(props: DealsProps) {
   const cardDateFilter = filtersStorage.kanbanDealsFilter.dateFilter;
   const user = useSelector<RootState, UserState>(state => state.user);
 
-  const { data: columns, isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanDealsQuery({
+  const { currentData: columns, isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanDealsQuery({
     userId: user.userProfile?.id || -1,
     filter: {
       deadline: kanbanFilter.deadline.ID,
