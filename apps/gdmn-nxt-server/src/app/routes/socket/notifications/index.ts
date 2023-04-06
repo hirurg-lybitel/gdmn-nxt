@@ -12,24 +12,6 @@ interface NotificationsProps {
   router: Router;
 }
 
-const host = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 'localhost'
-    : process.env.NX_HOST_IP;
-})();
-
-const port = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 4201
-    : process.env.GDMN_NXT_SERVER_PORT;
-})();
-
-const notificationPort = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 7777
-    : Number(process.env.NX_SOCKET_NOTIFICATIONS_PORT);
-})();
-
 export function Notifications({ router }: NotificationsProps) {
   const socketIO = new Server<
     ClientToServerEvents,
@@ -37,8 +19,7 @@ export function Notifications({ router }: NotificationsProps) {
   >({
     cors: {
       credentials: true,
-      // origin: `http://${process.env.NODE_ENV === 'development' ? 'localhost:4201' : `${process.env.NX_HOST_IP}:80`}`
-      origin: `http://${host}:${port}`
+      origin: `http://${config.host}:${config.appPort}`
     }
   });
 
@@ -48,7 +29,7 @@ export function Notifications({ router }: NotificationsProps) {
   socketIO.listen(config.notificationPort);
 
   socketIO.on('connection', (socket) => {
-    console.log(`⚡: ${socket.id} user just connected!`);
+    console.log(`⚡ Notifications: ${socket.id} user just connected!`);
 
     socket.on('delete', async (notificationId) => {
       await deleteNotification(sessionId, notificationId);

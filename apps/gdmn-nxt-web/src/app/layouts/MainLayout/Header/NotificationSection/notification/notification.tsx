@@ -22,7 +22,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import NotificationList from '../notification-list/notification-list';
 import NotificationsOffOutlinedIcon from '@mui/icons-material/NotificationsOffOutlined';
-import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, getSocketClient } from '@gdmn-nxt/socket';
+import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, clearSocket, getSocketClient, setSocketClient } from '@gdmn-nxt/socket';
 import logo from './NoNotifications.png'; // with import
 import { Socket } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
@@ -34,6 +34,7 @@ import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
 import { IFilteringData } from 'apps/gdmn-nxt-web/src/app/components/Kanban/deals-filter/deals-filter';
 import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
 import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
+import { config } from '@gdmn-nxt/config';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -110,24 +111,30 @@ export function Notification(props: NotificationProps) {
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
-  // const arrowRef = useRef<HTMLElement | null>(null);
-  const [fadeOut, setFadeOut] = useState(false);
-  const [socketClient, setsocketClient] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
-
+  const [socketClient, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
   const [messages, setMessages] = useState<IMessage[]>([]);
 
-  useEffect(() => {
-    const socket = getSocketClient('notifications');
-    setsocketClient(socket);
-  }, []);
+
+  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
   useEffect(() => {
-    if (!socketClient) return;
+    if (userId <= 0) return;
 
-    socketClient?.on?.('messages', (data: IMessage[]) => {
+    const socket = setSocketClient('notifications', {
+      url: `http://${config.host}:${config.notificationPort}`,
+      userId
+    })
+
+    socket?.on?.('messages', (data: IMessage[]) => {
       setMessages(data);
     });
-  }, [socketClient]);
+
+    socket && setSocket(socket);
+
+    return () => {
+      clearSocket('notifications');
+    };
+  }, []);
 
   /** Disable scrolling for main window when notifications are opened */
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
@@ -156,16 +163,6 @@ export function Notification(props: NotificationProps) {
       window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
     };
   }, [open]);
-
-  // useEffect(() => {
-  //   if (!open) {
-  //     const timer = setTimeout(() => {
-  //       setFadeOut(!fadeOut);
-  //     }, 1000);
-  //     return () => clearTimeout(timer);
-  //   };
-  //   return;
-  // });
 
   const handleDeleteNotification = (id: number) => {
     socketClient?.emit('delete', id);
