@@ -9,7 +9,7 @@ import tasks from '../../kanban/task';
 import denyReasons from '../../kanban/denyReasons';
 import { sourceCatalog } from '../../handlers/deals/sourceCatalog';
 import kanbanCatalogs from './kanbanCatalogs';
-
+import kanbanFilters from './kanbanFilters';
 
 const router = express.Router();
 
@@ -38,9 +38,10 @@ router.post('/tasks', tasks.upsert);
 router.put('/tasks/:id', tasks.upsert);
 router.delete('/tasks/:id', tasks.remove);
 
-// router.get('/denyreasons', denyReasons.get);
-
 /** Справочник источников сделки */
 router.use('/catalogs', kanbanCatalogs);
+
+/** Фильтры */
+router.use('/filters', kanbanFilters);
 
 export default router;

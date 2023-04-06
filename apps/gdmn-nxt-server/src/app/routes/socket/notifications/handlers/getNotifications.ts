@@ -47,7 +47,7 @@ export const getNotifications = async (sessionId: string) => {
       name: 'notifications',
       query: `
         SELECT
-          ID, EDITIONDATE, USR$USERKEY, USR$TITLE, USR$MESSAGE
+          ID, EDITIONDATE, USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$ACTIONTYPE, USR$ACTIONCONTENT
         FROM USR$CRM_NOTIFICATIONS
         WHERE USR$DELAYED = 0
         ORDER BY USR$USERKEY, EDITIONDATE DESC`
@@ -63,7 +63,9 @@ export const getNotifications = async (sessionId: string) => {
         date: n.EDITIONDATE,
         title: n.USR$TITLE,
         message: n.USR$MESSAGE,
-        userId: n.USR$USERKEY
+        userId: n.USR$USERKEY,
+        ...(n.USR$ACTIONTYPE ? { action: n.USR$ACTIONTYPE } : {}),
+        ...(n.USR$ACTIONCONTENT ? { actionContent: n.USR$ACTIONCONTENT } : {}),
       };
 
       if (notifictions[n.USR$USERKEY]) {

@@ -20,6 +20,8 @@ export interface IMessage {
   date: Date;
   title: string;
   text: string;
+  action?: NotificationAction;
+  actionContent?: string;
 };
 
 export interface IUser {
@@ -27,12 +29,18 @@ export interface IUser {
   socketId: string;
 };
 
+export enum NotificationAction {
+  JumpToDeal  = 1,
+}
+
 export interface INotification {
   id: number;
   date: Date;
   userId?: number;
   title: string;
   message: string;
+  action?: NotificationAction;
+  actionContent?: string;
 }
 
 export enum SocketRoom {

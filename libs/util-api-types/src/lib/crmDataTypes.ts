@@ -85,6 +85,7 @@ export interface IDeal extends IWithID {
   CONTACT_PHONE?: string;
   CREATIONDATE?: Date;
   DESCRIPTION?: string;
+  USR$NUMBER?: number;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -237,6 +238,16 @@ export interface IBusinessProcess extends IWithID {
 
 export interface IDealSource extends IWithID {
   NAME: string;
+}
+
+export interface IKanbanFilterDeadline extends IWithID {
+  CODE: number;
+  NAME: string;
+}
+
+export interface IKanbanLastUsedFilterDeadline extends IWithID {
+  USER: IUser;
+  FILTER: IKanbanFilterDeadline;
 }
 
 export enum Action {
