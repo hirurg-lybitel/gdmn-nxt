@@ -142,20 +142,6 @@ export const MainLayout = (props:MainLayoutProps) => {
   const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
 
   useEffect(() => {
-    const userId = user.userProfile?.id;
-    if (!userId) return;
-
-    const socket = setSocketClient('notifications', {
-      url: `http://${config.host}:${config.notificationPort}`,
-      userId
-    })
-
-    return () => {
-      clearSocket('notifications');
-    };
-  }, []);
-
-  useEffect(() => {
     if (errorMessage) {
       setOpenSnackBar(true);
     }

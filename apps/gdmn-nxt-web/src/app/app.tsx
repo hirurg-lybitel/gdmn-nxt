@@ -101,7 +101,7 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
-          navigate('/');
+          navigate('');
           break;
         case 'LAUNCHING':
           // приложение загружается
