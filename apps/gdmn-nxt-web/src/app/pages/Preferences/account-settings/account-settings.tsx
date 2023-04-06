@@ -94,6 +94,7 @@ export function AccountSettings(props: AccountSettingsProps) {
   return (
     <CustomizedCard className={style.card}>
       <CardHeader
+        style={{ paddingBottom:'15px',paddingTop:'15px'}}
         title={
           <div className={style.title}>
             <Typography variant="h3">

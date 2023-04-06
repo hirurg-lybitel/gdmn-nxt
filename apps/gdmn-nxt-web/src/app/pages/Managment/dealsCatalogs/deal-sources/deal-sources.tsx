@@ -84,7 +84,7 @@ export function DealSources(props: DealSourcesProps) {
       borders
       className={styles.Card}
     >
-      <CardHeader title={<Typography variant="h3">Источники заявок</Typography>} />
+      <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">Источники заявок</Typography>} />
       <Divider />
       <CardContent
         className={styles.CardContent}

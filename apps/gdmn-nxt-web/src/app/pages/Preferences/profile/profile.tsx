@@ -80,7 +80,7 @@ export function Profile(props: ProfileProps) {
   return (
     <>{memoConfirmDialog}
       <CustomizedCard className={styles.mainCard} borders>
-        <CardHeader title={<Typography variant="h3">Аккаунт</Typography>} />
+        <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">Аккаунт</Typography>} />
         <Divider />
         <CardContent className={styles['card-content']}>
           <Stack direction="row" flex={1} spacing={2} >

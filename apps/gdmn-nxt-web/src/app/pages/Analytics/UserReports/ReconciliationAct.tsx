@@ -70,7 +70,9 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
     <Box flex="1">
       <Stack direction="column" spacing={2}>
         <CustomizedCard borders boxShadows>
-          <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
+          <CardHeader
+          style={{ paddingBottom:'15px',paddingTop:'15px'}}
+          title={<Typography variant="h3">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
             <Grid container spacing={3} direction={'column'}>

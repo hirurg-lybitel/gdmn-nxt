@@ -155,6 +155,7 @@ export default function FAQ() {
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
           <CardHeader
+            style={{ paddingBottom:'15px',paddingTop:'15px'}}
             title={componentIsFetching ?
               <Skeleton variant="rectangular" height={'36px'}/>
               :

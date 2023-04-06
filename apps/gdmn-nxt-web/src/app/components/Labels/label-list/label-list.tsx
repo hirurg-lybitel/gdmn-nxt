@@ -77,6 +77,7 @@ export function LabelList(props: LabelListProps) {
         style={{ height: '100%' }}
       >
         <CardHeader
+          style={{ paddingBottom:'15px',paddingTop:'15px'}}
           title={componentIsFetching ? <Skeleton variant="rectangular" height={'36px'}/> : <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h3">Метки</Typography>
             <PermissionsGate actionCode={Action.CreateLabel}>

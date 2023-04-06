@@ -38,8 +38,9 @@ import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import style from './customers.module.less';
 import DataField from './dataField/DataField';
 import { LoadingButton } from '@mui/lab';
+import { height } from '@mui/system';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
     border: 'none',
     '& ::-webkit-scrollbar': {
@@ -74,10 +75,29 @@ const useStyles = makeStyles((theme: Theme) => ({
       padding: '24px'
     },
     '& .MuiDataGrid-columnHeader': {
-      fontSize: '1rem'
+      fontSize: '1rem',
+      paddingTop:'5px',
+      paddingBottom:'0px',
+      height:'50px !important'
     },
     '& .css-yrdy0g-MuiDataGrid-columnHeaderRow .MuiDataGrid-columnHeader:last-child': {
       pointerEvents:'none !important'
+    },
+    '& .MuiDataGrid-virtualScrollerContent':{
+      height:'700px !important'
+    },
+    '& .MuiToolbar-root':{
+      paddingTop:'0px !important',
+      paddingBottom:'0px !important',
+      height:'60px'
+    },
+    '& .MuiDataGrid-cell':{
+      minHeight:'70px !important',
+      maxHeight:'70px !important'
+    },
+    '& .MuiDataGrid-row':{
+      minHeight:'70px !important',
+      maxHeight:'70px !important'
     }
   }
 }));
@@ -505,7 +525,8 @@ export function Customers(props: CustomersProps) {
           })
       }}
     >
-      <CardHeader title={<Typography variant="h3">Клиенты</Typography>} />
+      <CardHeader
+      style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography  variant="h3">Клиенты</Typography>} />
       <Divider />
       <CardContent
         style={{
@@ -516,9 +537,9 @@ export function Customers(props: CustomersProps) {
         }}
       >
         <Stack flex={1}>
-          <Box p={3}>
+          <Box p={3} style={{paddingTop:'15px',paddingBottom:'0px'}}>
             <Stack direction="row" spacing={2}>
-              <Box display="flex" justifyContent="center">
+              <Box display="flex" justifyContent="center" >
                 {/* <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button> */}
                 <Button
                   variant="contained"
@@ -571,25 +592,27 @@ export function Customers(props: CustomersProps) {
               </Box>
             </Stack>
           </Box>
-          <Box p={3} className={style.bodySelectedDataContainer}>
-            <Stack style={{ flexWrap: 'wrap' }} direction="row" spacing={2}>
-              {filteringData?.DEPARTMENTS && (
-                <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
-              )}
-              {filteringData?.CONTRACTS && (
-                <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
-              )}
-              {filteringData?.WORKTYPES && (
-                <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
-              )}
-              {filteringData?.LABELS && (
-                <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
-              )}
-              {filteringData?.BUSINESSPROCESSES && (
-                <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
-              )}
-            </Stack>
-          </Box>
+          {Object.keys(filteringData || {}).length !== 0 &&
+            <Box p={3} className={style.bodySelectedDataContainer}>
+              <Stack style={{ flexWrap: 'wrap' }} direction="row" spacing={2}>
+                {filteringData?.DEPARTMENTS && (
+                  <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
+                )}
+                {filteringData?.CONTRACTS && (
+                  <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
+                )}
+                {filteringData?.WORKTYPES && (
+                  <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
+                )}
+                {filteringData?.LABELS && (
+                  <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
+                )}
+                {filteringData?.BUSINESSPROCESSES && (
+                  <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
+                )}
+              </Stack>
+            </Box>
+          }
           <Stack direction="row" flex={1} display="flex">
             <Box flex={1}>
               <DataGridPro

@@ -30,7 +30,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
 
   return (
     <CustomizedCard borders boxShadows style={{ height: 'calc(100vh - 130px)', flex: 1 }}>
-      <CardHeader title={<Typography variant="h3">Воронка продаж</Typography>} />
+      <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">Воронка продаж</Typography>} />
       {isFetching
         ? <></>
         : <ResponsiveFunnel

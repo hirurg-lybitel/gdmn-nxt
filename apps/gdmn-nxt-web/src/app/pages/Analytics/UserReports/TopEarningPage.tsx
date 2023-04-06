@@ -63,7 +63,7 @@ export default function TopEarningPage() {
     <>
       <Stack direction="column" flex={1} spacing={2}>
         <CustomizedCard borders boxShadows>
-          <CardHeader title={<Typography variant="h3">ТОП по выручке</Typography>} />
+          <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">ТОП по выручке</Typography>} />
           <Divider />
           <CardContent>
             <Grid container direction="column" spacing={2}>
