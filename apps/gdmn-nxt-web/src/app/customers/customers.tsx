@@ -75,6 +75,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     '& .MuiDataGrid-columnHeader': {
       fontSize: '1rem'
+    },
+    '& .css-yrdy0g-MuiDataGrid-columnHeaderRow .MuiDataGrid-columnHeader:last-child': {
+      pointerEvents:'none !important'
     }
   }
 }));
