@@ -413,7 +413,7 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(false);
     },
     handleFilterClear: async () => {
-      dispatch(clearFilterData());
+      dispatch(clearFilterData('customers'));
 
       setFilterModel({ items: [] });
       setFilteringData({});
