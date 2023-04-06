@@ -40,9 +40,12 @@ export function getSocketClient(name: string) {
   return socketClients[name];
 }
 
-export function clearSocket(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
+export function clearSocket(name: string) {
+  const socket = socketClients[name];
   if (!socket?.connected) return;
 
   socket.removeAllListeners();
   socket.disconnect();
+
+  delete socketClients[name];
 }
