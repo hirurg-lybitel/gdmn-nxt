@@ -169,8 +169,8 @@ export function CustomerEdit(props: CustomerEditProps) {
     setConfirmOpen(false);
   }, []);
 
-  const handleClose = useCallback((e: any, reason: string) => {
-    if (reason === 'backdropClick') handleCancelClick();
+  const handleClose = useCallback(() => {
+    handleCancelClick();
   }, [handleCancelClick]);
 
   const memoContactlist = useMemo(() =>

@@ -38,27 +38,42 @@ const Transition = forwardRef(function Transition(
 
 export interface CustomizedDialogProps {
   open: boolean;
-  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
+  onClose?: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown') => void;
   children: ReactNode;
   width?: number | string;
+  minWidth?: number | string;
 }
 
 
 function CustomizedDialog(props: CustomizedDialogProps) {
   const { children, open, onClose } = props;
-  const { width = 500 } = props;
+  const {
+    width = 500,
+    minWidth = 0
+  } = props;
 
+  console.log('width', width);
   const styles = {
-    width: width
+    width: width,
+    minWidth
   };
 
-  // const classes = useStyles(styles);
+  const handleOnClose = (event: object, reason: string) => {
+    switch (reason) {
+      case 'backdropClick':
+      case 'escapeKeyDown':
+        onClose && onClose(event, reason);
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <Dialog
       open={open}
       TransitionComponent={Transition}
-      onClose={onClose}
+      onClose={handleOnClose}
       // PaperComponent={myPaper}
       // classes={{
       //   paper: classes.dialog
@@ -75,6 +90,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
           '& .MuiDialogActions-root': {
             padding: '12px 24px 12px 16px !important'
           },
+          maxWidth: '100%',
           ...styles
         }
       }}

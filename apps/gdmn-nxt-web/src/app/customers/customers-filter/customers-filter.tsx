@@ -60,7 +60,7 @@ export interface IFilteringData {
 export interface CustomersFilterProps {
   open: boolean;
   width?: string;
-  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
+  onClose?: (event?: {}) => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
   onFilterClear: () => void;
@@ -359,7 +359,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
             fullWidth
             onClick={() => {
               onFilterClear();
-              onClose && onClose({}, 'backdropClick');
+              onClose && onClose();
             }}
           >
             Очистить

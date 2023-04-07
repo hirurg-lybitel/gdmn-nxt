@@ -136,7 +136,7 @@ export function Deals(props: DealsProps) {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
+    filterClose: async (event: any) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
