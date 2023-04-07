@@ -401,10 +401,7 @@ export function Customers(props: CustomersProps) {
       setFilterModel({ items: filterModels });
       setFilteringData(newValue);
     },
-    handleFilterClose: async (
-      event: any,
-      reason: 'backdropClick' | 'escapeKeyDown'
-    ) => {
+    handleFilterClose: async (event: any) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
