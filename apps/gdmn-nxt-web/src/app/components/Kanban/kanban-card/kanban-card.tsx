@@ -210,6 +210,9 @@ export function KanbanCard(props: KanbanCardProps) {
             display: 'inline',
             position: 'absolute',
             right: 0,
+          },
+          '&:hover .number': {
+            display: 'none',
           }
         }}
         onDoubleClick={doubleClick}
@@ -220,20 +223,22 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <PermissionsGate actionCode={Action.CopyDeal}>
+            <Typography className="number" variant="caption" color="GrayText">{'#' + card.DEAL?.USR$NUMBER}</Typography>
+
               {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
                 ?
-                <div
-                  className="actions"
-                  hidden
-                >
-                  <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </div>
+                <PermissionsGate actionCode={Action.CopyDeal}>
+                  <div
+                    className="actions"
+                    hidden
+                  >
+                    <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </div>
+                </PermissionsGate>
                 : null
               }
-            </PermissionsGate>
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">

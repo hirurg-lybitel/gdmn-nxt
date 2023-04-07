@@ -6,12 +6,12 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import filterOptions from '../../helpers/filter-options';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ICustomer } from '@gsbelarus/util-api-types';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 
 export interface IFilteringData {
-  [name: string] : any[];
+  [name: string] : any;
 }
 
 export interface DealsFilterProps {
@@ -21,7 +21,6 @@ export interface DealsFilterProps {
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
   onFilterClear: () => void;
-  onLastFilter: () => void;
 }
 
 export function DealsFilter(props: DealsFilterProps) {
@@ -31,8 +30,7 @@ export function DealsFilter(props: DealsFilterProps) {
     onClose,
     filteringData,
     onFilteringDataChange,
-    onFilterClear,
-    onLastFilter
+    onFilterClear
   } = props;
 
   const { data, isFetching: customerFetching } = useGetCustomersQuery();
@@ -40,14 +38,37 @@ export function DealsFilter(props: DealsFilterProps) {
   const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
 
   const handleOnChange = (entity: string, value: any) => {
-    const newObject = Object.assign({}, filteringData);
+    console.log('handleOnChange', entity, value);
+    const newObject = {...filteringData};
     delete newObject[entity];
-
-    onFilteringDataChange(Object.assign(newObject, value?.length > 0 ? { [entity]: value } : {}));
+    onFilteringDataChange({ ...newObject, ...(value?.length > 0 ? { [entity]: value } : {})});
   };
 
-  function Filter() {
-    return (
+  const [dealNumber, setDealNumber] = useState<string>(filteringData?.dealNumber);
+
+  useEffect(() => {
+    setDealNumber(filteringData?.dealNumber || '');
+  }, [filteringData?.dealNumber]);
+
+  /**Debouncing enter deal number */
+  useEffect(() => {
+    if (!open) return;
+    
+    const sendRequestNumber = setTimeout(() => {
+      handleOnChange('dealNumber', dealNumber);
+    }, 2000)
+
+    return () => clearTimeout(sendRequestNumber);
+
+  }, [dealNumber]);
+
+  return (
+    <CustomizedDialog
+      open={open}
+      onClose={onClose}
+      width={width}
+    >
+      {/* <Filter /> */}
       <CustomizedCard
         style={{
           flex: 1,
@@ -125,21 +146,22 @@ export function DealsFilter(props: DealsFilterProps) {
               loading={departmentsFetching}
               loadingText="Загрузка данных..."
             />
+            <TextField
+              label="Номер сделки"
+              value={dealNumber || ''}
+              onChange={(e) => setDealNumber(e.target.value)}
+            />
           </Stack>
         </CardContent>
-        <CardActions>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={onLastFilter}
-          >
-            Последний фильтр
-          </Button>
+        <CardActions style={{
+          padding: '16px'
+        }}>
           <Button
             variant="contained"
             fullWidth
             onClick={() => {
               onFilterClear();
+              setDealNumber('');
               onClose && onClose({}, 'backdropClick');
             }}
           >
@@ -147,23 +169,7 @@ export function DealsFilter(props: DealsFilterProps) {
           </Button>
         </CardActions>
       </CustomizedCard>
-    );
-  };
-
-  return (
-    <CustomizedDialog
-      open={open}
-      onClose={onClose}
-      width={width}
-    >
-      <Filter />
     </CustomizedDialog>
-  );
-
-  return (
-    <div className={styles.container}>
-      <h1>Welcome to DealsFilter!</h1>
-    </div>
   );
 }
 

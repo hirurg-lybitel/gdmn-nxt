@@ -22,9 +22,18 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import NotificationList from '../notification-list/notification-list';
 import NotificationsOffOutlinedIcon from '@mui/icons-material/NotificationsOffOutlined';
-import { ClientToServerEvents, IMessage, ServerToClientEvents, getSocketClient } from '@gdmn-nxt/socket';
+import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, getSocketClient } from '@gdmn-nxt/socket';
 import logo from './NoNotifications.png'; // with import
 import { Socket } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import { useGetKanbanDealsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanApi';
+import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
+import { IFilteringData } from 'apps/gdmn-nxt-web/src/app/components/Kanban/deals-filter/deals-filter';
+import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
+import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -171,6 +180,33 @@ export function Notification(props: NotificationProps) {
     setOpen(false);
   };
 
+  const navigate = useNavigate();
+  const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery();
+
+  const dispatch = useDispatch();
+  const handleClickNotification = (action?: NotificationAction, actionContent?: string) => {
+    switch (Number(action)) {
+      case NotificationAction.JumpToDeal:
+        if (!actionContent) break;
+
+        const newDealsFilters = {
+          deadline: [dealsDateFilter.find(f => f.CODE === 6)],
+          dealNumber: actionContent
+        };
+
+        dispatch(setActiveMenu('deals'));
+        navigate('managment/deals/list');
+
+        dispatch(saveFilterData({ 'deals': newDealsFilters }));
+
+        break;
+      default:
+        break;
+    };
+
+    setOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -230,7 +266,11 @@ export function Notification(props: NotificationProps) {
                     <Divider />
                     {messages.length > 0
                       ? <PerfectScrollbar>
-                        <NotificationList messages={messages} onDelete={handleDeleteNotification} />
+                        <NotificationList
+                          messages={messages}
+                          onDelete={handleDeleteNotification}
+                          onClick={handleClickNotification}
+                        />
                       </PerfectScrollbar>
                       : <Stack
                         flex={1}
