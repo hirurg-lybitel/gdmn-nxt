@@ -253,6 +253,7 @@ export function Customers(props: CustomersProps) {
       width: 150,
       headerAlign: 'center',
       align: 'center',
+      sortable: false,
       renderCell: (params) => {
         const customerId = Number(params.id);
 
