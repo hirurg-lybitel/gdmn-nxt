@@ -178,7 +178,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     setTabIndex(newindex);
   };
 
-  const initValue: IKanbanCard = useMemo(()=>({
+  const initValue: IKanbanCard = {
     ID: card?.ID === -1 ? 0 : card?.ID || 0,
     USR$MASTERKEY: card?.USR$MASTERKEY || currentStage?.ID || 0,
     USR$INDEX: card?.USR$INDEX || currentStage?.CARDS?.length || 0,
@@ -201,7 +201,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
     },
     TASKS: card?.TASKS || undefined,
-  }),[card])
+  };
 
   useEffect(()=>{
     if (card && card?.ID !== -1 && addTasks) {
@@ -210,8 +210,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       setIsFetchingCard(false);
     }
   }, [card, addTasks]);
-
-
 
   const formik = useFormik<IKanbanCard>({
     enableReinitialize: true,
@@ -376,19 +374,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       cancelClick={handleConfirmCancelClick}
     />,
   [confirmOpen, deleting, handleConfirmOkClick, handleConfirmCancelClick]);
-
-  const escPressed = useCallback((event:KeyboardEvent) => {
-    if (event.key === 'Escape' && JSON.stringify(formik.values) === JSON.stringify(card)) {
-      handleCancelClick()
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('keydown', escPressed);
-    return () => {
-      document.removeEventListener('keydown', escPressed);
-    };
-  }, [escPressed]);
 
   return (
     <Dialog
