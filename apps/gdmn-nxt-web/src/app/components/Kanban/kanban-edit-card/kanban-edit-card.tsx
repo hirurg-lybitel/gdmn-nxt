@@ -170,8 +170,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   };
 
   const handleOnClose = (e: any, reason: string) => {
-    if (reason !== 'backdropClick') return;
-    handleCancelClick();
+    switch (reason) {
+      case 'backdropClick':
+      case 'escapeKeyDown':
+        handleCancelClick();
+        break;
+      default:
+        break;
+    }
   };
 
   const handleTabsChange = (event: any, newindex: string) => {
