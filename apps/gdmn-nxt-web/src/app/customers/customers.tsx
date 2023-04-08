@@ -38,7 +38,8 @@ import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import style from './customers.module.less';
 import DataField from './dataField/DataField';
 import { LoadingButton } from '@mui/lab';
-import { height } from '@mui/system';
+import StyledGrid from '../components/Styled/styled-grid/styled-grid';
+import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -76,29 +77,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
     '& .MuiDataGrid-columnHeader': {
       fontSize: '1rem',
-      paddingTop:'5px',
-      paddingBottom:'0px',
-      height:'50px !important'
     },
-    '& .css-yrdy0g-MuiDataGrid-columnHeaderRow .MuiDataGrid-columnHeader:last-child': {
-      pointerEvents:'none !important'
-    },
-    '& .MuiDataGrid-virtualScrollerContent':{
-      height:'700px !important'
-    },
-    '& .MuiToolbar-root':{
-      paddingTop:'0px !important',
-      paddingBottom:'0px !important',
-      height:'60px'
-    },
-    '& .MuiDataGrid-cell':{
-      minHeight:'70px !important',
-      maxHeight:'70px !important'
-    },
-    '& .MuiDataGrid-row':{
-      minHeight:'70px !important',
-      maxHeight:'70px !important'
-    }
   }
 }));
 
@@ -237,10 +216,12 @@ export function Customers(props: CustomersProps) {
       flex: 1,
       minWidth: 200,
       renderCell: ({ value, row }) => {
+        const labels = (row as ICustomer)?.LABELS;
         return (
           <Stack spacing={1}>
             <div>{value}</div>
-            <List
+            {labels?.length
+              ? <List
               style={{
                 flexDirection: 'row',
                 padding: '0px',
@@ -250,7 +231,7 @@ export function Customers(props: CustomersProps) {
                 gap: '5px'
               }}
             >
-              {(row as ICustomer)?.LABELS?.map((label) => (
+              {labels.map((label) => (
                 <ListItemButton
                   key={label.ID}
                   onClick={handleLabelClick(label)}
@@ -265,6 +246,8 @@ export function Customers(props: CustomersProps) {
                 </ListItemButton>
               ))}
             </List>
+          : <></>}
+
           </Stack>
         );
       }
@@ -276,6 +259,7 @@ export function Customers(props: CustomersProps) {
       width: 150,
       headerAlign: 'center',
       align: 'center',
+      sortable: false,
       renderCell: (params) => {
         const customerId = Number(params.id);
 
@@ -508,6 +492,8 @@ export function Customers(props: CustomersProps) {
     filterHandlers.handleFilteringData(Object.assign(newObject));
   };
 
+  console.log('filteringData', Object.keys(filteringData || {}).length );
+
   return (
     <CustomizedCard
       borders
@@ -525,9 +511,64 @@ export function Customers(props: CustomersProps) {
           })
       }}
     >
-      <CardHeader
-      style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography  variant="h3">Клиенты</Typography>} />
+      <CardHeader title={<Typography variant="h3">Клиенты</Typography>} />
       <Divider />
+      <CardToolbar>
+        <Stack direction="row" spacing={2}>
+          <Box display="flex" justifyContent="center" >
+            {/* <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button> */}
+            <Button
+              variant="contained"
+              onClick={handleAddOrganization}
+              disabled={customerFetching}
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              Добавить
+            </Button>
+          </Box>
+          <Box flex={1} />
+          <Box>{memoSearchBar}</Box>
+          <Box display="flex" justifyContent="center" width={30}>
+            <LoadingButton
+              loading={customerFetching}
+              onClick={() => customerRefetch()}
+              variant="text"
+              size="medium"
+              style={{
+                minWidth: 30,
+                borderRadius: '12px'
+              }}
+            >
+              <RefreshIcon
+                style={{
+                  display: customerFetching ? 'none' : 'inline',
+                }}
+                color={'primary'}
+              />
+            </LoadingButton>
+          </Box>
+          <Box display="flex" justifyContent="center" width={30}>
+            <IconButton
+              onClick={filterHandlers.handleFilter}
+              disabled={customerFetching}
+            >
+              <Badge
+                color="error"
+                variant={
+                  Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                    ? 'dot'
+                    : 'standard'
+                }
+              >
+                <FilterListIcon
+                  color={customerFetching ? 'disabled' : 'primary'}
+                />
+              </Badge>
+            </IconButton>
+          </Box>
+        </Stack>
+      </CardToolbar>
       <CardContent
         style={{
           flex: 1,
@@ -537,121 +578,36 @@ export function Customers(props: CustomersProps) {
         }}
       >
         <Stack flex={1}>
-          <Box p={3} style={{paddingTop:'15px',paddingBottom:'0px'}}>
-            <Stack direction="row" spacing={2}>
-              <Box display="flex" justifyContent="center" >
-                {/* <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button> */}
-                <Button
-                  variant="contained"
-                  onClick={handleAddOrganization}
-                  disabled={customerFetching}
-                  startIcon={<AddIcon />}
-                >
-                  Добавить
-                </Button>
-              </Box>
-              <Box flex={1} />
-              <Box>{memoSearchBar}</Box>
-              <Box display="flex" justifyContent="center" width={30}>
-                <LoadingButton
-                  loading={customerFetching}
-                  onClick={() => customerRefetch()}
-                  variant="text"
-                  size="medium"
-                  style={{
-                    minWidth: 30,
-                    borderRadius: '12px'
-                  }}
-                >
-                  <RefreshIcon
-                    style={{
-                      display: customerFetching ? 'none' : 'inline',
-                    }}
-                    color={'primary'}
-                  />
-                </LoadingButton>
-              </Box>
-              <Box display="flex" justifyContent="center" width={30}>
-                <IconButton
-                  onClick={filterHandlers.handleFilter}
-                  disabled={customerFetching}
-                >
-                  <Badge
-                    color="error"
-                    variant={
-                      Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                        ? 'dot'
-                        : 'standard'
-                    }
-                  >
-                    <FilterListIcon
-                      color={customerFetching ? 'disabled' : 'primary'}
-                    />
-                  </Badge>
-                </IconButton>
-              </Box>
-            </Stack>
-          </Box>
           {Object.keys(filteringData || {}).length !== 0 &&
-            <Box p={3} className={style.bodySelectedDataContainer}>
-              <Stack style={{ flexWrap: 'wrap' }} direction="row" spacing={2}>
-                {filteringData?.DEPARTMENTS && (
-                  <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
-                )}
-                {filteringData?.CONTRACTS && (
-                  <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
-                )}
-                {filteringData?.WORKTYPES && (
-                  <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
-                )}
-                {filteringData?.LABELS && (
-                  <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
-                )}
-                {filteringData?.BUSINESSPROCESSES && (
-                  <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
-                )}
-              </Stack>
-            </Box>
+            <Stack className={style.bodySelectedDataContainer}style={{ flexWrap: 'wrap' }} direction="row" spacing={2} p={3}>
+              {filteringData?.DEPARTMENTS && (
+                <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.CONTRACTS && (
+                <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.WORKTYPES && (
+                <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.LABELS && (
+                <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
+              )}
+              {filteringData?.BUSINESSPROCESSES && (
+                <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
+              )}
+            </Stack>
           }
           <Stack direction="row" flex={1} display="flex">
             <Box flex={1}>
-              <DataGridPro
-                className={classes.DataGrid}
-                localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-                hideFooterSelectedRowCount
-                rows={customers ?? []}
+              <StyledGrid
                 columns={columns}
-                columnVisibilityModel={{
-                  CONTRACTS: false,
-                  DEPARTMENTS: false,
-                  WORKTYPES: false
-                }}
-                pagination
-                disableMultipleSelection
+                rows={customers ?? []}
                 loading={customerFetching}
-                getRowId={(row) => row.ID}
-                onSelectionModelChange={(ids) =>
-                  setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
-                }
-                components={{
-                  LoadingOverlay: CustomLoadingOverlay,
-                  NoRowsOverlay: CustomNoRowsOverlay,
-                  NoResultsOverlay: CustomNoRowsOverlay
-                }}
-                getRowHeight={(params) => {
-                  const customer: ICustomer = params.model as ICustomer;
-                  const labels: ILabel[] | undefined = customer.LABELS;
-
-                  if (labels?.length && labels.length > 4) {
-                    return 40 * Math.ceil(labels.length / 2);
-                  }
-
-                  return 80;
-                }}
-                rowsPerPageOptions={[10, 20, 50]}
+                pagination
                 paginationMode="server"
-                rowCount={customersCount}
                 pageSize={paginationData.pageSize}
+                rowCount={customersCount}
+                rowsPerPageOptions={[10, 20, 50]}
                 onPageChange={(data) => {
                   setPaginationData((prevState) => ({
                     ...prevState,
@@ -666,11 +622,31 @@ export function Customers(props: CustomersProps) {
                 }}
                 sortingMode="server"
                 onSortModelChange={handleSortModelChange}
-                headerHeight={70}
+                disableMultipleSelection
+                hideFooterSelectedRowCount
+                hideHeaderSeparator
                 disableColumnResize
                 disableColumnReorder
                 disableColumnFilter
                 disableColumnMenu
+                columnVisibilityModel={{
+                  CONTRACTS: false,
+                  DEPARTMENTS: false,
+                  WORKTYPES: false
+                }}
+                onSelectionModelChange={(ids) =>
+                  setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
+                }
+                getRowHeight={(params) => {
+                  const customer: ICustomer = params.model as ICustomer;
+                  const labels: ILabel[] | undefined = customer.LABELS;
+
+                  if (labels?.length && labels.length > 4) {
+                    return 40 * Math.ceil(labels.length / 2);
+                  }
+
+                  return 80;
+                }}
               />
             </Box>
             <Box>{memoFilter}</Box>
@@ -679,26 +655,6 @@ export function Customers(props: CustomersProps) {
         </Stack>
       </CardContent>
     </CustomizedCard>
-  );
-
-  return (
-    <Stack
-      flex={1}
-      display="flex"
-      direction="column"
-      spacing={2}
-      style={{ overflow: 'hidden' }}
-    >
-      <Snackbar
-        open={openSnackBar}
-        autoHideDuration={5000}
-        onClose={handleSnackBarClose}
-      >
-        <Alert onClose={handleSnackBarClose} variant="filled" severity="error">
-          {snackBarMessage}
-        </Alert>
-      </Snackbar>
-    </Stack>
   );
 }
 

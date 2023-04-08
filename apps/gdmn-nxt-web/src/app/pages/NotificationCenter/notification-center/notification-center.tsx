@@ -19,7 +19,7 @@ export function NotificationCenter(props: NotificationCenterProps) {
         display: 'flex',
       }}
     >
-      <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">Центр уведомлений</Typography>} />
+      <CardHeader title={<Typography variant="h3">Центр уведомлений</Typography>} />
       <Divider />
       <CardContent
         style={{

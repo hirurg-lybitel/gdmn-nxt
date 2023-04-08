@@ -12,6 +12,7 @@ import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
 import { usePermissions } from '../../../features/common/usePermissions';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { Action } from '@gsbelarus/util-api-types';
+import CardToolbar from '../../Styled/card-toolbar/card-toolbar';
 
 const ItemSkeleton = () => {
   return (
@@ -77,9 +78,12 @@ export function LabelList(props: LabelListProps) {
         style={{ height: '100%' }}
       >
         <CardHeader
-          style={{ paddingBottom:'15px',paddingTop:'15px'}}
-          title={componentIsFetching ? <Skeleton variant="rectangular" height={'36px'}/> : <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h3">Метки</Typography>
+          title={<Typography variant="h3">Метки</Typography>}
+        />
+        <Divider />
+        <CardToolbar>
+          <div style={{ display: 'flex' }}>
+            <Box flex={1} />
             <PermissionsGate actionCode={Action.CreateLabel}>
               <Button
                 variant="contained"
@@ -89,9 +93,8 @@ export function LabelList(props: LabelListProps) {
                 Добавить
               </Button>
             </PermissionsGate>
-          </div>}
-        />
-        <Divider />
+          </div>
+        </CardToolbar>
         <CardContent className={classes.scrollBarContainer}>
           <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }}>
             {componentIsFetching

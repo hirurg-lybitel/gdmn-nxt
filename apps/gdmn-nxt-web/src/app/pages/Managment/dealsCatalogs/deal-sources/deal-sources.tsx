@@ -8,6 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DealSourceUpsert from 'apps/gdmn-nxt-web/src/app/components/Kanban/deal-source-upsert/deal-source-upsert';
 import { useCallback, useMemo, useState } from 'react';
 import { IDealSource } from '@gsbelarus/util-api-types';
+import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
 
 
 /* eslint-disable-next-line */
@@ -84,12 +85,10 @@ export function DealSources(props: DealSourcesProps) {
       borders
       className={styles.Card}
     >
-      <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">Источники заявок</Typography>} />
+      <CardHeader title={<Typography variant="h3">Источники заявок</Typography>} />
       <Divider />
-      <CardContent
-        className={styles.CardContent}
-      >
-        <Stack direction="row" p={3}>
+      <CardToolbar>
+        <Stack direction="row">
           <Box flex={1} />
           <Button
             variant="contained"
@@ -99,6 +98,10 @@ export function DealSources(props: DealSourcesProps) {
             Добавить
           </Button>
         </Stack>
+      </CardToolbar>
+      <CardContent
+        className={styles.CardContent}
+      >
         <StyledGrid
           rows={data}
           columns={columns}
