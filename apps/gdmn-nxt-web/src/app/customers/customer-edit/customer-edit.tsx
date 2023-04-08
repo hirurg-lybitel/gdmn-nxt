@@ -94,7 +94,7 @@ export interface CustomerEditProps {
 }
 
 export function CustomerEdit(props: CustomerEditProps) {
-  const { open, deleteable = true, customer } = props;
+  const { open, deleteable = false, customer } = props;
   const { onCancelClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);

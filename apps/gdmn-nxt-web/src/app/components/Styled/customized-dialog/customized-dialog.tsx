@@ -52,7 +52,6 @@ function CustomizedDialog(props: CustomizedDialogProps) {
     minWidth = 0
   } = props;
 
-  console.log('width', width);
   const styles = {
     width: width,
     minWidth

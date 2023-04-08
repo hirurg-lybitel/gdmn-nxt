@@ -29,42 +29,24 @@ export function NotificationList(props: NotificationListProps) {
     onDelete && onDelete(id);
   };
 
-  // const navigate = useNavigate();
-
-  // const [skip, setSkip] = useState(true);
-
-  // const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
-  // const kanbanFilter = filtersStorage.activeKanbanDealsFilter;
-
-  // const user = useSelector<RootState, UserState>(state => state.user);
-  // const { data: columns, isFetching: columnsIsFetching, isLoading, refetch, currentData,  } = useGetKanbanDealsQuery({
-  //   userId: user.userProfile?.id || -1,
-  //   filter: {
-  //     deadline: kanbanFilter.deadline.ID
-  //   }
-  // }, {
-  //   skip
-  // });
-
-  // useEffect(() => {
-  //   console.log('skip', skip);
-  //   !skip && setSkip(true);
-
-  // }, [skip]);
-
-  // useEffect(() => {
-  //   console.log('isFetching', skip, columnsIsFetching, columns, currentData);
-  //   // if (columnsIsFetching) return;
-
-
-  // }, [columnsIsFetching]);
 
   const handleOnClick = useCallback((message: IMessage) => () => {
     onClick && onClick(message.action, message.actionContent);
   }, [onClick]);
 
   return (
-    <List disablePadding>
+    <List disablePadding
+    sx={{
+      '.close-action': {
+        display:'none'
+      },
+      '.MuiListItem-container:hover .close-action': {
+        display: 'inline',
+      },
+      '.MuiListItem-container:hover .datetime': {
+        display: 'none',
+      },
+    }}>
       {messages.length
         ? messages.map((message, index) =>
           <ListItem
@@ -72,6 +54,13 @@ export function NotificationList(props: NotificationListProps) {
             divider
             onClick={handleOnClick(message)}
             button
+            // className='list-item'
+            className={styles['list-item']}
+            // sx={{
+            //   '.list-item:hover .actions': {
+            //     backgroundColor: 'blue !important',
+            //   }
+            // }}
           >
             <ListItemIcon
               style={{
@@ -83,12 +72,34 @@ export function NotificationList(props: NotificationListProps) {
             <ListItemText>
               <Stack direction="column" spacing={1}>
                 <Typography variant="h4">{message?.title}</Typography>
+
+
                 <Typography variant="body1" component="div">
                   <ReactMarkdown className={styles['markdown']}>
                     {message?.text || ''}
                   </ReactMarkdown>
                 </Typography>
                 {/* <Typography variant="body1">{message?.text}</Typography> */}
+                {/* <Typography
+                  variant="caption"
+                  color="GrayText"
+                >
+                  {new Date(message?.date || 0).toLocaleString('default', {
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </Typography> */}
+              </Stack>
+            </ListItemText>
+            <ListItemSecondaryAction style={{ top: '25px' }}>
+              <div className="close-action">
+                <IconButton onClick={handleDelete(message.id)} >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </div>
+              <div className="datetime">
                 <Typography
                   variant="caption"
                   color="GrayText"
@@ -100,12 +111,8 @@ export function NotificationList(props: NotificationListProps) {
                     minute: '2-digit'
                   })}
                 </Typography>
-              </Stack>
-            </ListItemText>
-            <ListItemSecondaryAction style={{ top: '25px' }}>
-              <IconButton onClick={handleDelete(message.id)}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
+              </div>
+
             </ListItemSecondaryAction>
           </ListItem>
         )
