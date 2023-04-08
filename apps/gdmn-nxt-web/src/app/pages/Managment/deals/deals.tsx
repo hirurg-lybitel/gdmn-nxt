@@ -1,7 +1,7 @@
 import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { toggleMenu } from '../../../store/settingsSlice';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { CircularIndeterminate } from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
@@ -14,10 +14,11 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { Action, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { Action, IKanbanCard, IKanbanColumn, IKanbanFilterDeadline, IPermissionByUser } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
-import { clearFilterData, IActiveKanbanDealsFilter, saveFilterData, setActiveKanbanDealsFilter } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { usePermissions } from '../../../features/common/usePermissions';
+import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery, usePostLastUsedFilterDeadlineMutation } from '../../../features/kanban/kanbanFiltersApi';
 
 export interface IChanges {
   id: number;
@@ -84,31 +85,48 @@ export interface DealsProps {}
 export function Deals(props: DealsProps) {
   const [tabNo, setTabNo] = useState(0);
   const [openFilters, setOpenFilters] = useState(false);
-  const [filteringData, setFilteringData] = useState<IFilteringData>({});
 
   const dispatch = useDispatch();
   const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
-  const kanbanFilter = filtersStorage.activeKanbanDealsFilter;
-  const cardDateFilter = filtersStorage.kanbanDealsFilter.dateFilter;
-  const user = useSelector<RootState, UserState>(state => state.user);
+  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
-  const { currentData: columns, isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanDealsQuery({
-    userId: user.userProfile?.id || -1,
+  const { data: cardDateFilter = [], isFetching: cardDateFilterFetching } = useGetFiltersDeadlineQuery();
+  const { data: lastCardDateFilter, isFetching: lastCardDateFilterFetching, isLoading: lastCardDateFilterLoading } = useGetLastUsedFilterDeadlineQuery(userId);
+  const [postLastUsedFilter] = usePostLastUsedFilterDeadlineMutation();
+
+
+  useEffect(() => {
+    if (lastCardDateFilterLoading) return;
+    if (filtersStorage.filterData.deals?.deadline) return;
+
+    const currentDeadline = (() => {
+      /** по умолчанию Все сделки */
+      const deadlineDefault = cardDateFilter?.find(f => f.CODE === 6);
+      if (!lastCardDateFilter) return deadlineDefault;
+      return lastCardDateFilter;
+    })();
+    if (filtersStorage.filterData.deals?.deadline?.ID === currentDeadline?.ID) return;
+
+    saveFilters({ ...filtersStorage.filterData.deals, deadline: [currentDeadline]});
+
+  }, [lastCardDateFilterLoading])
+
+  const {
+    data: nonCachedData,
+    currentData: columns = nonCachedData || [],
+    isFetching: columnsIsFetching,
+    isLoading,
+    refetch
+  } = useGetKanbanDealsQuery({
+    userId,
     filter: {
-      deadline: kanbanFilter.deadline.ID,
-      ...filteringData,
+      // deadline: kanbanFilter.deadline.CODE,
+      ...filtersStorage.filterData.deals,
     }
   });
 
-  useEffect(() => {
-    setFilteringData(filtersStorage.filterData.deals);
-  }, []);
 
-  useEffect(() => {
-    SaveFilters();
-  }, [filteringData]);
-
-  const SaveFilters = () => {
+  const saveFilters = (filteringData: IFilteringData) => {
     dispatch(saveFilterData({ 'deals': filteringData }));
   };
 
@@ -118,7 +136,7 @@ export function Deals(props: DealsProps) {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async (event: any, reason: 'backdropClick' | 'escapeKeyDown') => {
+    filterClose: async (event: any) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
@@ -128,28 +146,30 @@ export function Deals(props: DealsProps) {
       setOpenFilters(false);
     },
     filterClear: () => {
-      dispatch(clearFilterData());
-
-      setFilteringData({});
-    },
-    lastFilter: () => {
-      setFilteringData(filtersStorage.lastFilterData.deals);
+      dispatch(clearFilterData('deals'));
     },
     filteringDataChange: async(newValue: IFilteringData) => {
-      setFilteringData(newValue);
+      saveFilters(newValue);
+    },
+    filterDeadlineChange: (e: SyntheticEvent<Element, Event>, value: IKanbanFilterDeadline) => {
+      saveFilters({ ...filtersStorage.filterData.deals, deadline: [value]});
+
+      postLastUsedFilter({
+        filter: value,
+        userId
+      });
     }
   };
 
   const DealsFilterMemo = useMemo(() =>
     <DealsFilter
       open={openFilters}
-      filteringData={filteringData}
+      filteringData={filtersStorage.filterData.deals}
       onClose={filterHandlers.filterClose}
       onFilteringDataChange={filterHandlers.filteringDataChange}
       onFilterClear={filterHandlers.filterClear}
-      onLastFilter={filterHandlers.lastFilter}
     />,
-  [openFilters, filteringData]);
+  [openFilters, filtersStorage.filterData.deals]);
 
   const [createDealIsFetching] = usePermissions(Action.CreateDeal);
   const [copyDealIsFetching] = usePermissions(Action.CopyDeal);
@@ -157,6 +177,7 @@ export function Deals(props: DealsProps) {
   const [deleteDealIsFetching] = usePermissions(Action.DeleteDeal);
 
   const componentIsFetching = isLoading || createDealIsFetching || copyDealIsFetching || editDealIsFetching || deleteDealIsFetching;
+
   const Header = useMemo(() => {
     return (
       <>
@@ -170,13 +191,13 @@ export function Deals(props: DealsProps) {
             }}
             options={cardDateFilter}
             disableClearable
-            getOptionLabel={option => option.name}
+            getOptionLabel={option => option.NAME}
             isOptionEqualToValue={(option, value) => option.ID === value.ID}
-            value={kanbanFilter.deadline || null}
-            onChange={(e, value) => dispatch(setActiveKanbanDealsFilter({ ...kanbanFilter, deadline: value }))}
+            value={filtersStorage.filterData.deals?.deadline?.length > 0 ? filtersStorage.filterData.deals.deadline[0] : null}
+            onChange={filterHandlers.filterDeadlineChange}
             renderOption={(props, option, { selected }) => (
               <li {...props} key={option.ID}>
-                {option.name}
+                {option.NAME}
               </li>
             )}
             renderInput={(params) => (
@@ -203,7 +224,7 @@ export function Deals(props: DealsProps) {
           >
             <Badge
               color="error"
-              variant={Object.keys(filteringData || {}).length > 0 ? 'dot' : 'standard'}
+              variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline').length > 0 ? 'dot' : 'standard'}
             >
               <FilterListIcon color="primary" />
             </Badge>
@@ -231,7 +252,7 @@ export function Deals(props: DealsProps) {
       </>
     );
   }
-  , [kanbanFilter.deadline, tabNo, filteringData, columnsIsFetching]);
+  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 

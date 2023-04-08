@@ -73,11 +73,9 @@ export function UserGroups(props: UserGroupsProps) {
       openEditUserGroupForm && setOpenEditUserGroupForm(false);
       openAddUserGroupForm && setOpenAddUserGroupForm(false);
     },
-    handleClose: async (e: any, reason: string) => {
-      if (reason === 'backdropClick') {
-        openEditUserGroupForm && setOpenEditUserGroupForm(false);
-        openAddUserGroupForm && setOpenAddUserGroupForm(false);
-      };
+    handleClose: async () => {
+      openEditUserGroupForm && setOpenEditUserGroupForm(false);
+      openAddUserGroupForm && setOpenAddUserGroupForm(false);
     },
     handleOnEdit: (id: number) => (e: any) => {
       setSelectedUserGroup(id);

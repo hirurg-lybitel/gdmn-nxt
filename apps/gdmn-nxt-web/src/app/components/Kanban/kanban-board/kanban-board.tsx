@@ -1,4 +1,4 @@
-import './kanban-board.module.less';
+import styles from './kanban-board.module.less';
 import { Box, Button, Stack } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
@@ -437,6 +437,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                         <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column?.ID * 10)?.toString()} index={index}>
                                           {(provided, snapshot) => (
                                             <Box
+                                            className={styles.boardItem}
                                               ref={provided.innerRef}
                                               {...provided.draggableProps}
                                               {...provided.dragHandleProps}

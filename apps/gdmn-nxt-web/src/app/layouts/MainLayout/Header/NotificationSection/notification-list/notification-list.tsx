@@ -1,27 +1,67 @@
 import styles from './notification-list.module.less';
-import { IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography } from '@mui/material';
+import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
-import { useState } from 'react';
-import { IMessage } from '@gdmn-nxt/socket';
+import { useCallback, useEffect, useState } from 'react';
+import { IMessage, NotificationAction } from '@gdmn-nxt/socket';
 import ReactMarkdown from 'react-markdown';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import { useGetKanbanDealsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanApi';
 
 /* eslint-disable-next-line */
 export interface NotificationListProps {
   messages: IMessage[];
   onDelete?: (arg: number) => void;
+  onClick?: (action?: NotificationAction, actionContent?: string) => void;
 };
 
 export function NotificationList(props: NotificationListProps) {
   const { messages } = props;
-  const { onDelete } = props;
+  const { onClick, onDelete } = props;
 
-  const handleDelete = (id: number) => () => {
+  const handleDelete = (id: number) => (e: any) => {
     const newMessages = [...messages];
     newMessages.splice(id, 1);
 
     onDelete && onDelete(id);
   };
+
+  // const navigate = useNavigate();
+
+  // const [skip, setSkip] = useState(true);
+
+  // const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+  // const kanbanFilter = filtersStorage.activeKanbanDealsFilter;
+
+  // const user = useSelector<RootState, UserState>(state => state.user);
+  // const { data: columns, isFetching: columnsIsFetching, isLoading, refetch, currentData,  } = useGetKanbanDealsQuery({
+  //   userId: user.userProfile?.id || -1,
+  //   filter: {
+  //     deadline: kanbanFilter.deadline.ID
+  //   }
+  // }, {
+  //   skip
+  // });
+
+  // useEffect(() => {
+  //   console.log('skip', skip);
+  //   !skip && setSkip(true);
+
+  // }, [skip]);
+
+  // useEffect(() => {
+  //   console.log('isFetching', skip, columnsIsFetching, columns, currentData);
+  //   // if (columnsIsFetching) return;
+
+
+  // }, [columnsIsFetching]);
+
+  const handleOnClick = useCallback((message: IMessage) => () => {
+    onClick && onClick(message.action, message.actionContent);
+  }, [onClick]);
 
   return (
     <List disablePadding>
@@ -29,8 +69,9 @@ export function NotificationList(props: NotificationListProps) {
         ? messages.map((message, index) =>
           <ListItem
             key={message?.id}
-            button
             divider
+            onClick={handleOnClick(message)}
+            button
           >
             <ListItemIcon
               style={{

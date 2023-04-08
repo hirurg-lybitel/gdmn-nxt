@@ -1,5 +1,5 @@
 import { faqApi } from './../features/FAQ/faqApi';
-import { configureStore } from '@reduxjs/toolkit';
+import { Action, combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
 import { contactApi } from '../features/contact/contactApi';
@@ -32,43 +32,55 @@ import { topEarningApi } from '../features/topEarning';
 import { businessProcessesApi } from '../features/business-processes';
 import { profileSettingsApi } from '../features/profileSettings';
 import { kanbanCatalogsApi } from '../features/kanban/kanbanCatalogsApi';
+import { kanbanFiltersApi } from '../features/kanban/kanbanFiltersApi';
+
+const reducers = combineReducers({
+  viewForms: viewFormsReducer,
+  settings: settingsReducer,
+  filtersStorage: filtersReducer,
+  error: errorReducer,
+  user: userReducer,
+  nlp: nlpReducer,
+  [contactApi.reducerPath]: contactApi.reducer,
+  [accountApi.reducerPath]: accountApi.reducer,
+  [labelsApi.reducerPath]: labelsApi.reducer,
+  [contactGroupApi.reducerPath]: contactGroupApi.reducer,
+  [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
+  [erModelApi.reducerPath]: erModelApi.reducer,
+  [departmentsApi.reducerPath]: departmentsApi.reducer,
+  [customerContractsApi.reducerPath]: customerContractsApi.reducer,
+  [kanbanApi.reducerPath]: kanbanApi.reducer,
+  [actCompletionApi.reducerPath]: actCompletionApi.reducer,
+  [bankStatementApi.reducerPath]: bankStatementApi.reducer,
+  [chartDataApi.reducerPath]: chartDataApi.reducer,
+  [nlpQueryApi.reducerPath]: nlpQueryApi.reducer,
+  [sqlEditorApi.reducerPath]: sqlEditorApi.reducer,
+  [customerApi.reducerPath]: customerApi.reducer,
+  [contractsListApi.reducerPath]: contractsListApi.reducer,
+  [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
+  [workTypesApi.reducerPath]: workTypesApi.reducer,
+  [labelsApi.reducerPath]: labelsApi.reducer,
+  [permissionsApi.reducerPath]: permissionsApi.reducer,
+  [systemUsers.reducerPath]: systemUsers.reducer,
+  [topEarningApi.reducerPath]: topEarningApi.reducer,
+  [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
+  [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
+  [faqApi.reducerPath]: faqApi.reducer,
+  [kanbanCatalogsApi.reducerPath]: kanbanCatalogsApi.reducer,
+  [kanbanFiltersApi.reducerPath]: kanbanFiltersApi.reducer,
+});
+
+const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
+  /** Очищаем весь стор при разлогине */
+  if (action.type === 'user/logout/fulfilled') {
+    state = undefined;
+  }
+  return reducers(state, action);
+}
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === 'development',
-  reducer: {
-    viewForms: viewFormsReducer,
-    settings: settingsReducer,
-    filtersStorage: filtersReducer,
-    error: errorReducer,
-    user: userReducer,
-    nlp: nlpReducer,
-    [contactApi.reducerPath]: contactApi.reducer,
-    [accountApi.reducerPath]: accountApi.reducer,
-    [labelsApi.reducerPath]: labelsApi.reducer,
-    [contactGroupApi.reducerPath]: contactGroupApi.reducer,
-    [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
-    [erModelApi.reducerPath]: erModelApi.reducer,
-    [departmentsApi.reducerPath]: departmentsApi.reducer,
-    [customerContractsApi.reducerPath]: customerContractsApi.reducer,
-    [kanbanApi.reducerPath]: kanbanApi.reducer,
-    [actCompletionApi.reducerPath]: actCompletionApi.reducer,
-    [bankStatementApi.reducerPath]: bankStatementApi.reducer,
-    [chartDataApi.reducerPath]: chartDataApi.reducer,
-    [nlpQueryApi.reducerPath]: nlpQueryApi.reducer,
-    [sqlEditorApi.reducerPath]: sqlEditorApi.reducer,
-    [customerApi.reducerPath]: customerApi.reducer,
-    [contractsListApi.reducerPath]: contractsListApi.reducer,
-    [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
-    [workTypesApi.reducerPath]: workTypesApi.reducer,
-    [labelsApi.reducerPath]: labelsApi.reducer,
-    [permissionsApi.reducerPath]: permissionsApi.reducer,
-    [systemUsers.reducerPath]: systemUsers.reducer,
-    [topEarningApi.reducerPath]: topEarningApi.reducer,
-    [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
-    [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
-    [faqApi.reducerPath]: faqApi.reducer,
-    [kanbanCatalogsApi.reducerPath]: kanbanCatalogsApi.reducer
-  },
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false })
     .concat(errorMiddleware)
     .concat(contactApi.middleware)
@@ -96,7 +108,8 @@ export const store = configureStore({
     .concat(businessProcessesApi.middleware)
     .concat(profileSettingsApi.middleware)
     .concat(faqApi.middleware)
-    .concat(kanbanCatalogsApi.middleware),
+    .concat(kanbanCatalogsApi.middleware)
+    .concat(kanbanFiltersApi.middleware),
 });
 
 setupListeners(store.dispatch);

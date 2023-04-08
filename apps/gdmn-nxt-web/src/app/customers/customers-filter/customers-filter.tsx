@@ -55,12 +55,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export interface IFilteringData {
-  [name: string] : any[];
+  [name: string] : any;
 }
 export interface CustomersFilterProps {
   open: boolean;
   width?: string;
-  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
+  onClose?: (event?: {}) => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
   onFilterClear: () => void;
@@ -87,7 +87,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
   const { data: businessProcesses = [], isFetching: businessProcessesFetching } = useGetBusinessProcessesQuery();
   const { data: labels, isFetching: labelsIsFetching } = useGetLabelsQuery();
   const { data: workTypes, isFetching: workTypesIsFetching } = useGetWorkTypesQuery(
-    { contractJob: filteringData?.CONTRACTS?.map(el => el.ID) },
+    { contractJob: filteringData?.CONTRACTS?.map((el: any) => el.ID) },
     { refetchOnMountOrArgChange: true });
 
   const handleOnChange = (entity: string, value: any) => {
@@ -359,7 +359,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
             fullWidth
             onClick={() => {
               onFilterClear();
-              onClose && onClose({}, 'backdropClick');
+              onClose && onClose();
             }}
           >
             Очистить

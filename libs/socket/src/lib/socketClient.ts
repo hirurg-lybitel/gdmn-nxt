@@ -13,7 +13,7 @@ type SocketOptions = {
 const socketClients: SocketClients = {};
 export function setSocketClient(name: string, options: SocketOptions) {
   const url = options?.url || '';
-  const userId = options?.userId || -1
+  const userId = options?.userId || -1;
 
   if (!socketClients[name]) {
     socketClients[name] = io(
@@ -40,9 +40,12 @@ export function getSocketClient(name: string) {
   return socketClients[name];
 }
 
-export function clearSocket(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
+export function clearSocket(name: string) {
+  const socket = socketClients[name];
   if (!socket?.connected) return;
 
   socket.removeAllListeners();
   socket.disconnect();
+
+  delete socketClients[name];
 }
