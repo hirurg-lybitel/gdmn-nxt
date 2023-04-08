@@ -108,7 +108,7 @@ export function ChartDonut(props: ChartDonutProps) {
       })}
     >
       <Stack direction="column" spacing={3} p={2} flex={1} display="flex"
-          style={{ maxWidth: '100%', padding: stagesIsLoading ? '15px 15px' : '15px 0' }}
+          style={{ maxWidth: '100%', padding: '15px 0' }}
       >
         {stagesIsLoading
           ? <ChartSkeleton />
