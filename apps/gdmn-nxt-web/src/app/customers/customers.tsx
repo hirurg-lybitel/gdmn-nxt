@@ -489,8 +489,6 @@ export function Customers(props: CustomersProps) {
     filterHandlers.handleFilteringData(Object.assign(newObject));
   };
 
-  console.log('filteringData', Object.keys(filteringData || {}).length );
-
   return (
     <CustomizedCard
       borders
