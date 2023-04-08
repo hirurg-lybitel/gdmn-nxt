@@ -92,7 +92,7 @@ export function AccountSettings(props: AccountSettingsProps) {
   };
 
   return (
-    <CustomizedCard className={style.card}>
+    <CustomizedCard className={style.card} borders>
       <CardHeader
         title={
           <div className={style.title}>

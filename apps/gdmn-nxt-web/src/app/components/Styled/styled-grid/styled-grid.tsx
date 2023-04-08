@@ -62,6 +62,9 @@ export default function StyledGrid(props: IStyledGridProps) {
     },
     '& .MuiDataGrid-pinnedColumns': {
       background: theme.palette.background.paper
+    },
+    '& .MuiDataGrid-footerContainer': {
+      height: '60px'
     }
   });
   return (
@@ -73,6 +76,7 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoRowsOverlay: CustomNoRowsOverlay,
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
+      headerHeight={50}
       {...props}
       sx={{
         ...defaultTheme(props),

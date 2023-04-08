@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField, Theme } from '@mui/material';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField, Theme } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
 import styles from './label-list-item-edit.module.less';
@@ -7,10 +7,11 @@ import { ILabel } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { SketchPicker, TwitterPicker } from 'react-color';
+import { SketchPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
 import { useTheme } from '@mui/material/styles';
 import { useOutsideClick } from '../../../features/common/useOutsideClick';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -66,8 +67,6 @@ export interface LabelListItemEditProps {
 };
 
 export function LabelListItemEdit(props: LabelListItemEditProps) {
-  const theme = useTheme();
-
   const classes = useStyles();
   const { open, label } = props;
   const { onSubmit, onCancelClick } = props;
@@ -122,23 +121,16 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const [colorLabel, setColorLabel] = useState(label?.USR$COLOR || 'grey');
 
-  const handleChange = (color:any) => {
-    setColorLabel(color.hex);
-  };
-
-  const [secondClick, setSecondClick] = useState(false);
+  const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
   const [ref] = useOutsideClick(selectColor, ()=>setSelectColor(false));
 
   return (
     <>
-
-      <Dialog
+      <CustomizedDialog
         open={open}
-        classes={{ paper: classes.dialog }}
-        TransitionComponent={Transition}
+        onClose={handleOnClose}
       >
-
         <DialogTitle>
           {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
         </DialogTitle>
@@ -229,7 +221,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           confirmClick={handleConfirmOkClick}
           cancelClick={handleConfirmCancelClick}
         />
-      </Dialog>
+      </CustomizedDialog>
     </>
   );
 }

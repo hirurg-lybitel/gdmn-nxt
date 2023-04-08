@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     childrenContainer: {
       display: 'flex',
-      padding: '1em',
+      padding: '10px',
       paddingTop: 0,
     },
     childrenItem: {
