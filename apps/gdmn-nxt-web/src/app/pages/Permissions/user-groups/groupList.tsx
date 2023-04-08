@@ -2,7 +2,7 @@ import { IUserGroup } from '@gsbelarus/util-api-types';
 import { IconButton, List, ListItem, ListItemText, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Dispatch, SetStateAction } from 'react';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import EditIcon from '@mui/icons-material/Edit';
 
 const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
@@ -63,7 +63,7 @@ export const GroupList = (props: IGroupList) => {
             hidden
           >
             <IconButton size="small" onClick={onEdit(group.ID)}>
-              <EditOutlinedIcon style={{color:'rgba(0, 0, 0, 0.54)'}} fontSize="small" />
+              <EditIcon fontSize="small" color="primary" />
             </IconButton>
           </div>
         </ListItemText>
