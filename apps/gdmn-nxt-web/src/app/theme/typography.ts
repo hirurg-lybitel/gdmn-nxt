@@ -13,7 +13,7 @@ export default function typography(theme: ThemeOptions) {
       fontWeight: 800
     },
     h3: {
-      fontSize: '1.25rem',
+      fontSize: '1.125rem',
       color: theme.textColor,
       fontWeight: 600
     },

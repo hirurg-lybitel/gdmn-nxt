@@ -20,6 +20,7 @@ import { makeStyles } from '@mui/styles';
 import { usePermissions } from '../../features/common/usePermissions';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
 import { Action } from '@gsbelarus/util-api-types';
+import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -105,16 +106,6 @@ export default function FAQ() {
     setExpanded(isExpanded ? panel : false);
   };
 
-  const theme = useTheme();
-
-  // if (componentIsFetching) {
-  //   return (
-  //     <div className={style.preloadevBody}>
-  //       <CircularProgress size={100} />
-  //     </div>
-  //   );
-  // }
-
   const skeletonItems = useMemo(() =>(count:number):fullFaq[] => {
     const skeletonFaqItems:fullFaq[] = [];
     const skeletonFaqItem = {} as fullFaq;
@@ -155,20 +146,14 @@ export default function FAQ() {
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
           <CardHeader
-            title={componentIsFetching ?
-              <Skeleton variant="rectangular" height={'36px'}/>
-              :
-              <div className={style.title}>
-                <Typography variant="h3">
-                  База знаний
-                </Typography>
-                {/* <PermissionsGate actionCode={Action.CreateFAQ}>
-                  <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-                </PermissionsGate> */}
-              </div>
-            }
+            title={<Typography variant="h3">База знаний</Typography>}
           />
           <Divider />
+          {/* <CardToolbar>
+            <PermissionsGate actionCode={Action.CreateFAQ}>
+              <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
+            </PermissionsGate>
+          </CardToolbar> */}
           <CardContent className={style.scrollBarContainer}>
             <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
               <Grid item xs={12}>

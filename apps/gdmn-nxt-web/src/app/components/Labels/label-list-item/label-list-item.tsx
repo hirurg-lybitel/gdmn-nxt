@@ -181,7 +181,7 @@ export function LabelListItem(props: LabelListItemProps) {
                 color="primary"
                 onClick={handleDeleteClick}
               >
-                <DeleteIcon />
+                <DeleteIcon fontSize="small"  />
               </IconButton>
             </PermissionsGate>
           </Box>
