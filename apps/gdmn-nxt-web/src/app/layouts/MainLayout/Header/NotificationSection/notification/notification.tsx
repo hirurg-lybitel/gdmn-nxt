@@ -249,7 +249,7 @@ export function Notification(props: NotificationProps) {
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders style={{ flex: 1, display: 'flex' }}>
                   <span className={classes.arrow} ref={setArrowRef} />
-                  <Stack direction="column" style={{ maxHeight: '50vh', flex: 1, display: 'flex' }}>
+                  <Stack direction="column" style={{ maxHeight: '90vh', flex: 1, display: 'flex' }}>
                     <Stack
                       className={classes.header}
                       direction="row"
