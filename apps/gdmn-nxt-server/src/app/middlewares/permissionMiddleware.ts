@@ -96,7 +96,7 @@ export const checkPermissionsMW = async (req, res, next) => {
       default: undefined
     }
   })()
-  if (isNaN(actionCode)) return res.status(500).send(resultError('mustAuthWithPermissions: Поле "actionCode" не указано или неверного типа'));
+  if (isNaN(actionCode)) return res.status(500).send(resultError('Не удалось проверить права'));
   try {
     if(!permissionsActionsCache.get(actionCode)){
       const result = await updatePermissonsCache(req)
