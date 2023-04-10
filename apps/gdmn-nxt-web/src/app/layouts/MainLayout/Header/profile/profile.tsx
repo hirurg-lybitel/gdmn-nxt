@@ -35,6 +35,7 @@ import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/p
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
     zIndex: 2000,
+    minWidth: 250,
     '&[x-placement*="bottom"] $arrow': {
       top: 0,
       left: 0,

@@ -1,7 +1,8 @@
 interface IConfig {
   host: string;
-  port: number;
+  serverPort: number;
   notificationPort: number;
+  streamingUpdatePort: number;
   appPort: number;
   env?: string;
 }
@@ -12,37 +13,34 @@ const host = (() => {
     : process.env.NX_HOST_IP || '';
 })();
 
-const port = (() => {
+const serverPort = (() => {
   return process.env.NODE_ENV === 'development'
-    ? 4444
-    : Number(process.env.GDMN_NXT_SERVER_PORT) || 4444;
+  ? Number(process.env.NX_GDMN_DEV_NXT_SERVER_PORT)
+  : Number(process.env.NX_GDMN_NXT_SERVER_PORT);
 })();
 
-const notificationPort = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 5555
-    : Number(process.env.NX_SOCKET_PORT);
-})();
+const notificationPort =
+  process.env.NODE_ENV === 'development'
+    ? Number(process.env.NX_DEV_SOCKET_NOTIFICATIONS_PORT)
+    : Number(process.env.NX_SOCKET_NOTIFICATIONS_PORT);
+
+const streamingUpdatePort =
+  process.env.NODE_ENV === 'development'
+    ? Number(process.env.NX_DEV_SOCKET_STREAMING_UPDATE_PORT)
+    : Number(process.env.NX_SOCKET_STREAMING_UPDATE_PORT);
 
 const appPort = (() => {
   return process.env.NODE_ENV === 'development'
-    ? 4201
-    : Number(process.env.NX_APP_PORT);
+    ? Number(process.env.NX_APP_PORT)
+    : Number(process.env.NX_GDMN_NXT_SERVER_PORT);
 })();
+
 
 export const config: IConfig = {
   host,
-  port,
+  serverPort,
   notificationPort,
+  streamingUpdatePort,
   appPort,
   env: process.env.NODE_ENV || '123'
 };
-
-// export function config(): IConfig {
-//   // process.env.NODE_ENV
-//   return {
-//     host,
-//     port: 80,
-//     env: process.env.NODE_ENV
-//   };
-// }

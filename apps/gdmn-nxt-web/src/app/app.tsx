@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setColorMode, setPageIdFound, setActiveMenu } from './store/settingsSlice';
@@ -97,11 +97,14 @@ export default function App(props: AppProps) {
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     (async function () {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
+          navigate('');
           break;
         case 'LAUNCHING':
           // приложение загружается

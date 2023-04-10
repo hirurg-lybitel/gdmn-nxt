@@ -129,14 +129,15 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
     onSubmit(formik.values, deleting);
+    formik.resetForm();
   }, [formik.values, deleting]);
 
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
   }, []);
 
-  const handleClose = useCallback((e: any, reason: string) => {
-    if (reason === 'backdropClick') handleCancelClick();
+  const handleClose = useCallback(() => {
+    handleCancelClick();
   }, [handleCancelClick]);
 
   function combineDateAndTime(date?: Date, time?: Date) {

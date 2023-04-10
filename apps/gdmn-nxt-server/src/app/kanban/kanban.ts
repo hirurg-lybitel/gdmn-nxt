@@ -53,7 +53,7 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber } = req.query;
+    const { departments, customers, requestNumber, dealNumber } = req.query;
 
     const checkFullView = `
       EXISTS(
@@ -86,19 +86,68 @@ const get: RequestHandler = async (req, res) => {
             OR con.ID IN (performer.ID, creator.ID))), 1, 0), 1)`;
 
     const filter = `
-      AND 1 =
-      CASE ${deadline || -1}
-        WHEN 1 THEN IIF(deal.USR$DONE = 0, 1, 0)
-        WHEN 2 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 0, 0, 1)
-        WHEN 3 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 1, 0, 1)
-        WHEN 4 THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) >= 0, 0, 1)
-        WHEN 5 THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
-        WHEN 6 THEN 1
-        ELSE 1
-      END
-      ${departments ? `AND dep.ID IN (${departments})` : ''}
-      ${customers ? `AND con.ID IN (${customers})` : ''}
-      ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''} `;
+      /** Фильтрация */
+      AND (
+        /** По сделкам */
+        1 =
+        CASE ${deadline || -1}
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029358 AND DBID = 1972632332 ROWS 1) THEN IIF(deal.USR$DONE = 0, 1, 0)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029357 AND DBID = 1972632332 ROWS 1) THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 0, 0, 1)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029356 AND DBID = 1972632332 ROWS 1) THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) != 1, 0, 1)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029355 AND DBID = 1972632332 ROWS 1) THEN IIF(deal.USR$DONE = 1 OR DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)) >= 0, 0, 1)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029354 AND DBID = 1972632332 ROWS 1) THEN IIF(deal.USR$DEADLINE IS NULL, 1, 0)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029353 AND DBID = 1972632332 ROWS 1) THEN 1
+          ELSE 1
+        END
+        /** По задачам */
+        OR 1 =
+        CASE ${deadline || -1}
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029358 AND DBID = 1972632332 ROWS 1) THEN
+            IIF(deal.USR$DONE != 1
+              AND EXISTS(
+              SELECT task.ID
+              FROM USR$CRM_KANBAN_CARD_TASKS task
+              WHERE task.USR$CARDKEY = card.ID
+                AND task.USR$CLOSED = 0),
+              1, 0)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029357 AND DBID = 1972632332 ROWS 1) THEN
+            IIF(deal.USR$DONE != 1
+              AND EXISTS(
+              SELECT task.ID
+              FROM USR$CRM_KANBAN_CARD_TASKS task
+              WHERE task.USR$CARDKEY = card.ID
+                AND IIF(DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(CAST(task.USR$DEADLINE AS DATE), CURRENT_DATE + 1000)) != 0, 0, 1) = 1),
+              1, 0)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029356 AND DBID = 1972632332 ROWS 1) THEN
+            IIF(deal.USR$DONE != 1
+              AND EXISTS(
+              SELECT task.ID
+              FROM USR$CRM_KANBAN_CARD_TASKS task
+              WHERE task.USR$CARDKEY = card.ID
+                AND IIF(DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(CAST(task.USR$DEADLINE AS DATE), CURRENT_DATE + 1000)) != 1, 0, 1) = 1),
+              1, 0)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029355 AND DBID = 1972632332 ROWS 1) THEN
+            IIF(deal.USR$DONE != 1
+              AND EXISTS(
+              SELECT task.ID
+              FROM USR$CRM_KANBAN_CARD_TASKS task
+              WHERE task.USR$CARDKEY = card.ID
+                AND IIF(DATEDIFF(DAY FROM CURRENT_DATE TO COALESCE(CAST(task.USR$DEADLINE AS DATE), CURRENT_DATE + 1000)) >= 0, 0, 1) = 1),
+              1, 0)
+          WHEN (SELECT ID FROM GD_RUID WHERE XID = 358029354 AND DBID = 1972632332 ROWS 1) THEN
+            IIF(deal.USR$DONE != 1
+              AND EXISTS(
+              SELECT task.ID
+              FROM USR$CRM_KANBAN_CARD_TASKS task
+              WHERE task.USR$CARDKEY = card.ID
+                AND task.USR$DEADLINE IS NULL),
+              1, 0)
+          ELSE 1
+        END)
+        ${departments ? `AND dep.ID IN (${departments})` : ''}
+        ${customers ? `AND con.ID IN (${customers})` : ''}
+        ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
+        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''} `;
 
     const queries = [
       {
@@ -139,7 +188,8 @@ const get: RequestHandler = async (req, res) => {
             deal.USR$CONTACT_NAME AS CONTACT_NAME,
             deal.USR$CONTACT_EMAIL AS CONTACT_EMAIL,
             deal.USR$CONTACT_PHONE AS CONTACT_PHONE,
-            deal.USR$CREATIONDATE CREATIONDATE
+            deal.USR$CREATIONDATE CREATIONDATE,
+            deal.USR$NUMBER AS DEAL_NUMBER
           FROM USR$CRM_KANBAN_CARDS card
             JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
@@ -218,8 +268,9 @@ const get: RequestHandler = async (req, res) => {
         USR$DEALKEY: el['USR$DEALKEY'],
         DEAL: {
           ID: el['DEAL_ID'],
+          USR$NUMBER: el['DEAL_NUMBER'],
           USR$NAME: el['DEAL_USR$NAME'],
-          USR$CONTACTKEY: el['DEAL_$CONTACTKEY'],
+          USR$CONTACTKEY: el['deal_USR$CONTACTKEY'],
           USR$AMOUNT: el['DEAL_USR$AMOUNT'],
           USR$DEADLINE: el['USR$DEADLINE'],
           ...(el['SOURCE_ID'] && {

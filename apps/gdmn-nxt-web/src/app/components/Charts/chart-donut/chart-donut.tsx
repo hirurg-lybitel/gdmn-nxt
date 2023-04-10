@@ -108,12 +108,12 @@ export function ChartDonut(props: ChartDonutProps) {
       })}
     >
       <Stack direction="column" spacing={3} p={2} flex={1} display="flex"
-          style={{ maxWidth: '100%', padding: stagesIsLoading ? '15.8px 15.8px' : '15.8px 0' }}
+          style={{ maxWidth: '100%', padding: '15px 0' }}
       >
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
-            <Typography variant="h1" style={{paddingLeft:'15.8px'}}>Статус сделок</Typography>
+            <Typography variant="h1" style={{paddingLeft:'15px'}}>Статус сделок</Typography>
             <Box flex={1} style={{color:'black', paddingLeft:'1px', paddingRight:'5px'}} >
               <Chart
                 type="donut"

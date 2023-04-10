@@ -1,5 +1,5 @@
-import { resultError } from '../../../responseMessages';
-import { startTransaction } from '../../../utils/db-connection';
+import { resultError } from '../../../../responseMessages';
+import { startTransaction } from '../../../../utils/db-connection';
 
 export const updateNotifications = async (sessionId: string) => {
   const { releaseTransaction, fetchAsObject } = await startTransaction(sessionId);
@@ -60,8 +60,8 @@ export const updateNotifications = async (sessionId: string) => {
             END;
 
             IF (MESSAGE != '') THEN
-              UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY)
-              VALUES(:USERKEY, 'Напоминание', :MESSAGE, :DEAL_ID)
+              UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY, USR$ACTIONTYPE, USR$ACTIONCONTENT)
+              VALUES(:USERKEY, 'Напоминание', :MESSAGE, :DEAL_ID, 1, :DEAL_NUMBER)
               MATCHING(USR$USERKEY, USR$KEY);
           END
 
@@ -91,8 +91,8 @@ export const updateNotifications = async (sessionId: string) => {
             END;
 
             IF (MESSAGE != '') THEN
-              UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY)
-              VALUES(:USERKEY, 'Напоминание', :MESSAGE, :TASK_ID)
+              UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY, USR$ACTIONTYPE, USR$ACTIONCONTENT)
+              VALUES(:USERKEY, 'Напоминание', :MESSAGE, :TASK_ID, 1, :DEAL_NUMBER )
               MATCHING(USR$USERKEY, USR$KEY);
           END
         END

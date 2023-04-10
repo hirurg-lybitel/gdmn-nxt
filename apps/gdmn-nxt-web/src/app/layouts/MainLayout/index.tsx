@@ -12,7 +12,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
-import { setSocketClient, socketClient } from '@gdmn-nxt/socket';
+import { clearSocket, getSocketClient, setSocketClient, socketClient } from '@gdmn-nxt/socket';
 import { config } from '@gdmn-nxt/config';
 import { IPermissionByUser } from '@gsbelarus/util-api-types';
 
@@ -140,19 +140,6 @@ export const MainLayout = (props:MainLayoutProps) => {
 
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
   const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
-
-  // const location = useLocation();
-  useEffect(() => {
-    setSocketClient({
-      url: `http://${config.host}:${config.notificationPort}`,
-      userId: user.userProfile?.id || -1
-    });
-
-    return () => {
-      socketClient.removeAllListeners();
-      socketClient.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     if (errorMessage) {

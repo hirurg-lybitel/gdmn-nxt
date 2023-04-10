@@ -1,46 +1,25 @@
-import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData, IUser, INotification } from '@gdmn-nxt/socket';
+import { ClientToServerEvents, ServerToClientEvents, IUser, INotification } from '@gdmn-nxt/socket';
 import { Router } from 'express';
 import { Server } from 'socket.io';
-import { deleteNotification } from './handlers/deleteNotification';
-import { getMessagesByUser } from './handlers/getMessagesByUser';
-import { getNotifications } from './handlers/getNotifications';
-import { insertNotification } from './handlers/insertNotification';
-import { updateNotifications } from './handlers/updateNotifications';
 import { config } from '@gdmn-nxt/config';
+import { getNotifications } from './handlers/getNotifications';
+import { deleteNotification } from './handlers/deleteNotification';
+import { updateNotifications } from './handlers/updateNotifications';
+import { getMessagesByUser } from './handlers/getMessagesByUser';
+import { insertNotification } from './handlers/insertNotification';
 
 interface NotificationsProps {
   router: Router;
 }
 
-const host = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 'localhost'
-    : process.env.NX_HOST_IP;
-})();
-
-const port = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 4201
-    : process.env.GDMN_NXT_SERVER_PORT;
-})();
-
-const notificationPort = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 7777
-    : Number(process.env.NX_SOCKET_PORT);
-})();
-
 export function Notifications({ router }: NotificationsProps) {
   const socketIO = new Server<
     ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
+    ServerToClientEvents
   >({
     cors: {
       credentials: true,
-      // origin: `http://${process.env.NODE_ENV === 'development' ? 'localhost:4201' : `${process.env.NX_HOST_IP}:80`}`
-      origin: `http://${host}:${port}`
+      origin: `http://${config.host}:${config.appPort}`
     }
   });
 
@@ -50,7 +29,7 @@ export function Notifications({ router }: NotificationsProps) {
   socketIO.listen(config.notificationPort);
 
   socketIO.on('connection', (socket) => {
-    console.log(`⚡: ${socket.id} user just connected!`);
+    console.log(`⚡ Notifications: ${socket.id} user just connected!`);
 
     socket.on('delete', async (notificationId) => {
       await deleteNotification(sessionId, notificationId);
@@ -83,19 +62,20 @@ export function Notifications({ router }: NotificationsProps) {
       socket.emit('sendMessageToUsers_response', 200, 'Сообщение успешно отправлено');
     });
 
-    // socket.emit('message', {
-    //   id: 1,
-    //   date: new Date(),
-    //   title: 'Система',
-    //   text: `Вы вошли под пользователем **${socket.id}**`
-    // });
-
     const user: IUser = {
       userId: socket.handshake.auth.userId,
       socketId: socket.id
     };
 
     users.push(user);
+
+    /** выслать список уведомлений подключившемуся пользователю */
+    const notifications = getNotifications(sessionId);
+    const userNotifications: INotification[] = notifications[user.userId];
+    socket.emit('messages', userNotifications?.map(n => {
+      const { message, userId, ...mes } = n;
+      return { ...mes, text: n.message };
+    }) || []);
 
     socket.on('disconnect', () => {
       const userIndex = users.indexOf(user);

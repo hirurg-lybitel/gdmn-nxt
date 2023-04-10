@@ -27,10 +27,12 @@ import labelsRouter from './app/routes/labelsRouter';
 import permissionsRouter from './app/routes/permissionsRouter';
 import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
-import { Notifications } from './app/routes/notifications';
 import faqRouter from './app/routes/faqRouter';
 import cookieParser from 'cookie-parser';
 import RateLimit from 'express-rate-limit';
+import { Notifications } from './app/routes/socket/notifications';
+import { StreamingUpdate } from './app/routes/socket/streamingUpdate';
+import { config } from '@gdmn-nxt/config';
 
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -41,32 +43,10 @@ const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
 
-// console.log(`['NODE' + '_ENV']`, process.env['NODE' + '_ENV']);
-console.log('NODE_ENV', process.env.NODE_ENV);
-const host = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 'localhost'
-    : process.env.NX_HOST_IP;
-})();
-
-console.log('host', host);
-
-const port = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 4444
-    : process.env.GDMN_NXT_SERVER_PORT;
-})();
-
-// const notificationPort = (() => {
-//   return !!process.env['NODE' + '_ENV'] || process.env['NODE' + '_ENV'] === 'development'
-//     ? 7777
-//     : process.env.NX_SOCKET_PORT;
-// })();
-
 app.use(cors({
   credentials: true,
   secure: 'httpOnly',
-  origin: `http://${host}:${process.env.NODE_ENV === 'development' ? '4201' : '80'}` // 'http://localhost:80'
+  origin: `http://${config.host}:${config.appPort}`
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -116,9 +96,6 @@ passport.use(new Strategy({
 },
   async (req: any, userName: string, password: string, done) => {
     const { employeeMode } = req.body;
-
-    console.log('this is passport');
-
     try {
       if (employeeMode) {
         // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
@@ -288,6 +265,9 @@ router.use(
 //   }
 // });
 
+/** Streaming updates module */
+StreamingUpdate();
+
 /** Notifications module */
 Notifications({ router });
 
@@ -379,8 +359,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-// const port = process.env.GDMN_NXT_SERVER_PORT || 3333;
-const server = app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
+const server = app.listen(config.serverPort, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
 
 server.on('error', console.error);
 

@@ -22,8 +22,19 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import NotificationList from '../notification-list/notification-list';
 import NotificationsOffOutlinedIcon from '@mui/icons-material/NotificationsOffOutlined';
-import { IMessage, socketClient } from '@gdmn-nxt/socket';
+import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, clearSocket, getSocketClient, setSocketClient } from '@gdmn-nxt/socket';
 import logo from './NoNotifications.png'; // with import
+import { Socket } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import { useGetKanbanDealsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanApi';
+import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
+import { IFilteringData } from 'apps/gdmn-nxt-web/src/app/components/Kanban/deals-filter/deals-filter';
+import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
+import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
+import { config } from '@gdmn-nxt/config';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -97,25 +108,33 @@ export interface NotificationProps {}
 
 export function Notification(props: NotificationProps) {
   const classes = useStyles();
-
-  // console.log('Notification', logo);
-  // console.log('users', socketClient);
-
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
-  // const arrowRef = useRef<HTMLElement | null>(null);
-  const [fadeOut, setFadeOut] = useState(false);
-
+  const [socketClient, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
   const [messages, setMessages] = useState<IMessage[]>([]);
 
-  // console.log('Notification');
+
+  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
   useEffect(() => {
-    socketClient?.on?.('messages', (data: IMessage[]) => {
+    if (userId <= 0) return;
+
+    const socket = setSocketClient('notifications', {
+      url: `http://${config.host}:${config.notificationPort}`,
+      userId
+    })
+
+    socket?.on?.('messages', (data: IMessage[]) => {
       setMessages(data);
     });
-  }, [socketClient]);
+
+    socket && setSocket(socket);
+
+    return () => {
+      clearSocket('notifications');
+    };
+  }, []);
 
   /** Disable scrolling for main window when notifications are opened */
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
@@ -145,16 +164,6 @@ export function Notification(props: NotificationProps) {
     };
   }, [open]);
 
-  // useEffect(() => {
-  //   if (!open) {
-  //     const timer = setTimeout(() => {
-  //       setFadeOut(!fadeOut);
-  //     }, 1000);
-  //     return () => clearTimeout(timer);
-  //   };
-  //   return;
-  // });
-
   const handleDeleteNotification = (id: number) => {
     socketClient?.emit('delete', id);
   };
@@ -165,6 +174,33 @@ export function Notification(props: NotificationProps) {
   };
 
   const handleClose = () => {
+    setOpen(false);
+  };
+
+  const navigate = useNavigate();
+  const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery();
+
+  const dispatch = useDispatch();
+  const handleClickNotification = (action?: NotificationAction, actionContent?: string) => {
+    switch (Number(action)) {
+      case NotificationAction.JumpToDeal:
+        if (!actionContent) break;
+
+        const newDealsFilters = {
+          deadline: [dealsDateFilter.find(f => f.CODE === 6)],
+          dealNumber: actionContent
+        };
+
+        dispatch(setActiveMenu('deals'));
+        navigate('managment/deals/list');
+
+        dispatch(saveFilterData({ 'deals': newDealsFilters }));
+
+        break;
+      default:
+        break;
+    };
+
     setOpen(false);
   };
 
@@ -213,7 +249,7 @@ export function Notification(props: NotificationProps) {
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders style={{ flex: 1, display: 'flex' }}>
                   <span className={classes.arrow} ref={setArrowRef} />
-                  <Stack direction="column" style={{ maxHeight: '50vh', flex: 1, display: 'flex' }}>
+                  <Stack direction="column" style={{ maxHeight: '90vh', flex: 1, display: 'flex' }}>
                     <Stack
                       className={classes.header}
                       direction="row"
@@ -227,7 +263,11 @@ export function Notification(props: NotificationProps) {
                     <Divider />
                     {messages.length > 0
                       ? <PerfectScrollbar>
-                        <NotificationList messages={messages} onDelete={handleDeleteNotification} />
+                        <NotificationList
+                          messages={messages}
+                          onDelete={handleDeleteNotification}
+                          onClick={handleClickNotification}
+                        />
                       </PerfectScrollbar>
                       : <Stack
                         flex={1}
