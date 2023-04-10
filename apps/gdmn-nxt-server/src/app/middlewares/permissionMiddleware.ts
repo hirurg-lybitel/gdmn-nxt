@@ -96,7 +96,7 @@ export const checkPermissionsMW = async (req, res, next) => {
       default: undefined
     }
   })()
-  if (isNaN(actionCode)) return res.status(500).send(resultError('Не удалось проверить права'));
+  if (isNaN(actionCode) || actionCode < 0) return res.status(500).send(resultError('Не удалось проверить права'));
   try {
     if(!permissionsActionsCache.get(actionCode)){
       const result = await updatePermissonsCache(req)
