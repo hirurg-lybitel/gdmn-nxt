@@ -84,7 +84,7 @@ export default function App(props: AppProps) {
         dispatch(setActiveMenu(page.id));
       }
     } else {
-      dispatch(setActiveMenu('dashboard'));
+      dispatch(setActiveMenu('overview'));
     }
 
     dispatch(setPageIdFound(true));
@@ -184,6 +184,8 @@ export default function App(props: AppProps) {
         break;
     }
 
+    dispatch(setActiveMenu('overview'));
+    dispatch(setPageIdFound(true));
     dispatch(queryLogin());
   };
 
