@@ -29,6 +29,7 @@ const preferences: IMenuItem = {
       title: 'Настройка прав',
       type: 'collapse',
       checkAction: 8,
+      url: 'preferences/permissions',
       icon: <AdminPanelSettingsIcon color="secondary" />,
       children: [
         {

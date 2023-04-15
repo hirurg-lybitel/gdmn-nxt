@@ -35,7 +35,6 @@ export function MenuItem(props: MenuItemProps) {
   const settings = useSelector((state: RootState) => state.settings);
 
   const classes = useStyles();
-  const dispatch = useDispatch();
 
   const [actionCode,setActionCode] = useState(-1)
   const navigate = useNavigate()
@@ -87,7 +86,6 @@ export function MenuItem(props: MenuItemProps) {
   }), [item.url]);
 
   return (
-    <>
     <ListItemButton
       component={MyNavLink}
       className={classes.menuItem}
@@ -104,7 +102,6 @@ export function MenuItem(props: MenuItemProps) {
         }
       />
     </ListItemButton>
-    </>
   );
 }
 

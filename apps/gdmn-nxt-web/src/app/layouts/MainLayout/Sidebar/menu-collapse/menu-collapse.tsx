@@ -59,6 +59,21 @@ export function MenuCollapse(props: MenuCollapseProps) {
   };
   const menuIcon = menu.icon;
 
+  useEffect(()=>{
+    let thisSelector = true;
+    const url = menu.url?.split('/')
+    const path = window.location.pathname.split('/')
+    if(!url) return
+    for(let i = 0;i<url?.length;i++){
+      if(path[i+2] !== url[i]){
+        thisSelector = false
+      }
+    }
+    if(thisSelector){
+      setOpen(true);
+    }
+  },[])
+
   return (
     <>
       <ListItemButton
