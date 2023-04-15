@@ -1,4 +1,4 @@
-import { IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { Box, ButtonProps, Chip, IconButton, Stack } from '@mui/material';
 import { DataGridProProps, GridActionsCellItem, GridColumns, gridFilteredDescendantCountLookupSelector, GridRenderCellParams, GridRowParams, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
@@ -38,6 +37,7 @@ export function KanbanList(props: KanbanListProps) {
   const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
   const user = useSelector<RootState, UserState>(state => state.user);
   const [deletingCardIDs, setDeletingCardIDs] = useState<number[]>([]);
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   useEffect(()=>{
     if ((updateCardSuccess) && changes.current.length > 0) {
@@ -217,7 +217,7 @@ export function KanbanList(props: KanbanListProps) {
       getActions: (params: GridRowParams) => [
         Object.keys(params.row).length > 0
           ? <>
-            <PermissionsGate actionCode={Action.EditDeal}>
+            <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
               <GridActionsCellItem key={1} icon={<EditIcon />} onClick={handleCardEdit(params.row)} label="Edit" color="primary" />
             </PermissionsGate>
           </>
@@ -292,7 +292,7 @@ export function KanbanList(props: KanbanListProps) {
         <div>
           {filteredDescendantCount > 0 ? (
             <Stack direction="row" alignItems="center">
-              <PermissionsGate actionCode={Action.CreateDeal} >
+              <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
                 <IconButton
                   onClick={handleCardAdd(value)}
                   color="primary"

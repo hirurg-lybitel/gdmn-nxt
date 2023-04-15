@@ -10,12 +10,10 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn,Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
-
 
 export interface KanbanColumnProps {
   provided: DraggableProvided;
@@ -45,6 +43,8 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   const [upsertCard, setUpsertCard] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
@@ -292,7 +292,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
               </PerfectScrollbar>
             </CardContent>
             <CardActions>
-              <PermissionsGate actionCode={Action.CreateDeal}>
+              <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
                 {item.USR$INDEX === 0 &&
                 <Button disabled={addIsFetching} onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
                 }

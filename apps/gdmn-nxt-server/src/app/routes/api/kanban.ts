@@ -1,13 +1,11 @@
-import { Action } from './../../../../../../libs/util-api-types/src/lib/crmDataTypes';
-import { checkPermissionsMW } from '../../middlewares/permissionMiddleware';
 import express from 'express';
-import cards from '../../kanban/cards';
-import columns from '../../kanban/columns';
-import kanban from '../../kanban/kanban';
-import history from '../../kanban/history';
-import tasks from '../../kanban/task';
-import denyReasons from '../../kanban/denyReasons';
-import { sourceCatalog } from '../../handlers/deals/sourceCatalog';
+import cards from '../../controllers/kanban/cards';
+import columns from '../../controllers/kanban/columns';
+import kanban from '../../controllers/kanban/kanban';
+import history from '../../controllers/kanban/history';
+import tasks from '../../controllers/kanban/task';
+import denyReasons from '../../controllers/kanban/denyReasons';
+import { sourceCatalog } from '../../controllers/deals/sourceCatalog';
 import kanbanCatalogs from './kanbanCatalogs';
 import kanbanFilters from './kanbanFilters';
 
@@ -24,6 +22,9 @@ router.delete('/columns/:id', columns.remove);
 
 router.get('/cards', cards.get);
 router.get('/cards/:id', cards.get);
+router.post('/cards', cards.upsert);
+router.put('/cards/:id', cards.upsert);
+router.delete('/cards/:id', cards.remove);
 
 router.get('/history', history.get);
 router.get('/history/:cardId', history.get);

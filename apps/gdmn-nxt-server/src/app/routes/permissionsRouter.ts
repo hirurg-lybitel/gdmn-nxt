@@ -1,13 +1,19 @@
-import { Action } from './../../../../../libs/util-api-types/src/lib/crmDataTypes';
-import { checkPermissionsMW } from '../middlewares/permissionMiddleware';
 import express from 'express';
-import permApi from './api/permissions';
-import permApiWithPermissions from './api/permissionsWithPermissions'
-import { pathsWithPermissons } from '../pathsWithPermissons';
+import { PermissionsController } from '../controllers/permissions';
 
 const router = express.Router();
 
-router.use(pathsWithPermissons.permissions, permApi);
-router.use(pathsWithPermissons.permissions, checkPermissionsMW, permApiWithPermissions);
+router.put('/', PermissionsController.upsertCross);
+router.post('/userGroups', PermissionsController.upsertGroup);
+router.put('/userGroups/:id', PermissionsController.upsertGroup);
+router.delete('/userGroups/:id', PermissionsController.removeGroup);
+router.post('/usergroupsline', PermissionsController.addUserGroupLine);
+router.delete('/usergroupsline/:id', PermissionsController.removeUserGroupLine);
+router.get(`/actions`, PermissionsController.getActions);
+router.get(`/actions/:actionCode/byUser/:userID`, PermissionsController.getPermissionByUser);
+router.get(`/`, PermissionsController.getCross);
+router.get('/userGroups', PermissionsController.getUserGroups);
+router.get('/userGroups/:id/users', PermissionsController.getUserByGroup);
+router.get('/usergroupsline/:groupId', PermissionsController.getUserGroupLine);
 
-export default router;
+export const permissionsRouter =  express.Router().use('/permissions', router);

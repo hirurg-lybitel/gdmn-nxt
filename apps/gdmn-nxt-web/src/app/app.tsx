@@ -14,9 +14,7 @@ import { CircularIndeterminate } from './components/helpers/circular-indetermina
 import { InitData } from './store/initData';
 import { setColorMode, setPageIdFound, setActiveMenu } from './store/settingsSlice';
 import menuItems, { IMenuItem } from './menu-items';
-import { useGetPermissionByUserQuery } from './features/permissions';
 import { getCookie } from './features/common/getCookie';
-import { usePermissions } from './features/common/usePermissions';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -47,12 +45,7 @@ export default function App(props: AppProps) {
 
   const appSettings = useSelector((state: RootState) => state.settings);
   const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
-  const [actionCode, setActionCode] = useState<number>(-3);
-  const { data: permissions } = useGetPermissionByUserQuery(
-    { actionCode, userID: userProfile?.id || -1 }, { skip: !userProfile?.id || actionCode < 1 }
-  );
-  const [isFetchingNotification, notificationPermission] = usePermissions(8);
-  const [isFetchingPermissions, permissionsPermission] = usePermissions(10);
+  const [actionCode, setActionCode] = useState<any>(-3);
 
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
@@ -75,14 +68,14 @@ export default function App(props: AppProps) {
         if (actionCode < 1) {
           setActionCode(page.checkAction);
         }
-        if (!permissions) {
-          return;
-        }
-        if (permissions?.MODE === 1) {
+        // if (!permissions) {
+        //   return;
+        // }
+        // if (permissions?.MODE === 1) {
           dispatch(setActiveMenu(page.id));
-        } else {
-          window.location.href = window.location.origin + '/employee/dashboard/overview';
-        }
+        // } else {
+        //   window.location.href = window.location.origin + '/employee/dashboard/overview';
+        // }
       } else {
         dispatch(setActiveMenu(page.id));
       }
@@ -91,7 +84,7 @@ export default function App(props: AppProps) {
     }
 
     dispatch(setPageIdFound(true));
-  }, [appSettings, permissions, pageIdFound]);
+  }, [appSettings, pageIdFound]);
 
 
   type User = IUserProfile & UserState;
@@ -104,7 +97,7 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
-          navigate('');
+          navigate('/');
           break;
         case 'LAUNCHING':
           // приложение загружается

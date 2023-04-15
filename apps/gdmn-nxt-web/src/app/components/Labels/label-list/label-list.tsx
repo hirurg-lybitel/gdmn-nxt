@@ -1,18 +1,20 @@
 import { Box, Button, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
-import { useAddLabelMutation, useGetLabelsQuery } from 'apps/gdmn-nxt-web/src/app/features/labels';
+import { useAddLabelMutation, useDeleteLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from 'apps/gdmn-nxt-web/src/app/features/labels';
 import LabelListItem from '../label-list-item/label-list-item';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './label-list.module.less';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
-import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
-import { usePermissions } from '../../../features/common/usePermissions';
+import { ILabel, Permissions } from '@gsbelarus/util-api-types';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
 import CardToolbar from '../../Styled/card-toolbar/card-toolbar';
+import { LoadingButton } from '@mui/lab';
+import AddIcon from '@mui/icons-material/Add';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 const ItemSkeleton = () => {
   return (
@@ -50,6 +52,10 @@ export function LabelList(props: LabelListProps) {
 
   const [openEditForm, setOpenEditForm] = useState(false);
   const [addLabel, { isLoading: addIsLoading }] = useAddLabelMutation();
+  const [deleteLabel, { isLoading: deleteIsLoading }] = useDeleteLabelMutation();
+  const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
+
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const handleOnSubmit = (label: ILabel) => {
     setOpenEditForm(false);
@@ -61,13 +67,12 @@ export function LabelList(props: LabelListProps) {
     setOpenEditForm(false);
   };
 
-  const [isFetching5, data5] = usePermissions(5);
-  const [isFetching6, data6] = usePermissions(6);
-  const [isFetching7, data7] = usePermissions(7);
-
-  const componentIsFetching = dataIsFetching || isFetching5 || isFetching6 || isFetching7 || dataIsFetching;
+  const componentIsFetching = useMemo(() => dataIsLoading, [dataIsLoading]);
 
   const classes = useStyles();
+
+  const handleDelete = useCallback((id: number) => deleteLabel(id), []);
+  const handleEdit = useCallback((label: ILabel) => updateLabel(label), []);
 
   return (
     <div
@@ -84,14 +89,16 @@ export function LabelList(props: LabelListProps) {
         <CardToolbar>
           <div style={{ display: 'flex' }}>
             <Box flex={1} />
-            <PermissionsGate actionCode={Action.CreateLabel}>
-              <Button
+            <PermissionsGate actionAllowed={userPermissions?.labels.POST}>
+              <LoadingButton
+                loading={dataIsFetching || addIsLoading || editIsLoading || deleteIsLoading}
+                loadingPosition="start"
+                startIcon={<AddIcon />}
                 variant="contained"
-                disabled={addIsLoading}
                 onClick={() => setOpenEditForm(true)}
               >
                 Добавить
-              </Button>
+              </LoadingButton>
             </PermissionsGate>
           </div>
         </CardToolbar>
@@ -107,7 +114,11 @@ export function LabelList(props: LabelListProps) {
               labels?.map((label, idx) =>
                 <div key={label.ID}>
                   {idx !== 0 ? <Divider /> : <></>}
-                  <LabelListItem data={label} />
+                  <LabelListItem
+                    data={label}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
                 </div>) || <></>
 
             }

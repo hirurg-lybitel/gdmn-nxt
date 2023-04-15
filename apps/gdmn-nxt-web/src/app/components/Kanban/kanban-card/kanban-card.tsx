@@ -4,13 +4,12 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
-import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
 
 
 /* eslint-disable-next-line */
@@ -36,6 +35,8 @@ export function KanbanCard(props: KanbanCardProps) {
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
+
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
@@ -227,7 +228,7 @@ export function KanbanCard(props: KanbanCardProps) {
 
               {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
                 ?
-                <PermissionsGate actionCode={Action.CopyDeal}>
+                <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
                   <div
                     className="actions"
                     hidden

@@ -6,6 +6,7 @@ import { useGetPermissionByUserQuery } from '../../../features/permissions';
 import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '../../../store';
 import styles from './permissions-gate.module.less';
+import { Permissions } from '@gsbelarus/util-api-types';
 
 // const hasPermission = ({ permissions: string[], scopes }) => {
 //   const scopesMap: { [key: string]: any } = {};
@@ -18,66 +19,39 @@ import styles from './permissions-gate.module.less';
 
 export interface PermissionsGateProps {
   children: ReactNode;
-  actionCode: number;
+  actionCode?: any;
   scopes?: any[],
   disableDefault?: boolean,
-  show?: boolean
+  show?: boolean;
+  actionAllowed?: boolean
 }
 
 export function PermissionsGate(props: PermissionsGateProps) {
-  const { children, scopes, actionCode = -1, disableDefault = true, show = false } = props;
-  // const { role } = useGetRole();
-  const role = '1';
+  const { children, scopes, actionCode, disableDefault = true, show = false, actionAllowed = true } = props;
 
-  const user = useSelector<RootState, UserState>(state => state.user);
+  if (actionAllowed) return <>{children}</>;
 
-  const { data, isFetching } = useGetPermissionByUserQuery(
-    { actionCode, userID: user.userProfile?.id || -1 },
-    { skip: !user.userProfile?.id || actionCode < 0 }
+  if (!show) {
+    return (<></>);
+  }
+  return (
+    <Tooltip title={<Typography variant="body1">У вас нет прав на это</Typography>} >
+      <div style={{ position: 'relative' }}>
+        {children}
+        <div
+          style={{
+            display: 'block',
+            zIndex: 99,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
+    </Tooltip>
   );
-
-  // console.log('data', isFetching, actionCode, user.userProfile?.id || -1, data);
-  // const permissions = PERMISSIONS[role];
-
-  // const permissionGranted = hasPermission({ permissions, scopes });
-
-  // if (!permissionGranted) return <></>;
-
-  if (actionCode < 0) return <>{children}</>;
-
-  const permissionGranted = (() => {
-    if (isFetching) {
-      if (!disableDefault) return true;
-      return false;
-    };
-    return data?.MODE === 1;
-  })();
-
-  if (!permissionGranted) {
-    if (!show) {
-      return (<></>);
-    }
-    return (
-      <Tooltip title={<Typography variant="body1">У вас нет прав на это</Typography>} >
-        <div style={{ position: 'relative' }}>
-          {children}
-          <div
-            style={{
-              display: 'block',
-              zIndex: 99,
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-            }}
-          />
-        </div>
-      </Tooltip>
-    );
-  };
-
-  return <>{children}</>;
 }
 
 export default PermissionsGate;

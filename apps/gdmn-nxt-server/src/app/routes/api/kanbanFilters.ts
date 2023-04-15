@@ -1,5 +1,5 @@
 import express from 'express';
-import { filters } from '../../handlers/deals/filters';
+import { filters } from '../../controllers/deals/filters';
 
 const router = express.Router();
 
