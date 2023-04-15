@@ -7,7 +7,7 @@ import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
-import { setActiveMenu, toggleMenu } from '../../store/settingsSlice';
+import { toggleMenu } from '../../store/settingsSlice';
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
@@ -139,7 +139,6 @@ export const MainLayout = (props:MainLayoutProps) => {
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
-  const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
 
   useEffect(() => {
     if (errorMessage) {

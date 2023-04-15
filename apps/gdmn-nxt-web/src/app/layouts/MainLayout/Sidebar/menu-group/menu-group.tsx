@@ -16,7 +16,7 @@ export function MenuGroup(props: MenuGroupProps) {
     switch (menu.type) {
       case 'collapse':
         return <PermissionsGate key={menu.id} actionCode={menu.checkAction} show={true} >
-          <MenuCollapse menu={menu} level={1} />
+          <MenuCollapse menu={menu} level={1}/>
         </PermissionsGate>;
         break;
       case 'item':

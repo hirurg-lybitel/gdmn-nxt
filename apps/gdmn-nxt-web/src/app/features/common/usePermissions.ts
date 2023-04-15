@@ -10,7 +10,7 @@ function usePermissions(actionCode:number):[boolean, IPermissionByUser | undefin
 
   const { data, isFetching } = useGetPermissionByUserQuery(
     { actionCode, userID: user.userProfile?.id || -1 },
-    { skip: !user.userProfile?.id }
+    { skip: !user.userProfile?.id || actionCode < 0 }
   );
 
   return [isFetching, data];

@@ -58,15 +58,6 @@ export function MenuCollapse(props: MenuCollapseProps) {
     setOpen(true);
   };
   const menuIcon = menu.icon;
-  const activeMenuId = useSelector((state: RootState) => state.settings.activeMenuId);
-  useEffect(()=>{
-    if (activeMenuId) {
-      if (menu.children?.findIndex((item: IMenuItem) => activeMenuId === item.id) !== -1) {
-        handleOpen();
-      }
-    }
-  }, [activeMenuId]);
-
 
   return (
     <>

@@ -28,8 +28,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
-import { Link } from 'react-router-dom';
-import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -75,7 +74,7 @@ export function Profile(props: ProfileProps) {
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
-
+  const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -92,12 +91,12 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleAccountClick = () => {
-    dispatch(setActiveMenu('account'));
+    navigate('preferences/account')
     handleClose();
   };
 
   const handleSettingsClick = () => {
-    dispatch(setActiveMenu('settings'));
+    navigate('preferences/settings')
     handleClose();
   };
 

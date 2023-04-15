@@ -11,15 +11,11 @@ const initCustomization: ICustomization = {
 
 interface ISettingsState {
   menuOpened: boolean;
-  activeMenuId: string,
-  pageIdFound: boolean,
   customization: ICustomization
 };
 
 const initialState: ISettingsState = {
   menuOpened: true,
-  activeMenuId: '',
-  pageIdFound: false,
   customization: initCustomization
 };
 
@@ -35,24 +31,12 @@ export const settingsSlice = createSlice({
     setColorMode: (state, action: PayloadAction<ColorMode>) => {
       return ({ ...state, customization: { ...state.customization, colorMode: action.payload } });
     },
-    setActiveMenu: (state, action: PayloadAction<string>) => {
-      return (
-        { ...state, activeMenuId: action.payload }
-      );
-    },
-    setPageIdFound: (state, action: PayloadAction<boolean>) => {
-      return (
-        { ...state, pageIdFound: action.payload }
-      );
-    }
   }
 });
 
 export const {
   toggleMenu,
   setColorMode,
-  setActiveMenu,
-  setPageIdFound
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

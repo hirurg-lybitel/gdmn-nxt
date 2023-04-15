@@ -33,7 +33,6 @@ import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
 import { IFilteringData } from 'apps/gdmn-nxt-web/src/app/components/Kanban/deals-filter/deals-filter';
 import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
-import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
 import { config } from '@gdmn-nxt/config';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -191,7 +190,6 @@ export function Notification(props: NotificationProps) {
           dealNumber: actionContent
         };
 
-        dispatch(setActiveMenu('deals'));
         navigate('managment/deals/list');
 
         dispatch(saveFilterData({ 'deals': newDealsFilters }));
