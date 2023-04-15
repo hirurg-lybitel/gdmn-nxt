@@ -1,5 +1,5 @@
 import express from 'express';
-import actCompletion from '../actCompletion';
+import actCompletion from '../controllers/reports/actCompletion';
 
 const router = express.Router();
 router.get('/act-completion', actCompletion.get);

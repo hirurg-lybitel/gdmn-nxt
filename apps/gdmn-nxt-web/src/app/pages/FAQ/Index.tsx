@@ -17,9 +17,7 @@ import { useTheme, Theme } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
-import { usePermissions } from '../../features/common/usePermissions';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
 import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -40,10 +38,8 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
-  const [isFetching11] = usePermissions(11);
-  const [isFetching12] = usePermissions(12);
-  const [isFetching13] = usePermissions(13);
-  const componentIsFetching = isFetching || isFetching11 || isFetching12 || isFetching13;
+
+  const componentIsFetching = isFetching; 
 
   const addFaqHandler = (question:string, answer:string) => {
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });

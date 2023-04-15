@@ -14,10 +14,9 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { Action, IKanbanCard, IKanbanColumn, IKanbanFilterDeadline, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IKanbanFilterDeadline, IPermissionByUser } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
-import { usePermissions } from '../../../features/common/usePermissions';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery, usePostLastUsedFilterDeadlineMutation } from '../../../features/kanban/kanbanFiltersApi';
 
 export interface IChanges {
@@ -171,12 +170,7 @@ export function Deals(props: DealsProps) {
     />,
   [openFilters, filtersStorage.filterData.deals]);
 
-  const [createDealIsFetching] = usePermissions(Action.CreateDeal);
-  const [copyDealIsFetching] = usePermissions(Action.CopyDeal);
-  const [editDealIsFetching] = usePermissions(Action.EditDeal);
-  const [deleteDealIsFetching] = usePermissions(Action.DeleteDeal);
-
-  const componentIsFetching = isLoading || createDealIsFetching || copyDealIsFetching || editDealIsFetching || deleteDealIsFetching;
+  const componentIsFetching = isLoading;
 
   const Header = useMemo(() => {
     return (

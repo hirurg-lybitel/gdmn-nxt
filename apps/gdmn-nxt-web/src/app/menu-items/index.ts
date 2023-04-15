@@ -4,6 +4,7 @@ import dashboard from './dashboard';
 import managment from './managment';
 import preferences from './preferences';
 import { systemMenu } from './system';
+import { ActionMethod, Permissions } from '@gsbelarus/util-api-types';
 
 type IType = 'group' | 'collapse' | 'item'
 export interface IMenuItem {
@@ -14,6 +15,10 @@ export interface IMenuItem {
   icon?: React.ReactElement;
   children?: IMenuItem[];
   checkAction?: number;
+  actionCheck?: {
+    name: keyof Permissions;
+    method: ActionMethod;
+  }
 }
 
 // TODO доделать systemMenu или убрать вовсе

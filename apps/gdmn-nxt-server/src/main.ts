@@ -1,30 +1,29 @@
 /* eslint-disable indent */
-import express from 'express';
+import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { authResult, ColorMode } from '@gsbelarus/util-api-types';
-import { checkGedeminUser, getAccount, getGedeminUser } from './app/app';
-import { upsertAccount, getAccounts } from './app/accounts';
-import contactGroups from './app/contactGrops';
-import departments from './app/departments';
+import { authResult, ColorMode, Permissions } from '@gsbelarus/util-api-types';
+import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
+import { upsertAccount, getAccounts } from './app/controllers/accounts';
+import contactGroups from './app/controllers/contactGrops';
+import departments from './app/controllers/departments';
 import bankStatementsRouter from './app/routes/bankStatementsRouter';
-import customerContracts from './app/customerContracts';
-import dealsRouter from './app/routes/dealsRouter';
+import customerContracts from './app/controllers/customerContracts';
 import kanbanRouter from './app/routes/kanbanRouter';
 import actCompletionRouter from './app/routes/actCompletionRouter';
 import chartsRouter from './app/routes/chartsDataRouter';
 import contactsRouter from './app/routes/contactsRouter';
 import systemRouter from './app/routes/systemRouter';
 import { disposeConnection } from './app/utils/db-connection';
-import { importedModels } from './app/models';
+import { importedModels } from './app/utils/models';
 import contractsListRouter from './app/routes/contractsListRouter';
 import reportsRouter from './app/routes/reportsRouter';
-import workTypes from './app/handlers/workTypes';
+import workTypes from './app/controllers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
-import permissionsRouter from './app/routes/permissionsRouter';
+import { permissionsRouter } from './app/routes/permissionsRouter';
 import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
 import faqRouter from './app/routes/faqRouter';
@@ -33,7 +32,17 @@ import RateLimit from 'express-rate-limit';
 import { Notifications } from './app/routes/socket/notifications';
 import { StreamingUpdate } from './app/routes/socket/streamingUpdate';
 import { config } from '@gdmn-nxt/config';
+import { checkPermissions, setPermissonsCache } from './app/middlewares/permissions';
+import { parseIntDef } from '@gsbelarus/util-useful';
+import { nodeCache } from './app/utils/cache';
 
+  // Расширенный интерфейс для сессии
+declare module 'express-session' {
+  interface SessionData {
+    userId: number;
+    permissions: Permissions;
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -94,12 +103,14 @@ passport.use(new Strategy({
   passwordField: 'password',
   passReqToCallback: true
 },
-  async (req: any, userName: string, password: string, done) => {
+  async (req: Request, userName: string, password: string, done) => {
     const { employeeMode } = req.body;
     try {
       if (employeeMode) {
         // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
         const res = await checkGedeminUser(userName, password);
+
+        //console.log('passport_strategy', req.sessionID);
 
         if (res.result === 'UNKNOWN_USER') {
           return done(null, false);
@@ -107,7 +118,15 @@ passport.use(new Strategy({
 
         if (res.result === 'SUCCESS') {
           console.log('valid gedemin user');
-          return done(null, { userName, gedeminUser: true, id: res.userProfile.id });
+
+          const userPermissions: Permissions = nodeCache.get('permissions')?.[res.userProfile.id];
+
+          return done(null, {
+            userName,
+            gedeminUser: true,
+            id: res.userProfile.id,
+            permissions: userPermissions
+          });
         } else {
           return done(null, false);
         }
@@ -132,15 +151,18 @@ passport.use(new Strategy({
 ));
 
 passport.serializeUser((user: IUser, done) => {
-  // console.log('passport serialize');
-  done(null, `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}`);
+  // console.log('passport serialize', user);
+  const newUser = { ...user, userName: `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}` };
+  done(null, newUser);
 });
 
-passport.deserializeUser(async (un: string, done) => {
-  // console.log('passport deserialize');
+passport.deserializeUser(async (user: IUser, done) => {
+  // console.log('passport deserialize', user);
 
-  const userType = un.slice(0, 1);
-  const userName = un.slice(1);
+  const { userName: name } = user;
+
+  const userType = name.slice(0, 1);
+  const userName = name.slice(1);
 
   if (userType === 'U') {
     const account = await getAccount('passport', userName);
@@ -154,7 +176,7 @@ passport.deserializeUser(async (un: string, done) => {
     const res = await getGedeminUser(userName);
 
     if (res) {
-      done(null, { ...res, gedeminUser: true });
+      done(null, { ...user, ...res, gedeminUser: true });
     } else {
       done(`Unknown user userName: ${userName}`);
     }
@@ -171,29 +193,28 @@ const middlewares = [
     saveUninitialized: true,
     store: sessionStore,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000
-    }
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production'
+    },
   }),
   cookieParser(),
   passport.initialize(),
-  passport.session()
+  passport.session(),
+  checkPermissions
 ];
 
 app.use(middlewares);
 
+// app.use(checkPermissions);
+
 const router = express.Router();
 
-app.use(apiRoot.v1, router);
+export const apiVersion = apiRoot.v1
 
-// app.get('/test', (req, res) => {
-//   if (req.isAuthenticated()) {
-//     return res.send(`Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
-//   } else {
-//     return res.send('Not authenticated!');
-//   }
-// });
+app.use(apiVersion, router);
 
 router.get('/user', (req, res) => {
+  // console.log('user', req.user);
   if (req.isAuthenticated()) {
     res.cookie('userId', req.user?.['id']);
     res.cookie('color-mode', req.user?.['colorMode'] || ColorMode.Light);
@@ -210,11 +231,19 @@ router.get('/user', (req, res) => {
   }
 });
 
-router.route('/user/signin')
+
+router
+  .route('/user/signin')
   .post(
     passport.authenticate('local'),
     (req, res) => {
+      console.log('signin', req.sessionID);
       const { userName } = req.body;
+      const { id: userId, permissions } = req.user as any;
+
+      req.session.userId = userId;
+      req.session.permissions = permissions;
+
       return res.json(authResult(
         'SUCCESS',
         `Вы вошли как ${userName}.`
@@ -222,7 +251,8 @@ router.route('/user/signin')
     },
   );
 
-router.route('/user/forgot-password')
+router
+  .route('/user/forgot-password')
   .post(
     async (req, res) => {
       const { email } = req.body;
@@ -245,7 +275,6 @@ router.get('/logout', (req, res) => {
 });
 
 
-
 router.use(
   (req, res, next) => {
     if (!req.isAuthenticated()) {
@@ -255,13 +284,8 @@ router.use(
   }
 );
 
-// router.get('/test', (req, res) => {
-//   if (req.isAuthenticated()) {
-//     return res.send(`from router: Authenticated!\n${JSON.stringify(req.user, undefined, 2)}`);
-//   } else {
-//     return res.send('from router: Not authenticated!');
-//   }
-// });
+/** Write permissions to cache when server is starting */
+setPermissonsCache();
 
 /** Streaming updates module */
 StreamingUpdate();
