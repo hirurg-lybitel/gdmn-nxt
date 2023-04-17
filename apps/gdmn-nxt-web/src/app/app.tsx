@@ -45,9 +45,6 @@ export default function App(props: AppProps) {
 
   const appSettings = useSelector((state: RootState) => state.settings);
   const [actionCode, setActionCode] = useState<number>(-3);
-  const { data: permissions } = useGetPermissionByUserQuery(
-    { actionCode, userID: userProfile?.id || -1 }, { skip: !userProfile?.id || actionCode < 1 }
-  );
   const navigate = useNavigate()
 
   const pathName:string[] = window.location.pathname.split('/');
@@ -96,9 +93,6 @@ export default function App(props: AppProps) {
         break;
         }
         case 'OTHER_LOADINGS': {
-          if(!pageIdFound){
-            return
-          }
           dispatch(renderApp())
           break
         }
@@ -130,7 +124,6 @@ export default function App(props: AppProps) {
   const handleSignIn = async () => {
     const response = await fetch(`${baseUrlApi}user`, { method: 'GET', credentials: 'include' });
     const data = await response.json();
-    dispatch(setPageIdFound(false));
     if (!data.result) {
       dispatch(selectMode());
       return;

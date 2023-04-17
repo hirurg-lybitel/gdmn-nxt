@@ -5,7 +5,8 @@ import React, { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'r
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, NavLink, NavLinkProps, useNavigate } from 'react-router-dom';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import {usePermissions} from '../../../../features/common/usePermissions'
+import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
+import { ActionMethod, ActionName, Permissions } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuItem: {
@@ -23,8 +24,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
+interface actionCheck {
+  name: ActionName;
+  method: ActionMethod;
+}
+
 export interface MenuItemProps {
-  item: any;
+  item: IMenuItem;
   level?: number;
   isOpen?:boolean
   open?:()=>void;
@@ -32,13 +38,8 @@ export interface MenuItemProps {
 
 export function MenuItem(props: MenuItemProps) {
   const { item, level = 0, isOpen, open } = props;
-  const settings = useSelector((state: RootState) => state.settings);
 
   const classes = useStyles();
-
-  const [actionCode,setActionCode] = useState(-1)
-  const navigate = useNavigate()
-  const [permissionsIsFetching,permissions] = usePermissions(actionCode)
 
   const itemIcon = item?.icon ||
     (level > 1
@@ -51,19 +52,16 @@ export function MenuItem(props: MenuItemProps) {
       />
       : <></>);
 
-  useEffect(()=>{
-    if(!permissions){
-      return
-    }
-    if(permissions?.MODE !== 1){
-      navigate('');
-    }
-  },[permissions])
+  const userPermissions = useSelector<RootState, any | undefined>(state => state.user.userProfile?.permissions);
 
   const lickClassAndReroute = (isActive:boolean, elClasses:string) => {
     if(isActive){
-      if(item.checkAction){
-        setActionCode(item.checkAction)
+      if(item.actionCheck){
+        console.log(userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`])
+        console.log(`userPermissions?.[${item.actionCheck.name}]?.[${item.actionCheck.method}]`)
+        if(!userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`]){
+          window.location.href=""
+        }
       }
       return elClasses + " Mui-selected"
     }else{
@@ -79,7 +77,7 @@ export function MenuItem(props: MenuItemProps) {
     return (<NavLink
       {...rest}
       ref={ref}
-      to={item.url}
+      to={item.url || ''}
       end
       className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
       />)
