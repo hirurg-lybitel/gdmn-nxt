@@ -1,5 +1,5 @@
 import express from 'express';
-import bankStatements from '../bankStatements';
+import bankStatements from '../controllers/reports/bankStatements';
 
 const router = express.Router();
 router.get('/bank-statement/:companyId', bankStatements.get);

@@ -250,18 +250,12 @@ export interface IKanbanLastUsedFilterDeadline extends IWithID {
   FILTER: IKanbanFilterDeadline;
 }
 
-export enum Action {
-  CreateDeal = 1,
-  EditDeal = 3,
-  DeleteDeal = 4,
-  CopyDeal = 2,
-  ShowAllDeals = 9,
-  CreateLabel = 5,
-  EditLabel = 6,
-  DeleteLabel = 7,
-  PermissionsSettings = 8,
-  NotificationCenter = 10,
-  CreateFAQ = 11,
-  EditFAQ = 12,
-  DeleteFAQ = 13
+type RouteMethod = 'POST' | 'GET' | 'PUT' | 'DELETE';
+export type ActionName = 'deals' | 'labels' | 'permissions' | 'notifications' | 'faq' | '';
+export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
+
+export type Permissions = {
+  [key in ActionName]: {
+    [key in (ActionMethod)]: boolean;
+  }
 }

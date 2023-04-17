@@ -1,6 +1,6 @@
 import express from 'express';
-import { denyReasons } from '../../handlers/deals/denyReasons';
-import { sourceCatalog } from '../../handlers/deals/sourceCatalog';
+import { denyReasons } from '../../controllers/deals/denyReasons';
+import { sourceCatalog } from '../../controllers/deals/sourceCatalog';
 
 const router = express.Router();
 

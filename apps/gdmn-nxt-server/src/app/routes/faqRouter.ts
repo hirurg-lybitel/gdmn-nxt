@@ -1,13 +1,12 @@
-import { Action } from '@gsbelarus/util-api-types';
-import { checkPermissionsMW } from './../middlewares/middlewares';
 import express from 'express';
-import faq from '../handlers/faq';
+import { faqController } from '../controllers/faq';
 
 const router = express.Router();
-router.get('/faq', faq.get);
-router.get('/faq/:id', faq.get);
-router.post('/faq', checkPermissionsMW(Action.CreateFAQ), faq.upsert);
-router.put('/faq/:id', checkPermissionsMW(Action.EditFAQ), faq.upsert);
-router.delete('/faq/:id', checkPermissionsMW(Action.DeleteFAQ), faq.remove);
+
+router.get('/faq', faqController.get);
+router.get('/faq/:id', faqController.get);
+router.post('/faq', faqController.upsert);
+router.put('/faq/:id', faqController.upsert);
+router.delete('/faq/:id', faqController.remove);
 
 export default router;

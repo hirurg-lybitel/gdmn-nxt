@@ -1,6 +1,6 @@
 import express from 'express';
-import sqlEditor from '../../handlers/sqlEditor';
-import systemUsers from '../../handlers/systemUsers';
+import sqlEditor from '../../controllers/sqlEditor';
+import systemUsers from '../../controllers/systemUsers';
 
 
 const router = express.Router();

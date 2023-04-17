@@ -31,7 +31,7 @@ import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IPermissionByUser, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { ICustomer } from '@gsbelarus/util-api-types';
@@ -59,7 +59,6 @@ import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsA
 import { DenyReasonsSelect } from './components/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 
 
@@ -130,6 +129,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const [expanded, setExpanded] = useState('');
   const [tabIndex, setTabIndex] = useState('1');
   const user = useSelector<RootState, UserState>(state => state.user);
+
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { isFetching: customerFetching } = useGetCustomersQuery();
@@ -743,7 +744,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        <PermissionsGate actionCode={Action.DeleteDeal}>
+        <PermissionsGate actionAllowed={userPermissions?.deals.DELETE}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
             <IconButton onClick={handleDeleteClick} size="small" hidden>
               <DeleteIcon />
@@ -751,7 +752,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           }
         </PermissionsGate>
         {!formik.values.ID &&
-          <PermissionsGate actionCode={Action.CreateDeal} show={true}>
+          <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
             <Button
               form="mainForm"
               type="submit"
@@ -768,7 +769,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           className={classes.button}
           onClick={handleCancelClick}
         >Отменить</Button>
-        <PermissionsGate actionCode={formik.values.ID > 0 ? Action.EditDeal : Action.CreateDeal} show={true}>
+        <PermissionsGate show={true} actionAllowed={formik.values.ID > 0 ? userPermissions?.deals.PUT : userPermissions?.deals.POST}>
           <Button
             className={classes.button}
             form="mainForm"

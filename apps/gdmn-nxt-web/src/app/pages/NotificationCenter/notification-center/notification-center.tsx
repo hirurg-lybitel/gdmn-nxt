@@ -5,11 +5,21 @@ import { useState } from 'react';
 import SendMessage from '../send-message/send-message';
 import ViewUserNotifications from '../view-user-notifications/view-user-notifications';
 import NotificationsSettings from '../notifications-settings/notifications-settings';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { Permissions } from '@gsbelarus/util-api-types';
+import { Navigate } from 'react-router-dom';
 
 /* eslint-disable-next-line */
 export interface NotificationCenterProps {}
 
 export function NotificationCenter(props: NotificationCenterProps) {
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+
+  if (!userPermissions?.notifications.forGroup) {
+    return <Navigate to="/" />;
+  };
+
   return (
     <CustomizedCard
       borders
