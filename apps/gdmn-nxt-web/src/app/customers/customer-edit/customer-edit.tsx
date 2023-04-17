@@ -94,7 +94,7 @@ export interface CustomerEditProps {
 }
 
 export function CustomerEdit(props: CustomerEditProps) {
-  const { open, deleteable = true, customer } = props;
+  const { open, deleteable = false, customer } = props;
   const { onCancelClick, onSubmit } = props;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -169,8 +169,8 @@ export function CustomerEdit(props: CustomerEditProps) {
     setConfirmOpen(false);
   }, []);
 
-  const handleClose = useCallback((e: any, reason: string) => {
-    if (reason === 'backdropClick') handleCancelClick();
+  const handleClose = useCallback(() => {
+    handleCancelClick();
   }, [handleCancelClick]);
 
   const memoContactlist = useMemo(() =>

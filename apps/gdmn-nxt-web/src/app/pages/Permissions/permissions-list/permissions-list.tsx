@@ -76,7 +76,7 @@ export function PermissionsList(props: PermissionsListProps) {
         flexDirection: 'column',
       }}
     >
-      <CardHeader style={{ paddingBottom:'15px',paddingTop:'15px'}} title={<Typography variant="h3">Права групп пользователей</Typography>} />
+      <CardHeader title={<Typography variant="h3">Права групп пользователей</Typography>} />
       <CardContent
         style={{
           flex: 1,

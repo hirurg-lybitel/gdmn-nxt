@@ -17,7 +17,7 @@ export interface IFilteringData {
 export interface DealsFilterProps {
   open: boolean;
   width?: string;
-  onClose?: (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => void;
+  onClose?: (event?: object) => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
   onFilterClear: () => void;
@@ -38,7 +38,6 @@ export function DealsFilter(props: DealsFilterProps) {
   const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
 
   const handleOnChange = (entity: string, value: any) => {
-    console.log('handleOnChange', entity, value);
     const newObject = {...filteringData};
     delete newObject[entity];
     onFilteringDataChange({ ...newObject, ...(value?.length > 0 ? { [entity]: value } : {})});
@@ -53,7 +52,7 @@ export function DealsFilter(props: DealsFilterProps) {
   /**Debouncing enter deal number */
   useEffect(() => {
     if (!open) return;
-    
+
     const sendRequestNumber = setTimeout(() => {
       handleOnChange('dealNumber', dealNumber);
     }, 2000)
@@ -162,7 +161,7 @@ export function DealsFilter(props: DealsFilterProps) {
             onClick={() => {
               onFilterClear();
               setDealNumber('');
-              onClose && onClose({}, 'backdropClick');
+              onClose && onClose();
             }}
           >
             Очистить

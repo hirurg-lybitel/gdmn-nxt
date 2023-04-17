@@ -60,8 +60,8 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
     onCancel();
   }, [onCancel]);
 
-  const handleClose = useCallback((e: any, reason: string) => {
-    if (reason === 'backdropClick') onCancel();
+  const handleClose = useCallback(() => {
+    onCancel();
   }, [onCancel]);
 
   const handleDeleteClick = useCallback(() => {

@@ -13,7 +13,7 @@ type SocketOptions = {
 const socketClients: SocketClients = {};
 export function setSocketClient(name: string, options: SocketOptions) {
   const url = options?.url || '';
-  const userId = options?.userId || -1
+  const userId = options?.userId || -1;
 
   if (!socketClients[name]) {
     socketClients[name] = io(

@@ -136,8 +136,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     setConfirmOpen(false);
   }, []);
 
-  const handleClose = useCallback((e: any, reason: string) => {
-    if (reason === 'backdropClick') handleCancelClick();
+  const handleClose = useCallback(() => {
+    handleCancelClick();
   }, [handleCancelClick]);
 
   function combineDateAndTime(date?: Date, time?: Date) {

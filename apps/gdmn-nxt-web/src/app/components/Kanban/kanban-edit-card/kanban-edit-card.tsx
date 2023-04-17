@@ -60,6 +60,7 @@ import { DenyReasonsSelect } from './components/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { Action } from '@gsbelarus/util-api-types';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -169,9 +170,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     }
   };
 
-  const handleOnClose = (e: any, reason: string) => {
-    if (reason !== 'backdropClick') return;
-    handleCancelClick();
+  const handleOnClose = () => {
+      handleCancelClick();
   };
 
   const handleTabsChange = (event: any, newindex: string) => {
@@ -376,16 +376,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   [confirmOpen, deleting, handleConfirmOkClick, handleConfirmCancelClick]);
 
   return (
-    <Dialog
+    <CustomizedDialog
       open={open}
-      TransitionComponent={Transition}
-      classes={{
-        paper: classes.dialog
-      }}
       onClose={handleOnClose}
+      width={useMediaQuery(theme.breakpoints.down('ultraWide')) ? '50vw' : '40vw'}
+      minWidth={400}
     >
       <DialogTitle>
-        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
+        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки' }
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
@@ -785,7 +783,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       </DialogActions>
       {memoConfirmDialog}
       {/* {memoAddDealsSource} */}
-    </Dialog>
+    </CustomizedDialog>
   );
 }
 

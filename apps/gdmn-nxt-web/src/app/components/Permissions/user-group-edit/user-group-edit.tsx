@@ -8,6 +8,7 @@ import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import DeleteIcon from '@mui/icons-material/Delete';
 import styles from './user-group-edit.module.less';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -40,7 +41,7 @@ export interface UserGroupEditProps {
   userGroup?: IUserGroup;
   onSubmit: (userGroup: IUserGroup, deleting: boolean) => void;
   onCancel: () => void;
-  onClose: (e: any, r: string) => void;
+  onClose: () => void;
 }
 
 export function UserGroupEdit(props: UserGroupEditProps) {
@@ -105,10 +106,8 @@ export function UserGroupEdit(props: UserGroupEditProps) {
 
 
   return (
-    <Dialog
+    <CustomizedDialog
       open={open}
-      classes={{ paper: classes.dialog }}
-      TransitionComponent={Transition}
       onClose={onClose}
     >
       <DialogTitle>
@@ -149,7 +148,7 @@ export function UserGroupEdit(props: UserGroupEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <IconButton size="large" onClick={onDeleteClick}>
+        <IconButton onClick={onDeleteClick}>
           <DeleteIcon />
         </IconButton >
         <Box flex={1}/>
@@ -180,7 +179,7 @@ export function UserGroupEdit(props: UserGroupEditProps) {
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />
-    </Dialog>
+    </CustomizedDialog>
   );
 }
 
