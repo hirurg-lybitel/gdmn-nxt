@@ -57,8 +57,6 @@ export function MenuItem(props: MenuItemProps) {
   const lickClassAndReroute = (isActive:boolean, elClasses:string) => {
     if(isActive){
       if(item.actionCheck){
-        console.log(userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`])
-        console.log(`userPermissions?.[${item.actionCheck.name}]?.[${item.actionCheck.method}]`)
         if(!userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`]){
           window.location.href=""
         }
