@@ -382,7 +382,6 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(!openFilters);
     },
     handleRequestSearch: async (value: string) => {
-      console.log('asdasdasd' + value)
       const newObject = { ...filteringData };
       delete newObject.NAME;
       setFilteringData({
@@ -478,10 +477,6 @@ export function Customers(props: CustomersProps) {
     ),
     [openFilters, filteringData]
   );
-
-useEffect(()=>{
-  console.log(filteringData)
-},[filteringData])
 
   const handleOnChange = (entity: string, value:any) => {
     const newObject:any = Object.assign({}, filteringData);
