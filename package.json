@@ -52,6 +52,7 @@
     "leaflet.markercluster": "^1.5.3",
     "memorystore": "^1.6.6",
     "nested-sets-tree": "^2.0.0",
+    "node-cache": "^5.1.2",
     "node-firebird-driver-native": "^2.3.0",
     "nodemailer": "^6.7.2",
     "notistack": "^2.0.8",

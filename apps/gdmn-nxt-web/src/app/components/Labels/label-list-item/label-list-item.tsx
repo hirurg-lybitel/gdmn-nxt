@@ -1,4 +1,4 @@
-import { ILabel, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { ILabel, IPermissionByUser, Permissions } from '@gsbelarus/util-api-types';
 import { Box, Divider, Grid, IconButton } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -10,12 +10,15 @@ import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { Action } from '@gsbelarus/util-api-types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 export interface LabelListItemProps {
   data: ILabel;
+  onEdit?: (label: ILabel) => void;
+  onDelete?: (id: number) => void;
 }
 
 const labelStyle: CSSProperties = {
@@ -52,7 +55,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export function LabelListItem(props: LabelListItemProps) {
-  const { data } = props;
+  const { data, onEdit, onDelete } = props;
   const { ID } = data;
 
   const [openEditForm, setOpenEditForm] = useState(false);
@@ -76,7 +79,7 @@ export function LabelListItem(props: LabelListItemProps) {
     setOpenEditForm(false);
 
     if (label.ID) {
-      updateLabel(label);
+      onEdit && onEdit(label);
       return;
     };
   };
@@ -87,7 +90,7 @@ export function LabelListItem(props: LabelListItemProps) {
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    deleteLabel(ID);
+    onDelete && onDelete(ID);
   }, [ID]);
 
   const handleConfirmCancelClick = useCallback(() => {
@@ -96,6 +99,8 @@ export function LabelListItem(props: LabelListItemProps) {
 
   function hexToRGB(h: any) {
     let r = 0, g = 0, b = 0;
+
+    if (!h) return { r, g, b };
 
     // 3 digits
     if (h.length === 4) {
@@ -155,6 +160,9 @@ export function LabelListItem(props: LabelListItemProps) {
   const backgroundAlpha = 0.2;
   const borderAlpha = 0.3;
 
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+
+
   return (
     <Box style={{ padding: '20px 0px' }}>
       <Grid container alignItems="center">
@@ -166,7 +174,7 @@ export function LabelListItem(props: LabelListItemProps) {
         </Grid>
         <Grid item xs={2} md={1}>
           <Box display={'inline-flex'} width="100%" justifyContent={'center'} style={{ marginRight: 0 }}>
-            <PermissionsGate actionCode={Action.EditLabel}>
+            <PermissionsGate actionAllowed={userPermissions?.labels.PUT}>
               <IconButton
                 disabled={editIsLoading || deleteIsLoading}
                 color="primary"
@@ -175,7 +183,7 @@ export function LabelListItem(props: LabelListItemProps) {
                 <EditIcon fontSize="small" />
               </IconButton>
             </PermissionsGate>
-            <PermissionsGate actionCode={Action.DeleteLabel}>
+            <PermissionsGate actionAllowed={userPermissions?.labels.DELETE}>
               <IconButton
                 disabled={editIsLoading || deleteIsLoading}
                 color="primary"

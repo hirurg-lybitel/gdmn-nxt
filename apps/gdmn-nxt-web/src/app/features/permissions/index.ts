@@ -148,7 +148,6 @@ export const permissionsApi = createApi({
     }),
     getPermissionByUser: builder.query<IPermissionByUser, { actionCode: number, userID: number }>({
       query: ({ actionCode, userID }) => `permissions/actions/${actionCode}/byUser/${userID}`,
-      transformResponse: (response: IPermissionByUserRequestResult) => response.queries.action,
       providesTags: (result) =>
         result
           ? [

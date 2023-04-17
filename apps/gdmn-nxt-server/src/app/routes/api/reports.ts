@@ -1,6 +1,6 @@
 import express from 'express';
-import { getRemainsInvoices } from '../../handlers/remainInvoices';
-import { getTopEarning } from '../../handlers/reports/topEarning';
+import { getRemainsInvoices } from '../../controllers/remainInvoices';
+import { getTopEarning } from '../../controllers/reports/topEarning';
 import { getReconciliationStatement } from '../../reconciliationStatement';
 
 const router = express.Router();

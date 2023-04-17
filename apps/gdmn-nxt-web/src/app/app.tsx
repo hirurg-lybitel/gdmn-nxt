@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
@@ -14,7 +14,6 @@ import { CircularIndeterminate } from './components/helpers/circular-indetermina
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
 import menuItems, { IMenuItem } from './menu-items';
-import { useGetPermissionByUserQuery } from './features/permissions';
 import { getCookie } from './features/common/getCookie';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
@@ -54,7 +53,6 @@ export default function App(props: AppProps) {
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
   // Поиск и установка id страницы, который соответствует url, в state
-
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
 
@@ -63,7 +61,7 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
-          navigate('');
+          navigate('/');
           break;
         case 'LAUNCHING':
           // приложение загружается
@@ -94,8 +92,15 @@ export default function App(props: AppProps) {
             default:
               dispatch(setColorMode(ColorMode.Light));
               break;
+        }
+        break;
+        }
+        case 'OTHER_LOADINGS': {
+          if(!pageIdFound){
+            return
           }
-          break;
+          dispatch(renderApp())
+          break
         }
       }
     })();
@@ -125,7 +130,7 @@ export default function App(props: AppProps) {
   const handleSignIn = async () => {
     const response = await fetch(`${baseUrlApi}user`, { method: 'GET', credentials: 'include' });
     const data = await response.json();
-
+    dispatch(setPageIdFound(false));
     if (!data.result) {
       dispatch(selectMode());
       return;
@@ -149,19 +154,25 @@ export default function App(props: AppProps) {
     dispatch(queryLogin());
   };
 
+  const loadingPage = useMemo(() => {
+    return(
+      <Stack spacing={2}>
+        <CircularIndeterminate open={true} size={100} />
+        <Typography variant="overline" color="gray" align="center">
+          подключение
+        </Typography>
+      </Stack>
+    )
+  },[])
+
   const renderLoginStage = useMemo(() => {
     switch (loginStage) {
       case 'LAUNCHING':
-        return (
-          <Stack spacing={2}>
-            <CircularIndeterminate open={true} size={100} />
-            <Typography variant="overline" color="gray" align="center">
-              подключение
-            </Typography>
-          </Stack>
-        );
+        return loadingPage;
+      case 'OTHER_LOADINGS':
+        return loadingPage;
       case 'SELECT_MODE':
-        return <></>;
+        return loadingPage;
       case 'CUSTOMER':
         return <Navigate to="/customer" />;
       case 'EMPLOYEE':
@@ -201,7 +212,7 @@ export default function App(props: AppProps) {
           />
         );
       default:
-        return <></>;
+        return loadingPage;
     }
   }, [loginStage]);
 

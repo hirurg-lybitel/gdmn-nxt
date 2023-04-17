@@ -1,8 +1,8 @@
 import express from 'express';
-import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, updateContact, upsertContact } from '../../contacts';
-import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../labels';
-import contactPersons from '../../handlers/contactPersons';
-import contactEmployees from '../../handlers/contactEmployees';
+import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, updateContact, upsertContact } from '../../controllers/contacts';
+import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../controllers/labelsContact';
+import contactPersons from '../../controllers/contactPersons';
+import contactEmployees from '../../controllers/contactEmployees';
 
 const router = express.Router();
 

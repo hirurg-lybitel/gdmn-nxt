@@ -1,5 +1,5 @@
 import express from 'express';
-import profileSettings from '../handlers/profileSettings';
+import profileSettings from '../controllers/profileSettings';
 
 const router = express.Router();
 router.get('/profile-settings/userId/:userId', profileSettings.get);

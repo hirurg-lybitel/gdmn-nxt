@@ -28,23 +28,32 @@ const preferences: IMenuItem = {
       id: 'permissions',
       title: 'Настройка прав',
       type: 'collapse',
-      checkAction: 8,
       url: 'preferences/permissions',
+      actionCheck: {
+        name: 'permissions',
+        method: 'forGroup'
+      },
       icon: <AdminPanelSettingsIcon color="secondary" />,
       children: [
         {
           id: 'permissions-view',
           title: 'Действия',
           type: 'item',
-          checkAction: 8,
-          url: 'preferences/permissions/list'
+          url: 'preferences/permissions/list',
+          actionCheck: {
+            name: 'permissions',
+            method: 'forGroup'
+          },
         },
         {
           id: 'permissions-usergroups',
           title: 'Группы пользователей',
           type: 'item',
-          checkAction: 8,
-          url: 'preferences/permissions/usergroups'
+          url: 'preferences/permissions/usergroups',
+          actionCheck: {
+            name: 'permissions',
+            method: 'forGroup'
+          },
         }
       ]
     },
@@ -52,7 +61,10 @@ const preferences: IMenuItem = {
       id: 'notifications',
       title: 'Центр уведомлений',
       type: 'item',
-      checkAction: 10,
+      actionCheck: {
+        name: 'notifications',
+        method: 'forGroup'
+      },
       url: 'preferences/notifications',
       icon: <EditNotificationsIcon color="secondary" />
     },

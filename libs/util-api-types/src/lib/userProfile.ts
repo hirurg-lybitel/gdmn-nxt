@@ -1,3 +1,5 @@
+import { Permissions } from "./crmDataTypes";
+
 export interface IUserProfile {
   id?: number,
   userName: string;
@@ -5,4 +7,5 @@ export interface IUserProfile {
   surname?: string;
   contactkey?: number,
   rank?: string;
+  permissions?: Permissions;
 };

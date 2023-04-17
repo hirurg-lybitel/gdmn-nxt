@@ -2,11 +2,11 @@ import { ClientToServerEvents, ServerToClientEvents, IUser, INotification } from
 import { Router } from 'express';
 import { Server } from 'socket.io';
 import { config } from '@gdmn-nxt/config';
-import { getNotifications } from './handlers/getNotifications';
-import { deleteNotification } from './handlers/deleteNotification';
-import { updateNotifications } from './handlers/updateNotifications';
-import { getMessagesByUser } from './handlers/getMessagesByUser';
-import { insertNotification } from './handlers/insertNotification';
+import { getNotifications } from '../../../controllers/socket/notifications/getNotifications';
+import { deleteNotification } from '../../../controllers/socket/notifications/deleteNotification';
+import { updateNotifications } from '../../../controllers/socket/notifications//updateNotifications';
+import { getMessagesByUser } from '../../../controllers/socket/notifications//getMessagesByUser';
+import { insertNotification } from '../../../controllers/socket/notifications//insertNotification';
 
 interface NotificationsProps {
   router: Router;
