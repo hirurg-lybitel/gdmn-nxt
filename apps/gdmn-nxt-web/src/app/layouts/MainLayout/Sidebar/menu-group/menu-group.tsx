@@ -25,7 +25,6 @@ export function MenuGroup(props: MenuGroupProps) {
         return <PermissionsGate
           key={menu.id}
           actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || '']}
-          show={true}
         >
           <MenuCollapse menu={menu} level={1} />
         </PermissionsGate>;

@@ -1,9 +1,9 @@
 import { ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import React, { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, NavLink, NavLinkProps, useNavigate } from 'react-router-dom';
+import { forwardRef, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { NavLink, NavLinkProps } from 'react-router-dom';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { ActionMethod, ActionName, Permissions } from '@gsbelarus/util-api-types';
@@ -52,7 +52,7 @@ export function MenuItem(props: MenuItemProps) {
       />
       : <></>);
 
-  const userPermissions = useSelector<RootState, any | undefined>(state => state.user.userProfile?.permissions);
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const lickClassAndReroute = (isActive:boolean, elClasses:string) => {
     if(isActive){
@@ -68,7 +68,7 @@ export function MenuItem(props: MenuItemProps) {
   }
 
   type MyNavLinkProps = Omit<NavLinkProps, 'to'>;
-  const MyNavLink = React.useMemo(() => React.forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
+  const MyNavLink = useMemo(() => forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
     const { className: previousClasses, ...rest } = navLinkProps;
     const elementClasses = previousClasses?.toString() ?? "";
     item.checkAction

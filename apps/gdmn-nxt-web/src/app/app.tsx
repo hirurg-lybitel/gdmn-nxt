@@ -42,9 +42,7 @@ export default function App(props: AppProps) {
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
-
-  const appSettings = useSelector((state: RootState) => state.settings);
-  const [actionCode, setActionCode] = useState<number>(-3);
+  
   const navigate = useNavigate()
 
   const pathName:string[] = window.location.pathname.split('/');
