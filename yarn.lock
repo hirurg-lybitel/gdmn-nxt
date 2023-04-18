@@ -9032,7 +9032,7 @@ __metadata:
     "@types/nodemailer": ^6.4.4
     "@types/passport": ^1.0.7
     "@types/passport-local": ^1.0.34
-    "@types/react": ^18.0.35
+    "@types/react": ^18.0.37
     "@types/react-color": ^3.0.6
     "@types/react-dom": 18.0.9
     "@types/react-leaflet": ^2.8.2
