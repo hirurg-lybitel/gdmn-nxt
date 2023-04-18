@@ -18,6 +18,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexDirection: 'column',
       maxWidth: '100%',
+      marginLeft: '0 !important',
       borderLeft: border,
       borderBottom: border,
       borderRight: border,
@@ -55,12 +56,14 @@ const useStyles = makeStyles((theme: Theme) => {
       flexGrow: 2,
     },
     childrenContainer: {
+      justifyContent: 'center',
       display: 'flex',
       padding: '10px',
       paddingTop: 0,
+      columnGap: '5px'
     },
     childrenItem: {
-      marginRight: '5px',
+      // marginRight: '5px',
     }
   };
 });

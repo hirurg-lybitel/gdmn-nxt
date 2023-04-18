@@ -47,10 +47,10 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
     width: '100%',
   },
   mouseOnFocus: {
-    border: `1px solid ${theme.color.common.black}`
+    border: `1px solid ${theme.textColor}`
   },
   onFocus: {
-    border: `1px solid ${theme.menu?.backgroundColor}`,
+    border: `1px solid ${theme.palette.primary.main}`,
     width: '100%',
     marginRight: '100px',
     transition: theme.transitions.create('margin', {

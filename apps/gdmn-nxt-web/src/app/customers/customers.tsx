@@ -199,14 +199,10 @@ export function Customers(props: CustomersProps) {
 
   const handleLabelClick = useCallback(
     (label: ILabel) => () => {
-      setFilterModel({
-        items: [
-          { id: 1, columnField: 'LABELS', value: label.ID, operatorValue: 'is' }
-        ]
-      });
-      setFilteringData({ LABELS: [{ ID: label.ID }] });
+      if (filteringData?.['LABELS']?.findIndex((l: ILabel) => l.ID === label.ID) >= 0) return;
+      filterHandlers.handleFilteringData({ ...filteringData, ['LABELS']: [...filteringData?.['LABELS'] || [], label]});
     },
-    []
+    [filteringData]
   );
 
   const columns: GridColDef[] = [
@@ -228,7 +224,7 @@ export function Customers(props: CustomersProps) {
                 width: 'fit-content',
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: '5px'
+                columnGap: '5px',
               }}
             >
               {labels.map((label) => (
@@ -574,7 +570,7 @@ export function Customers(props: CustomersProps) {
       >
         <Stack flex={1}>
           {Object.keys(filteringData || {}).length !== 0 &&
-            <Stack className={style.bodySelectedDataContainer}style={{ flexWrap: 'wrap' }} direction="row" spacing={2} p={3}>
+            <Stack className={style.bodySelectedDataContainer} direction="row" spacing={2} p={3}>
               {filteringData?.DEPARTMENTS && (
                 <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
               )}
