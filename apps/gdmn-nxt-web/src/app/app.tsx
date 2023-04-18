@@ -12,7 +12,7 @@ import CreateCustomerAccount from './create-customer-account/create-customer-acc
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
-import { setColorMode, setPageIdFound, setActiveMenu } from './store/settingsSlice';
+import { setColorMode } from './store/settingsSlice';
 import menuItems, { IMenuItem } from './menu-items';
 import { getCookie } from './features/common/getCookie';
 
@@ -42,55 +42,14 @@ export default function App(props: AppProps) {
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
-
-  const appSettings = useSelector((state: RootState) => state.settings);
-  const pageIdFound = useSelector((state: RootState) => state.settings.pageIdFound);
-  const [actionCode, setActionCode] = useState<any>(-3);
+  
+  const navigate = useNavigate()
 
   const pathName:string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
   // Поиск и установка id страницы, который соответствует url, в state
-  useEffect(() => {
-    if (pageIdFound) {
-      return;
-    }
-    const flatMenuItems = (items: IMenuItem[]): IMenuItem[] =>
-      items.map(item =>
-        item.type === 'item'
-          ? item
-          : flatMenuItems(item.children || [])).flatMap(el => el);
-
-    const flattedMenuItems = flatMenuItems(menuItems.items);
-    const path = (pathName.filter((pathItem, index) => index !== 0 && pathItem)).join('/');
-    const page = (flattedMenuItems.find(item => item.url === path));
-    if (page) {
-      if (page.checkAction) {
-        if (actionCode < 1) {
-          setActionCode(page.checkAction);
-        }
-        // if (!permissions) {
-        //   return;
-        // }
-        // if (permissions?.MODE === 1) {
-          dispatch(setActiveMenu(page.id));
-        // } else {
-        //   window.location.href = window.location.origin + '/employee/dashboard/overview';
-        // }
-      } else {
-        dispatch(setActiveMenu(page.id));
-      }
-    } else {
-      dispatch(setActiveMenu('dashboard'));
-    }
-
-    dispatch(setPageIdFound(true));
-  }, [appSettings, pageIdFound]);
-
-
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     (async function () {
@@ -132,15 +91,12 @@ export default function App(props: AppProps) {
         break;
         }
         case 'OTHER_LOADINGS': {
-          if(!pageIdFound){
-            return
-          }
           dispatch(renderApp())
           break
         }
       }
     })();
-  }, [loginStage, pageIdFound]);
+  }, [loginStage]);
 
   /** Wait for new color mod was applied */
   const theme = useTheme();
@@ -166,7 +122,6 @@ export default function App(props: AppProps) {
   const handleSignIn = async () => {
     const response = await fetch(`${baseUrlApi}user`, { method: 'GET', credentials: 'include' });
     const data = await response.json();
-    dispatch(setPageIdFound(false));
     if (!data.result) {
       dispatch(selectMode());
       return;

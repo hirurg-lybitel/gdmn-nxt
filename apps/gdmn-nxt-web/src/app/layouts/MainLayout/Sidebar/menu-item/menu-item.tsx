@@ -1,11 +1,12 @@
 import { ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import { setActiveMenu } from 'apps/gdmn-nxt-web/src/app/store/settingsSlice';
-import { ForwardedRef, forwardRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { forwardRef, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { NavLink, NavLinkProps } from 'react-router-dom';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
+import { ActionMethod, ActionName, Permissions } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuItem: {
@@ -23,26 +24,22 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
+interface actionCheck {
+  name: ActionName;
+  method: ActionMethod;
+}
+
 export interface MenuItemProps {
-  item: any;
+  item: IMenuItem;
   level?: number;
   isOpen?:boolean
   open?:()=>void;
 };
 
-
 export function MenuItem(props: MenuItemProps) {
   const { item, level = 0, isOpen, open } = props;
-  const settings = useSelector((state: RootState) => state.settings);
-  useEffect(()=>{
-    if (settings.activeMenuId === item.id && isOpen) {
-      open && open();
-    }
-  }, []);
 
   const classes = useStyles();
-  const dispatch = useDispatch();
-
 
   const itemIcon = item?.icon ||
     (level > 1
@@ -55,20 +52,38 @@ export function MenuItem(props: MenuItemProps) {
       />
       : <></>);
 
-  const listComponent = {
-    component: forwardRef((props, ref: ForwardedRef<any>) => <Link ref={ref} {...props} to={`${item.url}`} target="_self" />)
-  };
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
+  const lickClassAndReroute = (isActive:boolean, elClasses:string) => {
+    if(isActive){
+      if(item.actionCheck){
+        if(!userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`]){
+          window.location.href=""
+        }
+      }
+      return elClasses + " Mui-selected"
+    }else{
+      return elClasses
+    }
+  }
 
-  const handleItemOnClick = () => {
-    dispatch(setActiveMenu(item.id));
-  };
+  type MyNavLinkProps = Omit<NavLinkProps, 'to'>;
+  const MyNavLink = useMemo(() => forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
+    const { className: previousClasses, ...rest } = navLinkProps;
+    const elementClasses = previousClasses?.toString() ?? "";
+    item.checkAction
+    return (<NavLink
+      {...rest}
+      ref={ref}
+      to={item.url || ''}
+      end
+      className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
+      />)
+  }), [item.url]);
 
   return (
     <ListItemButton
-      {...listComponent}
-      onClick={handleItemOnClick}
-      selected={settings.activeMenuId === item.id}
+      component={MyNavLink}
       className={classes.menuItem}
       sx={{
         pl: `${level * 24}px`

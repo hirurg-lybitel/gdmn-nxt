@@ -11,6 +11,7 @@ const analytics: IMenuItem = {
       id: 'reports',
       title: 'Отчёты',
       type: 'collapse',
+      url: 'analytics/reports',
       icon: <SummarizeIcon color="secondary" />,
       children: [
         {

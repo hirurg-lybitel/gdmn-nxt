@@ -28,6 +28,7 @@ const preferences: IMenuItem = {
       id: 'permissions',
       title: 'Настройка прав',
       type: 'collapse',
+      url: 'preferences/permissions',
       actionCheck: {
         name: 'permissions',
         method: 'forGroup'

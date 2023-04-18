@@ -102,12 +102,29 @@ const Main = () => {
                                 path=""
                                 element={<Navigate to="overview" />}
                               />
-                              <Route path="overview" element={<Dashboard />} />
-                              <Route path="analytics" element={<Analytics />} />
+                              <Route
+                                path="overview"
+                                element={<Dashboard />}
+                              />
+                              <Route
+                                path="analytics"
+                                element={<Analytics />}
+                              />
                             </Route>
                             <Route path="managment">
+                              <Route
+                                path=""
+                                element={<Navigate to="deals/list" />}
+                              />
                               <Route path="deals">
-                                <Route path="list" element={<Deals />} />
+                                <Route
+                                  path=""
+                                  element={<Navigate to="list" />}
+                                />
+                                <Route
+                                  path="list"
+                                  element={<Deals />}
+                                />
                                 <Route
                                   path="dealSources"
                                   element={<DealSources />}
@@ -118,7 +135,10 @@ const Main = () => {
                                 />
                               </Route>
                               <Route path="customers">
-                                <Route path="" element={<NotFound />} />
+                                <Route
+                                  path=""
+                                  element={<Navigate to="list" />}
+                                />
                                 <Route
                                   path="orders/list"
                                   element={<OrderList />}
