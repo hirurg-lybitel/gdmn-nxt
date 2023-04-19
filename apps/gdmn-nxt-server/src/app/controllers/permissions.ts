@@ -8,6 +8,53 @@ import { setPermissonsCache } from '../middlewares/permissions';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
+const closeUserSession = (req,userIdToClose) => {
+  const { userId } = req.session;
+  if(userId === userIdToClose) return
+  req.sessionStore.all((err, sessions)=>{
+    for(let i = 0; i<Object.keys(sessions).length;i++){
+      if(sessions[Object.keys(sessions)[i]].userId === userIdToClose){
+        req.sessionStore.destroy(Object.keys(sessions)[i])
+        return
+      }
+    }
+  })
+}
+
+const closeUsersSessions = async (req,groupId) => {
+  const { userId } = req.session;
+  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+
+  const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const rs = await attachment.executeQuery(transaction, query, params);
+    try{
+
+      const data = await rs.fetchAsObject();
+      return [name,data];
+
+    }finally{
+      await rs.close();
+    }
+
+  };
+
+  const usersId = Object.values(
+    Object.fromEntries([await Promise.resolve(execQuery(
+      {
+        name: 'usersId',
+        query: `
+          select line.USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES line where line.USR$GROUPKEY = ?
+          `,
+        params: [groupId ],
+      }
+    ))]).usersId
+  ).map((id:any)=> id.USR$USERKEY)
+
+  for(let i = 0; i<usersId.length;i++){
+    if(usersId[i] !== userId) closeUserSession(req,usersId[i])
+  }
+}
+
 const getCross: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
@@ -139,6 +186,34 @@ const upsertCross: RequestHandler = async (req, res) => {
       },
       _schema
     };
+
+    const lineExecQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const rs = await attachment.executeQuery(transaction, query, params);
+      try{
+
+        const data = await rs.fetchAsObject();
+        return [name,data];
+
+      }finally{
+        await rs.close();
+      }
+
+    };
+
+    const usersId = {
+        ...Object.fromEntries([await Promise.resolve(lineExecQuery(
+          {
+            name: 'usersId',
+            query: `
+              select line.USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES line where line.USR$GROUPKEY = ?
+              `,
+            params: [req.body.USERGROUP.ID],
+          }
+        ))])
+    };
+
+    await closeUsersSessions(req,req.body.USERGROUP?.ID)
+
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
@@ -309,6 +384,8 @@ const removeGroup: RequestHandler = async (req, res) => {
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
     };
+
+    await closeUsersSessions(req,id)
 
     return res.status(200).json({ id });
   } catch (error) {
@@ -567,6 +644,8 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
       _schema
     };
 
+    closeUserSession(req,req.body.USER.ID)
+
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
@@ -582,7 +661,21 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
 
   const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
+  const lineExecQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const data = await attachment.executeSingletonAsObject(transaction, query, params);
+
+    return [name, data];
+  };
+
   try {
+
+    const userId = {...Object.fromEntries([await Promise.resolve(lineExecQuery({
+      name: 'userLine',
+      query: `select  line.USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES line where line.ID = ?`,
+      params: [id],
+    }
+    ))])}.userLine.USR$USERKEY
+
     const result = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
@@ -612,6 +705,8 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
     };
+
+    closeUserSession(req,userId)
 
     return res.status(200).json({ id });
   } catch (error) {
