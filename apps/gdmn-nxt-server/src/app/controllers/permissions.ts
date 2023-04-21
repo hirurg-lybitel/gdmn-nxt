@@ -8,41 +8,7 @@ import { setPermissonsCache } from '../middlewares/permissions';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
-const removeFromGroup = async (req:any,id:number) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
-
-  const result = await attachment.executeQuery(
-    transaction,
-    `EXECUTE BLOCK(
-      ID INTEGER = ?
-    )
-    RETURNS(SUCCESS SMALLINT)
-    AS
-    DECLARE VARIABLE UG_ID INTEGER;
-    BEGIN
-      SUCCESS = 0;
-      FOR SELECT ID FROM USR$CRM_PERMISSIONS_UG_LINES WHERE ID = :ID INTO :UG_ID AS CURSOR curUserGroup
-      DO
-      BEGIN
-        DELETE FROM USR$CRM_PERMISSIONS_UG_LINES WHERE CURRENT OF curUserGroup;
-
-        SUCCESS = 1;
-      END
-
-      SUSPEND;
-    END`,
-    [id]
-  );
-
-  const data: { SUCCESS: number }[] = await result.fetchAsObject();
-  await result.close();
-
-  await releaseTransaction();
-
-  return data
-}
-
-const closeUserSession = (req:any,userIdToClose:number) => {
+const closeUserSession = (req,userIdToClose) => {
   const { userId } = req.session;
   if(userId === userIdToClose) return
   req.sessionStore.all((err, sessions)=>{
@@ -55,7 +21,7 @@ const closeUserSession = (req:any,userIdToClose:number) => {
   })
 }
 
-const closeUsersSessions = async (req:any,groupId:number) => {
+const closeUsersSessions = async (req,groupId) => {
   const { userId } = req.session;
   const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
@@ -77,7 +43,7 @@ const closeUsersSessions = async (req:any,groupId:number) => {
       {
         name: 'usersId',
         query: `
-          select USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES where USR$GROUPKEY = ?
+          select line.USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES line where line.USR$GROUPKEY = ?
           `,
         params: [groupId ],
       }
@@ -87,7 +53,6 @@ const closeUsersSessions = async (req:any,groupId:number) => {
   for(let i = 0; i<usersId.length;i++){
     if(usersId[i] !== userId) closeUserSession(req,usersId[i])
   }
-  releaseTransaction()
 }
 
 const getCross: RequestHandler = async (req, res) => {
@@ -630,41 +595,6 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execGroupQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try{
-
-        const data = await rs.fetchAsObject();
-        return [name,data];
-
-      }finally{
-        await rs.close();
-      }
-
-    };
-
-    const userGroups:{USR$GROUPKEY:number,ID:number}[] = Object.values(
-      Object.fromEntries([await Promise.resolve(execGroupQuery(
-        {
-          name: 'usersId',
-          query: `
-            select ID, USR$GROUPKEY from USR$CRM_PERMISSIONS_UG_LINES where USR$USERKEY = ?
-            `,
-          params: [ req.body.USER.ID ],
-        }
-      ))]).usersId
-    )
-
-    if(userGroups.length > 0 ){
-      await userGroups.forEach(async(group)=>{
-        if(req.body.USERGROUP.ID === group.USR$GROUPKEY) {
-          return res.status(409).json(resultError('Пользователь уже добавлен в эту группу'));
-        }else{
-          await removeFromGroup(req,group.ID)
-        }
-      })
-    }
-
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
@@ -741,12 +671,36 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
 
     const userId = {...Object.fromEntries([await Promise.resolve(lineExecQuery({
       name: 'userLine',
-      query: `select USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES where ID = ?`,
+      query: `select  line.USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES line where line.ID = ?`,
       params: [id],
     }
     ))])}.userLine.USR$USERKEY
 
-    const data = await removeFromGroup(req,id)
+    const result = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE UG_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_PERMISSIONS_UG_LINES WHERE ID = :ID INTO :UG_ID AS CURSOR curUserGroup
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_PERMISSIONS_UG_LINES WHERE CURRENT OF curUserGroup;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [id]
+    );
+
+    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    await result.close();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
