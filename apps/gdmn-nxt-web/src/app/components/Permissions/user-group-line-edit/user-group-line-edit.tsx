@@ -1,13 +1,13 @@
 import { IUserGroupLine } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
+import { Autocomplete, Box, Button, createFilterOptions, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import * as yup from 'yup';
-import styles from './user-group-line-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
+import { useGetUserGroupLineQuery } from '../../../features/permissions';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -26,28 +26,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>,
-) {
-  return <Slide direction="left" ref={ref} {...props} />;
-});
-
 export interface UserGroupLineEditProps {
   open: boolean;
   userGroupLine: IUserGroupLine;
   onSubmit: (user: IUserGroupLine) => void;
   onCancel: () => void;
-  onClose: (e: any, r: string) => void;
 }
 
 export function UserGroupLineEdit(props: UserGroupLineEditProps) {
   const { open, userGroupLine } = props;
-  const { onSubmit, onCancel, onClose } = props;
+  const { onSubmit, onCancel } = props;
 
   const { data: users, isFetching: usersIsFetching } = useGetUsersQuery();
+  const { data: existsUsers = [] } = useGetUserGroupLineQuery(userGroupLine.USERGROUP.ID);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -91,22 +82,24 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
     stringify: (option:any) => option.NAME + option.CONTACT.NAME
   });
 
+  const handleClose = useCallback(() => {
+    onCancel();
+  }, [onCancel]);
+
   return (
-    <Dialog
+    <CustomizedDialog
       open={open}
-      classes={{ paper: classes.dialog }}
-      TransitionComponent={Transition}
-      onClose={onClose}
+      onClose={handleClose}
     >
       <DialogTitle>
-        {userGroupLine.USER ? `Редактирование: ${userGroupLine.USER.NAME}` : 'Добавление'}
+        {userGroupLine.USER ? `Редактирование: ${userGroupLine.USER.NAME}` : 'Добавление пользователя'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
           <Form id="mainForm" onSubmit={formik.handleSubmit}>
             <Stack direction="column" spacing={3}>
               <Autocomplete
-                options={users || []}
+                options={users?.filter(user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0) || []}
                 getOptionLabel={option => option.NAME}
                 filterOptions={filterOptions}
                 value={users?.find(el => el.ID === formik.values.USER?.ID) || null}
@@ -171,7 +164,7 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />
-    </Dialog>
+    </CustomizedDialog>
   );
 }
 

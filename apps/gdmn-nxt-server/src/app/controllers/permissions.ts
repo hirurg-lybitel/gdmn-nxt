@@ -513,10 +513,25 @@ const getUserByGroup: RequestHandler = async (req, res) => {
 };
 
 const addUserGroupLine: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
+
+    const userExistsQuery = `
+      SELECT
+        ug.USR$NAME NAME
+      FROM USR$CRM_PERMISSIONS_UG_LINES ul
+      JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = ul.USR$GROUPKEY
+      WHERE
+        ul.USR$GROUPKEY != :groupId
+        AND ul.USR$USERKEY = :userId`;
+
+    const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID']});
+
+    if (userExists.length) {
+      return res.status(409).json(resultError(`Пользователь уже добавлен в группу ${userExists[0]['NAME']}`));
+    }
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
@@ -554,8 +569,9 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
     const query = {
       name: 'users',
       query: `
-      INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(${actualFields})
+      UPDATE OR INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(${actualFields})
       VALUES(?, ?)
+      MATCHING(USR$USERKEY)
       RETURNING ID, USR$USERKEY, USR$GROUPKEY`,
       params: paramsValues,
     };
