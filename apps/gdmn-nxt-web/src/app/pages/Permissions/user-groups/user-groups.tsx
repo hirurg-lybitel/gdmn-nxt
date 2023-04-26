@@ -95,9 +95,6 @@ export function UserGroups(props: UserGroupsProps) {
     handleCancel: async () => {
       setOpenEditUserForm(false);
     },
-    handleClose: async (e: any, reason: string) => {
-      if (reason === 'backdropClick') setOpenEditUserForm(false);
-    }
   };
 
   const UsersList = useMemo(() =>
@@ -207,7 +204,6 @@ export function UserGroups(props: UserGroupsProps) {
               }}
               onSubmit={userUsersHandlers.handleOnSubmit}
               onCancel={userUsersHandlers.handleCancel}
-              onClose={userUsersHandlers.handleClose}
             />
           </Stack>
         </Stack>

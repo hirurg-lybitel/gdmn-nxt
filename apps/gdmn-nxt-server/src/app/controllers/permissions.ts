@@ -625,44 +625,24 @@ const getUserByGroup: RequestHandler = async (req, res) => {
 };
 
 const addUserGroupLine: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
 
-    const execGroupQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try{
+    const userExistsQuery = `
+      SELECT
+        ug.USR$NAME NAME
+      FROM USR$CRM_PERMISSIONS_UG_LINES ul
+      JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = ul.USR$GROUPKEY
+      WHERE
+        ul.USR$GROUPKEY != :groupId
+        AND ul.USR$USERKEY = :userId`;
 
-        const data = await rs.fetchAsObject();
-        return [name,data];
+    const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID']});
 
-      }finally{
-        await rs.close();
-      }
-
-    };
-
-    const userGroups:{USR$GROUPKEY:number,ID:number}[] = Object.values(
-      Object.fromEntries([await Promise.resolve(execGroupQuery(
-        {
-          name: 'usersId',
-          query: `
-            select ID, USR$GROUPKEY from USR$CRM_PERMISSIONS_UG_LINES where USR$USERKEY = ?
-            `,
-          params: [ req.body.USER.ID ],
-        }
-      ))]).usersId
-    )
-
-    if(userGroups.length > 0 ){
-      await userGroups.forEach(async(group)=>{
-        if(req.body.USERGROUP.ID === group.USR$GROUPKEY) {
-          return res.status(409).json(resultError('Пользователь уже добавлен в эту группу'));
-        }else{
-          await removeFromGroup(req,group.ID)
-        }
-      })
+    if (userExists.length) {
+      return res.status(409).json(resultError(`Пользователь уже добавлен в группу ${userExists[0]['NAME']}`));
     }
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
@@ -701,8 +681,9 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
     const query = {
       name: 'users',
       query: `
-      INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(${actualFields})
+      UPDATE OR INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(${actualFields})
       VALUES(?, ?)
+      MATCHING(USR$USERKEY)
       RETURNING ID, USR$USERKEY, USR$GROUPKEY`,
       params: paramsValues,
     };
