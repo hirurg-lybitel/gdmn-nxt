@@ -5,7 +5,7 @@ import passport from 'passport';
 import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { authResult, ColorMode, Permissions } from '@gsbelarus/util-api-types';
+import { Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
@@ -33,10 +33,10 @@ import { Notifications } from './app/routes/socket/notifications';
 import { StreamingUpdate } from './app/routes/socket/streamingUpdate';
 import { config } from '@gdmn-nxt/config';
 import { checkPermissions, setPermissonsCache } from './app/middlewares/permissions';
-import { parseIntDef } from '@gsbelarus/util-useful';
 import { nodeCache } from './app/utils/cache';
+import { authRouter } from './app/routes/authRouter';
 
-  // Расширенный интерфейс для сессии
+/** Расширенный интерфейс для сессии */
 declare module 'express-session' {
   interface SessionData {
     userId: number;
@@ -194,95 +194,34 @@ const middlewares = [
     store: sessionStore,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
-      secure: process.env.NODE_ENV === 'production'
+      /** TODO: включить при переходе на https */
+      // secure: process.env.NODE_ENV === 'production'
     },
   }),
   cookieParser(),
   passport.initialize(),
   passport.session(),
-  checkPermissions
 ];
-
-app.use(middlewares);
-
-// app.use(checkPermissions);
 
 const router = express.Router();
 
-export const apiVersion = apiRoot.v1
+export const apiVersion = apiRoot.v1;
 
+router.use(authRouter);
+/** Подключаем мидлвар после роутов, на котоыре он не должен распространятсься */
+router.use(checkPermissions);
+
+app.use(middlewares);
 app.use(apiVersion, router);
 
-router.get('/user', (req, res) => {
-  // console.log('user', req.user);
-  if (req.isAuthenticated()) {
-    res.cookie('userId', req.user?.['id']);
-    res.cookie('color-mode', req.user?.['colorMode'] || ColorMode.Light);
-    return res.json({
-      result: true,
-      user: req.user,
-    }
-    );
-  } else {
-    return res.json({
-      result: false,
-      user: null,
-    })
-  }
-});
-
-
-router
-  .route('/user/signin')
-  .post(
-    passport.authenticate('local'),
-    (req, res) => {
-      console.log('signin', req.sessionID);
-      const { userName } = req.body;
-      const { id: userId, permissions } = req.user as any;
-
-      req.session.userId = userId;
-      req.session.permissions = permissions;
-
-      return res.json(authResult(
-        'SUCCESS',
-        `Вы вошли как ${userName}.`
-      ));
-    },
-  );
-
-router
-  .route('/user/forgot-password')
-  .post(
-    async (req, res) => {
-      const { email } = req.body;
-      /*  1. проверим входные параметры на корректность  */
-
-      if (typeof email !== 'string') {
-        return res.json(authResult('INVALID_DATA', 'Invalid data.'));
-      }
-
-      return res.sendStatus(500);
-    });
-
-router.get('/logout', (req, res) => {
-  if (req.session) {
-    req.session.destroy(err => {
-      if (err) console.error(err);
-    });
-  }
-  res.sendStatus(200);
-});
-
-
-router.use(
-  (req, res, next) => {
-    if (!req.isAuthenticated()) {
-      return res.send('Not authenticated!');
-    }
-    next();
-  }
-);
+// router.use(
+//   (req, res, next) => {
+//     if (!req.isAuthenticated()) {
+//       return res.send('Not authenticated!');
+//     }
+//     next();
+//   }
+// );
 
 /** Write permissions to cache when server is starting */
 setPermissonsCache();

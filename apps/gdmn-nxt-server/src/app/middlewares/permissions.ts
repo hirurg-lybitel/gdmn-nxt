@@ -1,19 +1,22 @@
-import { RequestHandler } from "express";
-import { acquireReadTransaction } from "../utils/db-connection";
-import { nodeCache } from "../utils/cache";
-import { parseIntDef } from "@gsbelarus/util-useful";
-import {ActionName, Permissions } from "@gsbelarus/util-api-types";
-import { resultError } from "../responseMessages";
+import { RequestHandler } from 'express';
+import { acquireReadTransaction } from '../utils/db-connection';
+import { nodeCache } from '../utils/cache';
+import { parseIntDef } from '@gsbelarus/util-useful';
+import { ActionName, Permissions } from '@gsbelarus/util-api-types';
+import { resultError } from '../responseMessages';
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).send(resultError('Ваш сеанс отключён. Повторно войдите в систему'));
+  };
   const { userId, permissions } = req.session;
   const { url, method } = req;
 
   for (const name in permissions) {
     const methods = permissions[name as ActionName] ;
     const regEx = (() => 'forGroup' in methods
-        ? new RegExp(`\\/[^\/]*\\b${name}\\b`)
-        : new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?\\d*$`))();
+      ? new RegExp(`\\/[^\/]*\\b${name}\\b`)
+      : new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?\\d*$`))();
 
     if (!regEx.test(url)) continue;
 
@@ -29,9 +32,8 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 
     /** Если текущий метод для текущего роута запрещён */
     /** Если это групповое право и оно false */
-    if(method in methods && !methods[method] ||
+    if (method in methods && !methods[method] ||
       'forGroup' in methods && !methods.forGroup) {
-
       console.error('Access denied', userId, req.sessionID, method, name);
       return res.status(403).send(resultError('У вас недостаточно прав'));
     }
@@ -41,7 +43,7 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 
 export const setPermissonsCache = async () => {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction('permissions');
-  try{
+  try {
     const query = `
       SELECT
         u.ID AS USERID, cr.USR$MODE MODE, act.USR$NAME ACTIONNAME, act.USR$METHOD METHOD, act.USR$ISGROUP ISGROUP
@@ -65,16 +67,15 @@ export const setPermissonsCache = async () => {
           ...permissionsMap[p['USERID']]?.[p['ACTIONNAME']],
           [parseIntDef(p['ISGROUP'], 0) === 1 ? 'forGroup' : p['METHOD']]: Boolean(parseIntDef(p['MODE'], 0))
         }
-      }
-    })
+      };
+    });
 
-    nodeCache.set('permissions',  permissionsMap);
+    nodeCache.set('permissions', permissionsMap);
     return true;
-  }
-  catch(err) {
+  } catch (err) {
     console.error('setPermissonsCache', err.message);
     return false;
   } finally {
     await releaseReadTransaction();
   }
-}
+};
