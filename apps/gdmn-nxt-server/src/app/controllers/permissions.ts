@@ -1,94 +1,50 @@
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { RequestHandler } from 'express';
+import { Request, RequestHandler } from 'express';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
-import { getReadTransaction, releaseReadTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction } from '../utils/db-connection';
 import { genId } from '../utils/genId';
 import { setPermissonsCache } from '../middlewares/permissions';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
-const removeFromGroup = async (req:any,id:number) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
-
-  const result = await attachment.executeQuery(
-    transaction,
-    `EXECUTE BLOCK(
-      ID INTEGER = ?
-    )
-    RETURNS(SUCCESS SMALLINT)
-    AS
-    DECLARE VARIABLE UG_ID INTEGER;
-    BEGIN
-      SUCCESS = 0;
-      FOR SELECT ID FROM USR$CRM_PERMISSIONS_UG_LINES WHERE ID = :ID INTO :UG_ID AS CURSOR curUserGroup
-      DO
-      BEGIN
-        DELETE FROM USR$CRM_PERMISSIONS_UG_LINES WHERE CURRENT OF curUserGroup;
-
-        SUCCESS = 1;
-      END
-
-      SUSPEND;
-    END`,
-    [id]
-  );
-
-  const data: { SUCCESS: number }[] = await result.fetchAsObject();
-  await result.close();
-
-  await releaseTransaction();
-
-  return data
-}
-
-const closeUserSession = (req:any,userIdToClose:number) => {
-  const { userId } = req.session;
-  if(userId === userIdToClose) return
-  req.sessionStore.all((err, sessions)=>{
-    for(let i = 0; i<Object.keys(sessions).length;i++){
-      if(sessions[Object.keys(sessions)[i]].userId === userIdToClose){
-        req.sessionStore.destroy(Object.keys(sessions)[i])
-        return
-      }
-    }
-  })
-}
-
-const closeUsersSessions = async (req:any,groupId:number) => {
-  const { userId } = req.session;
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
-
-  const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-    const rs = await attachment.executeQuery(transaction, query, params);
-    try{
-
-      const data = await rs.fetchAsObject();
-      return [name,data];
-
-    }finally{
-      await rs.close();
-    }
-
-  };
-
-  const usersId = Object.values(
-    Object.fromEntries([await Promise.resolve(execQuery(
-      {
-        name: 'usersId',
-        query: `
-          select USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES where USR$GROUPKEY = ?
-          `,
-        params: [groupId ],
-      }
-    ))]).usersId
-  ).map((id:any)=> id.USR$USERKEY)
-
-  for(let i = 0; i<usersId.length;i++){
-    if(usersId[i] !== userId) closeUserSession(req,usersId[i])
+function getSessionIdByUserId(userId: number, sessions) {
+  const keys = Object.keys(sessions);
+  console.log('getSessionIdByUserId', sessions, keys);
+  for (const key of keys) {
+    if (sessions[key].userId === userId) return key;
   }
-  releaseTransaction()
+  return null;
 }
+
+const closeUserSession = async (req: Request, userIdToClose: number) => {
+  const { userId } = req.session;
+  if (userId === userIdToClose) return;
+
+  req.sessionStore.all((err, sessions) => {
+    const sessionID = getSessionIdByUserId(userIdToClose, sessions);
+    req.sessionStore.destroy(sessionID);
+  });
+};
+
+const closeUsersSessions = async (req: Request, groupId: number) => {
+  const { userId: currentUserId } = req.session;
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+
+  try {
+    const query = `
+      select USR$USERKEY AS USERID
+      from USR$CRM_PERMISSIONS_UG_LINES
+      where USR$GROUPKEY = :groupId AND USR$USERKEY != :currentUserId`;
+
+    const usersId = await fetchAsObject(query, { groupId, currentUserId });
+    usersId.forEach(u => closeUserSession(req, u['USERID']));
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await releaseReadTransaction();
+  }
+};
 
 const getCross: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -203,7 +159,7 @@ const upsertCross: RequestHandler = async (req, res) => {
     };
 
     const actualFieldsNames = actualFields.join(',');
-    const paramsString = actualFields.map( _ => '?' ).join(',');
+    const paramsString = actualFields.map(_ => '?').join(',');
 
     const query = {
       name: 'cross',
@@ -222,32 +178,7 @@ const upsertCross: RequestHandler = async (req, res) => {
       _schema
     };
 
-    const lineExecQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try{
-
-        const data = await rs.fetchAsObject();
-        return [name,data];
-
-      }finally{
-        await rs.close();
-      }
-
-    };
-
-    const usersId = {
-        ...Object.fromEntries([await Promise.resolve(lineExecQuery(
-          {
-            name: 'usersId',
-            query: `
-              select line.USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES line where line.USR$GROUPKEY = ?
-              `,
-            params: [req.body.USERGROUP.ID],
-          }
-        ))])
-    };
-
-    await closeUsersSessions(req,req.body.USERGROUP?.ID)
+    closeUsersSessions(req, req.body.USERGROUP?.ID);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -348,7 +279,7 @@ const upsertGroup: RequestHandler = async (req, res) => {
     };
 
     const actualFieldsNames = actualFields.join(',');
-    const paramsString = actualFields.map( _ => '?' ).join(',');
+    const paramsString = actualFields.map(_ => '?').join(',');
 
     const query = {
       name: 'userGroup',
@@ -420,7 +351,7 @@ const removeGroup: RequestHandler = async (req, res) => {
       return res.status(500).send(resultError('Объект не найден'));
     };
 
-    await closeUsersSessions(req,id)
+    closeUsersSessions(req, id);
 
     return res.status(200).json({ id });
   } catch (error) {
@@ -639,7 +570,7 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
         ul.USR$GROUPKEY != :groupId
         AND ul.USR$USERKEY = :userId`;
 
-    const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID']});
+    const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID'] });
 
     if (userExists.length) {
       return res.status(409).json(resultError(`Пользователь уже добавлен в группу ${userExists[0]['NAME']}`));
@@ -695,7 +626,7 @@ const addUserGroupLine: RequestHandler = async (req, res) => {
       _schema
     };
 
-    closeUserSession(req,req.body.USER.ID)
+    closeUserSession(req, req.body.USER.ID);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -712,28 +643,38 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
 
   const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
-  const lineExecQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-    const data = await attachment.executeSingletonAsObject(transaction, query, params);
-
-    return [name, data];
-  };
-
   try {
+    const result = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT, USERID INTEGER)
+      AS
+      DECLARE VARIABLE UG_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID, USR$USERKEY FROM USR$CRM_PERMISSIONS_UG_LINES WHERE ID = :ID INTO :UG_ID, :USERID AS CURSOR curUserGroup
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_PERMISSIONS_UG_LINES WHERE CURRENT OF curUserGroup;
 
-    const userId = {...Object.fromEntries([await Promise.resolve(lineExecQuery({
-      name: 'userLine',
-      query: `select USR$USERKEY from USR$CRM_PERMISSIONS_UG_LINES where ID = ?`,
-      params: [id],
-    }
-    ))])}.userLine.USR$USERKEY
+          SUCCESS = 1;
+        END
 
-    const data = await removeFromGroup(req,id)
+        SUSPEND;
+      END`,
+      [id]
+    );
+
+    const data: { SUCCESS: number, USERID: number }[] = await result.fetchAsObject();
+    await result.close();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
     };
 
-    closeUserSession(req,userId)
+    closeUserSession(req, data[0].USERID);
 
     return res.status(200).json({ id });
   } catch (error) {
