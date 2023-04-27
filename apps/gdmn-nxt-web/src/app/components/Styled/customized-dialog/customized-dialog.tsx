@@ -42,6 +42,7 @@ export interface CustomizedDialogProps {
   children: ReactNode;
   width?: number | string;
   minWidth?: number | string;
+  hideBackdrop?: boolean;
 }
 
 
@@ -49,7 +50,8 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const { children, open, onClose } = props;
   const {
     width = 500,
-    minWidth = 0
+    minWidth = 0,
+    hideBackdrop = false
   } = props;
 
   const styles = {
@@ -73,10 +75,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
       open={open}
       TransitionComponent={Transition}
       onClose={handleOnClose}
-      // PaperComponent={myPaper}
-      // classes={{
-      //   paper: classes.dialog
-      // }}
+      hideBackdrop={hideBackdrop}
       PaperProps={{
         sx: {
           position: 'absolute',
@@ -86,10 +85,13 @@ function CustomizedDialog(props: CustomizedDialogProps) {
           maxHeight: '100%',
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
+          maxWidth: '100%',
           '& .MuiDialogActions-root': {
             padding: '12px 24px 12px 16px !important'
           },
-          maxWidth: '100%',
+          '& .MuiDialogTitle-root': {
+            padding: '12px 24px !important',
+          },
           ...styles
         }
       }}

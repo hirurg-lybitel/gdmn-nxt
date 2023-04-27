@@ -33,7 +33,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
   return (
     <Dialog open={open} TransitionComponent={Transition}>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle className={classes.dialogTitle}>{title}</DialogTitle>
       <DialogContent dividers>{text}</DialogContent>
       <DialogActions className={classes.dialogAction}>
         <Button
