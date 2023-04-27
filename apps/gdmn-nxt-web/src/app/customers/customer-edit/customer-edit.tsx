@@ -192,7 +192,7 @@ export function CustomerEdit(props: CustomerEditProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
-      width={'30vw'}
+      // width={'30vw'}
     >
       <DialogTitle>
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}

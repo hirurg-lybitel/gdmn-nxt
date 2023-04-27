@@ -25,6 +25,7 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useGetDepartmentsQuery } from '../../features/departments/departmentsApi';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -175,10 +176,8 @@ export function PersonEdit(props: PersonEditProps) {
   }, []);
 
   return (
-    <Dialog
+    <CustomizedDialog
       open={open}
-      classes={{ paper: classes.dialog }}
-      TransitionComponent={Transition}
       hideBackdrop
     >
       <DialogTitle>
@@ -313,7 +312,7 @@ export function PersonEdit(props: PersonEditProps) {
         </PerfectScrollbar>
       </DialogContent>
       <DialogActions className={classes.dialogAction}>
-        <IconButton onClick={handleDeleteClick} size="large">
+        <IconButton onClick={handleDeleteClick}>
           <DeleteIcon />
         </IconButton>
         <Box flex={1} />
@@ -346,7 +345,7 @@ export function PersonEdit(props: PersonEditProps) {
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}
       />
-    </Dialog>
+    </CustomizedDialog>
   );
 }
 
