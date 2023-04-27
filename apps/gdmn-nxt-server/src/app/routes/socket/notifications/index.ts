@@ -105,7 +105,7 @@ export function Notifications({ router }: NotificationsProps) {
     });
   }
 
-  setInterval(sendMessages, 5000);
+  setInterval(sendMessages, 15000);
 
   router.get('/notifications/user/:userId', getMessagesByUser);
 }

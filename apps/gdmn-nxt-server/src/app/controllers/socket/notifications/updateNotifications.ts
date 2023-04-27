@@ -98,10 +98,11 @@ export const updateNotifications = async (sessionId: string) => {
       END`;
 
     await fetchAsObject(sql);
-    await releaseTransaction();
+    // await releaseTransaction();
   } catch (error) {
     console.error('updateNotifications', error);
-    await releaseTransaction(false);
+    // await releaseTransaction(false);
   } finally {
+    await releaseTransaction();
   };
 };

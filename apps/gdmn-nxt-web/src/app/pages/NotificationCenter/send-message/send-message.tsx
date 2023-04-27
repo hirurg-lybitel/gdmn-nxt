@@ -12,9 +12,10 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { socketClient } from '@gdmn-nxt/socket';
+import { ClientToServerEvents, ServerToClientEvents, getSocketClient } from '@gdmn-nxt/socket';
 import CloseIcon from '@mui/icons-material/Close';
 import { SnackbarKey, useSnackbar } from 'notistack';
+import { Socket } from 'socket.io-client';
 
 /* eslint-disable-next-line */
 export interface SendMessageProps {}
@@ -24,6 +25,7 @@ export function SendMessage(props: SendMessageProps) {
   const [message, setMessage] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<IUser[]>([]);
   const [allUser, setAllUser] = useState<boolean>(false);
+  const [socketClient, setSocketClient] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const { data: users = [], isFetching: usersIsFetching } = useGetUsersQuery();
@@ -43,9 +45,14 @@ export function SendMessage(props: SendMessageProps) {
 
   const handleCloseAlert = useCallback((snackbarId: SnackbarKey) => () => closeSnackbar(snackbarId), []);
 
+  useEffect(() => {
+    const socket = getSocketClient('notifications');
+    setSocketClient(socket);
+  }, []);
+
   const handleSend = useCallback(() => {
     socketClient?.emit('sendMessageToUsers_request', message, allUser ? users.map(u => u.ID) : selectedUsers.map(u => u.ID));
-  }, [message, users, selectedUsers, allUser]);
+  }, [message, users, selectedUsers, allUser, socketClient]);
 
 
   const alertAction = (snackbarId: SnackbarKey) => (
