@@ -1,4 +1,4 @@
-import { DataGridPro, GridColDef, ruRU, GridFilterModel, GridSortModel } from '@mui/x-data-grid-pro';
+import { DataGridPro, GridColDef, ruRU, GridFilterModel, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
@@ -72,12 +72,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
     '& .MuiDataGrid-iconSeparator': {
       display: 'none'
     },
-    '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
+    '& .MuiDataGrid-columnHeader': {
       padding: '24px'
     },
-    '& .MuiDataGrid-columnHeader': {
+    '& .MuiDataGrid-columnHeader .MuiDataGrid-cell': {
       fontSize: '1rem',
-    },
+    }
+  },
+  row: {
+    '& .MuiDataGrid-row': {
+      cursor: 'pointer !important',
+    }
   }
 }));
 
@@ -200,10 +205,15 @@ export function Customers(props: CustomersProps) {
   const handleLabelClick = useCallback(
     (label: ILabel) => () => {
       if (filteringData?.['LABELS']?.findIndex((l: ILabel) => l.ID === label.ID) >= 0) return;
-      filterHandlers.handleFilteringData({ ...filteringData, ['LABELS']: [...filteringData?.['LABELS'] || [], label]});
+      filterHandlers.handleFilteringData({ ...filteringData, 'LABELS': [...filteringData?.['LABELS'] || [], label] });
     },
     [filteringData]
   );
+
+  const handleCustomerEdit = (id: number) => () => {
+    setCurrentOrganization(id);
+    setOpenEditForm(true);
+  };
 
   const columns: GridColDef[] = [
     {
@@ -218,31 +228,31 @@ export function Customers(props: CustomersProps) {
             <div>{value}</div>
             {labels?.length
               ? <List
-              style={{
-                flexDirection: 'row',
-                padding: '0px',
-                width: 'fit-content',
-                display: 'flex',
-                flexWrap: 'wrap',
-                columnGap: '5px',
-              }}
-            >
-              {labels.map((label) => (
-                <ListItemButton
-                  key={label.ID}
-                  onClick={handleLabelClick(label)}
-                  style={labelStyle}
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'transparent'
-                    }
-                  }}
-                >
-                  <LabelMarker label={label} />
-                </ListItemButton>
-              ))}
-            </List>
-          : <></>}
+                style={{
+                  flexDirection: 'row',
+                  padding: '0px',
+                  width: 'fit-content',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  columnGap: '5px',
+                }}
+              >
+                {labels.map((label) => (
+                  <ListItemButton
+                    key={label.ID}
+                    onClick={handleLabelClick(label)}
+                    style={labelStyle}
+                    sx={{
+                      '&:hover': {
+                        backgroundColor: 'transparent'
+                      }
+                    }}
+                  >
+                    <LabelMarker label={label} />
+                  </ListItemButton>
+                ))}
+              </List>
+              : <></>}
 
           </Stack>
         );
@@ -258,11 +268,6 @@ export function Customers(props: CustomersProps) {
       sortable: false,
       renderCell: (params) => {
         const customerId = Number(params.id);
-
-        const handleCustomerEdit = () => {
-          setCurrentOrganization(customerId);
-          setOpenEditForm(true);
-        };
 
         const detailsComponent = {
           // eslint-disable-next-line react/display-name
@@ -283,7 +288,7 @@ export function Customers(props: CustomersProps) {
               <VisibilityIcon fontSize="small" color="primary" />
             </IconButton>
             <IconButton
-              onClick={handleCustomerEdit}
+              onClick={handleCustomerEdit(customerId)}
               disabled={customerFetching}
             >
               <EditOutlinedIcon fontSize="small" color="primary" />
@@ -420,6 +425,15 @@ export function Customers(props: CustomersProps) {
     }
   };
 
+  const lineDoubleClick: GridEventListener<'rowDoubleClick'> = (
+    params, // GridRowParams
+    event, // MuiEvent<React.MouseEvent<HTMLElement>>
+    details, // GridCallbackDetails
+  ) => {
+    const id = Number(params.id);
+    handleCustomerEdit(id)();
+  };
+
   const handleSortModelChange = useCallback((sortModel: GridSortModel) => {
     setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
@@ -471,8 +485,8 @@ export function Customers(props: CustomersProps) {
     [openFilters, filteringData]
   );
 
-  const handleOnChange = (entity: string, value:any) => {
-    const newObject:any = Object.assign({}, filteringData);
+  const handleOnChange = (entity: string, value: any) => {
+    const newObject: any = Object.assign({}, filteringData);
 
     if (entity === 'CONTRACTS') {
       delete newObject.WORKTYPES;
@@ -480,7 +494,7 @@ export function Customers(props: CustomersProps) {
     if (newObject[entity].length === 1) {
       delete newObject[entity];
     } else {
-      newObject[entity] = newObject[entity].filter((item:any) => (item.NAME || item.USR$NUMBER || item.USR$NAME) !== value);
+      newObject[entity] = newObject[entity].filter((item: any) => (item.NAME || item.USR$NUMBER || item.USR$NAME) !== value);
     }
     filterHandlers.handleFilteringData(Object.assign(newObject));
   };
@@ -588,9 +602,10 @@ export function Customers(props: CustomersProps) {
               )}
             </Stack>
           }
-          <Stack direction="row" flex={1} display="flex">
+          <Stack direction="row" flex={1} display="flex" className={classes.row}>
             <Box flex={1}>
               <StyledGrid
+                onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}
                 loading={customerFetching}
