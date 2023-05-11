@@ -88,7 +88,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     },
     validationSchema: yup.object().shape({
       USR$NAME: yup.string().required('')
-        .max(40, 'Слишком длинное наименование'),
+        .max(60, 'Слишком длинное наименование'),
       USR$DESCRIPTION: yup.string().max(40, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
@@ -123,7 +123,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
-  const [ref] = useOutsideClick(selectColor, ()=>setSelectColor(false));
+  const [ref] = useOutsideClick(selectColor, () => setSelectColor(false));
 
   return (
     <>
@@ -171,7 +171,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                         onChange= {(color) => {
                           setColorLabel(color.hex);
                         }}
-                        onChangeComplete={(color)=>{
+                        onChangeComplete={(color) => {
                           formik.setFieldValue('USR$COLOR', color.hex);
                         }}
                       />
