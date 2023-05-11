@@ -4,7 +4,7 @@ import passport from 'passport';
 export const router = express.Router();
 
 router.post('/user/signin', passport.authenticate('local'), function(req, res) {
-  console.log('signin', req.sessionID);
+  // console.log('signin', req.session);
   const { userName } = req.body;
   const { id: userId, permissions } = req.user as any;
 
@@ -32,7 +32,7 @@ router.get('/logout', (req, res) => {
 });
 
 router.get('/user', (req, res) => {
-  // console.log('user', req.user);
+  // console.log('user', req.session);
   if (req.isAuthenticated()) {
     res.cookie('userId', req.user?.['id']);
     res.cookie('color-mode', req.user?.['colorMode'] || ColorMode.Light);
