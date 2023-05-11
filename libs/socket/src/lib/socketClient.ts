@@ -21,15 +21,15 @@ export function setSocketClient(name: string, options: SocketOptions) {
       {
         auth: {
           userId
-      },
-    });
+        }
+      });
 
     socketClients[name].on('disconnect', reason => {
-        if (reason === 'io server disconnect') {
-            /** The disconnection was initiated by the server, you need to reconnect manually */
-            socketClients[name].connect();
-        }
-        socketClients[name].removeAllListeners();
+      if (reason === 'io server disconnect') {
+        /** The disconnection was initiated by the server, you need to reconnect manually */
+        socketClients[name].connect();
+      }
+      socketClients[name].removeAllListeners();
     });
   }
 

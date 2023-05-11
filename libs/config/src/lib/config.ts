@@ -1,22 +1,31 @@
 interface IConfig {
   host: string;
+  appPort: number;
+  serverHost: string;
   serverPort: number;
   notificationPort: number;
   streamingUpdatePort: number;
-  appPort: number;
-  env?: string;
 }
 
+/** Host where back/container is running  */
 const host = (() => {
   return process.env.NODE_ENV === 'development'
     ? 'localhost'
     : process.env.NX_HOST_IP || '';
 })();
 
+/** Listening host */
+const serverHost = (() => {
+  return process.env.NODE_ENV === 'development'
+    ? 'localhost'
+    : process.env.NX_SERVER_HOST || '';
+})();
+
+/** Listening port */
 const serverPort = (() => {
   return process.env.NODE_ENV === 'development'
-  ? Number(process.env.NX_GDMN_DEV_NXT_SERVER_PORT)
-  : Number(process.env.NX_GDMN_NXT_SERVER_PORT);
+    ? Number(process.env.NX_DEV_SERVER_PORT)
+    : Number(process.env.NX_SERVER_PORT);
 })();
 
 const notificationPort =
@@ -29,18 +38,14 @@ const streamingUpdatePort =
     ? Number(process.env.NX_DEV_SOCKET_STREAMING_UPDATE_PORT)
     : Number(process.env.NX_SOCKET_STREAMING_UPDATE_PORT);
 
-const appPort = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? Number(process.env.NX_APP_PORT)
-    : Number(process.env.NX_GDMN_NXT_SERVER_PORT);
-})();
+const appPort = Number(process.env.NX_APP_PORT) ?? 80;
 
 
 export const config: IConfig = {
   host,
+  appPort,
+  serverHost,
   serverPort,
   notificationPort,
-  streamingUpdatePort,
-  appPort,
-  env: process.env.NODE_ENV || '123'
+  streamingUpdatePort
 };

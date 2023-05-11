@@ -35,6 +35,7 @@ import { config } from '@gdmn-nxt/config';
 import { checkPermissions, setPermissonsCache } from './app/middlewares/permissions';
 import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
+import path from 'path';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -58,9 +59,7 @@ app.use(cors({
   origin: `http://${config.host}:${config.appPort}`
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const path = require('path');
-app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
+// app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 const apiRoot = {
@@ -110,7 +109,7 @@ passport.use(new Strategy({
         // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
         const res = await checkGedeminUser(userName, password);
 
-        //console.log('passport_strategy', req.sessionID);
+        // console.log('passport_strategy', req.sessionID);
 
         if (res.result === 'UNKNOWN_USER') {
           return done(null, false);
@@ -312,17 +311,17 @@ router.get('/er-model/make-sql', async (_, res) => {
   res.json(erModel);
 });
 
-if (process.env.NODE_ENV !== 'development') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
-  });
-};
+// if (process.env.NODE_ENV !== 'development') {
+//   app.get('*', (req, res) => {
+//     res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
+//   });
+// };
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-const server = app.listen(config.serverPort, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
+const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
 
-server.on('error', console.error);
+server.on('[ error ]', console.error);
 
 process
   .on('exit', code => {
@@ -334,69 +333,3 @@ process
   .on('SIGTERM', process.exit)
   .on('unhandledRejection', (reason, p) => console.error({ err: reason }, p))
   .on('uncaughtException', console.error);
-
-// //////////////////////////////////////////////////////////////////////////
-// garbage
-// //////////////////////////////////////////////////////////////////////////
-
-/*
-app.route('/login')
-  .get((_, res) => {
-    const form = '<h1>Login Page</h1><form method="POST" action="/login">\
-    Enter Username:<br><input type="text" name="username">\
-    <br>Enter Password:<br><input type="password" name="password">\
-    <br><br><input type="submit" value="Submit"></form>';
-
-    res.send(form);
-  })
-  .post(
-    passport.authenticate('local', {
-      failureRedirect: '/login-failure',
-      successRedirect: '/login-success'
-    }),
-    (err, _req, _res, next) => {
-      if (err) next(err);
-    }
-  );
-
-app.route('/register')
-  .get((_, res) => {
-    const form = '<h1>Register Page</h1><form method="post" action="register">\
-      Enter Username:<br><input type="text" name="username">\
-      <br>Enter Password:<br><input type="password" name="password">\
-      <br><br><input type="submit" value="Submit"></form>';
-
-    res.send(form);
-  })
-  .post(async (req, res) => {
-    const userName = req.body.username;
-
-    const newUser: ICustomerUser = {
-      userName,
-      email: '',
-      ...genPassword(req.body.password)
-    };
-
-    await userDB.write(userName2Key(userName), newUser, true);
-
-    res.redirect('/login');
-  });
-
-app.get('/protected-route', (req, res) => {
-  // This is how you check if a user is authenticated and protect a route.  You could turn this into a custom middleware to make it less redundant
-  if (req.isAuthenticated()) {
-    res.send('<h1>You are authenticated</h1><p><a href="/logout">Logout and reload</a></p>');
-  } else {
-    res.send('<h1>You are not authenticated</h1><p><a href="/login">Login</a></p>');
-  }
-});
-
-app.get('/login-success', (_, res) => {
-  res.send('<p>You successfully logged in. --> <a href="/protected-route">Go to protected route</a></p>');
-});
-
-app.get('/login-failure', (_, res) => {
-  res.send('You entered the wrong password.');
-});
-*/
-
