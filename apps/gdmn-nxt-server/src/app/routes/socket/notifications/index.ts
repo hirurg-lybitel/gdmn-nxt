@@ -26,6 +26,8 @@ export function Notifications({ router }: NotificationsProps) {
   const sessionId = 'notification';
   const users: IUser[] = [];
 
+  console.log(`[ notifications ] socket running at http://localhost:${config.notificationPort}`);
+
   socketIO.listen(config.notificationPort);
 
   socketIO.on('connection', (socket) => {
