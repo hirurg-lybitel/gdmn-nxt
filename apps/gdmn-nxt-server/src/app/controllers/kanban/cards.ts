@@ -131,7 +131,7 @@ const upsert: RequestHandler = async (req, res) => {
       deal.USR$AMOUNT || 0,
       deal.CONTACT?.ID || null,
       deal.CREATOR?.ID || null,
-      deal.PERFORMER?.ID || null,
+      deal.PERFORMERS?.[0].ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
       deal.SOURCE?.ID || null,
       deal.USR$READYTOWORK || 0,
@@ -173,7 +173,7 @@ const upsert: RequestHandler = async (req, res) => {
       ID,
       deal.CREATOR?.ID || null,
       deal.CONTACT?.ID || null,
-      deal.PERFORMER?.ID || null,
+      deal.PERFORMERS?.[0].ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
