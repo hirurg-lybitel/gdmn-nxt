@@ -64,7 +64,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -115,6 +115,25 @@ const upsert: RequestHandler = async (req, res) => {
     // actualFieldsNames = actualFields.join(',');
     // paramsString = actualFields.map(_ => '?').join(',');
     // returnFieldsNames = actualFields.join(',');
+
+    /** Сделка не может быть исполнена, если по ней есть незавершённые задачи */
+    if (deal.USR$DONE) {
+      sql = `
+        SELECT COUNT(task.ID)
+        FROM USR$CRM_KANBAN_CARDS card
+        JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+        JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
+        WHERE
+          card.ID = ${ID}
+          AND deal.USR$DONE = 0
+          AND task.USR$CLOSED = 0`;
+
+      const checkTasks: { COUNT: number} = await executeSingletonAsObject(sql);
+
+      if ((checkTasks.COUNT || 0) > 0) {
+        throw new Error('Не может быть исполнено. Есть незакрытые задачи');
+      }
+    }
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
