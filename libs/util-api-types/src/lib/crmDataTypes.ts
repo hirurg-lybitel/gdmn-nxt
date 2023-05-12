@@ -66,7 +66,7 @@ export interface IDeal extends IWithID {
   USR$NAME?: string;
   USR$AMOUNT?: number;
   CONTACT?: IContactWithID;
-  PERFORMERS?: IContactWithID[];
+  PERFORMER?: IContactWithID;
   CREATOR?: IContactWithID;
   SOURCE?: IDealSource;
   USR$DEADLINE?: Date;

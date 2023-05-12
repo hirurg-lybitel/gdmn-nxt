@@ -57,19 +57,11 @@ export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IK
       newValue: deal.USR$NAME
     });
   };
-  if (performer.ID !== oldCard.DEAL?.PERFORMERS?.[0].ID) {
+  if (performer.ID !== oldCard.DEAL?.PERFORMER?.ID) {
     changesArr.push({
       id: newCard.ID,
       fieldName: 'Исполнитель',
-      oldValue: oldCard.DEAL?.PERFORMERS?.[0].NAME,
-      newValue: performer.NAME
-    });
-  };
-  if (performer.ID !== oldCard.DEAL?.PERFORMERS?.[0].ID) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Исполнитель',
-      oldValue: oldCard.DEAL?.PERFORMERS?.[0].NAME,
+      oldValue: oldCard.DEAL?.PERFORMER?.NAME,
       newValue: performer.NAME
     });
   };
@@ -114,8 +106,9 @@ export function Deals(props: DealsProps) {
     })();
     if (filtersStorage.filterData.deals?.deadline?.ID === currentDeadline?.ID) return;
 
-    saveFilters({ ...filtersStorage.filterData.deals, deadline: [currentDeadline] });
-  }, [lastCardDateFilterLoading]);
+    saveFilters({ ...filtersStorage.filterData.deals, deadline: [currentDeadline]});
+
+  }, [lastCardDateFilterLoading])
 
   const {
     data: nonCachedData,
@@ -158,7 +151,7 @@ export function Deals(props: DealsProps) {
       saveFilters(newValue);
     },
     filterDeadlineChange: (e: SyntheticEvent<Element, Event>, value: IKanbanFilterDeadline) => {
-      saveFilters({ ...filtersStorage.filterData.deals, deadline: [value] });
+      saveFilters({ ...filtersStorage.filterData.deals, deadline: [value]});
 
       postLastUsedFilter({
         filter: value,
