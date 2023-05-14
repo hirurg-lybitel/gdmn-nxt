@@ -22,7 +22,8 @@ import {
   Tab,
   useMediaQuery,
   useTheme,
-  Paper
+  Paper,
+  Tooltip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -281,6 +282,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
   }, []);
+
+  const checkDoneAndTasks = useMemo(() =>
+    !(formik.values.DEAL?.USR$DONE) &&
+    (formik.values.TASKS?.reduce((acc, task) => acc + Number(!task.USR$CLOSED), 0) || 0) > 0
+  , [formik.values.DEAL?.USR$DONE, formik.values.TASKS]);
 
   const KanbanRequestInfo = useMemo(() => {
     if ((getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))) ||
@@ -660,26 +666,29 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 label="В работе"
                               />
                               : <></>}
-                            {(formik.values.USR$MASTERKEY === stages[2]?.ID || formik.values.USR$MASTERKEY === stages[3]?.ID) ?
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={formik.values.DEAL?.USR$DONE || false}
-                                    onChange={(e) => {
-                                      const value = e.target.checked;
-                                      formik.setFieldValue(
-                                        'DEAL',
-                                        { ...formik.values.DEAL, USR$DONE: value }
-                                      );
-                                      formik.setFieldValue(
-                                        'USR$MASTERKEY',
-                                        value ? stages[3].ID : stages[2].ID
-                                      );
-                                    }}
-                                  />
-                                }
-                                label="Исполнено"
-                              />
+                            {(formik.values.USR$MASTERKEY === stages[2]?.ID || formik.values.USR$MASTERKEY === stages[3]?.ID)
+                              ? <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
+                                <FormControlLabel
+                                  disabled={checkDoneAndTasks}
+                                  control={
+                                    <Checkbox
+                                      checked={formik.values.DEAL?.USR$DONE || false}
+                                      onChange={(e) => {
+                                        const value = e.target.checked;
+                                        formik.setFieldValue(
+                                          'DEAL',
+                                          { ...formik.values.DEAL, USR$DONE: value }
+                                        );
+                                        formik.setFieldValue(
+                                          'USR$MASTERKEY',
+                                          value ? stages[3].ID : stages[2].ID
+                                        );
+                                      }}
+                                    />
+                                  }
+                                  label="Исполнено"
+                                />
+                              </Tooltip>
                               : <></>
                             }
                             {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ?
