@@ -20,9 +20,9 @@ export interface KanbanCardProps {
   onAdd: (card: IKanbanCard) => void;
   onEdit: (card: IKanbanCard) => void;
   onDelete: (card: IKanbanCard) => void;
-  addIsFetching?:boolean;
-  lastCard?:IKanbanCard
-  clearLastCard:(isAdd?:boolean)=>void
+  addIsFetching?: boolean;
+  lastCard?: IKanbanCard
+  clearLastCard: (isAdd?: boolean) => void
 };
 
 
@@ -30,7 +30,6 @@ export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
   const { card, columns, lastCard, addIsFetching } = props;
   const { onAdd, onEdit, onDelete, clearLastCard } = props;
-
   const theme = useTheme();
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
   const [editCard, setEditCard] = useState(false);
@@ -39,7 +38,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
       if (deleting) {
         onDelete(card);
         setEditCard(false);
@@ -60,7 +59,7 @@ export function KanbanCard(props: KanbanCardProps) {
         return;
       }
     },
-    handleCancel: async (isFetching?:boolean) => {
+    handleCancel: async (isFetching?: boolean) => {
       clearLastCard(isFetching);
       editCard && setEditCard(false);
       copyCard && setCopyCard(false);
@@ -163,6 +162,23 @@ export function KanbanCard(props: KanbanCardProps) {
 
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
+    const dayCalc = (days: number) => {
+      const positiveDays = Math.abs(days);
+      const lastNumber = positiveDays % 10;
+      const preLast = positiveDays % 100;
+      if (preLast >= 5 && preLast <= 20) return 'Дней';
+      if (lastNumber === 1) {
+        return 'День';
+      }
+      if (lastNumber >= 2 && positiveDays <= 4) {
+        return 'Дня';
+      }
+      if (lastNumber >= 5 || positiveDays === 0) {
+        return 'Дней';
+      }
+      return days;
+    };
+
     return (
       <CustomizedCard
         borders={colorMode === ColorMode.Light}
@@ -225,21 +241,20 @@ export function KanbanCard(props: KanbanCardProps) {
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
             <Typography className="number" variant="caption" color="GrayText">{'#' + card.DEAL?.USR$NUMBER}</Typography>
-
-              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-                ?
-                <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
-                  <div
-                    className="actions"
-                    hidden
-                  >
-                    <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </div>
-                </PermissionsGate>
-                : null
-              }
+            {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+              ?
+              <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              </PermissionsGate>
+              : null
+            }
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">
@@ -251,6 +266,26 @@ export function KanbanCard(props: KanbanCardProps) {
                 : '-/-'}
             </Typography>
           </Stack>
+          {card.DEAL?.USR$DEADLINE &&
+            <Stack direction="row">
+              <Typography>
+                {'Срок: '}
+                {card.DEAL?.USR$DEADLINE
+                  ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+                  : '-/-'}
+              </Typography>
+              <Box flex={1} />
+              <Typography>
+                {
+                  (Math.ceil((new Date(card.DEAL.USR$DEADLINE).valueOf() - new Date().valueOf()) / (1000 * 86400)))
+                }
+                {
+                  ' ' + dayCalc(Number(Math.ceil((new Date(card.DEAL.USR$DEADLINE).valueOf() - new Date().valueOf()) / (1000 * 86400))))
+                }
+
+              </Typography>
+            </Stack>
+          }
           {TaskStatus}
         </Stack>
       </CustomizedCard>

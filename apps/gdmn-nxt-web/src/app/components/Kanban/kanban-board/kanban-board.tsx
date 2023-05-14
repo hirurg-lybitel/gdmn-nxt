@@ -72,7 +72,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
   //   // dispatch(fetchCustomers());
   // }, [inColumns]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if ((updateCardSuccess) && changes.current?.length > 0) {
       changes.current.forEach(item =>
         addHistory({
@@ -344,8 +344,8 @@ export function KanbanBoard(props: KanbanBoardProps) {
   //   );
   // }
 
-  const skeletonItems = useMemo(() =>(count:number):IKanbanColumn[] => {
-    const skeletonFaqItems:IKanbanColumn[] = [];
+  const skeletonItems = useMemo(() => (count: number): IKanbanColumn[] => {
+    const skeletonFaqItems: IKanbanColumn[] = [];
     const skeletonFaqItem = {} as IKanbanColumn;
     for (let i = 0; i < count; i++) {
       skeletonFaqItems.push(
@@ -356,20 +356,20 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return skeletonFaqItems;
   }, []);
 
-  const lastCard = useMemo(()=>{
+  const lastCard = useMemo(() => {
     if (!lastAddedCard) return undefined;
     const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === lastAddedCard?.ID);
     return cards;
   }, [columns, lastAddedCard]);
 
-  const clearLastCard = (isAdd?:boolean) => {
+  const clearLastCard = (isAdd?: boolean) => {
     if (isAdd) {
       setLastCardShouldClear(true);
     }
     setLastAddedCard(undefined);
   };
 
-  const skeletonCount:IKanbanColumn[] = skeletonItems(5);
+  const skeletonCount: IKanbanColumn[] = skeletonItems(5);
 
   return (
     <PerfectScrollbar
@@ -437,7 +437,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                         <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column?.ID * 10)?.toString()} index={index}>
                                           {(provided, snapshot) => (
                                             <Box
-                                            className={styles.boardItem}
+                                              className={styles.boardItem}
                                               ref={provided.innerRef}
                                               {...provided.draggableProps}
                                               {...provided.dragHandleProps}

@@ -248,6 +248,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
             .max(180, 'Слишком длинное наименование'),
+          USR$AMOUNT: yup.number()
+            .max(99999999999999, 'Слишком длинное наименование'),
         })
     }),
     onSubmit: (values) => {
@@ -470,6 +472,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               );
                             }}
                             placeholder="0.00"
+                            error={getIn(formik.touched, 'DEAL.USR$AMOUNT') && Boolean(getIn(formik.errors, 'DEAL.USR$AMOUNT'))}
                           />
                           <DesktopDatePicker
                             label="Срок"
