@@ -556,7 +556,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         />
                         <Autocomplete
                           fullWidth
-                          options={employees || []}
+                          options={employees?.filter(
+                            empl => empl !== formik.values.DEAL?.PERFORMERS?.[0] && empl !== formik.values.DEAL?.PERFORMERS?.[1]
+                          ) || []}
                           getOptionLabel={option => option.NAME}
                           filterOptions={filterOptions(50, 'NAME')}
                           readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
@@ -593,7 +595,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         />
                         <Autocomplete
                           fullWidth
-                          options={employees || []}
+                          options={employees?.filter(
+                            empl => empl !== formik.values.DEAL?.PERFORMERS?.[0] && empl !== formik.values.DEAL?.PERFORMERS?.[1]
+                          ) || []}
                           getOptionLabel={option => option.NAME}
                           filterOptions={filterOptions(50, 'NAME')}
                           readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
