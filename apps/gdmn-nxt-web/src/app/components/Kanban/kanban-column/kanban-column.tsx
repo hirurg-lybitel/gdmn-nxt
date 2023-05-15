@@ -10,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn,Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -23,14 +23,14 @@ export interface KanbanColumnProps {
   children: JSX.Element[];
   item: IKanbanColumn;
   isFetching: boolean,
-  addIsFetching:boolean,
-  lastCard?:IKanbanCard
+  addIsFetching: boolean,
+  lastCard?: IKanbanCard
   onEdit: (newColumn: IKanbanColumn) => void;
   onDelete: (column: IKanbanColumn) => void;
   onEditCard: (newColumn: IKanbanCard) => void;
-  onDeleteCard: (card:IKanbanCard) => void;
+  onDeleteCard: (card: IKanbanCard) => void;
   onAddCard: (card: IKanbanCard) => void;
-  clearLastCard: (arg1?:boolean) => void;
+  clearLastCard: (arg1?: boolean) => void;
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
@@ -47,7 +47,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
       if (deleting) {
         onDeleteCard(card);
         setUpsertCard(false);
@@ -66,7 +66,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         }
       }
     },
-    handleCancel: async (isFetching?:boolean) => {
+    handleCancel: async (isFetching?: boolean) => {
       clearLastCard(isFetching);
       setUpsertCard(false);
     },
@@ -291,13 +291,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
                 </Stack>
               </PerfectScrollbar>
             </CardContent>
-            <CardActions>
-              <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
-                {item.USR$INDEX === 0 &&
-                <Button disabled={addIsFetching} onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
-                }
-              </PermissionsGate>
-            </CardActions>
+            {item.USR$INDEX === 0 &&
+              <CardActions style={{ paddingTop: 0 }}>
+                <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
+                  <Button disabled={addIsFetching} onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
+                </PermissionsGate>
+              </CardActions>
+            }
           </CustomizedCard>
           {memoAddCard}
         </>

@@ -153,6 +153,52 @@ export function KanbanCard(props: KanbanCardProps) {
     setEditCard(true);
   }, [card]);
 
+  const dayCalc = (days: number): string => {
+    const positiveDays = Math.abs(days);
+    const lastNumber = positiveDays % 10;
+    const preLast = positiveDays % 100;
+    if (preLast >= 5 && preLast <= 20) return 'Дней';
+    if (lastNumber === 1) {
+      return 'День';
+    }
+    if (lastNumber >= 2 && lastNumber <= 4) {
+      return 'Дня';
+    }
+    if (lastNumber >= 5 || lastNumber === 0) {
+      return 'Дней';
+    }
+    return '';
+  };
+
+  const dayColor = (days: number): string => {
+    if (days === 1) return 'rgb(255, 214, 0)';
+    if (days <= 0) return 'rgb(255, 82, 82)';
+    return 'white';
+  };
+
+  const deadLine = useMemo(() => {
+    if (!card.DEAL?.USR$DEADLINE) return null;
+    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
+    return (
+      <Stack direction="row">
+        <Typography>
+          {'Срок: '}
+          {card.DEAL?.USR$DEADLINE
+            ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+            : '-/-'}
+        </Typography>
+        <Box flex={1} />
+        <Typography style={{ color: dayColor(deadline) }}>
+          {
+            Math.abs(deadline)
+          }
+          {
+            ' ' + dayCalc(deadline)
+          }
+        </Typography>
+      </Stack>
+    );
+  }, [card]);
 
   const memoCard = useMemo(() => {
     const today = new Date();
@@ -162,22 +208,6 @@ export function KanbanCard(props: KanbanCardProps) {
 
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
-    const dayCalc = (days: number) => {
-      const positiveDays = Math.abs(days);
-      const lastNumber = positiveDays % 10;
-      const preLast = positiveDays % 100;
-      if (preLast >= 5 && preLast <= 20) return 'Дней';
-      if (lastNumber === 1) {
-        return 'День';
-      }
-      if (lastNumber >= 2 && positiveDays <= 4) {
-        return 'Дня';
-      }
-      if (lastNumber >= 5 || positiveDays === 0) {
-        return 'Дней';
-      }
-      return days;
-    };
 
     return (
       <CustomizedCard
@@ -266,26 +296,7 @@ export function KanbanCard(props: KanbanCardProps) {
                 : '-/-'}
             </Typography>
           </Stack>
-          {card.DEAL?.USR$DEADLINE &&
-            <Stack direction="row">
-              <Typography>
-                {'Срок: '}
-                {card.DEAL?.USR$DEADLINE
-                  ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
-                  : '-/-'}
-              </Typography>
-              <Box flex={1} />
-              <Typography>
-                {
-                  (Math.ceil((new Date(card.DEAL.USR$DEADLINE).valueOf() - new Date().valueOf()) / (1000 * 86400)))
-                }
-                {
-                  ' ' + dayCalc(Number(Math.ceil((new Date(card.DEAL.USR$DEADLINE).valueOf() - new Date().valueOf()) / (1000 * 86400))))
-                }
-
-              </Typography>
-            </Stack>
-          }
+          {deadLine}
           {TaskStatus}
         </Stack>
       </CustomizedCard>
