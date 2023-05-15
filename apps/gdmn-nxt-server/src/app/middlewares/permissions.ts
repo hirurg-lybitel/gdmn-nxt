@@ -4,10 +4,14 @@ import { nodeCache } from '../utils/cache';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { ActionName, Permissions } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
+import { config } from '@gdmn-nxt/config';
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
+  const apiAccessKey = req.headers['x-api-key'] as string;
   if (!req.isAuthenticated()) {
-    return res.status(401).send(resultError('Ваш сеанс отключён. Повторно войдите в систему'));
+    if (!!apiAccessKey && apiAccessKey !== config.apiAccessToken) {
+      return res.status(401).send(resultError('Ваш сеанс отключён. Повторно войдите в систему'));
+    };
   };
   const { userId, permissions } = req.session;
   const { url, method } = req;
