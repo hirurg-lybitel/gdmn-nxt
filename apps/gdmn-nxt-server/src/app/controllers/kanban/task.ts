@@ -26,7 +26,10 @@ const get: RequestHandler = async (req, res) => {
         },
         USR$CLOSED: {
           type: 'boolean'
-        }
+        },
+        USR$INPROGRESS: {
+          type: 'boolean'
+        },
       }
     };
 
@@ -67,6 +70,7 @@ const get: RequestHandler = async (req, res) => {
           task.USR$DATECLOSE,
           task.USR$CREATIONDATE,
           task.USR$NUMBER,
+          task.USR$INPROGRESS,
           performer.ID AS PERFORMER_ID,
           performer.NAME AS PERFORMER_NAME,
           creator.ID AS CREATOR_ID,
@@ -137,7 +141,8 @@ const upsert: RequestHandler = async (req, res) => {
         DEADLINE TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$DEADLINE = ?,
         PERFORMER INTEGER = ?,
         CREATOR INTEGER = ?,
-        TASKTYPEKEY INTEGER = ?
+        TASKTYPEKEY INTEGER = ?,
+        INPROGRESS SMALLINT = ?
       )
       RETURNS(
         ID INTEGER,
@@ -159,8 +164,8 @@ const upsert: RequestHandler = async (req, res) => {
 
 
         UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_TASKS
-        (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER)
-        VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER)
+        (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER, USR$INPROGRESS)
+        VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER, :INPROGRESS)
         MATCHING(ID)
         RETURNING ID, USR$CARDKEY
         INTO :ID, :USR$CARDKEY;
@@ -183,22 +188,10 @@ const upsert: RequestHandler = async (req, res) => {
       task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
       task.PERFORMER?.ID > 0 ? task.PERFORMER?.ID : null,
       task.CREATOR?.ID > 0 ? task.CREATOR?.ID : null,
-      task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null
+      task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null,
+      Number(task.USR$INPROGRESS),
     ];
-
-    const parameters = {
-      ID: task.ID > 0 ? task.ID : id,
-      CARDKEY: task.USR$CARDKEY,
-      NAME: task.USR$NAME,
-      CLOSED: Number(task.USR$CLOSED),
-      DEADLINE: task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
-      PERFORMER: task.PERFORMER?.ID > 0 ? task.PERFORMER?.ID : null,
-      CREATOR: task.CREATOR?.ID > 0 ? task.CREATOR?.ID : null,
-      TASKTYPEKEY: task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null
-    };
-
     const taskRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
-    // const taskRecord = await fetchAsObject(sql, parameters);
 
     const result: IRequestResult = {
       queries: { tasks: [taskRecord] },

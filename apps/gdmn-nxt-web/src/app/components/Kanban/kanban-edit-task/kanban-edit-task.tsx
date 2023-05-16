@@ -98,7 +98,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       : {
         ID: -1,
         NAME: ''
-      }
+      },
+    USR$INPROGRESS: task?.USR$INPROGRESS || false
   };
 
   const formik = useFormik<IKanbanTask>({
@@ -372,16 +373,28 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     />
                   </Stack>
                   <Divider />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="USR$CLOSED"
-                        checked={!!formik.values.USR$CLOSED}
-                        onChange={formik.handleChange}
-                      />
-                    }
-                    label="Выполнена"
-                  />
+                  <Stack direction="row" spacing={3}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="USR$INPROGRESS"
+                          checked={!!formik.values.USR$INPROGRESS}
+                          onChange={formik.handleChange}
+                        />
+                      }
+                      label="В работе"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="USR$CLOSED"
+                          checked={!!formik.values.USR$CLOSED}
+                          onChange={formik.handleChange}
+                        />
+                      }
+                      label="Выполнена"
+                    />
+                  </Stack>
                 </Stack>
               </Form>
             </FormikProvider>
