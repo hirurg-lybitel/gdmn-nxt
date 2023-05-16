@@ -54,6 +54,8 @@ import { useState } from 'react';
 import DealSources from './app/pages/Managment/dealsCatalogs/deal-sources/deal-sources';
 import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-reasons';
 import { ColorMode } from '@gsbelarus/util-api-types';
+import { Tasks } from './app/pages/Managment/tasks/tasks';
+import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types';
 
 registerMUI();
 
@@ -93,177 +95,75 @@ const Main = () => {
                       {loginStage === 'EMPLOYEE' ? (
                         <Routes>
                           <Route path="/employee" element={<MainLayout />}>
-                            <Route
-                              path=""
-                              element={<Navigate to="dashboard/overview" />}
-                            />
+                            <Route path="" element={<Navigate to="dashboard/overview" />} />
                             <Route path="dashboard">
-                              <Route
-                                path=""
-                                element={<Navigate to="overview" />}
-                              />
-                              <Route
-                                path="overview"
-                                element={<Dashboard />}
-                              />
-                              <Route
-                                path="analytics"
-                                element={<Analytics />}
-                              />
+                              <Route path="" element={<Navigate to="overview" />} />
+                              <Route path="overview" element={<Dashboard />} />
+                              <Route path="analytics" element={<Analytics />} />
                             </Route>
                             <Route path="managment">
-                              <Route
-                                path=""
-                                element={<Navigate to="deals/list" />}
-                              />
+                              <Route path="" element={<Navigate to="deals/list" />} />
                               <Route path="deals">
-                                <Route
-                                  path=""
-                                  element={<Navigate to="list" />}
-                                />
-                                <Route
-                                  path="list"
-                                  element={<Deals />}
-                                />
-                                <Route
-                                  path="dealSources"
-                                  element={<DealSources />}
-                                />
-                                <Route
-                                  path="denyReasons"
-                                  element={<DenyReasons />}
-                                />
+                                <Route path="" element={<Navigate to="list" />} />
+                                <Route path="list" element={<Deals />} />
+                                <Route path="dealSources" element={<DealSources />} />
+                                <Route path="denyReasons" element={<DenyReasons />} />
+                              </Route>
+                              <Route path="tasks">
+                                <Route path="list" element={<Tasks />} />
+                                <Route path="taskTypes" element={<TaskTypes />} />
                               </Route>
                               <Route path="customers">
-                                <Route
-                                  path=""
-                                  element={<Navigate to="list" />}
-                                />
-                                <Route
-                                  path="orders/list"
-                                  element={<OrderList />}
-                                />
-                                <Route
-                                  path="list"
-                                  element={<CustomersList />}
-                                />
-                                <Route
-                                  path="list/details/:id"
-                                  element={<CustomerDetails />}
-                                />
+                                <Route path="" element={<Navigate to="list" />} />
+                                <Route path="orders/list" element={<OrderList />} />
+                                <Route path="list" element={<CustomersList />} />
+                                <Route path="list/details/:id" element={<CustomerDetails />} />
                               </Route>
                               <Route path="labels" element={<Labels />} />
                             </Route>
                             <Route path="analytics">
-                              <Route
-                                path=""
-                                element={
-                                  <Navigate to="reports/reconciliation" />
-                                }
-                              />
+                              <Route path="" element={<Navigate to="reports/reconciliation" />} />
                               <Route path="reports">
-                                <Route
-                                  path=""
-                                  element={<Navigate to="reconciliation" />}
-                                />
-                                <Route
-                                  path="reconciliation"
-                                  element={<ReconciliationAct />}
-                                />
-                                <Route
-                                  path="reconciliation/:customerId"
-                                  element={<ReconciliationAct />}
-                                />
-                                <Route
-                                  path="remainbyinvoices"
-                                  element={<RemainsByInvoices />}
-                                />
-                                <Route
-                                  path="topEarning"
-                                  element={<TopEarningPage />}
-                                />
+                                <Route path="" element={<Navigate to="reconciliation" />} />
+                                <Route path="reconciliation" element={<ReconciliationAct />} />
+                                <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
+                                <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
+                                <Route path="topEarning" element={<TopEarningPage />} />
                               </Route>
-                              <Route
-                                path="salesfunnel"
-                                element={<SalesFunnel />}
-                              />
+                              <Route path="salesfunnel" element={<SalesFunnel />} />
                             </Route>
                             <Route path="preferences">
-                              <Route
-                                path=""
-                                element={<Navigate to="account" />}
-                              />
+                              <Route path="" element={<Navigate to="account" />} />
                               <Route path="account" element={<Profile />} />
-                              <Route
-                                path="settings"
-                                element={<AccountSettings />}
-                              />
+                              <Route path="settings" element={<AccountSettings />} />
                               <Route path="permissions">
-                                <Route
-                                  path=""
-                                  element={<Navigate to="list" />}
-                                />
-                                <Route
-                                  path="list"
-                                  element={<PermissionsList />}
-                                />
-                                <Route
-                                  path="usergroups"
-                                  element={<UserGroups />}
-                                />
+                                <Route path="" element={<Navigate to="list" />} />
+                                <Route path="list" element={<PermissionsList />} />
+                                <Route path="usergroups" element={<UserGroups />} />
                               </Route>
-                              <Route
-                                path="notifications"
-                                element={<NotificationCenter />}
-                              />
+                              <Route path="notifications" element={<NotificationCenter />} />
                               <Route path="faq" element={<FAQ />} />
                             </Route>
                           </Route>
                           <Route path="/system" element={<BaseForm />}>
-                            <Route
-                              path=""
-                              element={<Navigate to="er-model-domains" />}
-                            />
-                            <Route
-                              path="er-model-domains"
-                              element={<ErModelDomains />}
-                            />
+                            <Route path="" element={<Navigate to="er-model-domains" />} />
+                            <Route path="er-model-domains" element={<ErModelDomains />} />
                             <Route path="er-model" element={<ErModel />} />
                             <Route path="nlp-main" element={<NlpMain />} />
                             <Route path="sql-editor" element={<SqlEditor />} />
                             <Route path="*" element={<NotFound />} />
                           </Route>
-                          <Route
-                            path="/"
-                            element={<Navigate to="/employee/dashboard" />}
-                          />
+                          <Route path="/" element={<Navigate to="/employee/dashboard" />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       ) : loginStage === 'CUSTOMER' ? (
                         <Routes>
-                          <Route
-                            path="/customer"
-                            element={<CustomerHomePage />}
-                          >
-                            <Route
-                              path=""
-                              element={<Navigate to="standard-order" />}
-                            />
-                            <Route
-                              path="standard-order"
-                              element={<StandardOrder />}
-                            />
-                            <Route
-                              path="reconciliation-statement"
-                              element={
-                                <ReconciliationStatement custId={148333193} />
-                              }
-                            />
+                          <Route path="/customer" element={<CustomerHomePage />} >
+                            <Route path="" element={<Navigate to="standard-order" />} />
+                            <Route path="standard-order" element={<StandardOrder />} />
+                            <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
                           </Route>
-                          <Route
-                            path="/"
-                            element={<Navigate to="/customer" />}
-                          />
+                          <Route path="/" element={<Navigate to="/customer" />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       ) : (

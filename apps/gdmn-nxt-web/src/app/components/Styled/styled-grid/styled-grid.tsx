@@ -65,6 +65,10 @@ export default function StyledGrid(props: IStyledGridProps) {
     },
     '& .MuiDataGrid-footerContainer': {
       height: '60px'
+    },
+    '.MuiDataGrid-detailPanel': {
+      backgroundColor: 'inherit',
+      padding: '24px',
     }
   });
   return (
@@ -203,4 +207,3 @@ export function renderCellExpand(params: GridRenderCellParams, value = '') {
     <GridCellExpand value={value} width={params.colDef.computedWidth} />
   );
 };
-

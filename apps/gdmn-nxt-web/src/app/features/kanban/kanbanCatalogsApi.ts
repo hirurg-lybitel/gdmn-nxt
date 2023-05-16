@@ -1,4 +1,4 @@
-import { IDealSource, IDenyReason, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDealSource, IDenyReason, IRequestResult, ITaskType } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -14,9 +14,13 @@ type IDenyReasonRequestResult = IRequestResult<{
   denyReasons: IDenyReason[]
 }>;
 
+type ITaskTypesRequestResult = IRequestResult<{
+  taskTypes: ITaskType[]
+}>;
+
 export const kanbanCatalogsApi = createApi({
   reducerPath: 'kanbanCatalogs',
-  tagTypes: ['DealSource', 'DenyReasons'],
+  tagTypes: ['DealSource', 'DenyReasons', 'TaskTypes'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: builder => ({
     getDealSources: builder.query<IDealSource[], void>({
@@ -152,6 +156,74 @@ export const kanbanCatalogsApi = createApi({
             : [{ type: 'DenyReasons', id: 'LIST' }];
       },
     }),
+    getTaskTypes: builder.query<ITaskType[], void>({
+      query: (arg) => ({
+        url: 'kanban/catalogs/tasktypes',
+        method: 'GET'
+      }),
+      transformResponse: (response: ITaskTypesRequestResult) => response.queries.taskTypes || [],
+      providesTags: (result, error) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'TaskTypes' as const, ID })),
+            { type: 'TaskTypes', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'TaskTypes', id: 'ERROR' }]
+            : [{ type: 'TaskTypes', id: 'LIST' }]
+    }),
+    deleteTaskType: builder.mutation<{ID: number}, number>({
+      query(id) {
+        return {
+          url: `kanban/catalogs/tasktypes/${id}`,
+          method: 'DELETE'
+        };
+      },
+      invalidatesTags: (result, error) => {
+        const id = result?.ID;
+
+        return result
+          ? [
+            { type: 'TaskTypes' as const, id },
+            { type: 'TaskTypes', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'TaskTypes', id: 'LIST' }]
+            : [{ type: 'TaskTypes', id: 'ERROR' }];
+      }
+    }),
+    addTaskType: builder.mutation<ITaskType, Partial<ITaskType>>({
+      query: (body) => ({
+        url: 'kanban/catalogs/tasktypes',
+        method: 'POST',
+        body
+      }),
+      transformResponse: (res: ITaskTypesRequestResult) => res.queries.taskTypes[0],
+      invalidatesTags: (result, error) => {
+        return [{ type: 'TaskTypes', id: 'LIST' }];
+      }
+    }),
+    updateTaskType: builder.mutation<ITaskType, Partial<ITaskType>>({
+      query (body) {
+        const { ID: id } = body;
+        return {
+          url: `kanban/catalogs/tasktypes/${id}`,
+          method: 'PUT',
+          body
+        };
+      },
+      transformResponse: (res: ITaskTypesRequestResult) => res.queries.taskTypes[0],
+      invalidatesTags: (result, error) => {
+        return result
+          ? [
+            { type: 'TaskTypes' as const, id: result?.ID },
+            { type: 'TaskTypes', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'TaskTypes', id: 'ERROR' }]
+            : [{ type: 'TaskTypes', id: 'LIST' }];
+      },
+    }),
   })
 });
 
@@ -163,5 +235,9 @@ export const {
   useGetDenyReasonsQuery,
   useAddDenyReasonMutation,
   useUpdateDenyReasonMutation,
-  useDeleteDenyReasonMutation
+  useDeleteDenyReasonMutation,
+  useGetTaskTypesQuery,
+  useAddTaskTypeMutation,
+  useUpdateTaskTypeMutation,
+  useDeleteTaskTypeMutation
 } = kanbanCatalogsApi;

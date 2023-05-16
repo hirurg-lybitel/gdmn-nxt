@@ -35,18 +35,19 @@ export function NotificationList(props: NotificationListProps) {
   }, [onClick]);
 
   return (
-    <List disablePadding
-    sx={{
-      '.close-action': {
-        display:'none'
-      },
-      '.MuiListItem-container:hover .close-action': {
-        display: 'inline',
-      },
-      '.MuiListItem-container:hover .datetime': {
-        display: 'none',
-      },
-    }}>
+    <List
+      disablePadding
+      sx={{
+        '.close-action': {
+          display: 'none'
+        },
+        '.MuiListItem-container:hover .close-action': {
+          display: 'inline',
+        },
+        '.MuiListItem-container:hover .datetime': {
+          display: 'none',
+        },
+      }}>
       {messages.length
         ? messages.map((message, index) =>
           <ListItem

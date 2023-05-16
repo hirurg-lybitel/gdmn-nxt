@@ -1,11 +1,10 @@
-import { Autocomplete, Box, Button, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Slide, Stack, TextField, Typography } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
+import { Autocomplete, Box, Button, Checkbox, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Slide, Stack, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { forwardRef, ReactElement, Ref, useCallback, useMemo, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IEmployee, IKanbanTask } from '@gsbelarus/util-api-types';
+import { IEmployee, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -15,6 +14,9 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers-pro';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
+import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
+import filterOptions from '../../helpers/filter-options';
+import { useGetTaskTypesQuery } from '../../../features/kanban/kanbanCatalogsApi';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -45,25 +47,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>,
-) {
-  return <Slide direction="left" ref={ref} {...props} />;
-});
-
-const filterOptions = createFilterOptions({
-  matchFrom: 'any',
-  limit: 50,
-  stringify: (option: IEmployee) => option.NAME,
-});
+// const filterOptions = createFilterOptions({
+//   matchFrom: 'any',
+//   limit: 50,
+//   stringify: (option: IEmployee) => option.NAME,
+// });
 
 export interface KanbanEditTaskProps {
   open: boolean;
   task?: IKanbanTask;
-  onSubmit: (arg1: IKanbanTask, deleting: boolean) => void;
+  onSubmit: (task: IKanbanTask, deleting: boolean) => void;
   onCancelClick: () => void;
 }
 
@@ -75,8 +68,16 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [cards, setCards] = useState<IKanbanCard[]>([]);
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
+  const { data: deals = [], isLoading: dealsIsLoading } = useGetKanbanDealsQuery({ userId: -1 });
+  const { data: taskTypes = [], isFetching: taskTypesFetching } = useGetTaskTypesQuery();
+
+  useEffect(() => {
+    if (dealsIsLoading) return;
+    setCards(deals.map(d => d.CARDS)?.flat());
+  }, [deals, dealsIsLoading]);
 
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -91,7 +92,13 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         NAME: ''
       },
     USR$CLOSED: task?.USR$CLOSED || false,
-    USR$DEADLINE: task?.USR$DEADLINE
+    USR$DEADLINE: task?.USR$DEADLINE,
+    TASKTYPE: task?.TASKTYPE
+      ? task.TASKTYPE
+      : {
+        ID: -1,
+        NAME: ''
+      }
   };
 
   const formik = useFormik<IKanbanTask>({
@@ -101,8 +108,17 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       ...initValue,
     },
     validationSchema: yup.object().shape({
-      USR$NAME: yup.string().required('')
+      USR$NAME: yup.string()
+        .required('')
         .max(80, 'Слишком длинное описание'),
+      USR$CARDKEY: yup.number()
+        .required()
+        .moreThan(-1),
+      // TASKTYPE: yup.object().shape({
+      //   ID: yup.number()
+      //     .required()
+      //     .moreThan(-1),
+      // })
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -115,6 +131,13 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     validateOnMount: true,
   });
 
+  // console.log('task', formik.values);
+  // console.log('cards', cards);
+
+  useEffect(() => {
+    if (!open) formik.resetForm();
+  }, [open]);
+
   const handleDeleteClick = () => {
     setDeleting(true);
     setConfirmOpen(true);
@@ -122,14 +145,12 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
 
   const handleCancelClick = useCallback(() => {
     setDeleting(false);
-    formik.resetForm();
     onCancelClick();
   }, [formik, onCancelClick]);
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
     onSubmit(formik.values, deleting);
-    formik.resetForm();
   }, [formik.values, deleting]);
 
   const handleConfirmCancelClick = useCallback(() => {
@@ -168,7 +189,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
-      width={400}
+      width={500}
     >
       <DialogTitle>
         {Number(task?.ID) ? `Редактирование: ${task?.USR$NAME}` : 'Добавление задачи'}
@@ -182,6 +203,31 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
             <FormikProvider value={formik}>
               <Form id="taskForm" onSubmit={formik.handleSubmit}>
                 <Stack direction="column" spacing={3}>
+                  <Autocomplete
+                    options={taskTypes || []}
+                    value={taskTypes?.find(el => el.ID === formik.values.TASKTYPE?.ID) || null}
+                    onChange={(e, value) => {
+                      formik.setFieldValue(
+                        'TASKTYPE',
+                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                      );
+                    }}
+                    getOptionLabel={option => option.NAME}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.ID}>
+                        {option.NAME}
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Тип задачи"
+                        placeholder="Выберите тип задачи"
+                      />
+                    )}
+                    loading={taskTypesFetching}
+                    loadingText="Загрузка данных..."
+                  />
                   <TextField
                     label="Описание"
                     type="text"
@@ -196,7 +242,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                   />
                   <Autocomplete
                     options={employees || []}
-                    filterOptions={filterOptions}
+
                     readOnly
                     value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
                     onChange={(e, value) => {
@@ -224,7 +270,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                   />
                   <Autocomplete
                     options={employees || []}
-                    filterOptions={filterOptions}
+                    filterOptions={filterOptions(50, 'NAME')}
                     value={employees?.find(el => el.ID === formik.values.PERFORMER?.ID) || null}
                     onChange={(e, value) => {
                       formik.setFieldValue(
@@ -246,6 +292,33 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       />
                     )}
                     loading={employeesIsFetching}
+                    loadingText="Загрузка данных..."
+                  />
+                  <Autocomplete
+                    options={cards}
+                    filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))
+                    }
+                    getOptionLabel={option => option.DEAL?.USR$NAME || ''}
+                    value={cards?.find(el => el.ID === formik.values.USR$CARDKEY) || null}
+                    readOnly={(initValue.USR$CARDKEY || 0) > 0}
+                    onChange={(e, value) => formik.setFieldValue('USR$CARDKEY', value?.ID)}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.ID}>
+                        <Box>
+                          <div>{option.DEAL?.USR$NAME}</div>
+                          <Typography variant="caption">{option.DEAL?.CONTACT?.NAME}</Typography>
+                        </Box>
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Сделка"
+                        placeholder="Выберите сделку"
+                        required
+                      />
+                    )}
+                    loading={dealsIsLoading}
                     loadingText="Загрузка данных..."
                   />
                   <Divider textAlign="left">Срок выполнения</Divider>
@@ -299,6 +372,16 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     />
                   </Stack>
                   <Divider />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="USR$CLOSED"
+                        checked={!!formik.values.USR$CLOSED}
+                        onChange={formik.handleChange}
+                      />
+                    }
+                    label="Выполнена"
+                  />
                 </Stack>
               </Form>
             </FormikProvider>

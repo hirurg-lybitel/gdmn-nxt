@@ -1,20 +1,20 @@
 import express from 'express';
 import cards from '../../controllers/kanban/cards';
 import columns from '../../controllers/kanban/columns';
-import kanban from '../../controllers/kanban/kanban';
 import history from '../../controllers/kanban/history';
 import tasks from '../../controllers/kanban/task';
-import denyReasons from '../../controllers/kanban/denyReasons';
-import { sourceCatalog } from '../../controllers/deals/sourceCatalog';
 import kanbanCatalogs from './kanbanCatalogs';
 import kanbanFilters from './kanbanFilters';
+import { kanbanController } from '../../controllers/kanban/kanban';
 
 const router = express.Router();
 
-router.get('/data/:mode', kanban.get);
-router.get('/data/:mode?userID=:userID', kanban.get);
-router.put('/reordercolumns', kanban.reorderColumns);
-router.put('/reordercards', kanban.reorderCards);
+router.get('/data/deals', kanbanController.get);
+router.get('/data/deals?userID=:userID', kanbanController.get);
+router.put('/reordercolumns', kanbanController.reorderColumns);
+router.put('/reordercards', kanbanController.reorderCards);
+
+router.get('/data/tasks', kanbanController.getTasks);
 
 router.post('/columns', columns.upsert);
 router.put('/columns/:id', columns.upsert);

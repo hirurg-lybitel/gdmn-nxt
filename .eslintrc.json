@@ -75,8 +75,8 @@
         "camelcase": "error",
         "semi": "error",
         "indent": ["error", 2, { "SwitchCase": 1 }],
-        "react/jsx-first-prop-new-line": [1, "multiline"],
-        "react/jsx-max-props-per-line": ["error", { "when": "multiline", "maximum": 1 }],
+        "react/jsx-first-prop-new-line": ["error", "multiline"],
+        "react/jsx-max-props-per-line": ["error", { "maximum": { "single": 2, "multi": 1 } }],
         "arrow-spacing": "error"
       }
     },

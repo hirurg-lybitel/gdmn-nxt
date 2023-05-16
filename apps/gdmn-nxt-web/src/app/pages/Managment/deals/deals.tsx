@@ -280,9 +280,7 @@ export function Deals(props: DealsProps) {
           }
         })()}
       </div>
-
     </Stack>
-
   );
 }
 

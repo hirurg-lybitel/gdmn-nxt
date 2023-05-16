@@ -8,15 +8,6 @@ import { RootState } from '../../../store';
 import styles from './permissions-gate.module.less';
 import { Permissions } from '@gsbelarus/util-api-types';
 
-// const hasPermission = ({ permissions: string[], scopes }) => {
-//   const scopesMap: { [key: string]: any } = {};
-//   scopes.forEach((scope: string | number) => {
-//     scopesMap[scope] = true;
-//   });
-
-//   return permissions.some((permission) => scopesMap[permission]);
-// };
-
 export interface PermissionsGateProps {
   children: ReactNode;
   actionCode?: any;

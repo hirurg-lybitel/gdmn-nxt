@@ -48,13 +48,20 @@ const useStyles = makeStyles(() => ({
     '& .MuiDataGrid-cell': {
       lineHeight: 'unset !important',
       maxHeight: 'none !important',
-      whiteSpace: 'normal'
+      whiteSpace: 'normal',
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
+    '& .MuiDataGrid-columnHeader': {
+      paddingLeft: 0,
+      paddingRight: 0,
     },
     '& .MuiDataGrid-row': {
-      maxHeight: 'none !important'
+      maxHeight: 'none !important',
+      cursor: 'pointer !important',
     },
     '& .MuiDataGrid-iconSeparator': {
-       display: 'none'
+      display: 'none'
     },
   },
 }));
@@ -258,6 +265,17 @@ export function KanbanTasks(props: KanbanTasksProps) {
     setOpenEditForm(false);
   };
 
+  const initTask: IKanbanTask = useMemo(() => ({
+    ID: -1,
+    USR$CARDKEY: card?.ID || -1,
+    USR$NAME: '',
+    CREATOR: {
+      ID: user.userProfile?.contactkey || -1,
+      NAME: ''
+    },
+    USR$CLOSED: false
+  }), []);
+
   const columns: GridColumns = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
       renderCell: ({ value, row }) => <Checkbox checked={value} onChange={handleClosedChange(row)}/> },
@@ -291,12 +309,12 @@ export function KanbanTasks(props: KanbanTasksProps) {
     { field: 'CREATOR', headerName: 'Создатель', width: 130,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value?.NAME}</Box>
     },
-  ], []);
+  ], [card?.ID]);
 
   const memoKanbanEditTask = useMemo(() =>
     <KanbanEditTask
       open={openEidtForm}
-      task={currentTask.current}
+      task={currentTask.current ? currentTask.current : initTask}
       onSubmit={handleTaskEditSubmit}
       onCancelClick={handleTaskEditCancelClick}
     />,
@@ -311,11 +329,11 @@ export function KanbanTasks(props: KanbanTasksProps) {
     >
       <Stack direction="row">
         <Box flex={1} />
-        <IconButton color="primary" size="large" onClick={refetch} >
-          <RefreshIcon />
-        </IconButton>
         <IconButton color="primary" onClick={handleTaskAdd}>
           <AddCircleRoundedIcon />
+        </IconButton>
+        <IconButton color="primary" onClick={refetch} >
+          <RefreshIcon />
         </IconButton>
       </Stack>
       <CustomizedCard
@@ -324,15 +342,22 @@ export function KanbanTasks(props: KanbanTasksProps) {
           flex: 1,
         }}
       >
-        {/* <StyledGrid
+        <StyledGrid
           className={classes.dataGrid}
           rows={tasks || []}
           columns={columns}
           loading={isFetching}
-          // rowHeight={80}
+          hideFooter
           hideHeaderSeparator
-        /> */}
-        <DataGridPro
+          disableColumnSelector
+          disableColumnFilter
+          disableColumnResize
+          disableColumnReorder
+          disableColumnMenu
+          disableColumnPinning
+          onRowDoubleClick={handleTaskEdit}
+        />
+        {/* <DataGridPro
           className={classes.dataGrid}
           localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
           rows={tasks || []}
@@ -354,7 +379,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
           disableColumnReorder
           disableColumnMenu
           disableColumnPinning
-        />
+        /> */}
       </CustomizedCard>
       {memoKanbanEditTask}
     </Stack>
