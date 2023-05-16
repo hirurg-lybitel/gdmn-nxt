@@ -55,12 +55,12 @@ export const kanbanApi = createApi({
               for (const [subName, subKey] of Object.entries(value)) {
                 const subParams = [];
                 if (typeof subKey === 'object' && subKey !== null) {
-                  for (const [subName_l2, subKey_l2] of Object.entries(subKey)) {
-                    if (typeof subKey_l2 === 'object' && subKey_l2 !== null) {
-                      subParams.push((subKey_l2 as any).ID);
+                  for (const [subNameNested, subKeyNested] of Object.entries(subKey)) {
+                    if (typeof subKeyNested === 'object' && subKeyNested !== null) {
+                      subParams.push((subKeyNested as any).ID);
                     };
-                    if (typeof subKey_l2 === 'string' || typeof subKey_l2 === 'number') {
-                      subParams.push(subKey_l2);
+                    if (typeof subKeyNested === 'string' || typeof subKeyNested === 'number') {
+                      subParams.push(subKeyNested);
                     };
                   }
                 } else {
@@ -572,8 +572,42 @@ export const kanbanApi = createApi({
       }
 
     }),
-    getKanbanTasks: builder.query<IKanbanColumn[], { userId?: number }>({
-      query: ({ userId }) => `kanban/data/tasks?userId=${userId || -1}`,
+    getKanbanTasks: builder.query<IKanbanColumn[], IDealsQueryOptions | void>({
+      query(options) {
+        const params: string[] = [];
+
+        for (const [name, value] of Object.entries(options || {})) {
+          switch (true) {
+            case typeof value === 'object' && value !== null:
+              for (const [subName, subKey] of Object.entries(value)) {
+                const subParams = [];
+                if (typeof subKey === 'object' && subKey !== null) {
+                  for (const [subNameNested, subKeyNested] of Object.entries(subKey)) {
+                    if (typeof subKeyNested === 'object' && subKeyNested !== null) {
+                      subParams.push((subKeyNested as any).ID);
+                    };
+                    if (typeof subKeyNested === 'string' || typeof subKeyNested === 'number') {
+                      subParams.push(subKeyNested);
+                    };
+                  }
+                } else {
+                  subParams.push(subKey);
+                };
+                params.push(`${subName}=${subParams}`);
+              };
+              break;
+
+            default:
+              params.push(`${name}=${value}`);
+              break;
+          }
+        };
+
+        return {
+          url: `kanban/data/tasks?${params.join('&')}`,
+          method: 'GET'
+        };
+      },
       transformResponse: async (response: IKanbanRequestResult) => response.queries?.columns || [],
       providesTags: (result, error) =>
         result

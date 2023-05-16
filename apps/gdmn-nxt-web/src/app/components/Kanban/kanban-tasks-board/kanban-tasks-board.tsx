@@ -2,8 +2,7 @@ import { IKanbanColumn } from '@gsbelarus/util-api-types';
 import styles from './kanban-tasks-board.module.less';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { Box, Button, Stack } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Box, Stack } from '@mui/material';
 import { useCallback, useMemo } from 'react';
 import KanbanColumn from '../kanban-column/kanban-column';
 import KanbanTasksCard from '../kanban-tasks-card/kanban-tasks-card';
@@ -19,7 +18,7 @@ export function KanbanTasksBoard(props: KanbanTasksBoardProps) {
   const skeletonsColumns: IKanbanColumn[] = useMemo(() => ([...Array(5)].map((el, idx) => ({ ID: idx } as IKanbanColumn))), []);
 
   const columnHandlers = {
-    handleTitleEdit: useCallback((newColumn: IKanbanColumn) => console.log('handleTitleEdit'), []), // updateColumn(newColumn);
+    handleTitleEdit: useCallback((newColumn: IKanbanColumn) => {}, []), // updateColumn(newColumn);
   };
 
   return (

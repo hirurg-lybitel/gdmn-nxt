@@ -113,7 +113,12 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         .max(80, 'Слишком длинное описание'),
       USR$CARDKEY: yup.number()
         .required()
-        .moreThan(-1)
+        .moreThan(-1),
+      // TASKTYPE: yup.object().shape({
+      //   ID: yup.number()
+      //     .required()
+      //     .moreThan(-1),
+      // })
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -218,7 +223,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         {...params}
                         label="Тип задачи"
                         placeholder="Выберите тип задачи"
-                        required
                       />
                     )}
                     loading={taskTypesFetching}

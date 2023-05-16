@@ -66,6 +66,7 @@ const get: RequestHandler = async (req, res) => {
           task.USR$DEADLINE,
           task.USR$DATECLOSE,
           task.USR$CREATIONDATE,
+          task.USR$NUMBER,
           performer.ID AS PERFORMER_ID,
           performer.NAME AS PERFORMER_NAME,
           creator.ID AS CREATOR_ID,
@@ -127,14 +128,45 @@ const upsert: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-
-
     const sql = `
-      UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_TASKS
-      (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY)
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-      MATCHING(ID)
-      RETURNING ID, USR$CARDKEY`;
+      EXECUTE BLOCK(
+        IN_ID INTEGER = ?,
+        CARDKEY INTEGER = ?,
+        NAME TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$NAME = ?,
+        CLOSED TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$CLOSED = ?,
+        DEADLINE TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$DEADLINE = ?,
+        PERFORMER INTEGER = ?,
+        CREATOR INTEGER = ?,
+        TASKTYPEKEY INTEGER = ?
+      )
+      RETURNS(
+        ID INTEGER,
+        USR$CARDKEY INTEGER
+      )
+      AS
+      DECLARE VARIABLE TASKEXISTS INTEGER;
+      DECLARE VARIABLE NEW_NUMBER INTEGER;
+      BEGIN
+        SELECT ID, USR$NUMBER FROM USR$CRM_KANBAN_CARD_TASKS WHERE ID = :IN_ID INTO TASKEXISTS, :NEW_NUMBER;
+
+        IF (TASKEXISTS IS NULL) THEN
+        BEGIN
+          SELECT max(USR$NUMBER)
+          FROM USR$CRM_KANBAN_CARD_TASKS
+          INTO :NEW_NUMBER;
+        NEW_NUMBER = COALESCE(NEW_NUMBER, 0) + 1;
+        END
+
+
+        UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_TASKS
+        (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER)
+        VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER)
+        MATCHING(ID)
+        RETURNING ID, USR$CARDKEY
+        INTO :ID, :USR$CARDKEY;
+
+        SUSPEND;
+      END`;
 
     let id = parseInt(req.params.id) || -1;
     if (id <= 0) {
@@ -143,20 +175,30 @@ const upsert: RequestHandler = async (req, res) => {
 
     const task: IKanbanTask = req.body as IKanbanTask;
 
-    console.log('task.TASKTYPE?.ID', task.TASKTYPE?.ID);
-
     const paramsValues = [
       task.ID > 0 ? task.ID : id,
       task.USR$CARDKEY,
       task.USR$NAME,
       Number(task.USR$CLOSED),
       task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
-      task.PERFORMER?.ID,
-      task.CREATOR?.ID,
-      task.TASKTYPE?.ID
+      task.PERFORMER?.ID > 0 ? task.PERFORMER?.ID : null,
+      task.CREATOR?.ID > 0 ? task.CREATOR?.ID : null,
+      task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null
     ];
 
+    const parameters = {
+      ID: task.ID > 0 ? task.ID : id,
+      CARDKEY: task.USR$CARDKEY,
+      NAME: task.USR$NAME,
+      CLOSED: Number(task.USR$CLOSED),
+      DEADLINE: task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
+      PERFORMER: task.PERFORMER?.ID > 0 ? task.PERFORMER?.ID : null,
+      CREATOR: task.CREATOR?.ID > 0 ? task.CREATOR?.ID : null,
+      TASKTYPEKEY: task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null
+    };
+
     const taskRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    // const taskRecord = await fetchAsObject(sql, parameters);
 
     const result: IRequestResult = {
       queries: { tasks: [taskRecord] },

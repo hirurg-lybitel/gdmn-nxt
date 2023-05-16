@@ -19,6 +19,7 @@ export const updateNotifications = async (sessionId: string) => {
         DECLARE VARIABLE TASK_CREATIONDATE TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$CREATIONDATE;
         DECLARE VARIABLE TASK_DEADLINE TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$DEADLINE;
         DECLARE VARIABLE TASK_NAME TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$NAME;
+        DECLARE VARIABLE TASK_NUMBER TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$NUMBER;
         DECLARE DAYS_FOR_WITHOUT_DEADLINE SMALLINT = 10;
         DECLARE TIME_FOR_DELETE_DELAYED SMALLINT = 60;
         DECLARE USERKEY TYPE OF COLUMN GD_USER.ID;
@@ -66,7 +67,7 @@ export const updateNotifications = async (sessionId: string) => {
 
           /** Создать уведомления по задачам сделок данного пользователя*/
           FOR SELECT
-            task.ID, d.USR$NUMBER, d.USR$NAME, task.USR$NAME, task.USR$CREATIONDATE, task.USR$DEADLINE
+            task.ID, task.USR$NUMBER, d.USR$NUMBER, d.USR$NAME, task.USR$NAME, task.USR$CREATIONDATE, task.USR$DEADLINE
           FROM USR$CRM_DEALS d
           JOIN USR$CRM_KANBAN_CARDS card ON card.USR$DEALKEY = d.ID
           JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
@@ -74,7 +75,7 @@ export const updateNotifications = async (sessionId: string) => {
             :CONTACTKEY IN (task.USR$CREATORKEY, task.USR$PERFORMER)
             AND d.USR$DONE = 0 AND d.USR$DENIED = 0 AND task.USR$CLOSED = 0
           ORDER BY d.USR$NUMBER
-          INTO :TASK_ID, :DEAL_NUMBER, :DEAL_NAME, :TASK_NAME, :TASK_CREATIONDATE, :TASK_DEADLINE
+          INTO :TASK_ID, :TASK_NUMBER, :DEAL_NUMBER, :DEAL_NAME, :TASK_NAME, :TASK_CREATIONDATE, :TASK_DEADLINE
           DO
           BEGIN
             MESSAGE = CASE
@@ -91,7 +92,7 @@ export const updateNotifications = async (sessionId: string) => {
 
             IF (MESSAGE != '') THEN
               UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY, USR$ACTIONTYPE, USR$ACTIONCONTENT)
-              VALUES(:USERKEY, 'Напоминание', :MESSAGE, :TASK_ID, 1, :DEAL_NUMBER )
+              VALUES(:USERKEY, 'Напоминание', :MESSAGE, :TASK_ID, 2, :TASK_NUMBER)
               MATCHING(USR$USERKEY, USR$KEY);
           END
         END

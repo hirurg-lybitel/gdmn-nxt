@@ -219,6 +219,7 @@ const get: RequestHandler = async (req, res) => {
             task.USR$DEADLINE,
             task.USR$DATECLOSE,
             task.USR$CREATIONDATE,
+            task.USR$NUMBER,
             performer.ID AS PERFORMER_ID,
             performer.NAME AS PERFORMER_NAME,
             creator.ID AS CREATOR_ID,
@@ -472,7 +473,6 @@ const reorderCards: RequestHandler = async (req, res) => {
 };
 
 const getTasks: RequestHandler = async (req, res) => {
-  const userId = parseInt(req.query.userId as string);
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
   try {
     const _schema: IDataSchema = {
@@ -508,6 +508,10 @@ const getTasks: RequestHandler = async (req, res) => {
         // await rs.close();
       }
     };
+
+    const userId = parseInt(req.query.userId as string);
+    const { taskNumber } = req.query;
+    const filter = taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : '';
 
     const checkFullView = `
       EXISTS(
@@ -561,6 +565,7 @@ const getTasks: RequestHandler = async (req, res) => {
             deal.USR$CONTACTKEY CONTACT_ID,
             deal.USR$NAME as DEAL_NAME,
             deal.USR$CONTACT_NAME REQUEST_CONTACT_NAME,
+            task.USR$NUMBER,
             task.USR$DEADLINE,
             task.USR$DATECLOSE,
             task.USR$PERFORMER PERFORMER_ID,
@@ -581,6 +586,7 @@ const getTasks: RequestHandler = async (req, res) => {
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
           WHERE 1 = 1
           ${userId > 0 ? checkCardsVisibility : ''}
+          ${filter}
           ORDER BY card.USR$MASTERKEY, card.ID`
       },
     ];
@@ -630,6 +636,7 @@ const getTasks: RequestHandler = async (req, res) => {
         TASK: {
           ID: el['TASK_ID'],
           USR$NAME: el['TASK_NAME'],
+          USR$NUMBER: el['USR$NUMBER'],
           USR$DEADLINE: el['USR$DEADLINE'],
           USR$DATECLOSE: el['USR$DATECLOSE'],
           USR$CARDKEY: el['CARD_ID'],

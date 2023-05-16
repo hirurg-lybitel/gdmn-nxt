@@ -196,11 +196,24 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
         style={{
           backgroundColor: colorModeIsLight ? 'whitesmoke' : 'dimgrey',
           padding: '12px',
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         <Stack spacing={1}>
-          <Typography variant="h4">{card.TASK?.USR$NAME}</Typography>
+          <Stack
+            direction="row"
+            style={{ justifyContent: 'space-between' }}
+          >
+            <Typography variant="h4">{card.TASK?.USR$NAME}</Typography>
+            <Typography
+              className="number"
+              variant="caption"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            >
+              {'#' + card.TASK?.USR$NUMBER}
+            </Typography>
+          </Stack>
+
           <Box>
             <Typography
               display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
@@ -222,7 +235,13 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               : '-/-'}
           </Typography>
           {!!card.TASK?.PERFORMER?.NAME &&
-          <Stack direction="row" display="inline-flex" alignItems="center" spacing={0.5} ml={-0.2}>
+          <Stack
+            direction="row"
+            display="inline-flex"
+            alignItems="center"
+            spacing={0.5}
+            ml={-0.2}
+          >
             <AccountCircleIcon color="primary" fontSize="small" />
             <Typography variant="h2">{card.TASK?.PERFORMER?.NAME}</Typography>
           </Stack>}

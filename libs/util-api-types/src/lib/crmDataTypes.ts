@@ -125,6 +125,7 @@ export interface IKanbanTask extends IWithID {
   USR$CARDKEY: number;
   USR$CLOSED: boolean;
   TASKTYPE?: ITaskType;
+  USR$NUMBER?: number;
 };
 
 export interface IKanbanTaskInfo extends IKanbanTask {

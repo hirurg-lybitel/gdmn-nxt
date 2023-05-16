@@ -30,7 +30,8 @@ export interface IUser {
 };
 
 export enum NotificationAction {
-  JumpToDeal  = 1,
+  JumpToDeal = 1,
+  JumpToTask = 2
 }
 
 export interface INotification {
