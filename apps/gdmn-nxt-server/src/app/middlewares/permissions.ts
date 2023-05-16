@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { acquireReadTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, startTransaction } from '../utils/db-connection';
 import { nodeCache } from '../utils/cache';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { ActionName, Permissions } from '@gsbelarus/util-api-types';
@@ -46,20 +46,48 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 };
 
 export const setPermissonsCache = async () => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction('permissions');
+  const { fetchAsObject, releaseTransaction } = await startTransaction('permissions');
   try {
     const query = `
-      SELECT
-        u.ID AS USERID, cr.USR$MODE MODE, act.USR$NAME ACTIONNAME, act.USR$METHOD METHOD, act.USR$ISGROUP ISGROUP
-      FROM USR$CRM_PERMISSIONS_CROSS cr
-        JOIN USR$CRM_PERMISSIONS_ACTIONS act ON act.ID = cr.USR$ACTIONKEY
-        JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = cr.USR$GROUPKEY
-        JOIN USR$CRM_PERMISSIONS_UG_LINES line ON line.USR$GROUPKEY = ug.ID
-        JOIN GD_USER u ON u.ID = line.USR$USERKEY
-      WHERE
-        u.DISABLED = 0
-      ORDER BY
-        USERID, ACTIONNAME`;
+      EXECUTE BLOCK
+      RETURNS (
+        USERID INTEGER,
+        MODE TYPE OF COLUMN USR$CRM_PERMISSIONS_CROSS.USR$MODE,
+        ACTIONNAME TYPE OF COLUMN USR$CRM_PERMISSIONS_ACTIONS.USR$NAME,
+        METHOD TYPE OF COLUMN USR$CRM_PERMISSIONS_ACTIONS.USR$METHOD,
+        ISGROUP TYPE OF COLUMN USR$CRM_PERMISSIONS_ACTIONS.USR$ISGROUP
+      )
+      AS
+      DECLARE VARIABLE groupID INTEGER;
+      DECLARE VARIABLE actID INTEGER;
+      BEGIN
+        FOR SELECT gr.ID
+        FROM USR$CRM_PERMISSIONS_USERGROUPS gr
+        INTO :groupID
+        DO
+          FOR SELECT act.ID
+          FROM USR$CRM_PERMISSIONS_ACTIONS act
+          WHERE NOT EXISTS(SELECT ID FROM USR$CRM_PERMISSIONS_CROSS cr WHERE cr.USR$ACTIONKEY = act.ID AND cr.USR$GROUPKEY = :groupID)
+          INTO :actID
+          DO
+            INSERT INTO USR$CRM_PERMISSIONS_CROSS(USR$ACTIONKEY, USR$GROUPKEY, USR$MODE)
+            VALUES(:actID, :groupID, 0);
+
+        FOR SELECT
+          u.ID AS USERID, cr.USR$MODE MODE, act.USR$NAME ACTIONNAME, act.USR$METHOD METHOD, act.USR$ISGROUP ISGROUP
+        FROM USR$CRM_PERMISSIONS_ACTIONS act
+          LEFT JOIN USR$CRM_PERMISSIONS_CROSS cr ON act.ID = cr.USR$ACTIONKEY
+          LEFT JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = cr.USR$GROUPKEY
+          LEFT JOIN USR$CRM_PERMISSIONS_UG_LINES line ON line.USR$GROUPKEY = ug.ID
+          LEFT JOIN GD_USER u ON u.ID = line.USR$USERKEY
+        WHERE
+          u.DISABLED = 0
+        ORDER BY
+          USERID, ACTIONNAME
+        INTO :USERID, :MODE, :ACTIONNAME, :METHOD, :ISGROUP
+        DO
+          SUSPEND;
+      END`;
 
     const permissions = await fetchAsObject(query);
     const permissionsMap: {[key: number]: Permissions} = {};
@@ -80,6 +108,6 @@ export const setPermissonsCache = async () => {
     console.error('setPermissonsCache', err.message);
     return false;
   } finally {
-    await releaseReadTransaction();
+    await releaseTransaction();
   }
 };

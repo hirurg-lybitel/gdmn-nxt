@@ -94,6 +94,7 @@ export interface IKanbanCard extends IWithID {
   USR$DEALKEY?: number;
   DEAL?: IDeal;
   TASKS?: IKanbanTask[];
+  TASK?: IKanbanTask;
   USR$ISREAD?: boolean;
 };
 
@@ -123,6 +124,12 @@ export interface IKanbanTask extends IWithID {
   USR$CREATIONDATE?: Date;
   USR$CARDKEY: number;
   USR$CLOSED: boolean;
+  TASKTYPE?: ITaskType;
+};
+
+export interface IKanbanTaskInfo extends IKanbanTask {
+  CONTACT?: IContactWithID;
+  APPLICANT_NAME?: string;
 };
 
 export interface IActCompletion extends IWithID {
@@ -240,6 +247,11 @@ export interface IDealSource extends IWithID {
   NAME: string;
 }
 
+export interface ITaskType extends IWithID {
+  NAME: string;
+  DESCRIPTION?: string;
+}
+
 export interface IKanbanFilterDeadline extends IWithID {
   CODE: number;
   NAME: string;
@@ -251,7 +263,7 @@ export interface IKanbanLastUsedFilterDeadline extends IWithID {
 }
 
 type RouteMethod = 'POST' | 'GET' | 'PUT' | 'DELETE';
-export type ActionName = 'deals' | 'labels' | 'permissions' | 'notifications' | 'faq' | '';
+export type ActionName = 'deals' | 'labels' | 'permissions' | 'notifications' | 'faq' | 'tasks' | '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
 export type Permissions = {

@@ -1,5 +1,5 @@
 import './kanban-column.module.less';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, Button, CardActions, CardContent, Stack, IconButton, useTheme, Chip, TextField, Skeleton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -10,31 +10,32 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn,Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 
 export interface KanbanColumnProps {
-  provided: DraggableProvided;
-  dragSnapshot: DraggableStateSnapshot;
-  dropSnapshot: DroppableStateSnapshot;
+  provided?: DraggableProvided;
+  dragSnapshot?: DraggableStateSnapshot;
+  dropSnapshot?: DroppableStateSnapshot;
   columns: IKanbanColumn[];
-  children: JSX.Element[];
+  children: React.JSX.Element[];
   item: IKanbanColumn;
   isFetching: boolean,
-  addIsFetching:boolean,
-  lastCard?:IKanbanCard
+  addIsFetching?: boolean,
+  lastCard?: IKanbanCard
+  disabledAddDeal?: boolean;
   onEdit: (newColumn: IKanbanColumn) => void;
-  onDelete: (column: IKanbanColumn) => void;
-  onEditCard: (newColumn: IKanbanCard) => void;
-  onDeleteCard: (card:IKanbanCard) => void;
-  onAddCard: (card: IKanbanCard) => void;
-  clearLastCard: (arg1?:boolean) => void;
+  onDelete?: (column: IKanbanColumn) => void;
+  onEditCard?: (newColumn: IKanbanCard) => void;
+  onDeleteCard?: (card: IKanbanCard) => void;
+  onAddCard?: (card: IKanbanCard) => void;
+  clearLastCard?: (arg1?: boolean) => void;
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
-  const { provided, dragSnapshot, dropSnapshot, isFetching, addIsFetching } = props;
+  const { provided, dragSnapshot, dropSnapshot, isFetching, addIsFetching = false, disabledAddDeal = false } = props;
   const { children, item, columns, lastCard } = props;
   const { onEdit, onDelete, onEditCard, onAddCard, clearLastCard, onDeleteCard } = props;
 
@@ -47,27 +48,27 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
       if (deleting) {
-        onDeleteCard(card);
+        onDeleteCard && onDeleteCard(card);
         setUpsertCard(false);
-        clearLastCard();
+        clearLastCard && clearLastCard();
       };
 
       if (card.ID && !deleting) {
-        onEditCard(card);
+        onEditCard && onEditCard(card);
         setUpsertCard(false);
-        clearLastCard();
+        clearLastCard && clearLastCard();
       } else {
-        onAddCard(card);
+        onAddCard && onAddCard(card);
         if (close || close === undefined) {
           setUpsertCard(false);
-          clearLastCard(true);
+          clearLastCard && clearLastCard(true);
         }
       }
     },
-    handleCancel: async (isFetching?:boolean) => {
-      clearLastCard(isFetching);
+    handleCancel: async (isFetching?: boolean) => {
+      clearLastCard && clearLastCard(isFetching);
       setUpsertCard(false);
     },
     handleClose: async (e: any, reason: string) => {
@@ -79,7 +80,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onDelete(item);
+    onDelete && onDelete(item);
   }, [item]);
 
   const handleConfirmCancelClick = useCallback(() => {
@@ -196,7 +197,11 @@ export function KanbanColumn(props: KanbanColumnProps) {
               </Typography> */}
               <Box flex={1} />
               {isFetching ?
-                <Skeleton variant="circular" width={'33px'} height={'32px'}/>
+                <Skeleton
+                  variant="circular"
+                  width={'33px'}
+                  height={'32px'}
+                />
                 :
                 <Chip className="quantity" label={item.CARDS?.length} />
               }
@@ -236,10 +241,18 @@ export function KanbanColumn(props: KanbanColumnProps) {
       style={{ display: 'flex', flex: 1, height: 'calc(100vh - 255px)', }}
       flexDirection={'column'}
     >
-      <Box px={2} pb={1} {...provided.dragHandleProps}>
+      <Box
+        px={2}
+        pb={1}
+        {...provided?.dragHandleProps}
+      >
         {header()}
       </Box>
-      {isFetching ? <Skeleton variant="rectangular" height={'100%'} style={{ borderRadius: '12px 12px 12px 12px' }}/> :
+      {isFetching ? <Skeleton
+        variant="rectangular"
+        height={'100%'}
+        style={{ borderRadius: '12px 12px 12px 12px' }}
+      /> :
         <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}
@@ -252,7 +265,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
               flexDirection: 'column',
               // height: 'calc(100vh - 420px)',
               backgroundColor: theme.palette.background.paper,
-              ...(dragSnapshot.isDragging
+              ...(dragSnapshot?.isDragging
                 ? {
                   backgroundColor: '#deebff',
                   opacity: 0.7,
@@ -268,7 +281,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
                 paddingLeft: 0,
                 paddingRight: 0,
                 height: 'calc(100vh - 420px)',
-                ...(dropSnapshot.isDraggingOver
+                ...(dropSnapshot?.isDraggingOver
                   ? {
                     backgroundColor: theme.palette.background.paper,
                   }
@@ -293,8 +306,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
             </CardContent>
             <CardActions>
               <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
-                {item.USR$INDEX === 0 &&
-                <Button disabled={addIsFetching} onClick={() => setUpsertCard(true)} startIcon={<AddIcon/>} color="primary">Сделка</Button>
+                {!disabledAddDeal && item.USR$INDEX === 0 &&
+                <Button
+                  disabled={addIsFetching}
+                  onClick={() => setUpsertCard(true)}
+                  startIcon={<AddIcon/>}
+                  color="primary"
+                >Сделка</Button>
                 }
               </PermissionsGate>
             </CardActions>
@@ -304,8 +322,9 @@ export function KanbanColumn(props: KanbanColumnProps) {
       }
       <ConfirmDialog
         open={confirmOpen}
-        title={'Удаление группы: ' + item.USR$NAME}
-        text="Вы уверены, что хотите продолжить?"
+        title={'Удаление этапа'}
+        text={`Этап **${item.USR$NAME}** будет удалён.<br>
+          Вы уверены, что хотите продолжить?`}
         dangerous={true}
         confirmClick={handleConfirmOkClick}
         cancelClick={handleConfirmCancelClick}

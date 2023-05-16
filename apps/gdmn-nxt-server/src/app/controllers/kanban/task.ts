@@ -69,11 +69,14 @@ const get: RequestHandler = async (req, res) => {
           performer.ID AS PERFORMER_ID,
           performer.NAME AS PERFORMER_NAME,
           creator.ID AS CREATOR_ID,
-          creator.NAME AS CREATOR_NAME
+          creator.NAME AS CREATOR_NAME,
+          tt.ID AS TYPE_ID,
+          tt.USR$NAME AS TYPE_NAME
         FROM USR$CRM_KANBAN_CARD_TASKS task
         JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
         LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
         LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
+        LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
         WHERE task.USR$CARDKEY = ?`,
       params: [cardId]
     };
@@ -91,7 +94,13 @@ const get: RequestHandler = async (req, res) => {
           ID: task['PERFORMER_ID'],
           NAME: task['PERFORMER_NAME'],
         }
-      })
+      }),
+      ...(task['TYPE_ID'] && {
+        TASKTYPE: {
+          ID: task['TYPE_ID'],
+          NAME: task['TYPE_NAME'],
+        },
+      }),
     }));
 
     const result: IRequestResult = {
@@ -118,10 +127,12 @@ const upsert: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
+
+
     const sql = `
       UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_TASKS
-      (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY)
-      VALUES(?, ?, ?, ?, ?, ?, ?)
+      (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING(ID)
       RETURNING ID, USR$CARDKEY`;
 
@@ -132,6 +143,8 @@ const upsert: RequestHandler = async (req, res) => {
 
     const task: IKanbanTask = req.body as IKanbanTask;
 
+    console.log('task.TASKTYPE?.ID', task.TASKTYPE?.ID);
+
     const paramsValues = [
       task.ID > 0 ? task.ID : id,
       task.USR$CARDKEY,
@@ -139,7 +152,8 @@ const upsert: RequestHandler = async (req, res) => {
       Number(task.USR$CLOSED),
       task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
       task.PERFORMER?.ID,
-      task.CREATOR?.ID
+      task.CREATOR?.ID,
+      task.TASKTYPE?.ID
     ];
 
     const taskRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);

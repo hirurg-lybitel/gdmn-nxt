@@ -571,6 +571,19 @@ export const kanbanApi = createApi({
             : [{ type: 'Task', id: 'ERROR' }];
       }
 
+    }),
+    getKanbanTasks: builder.query<IKanbanColumn[], { userId?: number }>({
+      query: ({ userId }) => `kanban/data/tasks?userId=${userId || -1}`,
+      transformResponse: async (response: IKanbanRequestResult) => response.queries?.columns || [],
+      providesTags: (result, error) =>
+        result
+          ? [
+            ...result.map(({ CARDS }) => CARDS.map(({ TASK }) => ({ type: 'Task' as const, id: TASK?.ID || -1 }))).flat(),
+            { type: 'Task', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'Task', id: 'ERROR' }]
+            : [{ type: 'Task', id: 'LIST' }]
     })
   })
 });
@@ -590,5 +603,6 @@ export const {
   useGetTasksQuery,
   useAddTaskMutation,
   useUpdateTaskMutation,
-  useDeleteTaskMutation
+  useDeleteTaskMutation,
+  useGetKanbanTasksQuery
 } = kanbanApi;

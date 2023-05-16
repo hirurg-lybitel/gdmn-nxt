@@ -3,6 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide } from
 import useStyles from './styles';
 import { forwardRef, ReactElement, Ref } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
+import ReactMarkdown from 'react-markdown';
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -26,7 +27,7 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const { open, text, title, dangerous = false } = props;
+  const { open, text = '', title, dangerous = false } = props;
   const { confirmClick, cancelClick } = props;
 
   const classes = useStyles();
@@ -34,7 +35,12 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   return (
     <Dialog open={open} TransitionComponent={Transition}>
       <DialogTitle className={classes.dialogTitle}>{title}</DialogTitle>
-      <DialogContent dividers>{text}</DialogContent>
+      <DialogContent dividers>
+        <ReactMarkdown components={{ p: 'div' }}>
+          {/** line break is a double space */}
+          {text.replace('<br>', '  ')}
+        </ReactMarkdown>
+      </DialogContent>
       <DialogActions className={classes.dialogAction}>
         <Button
           className={classes.button}

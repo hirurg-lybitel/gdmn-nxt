@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     button: {
       width: '50%',
-    },
+    }
   }),
 );
 
