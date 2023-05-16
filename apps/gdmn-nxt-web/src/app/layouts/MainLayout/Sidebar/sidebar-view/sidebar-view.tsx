@@ -43,7 +43,7 @@ export function Sidebar(props: SidebarProps) {
         <PerfectScrollbar
           className={classes.scroll}
           style={{
-            height: matchDownMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
+            height: matchDownMd ? 'calc(100vh - 56px)' : 'calc(100vh - 70px)',
           }}
         >
           <MenuList />
@@ -78,7 +78,7 @@ export function Sidebar(props: SidebarProps) {
             borderRight: 'none',
             paddingTop: '25px',
             [theme.breakpoints.up('md')]: {
-              top: '70px'
+              top: '50px'
             }
           }
         }}

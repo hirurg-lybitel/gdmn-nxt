@@ -34,7 +34,7 @@ export default function NotFound() {
               <Grid item xs={12}>
                 <Typography align="center" variant="h4" width={600} sx={{ color: 'text.secondary' }}>
                     Извините, мы не смогли найти страницу, которую вы ищете.
-                    Возможно, вы ошиблись адресом? Обязательно проверьте правописание.
+                    Возможно, вы ошиблись адресом? Обязательно проверьте путь.
                 </Typography>
               </Grid>
             </Grid>

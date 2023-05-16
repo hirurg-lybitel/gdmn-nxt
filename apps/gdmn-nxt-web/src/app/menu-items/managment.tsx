@@ -1,7 +1,7 @@
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { IMenuItem } from '.';
 
 
@@ -34,6 +34,27 @@ const managment: IMenuItem = {
           title: 'Причины отказа',
           type: 'item',
           url: 'managment/deals/denyReasons',
+        },
+      ]
+    },
+    {
+      id: 'tasksGroup',
+      title: 'Задачи',
+      type: 'collapse',
+      url: 'managment/tasks',
+      icon: <TaskAltIcon color="secondary" />,
+      children: [
+        {
+          id: 'tasks',
+          title: 'Список',
+          type: 'item',
+          url: 'managment/tasks/list',
+        },
+        {
+          id: 'taskTypes',
+          title: 'Типы задач',
+          type: 'item',
+          url: 'managment/tasks/taskTypes',
         },
       ]
     },
