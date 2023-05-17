@@ -12,7 +12,9 @@
     "pm2:stop": "pm2 stop crm",
     "pm2:mon": "pm2 monitor crm",
     "pm2:stat": "pm2 status crm",
-    "init": "yarn --network-timeout 1000000 && yarn build && yarn pm2"
+    "init": "yarn --network-timeout 1000000 && yarn build && yarn pm2",
+    "docker:build": "docker compose -f docker-compose.build.yml up -d",
+    "docker:run": "docker compose -f docker-compose.run.yml up -d"
   },
   "private": true,
   "dependencies": {
