@@ -242,6 +242,7 @@ const get: RequestHandler = async (req, res) => {
       },
     ];
 
+    const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
 
     interface IMapOfArrays {
       [key: string]: any[];
