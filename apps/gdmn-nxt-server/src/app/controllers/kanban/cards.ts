@@ -86,7 +86,6 @@ const upsert: RequestHandler = async (req, res) => {
     let paramsValues;
     let sql;
     const deal: IDeal = req.body['DEAL'];
-
     // allFields = ['ID', 'USR$NAME', 'USR$DISABLED', 'USR$AMOUNT', 'USR$CONTACTKEY'];
     // actualFields = allFields.filter(field => typeof req.body['DEAL'][field] !== 'undefined');
 
@@ -137,9 +136,9 @@ const upsert: RequestHandler = async (req, res) => {
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
-        USR$PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
+        USR$PERFORMER, USR$SECOND_PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
         USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
@@ -150,7 +149,8 @@ const upsert: RequestHandler = async (req, res) => {
       deal.USR$AMOUNT || 0,
       deal.CONTACT?.ID || null,
       deal.CREATOR?.ID || null,
-      deal.PERFORMERS?.[0].ID || null,
+      deal.PERFORMERS?.[0]?.ID || null,
+      deal.PERFORMERS?.[1]?.ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
       deal.SOURCE?.ID || null,
       deal.USR$READYTOWORK || 0,
@@ -192,7 +192,7 @@ const upsert: RequestHandler = async (req, res) => {
       ID,
       deal.CREATOR?.ID || null,
       deal.CONTACT?.ID || null,
-      deal.PERFORMERS?.[0].ID || null,
+      deal.PERFORMERS?.[0]?.ID || null,
       deal.USR$DEADLINE ? new Date(deal.USR$DEADLINE) : null,
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];

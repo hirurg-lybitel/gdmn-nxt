@@ -196,14 +196,14 @@ const get: RequestHandler = async (req, res) => {
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
             LEFT JOIN GD_CONTACT dep ON dep.ID = deal.USR$DEPOTKEY
             LEFT JOIN GD_CONTACT performer ON performer.ID = deal.USR$PERFORMER
-            LEFT JOIN GD_CONTACT secondPerformer ON performer.ID = deal.USR$SECOND_PERFORMER
+            LEFT JOIN GD_CONTACT secondPerformer ON secondPerformer.ID = deal.USR$SECOND_PERFORMER
             LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
             LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
             LEFT JOIN USR$CRM_DEALS_SOURCE source ON source.ID = deal.USR$SOURCEKEY
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$ISREAD, USR$INDEX`
+          ORDER BY card.USR$MASTERKEY, USR$ISREAD, deal.USR$DEADLINE`
       },
       {
         name: 'tasks',
@@ -228,7 +228,7 @@ const get: RequestHandler = async (req, res) => {
     ];
 
     const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
-
+    console.log(rawCards);
     interface IMapOfArrays {
       [key: string]: any[];
     };
@@ -240,12 +240,6 @@ const get: RequestHandler = async (req, res) => {
       const newTask = {
         ...el,
         PERFORMER: el['PERFORMER_ID']
-          ? {
-            ID: el['PERFORMER_ID'],
-            NAME: el['PERFORMER_NAME']
-          }
-          : null,
-        SECOND_PERFORMER: el['PERFORMER_ID']
           ? {
             ID: el['PERFORMER_ID'],
             NAME: el['PERFORMER_NAME']
@@ -305,7 +299,7 @@ const get: RequestHandler = async (req, res) => {
               NAME: el['PERFORMER_NAME'],
             },
             {
-              ID: el['SECOUND_PERFORMER_ID'],
+              ID: el['SECOND_PERFORMER_ID'],
               NAME: el['SECOND_PERFORMER_NAME'],
             }],
           }),
@@ -380,7 +374,7 @@ const get: RequestHandler = async (req, res) => {
     const sortedColumns = columns.map(value => ({ ...value, CARDS: dateSort(value.CARDS) }));
 
     const result: IRequestResult = {
-      queries: { columns: sortedColumns },
+      queries: { columns },
       _params: [{
         ...(userId ? { userId } : undefined),
         ...(deadline ? { deadline } : undefined)

@@ -566,12 +566,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         <Autocomplete
                           fullWidth
                           options={employees?.filter(
-                            empl => empl !== formik.values.DEAL?.PERFORMERS?.[0] && empl !== formik.values.DEAL?.PERFORMERS?.[1]
-                          ) || []}
+                            empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[1]?.ID) || []}
                           getOptionLabel={option => option.NAME}
                           filterOptions={filterOptions(50, 'NAME')}
                           readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0].ID) || null}
+                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0]?.ID) || null}
                           loading={employeesIsFetching}
                           loadingText="Загрузка данных..."
                           // onOpen={formik.handleBlur}
@@ -604,13 +603,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         />
                         <Autocomplete
                           fullWidth
-                          options={employees?.filter(
-                            empl => empl !== formik.values.DEAL?.PERFORMERS?.[0] && empl !== formik.values.DEAL?.PERFORMERS?.[1]
-                          ) || []}
+                          options={employees?.filter(empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID) || []}
                           getOptionLabel={option => option.NAME}
                           filterOptions={filterOptions(50, 'NAME')}
                           readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1].ID) || null}
+                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1]?.ID) || null}
                           loading={employeesIsFetching}
                           loadingText="Загрузка данных..."
                           // onOpen={formik.handleBlur}
