@@ -31,8 +31,8 @@ export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IK
 
   const deal = newCard.DEAL;
   const contact = newCard.DEAL?.CONTACT || {};
-  const performer = newCard.DEAL?.PERFORMERS[0] || {};
-  const secondPerformer = newCard.DEAL?.PERFORMERS[1] || {};
+  const performer = (newCard.DEAL?.PERFORMERS || [])[0] || {};
+  const secondPerformer = (newCard.DEAL?.PERFORMERS || [])[1] || {};
 
   if ((deal?.USR$AMOUNT || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
     changesArr.push({

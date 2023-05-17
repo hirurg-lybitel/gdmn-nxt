@@ -197,7 +197,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             NAME: ''
           },
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
-      PERFORMERS: card?.DEAL?.PERFORMERS,
+      PERFORMERS: card?.DEAL?.PERFORMERS || [],
       CONTACT: card?.DEAL?.CONTACT,
       COMMENT: card?.DEAL?.COMMENT || '',
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
