@@ -69,6 +69,8 @@ export function KanbanCard(props: KanbanCardProps) {
     },
   };
 
+  const handleCopyCard = useCallback(() => setCopyCard(true), []);
+
   const TaskStatus = useMemo(() => {
     const tasks = card.TASKS;
     if (!tasks || !tasks?.length) return <></>;
@@ -81,7 +83,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -112,7 +114,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -165,15 +167,16 @@ export function KanbanCard(props: KanbanCardProps) {
     const positiveDays = Math.abs(days);
     const lastNumber = positiveDays % 10;
     const preLast = positiveDays % 100;
-    if (preLast >= 5 && preLast <= 20) return 'Дней';
+
+    if (preLast >= 5 && preLast <= 20) return 'дней';
     if (lastNumber === 1) {
-      return 'День';
+      return 'день';
     }
     if (lastNumber >= 2 && lastNumber <= 4) {
-      return 'Дня';
+      return 'дня';
     }
     if (lastNumber >= 5 || lastNumber === 0) {
-      return 'Дней';
+      return 'дней';
     }
     return '';
   };
@@ -182,26 +185,26 @@ export function KanbanCard(props: KanbanCardProps) {
     const dayColor = (days: number): string => {
       if (days === 1) return 'rgb(255, 214, 0)';
       if (days <= 0) return 'rgb(255, 82, 82)';
-      return 'white';
+      return colorModeIsLight ? 'GrayText' : 'lightgray';
     };
 
     if (!card.DEAL?.USR$DEADLINE) return null;
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
     return (
       <Stack direction="row">
-        <Typography>
+        <Typography variant="h2">
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
             ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
             : '-/-'}
         </Typography>
         <Box flex={1} />
-        <Typography style={{ color: dayColor(deadline) }}>
+        <Typography variant="h2" style={{ color: dayColor(deadline) }}>
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
       </Stack>
     );
-  }, [card]);
+  }, [card, colorModeIsLight]);
 
   const memoCard = useMemo(() => {
     const today = new Date();
@@ -267,18 +270,17 @@ export function KanbanCard(props: KanbanCardProps) {
         }}
         onDoubleClick={doubleClick}
       >
-        <Stack direction="column" spacing={1}>
+        <Stack direction="column" spacing={0.5}>
           <Stack
             direction="row"
             style={{ position: 'relative' }}
           >
-            <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
+            <Typography variant="h4" flex={1}>{card.DEAL?.USR$NAME}</Typography>
             <Typography
               className="number"
               variant="caption"
               color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             >{'#' + card.DEAL?.USR$NUMBER}</Typography>
-
             {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
               ?
               <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
@@ -289,7 +291,7 @@ export function KanbanCard(props: KanbanCardProps) {
                   <IconButton
                     size="small"
                     disabled={addIsFetching}
-                    onClick={() => setCopyCard(true)}
+                    onClick={handleCopyCard}
                   >
                     <ContentCopyIcon fontSize="small" />
                   </IconButton>
@@ -300,9 +302,9 @@ export function KanbanCard(props: KanbanCardProps) {
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">
-            <Typography>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+            <Typography variant="h2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
             <Box flex={1} />
-            <Typography>
+            <Typography variant="h2">
               {card.DEAL?.CREATIONDATE
                 ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
                 : '-/-'}
