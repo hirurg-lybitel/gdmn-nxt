@@ -20,9 +20,9 @@ export interface KanbanCardProps {
   onAdd: (card: IKanbanCard) => void;
   onEdit: (card: IKanbanCard) => void;
   onDelete: (card: IKanbanCard) => void;
-  addIsFetching?:boolean;
-  lastCard?:IKanbanCard
-  clearLastCard:(isAdd?:boolean)=>void
+  addIsFetching?: boolean;
+  lastCard?: IKanbanCard
+  clearLastCard: (isAdd?: boolean) => void
 };
 
 
@@ -30,7 +30,6 @@ export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
   const { card, columns, lastCard, addIsFetching } = props;
   const { onAdd, onEdit, onDelete, clearLastCard } = props;
-
   const theme = useTheme();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
@@ -39,7 +38,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const [copyCard, setCopyCard] = useState(false);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?:boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
       if (deleting) {
         onDelete(card);
         setEditCard(false);
@@ -60,7 +59,7 @@ export function KanbanCard(props: KanbanCardProps) {
         return;
       }
     },
-    handleCancel: async (isFetching?:boolean) => {
+    handleCancel: async (isFetching?: boolean) => {
       clearLastCard(isFetching);
       editCard && setEditCard(false);
       copyCard && setCopyCard(false);
@@ -78,7 +77,11 @@ export function KanbanCard(props: KanbanCardProps) {
     const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
     return (
       closedTasks
-        ? <Stack direction="row" alignItems="center"spacing={0.5}>
+        ? <Stack
+          direction="row"
+          alignItems="center"
+          spacing={0.5}
+          >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -105,7 +108,11 @@ export function KanbanCard(props: KanbanCardProps) {
             {`${closedTasks} из ${allTasks} задач`}
           </Typography>
         </Stack>
-        : <Stack direction="row" alignItems="center" spacing={0.5}>
+        : <Stack
+          direction="row"
+          alignItems="center"
+          spacing={0.5}
+          >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -154,6 +161,47 @@ export function KanbanCard(props: KanbanCardProps) {
     setEditCard(true);
   }, [card]);
 
+  const dayCalc = (days: number): string => {
+    const positiveDays = Math.abs(days);
+    const lastNumber = positiveDays % 10;
+    const preLast = positiveDays % 100;
+    if (preLast >= 5 && preLast <= 20) return 'Дней';
+    if (lastNumber === 1) {
+      return 'День';
+    }
+    if (lastNumber >= 2 && lastNumber <= 4) {
+      return 'Дня';
+    }
+    if (lastNumber >= 5 || lastNumber === 0) {
+      return 'Дней';
+    }
+    return '';
+  };
+
+  const deadLine = useMemo(() => {
+    const dayColor = (days: number): string => {
+      if (days === 1) return 'rgb(255, 214, 0)';
+      if (days <= 0) return 'rgb(255, 82, 82)';
+      return 'white';
+    };
+
+    if (!card.DEAL?.USR$DEADLINE) return null;
+    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
+    return (
+      <Stack direction="row">
+        <Typography>
+          {'Срок: '}
+          {card.DEAL?.USR$DEADLINE
+            ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+            : '-/-'}
+        </Typography>
+        <Box flex={1} />
+        <Typography style={{ color: dayColor(deadline) }}>
+          {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
+        </Typography>
+      </Stack>
+    );
+  }, [card]);
 
   const memoCard = useMemo(() => {
     const today = new Date();
@@ -162,6 +210,7 @@ export function KanbanCard(props: KanbanCardProps) {
     tomorrow.setDate(tomorrow.getDate() + 10);
 
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
+
 
     return (
       <CustomizedCard
@@ -224,22 +273,30 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <Typography className="number" variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'}>{'#' + card.DEAL?.USR$NUMBER}</Typography>
+            <Typography
+              className="number"
+              variant="caption"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            >{'#' + card.DEAL?.USR$NUMBER}</Typography>
 
-              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-                ?
-                <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
-                  <div
-                    className="actions"
-                    hidden
+            {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+              ?
+              <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton
+                    size="small"
+                    disabled={addIsFetching}
+                    onClick={() => setCopyCard(true)}
                   >
-                    <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </div>
-                </PermissionsGate>
-                : null
-              }
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              </PermissionsGate>
+              : null
+            }
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">
@@ -251,6 +308,7 @@ export function KanbanCard(props: KanbanCardProps) {
                 : '-/-'}
             </Typography>
           </Stack>
+          {deadLine}
           {TaskStatus}
         </Stack>
       </CustomizedCard>

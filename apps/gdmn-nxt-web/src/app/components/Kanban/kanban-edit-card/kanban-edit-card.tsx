@@ -112,8 +112,8 @@ export interface KanbanEditCardProps {
   currentStage?: IKanbanColumn;
   card?: IKanbanCard;
   stages: IKanbanColumn[];
-  onSubmit: (arg1: IKanbanCard, arg2: boolean, arg3?:boolean) => void;
-  onCancelClick: (isFetching?:boolean) => void;
+  onSubmit: (arg1: IKanbanCard, arg2: boolean, arg3?: boolean) => void;
+  onCancelClick: (isFetching?: boolean) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
@@ -197,7 +197,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             NAME: ''
           },
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
-      PERFORMER: card?.DEAL?.PERFORMER,
+      PERFORMERS: card?.DEAL?.PERFORMERS,
       CONTACT: card?.DEAL?.CONTACT,
       COMMENT: card?.DEAL?.COMMENT || '',
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
@@ -249,6 +249,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
             .max(180, 'Слишком длинное наименование'),
+          USR$AMOUNT: yup.number()
+            .max(1000000, 'Слишком большая сумма'),
         })
     }),
     onSubmit: (values) => {
@@ -390,7 +392,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       minWidth={400}
     >
       <DialogTitle>
-        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки' }
+        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
@@ -476,6 +478,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               );
                             }}
                             placeholder="0.00"
+                            error={getIn(formik.touched, 'DEAL.USR$AMOUNT') && Boolean(getIn(formik.errors, 'DEAL.USR$AMOUNT'))}
+                            helperText={getIn(formik.touched, 'DEAL.USR$AMOUNT') && getIn(formik.errors, 'DEAL.USR$AMOUNT')}
                           />
                           <DesktopDatePicker
                             label="Срок"
@@ -562,18 +566,19 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         />
                         <Autocomplete
                           fullWidth
-                          options={employees || []}
+                          options={employees?.filter(
+                            empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[1]?.ID) || []}
                           getOptionLabel={option => option.NAME}
                           filterOptions={filterOptions(50, 'NAME')}
                           readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMER?.ID) || null}
+                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0]?.ID) || null}
                           loading={employeesIsFetching}
                           loadingText="Загрузка данных..."
                           // onOpen={formik.handleBlur}
                           onChange={(event, value) => {
                             formik.setFieldValue(
                               'DEAL',
-                              { ...formik.values.DEAL, PERFORMER: value ? value : null }
+                              { ...formik.values.DEAL, PERFORMERS: [value ? value : null, formik.values.DEAL?.PERFORMERS?.[1]] }
                             );
                             formik.setFieldValue(
                               'USR$MASTERKEY',
@@ -594,6 +599,43 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               disabled={formik.values.DEAL?.USR$READYTOWORK || false}
                               placeholder="Выберите сотрудника"
                               name="DEAL.PERFORMER"
+                            />
+                          )}
+                        />
+                        <Autocomplete
+                          fullWidth
+                          options={employees?.filter(empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID) || []}
+                          getOptionLabel={option => option.NAME}
+                          filterOptions={filterOptions(50, 'NAME')}
+                          readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
+                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1]?.ID) || null}
+                          loading={employeesIsFetching}
+                          loadingText="Загрузка данных..."
+                          // onOpen={formik.handleBlur}
+                          onChange={(event, value) => {
+                            formik.setFieldValue(
+                              'DEAL',
+                              { ...formik.values.DEAL, PERFORMERS: [formik.values.DEAL?.PERFORMERS?.[0], value ? value : null] }
+                            );
+                            formik.setFieldValue(
+                              'USR$MASTERKEY',
+                              value ? stages[1].ID : stages[0].ID
+                            );
+                          }}
+                          renderOption={(props, option) => {
+                            return (
+                              <li {...props} key={option.ID}>
+                                {option.NAME}
+                              </li>
+                            );
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Второй исполнитель"
+                              disabled={formik.values.DEAL?.USR$READYTOWORK || false}
+                              placeholder="Выберите сотрудника"
+                              name="DEAL.SECOND_PERFORMER"
                             />
                           )}
                         />
@@ -662,7 +704,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                         if (checked) return stages[4].ID;
                                         if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
                                         if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
-                                        if (formik.values.DEAL?.PERFORMER) return stages[1].ID;
+                                        if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
                                         return stages[0].ID;
                                       })();
                                       formik.setFieldValue('USR$MASTERKEY', newMasterKey);

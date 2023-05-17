@@ -10,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn,  Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';

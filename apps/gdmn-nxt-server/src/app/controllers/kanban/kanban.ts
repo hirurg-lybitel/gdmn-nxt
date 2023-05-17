@@ -33,6 +33,7 @@ const get: RequestHandler = async (req, res) => {
       }
     };
 
+
     const execQuery = async ({ name, query }) => {
       // const rs = await attachment.executeQuery(transaction, query);
 
@@ -177,6 +178,8 @@ const get: RequestHandler = async (req, res) => {
             con.ID con_ID, con.NAME con_NAME,
             performer.ID AS PERFORMER_ID,
             performer.NAME AS PERFORMER_NAME,
+            secondPerformer.ID AS SECOND_PERFORMER_ID,
+            secondPerformer.NAME AS SECOND_PERFORMER_NAME,
             creator.ID AS CREATOR_ID,
             creator.NAME AS CREATOR_NAME,
             source.ID AS SOURCE_ID,
@@ -203,13 +206,14 @@ const get: RequestHandler = async (req, res) => {
             JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
             LEFT JOIN GD_CONTACT dep ON dep.ID = deal.USR$DEPOTKEY
             LEFT JOIN GD_CONTACT performer ON performer.ID = deal.USR$PERFORMER
+            LEFT JOIN GD_CONTACT secondPerformer ON secondPerformer.ID = deal.USR$SECOND_PERFORMER
             LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
             LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
             LEFT JOIN USR$CRM_DEALS_SOURCE source ON source.ID = deal.USR$SOURCEKEY
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$ISREAD, USR$INDEX`
+          ORDER BY card.USR$MASTERKEY, USR$ISREAD, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
       },
       {
         name: 'tasks',
@@ -239,6 +243,11 @@ const get: RequestHandler = async (req, res) => {
     ];
 
     const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
+
+    interface IMapOfArrays {
+      [key: string]: any[];
+    };
+
 
     const cards: IMapOfArrays = {};
     const tasks: IMapOfArrays = {};
@@ -307,10 +316,14 @@ const get: RequestHandler = async (req, res) => {
             },
           }),
           ...(el['PERFORMER_ID'] && {
-            PERFORMER: {
+            PERFORMERS: [{
               ID: el['PERFORMER_ID'],
               NAME: el['PERFORMER_NAME'],
             },
+            {
+              ID: el['SECOND_PERFORMER_ID'],
+              NAME: el['SECOND_PERFORMER_NAME'],
+            }],
           }),
           ...(el['DEP_ID'] && {
             DEPARTMENT: {
