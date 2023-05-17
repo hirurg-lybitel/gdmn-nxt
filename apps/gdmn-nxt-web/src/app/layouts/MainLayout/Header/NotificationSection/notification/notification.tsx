@@ -5,7 +5,6 @@ import {
   ClickAwayListener,
   Divider,
   Fade,
-  Icon,
   IconButton,
   Paper,
   Popper,
@@ -17,21 +16,16 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { makeStyles } from '@mui/styles';
 import { useCallback, useEffect, useState } from 'react';
-import clsx from 'clsx';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import NotificationList from '../notification-list/notification-list';
-import NotificationsOffOutlinedIcon from '@mui/icons-material/NotificationsOffOutlined';
-import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, clearSocket, getSocketClient, setSocketClient } from '@gdmn-nxt/socket';
+import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, clearSocket, setSocketClient } from '@gdmn-nxt/socket';
 import logo from './NoNotifications.png'; // with import
 import { Socket } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import { useGetKanbanDealsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanApi';
-import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
-import { IFilteringData } from 'apps/gdmn-nxt-web/src/app/components/Kanban/deals-filter/deals-filter';
 import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
 import { config } from '@gdmn-nxt/config';
 
@@ -122,7 +116,7 @@ export function Notification(props: NotificationProps) {
     const socket = setSocketClient('notifications', {
       url: `http://${config.host}:${config.notificationPort}`,
       userId
-    })
+    });
 
     socket?.on?.('messages', (data: IMessage[]) => {
       setMessages(data);
@@ -161,6 +155,12 @@ export function Notification(props: NotificationProps) {
       window.removeEventListener('touchmove', preventDefault, false);
       window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
     };
+    return () => {
+      window.removeEventListener('DOMMouseScroll', preventDefault, false);
+      window.removeEventListener(wheelEvent, preventDefault, false);
+      window.removeEventListener('touchmove', preventDefault, false);
+      window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
+    };
   }, [open]);
 
   const handleDeleteNotification = (id: number) => {
@@ -181,10 +181,9 @@ export function Notification(props: NotificationProps) {
 
   const dispatch = useDispatch();
   const handleClickNotification = (action?: NotificationAction, actionContent?: string) => {
+    if (!actionContent) return;
     switch (Number(action)) {
-      case NotificationAction.JumpToDeal:
-        if (!actionContent) break;
-
+      case NotificationAction.JumpToDeal: {
         const newDealsFilters = {
           deadline: [dealsDateFilter.find(f => f.CODE === 6)],
           dealNumber: actionContent
@@ -195,6 +194,15 @@ export function Notification(props: NotificationProps) {
         dispatch(saveFilterData({ 'deals': newDealsFilters }));
 
         break;
+      }
+      case NotificationAction.JumpToTask: {
+        const newTasksFilters = {
+          taskNumber: actionContent
+        };
+        navigate('managment/tasks/list');
+        dispatch(saveFilterData({ 'tasks': newTasksFilters }));
+        break;
+      }
       default:
         break;
     };
@@ -275,10 +283,13 @@ export function Notification(props: NotificationProps) {
                         justifyContent="center"
                         spacing={1}
                         >
-                        {/* <Icon fontSize="large">
-                          <NotificationsOffOutlinedIcon fontSize="large" color="action" />
-                        </Icon> */}
-                        <img src={logo} alt="" draggable={false} width="150" color="red" />
+                        <img
+                          src={logo}
+                          alt=""
+                          draggable={false}
+                          width="150"
+                          color="red"
+                        />
                         <Typography variant="h4" color={'GrayText'}>Пока нет уведомлений</Typography>
                       </Stack>}
                   </Stack>

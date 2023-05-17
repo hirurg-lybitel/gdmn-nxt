@@ -31,11 +31,11 @@ export function KanbanCard(props: KanbanCardProps) {
   const { card, columns, lastCard, addIsFetching } = props;
   const { onAdd, onEdit, onDelete, clearLastCard } = props;
   const theme = useTheme();
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
+  const colorModeIsLight = useMemo(() => colorMode === ColorMode.Light, [colorMode]);
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
-
-  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
@@ -270,21 +270,22 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <Typography className="number" variant="caption" color="GrayText">{'#' + card.DEAL?.USR$NUMBER}</Typography>
-            {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-              ?
-              <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
-                <div
-                  className="actions"
-                  hidden
-                >
-                  <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </div>
-              </PermissionsGate>
-              : null
-            }
+            <Typography className="number" variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'}>{'#' + card.DEAL?.USR$NUMBER}</Typography>
+
+              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+                ?
+                <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
+                  <div
+                    className="actions"
+                    hidden
+                  >
+                    <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </div>
+                </PermissionsGate>
+                : null
+              }
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">

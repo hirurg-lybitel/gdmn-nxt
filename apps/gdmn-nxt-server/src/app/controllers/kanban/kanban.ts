@@ -2,7 +2,12 @@ import { IDataSchema, IEntities, IKanbanCard, IKanbanColumn, IRequestResult } fr
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
-import { commitTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
+import { acquireReadTransaction, commitTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
+import { getDayDiff } from '@gsbelarus/util-helpers';
+
+interface IMapOfArrays {
+  [key: string]: any;
+};
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction, fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
@@ -21,9 +26,13 @@ const get: RequestHandler = async (req, res) => {
         },
         USR$CLOSED: {
           type: 'boolean'
-        }
+        },
+        USR$INPROGRESS: {
+          type: 'boolean'
+        },
       }
     };
+
 
     const execQuery = async ({ name, query }) => {
       // const rs = await attachment.executeQuery(transaction, query);
@@ -156,6 +165,7 @@ const get: RequestHandler = async (req, res) => {
           FROM USR$CRM_KANBAN_TEMPLATE temp
             JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
             JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
+          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 370480752 AND DBID = 1811180906 ROWS 1)
           ORDER BY col.USR$INDEX`
       },
       {
@@ -216,21 +226,27 @@ const get: RequestHandler = async (req, res) => {
             task.USR$DEADLINE,
             task.USR$DATECLOSE,
             task.USR$CREATIONDATE,
+            task.USR$NUMBER,
+            task.USR$INPROGRESS,
             performer.ID AS PERFORMER_ID,
             performer.NAME AS PERFORMER_NAME,
             creator.ID AS CREATOR_ID,
-            creator.NAME AS CREATOR_NAME
+            creator.NAME AS CREATOR_NAME,
+            tt.ID AS TYPE_ID,
+            tt.USR$NAME AS TYPE_NAME
           FROM USR$CRM_KANBAN_CARD_TASKS task
           JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
           LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
-          LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY`
+          LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
+          LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY`
       },
     ];
 
-    const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
+
     interface IMapOfArrays {
       [key: string]: any[];
     };
+
 
     const cards: IMapOfArrays = {};
     const tasks: IMapOfArrays = {};
@@ -249,7 +265,13 @@ const get: RequestHandler = async (req, res) => {
             ID: el['CREATOR_ID'],
             NAME: el['CREATOR_NAME']
           }
-          : null
+          : null,
+        ...(el['TYPE_ID'] && {
+          TASKTYPE: {
+            ID: el['TYPE_ID'],
+            NAME: el['TYPE_NAME'],
+          },
+        }),
 
       };
 
@@ -473,4 +495,237 @@ const reorderCards: RequestHandler = async (req, res) => {
   };
 };
 
-export default { get, reorderColumns, reorderCards };
+const getTasks: RequestHandler = async (req, res) => {
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+  try {
+    const _schema: IDataSchema = {
+      cards: {
+        USR$DEADLINE: {
+          type: 'date'
+        },
+        USR$CLOSED: {
+          type: 'boolean'
+        },
+        USR$INPROGRESS: {
+          type: 'boolean'
+        },
+      }
+    };
+
+    const execQuery = async ({ name, query }) => {
+      try {
+        const data = await fetchAsObject(query);
+        const sch = _schema[name];
+
+        if (sch) {
+          for (const rec of data) {
+            for (const fld of Object.keys(rec)) {
+              if ((sch[fld]?.type === 'date' || sch[fld]?.type === 'timestamp') && rec[fld] !== null) {
+                rec[fld] = (rec[fld] as Date).getTime();
+              }
+              if ((sch[fld]?.type === 'boolean') && rec[fld] !== null) {
+                rec[fld] = +rec[fld] === 1;
+              }
+            }
+          }
+        };
+        return data as any;
+      } finally {
+        // await rs.close();
+      }
+    };
+
+    const userId = parseInt(req.query.userId as string);
+    const { taskNumber } = req.query;
+    const filter = taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : '';
+
+    const checkFullView = `
+      EXISTS(
+        SELECT ul.ID
+        FROM USR$CRM_PERMISSIONS_UG_LINES ul
+          JOIN USR$CRM_PERMISSIONS_CROSS cr ON ul.USR$GROUPKEY = cr.USR$GROUPKEY
+          JOIN GD_RUID r ON r.ID = cr.USR$ACTIONKEY
+        WHERE
+          /* Если есть право на действие Видеть все */
+          r.XID = 358029872 AND r.DBID = 1972632332
+          AND cr.USR$MODE = 1
+          AND ul.USR$USERKEY = ${userId})`;
+
+
+    const checkCardsVisibility = `
+      AND 1 = IIF(NOT ${checkFullView},
+        IIF(EXISTS(
+          SELECT DISTINCT
+            con.NAME,
+            ud.USR$DEPOTKEY
+          FROM GD_USER u
+            JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+            LEFT JOIN USR$CRM_USERSDEPOT ud ON ud.USR$USERKEY = u.ID
+            JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$USERKEY = u.ID
+            LEFT JOIN GD_P_GETRUID(ul.USR$GROUPKEY) r ON 1 = 1
+          WHERE
+            u.ID = ${userId}
+            /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
+            AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
+            OR con.ID IN (performer.ID, creator.ID))), 1, 0), 1)`;
+
+    const queries = [
+      {
+        name: 'columns',
+        query:
+          `SELECT col.ID, col.USR$INDEX, col.USR$NAME
+          FROM USR$CRM_KANBAN_TEMPLATE temp
+            JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
+            JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
+            WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 358029675 AND DBID = 1972632332 ROWS 1)
+          ORDER BY col.USR$INDEX`
+      },
+      {
+        name: 'cards',
+        query: `
+          SELECT
+            task.ID,
+            task.ID as TASK_ID,
+            card.ID as CARD_ID,
+            deal.ID as DEAL_ID,
+            deal.USR$CONTACTKEY CONTACT_ID,
+            deal.USR$NAME as DEAL_NAME,
+            deal.USR$CONTACT_NAME REQUEST_CONTACT_NAME,
+            task.USR$NUMBER,
+            task.USR$DEADLINE,
+            task.USR$DATECLOSE,
+            task.USR$INPROGRESS,
+            task.USR$PERFORMER PERFORMER_ID,
+            task.USR$NAME as TASK_NAME,
+            task.USR$CLOSED,
+            task.USR$TASKTYPEKEY AS TYPE_ID,
+            tt.USR$NAME AS TYPE_NAME,
+            creator.ID AS CREATOR_ID,
+            creator.NAME AS CREATOR_NAME,
+            con.NAME as CONTACT_NAME,
+            performer.NAME AS PERFORMER_NAME
+          FROM USR$CRM_KANBAN_CARD_TASKS task
+          JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
+          JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+          JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
+          LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
+          LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
+          LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
+          WHERE 1 = 1
+          ${userId > 0 ? checkCardsVisibility : ''}
+          ${filter}
+          ORDER BY card.USR$MASTERKEY, card.ID`
+      },
+    ];
+
+    const [rawColumns, rawCards] = await Promise.all(queries.map(execQuery));
+
+    const columnsIDs: IMapOfArrays = {};
+    const cards: IMapOfArrays = {};
+
+    rawColumns.forEach(el => {
+      columnsIDs[el['USR$INDEX']] = el['ID'];
+    });
+
+    rawCards.forEach(el => {
+      const columnIndex = (() => {
+        if (el['USR$CLOSED']) return 5;
+        if (!el['USR$DEADLINE']) return 4;
+
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+
+        const deadline = new Date(el['USR$DEADLINE']);
+        deadline.setHours(0, 0, 0, 0);
+
+        const daysInmonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+        const diffTime = getDayDiff(deadline, currentDate);
+
+        switch (true) {
+          case diffTime < 0:
+            return 0;
+          case diffTime === 0:
+            return 1;
+          case diffTime === 1:
+            return 2;
+          case diffTime <= daysInmonth - currentDate.getDate():
+            return 3;
+          default:
+            return 4;
+        };
+      })();
+
+      const newCard: IKanbanCard = {
+        ID: el['CARD_ID'],
+        USR$INDEX: el['USR$INDEX'],
+        USR$MASTERKEY: columnsIDs[columnIndex],
+        TASK: {
+          ID: el['TASK_ID'],
+          USR$NAME: el['TASK_NAME'],
+          USR$NUMBER: el['USR$NUMBER'],
+          USR$INPROGRESS: el['USR$INPROGRESS'],
+          USR$DEADLINE: el['USR$DEADLINE'],
+          USR$DATECLOSE: el['USR$DATECLOSE'],
+          USR$CARDKEY: el['CARD_ID'],
+          ...(el['CREATOR_ID'] && {
+            CREATOR: {
+              ID: el['CREATOR_ID'],
+              NAME: el['CREATOR_NAME'],
+            },
+          }),
+          ...(el['PERFORMER_ID'] && {
+            PERFORMER: {
+              ID: el['PERFORMER_ID'],
+              NAME: el['PERFORMER_NAME'],
+            },
+          }),
+          ...(el['TYPE_ID'] && {
+            TASKTYPE: {
+              ID: el['TYPE_ID'],
+              NAME: el['TYPE_NAME'],
+            },
+          }),
+          USR$CLOSED: el['USR$CLOSED'],
+        },
+        DEAL: {
+          ID: el['DEAL_ID'],
+          ...(el['CONTACT_ID'] && {
+            CONTACT: {
+              ID: el['CONTACT_ID'],
+              NAME: el['CONTACT_NAME'],
+            },
+          }),
+          CONTACT_NAME: el['REQUEST_CONTACT_NAME'],
+          USR$NAME: el['DEAL_NAME']
+        }
+      };
+
+      if (cards[columnsIDs[columnIndex]]) {
+        cards[columnsIDs[columnIndex]].push(newCard);
+      } else {
+        cards[columnsIDs[columnIndex]] = [newCard];
+      };
+    });
+
+    const columns = rawColumns.map(el => {
+      return {
+        ...el,
+        CARDS: cards[el.ID] ?? []
+      };
+    });
+
+    const result: IRequestResult = {
+      queries: { columns },
+      _schema
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseReadTransaction();
+  }
+};
+
+export const kanbanController = { get, reorderColumns, reorderCards, getTasks };

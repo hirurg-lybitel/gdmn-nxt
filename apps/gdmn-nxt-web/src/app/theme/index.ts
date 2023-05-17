@@ -80,10 +80,10 @@ export const theme = (customization: ICustomization) => {
     mainContent: {
       backgroundColor: themeOption.backgroundColor,
       width: '100%',
-      minHeight: 'calc(100vh - 88px)',
+      minHeight: 'calc(100vh - 70px)',
       flexGrow: 1,
       padding: '20px',
-      marginTop: '88px',
+      marginTop: '70px',
       marginRight: '20px',
       borderRadius: '12px',
       borderColor: themeOption.borderColor,

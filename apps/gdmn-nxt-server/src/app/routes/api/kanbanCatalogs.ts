@@ -1,6 +1,7 @@
 import express from 'express';
 import { denyReasons } from '../../controllers/deals/denyReasons';
 import { sourceCatalog } from '../../controllers/deals/sourceCatalog';
+import { taskTypesController } from '../../controllers/tasks/taskTypes';
 
 const router = express.Router();
 
@@ -15,5 +16,11 @@ router.get('/denyreasons', denyReasons.get);
 router.post('/denyreasons', denyReasons.upsert);
 router.put('/denyreasons/:id', denyReasons.upsert);
 router.delete('/denyreasons/:id', denyReasons.remove);
+
+/** Типы задач */
+router.get('/tasktypes', taskTypesController.get);
+router.post('/tasktypes', taskTypesController.upsert);
+router.put('/tasktypes/:id', taskTypesController.upsert);
+router.delete('/tasktypes/:id', taskTypesController.remove);
 
 export default router;

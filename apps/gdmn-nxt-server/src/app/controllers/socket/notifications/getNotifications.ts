@@ -14,7 +14,7 @@ export const getNotifications = async (sessionId: string) => {
   try {
     const schema: IDataSchema = {
       notifications: {
-        EDITIONDATE: {
+        USR$ONDATE: {
           type: 'date'
         }
       }
@@ -47,7 +47,7 @@ export const getNotifications = async (sessionId: string) => {
       name: 'notifications',
       query: `
         SELECT
-          ID, EDITIONDATE, USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$ACTIONTYPE, USR$ACTIONCONTENT
+          ID, EDITIONDATE, USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$ACTIONTYPE, USR$ACTIONCONTENT, USR$ONDATE
         FROM USR$CRM_NOTIFICATIONS
         WHERE USR$DELAYED = 0
         ORDER BY USR$USERKEY, EDITIONDATE DESC`
@@ -60,7 +60,7 @@ export const getNotifications = async (sessionId: string) => {
     rawNotifications.forEach((n: any) => {
       const newNotification: INotification = {
         id: n.ID,
-        date: n.EDITIONDATE,
+        date: n.USR$ONDATE,
         title: n.USR$TITLE,
         message: n.USR$MESSAGE,
         userId: n.USR$USERKEY,

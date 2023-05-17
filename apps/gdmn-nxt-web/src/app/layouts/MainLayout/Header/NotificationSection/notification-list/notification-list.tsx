@@ -2,7 +2,7 @@ import styles from './notification-list.module.less';
 import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { IMessage, NotificationAction } from '@gdmn-nxt/socket';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { useGetKanbanDealsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanApi';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface NotificationListProps {
@@ -22,6 +23,9 @@ export function NotificationList(props: NotificationListProps) {
   const { messages } = props;
   const { onClick, onDelete } = props;
 
+  const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
+  const colorModeIsLight = useMemo(() => colorMode === ColorMode.Light, [colorMode]);
+
   const handleDelete = (id: number) => (e: any) => {
     const newMessages = [...messages];
     newMessages.splice(id, 1);
@@ -29,24 +33,24 @@ export function NotificationList(props: NotificationListProps) {
     onDelete && onDelete(id);
   };
 
-
   const handleOnClick = useCallback((message: IMessage) => () => {
     onClick && onClick(message.action, message.actionContent);
   }, [onClick]);
 
   return (
-    <List disablePadding
-    sx={{
-      '.close-action': {
-        display:'none'
-      },
-      '.MuiListItem-container:hover .close-action': {
-        display: 'inline',
-      },
-      '.MuiListItem-container:hover .datetime': {
-        display: 'none',
-      },
-    }}>
+    <List
+      disablePadding
+      sx={{
+        '.close-action': {
+          display: 'none'
+        },
+        '.MuiListItem-container:hover .close-action': {
+          display: 'inline',
+        },
+        '.MuiListItem-container:hover .datetime': {
+          display: 'none',
+        },
+      }}>
       {messages.length
         ? messages.map((message, index) =>
           <ListItem
@@ -54,7 +58,6 @@ export function NotificationList(props: NotificationListProps) {
             divider
             onClick={handleOnClick(message)}
             button
-            // className='list-item'
             className={styles['list-item']}
             // sx={{
             //   '.list-item:hover .actions': {
@@ -63,17 +66,13 @@ export function NotificationList(props: NotificationListProps) {
             // }}
           >
             <ListItemIcon
-              style={{
-                alignItems: 'center'
-              }}
+              className={styles['list-item-icon']}
             >
               <MessageIcon />
             </ListItemIcon>
             <ListItemText>
               <Stack direction="column" spacing={1}>
                 <Typography variant="h4">{message?.title}</Typography>
-
-
                 <Typography variant="body1" component="div">
                   <ReactMarkdown className={styles['markdown']}>
                     {message?.text || ''}
@@ -102,13 +101,12 @@ export function NotificationList(props: NotificationListProps) {
               <div className="datetime">
                 <Typography
                   variant="caption"
-                  color="GrayText"
+                  color={colorModeIsLight ? 'GrayText' : 'lightgray'}
                 >
                   {new Date(message?.date || 0).toLocaleString('default', {
                     month: 'short',
                     day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    ...((new Date(message?.date).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' })
                   })}
                 </Typography>
               </div>

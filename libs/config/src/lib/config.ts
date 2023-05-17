@@ -5,6 +5,7 @@ interface IConfig {
   serverPort: number;
   notificationPort: number;
   streamingUpdatePort: number;
+  apiAccessToken: string;
 }
 
 /** Host where back/container is running  */
@@ -40,6 +41,7 @@ const streamingUpdatePort =
 
 const appPort = Number(process.env.NX_APP_PORT) ?? 80;
 
+const apiAccessToken = process.env.ACCESS_TOKEN || '';
 
 export const config: IConfig = {
   host,
@@ -47,5 +49,6 @@ export const config: IConfig = {
   serverHost,
   serverPort,
   notificationPort,
-  streamingUpdatePort
+  streamingUpdatePort,
+  apiAccessToken
 };
