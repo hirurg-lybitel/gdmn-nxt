@@ -55,7 +55,6 @@ export function NotificationList(props: NotificationListProps) {
             divider
             onClick={handleOnClick(message)}
             button
-            // className='list-item'
             className={styles['list-item']}
             // sx={{
             //   '.list-item:hover .actions': {
@@ -64,9 +63,7 @@ export function NotificationList(props: NotificationListProps) {
             // }}
           >
             <ListItemIcon
-              style={{
-                alignItems: 'center'
-              }}
+              className={styles['list-item-icon']}
             >
               <MessageIcon />
             </ListItemIcon>
@@ -108,8 +105,7 @@ export function NotificationList(props: NotificationListProps) {
                   {new Date(message?.date || 0).toLocaleString('default', {
                     month: 'short',
                     day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    ...((new Date(message?.date).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' })
                   })}
                 </Typography>
               </div>

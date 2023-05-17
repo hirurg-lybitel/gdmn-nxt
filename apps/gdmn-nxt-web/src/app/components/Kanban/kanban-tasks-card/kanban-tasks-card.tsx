@@ -10,6 +10,9 @@ import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import { IChanges } from '../../../pages/Managment/deals/deals';
 import { UserState } from '../../../features/user/userSlice';
+import useTruncate from '../../helpers/hooks/useTruncate';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import usePermissions from '../../helpers/hooks/usePermissions';
 
 export interface KanbanTasksCardProps {
   card: IKanbanCard;
@@ -18,6 +21,7 @@ export interface KanbanTasksCardProps {
 export function KanbanTasksCard(props: KanbanTasksCardProps) {
   const { card } = props;
 
+  const truncate = useTruncate();
   const [openEditForm, setOpenEditForm] = useState(false);
   const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
   const [updateTask, { isSuccess: updatedTaskSuccess }] = useUpdateTaskMutation();
@@ -26,6 +30,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
   const user = useSelector <RootState, UserState>(state => state.user);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
   const changes = useRef<IChanges[]>([]);
+  const userPermissions = usePermissions();
 
   useEffect(() => {
     if ((updatedTaskSuccess) && changes.current.length > 0) {
@@ -204,7 +209,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             direction="row"
             style={{ justifyContent: 'space-between' }}
           >
-            <Typography variant="h4">{card.TASK?.USR$NAME}</Typography>
+            <Typography variant="h4">{truncate(card.TASK?.USR$NAME || '', 60)}</Typography>
             <Typography
               className="number"
               variant="caption"
@@ -222,7 +227,14 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             >
               {`${card.DEAL?.CONTACT_NAME}, `}
             </Typography>
-            <Typography variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'} component="span" sx={{ display: 'inline' }}>{card.DEAL?.CONTACT?.NAME}</Typography>
+            <Typography
+              variant="caption"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+              component="span"
+              sx={{ display: 'inline' }}
+            >
+              {truncate(card.DEAL?.CONTACT?.NAME || '', 50)}
+            </Typography>
           </Box>
           <Typography variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'}>
             {card.TASK?.USR$DEADLINE
@@ -248,7 +260,9 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           <Typography variant="body1">{card.DEAL?.USR$NAME}</Typography>
         </Stack>
       </CustomizedCard>
-      {memoKanbanEditTask}
+      <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>
+        {memoKanbanEditTask}
+      </PermissionsGate>
     </>
 
   );
