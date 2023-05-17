@@ -112,29 +112,29 @@ export const customerApi = createApi({
         };
       },
       transformResponse: (response: ICustomerRequestResult) => response.queries?.contact,
-      // invalidatesTags: (result, error) =>
-      //   result
-      //     ? [{ type: 'Customers', id: result?.ID }, { type: 'Customers', id: 'LIST' }]
-      //     : error
-      //       ? [{ type: 'Customers', id: 'ERROR' }]
-      //       : [{ type: 'Customers', id: 'LIST' }],
+      invalidatesTags: (result, error) =>
+        result
+          ? [{ type: 'Customers', id: result?.ID }, { type: 'Customers', id: 'LIST' }]
+          : error
+            ? [{ type: 'Customers', id: 'ERROR' }]
+            : [{ type: 'Customers', id: 'LIST' }],
       async onQueryStarted(newCustomer, { dispatch, queryFulfilled }) {
         console.info('⏩ request', 'PUT', `${baseUrlApi}contacts`);
-        const patchResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
-            if (Array.isArray(draft.data)) {
-              const findIndex = draft.data?.findIndex(c => c.ID = newCustomer.ID);
-              if (findIndex >= 0) {
-                draft.data[findIndex] = {...draft.data[findIndex], ...newCustomer};
-              }
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
+        // const patchResult = dispatch(
+        //   customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
+        //     if (Array.isArray(draft.data)) {
+        //       const findIndex = draft.data?.findIndex(c => c.ID = newCustomer.ID);
+        //       if (findIndex >= 0) {
+        //         draft.data[findIndex] = {...draft.data[findIndex], ...newCustomer};
+        //       }
+        //     }
+        //   })
+        // );
+        // try {
+        //   await queryFulfilled;
+        // } catch {
+        //   patchResult.undo();
+        // }
       },
     }),
     addCustomer: builder.mutation<ICustomer, Partial<ICustomer>>({
@@ -146,16 +146,16 @@ export const customerApi = createApi({
       transformResponse: (response: ICustomerRequestResult) => response.queries?.contact,
       async onQueryStarted({ ID, ...patch }, { dispatch, queryFulfilled, extra }) {
         console.log('⏩ request', 'POST', `${baseUrlApi}constacts`);
-        const { data: addedCustomer } = await queryFulfilled;
+        // const { data: addedCustomer } = await queryFulfilled;
 
-        const patchResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
-            if (Array.isArray(draft.data)) {
-              draft.data.unshift(addedCustomer);
-              if (draft.count) draft.count += 1;
-            }
-          })
-        );
+        // const patchResult = dispatch(
+        //   customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
+        //     if (Array.isArray(draft.data)) {
+        //       draft.data.unshift(addedCustomer);
+        //       if (draft.count) draft.count += 1;
+        //     }
+        //   })
+        // );
       },
       invalidatesTags: (result, error) =>
         result
@@ -172,28 +172,28 @@ export const customerApi = createApi({
       async onQueryStarted(id, {dispatch, queryFulfilled}) {
         console.log('⏩ request', 'DELETE', `${baseUrlApi}constacts/${id}`);
 
-        const deleteResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
-            if (Array.isArray(draft.data)) {
-              const findIndex = draft.data.findIndex(d => d.ID === id);
+        // const deleteResult = dispatch(
+        //   customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
+        //     if (Array.isArray(draft.data)) {
+        //       const findIndex = draft.data.findIndex(d => d.ID === id);
 
-              if (findIndex >=0 ) {
-                draft.data.splice(findIndex, 1);
-                if (draft.count) draft.count -= 1;
-              }
-            }
-          })
-        );
+        //       if (findIndex >=0 ) {
+        //         draft.data.splice(findIndex, 1);
+        //         if (draft.count) draft.count -= 1;
+        //       }
+        //     }
+        //   })
+        // );
 
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          deleteResult.undo();
-        }
+        // try {
+        //   await queryFulfilled;
+        // } catch (error) {
+        //   deleteResult.undo();
+        // }
       },
-      // invalidatesTags: (result, error, arg) => {
-      //   return [{ type: 'Customers', id: result?.id }, { type: 'Customers', id: 'LIST' }];
-      // }
+      invalidatesTags: (result, error, arg) => {
+        return [{ type: 'Customers', id: result?.id }, { type: 'Customers', id: 'LIST' }];
+      }
     }),
     getCustomersCross: builder.query<ICustomerCross, void>({
       query() {
