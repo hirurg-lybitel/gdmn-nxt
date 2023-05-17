@@ -77,7 +77,11 @@ export function KanbanCard(props: KanbanCardProps) {
     const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
     return (
       closedTasks
-        ? <Stack direction="row" alignItems="center"spacing={0.5}>
+        ? <Stack
+          direction="row"
+          alignItems="center"
+          spacing={0.5}
+          >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -104,7 +108,11 @@ export function KanbanCard(props: KanbanCardProps) {
             {`${closedTasks} из ${allTasks} задач`}
           </Typography>
         </Stack>
-        : <Stack direction="row" alignItems="center" spacing={0.5}>
+        : <Stack
+          direction="row"
+          alignItems="center"
+          spacing={0.5}
+          >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -189,12 +197,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Typography>
         <Box flex={1} />
         <Typography style={{ color: dayColor(deadline) }}>
-          {
-            Math.abs(deadline)
-          }
-          {
-            ' ' + dayCalc(deadline)
-          }
+          {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
       </Stack>
     );
@@ -270,22 +273,30 @@ export function KanbanCard(props: KanbanCardProps) {
             style={{ position: 'relative' }}
           >
             <Typography variant="h2" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-            <Typography className="number" variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'}>{'#' + card.DEAL?.USR$NUMBER}</Typography>
+            <Typography
+              className="number"
+              variant="caption"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            >{'#' + card.DEAL?.USR$NUMBER}</Typography>
 
-              {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
-                ?
-                <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
-                  <div
-                    className="actions"
-                    hidden
+            {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+              ?
+              <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton
+                    size="small"
+                    disabled={addIsFetching}
+                    onClick={() => setCopyCard(true)}
                   >
-                    <IconButton size="small" disabled={addIsFetching} onClick={() => setCopyCard(true)}>
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </div>
-                </PermissionsGate>
-                : null
-              }
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              </PermissionsGate>
+              : null
+            }
           </Stack>
           <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
           <Stack direction="row">
