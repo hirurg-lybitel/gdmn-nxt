@@ -126,6 +126,7 @@ export interface IKanbanTask extends IWithID {
   USR$CLOSED: boolean;
   TASKTYPE?: ITaskType;
   USR$NUMBER?: number;
+  USR$INPROGRESS?: boolean;
 };
 
 export interface IKanbanTaskInfo extends IKanbanTask {

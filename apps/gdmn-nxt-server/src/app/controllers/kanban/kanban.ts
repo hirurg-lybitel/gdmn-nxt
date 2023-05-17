@@ -26,7 +26,10 @@ const get: RequestHandler = async (req, res) => {
         },
         USR$CLOSED: {
           type: 'boolean'
-        }
+        },
+        USR$INPROGRESS: {
+          type: 'boolean'
+        },
       }
     };
 
@@ -220,6 +223,7 @@ const get: RequestHandler = async (req, res) => {
             task.USR$DATECLOSE,
             task.USR$CREATIONDATE,
             task.USR$NUMBER,
+            task.USR$INPROGRESS,
             performer.ID AS PERFORMER_ID,
             performer.NAME AS PERFORMER_NAME,
             creator.ID AS CREATOR_ID,
@@ -482,7 +486,10 @@ const getTasks: RequestHandler = async (req, res) => {
         },
         USR$CLOSED: {
           type: 'boolean'
-        }
+        },
+        USR$INPROGRESS: {
+          type: 'boolean'
+        },
       }
     };
 
@@ -568,6 +575,7 @@ const getTasks: RequestHandler = async (req, res) => {
             task.USR$NUMBER,
             task.USR$DEADLINE,
             task.USR$DATECLOSE,
+            task.USR$INPROGRESS,
             task.USR$PERFORMER PERFORMER_ID,
             task.USR$NAME as TASK_NAME,
             task.USR$CLOSED,
@@ -637,6 +645,7 @@ const getTasks: RequestHandler = async (req, res) => {
           ID: el['TASK_ID'],
           USR$NAME: el['TASK_NAME'],
           USR$NUMBER: el['USR$NUMBER'],
+          USR$INPROGRESS: el['USR$INPROGRESS'],
           USR$DEADLINE: el['USR$DEADLINE'],
           USR$DATECLOSE: el['USR$DATECLOSE'],
           USR$CARDKEY: el['CARD_ID'],
