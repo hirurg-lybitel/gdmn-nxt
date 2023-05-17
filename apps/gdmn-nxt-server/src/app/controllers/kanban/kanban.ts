@@ -213,7 +213,7 @@ const get: RequestHandler = async (req, res) => {
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$ISREAD, deal.USR$DEADLINE`
+          ORDER BY card.USR$MASTERKEY, USR$ISREAD, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
       },
       {
         name: 'tasks',
@@ -367,15 +367,8 @@ const get: RequestHandler = async (req, res) => {
       };
     });
 
-    const nullsToDown = (arr) => {
-      const withoutNulls = arr.filter(value => !!value.DEAL?.USR$DEADLINE);
-      const nulls = arr.filter(value => !value.DEAL?.USR$DEADLINE);
-      return (withoutNulls).concat(nulls);
-    };
-
-    const sortedColumns = columns.map(value => ({ ...value, CARDS: nullsToDown(value.CARDS) }));
     const result: IRequestResult = {
-      queries: { columns: sortedColumns },
+      queries: { columns },
       _params: [{
         ...(userId ? { userId } : undefined),
         ...(deadline ? { deadline } : undefined)
