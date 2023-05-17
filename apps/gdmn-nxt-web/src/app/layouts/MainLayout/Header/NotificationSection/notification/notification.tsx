@@ -155,6 +155,12 @@ export function Notification(props: NotificationProps) {
       window.removeEventListener('touchmove', preventDefault, false);
       window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
     };
+    return () => {
+      window.removeEventListener('DOMMouseScroll', preventDefault, false);
+      window.removeEventListener(wheelEvent, preventDefault, false);
+      window.removeEventListener('touchmove', preventDefault, false);
+      window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
+    };
   }, [open]);
 
   const handleDeleteNotification = (id: number) => {
