@@ -228,7 +228,6 @@ const get: RequestHandler = async (req, res) => {
     ];
 
     const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
-    console.log(rawCards);
     interface IMapOfArrays {
       [key: string]: any[];
     };
@@ -345,36 +344,15 @@ const get: RequestHandler = async (req, res) => {
       };
     });
 
-    const qsort = (array) => {
-      if (array.length <= 1) {
-        return array;
-      }
-
-      const pivot = array[0].DEAL?.USR$DEADLINE;
-      const left = [];
-      const right = [];
-
-      for (let i = 1; i < array.length; i++) {
-        (array[i].DEAL?.USR$DEADLINE) < pivot ? left.push(array[i]) : right.push(array[i]);
-      }
-
-      return qsort(left).concat(array[0], qsort(right));
-    };
-
-    const dateSort = (arr) => {
+    const nullsToDown = (arr) => {
       const withoutNulls = arr.filter(value => !!value.DEAL?.USR$DEADLINE);
       const nulls = arr.filter(value => !value.DEAL?.USR$DEADLINE);
-      const msDates = withoutNulls.map(value => ({ ...value, DEAL: { ...value.DEAL, USR$DEADLINE: new Date(value.DEAL?.USR$DEADLINE).getTime() || null } }));
-      const normalizeDates = qsort(msDates).map(value => ({
-        ...value, DEAL: { ...value.DEAL, USR$DEADLINE: value.DEAL?.USR$DEADLINE ? new Date(value.DEAL?.USR$DEADLINE) : null }
-      }));
-      return qsort(normalizeDates).concat(nulls);
+      return (withoutNulls).concat(nulls);
     };
 
-    const sortedColumns = columns.map(value => ({ ...value, CARDS: dateSort(value.CARDS) }));
-
+    const sortedColumns = columns.map(value => ({ ...value, CARDS: nullsToDown(value.CARDS) }));
     const result: IRequestResult = {
-      queries: { columns },
+      queries: { columns: sortedColumns },
       _params: [{
         ...(userId ? { userId } : undefined),
         ...(deadline ? { deadline } : undefined)

@@ -170,13 +170,13 @@ export function KanbanCard(props: KanbanCardProps) {
     return '';
   };
 
-  const dayColor = (days: number): string => {
-    if (days === 1) return 'rgb(255, 214, 0)';
-    if (days <= 0) return 'rgb(255, 82, 82)';
-    return 'white';
-  };
-
   const deadLine = useMemo(() => {
+    const dayColor = (days: number): string => {
+      if (days === 1) return 'rgb(255, 214, 0)';
+      if (days <= 0) return 'rgb(255, 82, 82)';
+      return 'white';
+    };
+
     if (!card.DEAL?.USR$DEADLINE) return null;
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
     return (
