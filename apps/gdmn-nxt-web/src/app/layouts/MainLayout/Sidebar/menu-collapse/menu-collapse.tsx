@@ -1,13 +1,12 @@
 import './menu-collapse.module.less';
 import { Collapse, List, ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import MenuItem from '../menu-item/menu-item';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { makeStyles } from '@mui/styles';
-import { useSelector } from 'react-redux';
-import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import { NavLink } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuCollapse: {
@@ -45,43 +44,45 @@ export function MenuCollapse(props: MenuCollapseProps) {
   const menus = menu.children?.map((item: IMenuItem) => {
     switch (item.type) {
       case 'item':
-        return <MenuItem key={item.id} item={item} level={level + 1} />;
+        return <MenuItem
+          key={item.id}
+          item={item}
+          level={level + 1}
+               />;
       default:
         return (
-          <Typography key={item.id} variant="h6" color="error" align="center">
+          <Typography
+            key={item.id}
+            variant="h6"
+            color="error"
+            align="center"
+          >
             Ошибка отображения
           </Typography>
         );
     }
   });
-  const handleOpen = () => {
-    setOpen(true);
-  };
+
   const menuIcon = menu.icon;
 
-  useEffect(()=>{
-    let thisSelector = true;
-    const url = menu.url?.split('/')
-    const path = window.location.pathname.split('/')
-    if(!url) return
-    for(let i = 0;i<url?.length;i++){
-      if(path[i+2] !== url[i]){
-        thisSelector = false
-      }
-    }
-    if(thisSelector){
-      setOpen(true);
-    }
-  },[])
+  const isActive = ({ isActive }: any) => {
+    if (isActive) setOpen(true);
+    return '';
+  };
 
   return (
     <>
+      <NavLink
+        style={{ position: 'absolute', visibility: 'hidden' }}
+        className={isActive}
+        to={menu.url || ''}
+      >asd</NavLink>
       <ListItemButton
         className={classes.menuCollapse}
         sx={{
           pl: `${level * 24}px`
         }}
-        selected={selected === menu.id}
+        selected={open}
         onClick={handleClick}
       >
         <ListItemIcon color="secondary" sx={{ minWidth: !menu.icon ? 18 : 36 }}>
@@ -89,7 +90,11 @@ export function MenuCollapse(props: MenuCollapseProps) {
         </ListItemIcon>
         <ListItemText
           primary={
-            <Typography variant="h4" color="inherit" sx={{ my: 'auto' }}>
+            <Typography
+              variant="h4"
+              color="inherit"
+              sx={{ my: 'auto' }}
+            >
               {menu.title}
             </Typography>
           }
@@ -100,7 +105,11 @@ export function MenuCollapse(props: MenuCollapseProps) {
           <KeyboardArrowDownIcon style={{ marginTop: 'auto', marginBottom: 'auto' }} />
         )}
       </ListItemButton>
-      <Collapse in={open} timeout="auto" unmountOnExit>
+      <Collapse
+        in={open}
+        timeout="auto"
+        unmountOnExit
+      >
         <List
           component="div"
           disablePadding
