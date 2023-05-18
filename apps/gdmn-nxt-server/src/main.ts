@@ -59,7 +59,9 @@ app.use(cors({
   origin: `http://${config.host}:${config.appPort}`
 }));
 
-// app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
+if (config.serverStaticMode) {
+  app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
+}
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 const apiRoot = {
@@ -311,11 +313,12 @@ router.get('/er-model/make-sql', async (_, res) => {
   res.json(erModel);
 });
 
-// if (process.env.NODE_ENV !== 'development') {
-//   app.get('*', (req, res) => {
-//     res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
-//   });
-// };
+
+if (config.serverStaticMode) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../gdmn-nxt-web', 'index.html'));
+  });
+}
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 

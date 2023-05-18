@@ -1,5 +1,5 @@
-import { ServerToClientEvents, ClientToServerEvents, KanbanEvent, SocketRoom } from "@gdmn-nxt/socket";
-import { Server } from "socket.io";
+import { ServerToClientEvents, ClientToServerEvents, KanbanEvent, SocketRoom } from '@gdmn-nxt/socket';
+import { Server } from 'socket.io';
 import { config } from '@gdmn-nxt/config';
 
 
