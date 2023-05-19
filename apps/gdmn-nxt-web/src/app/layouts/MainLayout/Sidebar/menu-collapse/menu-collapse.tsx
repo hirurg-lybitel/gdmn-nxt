@@ -1,12 +1,13 @@
 import './menu-collapse.module.less';
 import { Collapse, List, ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuItem from '../menu-item/menu-item';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { makeStyles } from '@mui/styles';
 import { NavLink } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuCollapse: {
@@ -65,17 +66,25 @@ export function MenuCollapse(props: MenuCollapseProps) {
 
   const menuIcon = menu.icon;
 
-  const isActive = ({ isActive }: any) => {
-    if (isActive) setOpen(true);
-    return '';
-  };
+  const location = useLocation();
+
+  useEffect(() => {
+    let thisSelector = true;
+    const url = menu.url?.split('/');
+    const path = location.pathname.split('/');
+    if (!url) return;
+    for (let i = 0;i < url?.length;i++) {
+      if (path[i + 2] !== url[i]) {
+        thisSelector = false;
+      }
+    }
+    if (thisSelector) {
+      setOpen(true);
+    }
+  }, [location]);
 
   return (
     <>
-      <NavLink
-        className={isActive}
-        to={menu.url || ''}
-      />
       <ListItemButton
         className={classes.menuCollapse}
         sx={{
@@ -98,7 +107,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
             </Typography>
           }
         />
-        {open ? (
+        {(open) ? (
           <KeyboardArrowUpIcon style={{ marginTop: 'auto', marginBottom: 'auto' }} />
         ) : (
           <KeyboardArrowDownIcon style={{ marginTop: 'auto', marginBottom: 'auto' }} />
