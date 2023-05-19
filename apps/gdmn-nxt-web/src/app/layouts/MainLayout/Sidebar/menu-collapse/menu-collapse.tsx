@@ -48,7 +48,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
           key={item.id}
           item={item}
           level={level + 1}
-               />;
+        />;
       default:
         return (
           <Typography
@@ -76,7 +76,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
         style={{ position: 'absolute', visibility: 'hidden' }}
         className={isActive}
         to={menu.url || ''}
-      >asd</NavLink>
+      />
       <ListItemButton
         className={classes.menuCollapse}
         sx={{
