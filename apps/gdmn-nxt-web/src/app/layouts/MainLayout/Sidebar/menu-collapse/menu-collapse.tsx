@@ -48,7 +48,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
           key={item.id}
           item={item}
           level={level + 1}
-        />;
+               />;
       default:
         return (
           <Typography
@@ -73,7 +73,6 @@ export function MenuCollapse(props: MenuCollapseProps) {
   return (
     <>
       <NavLink
-        style={{ position: 'absolute', visibility: 'hidden' }}
         className={isActive}
         to={menu.url || ''}
       />
