@@ -49,12 +49,14 @@ export function MenuCollapse(props: MenuCollapseProps) {
           key={item.id}
           item={item}
           level={level + 1}
-               />;
+        />;
+      case 'collapse': return <MenuCollapse menu={item} level={level + 1} />;
+
       default:
         return (
           <Typography
             key={item.id}
-            variant="h6"
+            variant="h4"
             color="error"
             align="center"
           >
@@ -68,17 +70,34 @@ export function MenuCollapse(props: MenuCollapseProps) {
 
   const location = useLocation();
 
-  useEffect(() => {
-    let thisSelector = true;
-    const url = menu.url?.split('/');
+  const findPath = (fullUrl: string | undefined): boolean => {
+    const url = fullUrl?.split('/');
     const path = location.pathname.split('/');
-    if (!url) return;
-    for (let i = 0;i < url?.length;i++) {
+    if (!url) return false;
+    for (let i = 0;i < url.length;i++) {
       if (path[i + 2] !== url[i]) {
-        thisSelector = false;
+        return false;
       }
     }
-    if (thisSelector) {
+    return true;
+  };
+
+  const findCollapseObject = (countMassive: IMenuItem[]): IMenuItem[] => {
+    let count: IMenuItem[] = [];
+    for (let i = 0;i < countMassive.length;i++) {
+      const fil: IMenuItem[] = countMassive[i].children?.filter((value) => value.type === 'collapse') || [];
+      count = count.concat(fil);
+    }
+    if (count?.length === 0) {
+      return [];
+    } else {
+      return count?.concat(findCollapseObject(count));
+    }
+  };
+
+  useEffect(() => {
+    const allCollapseObject = findCollapseObject([menu]).concat(menu);
+    if (!allCollapseObject.every(value => !findPath(value.url))) {
       setOpen(true);
     }
   }, [location]);
