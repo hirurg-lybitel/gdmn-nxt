@@ -49,7 +49,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
           key={item.id}
           item={item}
           level={level + 1}
-        />;
+               />;
       case 'collapse': return <MenuCollapse menu={item} level={level + 1} />;
 
       default:
@@ -96,6 +96,11 @@ export function MenuCollapse(props: MenuCollapseProps) {
   };
 
   useEffect(() => {
+    const currentPath = findPath(menu.url);
+    if (currentPath) {
+      setOpen(true);
+      return;
+    }
     const allCollapseObject = findCollapseObject([menu]).concat(menu);
     if (!allCollapseObject.every(value => !findPath(value.url))) {
       setOpen(true);
