@@ -144,6 +144,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     refComment && refComment.current && refComment.current.scrollIntoView({ behavior: 'smooth' });
   }, [refComment.current]);
 
+  useEffect(() => {
+    if (!open) formik.resetForm();
+  }, [open]);
+
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
@@ -155,7 +159,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const handleDeleteClick = () => {
     setAddTasks(false);
-    formik.resetForm();
     setTabIndex('1');
     setDeleting(true);
     setConfirmOpen(true);
@@ -164,7 +167,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const handleCancelClick = () => {
     setAddTasks(false);
     setDeleting(false);
-    formik.resetForm();
     setTabIndex('1');
     onCancelClick(isFetchingCard);
     if (isFetchingCard) {
@@ -207,7 +209,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   useEffect(() => {
     if (card && card?.ID !== -1 && addTasks) {
-      formik.resetForm();
       setTabIndex('3');
       setIsFetchingCard(false);
     }

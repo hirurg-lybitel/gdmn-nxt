@@ -71,49 +71,15 @@ const upsert: RequestHandler = async (req, res) => {
   if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
   try {
-    const isInsertMode = id ? false : true;
+    const isInsertMode = !id;
 
-    let ID = Number(id);
-    if (isInsertMode) {
-      ID = await genId(attachment, transaction);
-    };
+    const deal: IDeal = req.body['DEAL'];
 
-    // const erModelFull = importERModel('TgdcDepartment');
-    // const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
-
-    // const allFields = [...new Set(entites['TgdcDepartment'].attributes.map(attr => attr.name))];
+    const cardId = await (() => isInsertMode ? genId(attachment, transaction) : id)();
+    const dealId = await (() => isInsertMode ? genId(attachment, transaction) : deal.ID)();
 
     let paramsValues;
     let sql;
-    const deal: IDeal = req.body['DEAL'];
-    // allFields = ['ID', 'USR$NAME', 'USR$DISABLED', 'USR$AMOUNT', 'USR$CONTACTKEY'];
-    // actualFields = allFields.filter(field => typeof req.body['DEAL'][field] !== 'undefined');
-
-    // paramsValues = actualFields.map(field => {
-    //   return req.body[field];
-    // });
-
-    // actualFields = actualFields.map(field => field === 'USR$DEALKEY' ? 'ID' : field);
-
-    // if (isInsertMode) {
-    //   paramsValues.splice(actualFields.indexOf('ID'), 1);
-    //   actualFields.splice(actualFields.indexOf('ID'), 1);
-
-    //   const requiredFields = {
-    //     ID: ID
-    //   };
-
-    //   for (const [key, value] of Object.entries(requiredFields)) {
-    //     if (!actualFields.includes(key)) {
-    //       actualFields.push(key);
-    //       paramsValues.push(value);
-    //     };
-    //   };
-    // };
-
-    // actualFieldsNames = actualFields.join(',');
-    // paramsString = actualFields.map(_ => '?').join(',');
-    // returnFieldsNames = actualFields.join(',');
 
     /** Сделка не может быть исполнена, если по ней есть незавершённые задачи */
     if (deal.USR$DONE) {
@@ -123,7 +89,7 @@ const upsert: RequestHandler = async (req, res) => {
         JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
         JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
         WHERE
-          card.ID = ${ID}
+          card.ID = ${cardId}
           AND deal.USR$DONE = 0
           AND task.USR$CLOSED = 0`;
 
@@ -143,7 +109,7 @@ const upsert: RequestHandler = async (req, res) => {
       RETURNING ID`;
 
     paramsValues = [
-      ID,
+      dealId,
       deal.USR$NAME || '',
       deal.USR$DISABLED ? 1 : 0,
       deal.USR$AMOUNT || 0,
@@ -170,26 +136,11 @@ const upsert: RequestHandler = async (req, res) => {
 
     const dealRecord: IDeal = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
 
-    // sql = `
-    //   EXECUTE PROCEDURE USR$CRM_CREATE_DEAL(
-    //     ${deal.CREATOR.ID || null},
-    //     ${deal.CONTACT.ID || null},
-    //     ${deal.PERFORMER?.ID || null},
-    //     ${new Date(deal.USR$DEADLINE).toLocaleDateString() || null}
-    //   )`;
-
-    // DEALKEY DINTKEY,
-    // USERKEY DINTKEY,
-    // CONTACTKEY USR$GS_DCUSTOMER,
-    // EMPLKEY USR$BN_DEMPLOYEE,
-    // DATEENDPLAN DDATE,
-    // CREATIONDATE DDATE)
-
     sql = `
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
 
     paramsValues = [
-      ID,
+      dealId,
       deal.CREATOR?.ID || null,
       deal.CONTACT?.ID || null,
       deal.PERFORMERS?.[0]?.ID || null,
@@ -197,12 +148,7 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
 
-    const rec = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
-    // const rec = fetchAsObject(sql, [{ 'USERKEY': 159661087 }, { 'CONTACTKEY': 159661087 }]);
-
-    if (isInsertMode) {
-      ID = await genId(attachment, transaction);
-    };
+    await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
 
     const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY', 'USR$ISREAD'];
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
@@ -219,7 +165,7 @@ const upsert: RequestHandler = async (req, res) => {
       actualFields.splice(actualFields.indexOf('ID'), 1);
 
       const requiredFields = {
-        ID: ID
+        ID: cardId
       };
 
       for (const [key, value] of Object.entries(requiredFields)) {
