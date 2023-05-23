@@ -138,7 +138,7 @@ export function Tasks(props: TasksProps) {
 
   const KanbanBoardMemo = useMemo(() => <KanbanTasksBoard columns={columns} isLoading={isLoading} />, [columns, isLoading]);
 
-  const KanbanListMemo = useMemo(() => <KanbanTasksList columns={columns} />, [columns, columnsIsFetching]);
+  const KanbanListMemo = useMemo(() => <KanbanTasksList columns={columns} isLoading={isLoading} />, [columns, isLoading]);
 
   return (
     <Stack
