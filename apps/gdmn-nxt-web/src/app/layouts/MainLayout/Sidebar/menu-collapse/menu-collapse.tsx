@@ -34,12 +34,10 @@ export function MenuCollapse(props: MenuCollapseProps) {
   const { menu, level = 0 } = props;
   const classes = useStyles();
 
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);;
 
   const handleClick = () => {
     setOpen(!open);
-    setSelected(!selected ? menu.id : null);
   };
 
   const menus = menu.children?.map((item: IMenuItem) => {
@@ -49,9 +47,13 @@ export function MenuCollapse(props: MenuCollapseProps) {
           key={item.id}
           item={item}
           level={level + 1}
-               />;
-      case 'collapse': return <MenuCollapse menu={item} level={level + 1} />;
-
+        />;
+      case 'collapse':
+        return <MenuCollapse
+          key={item.id}
+          menu={item}
+          level={level + 1}
+        />;
       default:
         return (
           <Typography
@@ -70,42 +72,22 @@ export function MenuCollapse(props: MenuCollapseProps) {
 
   const location = useLocation();
 
-  const findPath = (fullUrl: string | undefined): boolean => {
-    const url = fullUrl?.split('/');
-    const path = location.pathname.split('/');
-    if (!url) return false;
-    for (let i = 0;i < url.length;i++) {
-      if (path[i + 2] !== url[i]) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const findCollapseObject = (countMassive: IMenuItem[]): IMenuItem[] => {
-    let count: IMenuItem[] = [];
-    for (let i = 0;i < countMassive.length;i++) {
-      const fil: IMenuItem[] = countMassive[i].children?.filter((value) => value.type === 'collapse') || [];
-      count = count.concat(fil);
-    }
-    if (count?.length === 0) {
-      return [];
-    } else {
-      return count?.concat(findCollapseObject(count));
-    }
-  };
-
   useEffect(() => {
-    const currentPath = findPath(menu.url);
-    if (currentPath) {
-      setOpen(true);
-      return;
-    }
-    const allCollapseObject = findCollapseObject([menu]).concat(menu);
-    if (!allCollapseObject.every(value => !findPath(value.url))) {
-      setOpen(true);
-    }
-  }, [location]);
+    /** Рекурсивно проверяем, есть ли в текущем пути вложенный путь, соответствующий одному из подменю */
+    const findSubMenuPath = (menu: IMenuItem) => {
+      if (menu.children) {
+        for (const item of menu.children) {
+          if (!!item.url && location.pathname?.includes(item.url || '')) {
+            setOpen(true);
+            break;
+          }
+          findSubMenuPath(item);
+        }
+      }
+    };
+
+    findSubMenuPath(menu);
+  }, [location.pathname, menu]);
 
   return (
     <>
