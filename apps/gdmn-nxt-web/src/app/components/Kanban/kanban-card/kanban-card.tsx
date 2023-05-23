@@ -165,15 +165,15 @@ export function KanbanCard(props: KanbanCardProps) {
     const positiveDays = Math.abs(days);
     const lastNumber = positiveDays % 10;
     const preLast = positiveDays % 100;
-    if (preLast >= 5 && preLast <= 20) return 'Дней';
+    if (preLast >= 5 && preLast <= 20) return 'дней';
     if (lastNumber === 1) {
-      return 'День';
+      return 'день';
     }
     if (lastNumber >= 2 && lastNumber <= 4) {
-      return 'Дня';
+      return 'дня';
     }
     if (lastNumber >= 5 || lastNumber === 0) {
-      return 'Дней';
+      return 'дней';
     }
     return '';
   };

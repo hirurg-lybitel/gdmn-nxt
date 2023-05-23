@@ -22,6 +22,7 @@ export const updateNotifications = async (sessionId: string) => {
         DECLARE VARIABLE DEAL_DEADLINE TIMESTAMP;
         DECLARE VARIABLE DEAL_NUMBER TYPE OF COLUMN USR$CRM_DEALS.USR$NUMBER;
         DECLARE VARIABLE DEAL_NAME TYPE OF COLUMN USR$CRM_DEALS.USR$NAME;
+        DECLARE VARIABLE DEAL_PERFORMER VARCHAR(200);
         DECLARE VARIABLE TASK_ID TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.ID;
         DECLARE VARIABLE TASK_CREATIONDATE TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$CREATIONDATE;
         DECLARE VARIABLE TASK_DEADLINE TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$DEADLINE;
@@ -48,13 +49,27 @@ export const updateNotifications = async (sessionId: string) => {
         DO
         BEGIN
           /** Создать уведомления по сделкам данного пользователя*/
-          FOR SELECT d.ID, d.USR$NUMBER, d.USR$NAME, D.USR$CREATIONDATE, d.USR$DEADLINE
+          FOR SELECT
+            d.ID, d.USR$NUMBER, d.USR$NAME, D.USR$CREATIONDATE, d.USR$DEADLINE, d.USR$READYTOWORK,
+            CASE
+            WHEN :CONTACTKEY = d.USR$CREATORKEY THEN
+              '**Исполнитель:** ' || CASE
+              WHEN performer_1.ID IS NOT NULL AND performer_2.ID IS NULL THEN performer_1.NAME
+              WHEN performer_1.ID IS NULL AND performer_2.ID IS NOT NULL THEN performer_2.NAME
+              WHEN performer_1.ID IS NOT NULL AND performer_2.ID IS NOT NULL THEN performer_1.NAME || ', ' || performer_2.NAME
+              ELSE 'не указан'
+              END
+            WHEN :CONTACTKEY IN (d.USR$PERFORMER, d.USR$SECOND_PERFORMER)  THEN '**Постановщик:** ' || creator.NAME
+            END
           FROM USR$CRM_DEALS d
+          LEFT JOIN GD_CONTACT creator ON creator.ID = d.USR$CREATORKEY
+          LEFT JOIN GD_CONTACT performer_1 ON performer_1.ID = d.USR$PERFORMER
+          LEFT JOIN GD_CONTACT performer_2 ON performer_2.ID = d.USR$SECOND_PERFORMER
           WHERE
-            :CONTACTKEY IN (d.USR$CREATORKEY, d.USR$PERFORMER)
+            :CONTACTKEY IN (d.USR$CREATORKEY, d.USR$PERFORMER, d.USR$SECOND_PERFORMER)
             AND d.USR$DONE = 0 AND d.USR$DENIED = 0
           ORDER BY d.USR$NUMBER
-          INTO :DEAL_ID, :DEAL_NUMBER, :DEAL_NAME, :DEAL_CREATIONDATE, :DEAL_DEADLINE
+          INTO :DEAL_ID, :DEAL_NUMBER, :DEAL_NAME, :DEAL_CREATIONDATE, :DEAL_DEADLINE, :IN_PROGRESS, :DEAL_PERFORMER
           DO
           BEGIN
             DEADLINE_TIME = IIF(DATEDIFF (MINUTE FROM TIME '0:00' TO CAST(DEAL_DEADLINE AS TIME)) = 0, NULL, CAST(DEAL_DEADLINE AS TIME));
@@ -85,7 +100,7 @@ export const updateNotifications = async (sessionId: string) => {
             IF (CHAR_LENGTH(MESSAGE_TEXT) > MAX_LENGTH_FOR_TASK_DESCRIPTION + 5) THEN
               MESSAGE_TEXT = SUBSTRING(MESSAGE_TEXT FROM 1 FOR MAX_LENGTH_FOR_TASK_DESCRIPTION) || ' ...';
 
-              MESSAGE_TEXT = MESSAGE_TEXT || BREAK_LINE || '**Исполнитель:** ' || TASK_PERFORMER_NAME;
+              MESSAGE_TEXT = MESSAGE_TEXT || BREAK_LINE || DEAL_PERFORMER;
 
             IF (TITLE != '' AND MESSAGE_TEXT != '') THEN
               UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY, USR$ACTIONTYPE, USR$ACTIONCONTENT, USR$ONDATE)
@@ -104,11 +119,17 @@ export const updateNotifications = async (sessionId: string) => {
             task.USR$DEADLINE,
             COALESCE(taskType.USR$NAME, 'Выполнить'),
             COALESCE(task.USR$INPROGRESS, 0),
-            COALESCE(performer.NAME, 'не указан')
+            CASE
+            WHEN :CONTACTKEY = d.USR$CREATORKEY THEN
+              '**Исполнитель:** ' || COALESCE(performer.NAME, 'не указан')
+            WHEN :CONTACTKEY = d.USR$PERFORMER THEN
+              '**Постановщик:** ' || creator.NAME
+            END
           FROM USR$CRM_DEALS d
           JOIN USR$CRM_KANBAN_CARDS card ON card.USR$DEALKEY = d.ID
           JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES taskType ON taskType.ID = task.USR$TASKTYPEKEY
+          LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
           LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
           WHERE
             :CONTACTKEY IN (task.USR$CREATORKEY, task.USR$PERFORMER)
@@ -147,7 +168,7 @@ export const updateNotifications = async (sessionId: string) => {
             IF (CHAR_LENGTH(MESSAGE_TEXT) > MAX_LENGTH_FOR_TASK_DESCRIPTION + 5) THEN
               MESSAGE_TEXT = SUBSTRING(MESSAGE_TEXT FROM 1 FOR MAX_LENGTH_FOR_TASK_DESCRIPTION) || ' ...';
 
-            MESSAGE_TEXT = MESSAGE_TEXT || BREAK_LINE || '**Исполнитель:** ' || TASK_PERFORMER_NAME;
+            MESSAGE_TEXT = MESSAGE_TEXT || BREAK_LINE || TASK_PERFORMER_NAME;
 
             IF (TITLE != '' AND MESSAGE_TEXT != '') THEN
               UPDATE OR INSERT INTO USR$CRM_NOTIFICATIONS(USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$KEY, USR$ACTIONTYPE, USR$ACTIONCONTENT, USR$ONDATE)
