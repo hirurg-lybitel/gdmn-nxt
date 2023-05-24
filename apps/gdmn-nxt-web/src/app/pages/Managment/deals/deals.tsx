@@ -26,67 +26,6 @@ export interface IChanges {
   newValue: string | number | undefined;
 };
 
-export const compareCards = (columns: IKanbanColumn[], newCard: any, oldCard: IKanbanCard) => {
-  const changesArr: IChanges[] = [];
-
-  const deal = newCard.DEAL;
-  const contact = newCard.DEAL?.CONTACT || {};
-  const performer = (newCard.DEAL?.PERFORMERS || [])[0] || {};
-  const secondPerformer = (newCard.DEAL?.PERFORMERS || [])[1] || {};
-
-  if ((deal?.USR$AMOUNT || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Сумма',
-      oldValue: Number(oldCard.DEAL?.USR$AMOUNT) || 0,
-      newValue: deal.USR$AMOUNT || 0
-    });
-  }
-  if (contact.ID !== oldCard.DEAL?.CONTACT?.ID) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Клиент',
-      oldValue: oldCard.DEAL?.CONTACT?.NAME,
-      newValue: contact.NAME
-    });
-  };
-  if (deal?.USR$NAME !== oldCard.DEAL?.USR$NAME) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Наименование',
-      oldValue: oldCard.DEAL?.USR$NAME,
-      newValue: deal.USR$NAME
-    });
-  };
-  if (performer.ID !== oldCard.DEAL?.PERFORMERS?.[0]?.ID) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Исполнитель',
-      oldValue: oldCard.DEAL?.PERFORMERS?.[0]?.NAME,
-      newValue: performer.NAME
-    });
-  };
-  if (secondPerformer.ID !== oldCard.DEAL?.PERFORMERS?.[1]?.ID) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Второй исполнитель',
-      oldValue: oldCard.DEAL?.PERFORMERS?.[1]?.NAME,
-      newValue: secondPerformer.NAME
-    });
-  };
-  if (newCard.USR$MASTERKEY !== oldCard.USR$MASTERKEY) {
-    changesArr.push({
-      id: newCard.ID,
-      fieldName: 'Этап',
-      oldValue: columns.find(column => column.ID === oldCard.USR$MASTERKEY)?.USR$NAME || '',
-      newValue: columns.find(column => column.ID === newCard.USR$MASTERKEY)?.USR$NAME || ''
-    });
-  };
-
-  return changesArr;
-};
-
-
 /* eslint-disable-next-line */
 export interface DealsProps {}
 
@@ -127,11 +66,9 @@ export function Deals(props: DealsProps) {
   } = useGetKanbanDealsQuery({
     userId,
     filter: {
-      // deadline: kanbanFilter.deadline.CODE,
       ...filtersStorage.filterData.deals,
     }
   });
-
 
   const saveFilters = (filteringData: IFilteringData) => {
     dispatch(saveFilterData({ 'deals': filteringData }));
@@ -244,10 +181,10 @@ export function Deals(props: DealsProps) {
             }}
           >
             <Tooltip title="Доска" arrow>
-              <BottomNavigationAction style={{ padding: 0, margin: 0 }} icon={<ViewWeekIcon />} />
+              <BottomNavigationAction className={styles.bottomNavigationAction} icon={<ViewWeekIcon />} />
             </Tooltip>
             <Tooltip title="Список" arrow>
-              <BottomNavigationAction style={{ padding: 0, margin: 0 }} icon={<ViewStreamIcon />} />
+              <BottomNavigationAction className={styles.bottomNavigationAction} icon={<ViewStreamIcon />} />
             </Tooltip>
           </BottomNavigation>
         </CustomizedCard>
@@ -258,7 +195,11 @@ export function Deals(props: DealsProps) {
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
-  const KanbanListMemo = useMemo(() => <KanbanList columns={columns} />, [columns]);
+  const KanbanListMemo = useMemo(() =>
+    <Box className={styles.kanbanListContainer}>
+      <KanbanList columns={columns} />
+    </Box>
+  , [columns]);
 
   return (
     <Stack
@@ -270,8 +211,8 @@ export function Deals(props: DealsProps) {
       {componentIsFetching
         ?
         <div>
-          <Skeleton variant="rectangular" height={'70px'} style={{ borderRadius: '12px 12px 0 0' }}/>
-          <Skeleton variant="rectangular" height={'40px'} width={'235px'} style={{ borderRadius: '0 0 12px 12px' }}/>
+          <Skeleton variant="rectangular" className={styles.skeletonHeader} />
+          <Skeleton variant="rectangular" className={styles.skeletonBody} />
         </div>
         : Header
       }

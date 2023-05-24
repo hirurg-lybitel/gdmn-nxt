@@ -13,11 +13,12 @@ import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/
 import usePermissions from '../../helpers/hooks/usePermissions';
 
 export interface KanbanTasksListProps {
-  columns: IKanbanColumn[]
+  columns: IKanbanColumn[];
+  isLoading?: boolean;
 }
 
 export function KanbanTasksList(props: KanbanTasksListProps) {
-  const { columns } = props;
+  const { columns, isLoading = false } = props;
 
   const [updateTask, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateTaskMutation();
   const [deleteTask, { isLoading: deleteIsLoading }] = useDeleteTaskMutation();
@@ -148,6 +149,7 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
         treeData
         rows={rows || []}
         columns={cols}
+        loading={isLoading}
         getTreeDataPath={getTreeDataPath}
         groupingColDef={groupingColDef}
         hideFooter

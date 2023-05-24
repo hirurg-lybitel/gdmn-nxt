@@ -32,12 +32,10 @@ interface actionCheck {
 export interface MenuItemProps {
   item: IMenuItem;
   level?: number;
-  isOpen?:boolean
-  open?:()=>void;
 };
 
 export function MenuItem(props: MenuItemProps) {
-  const { item, level = 0, isOpen, open } = props;
+  const { item, level = 0 } = props;
 
   const classes = useStyles();
 
@@ -54,31 +52,31 @@ export function MenuItem(props: MenuItemProps) {
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
-  const lickClassAndReroute = (isActive:boolean, elClasses:string) => {
-    if(isActive){
-      if(item.actionCheck){
-        if(!userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`]){
-          window.location.href=""
+  const lickClassAndReroute = (isActive: boolean, elClasses: string) => {
+    if (isActive) {
+      if (item.actionCheck) {
+        if (!userPermissions?.[`${item.actionCheck.name}`]?.[`${item.actionCheck.method}`]) {
+          window.location.href = '';
         }
       }
-      return elClasses + " Mui-selected"
-    }else{
-      return elClasses
+      return elClasses + ' Mui-selected';
+    } else {
+      return elClasses;
     }
-  }
+  };
 
   type MyNavLinkProps = Omit<NavLinkProps, 'to'>;
   const MyNavLink = useMemo(() => forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
     const { className: previousClasses, ...rest } = navLinkProps;
-    const elementClasses = previousClasses?.toString() ?? "";
-    item.checkAction
+    const elementClasses = previousClasses?.toString() ?? '';
+    item.checkAction;
     return (<NavLink
       {...rest}
       ref={ref}
       to={item.url || ''}
       end
       className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
-      />)
+    />);
   }), [item.url]);
 
   return (

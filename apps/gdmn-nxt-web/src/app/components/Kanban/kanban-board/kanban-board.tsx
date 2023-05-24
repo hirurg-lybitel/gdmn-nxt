@@ -24,15 +24,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setError } from '../../../features/error-slice/error-slice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
+import { IChanges } from '../../../pages/Managment/deals/deals';
 import { useMemo } from 'react';
 
-// export interface IChanges {
-//   id: number;
-//   fieldName: string,
-//   oldValue: string | number | undefined;
-//   newValue: string | number | undefined;
-// };
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
   isLoading: boolean,
@@ -64,105 +58,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const deleteColumnEnable = false;
 
   const changes = useRef<IChanges[]>([]);
-
-  // const user = useSelector<RootState, UserState>(state => state.user);
-
-  // useEffect(()=>{
-  //   setColumns(inColumns);
-  //   // dispatch(fetchCustomers());
-  // }, [inColumns]);
-
-  useEffect(() => {
-    if ((updateCardSuccess) && changes.current?.length > 0) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: item.id,
-          USR$TYPE: '2',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-
-      changes.current = [];
-    };
-  }, [updateCardSuccess]);
-
-  useEffect(() => {
-    if (addCardSuccess && addedCard) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: addedCard[0].ID,
-          USR$TYPE: '1',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-      if (lastCardShouldClear) {
-        setLastCardShouldClear(false);
-      } else {
-        setLastAddedCard(addedCard[0]);
-      }
-
-      changes.current = [];
-    };
-  }, [addCardSuccess, addedCard]);
-
-  // const compareCards = (newCard: any, oldCard: IKanbanCard) => {
-  //   const changesArr: IChanges[] = [];
-
-  //   const deal = newCard['DEAL'];
-  //   const contact = newCard['DEAL']['CONTACT'] || {};
-  //   const performer = newCard['DEAL']['PERFORMER'] || {};
-
-  //   if ((deal['USR$AMOUNT'] || 0) !== (oldCard.DEAL?.USR$AMOUNT || 0)) {
-  //     changesArr.push({
-  //       id: newCard.ID,
-  //       fieldName: 'Сумма',
-  //       oldValue: Number(oldCard.DEAL?.USR$AMOUNT) || 0,
-  //       newValue: deal['USR$AMOUNT'] || 0
-  //     });
-  //   }
-  //   if (contact['ID'] !== oldCard.DEAL?.CONTACT?.ID) {
-  //     changesArr.push({
-  //       id: newCard.ID,
-  //       fieldName: 'Клиент',
-  //       oldValue: oldCard.DEAL?.CONTACT?.NAME,
-  //       newValue: contact['NAME']
-  //     });
-  //   };
-  //   if (deal['USR$NAME'] !== oldCard.DEAL?.USR$NAME) {
-  //     changesArr.push({
-  //       id: newCard.ID,
-  //       fieldName: 'Наименование',
-  //       oldValue: oldCard.DEAL?.USR$NAME,
-  //       newValue: deal['USR$NAME']
-  //     });
-  //   };
-  //   if (performer['ID'] !== oldCard.DEAL?.PERFORMER?.ID) {
-  //     changesArr.push({
-  //       id: newCard.ID,
-  //       fieldName: 'Исполнитель',
-  //       oldValue: oldCard.DEAL?.PERFORMER?.NAME,
-  //       newValue: performer['NAME']
-  //     });
-  //   };
-  //   if (newCard['USR$MASTERKEY'] !== oldCard.USR$MASTERKEY) {
-  //     changesArr.push({
-  //       id: newCard.ID,
-  //       fieldName: 'Этап',
-  //       oldValue: columns.find(column => column.ID === oldCard.USR$MASTERKEY)?.USR$NAME || '',
-  //       newValue: columns.find(column => column.ID === newCard['USR$MASTERKEY'])?.USR$NAME || ''
-  //     });
-  //   };
-
-  //   return changesArr;
-  // };
 
   const columnHandlers = {
     handleTitleEdit: async (newColumn: IKanbanColumn) => {
@@ -205,20 +100,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
         return true;
       });
-
-      changes.current = compareCards(columns, newCard, oldCard);
     },
     handleDeleteCard: async (deletinCard: IKanbanCard) => {
       deleteCard(deletinCard.ID);
     },
     handleAddCard: async (newCard: IKanbanCard) => {
-      changes.current.push({
-        id: -1,
-        fieldName: 'Сделка',
-        oldValue: '',
-        newValue: (newCard as any).DEAL.USR$NAME || ''
-      });
-
       addCard(newCard);
     }
   };
@@ -305,14 +191,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
               break;
           }
           return { ...column, CARDS: newCards };
-        });
-
-        // setColumns(newColumns);
-        changes.current.push({
-          id: moveCard.ID,
-          fieldName: 'Этап',
-          oldValue: columns[Number(result.source.droppableId)].USR$NAME || '',
-          newValue: columns[Number(result.destination.droppableId)].USR$NAME || ''
         });
 
         updateCard(moveCard);

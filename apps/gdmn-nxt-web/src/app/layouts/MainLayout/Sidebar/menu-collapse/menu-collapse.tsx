@@ -6,8 +6,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { makeStyles } from '@mui/styles';
-import { useSelector } from 'react-redux';
-import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import { NavLink } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuCollapse: {
@@ -34,45 +34,60 @@ export function MenuCollapse(props: MenuCollapseProps) {
   const { menu, level = 0 } = props;
   const classes = useStyles();
 
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);;
 
   const handleClick = () => {
     setOpen(!open);
-    setSelected(!selected ? menu.id : null);
   };
 
   const menus = menu.children?.map((item: IMenuItem) => {
     switch (item.type) {
       case 'item':
-        return <MenuItem key={item.id} item={item} level={level + 1} />;
+        return <MenuItem
+          key={item.id}
+          item={item}
+          level={level + 1}
+        />;
+      case 'collapse':
+        return <MenuCollapse
+          key={item.id}
+          menu={item}
+          level={level + 1}
+        />;
       default:
         return (
-          <Typography key={item.id} variant="h6" color="error" align="center">
+          <Typography
+            key={item.id}
+            variant="h4"
+            color="error"
+            align="center"
+          >
             Ошибка отображения
           </Typography>
         );
     }
   });
-  const handleOpen = () => {
-    setOpen(true);
-  };
+
   const menuIcon = menu.icon;
 
-  useEffect(()=>{
-    let thisSelector = true;
-    const url = menu.url?.split('/')
-    const path = window.location.pathname.split('/')
-    if(!url) return
-    for(let i = 0;i<url?.length;i++){
-      if(path[i+2] !== url[i]){
-        thisSelector = false
+  const location = useLocation();
+
+  useEffect(() => {
+    /** Рекурсивно проверяем, есть ли в текущем пути вложенный путь, соответствующий одному из подменю */
+    const findSubMenuPath = (menu: IMenuItem) => {
+      if (menu.children) {
+        for (const item of menu.children) {
+          if (!!item.url && location.pathname?.includes(item.url || '')) {
+            setOpen(true);
+            break;
+          }
+          findSubMenuPath(item);
+        }
       }
-    }
-    if(thisSelector){
-      setOpen(true);
-    }
-  },[])
+    };
+
+    findSubMenuPath(menu);
+  }, [location.pathname, menu]);
 
   return (
     <>
@@ -81,7 +96,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
         sx={{
           pl: `${level * 24}px`
         }}
-        selected={selected === menu.id}
+        selected={open}
         onClick={handleClick}
       >
         <ListItemIcon color="secondary" sx={{ minWidth: !menu.icon ? 18 : 36 }}>
@@ -89,18 +104,26 @@ export function MenuCollapse(props: MenuCollapseProps) {
         </ListItemIcon>
         <ListItemText
           primary={
-            <Typography variant="h4" color="inherit" sx={{ my: 'auto' }}>
+            <Typography
+              variant="h4"
+              color="inherit"
+              sx={{ my: 'auto' }}
+            >
               {menu.title}
             </Typography>
           }
         />
-        {open ? (
+        {(open) ? (
           <KeyboardArrowUpIcon style={{ marginTop: 'auto', marginBottom: 'auto' }} />
         ) : (
           <KeyboardArrowDownIcon style={{ marginTop: 'auto', marginBottom: 'auto' }} />
         )}
       </ListItemButton>
-      <Collapse in={open} timeout="auto" unmountOnExit>
+      <Collapse
+        in={open}
+        timeout="auto"
+        unmountOnExit
+      >
         <List
           component="div"
           disablePadding

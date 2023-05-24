@@ -1,9 +1,10 @@
-import { IDataSchema, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDataSchema, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
 import { genId } from '../../utils/genId';
+import { addHistory } from './history';
 
 const get: RequestHandler = async (req, res) => {
   const cardId = parseInt(req.params.cardId);
@@ -127,12 +128,92 @@ const upsert: RequestHandler = async (req, res) => {
 
   if (isNaN(cardId)) return res.status(422).send(resultError('Не указано поле "cardId"'));
 
-  const { attachment, transaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, executeSingletonAsObject, fetchAsSingletonObject, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
 
-    const sql = `
+    const { id } = req.params;
+    const isInsertMode = !id;
+
+    const task: IKanbanTask = req.body as IKanbanTask;
+
+    const userId = req.session.userId || -1;
+    const taskId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
+
+    let sql;
+
+    /** Формирование истории изменений */
+    sql = `
+      SELECT
+        task.USR$NAME, task.USR$DEADLINE, task.USR$CARDKEY, USR$CLOSED,
+        creator.ID AS CREATOR_ID, creator.NAME AS CREATOR_NAME,
+        performer.ID AS PERMORMER_ID, performer.NAME AS PERMORMER_NAME
+      FROM USR$CRM_KANBAN_CARD_TASKS task
+        LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
+        LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
+      WHERE task.ID = :taskId`;
+
+    const oldTaskRecord = await fetchAsSingletonObject(sql, { taskId });
+
+    const changes: IKanbanHistory[] = [];
+    if ((task.CREATOR?.ID || -1) !== (oldTaskRecord?.CREATOR_ID || -1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: `Постановщик задачи "${task.USR$NAME}"`,
+        USR$OLD_VALUE: oldTaskRecord.CONTACT_NAME,
+        USR$NEW_VALUE: task.CREATOR.NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if ((task.PERFORMER?.ID || -1) !== (oldTaskRecord?.PERMORMER_ID || -1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: `Исполнитель задачи "${task.USR$NAME}"`,
+        USR$OLD_VALUE: oldTaskRecord.PERMORMER_NAME,
+        USR$NEW_VALUE: task.PERFORMER.NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if (task?.USR$NAME !== oldTaskRecord?.USR$NAME) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Описание задачи',
+        USR$OLD_VALUE: oldTaskRecord?.USR$NAME,
+        USR$NEW_VALUE: task.USR$NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if ((task.USR$DEADLINE || -1) !== (oldTaskRecord.USR$DEADLINE || -1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: `Срок выполнения задачи "${task.USR$NAME}"`,
+        USR$OLD_VALUE: oldTaskRecord?.USR$DEADLINE ? new Date(oldTaskRecord?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+        USR$NEW_VALUE: task?.USR$DEADLINE ? new Date(task?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+        USR$USERKEY: userId
+      });
+    };
+    if ((task.USR$CLOSED || -1) !== (oldTaskRecord.USR$CLOSED === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: `Задача "${task.USR$NAME}"`,
+        USR$OLD_VALUE: oldTaskRecord.USR$CLOSED === 1 ? 'Выполнена' : 'Не выполнена',
+        USR$NEW_VALUE: task.USR$CLOSED ? 'Выполнена' : 'Не выполнена',
+        USR$USERKEY: userId
+      });
+    };
+
+    sql = `
       EXECUTE BLOCK(
         IN_ID INTEGER = ?,
         CARDKEY INTEGER = ?,
@@ -173,15 +254,8 @@ const upsert: RequestHandler = async (req, res) => {
         SUSPEND;
       END`;
 
-    let id = parseInt(req.params.id) || -1;
-    if (id <= 0) {
-      id = await genId(attachment, transaction);
-    };
-
-    const task: IKanbanTask = req.body as IKanbanTask;
-
     const paramsValues = [
-      task.ID > 0 ? task.ID : id,
+      taskId,
       task.USR$CARDKEY,
       task.USR$NAME,
       Number(task.USR$CLOSED),
@@ -191,7 +265,10 @@ const upsert: RequestHandler = async (req, res) => {
       task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null,
       Number(task.USR$INPROGRESS),
     ];
-    const taskRecord = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    const taskRecord = await executeSingletonAsObject(sql, paramsValues);
+
+    /** Сохранение истории изменений */
+    changes.forEach(c => addHistory(req.sessionID, c));
 
     const result: IRequestResult = {
       queries: { tasks: [taskRecord] },
@@ -202,20 +279,43 @@ const upsert: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    await releaseTransaction();
   }
 };
 
 const remove: RequestHandler = async(req, res) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   const id = parseInt(req.params.id);
 
   if (!id) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
 
-  let result: ResultSet;
+
+  // let result: ResultSet;
   try {
-    result = await attachment.executeQuery(
+    const userId = req.session.userId || -1;
+
+    /** Формирование истории изменений */
+    const sql = `
+      SELECT
+        task.USR$NAME, task.USR$CARDKEY
+      FROM USR$CRM_KANBAN_CARD_TASKS task
+      WHERE task.ID = :taskId`;
+
+    const oldTaskRecord = await fetchAsSingletonObject(sql, { taskId: id });
+
+    const changes: IKanbanHistory[] = [];
+    changes.push({
+      ID: -1,
+      USR$TYPE: '3',
+      USR$CARDKEY: oldTaskRecord.USR$CARDKEY,
+      USR$DESCRIPTION: 'Задача',
+      USR$OLD_VALUE: oldTaskRecord.USR$NAME || '',
+      USR$NEW_VALUE: oldTaskRecord.USR$NAME || '',
+      USR$USERKEY: userId
+    });
+
+    const result: ResultSet = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
         ID INTEGER = ?
@@ -241,6 +341,9 @@ const remove: RequestHandler = async(req, res) => {
 
     const data: { SUCCESS: number }[] = await result.fetchAsObject();
     await result.close();
+
+    /** Сохранение истории изменений */
+    changes.forEach(c => addHistory(req.sessionID, c));
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));

@@ -77,18 +77,26 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const add: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  try {
+    const result = await addHistory(req.sessionID, req.body);
 
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  };
+};
 
+export const addHistory = async (sessionID: string, body) => {
+  const { executeSingletonAsObject, releaseTransaction } = await startTransaction(sessionID);
   const { erModelNoAdapters } = await importedModels;
 
   const allFields = erModelNoAdapters.entities['TgdcAttrUserDefinedUSR_CRM_KANBAN_CARD_HISTORY'].attributes.map(attr => attr.name);
-  const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
+  const actualFields = allFields.filter(field => typeof body[field] !== 'undefined');
   actualFields.splice(actualFields.indexOf('ID'), 1);
   const actualFieldsNames = actualFields.join(',');
 
   const paramsValues = actualFields.map(field => {
-    return req.body[field];
+    return body[field];
   });
   const paramsString = actualFields.map(_ => '?').join(',');
 
@@ -104,9 +112,9 @@ const add: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rec = await attachment.executeSingletonAsObject(transaction, query, params);
+      const rec = await executeSingletonAsObject(query, params);
       try {
-        // const data = await rs.fetchAsObject();
+      // const data = await rs.fetchAsObject();
         const sch = _schema[name];
 
         if (sch) {
@@ -119,16 +127,16 @@ const add: RequestHandler = async (req, res) => {
 
         return [rec];
       } finally {
-        // await rs.close();
+      // await rs.close();
       }
     };
 
     const query = {
       name: 'history',
       query: `
-        INSERT INTO USR$CRM_KANBAN_CARD_HISTORY(${actualFieldsNames}, USR$DATE)
-        VALUES(${paramsString}, CURRENT_TIMESTAMP)
-        RETURNING ${returnFieldsNames}`,
+      INSERT INTO USR$CRM_KANBAN_CARD_HISTORY(${actualFieldsNames}, USR$DATE)
+      VALUES(${paramsString}, CURRENT_TIMESTAMP)
+      RETURNING ${returnFieldsNames}`,
       params: paramsValues
     };
 
@@ -139,12 +147,10 @@ const add: RequestHandler = async (req, res) => {
       _schema
     };
 
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).send(resultError(error.message));
+    return result;
   } finally {
     await releaseTransaction();
-  };
+  }
 };
 
 export default { get, add };

@@ -14,7 +14,6 @@ const managment: IMenuItem = {
       id: 'dealsGroup',
       title: 'Сделки',
       type: 'collapse',
-      url: 'managment/deals',
       icon: <WorkIcon color="secondary" />,
       children: [
         {
@@ -41,7 +40,6 @@ const managment: IMenuItem = {
       id: 'tasksGroup',
       title: 'Задачи',
       type: 'collapse',
-      url: 'managment/tasks',
       icon: <TaskAltIcon color="secondary" />,
       children: [
         {
@@ -62,7 +60,6 @@ const managment: IMenuItem = {
       id: 'customers',
       title: 'Клиенты',
       type: 'collapse',
-      url: 'managment/customers',
       icon: <PeopleAltIcon color="secondary" />,
       children: [
         {

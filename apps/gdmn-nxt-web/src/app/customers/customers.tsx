@@ -128,7 +128,7 @@ export function Customers(props: CustomersProps) {
   } = useGetCustomersQuery(
     {
       pagination: paginationData,
-      ...(filteringData ? { filter: filteringData } : {}),
+      ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
       ...(sortingData ? { sort: sortingData } : {})
     }
     // { refetchOnMountOrArgChange: true }
