@@ -265,7 +265,15 @@ export interface IKanbanLastUsedFilterDeadline extends IWithID {
 }
 
 type RouteMethod = 'POST' | 'GET' | 'PUT' | 'DELETE';
-export type ActionName = 'deals' | 'labels' | 'permissions' | 'notifications' | 'faq' | 'tasks' | '';
+export type ActionName =
+  'deals' |
+  'labels' |
+  'permissions' |
+  'notifications' |
+  'faq' |
+  'tasks' |
+  'customers' |
+  '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
 export type Permissions = {

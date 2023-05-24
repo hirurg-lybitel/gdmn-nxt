@@ -13,6 +13,7 @@ import { useGetCustomerQuery, useGetCustomersCrossQuery, useGetCustomersQuery } 
 import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
 import CustomerInfo from '../../../customers/CustomerDetails/customer-info/customer-info';
 import { ICustomer } from '@gsbelarus/util-api-types';
+import CustomerDeals from '../../../customers/CustomerDetails/customer-deals/customer-deals';
 
 const useStyles = makeStyles(() => ({
   card: {
@@ -101,6 +102,7 @@ export function CustomerDetails(props: CustomerDetailsProps) {
                 <Tab label="Акты выполненных работ" value="2" />
                 <Tab label="Выписки по р/с" value="3" />
                 <Tab label="Договоры" value="4" />
+                <Tab label="Сделки" value="5" />
               </TabList>
             </Box>
             <Divider />
@@ -115,6 +117,9 @@ export function CustomerDetails(props: CustomerDetailsProps) {
             </TabPanel>
             <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''} >
               <ContractsList companyId={Number(customerId)} />
+            </TabPanel>
+            <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''} >
+              <CustomerDeals customerId={Number(customerId)} />
             </TabPanel>
           </TabContext>
         </Stack>
