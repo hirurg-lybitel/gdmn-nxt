@@ -107,3 +107,10 @@ export type GedeminUser = {
   rank?: string;
   colorMode?: ColorMode
 }
+
+export interface IChanges {
+  id: number;
+  fieldName: string,
+  oldValue: string | number | undefined;
+  newValue: string | number | undefined;
+};

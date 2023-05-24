@@ -315,16 +315,15 @@ const get: RequestHandler = async (req, res) => {
               NAME: el['CREATOR_NAME'],
             },
           }),
-          ...(el['PERFORMER_ID'] && {
-            PERFORMERS: [{
+          PERFORMERS: []
+            .concat(el['PERFORMER_ID'] ? [{
               ID: el['PERFORMER_ID'],
               NAME: el['PERFORMER_NAME'],
-            },
-            {
+            }] : [])
+            .concat(el['SECOND_PERFORMER_ID'] ? [{
               ID: el['SECOND_PERFORMER_ID'],
               NAME: el['SECOND_PERFORMER_NAME'],
-            }],
-          }),
+            }] : []),
           ...(el['DEP_ID'] && {
             DEPARTMENT: {
               ID: el['DEP_ID'],

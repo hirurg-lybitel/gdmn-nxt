@@ -77,12 +77,10 @@ export function KanbanTasks(props: KanbanTasksProps) {
   const classes = useStyles();
 
   const [openEidtForm, setOpenEditForm] = useState(false);
-
   const { data: tasks = [], refetch, isFetching } = useGetTasksQuery(card?.ID || -1);
   const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
   const [updateTask, { isSuccess: updatedTaskSuccess }] = useUpdateTaskMutation();
   const [deleteTask, { isSuccess: deletedTaskSuccess }] = useDeleteTaskMutation();
-  const [addHistory] = useAddHistoryMutation();
   const user = useSelector<RootState, UserState>(state => state.user);
 
   const changes = useRef<IChanges[]>([]);
@@ -102,114 +100,8 @@ export function KanbanTasks(props: KanbanTasksProps) {
     }
   }, [isFetching, updatedTaskSuccess, deletedTaskSuccess]);
 
-  useEffect(() => {
-    if ((updatedTaskSuccess) && changes.current.length > 0) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: card?.ID || -1,
-          USR$TYPE: '2',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-
-      changes.current = [];
-    };
-  }, [updatedTaskSuccess]);
-
-  useEffect(() => {
-    if (addedTaskSuccess && addedTask) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: item.id,
-          USR$TYPE: '1',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-
-      changes.current = [];
-    };
-  }, [addedTaskSuccess, addedTask]);
-
-  useEffect(() => {
-    if ((deletedTaskSuccess) && changes.current.length > 0) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: item.id,
-          USR$TYPE: '3',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-
-      changes.current = [];
-    };
-  }, [deletedTaskSuccess]);
-
-  const compareTasks = useCallback((newTask: IKanbanTask, oldTask: IKanbanTask) => {
-    const changesArr: IChanges[] = [];
-
-    const creator = newTask.CREATOR;
-    const performer = newTask.PERFORMER;
-
-    if (creator?.ID !== oldTask.CREATOR?.ID) {
-      changesArr.push({
-        id: card?.ID || -1,
-        fieldName: `Постановщик задачи "${newTask.USR$NAME}"`,
-        oldValue: oldTask.CREATOR?.NAME,
-        newValue: creator?.NAME
-      });
-    };
-
-    if (performer?.ID !== oldTask?.PERFORMER?.ID) {
-      changesArr.push({
-        id: card?.ID || -1,
-        fieldName: `Исполнитель задачи "${newTask.USR$NAME}"`,
-        oldValue: oldTask?.PERFORMER?.NAME,
-        newValue: performer?.NAME
-      });
-    };
-
-    if (newTask.USR$NAME !== oldTask.USR$NAME) {
-      changesArr.push({
-        id: card?.ID || -1,
-        fieldName: 'Описание задачи',
-        oldValue: oldTask?.USR$NAME,
-        newValue: newTask?.USR$NAME
-      });
-    };
-
-    if ((newTask.USR$DEADLINE || -1) !== (oldTask.USR$DEADLINE || -1)) {
-      changesArr.push({
-        id: card?.ID || -1,
-        fieldName: `Срок выполнения задачи "${newTask.USR$NAME}"`,
-        oldValue: oldTask?.USR$DEADLINE ? new Date(oldTask?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
-        newValue: newTask?.USR$DEADLINE ? new Date(newTask?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
-      });
-    };
-
-    return changesArr;
-  }, [card]);
-
   const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
     const newTask = { ...row, USR$CLOSED: checked };
-
-    changes.current.push({
-      id: newTask.ID,
-      fieldName: `Задача "${newTask.USR$NAME}"`,
-      oldValue: row.USR$CLOSED ? 'Выполнена' : 'Не выполнена',
-      newValue: newTask.USR$CLOSED ? 'Выполнена' : 'Не выполнена',
-    });
 
     updateTask(newTask);
   }, []);
@@ -231,20 +123,12 @@ export function KanbanTasks(props: KanbanTasksProps) {
     };
 
     if (deleting) {
-      changes.current.push({
-        id: card?.ID || -1,
-        fieldName: 'Задача',
-        oldValue: newTask.USR$NAME || '',
-        newValue: newTask.USR$NAME || '',
-      });
       deleteTask(newTask.ID);
       setOpenEditForm(false);
       return;
     };
 
     if (newTask.ID > 0) {
-      changes.current = compareTasks(newTask, currentTask.current!);
-
       updateTask(newTask);
       setOpenEditForm(false);
       return;
@@ -271,7 +155,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
     USR$NAME: '',
     CREATOR: {
       ID: user.userProfile?.contactkey || -1,
-      NAME: ''
+      NAME: user.userProfile?.userName || ''
     },
     USR$CLOSED: false
   }), []);

@@ -89,7 +89,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       ? task.CREATOR
       : {
         ID: user.userProfile?.contactkey || -1,
-        NAME: ''
+        NAME: user.userProfile?.userName || ''
       },
     USR$CLOSED: task?.USR$CLOSED || false,
     USR$DEADLINE: task?.USR$DEADLINE,

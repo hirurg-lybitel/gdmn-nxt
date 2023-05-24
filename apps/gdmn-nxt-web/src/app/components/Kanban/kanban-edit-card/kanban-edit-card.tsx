@@ -575,16 +575,25 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0]?.ID) || null}
                           loading={employeesIsFetching}
                           loadingText="Загрузка данных..."
-                          // onOpen={formik.handleBlur}
                           onChange={(event, value) => {
+                            const secondPerformer = formik.values.DEAL?.PERFORMERS?.[1];
+                            const newPerformers = []
+                              .concat(value ? value : [])
+                              .concat(secondPerformer ? secondPerformer as any : []);
+
                             formik.setFieldValue(
                               'DEAL',
-                              { ...formik.values.DEAL, PERFORMERS: [value ? value : null, formik.values.DEAL?.PERFORMERS?.[1]] }
+                              {
+                                ...formik.values.DEAL,
+                                PERFORMERS: newPerformers
+                              }
                             );
-                            formik.setFieldValue(
-                              'USR$MASTERKEY',
-                              value ? stages[1].ID : stages[0].ID
-                            );
+
+                            if (!value && newPerformers.length === 0) {
+                              formik.setFieldValue('USR$MASTERKEY', stages[0].ID);
+                              return;
+                            }
+                            formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
                           }}
                           renderOption={(props, option) => {
                             return (
@@ -599,12 +608,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               label="Исполнитель"
                               disabled={formik.values.DEAL?.USR$READYTOWORK || false}
                               placeholder="Выберите сотрудника"
-                              name="DEAL.PERFORMER"
                             />
                           )}
                         />
                         <Autocomplete
                           fullWidth
+                          disabled={(formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
                           options={employees?.filter(empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID) || []}
                           getOptionLabel={option => option.NAME}
                           filterOptions={filterOptions(50, 'NAME')}
@@ -612,16 +621,24 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1]?.ID) || null}
                           loading={employeesIsFetching}
                           loadingText="Загрузка данных..."
-                          // onOpen={formik.handleBlur}
                           onChange={(event, value) => {
+                            const firstPerformer = formik.values.DEAL?.PERFORMERS?.[0];
+                            const newPerformers = []
+                              .concat(firstPerformer ? firstPerformer as any : [])
+                              .concat(value ? value : []);
+
                             formik.setFieldValue(
                               'DEAL',
-                              { ...formik.values.DEAL, PERFORMERS: [formik.values.DEAL?.PERFORMERS?.[0], value ? value : null] }
+                              {
+                                ...formik.values.DEAL,
+                                PERFORMERS: newPerformers
+                              }
                             );
-                            formik.setFieldValue(
-                              'USR$MASTERKEY',
-                              value ? stages[1].ID : stages[0].ID
-                            );
+                            if (!value && newPerformers.length === 0) {
+                              formik.setFieldValue('USR$MASTERKEY', stages[0].ID);
+                              return;
+                            }
+                            formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
                           }}
                           renderOption={(props, option) => {
                             return (
@@ -636,7 +653,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               label="Второй исполнитель"
                               disabled={formik.values.DEAL?.USR$READYTOWORK || false}
                               placeholder="Выберите сотрудника"
-                              name="DEAL.SECOND_PERFORMER"
                             />
                           )}
                         />
