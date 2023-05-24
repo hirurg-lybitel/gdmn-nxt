@@ -80,7 +80,11 @@ const Transition = forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
-  return <Slide direction="left" ref={ref} {...props} />;
+  return <Slide
+    direction="left"
+    ref={ref}
+    {...props}
+         />;
 });
 
 export interface CustomerEditProps {
@@ -199,7 +203,11 @@ export function CustomerEdit(props: CustomerEditProps) {
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '16px 24px' }}>
-          <Stack direction="column" spacing={3} style={{ flex: 1, display: 'flex' }}>
+          <Stack
+            direction="column"
+            spacing={3}
+            style={{ flex: 1, display: 'flex' }}
+          >
             <FormikProvider value={formik}>
               <Form id="customerEdit" onSubmit={formik.handleSubmit}>
                 <TabContext value={tabIndex}>
@@ -211,7 +219,12 @@ export function CustomerEdit(props: CustomerEditProps) {
                   </Box>
                   <Divider style={{ margin: 0 }} />
                   <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
-                    <Stack direction="column" spacing={3} flex={1} width="100%">
+                    <Stack
+                      direction="column"
+                      spacing={3}
+                      flex={1}
+                      width="100%"
+                    >
                       <TextField
                         label="Наименование"
                         className={classes.helperText}
@@ -359,7 +372,11 @@ export function CustomerEdit(props: CustomerEditProps) {
                         )}
                         renderTags={(value: readonly ILabel[], getTagProps) =>
                           value.map((option: ILabel, index: number) =>
-                            <Box key={index} pr={0.5} pb={0.5}>
+                            <Box
+                              key={index}
+                              pr={0.5}
+                              pb={0.5}
+                            >
                               <LabelMarker label={option} {...getTagProps({ index })}/>
                             </Box>
                           )
@@ -381,7 +398,11 @@ export function CustomerEdit(props: CustomerEditProps) {
       <DialogActions>
         {
           customer && deleteable &&
-          <IconButton onClick={handleDeleteClick} size="small" hidden>
+          <IconButton
+            onClick={handleDeleteClick}
+            size="small"
+            hidden
+          >
             <DeleteIcon />
           </IconButton>
         }
