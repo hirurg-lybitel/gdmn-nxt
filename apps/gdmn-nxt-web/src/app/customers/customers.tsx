@@ -1,35 +1,28 @@
-import { DataGridPro, GridColDef, ruRU, GridFilterModel, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
+import { GridColDef, GridFilterModel, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Chip, Box, List, ListItemButton, Snackbar, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
-import Alert from '@mui/material/Alert';
+import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SummarizeIcon from '@mui/icons-material/Summarize';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from './customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { IBusinessProcess, IContactWithID, IContractJob, ICustomer, ICustomerContract, ICustomerContractWithID, ILabel, IWorkType } from '@gsbelarus/util-api-types';
+import { IContactWithID, ICustomer, ICustomerContract, ILabel, IWorkType } from '@gsbelarus/util-api-types';
 import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
-import CustomNoRowsOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
-import CustomLoadingOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomLoadingOverlay';
 import CustomizedCard from '../components/Styled/customized-card/customized-card';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import CustomersFilter, {
   IFilteringData
 } from './customers-filter/customers-filter';
 import SearchBar from '../components/search-bar/search-bar';
-import CustomGridToolbarOverlay from '../components/Styled/styled-grid/DataGridProOverlay/CustomGridToolbarOverlay';
 import { makeStyles } from '@mui/styles';
 import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation, useGetCustomersCrossQuery, ISortingData } from '../features/customer/customerApi_new';
 import { clearFilterData, saveFilterData, saveFilterModel } from '../store/filtersSlice';
-import { useGetLabelsQuery } from '../features/labels';
 import LabelMarker from '../components/Labels/label-marker/label-marker';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetDepartmentsQuery } from '../features/departments/departmentsApi';
@@ -40,6 +33,8 @@ import DataField from './dataField/DataField';
 import { LoadingButton } from '@mui/lab';
 import StyledGrid from '../components/Styled/styled-grid/styled-grid';
 import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
+import usePermissions from '../components/helpers/hooks/usePermissions';
+import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -97,6 +92,7 @@ export interface CustomersProps {}
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
 
+  const userPermissions = usePermissions();
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
@@ -287,12 +283,14 @@ export function Customers(props: CustomersProps) {
             <IconButton {...detailsComponent} disabled={customerFetching}>
               <VisibilityIcon fontSize="small" color="primary" />
             </IconButton>
-            <IconButton
-              onClick={handleCustomerEdit(customerId)}
-              disabled={customerFetching}
-            >
-              <EditOutlinedIcon fontSize="small" color="primary" />
-            </IconButton>
+            <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
+              <IconButton
+                onClick={handleCustomerEdit(customerId)}
+                disabled={customerFetching}
+              >
+                <EditOutlinedIcon fontSize="small" color="primary" />
+              </IconButton>
+            </PermissionsGate>
           </Box>
         );
       }
@@ -426,11 +424,12 @@ export function Customers(props: CustomersProps) {
   };
 
   const lineDoubleClick: GridEventListener<'rowDoubleClick'> = (
-    params, // GridRowParams
-    event, // MuiEvent<React.MouseEvent<HTMLElement>>
-    details, // GridCallbackDetails
+    params,
+    event,
+    details,
   ) => {
     const id = Number(params.id);
+    if (!userPermissions?.customers.PUT) return;
     handleCustomerEdit(id)();
   };
 
@@ -520,18 +519,19 @@ export function Customers(props: CustomersProps) {
       <Divider />
       <CardToolbar>
         <Stack direction="row" spacing={2}>
-          <Box display="flex" justifyContent="center" >
-            {/* <Button onClick={() => customerRefetch()} disabled={customerFetching} startIcon={<RefreshIcon/>}>Обновить</Button> */}
-            <Button
-              variant="contained"
-              onClick={handleAddOrganization}
-              disabled={customerFetching}
-              startIcon={<AddIcon />}
-              size="small"
-            >
-              Добавить
-            </Button>
-          </Box>
+          <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
+            <Box display="flex" justifyContent="center" >
+              <Button
+                variant="contained"
+                onClick={handleAddOrganization}
+                disabled={customerFetching}
+                startIcon={<AddIcon />}
+                size="small"
+              >
+                Добавить
+              </Button>
+            </Box>
+          </PermissionsGate>
           <Box flex={1} />
           <Box>{memoSearchBar}</Box>
           <Box display="flex" justifyContent="center" width={30}>
