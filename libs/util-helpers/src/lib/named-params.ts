@@ -8,9 +8,9 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
         return fn.call(attachment, transaction, sqlStmt, parameters as any[]);
       } else {
         const parsed = parseParams(sqlStmt);
-        return fn.call(attachment, transaction, parsed.sqlStmt, parsed.paramNames?.map( p => parameters[p] ?? null ));
+        return fn.call(attachment, transaction, parsed.sqlStmt, parsed.paramNames?.map(p => parameters[p] ?? null));
       }
-    }
+    };
   };
 
   return {
@@ -27,7 +27,7 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
       } else {
         const parsed = parseParams(sqlStmt);
         s = parsed.sqlStmt;
-        p = parsed.paramNames?.map( p => parameters[p] ?? null );
+        p = parsed.paramNames?.map(p => parameters[p] ?? null);
       }
 
       const statement = await attachment.prepare(transaction, s);
@@ -41,7 +41,33 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
       } finally {
         await statement.dispose();
       }
-    }
-  }
+    },
+    fetchAsSingletonObject: async (sqlStmt: string, parameters?: Parameters) => {
+      let s;
+      let p;
+
+      if (!parameters || Array.isArray(parameters)) {
+        s = sqlStmt;
+        p = parameters;
+      } else {
+        const parsed = parseParams(sqlStmt);
+        s = parsed.sqlStmt;
+        p = parsed.paramNames?.map(p => parameters[p] ?? null);
+      }
+
+      const statement = await attachment.prepare(transaction, s);
+      try {
+        const resultSet = await statement.executeQuery(transaction, p);
+        try {
+          const result = await resultSet.fetchAsObject();
+          return (result.length === 0 ? {} : result[0]) as any;
+        } finally {
+          await resultSet.close();
+        }
+      } finally {
+        await statement.dispose();
+      }
+    },
+  };
 };
 

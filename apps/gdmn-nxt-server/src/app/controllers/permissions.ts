@@ -10,7 +10,6 @@ const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
 function getSessionIdByUserId(userId: number, sessions) {
   const keys = Object.keys(sessions);
-  console.log('getSessionIdByUserId', sessions, keys);
   for (const key of keys) {
     if (sessions[key].userId === userId) return key;
   }

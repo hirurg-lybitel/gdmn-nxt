@@ -1,9 +1,10 @@
-import { IDeal, IEntities, IKanbanCard, IKanbanColumn, IRequestResult } from '@gsbelarus/util-api-types';
+import { IChanges, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
 import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
 import { genId } from '../../utils/genId';
+import { addHistory } from './history';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -64,7 +65,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, executeSingletonAsObject, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -74,8 +75,11 @@ const upsert: RequestHandler = async (req, res) => {
     const isInsertMode = !id;
 
     const deal: IDeal = req.body['DEAL'];
+    const card: IKanbanCard = { ...req.body };
 
-    const cardId = await (() => isInsertMode ? genId(attachment, transaction) : id)();
+    const userId = req.session.userId || -1;
+
+    const cardId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
     const dealId = await (() => isInsertMode ? genId(attachment, transaction) : deal.ID)();
 
     let paramsValues;
@@ -99,6 +103,103 @@ const upsert: RequestHandler = async (req, res) => {
         throw new Error('Не может быть исполнено. Есть незакрытые задачи');
       }
     }
+
+    /** Формирование истории изменений */
+    sql = `
+      SELECT
+        d.USR$AMOUNT, d.USR$CONTACTKEY, d.USR$NAME, d.USR$PERFORMER, d.USR$SECOND_PERFORMER,
+        con.ID AS CONTACT_ID, con.NAME AS CONTACT_NAME,
+        performer_1.ID AS PERMORMER_1_ID, performer_1.NAME AS PERMORMER_1_NAME,
+        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME
+      FROM USR$CRM_DEALS d
+        LEFT JOIN GD_CONTACT con ON con.ID = d.USR$CONTACTKEY
+        LEFT JOIN GD_CONTACT performer_1 ON performer_1.ID = d.USR$PERFORMER
+        LEFT JOIN GD_CONTACT performer_2 ON performer_2.ID = d.USR$SECOND_PERFORMER
+      WHERE d.ID = :dealId`;
+
+    const oldDealRecord = await fetchAsSingletonObject(sql, { dealId });
+
+    sql = `
+      SELECT
+        USR$MASTERKEY
+      FROM USR$CRM_KANBAN_CARDS
+      WHERE ID = :cardId`;
+
+    const oldCardRecord = await fetchAsSingletonObject(sql, { cardId });
+
+    sql = `
+      SELECT ID, USR$NAME
+      FROM USR$CRM_KANBAN_COLUMNS`;
+
+    const columns = await fetchAsObject(sql);
+
+    const changes: IKanbanHistory[] = [];
+    if ((Number(deal.USR$AMOUNT) || 0) !== (Number(oldDealRecord?.USR$AMOUNT) || 0)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Сумма',
+        USR$OLD_VALUE: (Number(oldDealRecord.USR$AMOUNT) || 0).toString(),
+        USR$NEW_VALUE: (Number(deal.USR$AMOUNT) || 0).toString(),
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.CONTACT?.ID !== oldDealRecord?.CONTACT_ID) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Клиент',
+        USR$OLD_VALUE: oldDealRecord.CONTACT_NAME,
+        USR$NEW_VALUE: deal.CONTACT.NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if (deal?.USR$NAME !== oldDealRecord?.USR$NAME) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Наименование',
+        USR$OLD_VALUE: oldDealRecord?.USR$NAME,
+        USR$NEW_VALUE: deal.USR$NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if ((deal.PERFORMERS?.[0]?.ID || -1) !== (oldDealRecord.PERMORMER_1_ID || -1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Исполнитель',
+        USR$OLD_VALUE: oldDealRecord?.PERMORMER_1_NAME,
+        USR$NEW_VALUE: deal.PERFORMERS?.[0]?.NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if ((deal.PERFORMERS?.[1]?.ID || -1) !== (oldDealRecord.PERMORMER_2_ID || -1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Второй исполнитель',
+        USR$OLD_VALUE: oldDealRecord?.PERMORMER_2_NAME,
+        USR$NEW_VALUE: deal.PERFORMERS?.[1]?.NAME,
+        USR$USERKEY: userId
+      });
+    };
+    if (card.USR$MASTERKEY !== oldCardRecord?.USR$MASTERKEY) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Этап',
+        USR$OLD_VALUE: columns.find(column => column['ID'] === oldCardRecord.USR$MASTERKEY)?.['USR$NAME'] || '',
+        USR$NEW_VALUE: columns.find(column => column['ID'] === card.USR$MASTERKEY)?.['USR$NAME'] || '',
+        USR$USERKEY: userId
+      });
+    };
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
@@ -187,6 +288,10 @@ const upsert: RequestHandler = async (req, res) => {
       RETURNING ${returnFieldsNames}`;
 
     const cardRecord: IKanbanCard = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+
+
+    /** Сохранение истории изменений */
+    changes.forEach(c => addHistory(req.sessionID, c));
 
     const result: IRequestResult<{ cards: IKanbanCard[] }> = {
       queries: {

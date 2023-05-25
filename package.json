@@ -8,11 +8,13 @@
     "start:prod": "cross-env NODE_ENV=production yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web --prod",
     "build": "cross-env NODE_ENV=production yarn nx run-many --target=build --all --parallel --prod",
     "test": "yarn nx run-many --target=test --all --parallel",
-    "pm2": "pm2 start pm2.config.js",
-    "pm2:stop": "pm2 stop crm",
-    "pm2:mon": "pm2 monitor crm",
-    "pm2:stat": "pm2 status crm",
-    "init": "yarn --network-timeout 1000000 && yarn build && yarn pm2"
+    "pm2:start": "pm2 start pm2.config.js",
+    "pm2:stop": "pm2 stop gdmn-crm",
+    "pm2:mon": "pm2 monitor gdmn-crm",
+    "pm2:stat": "pm2 status gdmn-crm",
+    "init": "yarn --network-timeout 1000000 && yarn build && yarn pm2",
+    "docker:build": "docker compose -f docker-compose.build.yml up -d",
+    "docker:run": "docker compose -f docker-compose.run.yml up -d"
   },
   "private": true,
   "dependencies": {
