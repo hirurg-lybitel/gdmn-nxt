@@ -1,7 +1,7 @@
 import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import React, { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
@@ -12,6 +12,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
+import UpdateList from '../../update-list/update-list';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -126,7 +127,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
 interface MainLayoutProps{
 }
 
-export const MainLayout = (props:MainLayoutProps) => {
+export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -173,50 +174,57 @@ export const MainLayout = (props:MainLayoutProps) => {
     }
   ];
 
+  const [openUpdates, setOpenUpdates] = useState(true);
+  const handleOpenUpdates = () => setOpenUpdates(true);
+  const handleCloseUpdates = () => setOpenUpdates(false);
+
   return (
-    <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          transition: menuOpened ? theme.transitions.create('width') : 'none'
-        }}
-      >
-        <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
-          <Header onDrawerToggle={handleDrawerToggle} />
-        </Toolbar>
-      </AppBar>
-      <CustomMenu
-        anchorEl={anchorProfileEl}
-        handleClose={() => setAnchorProfileEl(null)}
-        items={profileMenuItems}
-      />
-      <Sidebar
-        open={menuOpened}
-        onToogle={handleDrawerToggle}
-      />
-      <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
-        <Outlet />
-      </Main>
-      <Snackbar
-        open={openSnackBar}
-        autoHideDuration={5000}
-        onClose={handleSnackBarClose}
-        sx={{
-          '& .MuiAlert-icon, .MuiAlert-action': {
-            alignItems: 'center',
-          }
-        }}
-      >
-        <Alert
-          onClose={handleSnackBarClose}
-          variant="filled"
-          severity="error"
-          style={{
-            fontSize: '1.2em'
+    <>
+      <UpdateList handleClose={handleCloseUpdates} open={openUpdates}/>
+      <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
+        <AppBar
+          position="fixed"
+          elevation={0}
+          sx={{
+            transition: menuOpened ? theme.transitions.create('width') : 'none'
           }}
-        >{errorMessage}</Alert>
-      </Snackbar>
-    </Box>
+        >
+          <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
+            <Header onDrawerToggle={handleDrawerToggle} openUpdates={handleOpenUpdates} />
+          </Toolbar>
+        </AppBar>
+        <CustomMenu
+          anchorEl={anchorProfileEl}
+          handleClose={() => setAnchorProfileEl(null)}
+          items={profileMenuItems}
+        />
+        <Sidebar
+          open={menuOpened}
+          onToogle={handleDrawerToggle}
+        />
+        <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
+          <Outlet />
+        </Main>
+        <Snackbar
+          open={openSnackBar}
+          autoHideDuration={5000}
+          onClose={handleSnackBarClose}
+          sx={{
+            '& .MuiAlert-icon, .MuiAlert-action': {
+              alignItems: 'center',
+            }
+          }}
+        >
+          <Alert
+            onClose={handleSnackBarClose}
+            variant="filled"
+            severity="error"
+            style={{
+              fontSize: '1.2em'
+            }}
+          >{errorMessage}</Alert>
+        </Snackbar>
+      </Box>
+    </>
   );
 };
