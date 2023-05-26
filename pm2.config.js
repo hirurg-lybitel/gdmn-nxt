@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'crm',
+      name: 'gdmn-crm',
       script: 'dist/apps/gdmn-nxt-server/main.js',
       watch: true,
       ignore_watch: ['node_modules'],

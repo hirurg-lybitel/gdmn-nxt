@@ -7,7 +7,7 @@ import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import styles from './kanban-list.module.less';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAddCardMutation, useAddHistoryMutation, useDeleteCardMutation, useUpdateCardMutation } from '../../../features/kanban/kanbanApi';
-import { compareCards, IChanges } from '../../../pages/Managment/deals/deals';
+import { IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
@@ -86,46 +86,6 @@ export function KanbanList(props: KanbanListProps) {
   const [deletingCardIDs, setDeletingCardIDs] = useState<number[]>([]);
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
-  useEffect(() => {
-    if ((updateCardSuccess) && changes.current.length > 0) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: item.id,
-          USR$TYPE: '2',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-
-      changes.current = [];
-    };
-  }, [updateCardSuccess]);
-
-  useEffect(() => {
-    if (addCardSuccess && addedCard) {
-      changes.current.forEach(item =>
-        addHistory({
-          ID: -1,
-          USR$CARDKEY: addedCard[0].ID,
-          USR$TYPE: '1',
-          USR$DESCRIPTION: item.fieldName,
-          USR$OLD_VALUE: item.oldValue?.toString() || '',
-          USR$NEW_VALUE: item.newValue?.toString() || '',
-          USR$USERKEY: user.userProfile?.id || -1
-        })
-      );
-      if (lastCardShouldClear) {
-        setLastCardShouldClear(false);
-      } else {
-        setLastAddedCard(addedCard[0]);
-      }
-      changes.current = [];
-    };
-  }, [addCardSuccess, addedCard]);
-
   const lastCard = useMemo(() => {
     if (!lastAddedCard) return undefined;
     const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === lastAddedCard?.ID);
@@ -153,8 +113,6 @@ export function KanbanList(props: KanbanListProps) {
 
       return true;
     });
-
-    changes.current = compareCards(columns, newCard, oldCard);
   };
 
   const onDelete = async (deletingCard: IKanbanCard) => {

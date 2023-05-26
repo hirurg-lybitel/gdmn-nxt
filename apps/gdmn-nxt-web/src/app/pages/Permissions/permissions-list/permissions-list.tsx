@@ -1,17 +1,19 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
-import { GridColDef } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridColumns, GridSortModel } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery, useUpdateMatrixMutation } from '../../../features/permissions';
 import styles from './permissions-list.module.less';
+import { useMemo, useState } from 'react';
+import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 
 /* eslint-disable-next-line */
 export interface PermissionsListProps {}
 
 const initialStateDataGrid: GridInitialStatePro = {
-  pinnedColumns: { left: ['NAME'] }
+  pinnedColumns: { left: [GRID_TREE_DATA_GROUPING_FIELD] }
 };
 
 export function PermissionsList(props: PermissionsListProps) {
@@ -29,7 +31,7 @@ export function PermissionsList(props: PermissionsListProps) {
     });
   };
 
-  const columns: GridColDef[] = userGroups?.map(ug => ({
+  const columns: GridColumns = userGroups?.map(ug => ({
     field: 'USERGROUP_' + ug.ID,
     headerName: ug.NAME,
     flex: 1,
@@ -37,35 +39,49 @@ export function PermissionsList(props: PermissionsListProps) {
     editable: false,
     type: 'boolean',
     minWidth: 150,
-    renderCell: (params: any) => {
-      const actionID = params.id;
+    renderCell: ({ row, id }) => {
+      if (Object.keys(row).length === 0) return <></>;
+      const actionID = id;
       const matrixNode = matrix?.filter(c => c.ACTION.ID === actionID).find(f => f.USERGROUP.ID === ug.ID);
       const checked = matrixNode?.MODE === 1 || false;
 
       return <Checkbox
         disabled={matrixFetching}
         checked={checked}
-        onChange={CheckBoxOnChange(matrixNode?.ID, params.row, ug)}
-             />;
-    },
-    renderHeader: (params) => {
-      return (
-        <div
-          className={`MuiDataGrid-columnHeaderTitle css-1jbbcbn-MuiDataGrid-columnHeaderTitle ${styles.columnHeader}`}
-          onClick={() => console.log('onClick')}
-        >
-          {params.colDef.headerName}
-        </div>
-      );
+        onChange={CheckBoxOnChange(matrixNode?.ID, row, ug)}
+      />;
     },
   })) || [];
 
-  columns.unshift({
-    field: 'NAME',
+  // columns.unshift({
+  //   field: 'NAME',
+  //   headerName: 'Действие',
+  //   minWidth: 300,
+  //   headerAlign: 'center'
+  // });
+
+  const rows = useMemo(() => actions?.map(action => {
+    const hierarchy = (() => {
+      const names = action.NAME.split('/');
+      if (names.length === 1) {
+        return names;
+      };
+      return [names[0].trim(), action.NAME];
+    })();
+    return { ...action, hierarchy };
+  }), [actions]);
+
+  const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {
+    return row?.hierarchy || [];
+  };
+
+  const groupingColDef: DataGridProProps['groupingColDef'] = {
     headerName: 'Действие',
-    minWidth: 200,
-    headerAlign: 'center'
-  });
+    width: 300,
+    minWidth: 250,
+    flex: 1,
+    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params} />,
+  };
 
   return (
     <CustomizedCard
@@ -88,14 +104,21 @@ export function PermissionsList(props: PermissionsListProps) {
         <Stack flex={1}>
           <Box style={{ height: '40px' }} />
           <StyledGrid
+            treeData
+            getTreeDataPath={getTreeDataPath}
+            groupingColDef={groupingColDef}
             columns={columns}
-            rows={actions || []}
+            rows={rows || []}
             loading={actionsLoading || userGroupsLoading || matrixLoading}
             getRowId={row => row.ID}
             hideFooter
             disableColumnReorder
             disableColumnMenu
             initialState={initialStateDataGrid}
+            sortModel={[
+              { field: GRID_TREE_DATA_GROUPING_FIELD, sort: 'asc' }
+            ]}
+            disableChildrenSorting
           />
         </Stack>
       </CardContent>
