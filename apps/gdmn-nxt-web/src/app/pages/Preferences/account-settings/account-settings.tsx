@@ -74,11 +74,12 @@ export function AccountSettings(props: AccountSettingsProps) {
       userId,
       body: {
         AVATAR: settings?.AVATAR || '',
-        COLORMODE: typeTheme
+        COLORMODE: typeTheme,
+        LASTVERSION: settings?.LASTVERSION || ''
       }
     });
   };
-  const handleChange = async (event:any) => {
+  const handleChange = async (event: any) => {
     if (!userId) {
       return;
     }

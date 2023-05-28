@@ -1,4 +1,5 @@
 import { faqApi } from './../features/FAQ/faqApi';
+import { updatesApi } from './../features/updates/updatesApi';
 import { Action, combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
@@ -66,6 +67,7 @@ const reducers = combineReducers({
   [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
   [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
   [faqApi.reducerPath]: faqApi.reducer,
+  [updatesApi.reducerPath]: updatesApi.reducer,
   [kanbanCatalogsApi.reducerPath]: kanbanCatalogsApi.reducer,
   [kanbanFiltersApi.reducerPath]: kanbanFiltersApi.reducer,
 });
@@ -76,7 +78,7 @@ const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Act
     state = undefined;
   }
   return reducers(state, action);
-}
+};
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === 'development',
@@ -108,6 +110,7 @@ export const store = configureStore({
     .concat(businessProcessesApi.middleware)
     .concat(profileSettingsApi.middleware)
     .concat(faqApi.middleware)
+    .concat(updatesApi.middleware)
     .concat(kanbanCatalogsApi.middleware)
     .concat(kanbanFiltersApi.middleware),
 });

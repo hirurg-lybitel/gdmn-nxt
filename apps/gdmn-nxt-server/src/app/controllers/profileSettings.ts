@@ -14,7 +14,7 @@ const get: RequestHandler = async (req, res) => {
   try {
     const sqlResult = await fetchAsObject(`
       SELECT
-        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode
+        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
@@ -62,7 +62,7 @@ const set: RequestHandler = async (req, res) => {
 
   const userId = parseIntDef(req.params.userId, -1);
 
-  const { AVATAR: avatar, COLORMODE: colorMode } = req.body;
+  const { AVATAR: avatar, COLORMODE: colorMode, LASTVERSION: lastVersion } = req.body;
 
   try {
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
@@ -71,11 +71,11 @@ const set: RequestHandler = async (req, res) => {
     await blob.write(blobBuffer);
     await blob.close();
     const sqlResult = await fetchAsObject(`
-      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE)
-      VALUES(:userId, :avatar, :colorMode)
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
-    { userId, avatar: blob, colorMode });
+    { userId, avatar: blob, colorMode, lastVersion });
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },

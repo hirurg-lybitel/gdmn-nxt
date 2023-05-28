@@ -1,7 +1,7 @@
 import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
-import React, { SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logoutUser, UserState } from '../../features/user/userSlice';
@@ -174,13 +174,9 @@ export const MainLayout = (props: MainLayoutProps) => {
     }
   ];
 
-  const [openUpdates, setOpenUpdates] = useState(true);
-  const handleOpenUpdates = () => setOpenUpdates(true);
-  const handleCloseUpdates = () => setOpenUpdates(false);
-
   return (
     <>
-      <UpdateList handleClose={handleCloseUpdates} open={openUpdates}/>
+      <UpdateList/>
       <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
         <AppBar
           position="fixed"
@@ -190,7 +186,7 @@ export const MainLayout = (props: MainLayoutProps) => {
           }}
         >
           <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
-            <Header onDrawerToggle={handleDrawerToggle} openUpdates={handleOpenUpdates} />
+            <Header onDrawerToggle={handleDrawerToggle} />
           </Toolbar>
         </AppBar>
         <CustomMenu

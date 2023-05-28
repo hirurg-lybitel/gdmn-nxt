@@ -273,6 +273,7 @@ export type ActionName =
   'faq' |
   'tasks' |
   'customers' |
+  'updates' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 

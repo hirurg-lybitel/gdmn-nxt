@@ -76,7 +76,7 @@ export function Sidebar(props: SidebarProps) {
             ...theme.menu,
             width: theme.drawerWidth,
             borderRight: 'none',
-            paddingTop: '25px',
+            marginTop: '25px',
             [theme.breakpoints.up('md')]: {
               top: '50px'
             }

@@ -4,7 +4,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress, Skeleton } from '@mui/material';
-import style from './faq.module.less';
+import style from './updateHistory.module.less';
 import * as React from 'react';
 import { useState, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -12,7 +12,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
-import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
+import { updatesApi, fullUpdate } from '../../features/updates/updatesApi';
 import { useTheme, Theme } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
@@ -33,26 +33,26 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export default function FAQ() {
-  const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
+  const { data: updates = [], isFetching, isLoading } = updatesApi.useGetAllUpdatesQuery();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
   const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
-  const [faq, setFaq] = useState<fullFaq>();
-  const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
-  const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
-  const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
+  const [update, setUpdate] = useState<fullUpdate>();
+  const [addUpdate, addUpdateObj] = updatesApi.useAddUpdateMutation();
+  const [editUpdate, editUpdateObj] = updatesApi.useEditUpdateMutation();
+  const [deleteUpdate, deleteUpdateObj] = updatesApi.useDeleteUpdateMutation();
   const userPermissions = usePermissions();
 
   const componentIsFetching = isFetching;
 
-  const addFaqHandler = (question: string, answer: string) => {
-    addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
+  const addUpdateHandler = (version: string, changes: string) => {
+    addUpdate({ 'USR$VERSION': version, 'USR$CHANGES': changes });
   };
-  const editFaqHandler = (question: string, answer: string, id: number) => {
-    editFaq([{ 'USR$QUESTION': question, 'USR$ANSWER': answer }, id]);
+  const editUpdateHandler = (version: string, changes: string, id: number) => {
+    editUpdate([{ 'USR$VERSION': version, 'USR$CHANGES': changes }, id]);
   };
-  const deleteFaqHandler = (id: number) => {
-    deleteFaq(id);
+  const deleteUpdateHandler = (id: number) => {
+    deleteUpdate(id);
   };
 
   const handleOpenAddPopup = () => {
@@ -63,8 +63,8 @@ export default function FAQ() {
     setIsOpenedAddPopup(false);
   };
 
-  const handleOpenEditPopup = (editableFaq: fullFaq) => () => {
-    setFaq(editableFaq);
+  const handleOpenEditPopup = (editableUpdate: fullUpdate) => () => {
+    setUpdate(editableUpdate);
     setIsOpenedEditPopup(true);
   };
 
@@ -73,16 +73,16 @@ export default function FAQ() {
   };
 
   const handleDelete = useCallback(() => {
-    if (faq) {
+    if (update) {
       handleConfirmCancelClick();
-      deleteFaqHandler(faq.ID);
+      deleteUpdateHandler(update.ID);
     }
-  }, [faq]);
+  }, [update]);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const handleDeleteClick = (deletedFaq: fullFaq) => () => {
-    setFaq(deletedFaq);
+  const handleDeleteClick = (deletedFaq: fullUpdate) => () => {
+    setUpdate(deletedFaq);
     setConfirmOpen(true);
   };
 
@@ -100,15 +100,15 @@ export default function FAQ() {
       }
       cancelClick={handleConfirmCancelClick}
     />
-  , [confirmOpen, addFaqHandler, handleDelete, editFaqHandler, handleConfirmCancelClick]);
+  , [confirmOpen, addUpdateHandler, handleDelete, editUpdateHandler, handleConfirmCancelClick]);
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
 
-  const skeletonItems = useMemo(() => (count: number): fullFaq[] => {
-    const skeletonFaqItems: fullFaq[] = [];
-    const skeletonFaqItem = {} as fullFaq;
+  const skeletonItems = useMemo(() => (count: number): fullUpdate[] => {
+    const skeletonFaqItems: fullUpdate[] = [];
+    const skeletonFaqItem = {} as fullUpdate;
     for (let i = 0; i < count; i++) {
       skeletonFaqItems.push(
         { ...skeletonFaqItem, ID: i }
@@ -118,7 +118,7 @@ export default function FAQ() {
     return skeletonFaqItems;
   }, []);
 
-  const skeletonFaqsCount: fullFaq[] = skeletonItems(10);
+  const skeletonUpdatesCount: fullUpdate[] = skeletonItems(10);
 
 
   const classes = useStyles();
@@ -132,14 +132,14 @@ export default function FAQ() {
             close={handleCloseEditPopup}
             isOpened={isOpenedEditPopup}
             isAddPopup={false}
-            faq={faq}
-            editFaq={editFaqHandler}
+            update={update}
+            editUpdate={editUpdateHandler}
           />
           <Popup
             close={handleCloseAddPopup}
             isOpened={isOpenedAddPopup}
             isAddPopup={true}
-            addFaq={addFaqHandler}
+            addUpdate={addUpdateHandler}
           />
         </>
       }
@@ -147,12 +147,12 @@ export default function FAQ() {
         <CustomizedCard className={style.card} borders>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <CardHeader
-              title={<Typography variant="h3">База знаний</Typography>}
+              title={<Typography variant="h3">История обновлений</Typography>}
             />
             <div style={{ padding: '5px 10px' }}>
-              <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
+              <PermissionsGate actionAllowed={userPermissions?.updates.POST}>
                 <Button
-                  disabled={addFaqObj.isLoading}
+                  disabled={addUpdateObj.isLoading}
                   variant="contained"
                   onClick={handleOpenAddPopup}
                 >Добавить</Button>
@@ -164,10 +164,10 @@ export default function FAQ() {
           <CardContent className={style.scrollBarContainer}>
             <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
               <Grid item xs={12}>
-                {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
+                {(componentIsFetching ? skeletonUpdatesCount : updates).map(item =>
 
                   <div key={item.ID}>
-                    {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
+                    {(componentIsFetching ? skeletonUpdatesCount : updates)?.indexOf(item) !== 0 && <Divider/>}
                     <div className={style.faqList}>
                       {componentIsFetching ?
                         <div style={{ margin: '20px', width: '100%' }}>
@@ -190,14 +190,14 @@ export default function FAQ() {
                               <Typography variant="h4">
                                 {/* {item.USR$QUESTION} */}
                                 <ReactMarkdown>
-                                  {item.USR$QUESTION}
+                                  {item.USR$VERSION}
                                 </ReactMarkdown>
                               </Typography>
                             </AccordionSummary>
                             <AccordionDetails className={style.details}>
                               <Typography variant="body1" component="div">
                                 <ReactMarkdown >
-                                  {item.USR$ANSWER}
+                                  {item.USR$CHANGES}
                                 </ReactMarkdown>
                               </Typography>
                             </AccordionDetails>
@@ -206,21 +206,21 @@ export default function FAQ() {
                       }
                       {!componentIsFetching &&
                         <>
-                          <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
+                          <PermissionsGate actionAllowed={userPermissions?.updates.PUT}>
                             <IconButton
                               color="primary"
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                              disabled={deleteUpdateObj.isLoading || editUpdateObj.isLoading}
                               style={{ marginTop: '20px' }}
                               onClick={handleOpenEditPopup(item)}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </PermissionsGate>
-                          <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
+                          <PermissionsGate actionAllowed={userPermissions?.updates.DELETE}>
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                              disabled={deleteUpdateObj.isLoading || editUpdateObj.isLoading}
                               onClick={handleDeleteClick(item)}
                             >
                               <DeleteIcon />

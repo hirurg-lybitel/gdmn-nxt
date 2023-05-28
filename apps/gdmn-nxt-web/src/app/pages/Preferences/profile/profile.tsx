@@ -34,7 +34,8 @@ export function Profile(props: ProfileProps) {
         userId: userProfile?.id || -1,
         body: {
           AVATAR: reader.result?.toString() || '',
-          COLORMODE: settings?.COLORMODE
+          COLORMODE: settings?.COLORMODE,
+          LASTVERSION: settings?.LASTVERSION || ''
         }
       });
     };
@@ -83,10 +84,18 @@ export function Profile(props: ProfileProps) {
         <CardHeader title={<Typography variant="h3">Аккаунт</Typography>} />
         <Divider />
         <CardContent className={styles['card-content']}>
-          <Stack direction="row" flex={1} spacing={2} >
+          <Stack
+            direction="row"
+            flex={1}
+            spacing={2}
+          >
             <Box position="relative">
               {isLoading || updateIsLoading
-                ? <Skeleton variant="circular" height={300} width={300} />
+                ? <Skeleton
+                  variant="circular"
+                  height={300}
+                  width={300}
+                  />
                 :
                 <Avatar
                   className={styles.image}
@@ -102,9 +111,17 @@ export function Profile(props: ProfileProps) {
                   <DeleteIcon />
                 </Fab>
               </Box>
-              <Box position="absolute" top={250} left={245}>
+              <Box
+                position="absolute"
+                top={250}
+                left={245}
+              >
                 <label htmlFor="contained-button-file">
-                  <Fab component="span" color="primary" disabled={isLoading || updateIsLoading}>
+                  <Fab
+                    component="span"
+                    color="primary"
+                    disabled={isLoading || updateIsLoading}
+                  >
                     <AddPhotoAlternateIcon />
                   </Fab>
                 </label>
@@ -120,7 +137,11 @@ export function Profile(props: ProfileProps) {
               />
             </Box>
             <Divider orientation="vertical" flexItem />
-            <Stack direction="column" spacing={2} flex={1} >
+            <Stack
+              direction="column"
+              spacing={2}
+              flex={1}
+            >
               <TextField
                 label="Должность"
                 value={settings?.RANK || ''}

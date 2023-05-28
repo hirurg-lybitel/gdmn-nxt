@@ -93,6 +93,7 @@ export interface IProfileSettings {
   AVATAR?: string | null;
   RANK?: string;
   COLORMODE?: ColorMode;
+  LASTVERSION?: string;
 }
 
 export enum ColorMode {

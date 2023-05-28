@@ -1,12 +1,16 @@
 import { Button, IconButton, MenuItem, Modal, Select, Typography } from '@mui/material';
 import styles from './update-list.module.less';
 import { Box } from '@mui/system';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import CloseIcon from '@mui/icons-material/Close';
-
-/* eslint-disable-next-line */
-
+import ReactMarkdown from 'react-markdown';
+import { RootState } from '../store';
+import { UserState } from '../features/user/userSlice';
+import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../features/profileSettings';
+import { useSelector } from 'react-redux';
+import { updatesApi } from '../features/updates/updatesApi';
+import { Skeleton } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -19,69 +23,54 @@ const style = {
   boxShadow: 24,
   p: 4,
   height: '90vh',
-  borderRadius: '20px'
+  borderRadius: '20px',
 };
 
 export interface UpdateListProps {
-  handleClose: () => void,
-  open: boolean
-}
-
-interface content{
-  head: string,
-  text: string[]
 }
 
 interface Update {
   version: string,
-  content: content[]
+  changes: string
 }
 
 const initialUpdate: Update[] = [
   {
     version: '7.33',
-    content: [
-      { head: 'testHead1', text: ['testTddddddddddd ddddddddddddddddddddddddddddddddddddddddddddddd ddddddddddddddddddddddd ddddddddddddddext1_1dddddddd ddddddddddddddddd', 'testText1_2', 'testText1_3', 'testText1_4'] },
-      { head: 'testHead2', text: ['testText2_1', 'testText2_2', 'testText2_3', 'testText2_4', 'testText2_5', 'testText2_6'] },
-      { head: 'testHead3', text: ['testText3_1', 'testText3_2', 'testText3_3', 'testText3_4', 'testText3_5'] },
-      { head: 'testHead4', text: ['testText4_1', 'testText4_2', 'testText4_3', 'testText4_4'] },
-      { head: 'testHead5', text: ['testText5_1', 'testText5_2', 'testText5_3'] },
-      { head: 'testHead6', text: ['testText6_1', 'testText6_2', 'testText6_3', 'testText6_4', 'testText6_5'] },
-      { head: 'testHead7', text: ['testText7_1', 'testText7_2', 'testText7_3', 'testText7_4'] },
-      { head: 'testHead8', text: ['testText8_1', 'testText8_2'] },
-      { head: 'testHead9', text: ['testText9_1', 'testText9_2', 'testText9_3', 'testText9_4'] },
-    ]
+    changes: ` # sdfsdfs
+    выа выа  ипапаи паи ку  ыкп иы пуы п
+    куфкпивыкеиыикеы икеи еи еиык ике кеиыкеиыи
+    иеиеыыиеи кеиы иикеы иык икеиыеикы иеи екеиы иек иеиыие ике икеике ыи икеыи ыкикеы
+    иыке иеы еиыиы иы иые еиы иые иы еиыыи иы иы еиыеи кеиы еи иеие
+    и кеикеи фкеи ы иекеиы кеи кеиыкеиы кеи кеи ыкеи кеи ие еи кеиы икеы еиыккеиыкеиыкеиы икеы кеиы кеиы кеи
+    и икеы кеиы кеиыи кеыкеиы кеиыкеиыкеиытщотещуиеуи еуилзуиьзиетщаиытшщкеиы ишщиыетшеиытшщ мтотшщфку иыикеыи икеы `
   },
-  {
-    version: '7.32a',
-    content: [
-      { head: 'testHead2', text: ['testText2_1', 'testText2_2', 'testText2_3', 'testText2_4', 'testText2_5', 'testText2_6'] },
-      { head: 'testHead7', text: ['testText7_1', 'testTextfffffffffffffff7_2', 'testText7_3', 'testText7_4'] },
-      { head: 'testHead8', text: ['testText8_1', 'testText8_2'] },
-      { head: 'testHead9', text: ['testText9_1', 'testText9_2', 'testText9_3', 'testText9_4'] },
-
-    ]
-  },
-  {
-    version: '7.32',
-    content: [
-      { head: 'testHead6', text: ['testText6_1', 'testText6_2', 'testText6_3', 'testText6_4', 'testText6_5'] },
-      { head: 'testHead7', text: ['testTedddddddddddddddxt7_1', 'testText7_2', 'testText7_3', 'testText7_4'] },
-      { head: 'testHead8', text: ['testText8_1', 'testText8_2'] },
-      { head: 'testHead9', text: ['testText9_1', 'testText9dddddddddd_2', 'testText9_3', 'testText9_4'] },
-
-    ]
-  }
 ];
 
 export function UpdateList(props: UpdateListProps) {
-  const { open, handleClose } = props;
-  const [version, setVersion] = useState<string>('');
-  const updates = initialUpdate.find(update => update.version === version) || initialUpdate[0];
-
-  const handleChange = (e: any) => {
-    setVersion(e.target.value);
+  // const version = '';
+  // const updates = initialUpdate.find(update => update.version === version) || initialUpdate[0];
+  const { data: updates = [], isFetching, isLoading: updatesIsLoading } = updatesApi.useGetAllUpdatesQuery();
+  const { userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const { data: settings, isLoading: userIsLoading } = useGetProfileSettingsQuery(userProfile?.id || -1);
+  const [setSettings, { isLoading }] = useSetProfileSettingsMutation();
+  const [open, setOpen] = useState(false);
+  const handleClose = () => {
+    setOpen(false);
+    setSettings({
+      userId: userProfile?.id || -1,
+      body: {
+        AVATAR: settings?.AVATAR || '',
+        COLORMODE: settings?.COLORMODE,
+        LASTVERSION: updates?.[updates?.length - 1]?.USR$VERSION
+      }
+    });
   };
+
+  useEffect(() => {
+    if (!updates || !settings) return;
+    if (settings?.LASTVERSION !== updates?.[updates?.length - 1]?.USR$VERSION) setOpen(true);
+  }, [settings, updates]);
 
   return (
     <div>
@@ -100,56 +89,21 @@ export function UpdateList(props: UpdateListProps) {
           >
             <CloseIcon />
           </IconButton>
-          <PerfectScrollbar>
-            <div style={{ paddingRight: '20px' }}>
+          <PerfectScrollbar options={{ suppressScrollX: true }} >
+            <div style={{ paddingRight: '20px', height: 'calc(100% - 60px)' }}>
               <Typography
                 variant="h1"
                 align="center"
               >
-
-                <Select
-                  value={updates.version}
-                  onChange={handleChange}
-                  displayEmpty
-                >
-                  {initialUpdate.map((update, index) =>
-                    <MenuItem key={index} value={update.version}>
-                      <h1 style={{ margin: '0px' }}>
-                        <em>{update.version}</em>
-                      </h1>
-                    </MenuItem>
-                  )}
-
-                </Select>
-
+                <h1 style={{ margin: '0px' }}>
+                  <em>{updates?.[updates?.length - 1]?.USR$VERSION}</em>
+                </h1>
               </Typography>
-
-              {updates.content.map((content, index1) =>
-                <>
-                  <Typography
-                    variant="h1"
-                    key={index1}
-                  >
-                    <h2 style={{ margin: '0px' }}>
-                      {content.head}
-                    </h2>
-                  </Typography>
-                  <ul>
-                    {content.text.map((text, index2) =>
-                      <Typography
-                        variant="h4"
-                        key={index2}
-                      >
-                        <h3 style={{ margin: '0px' }}>
-                          <li>
-                            {text}
-                          </li>
-                        </h3>
-                      </Typography>
-                    )}
-                  </ul>
-                </>
-              )}
+              <Typography variant="h1" component="div">
+                <ReactMarkdown className={styles.mark}>
+                  {updates?.[updates?.length - 1]?.USR$CHANGES}
+                </ReactMarkdown>
+              </Typography>
             </div>
           </PerfectScrollbar>
         </Box>
