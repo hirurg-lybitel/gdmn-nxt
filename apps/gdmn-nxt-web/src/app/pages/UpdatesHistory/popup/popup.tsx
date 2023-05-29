@@ -175,7 +175,7 @@ export default function Popup({ close, isOpened, isAddPopup, update, addUpdate, 
               <div>
                 <CardHeader
                   title={<Typography variant="h4">{
-                    isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
+                    isAddPopup ? 'Добавление обновление' : 'Редактирование обновления'
                   }</Typography>}
                 />
                 <Divider/>
@@ -185,7 +185,7 @@ export default function Popup({ close, isOpened, isAddPopup, update, addUpdate, 
                       rows={4}
                       className={style.textArea}
                       id="outlined-textarea"
-                      placeholder="Вопрос"
+                      placeholder="Версия"
                       multiline
                       {...register('version', {
                         required: 'Обязательное поле'
@@ -212,7 +212,7 @@ export default function Popup({ close, isOpened, isAddPopup, update, addUpdate, 
                           rows={12}
                           className={style.textArea}
                           id="outlined-textarea"
-                          placeholder="Ответ"
+                          placeholder="Изменения"
                           multiline
                           {...register('changes', {
                             required: 'Обязательное поле'
