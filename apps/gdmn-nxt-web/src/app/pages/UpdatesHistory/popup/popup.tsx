@@ -175,7 +175,7 @@ export default function Popup({ close, isOpened, isAddPopup, update, addUpdate, 
               <div>
                 <CardHeader
                   title={<Typography variant="h4">{
-                    isAddPopup ? 'Добавление обновление' : 'Редактирование обновления'
+                    isAddPopup ? 'Добавление обновления' : 'Редактирование обновления'
                   }</Typography>}
                 />
                 <Divider/>
