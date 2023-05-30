@@ -70,7 +70,7 @@ const get: RequestHandler = async (req, res) => {
           JOIN USR$CRM_PERMISSIONS_CROSS cr ON ul.USR$GROUPKEY = cr.USR$GROUPKEY
           JOIN GD_RUID r ON r.ID = cr.USR$ACTIONKEY
         WHERE
-          /* Если есть право на действие Видёть все */
+          /* Если есть право на действие Видеть все */
           r.XID = 370486335 AND r.DBID = 1811180906
           AND cr.USR$MODE = 1
           AND ul.USR$USERKEY = ${userId})`;
@@ -91,7 +91,7 @@ const get: RequestHandler = async (req, res) => {
             u.ID = ${userId}
             /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
             AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
-            OR con.ID IN (performer.ID, creator.ID))), 1, 0), 1)`;
+            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID))), 1, 0), 1)`;
 
     const filter = `
       /** Фильтрация */
@@ -548,19 +548,10 @@ const getTasks: RequestHandler = async (req, res) => {
     const checkCardsVisibility = `
       AND 1 = IIF(NOT ${checkFullView},
         IIF(EXISTS(
-          SELECT DISTINCT
-            con.NAME,
-            ud.USR$DEPOTKEY
+          SELECT u.ID
           FROM GD_USER u
-            JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
-            LEFT JOIN USR$CRM_USERSDEPOT ud ON ud.USR$USERKEY = u.ID
-            JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$USERKEY = u.ID
-            LEFT JOIN GD_P_GETRUID(ul.USR$GROUPKEY) r ON 1 = 1
-          WHERE
-            u.ID = ${userId}
-            /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
-            AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
-            OR con.ID IN (performer.ID, creator.ID))), 1, 0), 1)`;
+          JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+          WHERE con.ID IN (performer.ID, creator.ID) AND u.ID = ${userId}), 1, 0), 1)`;
 
     const queries = [
       {
