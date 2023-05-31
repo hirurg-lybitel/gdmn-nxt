@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-export default function FAQ() {
+export default function UpdateHistory() {
   const { data: updates = [], isFetching, isLoading } = updatesApi.useGetAllUpdatesQuery();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
@@ -150,7 +150,7 @@ export default function FAQ() {
               title={<Typography variant="h3">История обновлений</Typography>}
             />
             <div style={{ padding: '5px 10px' }}>
-              <PermissionsGate actionAllowed={userPermissions?.updates.POST}>
+              <PermissionsGate actionAllowed={userPermissions?.updates?.POST}>
                 <Button
                   disabled={addUpdateObj.isLoading}
                   variant="contained"
@@ -206,7 +206,7 @@ export default function FAQ() {
                       }
                       {!componentIsFetching &&
                         <>
-                          <PermissionsGate actionAllowed={userPermissions?.updates.PUT}>
+                          <PermissionsGate actionAllowed={userPermissions?.updates?.PUT}>
                             <IconButton
                               color="primary"
                               disabled={deleteUpdateObj.isLoading || editUpdateObj.isLoading}
@@ -216,7 +216,7 @@ export default function FAQ() {
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </PermissionsGate>
-                          <PermissionsGate actionAllowed={userPermissions?.updates.DELETE}>
+                          <PermissionsGate actionAllowed={userPermissions?.updates?.DELETE}>
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}

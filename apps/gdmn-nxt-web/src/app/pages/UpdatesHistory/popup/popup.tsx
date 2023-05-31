@@ -172,103 +172,101 @@ export default function Popup({ close, isOpened, isAddPopup, update, addUpdate, 
             className={style.QuestionForm}
           >
             <Card className={style.card}>
-              <div>
-                <CardHeader
-                  title={<Typography variant="h4">{
-                    isAddPopup ? 'Добавление обновления' : 'Редактирование обновления'
-                  }</Typography>}
-                />
-                <Divider/>
-                <CardContent style={{ flex: 1 }} >
-                  <div className={style.inputContainer}>
-                    <TextField
-                      rows={4}
-                      className={style.textArea}
-                      id="outlined-textarea"
-                      placeholder="Версия"
-                      multiline
-                      {...register('version', {
-                        required: 'Обязательное поле'
-                      })}
-                      onChange={() => {
-                        clearErrors('version');
-                      }}
-                    />
-                    {
-                      errors.version
+              <CardHeader
+                title={<Typography variant="h4">{
+                  isAddPopup ? 'Добавление обновления' : 'Редактирование обновления'
+                }</Typography>}
+              />
+              <Divider/>
+              <CardContent style={{ flex: 1 }} >
+                <div className={style.inputContainer}>
+                  <TextField
+                    rows={4}
+                    className={style.textArea}
+                    id="outlined-textarea"
+                    placeholder="Версия"
+                    multiline
+                    {...register('version', {
+                      required: 'Обязательное поле'
+                    })}
+                    onChange={() => {
+                      clearErrors('version');
+                    }}
+                  />
+                  {
+                    errors.version
                   && <div className={style.errorMessage}>{errors.version.message}</div>
-                    }
-                  </div>
-                  <TabContext value={tabIndex}>
-                    <Box>
-                      <TabList onChange={handleTabsChange}>
-                        <Tab label="Изменить" value="1" />
-                        <Tab label="Просмотреть" value="2" />
-                      </TabList>
-                    </Box>
-                    <TabPanel value="1" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <TextField
-                          rows={12}
-                          className={style.textArea}
-                          id="outlined-textarea"
-                          placeholder="Изменения"
-                          multiline
-                          {...register('changes', {
-                            required: 'Обязательное поле'
-                          })}
-                          onChange={() => {
-                            clearErrors('changes');
-                          }}
-                        />
-                        {
-                          errors.changes
+                  }
+                </div>
+                <TabContext value={tabIndex}>
+                  <Box>
+                    <TabList onChange={handleTabsChange}>
+                      <Tab label="Изменить" value="1" />
+                      <Tab label="Просмотреть" value="2" />
+                    </TabList>
+                  </Box>
+                  <TabPanel value="1" className={style.tab}>
+                    <div className={style.inputContainer}>
+                      <TextField
+                        rows={12}
+                        className={style.textArea}
+                        id="outlined-textarea"
+                        placeholder="Изменения"
+                        multiline
+                        {...register('changes', {
+                          required: 'Обязательное поле'
+                        })}
+                        onChange={() => {
+                          clearErrors('changes');
+                        }}
+                      />
+                      {
+                        errors.changes
                         && <div className={style.errorMessage}>{errors.changes.message}</div>
-                        }
+                      }
+                    </div>
+                  </TabPanel>
+                  <TabPanel value="2" className={style.tab}>
+                    <div className={style.inputContainer}>
+                      <div className={style.previewBackground}>
+                        <PerfectScrollbar className={style.preview}>
+                          <div className={style.previewContent}>
+                            <ReactMarkdown className={style.markdown}>
+                              {
+                                getValues('changes')
+                              }
+                            </ReactMarkdown>
+                          </div>
+                        </PerfectScrollbar>
                       </div>
-                    </TabPanel>
-                    <TabPanel value="2" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <div className={style.previewBackground}>
-                          <PerfectScrollbar className={style.preview}>
-                            <div className={style.previewContent}>
-                              <ReactMarkdown className={style.markdown}>
-                                {
-                                  getValues('changes')
-                                }
-                              </ReactMarkdown>
-                            </div>
-                          </PerfectScrollbar>
-                        </div>
-                        {
-                          errors.changes
+                      {
+                        errors.changes
                         && <div className={style.errorMessage}>{errors.changes.message}</div>
-                        }
-                      </div>
-                    </TabPanel>
-                  </TabContext>
-                </CardContent>
-                <Divider/>
-                <CardActions className={style.buttonsContainer}>
-                  <Box flex={1} />
-                  <div>
-                    <Button
-                      type="button"
-                      variant="text"
-                      onClick={clearAndClosePopup}
-                      className={style.button}
-                    >Отменить</Button>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      onClick={onSubmitClick}
-                      className={`${style.saveButton} ${style.button}`}
-                    >
-                      {isAddPopup ? 'Добавить' : 'Сохранить'}
-                    </Button>
-                  </div>
-                </CardActions>
-              </div>
+                      }
+                    </div>
+                  </TabPanel>
+                </TabContext>
+              </CardContent>
+              <Divider/>
+              <CardActions className={style.buttonsContainer}>
+                <Box flex={1} />
+                <div>
+                  <Button
+                    type="button"
+                    variant="text"
+                    onClick={clearAndClosePopup}
+                    className={style.button}
+                  >Отменить</Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    onClick={onSubmitClick}
+                    className={`${style.saveButton} ${style.button}`}
+                  >
+                    {isAddPopup ? 'Добавить' : 'Сохранить'}
+                  </Button>
+                </div>
+              </CardActions>
             </Card>
           </form>
         </div>

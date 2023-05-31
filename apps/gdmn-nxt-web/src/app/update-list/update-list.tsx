@@ -19,7 +19,6 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: '50vw',
   bgcolor: 'background.paper',
-  border: '2px solid #000',
   boxShadow: 24,
   p: 4,
   height: '90vh',
@@ -28,24 +27,6 @@ const style = {
 
 export interface UpdateListProps {
 }
-
-interface Update {
-  version: string,
-  changes: string
-}
-
-const initialUpdate: Update[] = [
-  {
-    version: '7.33',
-    changes: ` # sdfsdfs
-    выа выа  ипапаи паи ку  ыкп иы пуы п
-    куфкпивыкеиыикеы икеи еи еиык ике кеиыкеиыи
-    иеиеыыиеи кеиы иикеы иык икеиыеикы иеи екеиы иек иеиыие ике икеике ыи икеыи ыкикеы
-    иыке иеы еиыиы иы иые еиы иые иы еиыыи иы иы еиыеи кеиы еи иеие
-    и кеикеи фкеи ы иекеиы кеи кеиыкеиы кеи кеи ыкеи кеи ие еи кеиы икеы еиыккеиыкеиыкеиы икеы кеиы кеиы кеи
-    и икеы кеиы кеиыи кеыкеиы кеиыкеиыкеиытщотещуиеуи еуилзуиьзиетщаиытшщкеиы ишщиыетшеиытшщ мтотшщфку иыикеыи икеы `
-  },
-];
 
 export function UpdateList(props: UpdateListProps) {
   // const version = '';
@@ -69,8 +50,8 @@ export function UpdateList(props: UpdateListProps) {
 
   useEffect(() => {
     if (!updates || !settings) return;
-    if (settings?.LASTVERSION !== updates?.[updates?.length - 1]?.USR$VERSION) setOpen(true);
-  }, [settings, updates]);
+    if (settings?.LASTVERSION !== updates?.[updates?.length - 1]?.USR$VERSION && updates?.length !== 0) setOpen(true);
+  }, [updatesIsLoading, userIsLoading]);
 
   return (
     <div>
