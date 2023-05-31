@@ -47,7 +47,7 @@ import Profile from './app/pages/Preferences/profile/profile';
 import AccountSettings from './app/pages/Preferences/account-settings/account-settings';
 import NotificationCenter from './app/pages/NotificationCenter/notification-center/notification-center';
 import FAQ from './app/pages/FAQ/Index';
-import UpdatesHistory from './app/pages/UpdatesHistory/Index';
+import UpdatesHistory from './app/pages/UpdatesHistory';
 import { SnackbarProvider } from 'notistack';
 import NotFound from './app/pages/NotFound';
 import Analytics from './app/pages/Dashboard/analytics/analytics';
