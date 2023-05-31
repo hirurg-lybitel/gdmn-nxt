@@ -1,122 +1,110 @@
-import { IRequestResult } from '@gsbelarus/util-api-types';
+import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '../utils/db-connection';
 import { genId } from '../utils/genId';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_CRM_UPDATES';
 
-const get: RequestHandler = async(req, res) => {
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
-
-  const { id } = req.params;
+const get: RequestHandler = async (req, res) => {
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
   try {
-    const _schema = {};
-
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try {
-        const data = await rs.fetchAsObject();
-
-        return [name, id ? data.length > 0 ? data[0] : {} : data];
-      } finally {
-        await rs.close();
+    const _schema: IDataSchema = {
+      updates: {
+        ONDATE: {
+          type: 'date'
+        }
       }
     };
 
-    const queries = [
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const data = await fetchAsObject(query);
+      const sch = _schema[name];
+
+      if (sch) {
+        for (const rec of data) {
+          for (const fld of Object.keys(rec)) {
+            if ((sch[fld]?.type === 'date' || sch[fld]?.type === 'timestamp') && rec[fld] !== null) {
+              rec[fld] = (rec[fld] as Date).getTime();
+            }
+          }
+        }
+      };
+      return data;
+    };
+
+    const query =
       {
-        name: id ? 'update' : 'updates',
+        name: 'updates',
         query: `
-          SELECT ID, USR$VERSION, USR$CHANGES
+          SELECT ID, USR$VERSION VERSION, USR$CHANGES CHANGES, USR$ONDATE ONDATE
           FROM USR$CRM_UPDATES
-          ${id ? ' WHERE ID = ?' : ''}`,
-        params: id ? [id] : undefined,
-      },
-    ];
+          ORDER BY USR$VERSION DESC`,
+      };
+
+    const updates = await Promise.resolve(execQuery(query));
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map(execQuery)))
+        updates
       },
-      _params: id ? [{ id: id }] : undefined,
       _schema
     };
 
-    return res.status(200).json(result);
+    res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send(resultError(error.message));
+    res.status(500).send(resultError(error.message));
   } finally {
-    await releaseReadTransaction(req.sessionID);
+    await releaseReadTransaction();
   }
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
-
   const isInsertMode = (req.method === 'POST');
 
   const id = parseInt(req.params.id);
   if (!isInsertMode) {
     if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
   };
+
+  const { VERSION, CHANGES, ONDATE } = req.body;
+
+  const regEx = new RegExp(/^\d+(\.\d+){2}$/);
+  if (!regEx.test(VERSION)) {
+    return res.status(422).send(resultError('Поле "version" не соответсвует формату <major.minor.patch>'));
+  }
+
+  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
+
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const data = await attachment.executeSingletonAsObject(transaction, query, params);
+    const sql = `
+      UPDATE OR INSERT INTO USR$CRM_UPDATES(ID, USR$VERSION, USR$CHANGES, USR$ONDATE)
+      VALUES(:ID, :VERSION, :CHANGES, :ONDATE)
+      MATCHING(ID)
+      RETURNING ID`;
 
-      return [name, data];
-    };
-    const { erModel } = await importedModels;
-    const allFields = [...new Set(erModel.entities[eintityName].attributes.map(attr => attr.name))];
-    const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
-    const paramsValues = actualFields.map(field => {
-      return req.body[field];
-    });
-    let ID = id;
-    if (isInsertMode) {
-      ID = await genId(attachment, transaction);
-      if (actualFields.indexOf('ID') >= 0) {
-        paramsValues.splice(actualFields.indexOf('ID'), 1, ID);
+    const ID = await (() => {
+      if (isNaN(id) || id <= 0) {
+        return genId(attachment, transaction);
       };
-    };
-    const requiredFields = {
-      ID: ID,
-    };
-
-    for (const [key, value] of Object.entries(requiredFields)) {
-      if (!actualFields.includes(key)) {
-        actualFields.push(key);
-        paramsValues.push(value);
-      }
-    };
-
-    const actualFieldsNames = actualFields.join(',');
-    const paramsString = actualFields.map(_ => '?').join(',');
-    const query = {
-      name: 'update',
-      query: `
-        UPDATE OR INSERT INTO USR$CRM_UPDATES(${actualFieldsNames})
-        VALUES(${paramsString})
-        MATCHING(ID)
-        RETURNING ${actualFieldsNames}`,
-      params: paramsValues,
-    };
+      return id;
+    })() ;
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries([await Promise.resolve(execQuery(query))])
+        update: [... await fetchAsObject(sql, { ID, VERSION, CHANGES, ONDATE: new Date(ONDATE) })]
       },
       _params: id ? [{ id: id }] : undefined,
       _schema
     };
-    return res.status(200).json(result);
+    res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send(resultError(error.message));
+    res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
   };

@@ -10,15 +10,12 @@ import { Permissions } from '@gsbelarus/util-api-types';
 
 export interface PermissionsGateProps {
   children: ReactNode;
-  actionCode?: any;
-  scopes?: any[],
-  disableDefault?: boolean,
   show?: boolean;
   actionAllowed?: boolean
 }
 
 export function PermissionsGate(props: PermissionsGateProps) {
-  const { children, scopes, actionCode, disableDefault = true, show = false, actionAllowed = true } = props;
+  const { children, show = false, actionAllowed = true } = props;
 
   if (actionAllowed) return <>{children}</>;
 

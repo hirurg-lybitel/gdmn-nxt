@@ -1,5 +1,5 @@
 
-import { IRequestResult } from '@gsbelarus/util-api-types';
+import { IRequestResult, IUpdateHistory } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -18,36 +18,36 @@ export interface fullUpdate {
   ID: number
 }
 
-type updatesResponse = fullUpdate[];
-type IUpdatesRequestResult = IRequestResult<IUpdatess>
+// type UpdatesResponse = IUpdateHistory[];
+type IUpdatesRequestResult = IRequestResult<{ updates: IUpdateHistory[] }>
 
 export const updatesApi = createApi({
   reducerPath: 'updates',
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   tagTypes: ['updates'],
   endpoints: (builder) => ({
-    getAllUpdates: builder.query<updatesResponse, void>({
+    getAllUpdates: builder.query<IUpdateHistory[], void>({
       query: () => 'updates',
       transformResponse: (response: IUpdatesRequestResult) => response.queries?.updates || [],
       providesTags: result => ['updates']
     }),
-    addUpdate: builder.mutation<updates[], updates>({
+    addUpdate: builder.mutation<IUpdateHistory[], Partial<IUpdateHistory>>({
       query: (body) => ({
         url: 'updates',
         method: 'POST',
-        body
+        body: { ...body, ONDATE: new Date(body.ONDATE ?? -1).getTime() },
       }),
       invalidatesTags: ['updates']
     }),
-    editUpdate: builder.mutation<updates[], [updates, number]>({
-      query: ([body, id]) => ({
-        url: `updates/${id}`,
+    editUpdate: builder.mutation<IUpdateHistory[], Partial<IUpdateHistory>>({
+      query: (body) => ({
+        url: `updates/${body.ID}`,
         method: 'PUT',
-        body,
+        body: { ...body, ONDATE: new Date(body.ONDATE ?? -1).getTime() },
       }),
       invalidatesTags: ['updates']
     }),
-    deleteUpdate: builder.mutation<updates[], number>({
+    deleteUpdate: builder.mutation<IUpdateHistory[], number>({
       query: (id) => ({
         url: `updates/${id}`,
         method: 'DELETE',

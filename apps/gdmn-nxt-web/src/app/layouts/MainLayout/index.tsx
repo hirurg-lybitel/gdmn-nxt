@@ -12,7 +12,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
-import UpdateList from '../../update-list/update-list';
+import UpdatesInfo from '../../components/updates/updates-info/updates-info';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -176,7 +176,7 @@ export const MainLayout = (props: MainLayoutProps) => {
 
   return (
     <>
-      <UpdateList/>
+      <UpdatesInfo />
       <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
         <AppBar
           position="fixed"

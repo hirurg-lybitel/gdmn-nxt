@@ -282,3 +282,9 @@ export type Permissions = {
     [key in (ActionMethod)]: boolean;
   }
 }
+
+export interface IUpdateHistory extends IWithID {
+  VERSION: string;
+  CHANGES: string;
+  ONDATE: Date;
+}

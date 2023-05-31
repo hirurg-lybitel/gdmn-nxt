@@ -9,8 +9,8 @@ import { RootState } from '../store';
 import { UserState } from '../features/user/userSlice';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../features/profileSettings';
 import { useSelector } from 'react-redux';
-import { updatesApi } from '../features/updates/updatesApi';
 import { Skeleton } from '@mui/material';
+import { updatesApi } from '../features/updates';
 
 const style = {
   position: 'absolute',
@@ -36,26 +36,26 @@ export function UpdateList(props: UpdateListProps) {
   const { data: settings, isLoading: userIsLoading } = useGetProfileSettingsQuery(userProfile?.id || -1);
   const [setSettings, { isLoading }] = useSetProfileSettingsMutation();
   const [open, setOpen] = useState(false);
-  const handleClose = () => {
-    setOpen(false);
-    setSettings({
-      userId: userProfile?.id || -1,
-      body: {
-        AVATAR: settings?.AVATAR || '',
-        COLORMODE: settings?.COLORMODE,
-        LASTVERSION: updates?.[updates?.length - 1]?.USR$VERSION
-      }
-    });
-  };
+  // const handleClose = () => {
+  //   setOpen(false);
+  //   setSettings({
+  //     userId: userProfile?.id || -1,
+  //     body: {
+  //       AVATAR: settings?.AVATAR || '',
+  //       COLORMODE: settings?.COLORMODE,
+  //       LASTVERSION: updates?.[updates?.length - 1]?.USR$VERSION
+  //     }
+  //   });
+  // };
 
-  useEffect(() => {
-    if (!updates || !settings) return;
-    if (settings?.LASTVERSION !== updates?.[updates?.length - 1]?.USR$VERSION && updates?.length !== 0) setOpen(true);
-  }, [updatesIsLoading, userIsLoading]);
+  // useEffect(() => {
+  //   if (!updates || !settings) return;
+  //   if (settings?.LASTVERSION !== updates?.[updates?.length - 1]?.USR$VERSION && updates?.length !== 0) setOpen(true);
+  // }, [updatesIsLoading, userIsLoading]);
 
   return (
     <div>
-      <Modal
+      {/* <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -88,7 +88,7 @@ export function UpdateList(props: UpdateListProps) {
             </div>
           </PerfectScrollbar>
         </Box>
-      </Modal>
+      </Modal> */}
     </div>
   );
 }

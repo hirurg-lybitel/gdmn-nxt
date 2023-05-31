@@ -1,5 +1,4 @@
 import { faqApi } from './../features/FAQ/faqApi';
-import { updatesApi } from './../features/updates/updatesApi';
 import { Action, combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
@@ -34,6 +33,7 @@ import { businessProcessesApi } from '../features/business-processes';
 import { profileSettingsApi } from '../features/profileSettings';
 import { kanbanCatalogsApi } from '../features/kanban/kanbanCatalogsApi';
 import { kanbanFiltersApi } from '../features/kanban/kanbanFiltersApi';
+import { updatesApi } from '../features/updates';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
