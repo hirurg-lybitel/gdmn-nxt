@@ -25,7 +25,7 @@ const get: RequestHandler = async (req, res) => {
       if (r['AVATAR_BLOB'] !== null && typeof r['AVATAR_BLOB'] === 'object') {
         // eslint-disable-next-line dot-notation
         const readStream = await attachment.openBlob(transaction, r['AVATAR_BLOB']);
-        const blobLength = await readStream.length;
+        const blobLength = await readStream?.length;
         const resultBuffer = Buffer.alloc(blobLength);
 
         let size = 0;
@@ -66,7 +66,7 @@ const set: RequestHandler = async (req, res) => {
 
   try {
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
-    const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString.length : 0, charArrayString);
+    const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString?.length : 0, charArrayString);
     const blob = await attachment.createBlob(transaction);
     await blob.write(blobBuffer);
     await blob.close();

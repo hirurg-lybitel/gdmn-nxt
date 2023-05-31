@@ -145,11 +145,12 @@ export default function FAQ() {
       }
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <CardHeader
-              title={<Typography variant="h3">База знаний</Typography>}
-            />
-            <div style={{ padding: '5px 10px' }}>
+          <CardHeader
+            title={<Typography variant="h3">База знаний</Typography>}
+          />
+          <Divider />
+          <CardToolbar>
+            {/* <div style={{ padding: '5px 10px' }}>
               <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
                 <Button
                   disabled={addFaqObj.isLoading}
@@ -157,9 +158,8 @@ export default function FAQ() {
                   onClick={handleOpenAddPopup}
                 >Добавить</Button>
               </PermissionsGate>
-            </div>
-          </div>
-          <Divider />
+            </div> */}
+          </CardToolbar>
 
           <CardContent className={style.scrollBarContainer}>
             <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
@@ -206,7 +206,7 @@ export default function FAQ() {
                       }
                       {!componentIsFetching &&
                         <>
-                          <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
+                          {/* <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
                             <IconButton
                               color="primary"
                               disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
@@ -225,7 +225,7 @@ export default function FAQ() {
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate>
+                          </PermissionsGate> */}
                         </>
                       }
                     </div>
