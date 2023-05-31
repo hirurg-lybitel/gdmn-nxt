@@ -213,6 +213,7 @@ export function KanbanCard(props: KanbanCardProps) {
 
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
+    const isFirstColumn = columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0;
 
     return (
       <CustomizedCard
@@ -264,7 +265,10 @@ export function KanbanCard(props: KanbanCardProps) {
             right: 0,
           },
           '&:hover .number': {
-            display: 'none',
+            display: isFirstColumn ? 'none' : 'inline',
+          },
+          '&:hover': {
+            boxShadow: '0 4px 18px rgba(0,0,0,.3)'
           }
         }}
         onDoubleClick={doubleClick}
@@ -280,7 +284,7 @@ export function KanbanCard(props: KanbanCardProps) {
               variant="caption"
               color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             >{'#' + card.DEAL?.USR$NUMBER}</Typography>
-            {columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0
+            {isFirstColumn
               ?
               <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
                 <div

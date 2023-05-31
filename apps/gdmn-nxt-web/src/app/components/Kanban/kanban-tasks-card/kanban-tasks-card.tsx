@@ -78,6 +78,11 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           padding: '12px',
           cursor: 'pointer',
         }}
+        sx={{
+          '&:hover': {
+            boxShadow: '0 4px 18px rgba(0,0,0,.3)'
+          }
+        }}
       >
         <Stack spacing={1}>
           <Stack

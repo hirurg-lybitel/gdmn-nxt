@@ -120,9 +120,9 @@ export const updateNotifications = async (sessionId: string) => {
             COALESCE(taskType.USR$NAME, 'Выполнить'),
             COALESCE(task.USR$INPROGRESS, 0),
             CASE
-            WHEN :CONTACTKEY = d.USR$CREATORKEY THEN
+            WHEN :CONTACTKEY = task.USR$CREATORKEY THEN
               '**Исполнитель:** ' || COALESCE(performer.NAME, 'не указан')
-            WHEN :CONTACTKEY = d.USR$PERFORMER THEN
+            WHEN :CONTACTKEY = task.USR$PERFORMER THEN
               '**Постановщик:** ' || creator.NAME
             END
           FROM USR$CRM_DEALS d
