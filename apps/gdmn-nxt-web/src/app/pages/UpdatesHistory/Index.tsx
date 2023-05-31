@@ -216,7 +216,7 @@ export default function UpdateHistory() {
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </PermissionsGate>
-                          <PermissionsGate actionAllowed={userPermissions?.updates?.DELETE}>
+                          {/* <PermissionsGate actionAllowed={userPermissions?.updates?.DELETE}>
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}
@@ -225,7 +225,7 @@ export default function UpdateHistory() {
                             >
                               <DeleteIcon />
                             </IconButton>
-                          </PermissionsGate>
+                          </PermissionsGate> */}
                         </>
                       }
                     </div>
