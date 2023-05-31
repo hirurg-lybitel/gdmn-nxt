@@ -273,6 +273,7 @@ export type ActionName =
   'faq' |
   'tasks' |
   'customers' |
+  'updates' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -280,4 +281,10 @@ export type Permissions = {
   [key in ActionName]: {
     [key in (ActionMethod)]: boolean;
   }
+}
+
+export interface IUpdateHistory extends IWithID {
+  VERSION: string;
+  CHANGES: string;
+  ONDATE: Date;
 }

@@ -19,6 +19,9 @@ import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
 import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import usePermissions from '../../components/helpers/hooks/usePermissions';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -38,16 +41,17 @@ export default function FAQ() {
   const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
   const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
   const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
+  const userPermissions = usePermissions();
 
-  const componentIsFetching = isFetching; 
+  const componentIsFetching = isFetching;
 
-  const addFaqHandler = (question:string, answer:string) => {
+  const addFaqHandler = (question: string, answer: string) => {
     addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
   };
-  const editFaqHandler = (question:string, answer:string, id:number) => {
+  const editFaqHandler = (question: string, answer: string, id: number) => {
     editFaq([{ 'USR$QUESTION': question, 'USR$ANSWER': answer }, id]);
   };
-  const deleteFaqHandler = (id:number) => {
+  const deleteFaqHandler = (id: number) => {
     deleteFaq(id);
   };
 
@@ -55,7 +59,7 @@ export default function FAQ() {
     setIsOpenedAddPopup(true);
   };
 
-  const handleCloseAddPopup = ():void => {
+  const handleCloseAddPopup = (): void => {
     setIsOpenedAddPopup(false);
   };
 
@@ -102,8 +106,8 @@ export default function FAQ() {
     setExpanded(isExpanded ? panel : false);
   };
 
-  const skeletonItems = useMemo(() =>(count:number):fullFaq[] => {
-    const skeletonFaqItems:fullFaq[] = [];
+  const skeletonItems = useMemo(() => (count: number): fullFaq[] => {
+    const skeletonFaqItems: fullFaq[] = [];
     const skeletonFaqItem = {} as fullFaq;
     for (let i = 0; i < count; i++) {
       skeletonFaqItems.push(
@@ -114,7 +118,7 @@ export default function FAQ() {
     return skeletonFaqItems;
   }, []);
 
-  const skeletonFaqsCount:fullFaq[] = skeletonItems(10);
+  const skeletonFaqsCount: fullFaq[] = skeletonItems(10);
 
 
   const classes = useStyles();
@@ -145,11 +149,18 @@ export default function FAQ() {
             title={<Typography variant="h3">База знаний</Typography>}
           />
           <Divider />
-          {/* <CardToolbar>
-            <PermissionsGate actionCode={Action.CreateFAQ}>
-              <Button disabled={addFaqObj.isLoading} variant="contained" onClick={handleOpenAddPopup}>Добавить</Button>
-            </PermissionsGate>
-          </CardToolbar> */}
+          <CardToolbar>
+            {/* <div style={{ padding: '5px 10px' }}>
+              <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
+                <Button
+                  disabled={addFaqObj.isLoading}
+                  variant="contained"
+                  onClick={handleOpenAddPopup}
+                >Добавить</Button>
+              </PermissionsGate>
+            </div> */}
+          </CardToolbar>
+
           <CardContent className={style.scrollBarContainer}>
             <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
               <Grid item xs={12}>
@@ -160,7 +171,11 @@ export default function FAQ() {
                     <div className={style.faqList}>
                       {componentIsFetching ?
                         <div style={{ margin: '20px', width: '100%' }}>
-                          <Skeleton variant="text" width={'100%'} height={'40px'} />
+                          <Skeleton
+                            variant="text"
+                            width={'100%'}
+                            height={'40px'}
+                          />
                         </div>
                         :
                         <>
@@ -191,7 +206,7 @@ export default function FAQ() {
                       }
                       {!componentIsFetching &&
                         <>
-                          {/* <PermissionsGate actionCode={Action.EditFAQ}>
+                          {/* <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
                             <IconButton
                               color="primary"
                               disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
@@ -201,7 +216,7 @@ export default function FAQ() {
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </PermissionsGate>
-                          <PermissionsGate actionCode={Action.DeleteFAQ}>
+                          <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
                             <IconButton
                               color="primary"
                               style={{ marginTop: '17.5px' }}

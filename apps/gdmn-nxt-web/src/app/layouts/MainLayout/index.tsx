@@ -12,6 +12,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import { Header } from './Header';
+import UpdatesInfo from '../../components/updates/updates-info/updates-info';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -126,7 +127,7 @@ const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
 interface MainLayoutProps{
 }
 
-export const MainLayout = (props:MainLayoutProps) => {
+export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -174,49 +175,52 @@ export const MainLayout = (props:MainLayoutProps) => {
   ];
 
   return (
-    <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          transition: menuOpened ? theme.transitions.create('width') : 'none'
-        }}
-      >
-        <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
-          <Header onDrawerToggle={handleDrawerToggle} />
-        </Toolbar>
-      </AppBar>
-      <CustomMenu
-        anchorEl={anchorProfileEl}
-        handleClose={() => setAnchorProfileEl(null)}
-        items={profileMenuItems}
-      />
-      <Sidebar
-        open={menuOpened}
-        onToogle={handleDrawerToggle}
-      />
-      <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
-        <Outlet />
-      </Main>
-      <Snackbar
-        open={openSnackBar}
-        autoHideDuration={5000}
-        onClose={handleSnackBarClose}
-        sx={{
-          '& .MuiAlert-icon, .MuiAlert-action': {
-            alignItems: 'center',
-          }
-        }}
-      >
-        <Alert
-          onClose={handleSnackBarClose}
-          variant="filled"
-          severity="error"
-          style={{
-            fontSize: '1.2em'
+    <>
+      <UpdatesInfo />
+      <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
+        <AppBar
+          position="fixed"
+          elevation={0}
+          sx={{
+            transition: menuOpened ? theme.transitions.create('width') : 'none'
           }}
-        >{errorMessage}</Alert>
-      </Snackbar>
-    </Box>
+        >
+          <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
+            <Header onDrawerToggle={handleDrawerToggle} />
+          </Toolbar>
+        </AppBar>
+        <CustomMenu
+          anchorEl={anchorProfileEl}
+          handleClose={() => setAnchorProfileEl(null)}
+          items={profileMenuItems}
+        />
+        <Sidebar
+          open={menuOpened}
+          onToogle={handleDrawerToggle}
+        />
+        <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
+          <Outlet />
+        </Main>
+        <Snackbar
+          open={openSnackBar}
+          autoHideDuration={5000}
+          onClose={handleSnackBarClose}
+          sx={{
+            '& .MuiAlert-icon, .MuiAlert-action': {
+              alignItems: 'center',
+            }
+          }}
+        >
+          <Alert
+            onClose={handleSnackBarClose}
+            variant="filled"
+            severity="error"
+            style={{
+              fontSize: '1.2em'
+            }}
+          >{errorMessage}</Alert>
+        </Snackbar>
+      </Box>
+    </>
   );
 };

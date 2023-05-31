@@ -27,6 +27,7 @@ import { permissionsRouter } from './app/routes/permissionsRouter';
 import businessProcessRouter from './app/routes/businessProcess';
 import profileSettingsRouter from './app/routes/profileSettings';
 import faqRouter from './app/routes/faqRouter';
+import updatesRouter from './app/routes/updatesRouter';
 import cookieParser from 'cookie-parser';
 import RateLimit from 'express-rate-limit';
 import { Notifications } from './app/routes/socket/notifications';
@@ -266,6 +267,10 @@ router.use(labelsRouter);
 
 /** FAQ*/
 router.use(faqRouter);
+
+// Updates
+
+router.use(updatesRouter);
 
 /** Contracts list */
 router.use(contractsListRouter);

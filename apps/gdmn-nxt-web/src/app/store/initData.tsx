@@ -7,11 +7,13 @@ import { UserState } from '../features/user/userSlice';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
 import { useGetBusinessProcessesQuery } from '../features/business-processes';
+import { useGetAllUpdatesQuery } from '../features/updates';
 
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
   const skip = !userProfile?.id;
+  const { } = useGetAllUpdatesQuery(undefined, { skip });
   const { } = useGetKanbanDealsQuery({ userId: userProfile?.id || -1 }, { skip });
   const { } = useGetCustomersCrossQuery(undefined, { skip });
   const { } = useGetWorkTypesQuery(undefined, { skip });

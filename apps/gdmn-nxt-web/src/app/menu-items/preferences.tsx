@@ -4,6 +4,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { IMenuItem } from '.';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 
 const preferences: IMenuItem = {
   id: 'preferences',
@@ -74,7 +75,14 @@ const preferences: IMenuItem = {
       type: 'item',
       url: 'preferences/faq',
       icon: <HelpIcon color="secondary" />
-    }
+    },
+    {
+      id: 'updates-history',
+      title: 'История обновлений',
+      type: 'item',
+      url: 'preferences/updates-history',
+      icon: <TipsAndUpdatesIcon color="secondary" />
+    },
   ]
 };
 

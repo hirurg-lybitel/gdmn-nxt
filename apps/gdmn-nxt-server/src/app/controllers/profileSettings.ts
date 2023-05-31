@@ -14,7 +14,7 @@ const get: RequestHandler = async (req, res) => {
   try {
     const sqlResult = await fetchAsObject(`
       SELECT
-        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode
+        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
@@ -25,7 +25,7 @@ const get: RequestHandler = async (req, res) => {
       if (r['AVATAR_BLOB'] !== null && typeof r['AVATAR_BLOB'] === 'object') {
         // eslint-disable-next-line dot-notation
         const readStream = await attachment.openBlob(transaction, r['AVATAR_BLOB']);
-        const blobLength = await readStream.length;
+        const blobLength = await readStream?.length;
         const resultBuffer = Buffer.alloc(blobLength);
 
         let size = 0;
@@ -62,20 +62,20 @@ const set: RequestHandler = async (req, res) => {
 
   const userId = parseIntDef(req.params.userId, -1);
 
-  const { AVATAR: avatar, COLORMODE: colorMode } = req.body;
+  const { AVATAR: avatar, COLORMODE: colorMode, LASTVERSION: lastVersion } = req.body;
 
   try {
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
-    const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString.length : 0, charArrayString);
+    const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString?.length : 0, charArrayString);
     const blob = await attachment.createBlob(transaction);
     await blob.write(blobBuffer);
     await blob.close();
     const sqlResult = await fetchAsObject(`
-      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE)
-      VALUES(:userId, :avatar, :colorMode)
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
-    { userId, avatar: blob, colorMode });
+    { userId, avatar: blob, colorMode, lastVersion });
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },

@@ -11,12 +11,12 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { fullFaq } from '../../../features/FAQ/faqApi';
 
 interface PopupProps {
-  close: ()=>void
-  isOpened:boolean
+  close: () => void
+  isOpened: boolean
   isAddPopup: boolean
   faq?: fullFaq,
-  addFaq?: (question:string, answer:string)=>void,
-  editFaq?: (question:string, answer:string, id:number)=>void,
+  addFaq?: (question: string, answer: string) => void,
+  editFaq?: (question: string, answer: string, id: number) => void,
 }
 
 interface IShippingFields {
@@ -24,7 +24,7 @@ interface IShippingFields {
   answer: string
 }
 
-export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq }:PopupProps) {
+export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq }: PopupProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   const {
@@ -65,7 +65,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     setTabIndex(newindex);
   }, [faq]);
 
-  const escPressed = useCallback((event:KeyboardEvent) => {
+  const escPressed = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       closePopup();
     }
@@ -120,7 +120,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     setConfirmOpen(false);
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (faq) {
       setValue('question', faq.USR$QUESTION);
       setValue('answer', faq.USR$ANSWER);
@@ -172,103 +172,101 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
             className={style.questionForm}
           >
             <Card className={style.card}>
-              <div>
-                <CardHeader
-                  title={<Typography variant="h4">{
-                    isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
-                  }</Typography>}
-                />
-                <Divider/>
-                <CardContent style={{ flex: 1 }} >
-                  <div className={style.inputContainer}>
-                    <TextField
-                      rows={4}
-                      className={style.textArea}
-                      id="outlined-textarea"
-                      placeholder="Вопрос"
-                      multiline
-                      {...register('question', {
-                        required: 'Обязательное поле'
-                      })}
-                      onChange={()=>{
-                        clearErrors('question');
-                      }}
-                    />
-                    {
-                      errors.question
+              <CardHeader
+                title={<Typography variant="h4">{
+                  isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
+                }</Typography>}
+              />
+              <Divider/>
+              <CardContent style={{ flex: 1 }} >
+                <div className={style.inputContainer}>
+                  <TextField
+                    rows={4}
+                    className={style.textArea}
+                    id="outlined-textarea"
+                    placeholder="Вопрос"
+                    multiline
+                    {...register('question', {
+                      required: 'Обязательное поле'
+                    })}
+                    onChange={() => {
+                      clearErrors('question');
+                    }}
+                  />
+                  {
+                    errors.question
                   && <div className={style.errorMessage}>{errors.question.message}</div>
-                    }
-                  </div>
-                  <TabContext value={tabIndex}>
-                    <Box>
-                      <TabList onChange={handleTabsChange}>
-                        <Tab label="Изменить" value="1" />
-                        <Tab label="Просмотреть" value="2" />
-                      </TabList>
-                    </Box>
-                    <TabPanel value="1" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <TextField
-                          rows={12}
-                          className={style.textArea}
-                          id="outlined-textarea"
-                          placeholder="Ответ"
-                          multiline
-                          {...register('answer', {
-                            required: 'Обязательное поле'
-                          })}
-                          onChange={()=>{
-                            clearErrors('answer');
-                          }}
-                        />
-                        {
-                          errors.answer
+                  }
+                </div>
+                <TabContext value={tabIndex}>
+                  <Box>
+                    <TabList onChange={handleTabsChange}>
+                      <Tab label="Изменить" value="1" />
+                      <Tab label="Просмотреть" value="2" />
+                    </TabList>
+                  </Box>
+                  <TabPanel value="1" className={style.tab}>
+                    <div className={style.inputContainer}>
+                      <TextField
+                        rows={12}
+                        className={style.textArea}
+                        id="outlined-textarea"
+                        placeholder="Ответ"
+                        multiline
+                        {...register('answer', {
+                          required: 'Обязательное поле'
+                        })}
+                        onChange={() => {
+                          clearErrors('answer');
+                        }}
+                      />
+                      {
+                        errors.answer
                         && <div className={style.errorMessage}>{errors.answer.message}</div>
-                        }
+                      }
+                    </div>
+                  </TabPanel>
+                  <TabPanel value="2" className={style.tab}>
+                    <div className={style.inputContainer}>
+                      <div className={style.previewBackground}>
+                        <PerfectScrollbar className={style.preview}>
+                          <div className={style.previewContent}>
+                            <ReactMarkdown className={style.markdown}>
+                              {
+                                getValues('answer')
+                              }
+                            </ReactMarkdown>
+                          </div>
+                        </PerfectScrollbar>
                       </div>
-                    </TabPanel>
-                    <TabPanel value="2" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <div className={style.previewBackground}>
-                          <PerfectScrollbar className={style.preview}>
-                            <div className={style.previewContent}>
-                              <ReactMarkdown className={style.markdown}>
-                                {
-                                  getValues('answer')
-                                }
-                              </ReactMarkdown>
-                            </div>
-                          </PerfectScrollbar>
-                        </div>
-                        {
-                          errors.answer
+                      {
+                        errors.answer
                         && <div className={style.errorMessage}>{errors.answer.message}</div>
-                        }
-                      </div>
-                    </TabPanel>
-                  </TabContext>
-                </CardContent>
-                <Divider/>
-                <CardActions className={style.buttonsContainer}>
-                  <Box flex={1} />
-                  <div>
-                    <Button
-                      type="button"
-                      variant="text"
-                      onClick={clearAndClosePopup}
-                      className={style.button}
-                    >Отменить</Button>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      onClick={onSubmitClick}
-                      className={`${style.saveButton} ${style.button}`}
-                    >
-                      {isAddPopup ? 'Добавить' : 'Сохранить'}
-                    </Button>
-                  </div>
-                </CardActions>
-              </div>
+                      }
+                    </div>
+                  </TabPanel>
+                </TabContext>
+              </CardContent>
+              <Divider/>
+              <CardActions className={style.buttonsContainer}>
+                <Box flex={1} />
+                <div>
+                  <Button
+                    type="button"
+                    variant="text"
+                    onClick={clearAndClosePopup}
+                    className={style.button}
+                  >Отменить</Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    onClick={onSubmitClick}
+                    className={`${style.saveButton} ${style.button}`}
+                  >
+                    {isAddPopup ? 'Добавить' : 'Сохранить'}
+                  </Button>
+                </div>
+              </CardActions>
             </Card>
           </form>
         </div>
