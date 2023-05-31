@@ -8,10 +8,10 @@ export function bin2String(binArray: (string | number)[]) {
 };
 
 
-export function string2Bin(charArray: string) {
+export function string2Bin(charArray = '') {
   const charCodeArr = [];
 
-  for (let i = 0; i < charArray?.length; i++) {
+  for (let i = 0; i < charArray.length; i++) {
     const code = charArray.charCodeAt(i);
     charCodeArr.push(code);
   };
