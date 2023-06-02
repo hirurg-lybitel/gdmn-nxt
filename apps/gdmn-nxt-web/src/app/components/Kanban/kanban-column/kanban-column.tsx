@@ -10,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn,  Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -31,14 +31,13 @@ export interface KanbanColumnProps {
   onEditCard?: (newColumn: IKanbanCard) => void;
   onDeleteCard?: (card: IKanbanCard) => void;
   onAddCard?: (card: IKanbanCard) => void;
-  clearLastCard?: (arg1?: boolean) => void;
 }
 
 export function KanbanColumn(props: KanbanColumnProps) {
   const { provided, dragSnapshot, dropSnapshot, isFetching, addIsFetching = false, disabledAddDeal = false } = props;
   const { children, item, columns, lastCard } = props;
-  const { onEdit, onDelete, onEditCard, onAddCard, clearLastCard, onDeleteCard } = props;
-
+  const { onEdit, onDelete, onEditCard, onAddCard, onDeleteCard } = props;
+  const [addTasks, setAddTasks] = useState(false);
   const theme = useTheme();
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
@@ -52,23 +51,23 @@ export function KanbanColumn(props: KanbanColumnProps) {
       if (deleting) {
         onDeleteCard && onDeleteCard(card);
         setUpsertCard(false);
-        clearLastCard && clearLastCard();
+        setAddTasks(false);
       };
-
       if (card.ID && !deleting) {
         onEditCard && onEditCard(card);
         setUpsertCard(false);
-        clearLastCard && clearLastCard();
+        setAddTasks(false);
       } else {
         onAddCard && onAddCard(card);
+        setAddTasks(true);
         if (close || close === undefined) {
+          setAddTasks(false);
           setUpsertCard(false);
-          clearLastCard && clearLastCard(true);
         }
       }
     },
     handleCancel: async (isFetching?: boolean) => {
-      clearLastCard && clearLastCard(isFetching);
+      setAddTasks(false);
       setUpsertCard(false);
     },
     handleClose: async (e: any, reason: string) => {
@@ -222,14 +221,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
       </Stack>
     );
   };
-
   const memoAddCard = useMemo(() => {
     return (
       <KanbanEditCard
         open={upsertCard}
         currentStage={item}
         stages={columns}
-        card={lastCard}
+        card={addTasks ? lastCard : undefined}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
       />
@@ -252,7 +250,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         variant="rectangular"
         height={'100%'}
         style={{ borderRadius: '12px 12px 12px 12px' }}
-      /> :
+                    /> :
         <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}

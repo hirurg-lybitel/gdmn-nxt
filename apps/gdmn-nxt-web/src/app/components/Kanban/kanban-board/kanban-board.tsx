@@ -42,8 +42,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [reorderColumn] = useReorderColumnsMutation();
 
   const [addCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: isLoadingAddCard }] = useAddCardMutation();
-  const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
-  const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: isLoadingEditCard }] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
   const [reorderCard] = useReorderCardsMutation();
@@ -235,17 +233,10 @@ export function KanbanBoard(props: KanbanBoardProps) {
   }, []);
 
   const lastCard = useMemo(() => {
-    if (!lastAddedCard) return undefined;
-    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === lastAddedCard?.ID);
+    if (!addedCard) return undefined;
+    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === addedCard?.[0]?.ID);
     return cards;
-  }, [columns, lastAddedCard]);
-
-  const clearLastCard = (isAdd?: boolean) => {
-    if (isAdd) {
-      setLastCardShouldClear(true);
-    }
-    setLastAddedCard(undefined);
-  };
+  }, [columns, addedCard]);
 
   const skeletonCount: IKanbanColumn[] = skeletonItems(5);
 
@@ -259,7 +250,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
     >
       <Box display="flex" flex={1}>
         <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="board" type="board" direction="horizontal">
+          <Droppable
+            droppableId="board"
+            type="board"
+            direction="horizontal"
+          >
             {(provided, snapshot) => (
               <Stack
                 direction="row"
@@ -271,7 +266,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
                 flex={1}
               >
                 {(isLoading ? skeletonCount : columns).map((column: IKanbanColumn, index) => (
-                  <Draggable key={column.ID} draggableId={column.ID.toString()} index={index}>
+                  <Draggable
+                    key={column.ID}
+                    draggableId={column.ID.toString()}
+                    index={index}
+                  >
                     {(provided, snapshot) => {
                       const dragProvided: DraggableProvided = provided;
                       const dragSnapshot = snapshot;
@@ -282,7 +281,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
                           display="flex"
                           flex={1}
                         >
-                          <Droppable key={index} droppableId={`${index}`} type="column">
+                          <Droppable
+                            key={index}
+                            droppableId={`${index}`}
+                            type="column"
+                          >
                             {(provided, snapshot) => (
                               <Box
                                 style={{
@@ -307,12 +310,15 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   isFetching={isLoading}
                                   addIsFetching={isLoadingAddCard}
                                   lastCard={lastCard}
-                                  clearLastCard={clearLastCard}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
                                       return (
-                                        <Draggable key={card.ID + column.ID * 10} draggableId={(card.ID + column?.ID * 10)?.toString()} index={index}>
+                                        <Draggable
+                                          key={card.ID + column.ID * 10}
+                                          draggableId={(card.ID + column?.ID * 10)?.toString()}
+                                          index={index}
+                                        >
                                           {(provided, snapshot) => (
                                             <Box
                                               className={styles.boardItem}
@@ -330,7 +336,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onDelete={cardHandlers.handleDeleteCard}
                                                 addIsFetching={isLoadingAddCard || isLoadingEditCard}
                                                 lastCard={lastCard}
-                                                clearLastCard={clearLastCard}
                                               />
                                             </Box>
                                           )}

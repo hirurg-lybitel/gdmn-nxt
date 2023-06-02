@@ -22,14 +22,13 @@ export interface KanbanCardProps {
   onDelete: (card: IKanbanCard) => void;
   addIsFetching?: boolean;
   lastCard?: IKanbanCard
-  clearLastCard: (isAdd?: boolean) => void
 };
 
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
   const { card, columns, lastCard, addIsFetching } = props;
-  const { onAdd, onEdit, onDelete, clearLastCard } = props;
+  const { onAdd, onEdit, onDelete } = props;
   const theme = useTheme();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
@@ -48,19 +47,16 @@ export function KanbanCard(props: KanbanCardProps) {
         onEdit(card);
         copyCard && setCopyCard(false);
         setEditCard(false);
-        clearLastCard();
         return;
       } else {
         onAdd(card);
         if (close || close === undefined) {
           copyCard && setCopyCard(false);
-          clearLastCard(true);
         }
         return;
       }
     },
     handleCancel: async (isFetching?: boolean) => {
-      clearLastCard(isFetching);
       editCard && setEditCard(false);
       copyCard && setCopyCard(false);
     },
@@ -83,7 +79,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -114,7 +110,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
