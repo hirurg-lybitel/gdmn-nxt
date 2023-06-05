@@ -1,9 +1,8 @@
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './task-types.module.less';
-import { Box, Button, CardContent, CardHeader, Divider, Stack, TextField, Typography } from '@mui/material';
-import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
+import { Button, CardContent, CardHeader, Stack, TextField, Typography } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import { DataGridPro, DataGridProProps, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridActionsCellItem, GridColumns, GridRowId, GridRowModes, GridRowModesModel, GridRowParams, useGridApiContext } from '@mui/x-data-grid-pro';
+import { GridActionsCellItem, GridColumns, GridRowParams, GridToolbarContainer, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -11,9 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { useAddTaskTypeMutation, useDeleteTaskTypeMutation, useGetTaskTypesQuery, useUpdateTaskTypeMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { ITaskType } from '@gsbelarus/util-api-types';
-import { Form, FormikProvider, useFormik } from 'formik';
-import * as yup from 'yup';
-import TaskTypesUpsert from 'apps/gdmn-nxt-web/src/app/components/Kanban/task-types-upsert/task-types-upsert';
+import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 
 /* eslint-disable-next-line */
 export interface TaskTypesProps {}
@@ -127,45 +124,15 @@ function DetailPanelContent({ row: rowProp }: { row: ITaskType }) {
 }
 
 export function TaskTypes(props: TaskTypesProps) {
-  const [detailPanelExpandedRowIds, setDetailPanelExpandedRowIds] = useState<GridRowId[]>([]);
-  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
-
   const { data: taskTypes = [], isFetching, isLoading } = useGetTaskTypesQuery();
   const [insertTaskType] = useAddTaskTypeMutation();
   const [updateTaskType, { isLoading: updateTaskTypeIsLoading }] = useUpdateTaskTypeMutation();
   const [deleteTaskType, { isLoading: deleteTaskTypeIsLoading }] = useDeleteTaskTypeMutation();
-  const [upsertTaskType, setUpsertTaskType] = useState(false);
-  const [taskType, setTaskType] = useState<ITaskType>();
-
-  const columns: GridColumns = [
-    { field: 'NAME', headerName: 'Наименование', flex: 0.5, },
-    { field: 'DESCRIPTION', headerName: 'Описание', flex: 1, },
-    {
-      field: 'actions',
-      type: 'actions',
-      resizable: false,
-      getActions: (params: GridRowParams) => [
-        <GridActionsCellItem
-          key={1}
-          icon={<EditIcon />}
-          onClick={handleEditSource(params.row)}
-          label="Edit"
-          color="primary"
-          disabled={isFetching || deleteTaskTypeIsLoading || updateTaskTypeIsLoading}
-        />
-      ]
-    }
-  ];
-
-  const handleAddSource = useCallback(() => {
-    setTaskType(undefined);
-    setUpsertTaskType(true);
-  }, []);
-
-  const handleEditSource = useCallback((taskType?: ITaskType) => () => {
-    setTaskType(taskType);
-    setUpsertTaskType(true);
-  }, []);
+  const [titleAndMethod, setTitleAndMethod] = useState<{title: string, method: () => void}>({ title: '', method: () => {} });
+  const handleSetTAM = (title: string, method: () => void) => {
+    setTitleAndMethod({ title, method });
+  };
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleSubmit = useCallback((taskType: ITaskType) => {
     if (taskType.ID > 0) {
@@ -173,58 +140,202 @@ export function TaskTypes(props: TaskTypesProps) {
     } else {
       insertTaskType(taskType);
     };
-    setUpsertTaskType(false);
   }, []);
 
-  const handleDelete = useCallback((id: number) => {
-    deleteTaskType(id);
-    setUpsertTaskType(false);
-  }, []);
+  function EditToolbar() {
+    const handleClick = () => {
+      const id = 0;
+      apiRef.current.updateRows([{ ID: id, isNew: true }]);
+      apiRef.current.setRowIndex(id, 0);
+      apiRef.current.scrollToIndexes({
+        rowIndex: 0,
+      });
+      apiRef.current.setRowMode(id, 'edit');
+      // Wait for the grid to render with the new row
+      setTimeout(() => {
+        apiRef.current.scrollToIndexes({
+          rowIndex: 0,
+        });
+        apiRef.current.setCellFocus(id, 'name');
+      }, 150);
+    };
 
-  const handleCancel = useCallback(() => setUpsertTaskType(false), []);
-
-  const memoUpsertTaskType = useMemo(() =>
-    <TaskTypesUpsert
-      open={upsertTaskType}
-      taskType={taskType}
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      onDelete={handleDelete}
-    />, [upsertTaskType, taskType]);
-
-  return (
-    <CustomizedCard
-      borders
-      className={styles.card}
-    >
-      <CardHeader title={<Typography variant="h3">Типы задач</Typography>} />
-      <Divider />
-      <CardToolbar>
-        <Stack direction="row">
-          <Box flex={1} />
+    return (
+      <GridToolbarContainer>
+        <div style={{ paddingRight: '20px', paddingTop: '6px', width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
           <Button
             variant="contained"
             disabled={isFetching}
-            onClick={handleAddSource}
+            onClick={handleClick}
           >
             Добавить
           </Button>
-        </Stack>
-      </CardToolbar>
-      <CardContent
-        className={styles.cardContent}
-      >
-        <StyledGrid
-          rows={taskTypes}
-          columns={columns}
-          loading={isLoading}
-          rowHeight={80}
-          hideHeaderSeparator
-          hideFooter
+        </div>
+      </GridToolbarContainer>
+    );
+  }
+
+  function RowMenuCell(props: any) {
+    const { api, id } = props;
+    const isInEditMode = api.getRowMode(id) === 'edit';
+
+    const handleEditClick = (event: any) => {
+      event.stopPropagation();
+      api.setRowMode(id, 'edit');
+    };
+
+    const handleConfirmSave = (event: any) => {
+      event.stopPropagation();
+      const row = api.getRow(id);
+      if (row!.isNew) {
+        handleSetTAM('Сохранение нового типа задач', handleSaveClick);
+      } else {
+        handleSetTAM('Редактирование типа задач', handleSaveClick);
+      }
+      setConfirmOpen(true);
+    };
+
+    const handleSaveClick = () => {
+      setConfirmOpen(false);
+      api.commitRowChange(id);
+      api.setRowMode(id, 'view');
+      const row = api.getRow(id);
+      if (row!.isNew) delete row['ID'];
+      handleSubmit(row);
+    };
+
+    const handleConfirmDelete = (event: any) => {
+      event.stopPropagation();
+      handleSetTAM('Удаление типа задач', handleDeleteClick);
+      setConfirmOpen(true);
+    };
+
+    const handleDeleteClick = () => {
+      setConfirmOpen(false);
+      deleteTaskType(id);
+    };
+
+    const handleCancelClick = () => {
+      api.setRowMode(id, 'view');
+
+      const row = api.getRow(id);
+      if (row!.isNew) {
+        api.updateRows([{ ID: id, _action: 'delete' }]);
+      }
+    };
+
+    if (isInEditMode) {
+      return (<>
+        <GridActionsCellItem
+          icon={<SaveIcon />}
+          label="Save"
+          onClick={handleConfirmSave}
         />
-        {memoUpsertTaskType}
-      </CardContent>
-    </CustomizedCard>
+        <GridActionsCellItem
+          icon={<CancelIcon />}
+          label="Cancel"
+          className="textPrimary"
+          onClick={handleCancelClick}
+          color="inherit"
+        />
+      </>);
+    }
+
+    return (
+      <>
+        <GridActionsCellItem
+          icon={<EditIcon />}
+          label="Edit"
+          className="textPrimary"
+          onClick={handleEditClick}
+          color="inherit"
+        />
+        <GridActionsCellItem
+          icon={<DeleteIcon />}
+          label="Delete"
+          onClick={handleConfirmDelete}
+          color="inherit"
+        />
+      </>
+    );
+  }
+
+  const columns: GridColumns = [
+    { field: 'NAME', headerName: 'Наименование', editable: true, flex: 0.5, },
+    { field: 'DESCRIPTION', editable: true, headerName: 'Описание', flex: 1, },
+    {
+      field: 'actions',
+      type: 'actions',
+      resizable: false,
+      renderCell: RowMenuCell
+    }
+  ];
+
+  const apiRef = useGridApiRef();
+
+  const handleRowEditStart = (
+    params: GridRowParams,
+    event: MuiEvent<React.SyntheticEvent>,
+  ) => {
+    event.defaultMuiPrevented = true;
+  };
+
+  const handleRowEditStop = (
+    params: GridRowParams,
+    event: any,
+  ) => {
+    event.defaultMuiPrevented = true;
+  };
+
+  const memoConfirmDialog = useMemo(() =>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={titleAndMethod.title}
+      text="Вы уверены, что хотите продолжить?"
+      confirmClick={titleAndMethod.method}
+      cancelClick={() => {
+        setConfirmOpen(false);
+      }}
+    />
+  , [confirmOpen, titleAndMethod]);
+
+  return (
+    <>
+      {memoConfirmDialog}
+      <CustomizedCard
+        borders
+        className={styles.card}
+      >
+        <CardHeader title={<Typography variant="h3">Типы задач</Typography>} />
+        <CardContent
+          className={styles.cardContent}
+        >
+          <StyledGrid
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'rating', sort: 'desc' }],
+              },
+            }}
+            editMode="row"
+            rows={taskTypes}
+            columns={columns}
+            loading={isLoading}
+            rowHeight={80}
+            apiRef={apiRef}
+            onRowEditStart={handleRowEditStart}
+            onRowEditStop={handleRowEditStop}
+            components={{
+              Toolbar: EditToolbar,
+            }}
+            componentsProps={{
+              toolbar: { apiRef },
+            }}
+            hideHeaderSeparator
+            hideFooter
+          />
+        </CardContent>
+      </CustomizedCard>
+    </>
   );
 }
 
