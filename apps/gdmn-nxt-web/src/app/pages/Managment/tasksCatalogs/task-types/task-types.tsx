@@ -2,7 +2,7 @@ import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customiz
 import styles from './task-types.module.less';
 import { Button, CardContent, CardHeader, Divider, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import { GridActionsCellItem, GridCellParams, GridColumns, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridActionsCellItem, GridCellParams, GridColumns, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -105,17 +105,17 @@ export function TaskTypes(props: TaskTypesProps) {
   function RowMenuCell(props: GridRenderCellParams) {
     const { id } = props;
     const api = useGridApiContext();
-    const isInEditMode = api.current.getRowMode(id) === 'edit';
+    const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
     const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      api.current.setRowMode(id, 'edit');
+      api.current.setRowMode(id, GridRowModes.Edit);
     };
 
     const handleConfirmSave = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       const row = api.current.getRow(id);
-      if (row!.isNew) {
+      if (row?.isNew) {
         handleSetTitleAndMethod('additing', handleSaveClick);
       } else {
         handleSetTitleAndMethod('editing', handleSaveClick);
@@ -125,8 +125,16 @@ export function TaskTypes(props: TaskTypesProps) {
 
     const handleSaveClick = () => {
       setConfirmOpen(false);
-      api.current.commitRowChange(id);
-      api.current.setRowMode(id, 'view');
+
+      const rowModel = apiRef.current.getEditRowsModel();
+      const newRow: { [key: string]: any } = {};
+      for (const [key, { value }] of Object.entries(rowModel[id])) {
+        newRow[key] = value;
+      }
+      newRow['ID'] = id;
+
+      api.current.updateRows([newRow]);
+      api.current.setRowMode(id, GridRowModes.View);
 
       const row = api.current.getRow(id);
       if (row!.isNew) delete row['ID'];
@@ -145,7 +153,7 @@ export function TaskTypes(props: TaskTypesProps) {
     };
 
     const handleCancelClick = () => {
-      api.current.setRowMode(id, 'view');
+      api.current.setRowMode(id, GridRowModes.View);
 
       const row = api.current.getRow(id);
       if (row!.isNew) {
@@ -197,9 +205,9 @@ export function TaskTypes(props: TaskTypesProps) {
     }
   };
 
-  const validationCell = (fieldName: string) => (params: GridPreProcessEditCellProps) => {
+  const validationCell = (fieldName: string) => async (params: GridPreProcessEditCellProps) => {
     const errorMessage = validationShema[fieldName](params.props.value ?? '');
-    return { ...params.props };
+    return { ...params.props, error: errorMessage };
   };
 
   const renderEditCell = (params: GridRenderEditCellParams) => <CustomCellEditForm {...params} />;
@@ -211,7 +219,7 @@ export function TaskTypes(props: TaskTypesProps) {
       editable: true,
       flex: 0.5,
       renderEditCell,
-      // preProcessEditCellProps: validationCell('NAME'),
+      preProcessEditCellProps: validationCell('NAME'),
     },
     {
       field: 'DESCRIPTION',
@@ -303,7 +311,7 @@ export function TaskTypes(props: TaskTypesProps) {
             apiRef={apiRef}
             onRowEditStart={handleRowEditStart}
             onRowEditStop={handleRowEditStop}
-            // onCellKeyDown={handleCellKeyDown}
+            onCellKeyDown={handleCellKeyDown}
             hideHeaderSeparator
             hideFooter
           />
