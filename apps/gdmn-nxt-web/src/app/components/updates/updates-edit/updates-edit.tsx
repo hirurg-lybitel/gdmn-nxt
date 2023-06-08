@@ -125,10 +125,14 @@ export function UpdatesEdit(props: UpdatesEditProps) {
       <DialogTitle>
         {update ? `Редактирование: ${update.VERSION}` : 'Добавление новой версии'}
       </DialogTitle>
-      <DialogContent dividers>
+      <DialogContent className={styles.dialogContent} dividers >
         <FormikProvider value={formik}>
-          <Form id="updates" onSubmit={formik.handleSubmit}>
-            <Stack spacing={2}>
+          <Form
+            id="updates"
+            onSubmit={formik.handleSubmit}
+            className={styles.formContent}
+          >
+            <Stack spacing={2} flex={1}>
               <TextField
                 label="Номер версии"
                 type="text"
@@ -185,11 +189,12 @@ export function UpdatesEdit(props: UpdatesEditProps) {
                   className={styles.tabPanel}
                 >
                   <div className={styles.preview}>
-                    <CustomizedScrollBox className={styles.scrollBar}>
+                    <CustomizedScrollBox>
                       <ReactMarkdown components={{ p: 'div' }}>
                         {formik.values.CHANGES}
                       </ReactMarkdown>
                     </CustomizedScrollBox>
+
                   </div>
                 </TabPanel>
               </TabContext>
