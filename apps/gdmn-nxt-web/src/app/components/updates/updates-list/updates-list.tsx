@@ -91,7 +91,7 @@ export function UpdatesList(props: UpdatesListProps) {
         </div>
       </CardToolbar>
       <CardContent>
-        <CustomizedScrollBox className={styles.scrollBar}>
+        <CustomizedScrollBox>
           {isLoading
             ? [...Array(5)].map((u, idx) => (
               <Fragment key={idx}>

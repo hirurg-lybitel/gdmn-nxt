@@ -11,11 +11,16 @@ interface ICustomizedCardProps {
 const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
 })<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false }) => ({
+  display: 'flex',
+  flexDirection: 'column',
   ...(borders ? { border: `1px solid ${theme.mainContent.borderColor }` } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : { boxShadow: 'none' }),
   '.MuiCardHeader-root': {
     paddingTop: '10px',
     paddingBottom: '10px'
+  },
+  '.MuiCardContent-root': {
+    flex: 1
   },
   '.card-toolbar': {
     padding: '12px 24px 12px 24px'
