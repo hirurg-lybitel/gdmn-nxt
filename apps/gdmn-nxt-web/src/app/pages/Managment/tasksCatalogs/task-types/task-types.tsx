@@ -263,7 +263,7 @@ export function TaskTypes(props: TaskTypesProps) {
     apiRef.current.scrollToIndexes({
       rowIndex: 0,
     });
-    apiRef.current.setRowMode(id, 'edit');
+    apiRef.current.setRowMode(id, GridRowModes.Edit);
   };
 
   const memoConfirmDialog = useMemo(() =>
