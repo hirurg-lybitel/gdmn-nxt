@@ -200,7 +200,7 @@ export function TaskTypes(props: TaskTypesProps) {
 
   const validationShema: ValidationShema = {
     NAME: (value) => {
-      if (value.length > 10) return 'Слишком длинное наименование';
+      if (value.length > 60) return 'Слишком длинное наименование';
       return '';
     }
   };
