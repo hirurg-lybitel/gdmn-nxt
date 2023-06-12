@@ -5,7 +5,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Tab, TextField } from '@mui/material';
+import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Tab, TextField, Theme } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -13,6 +13,16 @@ import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles((theme: Theme) => ({
+  input: {
+    height: 'calc(100% - 30px)',
+    '& div': {
+      height: '100%'
+    },
+  }
+}));
 
 export interface UpdatesEditProps {
   open: boolean;
@@ -116,6 +126,8 @@ export function UpdatesEdit(props: UpdatesEditProps) {
     />
   , [confirmOpen, deleting]);
 
+  const classes = useStyles();
+
   return (
     <CustomizedDialog
       open={open}
@@ -158,13 +170,17 @@ export function UpdatesEdit(props: UpdatesEditProps) {
                   className={styles.tabPanel}
                 >
                   <TextField
+                    className={classes.input}
                     label="Описание"
                     type="text"
                     fullWidth
                     required
                     multiline
-                    minRows={15}
-                    maxRows={18}
+                    inputProps={{
+                      style: {
+                        height: '100%',
+                      },
+                    }}
                     name="CHANGES"
                     onChange={formik.handleChange}
                     value={formik.values.CHANGES}
