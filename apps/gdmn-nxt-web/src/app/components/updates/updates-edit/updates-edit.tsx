@@ -176,6 +176,7 @@ export function UpdatesEdit(props: UpdatesEditProps) {
                     fullWidth
                     required
                     multiline
+                    rows={1}
                     inputProps={{
                       style: {
                         height: '100%',
