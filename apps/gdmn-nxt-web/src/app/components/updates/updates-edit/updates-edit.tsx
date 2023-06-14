@@ -17,7 +17,7 @@ import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme: Theme) => ({
   input: {
-    height: 'calc(100% - 30px)',
+    height: '100%',
     '& div': {
       height: '100%'
     },
@@ -188,18 +188,7 @@ export function UpdatesEdit(props: UpdatesEditProps) {
                     error={getIn(formik.touched, 'CHANGES') && Boolean(getIn(formik.errors, 'CHANGES'))}
                     helperText={getIn(formik.touched, 'CHANGES') && getIn(formik.errors, 'CHANGES')}
                   />
-                  <a
-                    href="https://www.markdownguide.org/basic-syntax/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Chip
-                      icon={<InfoIcon />}
-                      label="Поддерживаются стили Markdown "
-                      variant="outlined"
-                      className={styles.link}
-                    />
-                  </a>
+
                 </TabPanel>
                 <TabPanel
                   value="2"
@@ -214,6 +203,18 @@ export function UpdatesEdit(props: UpdatesEditProps) {
 
                   </div>
                 </TabPanel>
+                <a
+                  href="https://www.markdownguide.org/basic-syntax/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Chip
+                    icon={<InfoIcon />}
+                    label="Поддерживаются стили Markdown "
+                    variant="outlined"
+                    className={styles.link}
+                  />
+                </a>
               </TabContext>
             </Stack>
           </Form>
