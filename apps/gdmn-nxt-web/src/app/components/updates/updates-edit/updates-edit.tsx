@@ -15,15 +15,6 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
 import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  input: {
-    height: '100%',
-    '& div': {
-      height: '100%'
-    },
-  }
-}));
-
 export interface UpdatesEditProps {
   open: boolean;
   update?: IUpdateHistory;
@@ -126,8 +117,6 @@ export function UpdatesEdit(props: UpdatesEditProps) {
     />
   , [confirmOpen, deleting]);
 
-  const classes = useStyles();
-
   return (
     <CustomizedDialog
       open={open}
@@ -170,18 +159,13 @@ export function UpdatesEdit(props: UpdatesEditProps) {
                   className={styles.tabPanel}
                 >
                   <TextField
-                    className={classes.input}
+                    className={styles.inputTextField}
                     label="Описание"
                     type="text"
                     fullWidth
                     required
                     multiline
                     rows={1}
-                    inputProps={{
-                      style: {
-                        height: '100%',
-                      },
-                    }}
                     name="CHANGES"
                     onChange={formik.handleChange}
                     value={formik.values.CHANGES}
