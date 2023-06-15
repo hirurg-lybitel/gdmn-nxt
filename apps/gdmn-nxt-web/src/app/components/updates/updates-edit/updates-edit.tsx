@@ -5,7 +5,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Tab, TextField } from '@mui/material';
+import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Tab, TextField, Theme } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -13,6 +13,7 @@ import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
+import { makeStyles } from '@mui/styles';
 
 export interface UpdatesEditProps {
   open: boolean;
@@ -158,31 +159,20 @@ export function UpdatesEdit(props: UpdatesEditProps) {
                   className={styles.tabPanel}
                 >
                   <TextField
+                    className={styles.inputTextField}
                     label="Описание"
                     type="text"
                     fullWidth
                     required
                     multiline
-                    minRows={15}
-                    maxRows={18}
+                    rows={1}
                     name="CHANGES"
                     onChange={formik.handleChange}
                     value={formik.values.CHANGES}
                     error={getIn(formik.touched, 'CHANGES') && Boolean(getIn(formik.errors, 'CHANGES'))}
                     helperText={getIn(formik.touched, 'CHANGES') && getIn(formik.errors, 'CHANGES')}
                   />
-                  <a
-                    href="https://www.markdownguide.org/basic-syntax/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Chip
-                      icon={<InfoIcon />}
-                      label="Поддерживаются стили Markdown "
-                      variant="outlined"
-                      className={styles.link}
-                    />
-                  </a>
+
                 </TabPanel>
                 <TabPanel
                   value="2"
@@ -197,6 +187,18 @@ export function UpdatesEdit(props: UpdatesEditProps) {
 
                   </div>
                 </TabPanel>
+                <a
+                  href="https://www.markdownguide.org/basic-syntax/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Chip
+                    icon={<InfoIcon />}
+                    label="Поддерживаются стили Markdown "
+                    variant="outlined"
+                    className={styles.link}
+                  />
+                </a>
               </TabContext>
             </Stack>
           </Form>
