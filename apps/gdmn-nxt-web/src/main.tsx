@@ -74,8 +74,6 @@ const Main = () => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
-  console.log(`http://localhost:${process.env.NX_APP_PORT}`);
-
   return (
     <div
       style={{
