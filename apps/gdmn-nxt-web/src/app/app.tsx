@@ -15,6 +15,7 @@ import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
 import menuItems, { IMenuItem } from './menu-items';
 import { getCookie } from './features/common/getCookie';
+import { config } from '@gdmn-nxt/config';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -42,14 +43,16 @@ export default function App(props: AppProps) {
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
-  
-  const navigate = useNavigate()
 
-  const pathName:string[] = window.location.pathname.split('/');
-  pathName.splice(0, 1);
+  const navigate = useNavigate();
+
   // Поиск и установка id страницы, который соответствует url, в state
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
+
+  useEffect(() => {
+    if (window.location.pathname !== '/') window.location.href = `http://${config.host}:${config.appPort}`;
+  }, []);
 
   useEffect(() => {
     (async function () {
@@ -87,12 +90,12 @@ export default function App(props: AppProps) {
             default:
               dispatch(setColorMode(ColorMode.Light));
               break;
-        }
-        break;
+          }
+          break;
         }
         case 'OTHER_LOADINGS': {
-          dispatch(renderApp())
-          break
+          dispatch(renderApp());
+          break;
         }
       }
     })();
@@ -103,8 +106,7 @@ export default function App(props: AppProps) {
   useEffect(() => {
     if (loginStage === 'QUERY_LOGIN' &&
         theme.palette.mode === getCookie('color-mode') &&
-        !!user)
-    {
+        !!user) {
       if (user.gedeminUser) {
         dispatch(signedInEmployee({ ...user }));
       } else {
@@ -146,15 +148,19 @@ export default function App(props: AppProps) {
   };
 
   const loadingPage = useMemo(() => {
-    return(
+    return (
       <Stack spacing={2}>
         <CircularIndeterminate open={true} size={100} />
-        <Typography variant="overline" color="gray" align="center">
+        <Typography
+          variant="overline"
+          color="gray"
+          align="center"
+        >
           подключение
         </Typography>
       </Stack>
-    )
-  },[])
+    );
+  }, []);
 
   const renderLoginStage = useMemo(() => {
     switch (loginStage) {
@@ -173,14 +179,14 @@ export default function App(props: AppProps) {
       case 'SIGN_IN_EMPLOYEE':
         return (
           <SignInSignUp
-            checkCredentials={(userName, password) => post(`user/signin`, { userName, password, employeeMode: true })}
+            checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
             onSignIn={handleSignIn}
           />
         );
       case 'SIGN_IN_CUSTOMER':
         return (
           <SignInSignUp
-            checkCredentials={(userName, password) => post(`user/signin`, { userName, password })}
+            checkCredentials={(userName, password) => post('user/signin', { userName, password })}
             newPassword={(email) => post('user/forgot-password', { email })}
             onSignIn={handleSignIn}
             bottomDecorator={() =>
@@ -208,7 +214,12 @@ export default function App(props: AppProps) {
   }, [loginStage]);
 
   const result =
-    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
+    <Stack
+      direction="column"
+      justifyContent="center"
+      alignContent="center"
+      sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}
+    >
       {renderLoginStage}
     </Stack>;
 
