@@ -81,7 +81,7 @@ const Main = () => {
         height: '100%'
       }}
     >
-      <HashRouter>
+      <HashRouter> {/** При изменении маршрутизации с якорной, убрать функцию по удалению pathName в app.tsx */}
         <StrictMode>
           <CssBaseline>
             <ThemeProvider theme={savedTheme}>
