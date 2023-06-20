@@ -74,6 +74,8 @@ const Main = () => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
+  const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
+
   return (
     <div
       style={{
@@ -81,7 +83,7 @@ const Main = () => {
         height: '100%'
       }}
     >
-      <HashRouter>
+      <CustomRouter>
         <StrictMode>
           <CssBaseline>
             <ThemeProvider theme={savedTheme}>
@@ -178,7 +180,7 @@ const Main = () => {
             </ThemeProvider>
           </CssBaseline>
         </StrictMode>
-      </HashRouter>
+      </CustomRouter>
     </div>
   );
 };
