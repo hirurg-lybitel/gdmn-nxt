@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 
 import { RootState, store } from './app/store';
 import { Provider, useDispatch, useSelector } from 'react-redux';
-import { BrowserRouter, json, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, HashRouter, json, Navigate, Route, Routes } from 'react-router-dom';
 
 // rename mui-license.ts.sample -> mui-license.ts
 // put in bought license key
@@ -74,6 +74,8 @@ const Main = () => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
+  const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
+
   return (
     <div
       style={{
@@ -81,7 +83,7 @@ const Main = () => {
         height: '100%'
       }}
     >
-      <BrowserRouter>
+      <CustomRouter>
         <StrictMode>
           <CssBaseline>
             <ThemeProvider theme={savedTheme}>
@@ -178,7 +180,7 @@ const Main = () => {
             </ThemeProvider>
           </CssBaseline>
         </StrictMode>
-      </BrowserRouter>
+      </CustomRouter>
     </div>
   );
 };
