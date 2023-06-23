@@ -11,12 +11,16 @@ interface IConfig {
 
 /** Host where back/container is running  */
 const host = (() => {
-  return 'localhost';
+  return process.env.NODE_ENV === 'development'
+    ? 'localhost'
+    : process.env.NX_HOST_IP || '';
 })();
 
 /** Listening host */
 const serverHost = (() => {
-  return 'localhost';
+  return process.env.NODE_ENV === 'development'
+    ? 'localhost'
+    : process.env.NX_SERVER_HOST || '';
 })();
 
 /** Listening port */
