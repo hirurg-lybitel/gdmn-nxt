@@ -13,3 +13,4 @@ services:
       - "${NX_SOCKET_STREAMING_UPDATE_PORT}:${NX_SOCKET_STREAMING_UPDATE_PORT}"
     env_file:
       - ./.env
+      - ./.env.prod

@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/gdmn-nxt-server/src",
   "projectType": "application",
+  "implicitDependencies": ["gdmn-nxt-web"],
   "targets": {
     "build": {
       "executor": "@nrwl/webpack:webpack",
@@ -31,6 +32,7 @@
     },
     "serve": {
       "executor": "@nrwl/node:node",
+      "dependsOn": ["^build", "gdmn-nxt-web"],
       "options": {
         "buildTarget": "gdmn-nxt-server:build"
       },
