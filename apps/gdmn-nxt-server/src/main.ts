@@ -49,7 +49,7 @@ declare module 'express-session' {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
 
-dotenv.config({ path: '../..' });
+// dotenv.config({ path: '../..' });
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');

@@ -9,41 +9,21 @@ interface IConfig {
   serverStaticMode: boolean;
 }
 
+
 /** Host where back/container is running  */
-const host = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 'localhost'
-    : process.env.NX_HOST_IP || '';
-})();
+const host = process.env.NX_HOST_IP || '';
 
 /** Listening host */
-const serverHost = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? 'localhost'
-    : process.env.NX_SERVER_HOST || '';
-})();
+const serverHost = process.env.NX_SERVER_HOST || '';
 
 /** Listening port */
-const serverPort = (() => {
-  return process.env.NODE_ENV === 'development'
-    ? Number(process.env.NX_DEV_SERVER_PORT)
-    : Number(process.env.NX_SERVER_PORT);
-})();
+const serverPort = Number(process.env.NX_SERVER_PORT);
 
-const serverStaticMode: boolean =
-  process.env.NODE_ENV === 'development'
-    ? false
-    : process.env.NX_SEVER_USE_STATIC_FILE === 'true';
+const serverStaticMode = process.env.NX_SEVER_USE_STATIC_FILE === 'true';
 
-const notificationPort =
-  process.env.NODE_ENV === 'development'
-    ? Number(process.env.NX_DEV_SOCKET_NOTIFICATIONS_PORT)
-    : Number(process.env.NX_SOCKET_NOTIFICATIONS_PORT);
+const notificationPort = Number(process.env.NX_SOCKET_NOTIFICATIONS_PORT);
 
-const streamingUpdatePort =
-  process.env.NODE_ENV === 'development'
-    ? Number(process.env.NX_DEV_SOCKET_STREAMING_UPDATE_PORT)
-    : Number(process.env.NX_SOCKET_STREAMING_UPDATE_PORT);
+const streamingUpdatePort = Number(process.env.NX_SOCKET_STREAMING_UPDATE_PORT);
 
 const appPort =
   serverStaticMode
