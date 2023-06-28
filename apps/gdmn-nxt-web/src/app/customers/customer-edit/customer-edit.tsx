@@ -130,7 +130,8 @@ export function CustomerEdit(props: CustomerEditProps) {
     validationSchema: yup.object().shape({
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
-      EMAIL: yup.string().matches(/@./)
+      EMAIL: yup.string().matches(/@./),
+      PHONE: yup.string().matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im, 'Некорректный номер')
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
