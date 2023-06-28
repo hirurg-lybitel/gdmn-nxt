@@ -104,7 +104,15 @@ const Transition = forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
+<<<<<<< Updated upstream
   return <Slide direction="left" ref={ref} {...props} />;
+=======
+  return <Slide
+    direction="left"
+    ref={ref}
+    {...props}
+         />;
+>>>>>>> Stashed changes
 });
 
 export interface KanbanEditCardProps {
@@ -242,7 +250,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(80, 'Слишком длинное имя'),
           CONTACT_EMAIL: yup.string()
             .nullable()
-            .matches(/@./, 'Адрес электрочнной почты должен содержать символы @ и .')
+            .matches(/^[a-zа-я]+@[a-zа-я]+\.[a-zа-я]+$/i,
+              'Адрес электрочнной почты должен содержать символы "@" и ".", а также только символы кирилицы и латиницы')
             .max(40, 'Слишком длинный email'),
           CONTACT_PHONE: yup.string().nullable()
             .max(40, 'Слишком длинный номер'),
@@ -350,7 +359,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         <Stack flex={1} spacing={3} direction={{ sm: 'column', md: 'row', lg: 'row' }}>
           <TextField
             label="Email"
-            type="email"
+            type="text"
             fullWidth
             name="DEAL.CONTACT_EMAIL"
             onChange={formik.handleChange}

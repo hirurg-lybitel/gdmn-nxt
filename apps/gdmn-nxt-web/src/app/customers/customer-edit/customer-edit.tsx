@@ -130,7 +130,14 @@ export function CustomerEdit(props: CustomerEditProps) {
     validationSchema: yup.object().shape({
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
+<<<<<<< Updated upstream
       EMAIL: yup.string().matches(/@./)
+=======
+      EMAIL: yup.string().matches(/^[a-zа-я]+@[a-zа-я]+\.[a-zа-я]+$/i,
+        'Адрес электрочнной почты должен содержать символы "@" и ".", а также только символы кирилицы и латиницы')
+        .max(40, 'Слишком длинный email'),
+      PHONE: yup.string().matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im, 'Некорректный номер')
+>>>>>>> Stashed changes
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -250,7 +257,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                       <Stack direction="row" spacing={2}>
                         <TextField
                           label="Email"
-                          type="email"
+                          type="text"
                           name="EMAIL"
                           onBlur={formik.handleBlur}
                           onChange={formik.handleChange}

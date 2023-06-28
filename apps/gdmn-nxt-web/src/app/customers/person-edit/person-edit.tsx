@@ -62,7 +62,11 @@ const Transition = forwardRef(function Transition(
   },
   ref: Ref<unknown>,
 ) {
-  return <Slide direction="left" ref={ref} {...props} />;
+  return <Slide
+    direction="left"
+    ref={ref}
+    {...props}
+  />;
 });
 
 
@@ -105,6 +109,9 @@ export function PersonEdit(props: PersonEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
+      Email: yup.string().matches(/^[a-zа-я]+@[a-zа-я]+\.[a-zа-я]+$/i,
+        'Адрес электрочнной почты должен содержать символы "@" и ".", а также только символы кирилицы и латиницы')
+        .max(40, 'Слишком длинный email'),
       NAME: yup.string()
         .required('Не указано имя')
         .max(80, 'Слишком длинное имя'),
@@ -188,7 +195,11 @@ export function PersonEdit(props: PersonEditProps) {
         className={classes.dialogContent}
       >
         <PerfectScrollbar>
-          <Stack direction="column" spacing={3} p="16px 24px">
+          <Stack
+            direction="column"
+            spacing={3}
+            p="16px 24px"
+          >
             <FormikProvider value={formik}>
               <Form id="mainForm" onSubmit={formik.handleSubmit}>
                 <Stack direction="column" spacing={3}>
@@ -206,7 +217,7 @@ export function PersonEdit(props: PersonEditProps) {
                   />
                   <TextField
                     label="Email"
-                    type="email"
+                    type="text"
                     name="EMAIL"
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
