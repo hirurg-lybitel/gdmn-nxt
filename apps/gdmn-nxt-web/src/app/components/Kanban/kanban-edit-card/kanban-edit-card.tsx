@@ -104,15 +104,11 @@ const Transition = forwardRef(function Transition(
   },
   ref: React.Ref<unknown>,
 ) {
-<<<<<<< Updated upstream
-  return <Slide direction="left" ref={ref} {...props} />;
-=======
   return <Slide
     direction="left"
     ref={ref}
     {...props}
-         />;
->>>>>>> Stashed changes
+  />;
 });
 
 export interface KanbanEditCardProps {
@@ -330,7 +326,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
               helperText={getIn(formik.touched, 'DEAL.REQUESTNUMBER') && getIn(formik.errors, 'DEAL.REQUESTNUMBER')}
             />
           </Stack>
-          <Stack direction="column" spacing={3} width={150}>
+          <Stack
+            direction="column"
+            spacing={3}
+            width={150}
+          >
             <DesktopDatePicker
               label="Дата"
               value={formik.values.DEAL?.CREATIONDATE}
@@ -356,7 +356,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           error={getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))}
           helperText={getIn(formik.touched, 'DEAL.CONTACT_NAME') && getIn(formik.errors, 'DEAL.CONTACT_NAME')}
         />
-        <Stack flex={1} spacing={3} direction={{ sm: 'column', md: 'row', lg: 'row' }}>
+        <Stack
+          flex={1}
+          spacing={3}
+          direction={{ sm: 'column', md: 'row', lg: 'row' }}
+        >
           <TextField
             label="Email"
             type="text"
@@ -407,7 +411,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
           <FormikProvider value={formik}>
-            <Form id="mainForm" onSubmit={formik.handleSubmit} style={{ flex: 1, display: 'flex' }}>
+            <Form
+              id="mainForm"
+              onSubmit={formik.handleSubmit}
+              style={{ flex: 1, display: 'flex' }}
+            >
               <Stack spacing={3} flex={1}>
                 <Stepper
                   activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
@@ -426,7 +434,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Сведения" value="1" />
                       <Tab label="Заявка" value="2" />
-                      <Tab label="Задачи" value="3" disabled={!formik.values.ID} />
+                      <Tab
+                        label="Задачи"
+                        value="3"
+                        disabled={!formik.values.ID}
+                      />
                       <Tab label="Хронология" value="4" />
                       <Tab label="Описание" value="5" />
                     </TabList>
@@ -455,7 +467,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         helperText={getIn(formik.touched, 'DEAL.USR$NAME') && getIn(formik.errors, 'DEAL.USR$NAME')}
                       />
                       <Stack direction={matchDownLg ? 'column' : 'row'} spacing={3}>
-                        <Stack direction="column" spacing={3} flex={1}>
+                        <Stack
+                          direction="column"
+                          spacing={3}
+                          flex={1}
+                        >
                           <CustomerSelect formik={formik} />
                           <DealSourcesSelect formik={formik} />
                         </Stack>
@@ -823,7 +839,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       <DialogActions className={styles.DialogActions}>
         <PermissionsGate actionAllowed={userPermissions?.deals.DELETE}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
-            <IconButton onClick={handleDeleteClick} size="small" hidden>
+            <IconButton
+              onClick={handleDeleteClick}
+              size="small"
+              hidden
+            >
               <DeleteIcon />
             </IconButton>
           }
