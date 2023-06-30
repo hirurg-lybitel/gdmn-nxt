@@ -84,7 +84,7 @@ const Transition = forwardRef(function Transition(
     direction="left"
     ref={ref}
     {...props}
-         />;
+  />;
 });
 
 export interface CustomerEditProps {
@@ -253,11 +253,13 @@ export function CustomerEdit(props: CustomerEditProps) {
                       <Stack direction="row" spacing={2}>
                         <TextField
                           label="Email"
+                          className={classes.helperText}
                           type="text"
                           name="EMAIL"
                           onBlur={formik.handleBlur}
                           onChange={formik.handleChange}
                           value={formik.values.EMAIL}
+                          helperText={formik.errors.EMAIL}
                           fullWidth
                         />
                         <TextField
