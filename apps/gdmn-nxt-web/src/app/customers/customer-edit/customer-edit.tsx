@@ -84,7 +84,7 @@ const Transition = forwardRef(function Transition(
     direction="left"
     ref={ref}
     {...props}
-         />;
+  />;
 });
 
 export interface CustomerEditProps {
@@ -131,7 +131,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string().matches(/@./),
-      PHONE: yup.string().matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im, 'Некорректный номер')
+      PHONE: yup.string().matches(/^\+?\d{0,3}[-\ ]?\(?\d{0,3}\)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {

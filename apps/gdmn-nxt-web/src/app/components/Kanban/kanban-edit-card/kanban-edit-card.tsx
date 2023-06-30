@@ -108,7 +108,7 @@ const Transition = forwardRef(function Transition(
     direction="left"
     ref={ref}
     {...props}
-  />;
+         />;
 });
 
 export interface KanbanEditCardProps {
@@ -250,7 +250,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(40, 'Слишком длинный email'),
           CONTACT_PHONE: yup.string().nullable()
             .max(40, 'Слишком длинный номер')
-            .matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im, 'Некорректный номер'),
+            .matches(/^\+?\d{0,3}[-\ ]?\(?\d{0,3}\)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер'),
           REQUESTNUMBER: yup.string().nullable()
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
