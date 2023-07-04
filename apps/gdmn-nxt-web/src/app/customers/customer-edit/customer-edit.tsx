@@ -203,8 +203,6 @@ export function CustomerEdit(props: CustomerEditProps) {
     />
   , [confirmOpen, deleting]);
 
-  console.log('formik', formik.touched, formik.errors);
-
   return (
     <CustomizedDialog
       open={open}
