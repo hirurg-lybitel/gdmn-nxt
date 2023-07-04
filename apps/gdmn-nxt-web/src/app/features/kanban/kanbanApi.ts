@@ -579,22 +579,17 @@ export const kanbanApi = createApi({
         for (const [name, value] of Object.entries(options || {})) {
           switch (true) {
             case typeof value === 'object' && value !== null:
+              const subParams = [];
               for (const [subName, subKey] of Object.entries(value)) {
-                const subParams = [];
                 if (typeof subKey === 'object' && subKey !== null) {
                   for (const [subNameNested, subKeyNested] of Object.entries(subKey)) {
-                    if (typeof subKeyNested === 'object' && subKeyNested !== null) {
-                      subParams.push((subKeyNested as any).ID);
-                    };
-                    if (typeof subKeyNested === 'string' || typeof subKeyNested === 'number') {
-                      subParams.push(subKeyNested);
-                    };
+                    if (subNameNested === 'ID') subParams.push(subKeyNested);
                   }
                 } else {
                   subParams.push(subKey);
                 };
-                params.push(`${subName}=${subParams}`);
               };
+              params.push(`${name}=${subParams}`);
               break;
 
             default:
