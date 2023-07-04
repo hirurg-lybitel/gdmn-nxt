@@ -529,8 +529,11 @@ const getTasks: RequestHandler = async (req, res) => {
     };
 
     const userId = parseInt(req.query.userId as string);
-    const { taskNumber } = req.query;
-    const filter = taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : '';
+    const { taskNumber, performers } = req.query;
+    const filter = `
+      ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
+      ${performers ? ` AND performer.ID IN (${performers}) ` : ''}`;
+
 
     const checkFullView = `
       EXISTS(

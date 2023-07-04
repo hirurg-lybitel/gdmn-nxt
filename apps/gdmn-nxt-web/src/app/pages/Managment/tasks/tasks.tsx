@@ -108,7 +108,7 @@ export function Tasks(props: TasksProps) {
               color="error"
               variant={Object.keys(filterData || {}).length > 0 ? 'dot' : 'standard'}
             >
-              <FilterListIcon color="primary" />
+              <FilterListIcon color={columnsIsFetching ? 'disabled' : 'primary'} />
             </Badge>
           </IconButton>
         </CustomizedCard>
