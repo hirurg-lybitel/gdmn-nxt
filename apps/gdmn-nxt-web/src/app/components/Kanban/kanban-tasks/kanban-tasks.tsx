@@ -15,7 +15,6 @@ import { useSelector } from 'react-redux';
 import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '../../../store';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
-import CustomLoadingOverlay from '../../Styled/styled-grid/DataGridProOverlay/CustomLoadingOverlay';
 import { FormikProps } from 'formik';
 
 const useStyles = makeStyles(() => ({
@@ -241,29 +240,6 @@ export function KanbanTasks(props: KanbanTasksProps) {
           disableColumnPinning
           onRowDoubleClick={handleTaskEdit}
         />
-        {/* <DataGridPro
-          className={classes.dataGrid}
-          localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-          rows={tasks || []}
-          getRowId={row => row.ID}
-          columns={columns}
-          loading={isFetching}
-          pagination
-          rowsPerPageOptions={[20]}
-          pageSize={20}
-          components={{
-            NoRowsOverlay: CustomNoRowsOverlay,
-            LoadingOverlay: CustomLoadingOverlay,
-          }}
-          onRowDoubleClick={handleTaskEdit}
-          hideFooter
-          disableColumnSelector
-          disableColumnFilter
-          disableColumnResize
-          disableColumnReorder
-          disableColumnMenu
-          disableColumnPinning
-        /> */}
       </CustomizedCard>
       {memoKanbanEditTask}
     </Stack>

@@ -1,25 +1,22 @@
-import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import './customer-details.module.less';
-import { Box, Breadcrumbs, Button, Divider, Link, Stack, Tab, Typography } from '@mui/material';
+import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
+import { Box, Breadcrumbs, Divider, Link, Skeleton, Stack, Tab, Typography } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ActCompletion from '../../../customers/CustomerDetails/act-completion/act-completion';
 import { makeStyles } from '@mui/styles';
 import BankStatement from '../../../customers/CustomerDetails/bank-statement/bank-statement';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import HomeIcon from '@mui/icons-material/Home';
-import { useGetCustomerQuery, useGetCustomersCrossQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import { useGetCustomerQuery } from '../../../features/customer/customerApi_new';
 import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
 import CustomerInfo from '../../../customers/CustomerDetails/customer-info/customer-info';
-import { ICustomer } from '@gsbelarus/util-api-types';
 import CustomerDeals from '../../../customers/CustomerDetails/customer-deals/customer-deals';
 
 const useStyles = makeStyles(() => ({
   card: {
     flex: 1,
     display: 'flex',
-    // maxHeight: "calc(100% - 300px)"
   },
   tabsBox: {
     borderBottom: 10,
@@ -33,6 +30,10 @@ const useStyles = makeStyles(() => ({
   link: {
     display: 'flex',
     alignItems: 'center'
+  },
+  title: {
+    height: '68px',
+    padding: '18px'
   }
 }));
 
@@ -45,14 +46,7 @@ export function CustomerDetails(props: CustomerDetailsProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   const { id: customerId } = useParams();
-
-  // const { data } = useGetCustomersQuery();
-  const { data: customer } = useGetCustomerQuery({ customerId: Number(customerId) });
-  // const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
-
-  const { data: cross } = useGetCustomersCrossQuery();
-
-  // console.log('cross', cross?.persons[customer?.ID || -1]);
+  const { data: customer, isFetching } = useGetCustomerQuery({ customerId: Number(customerId) });
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -65,25 +59,35 @@ export function CustomerDetails(props: CustomerDetailsProps) {
       flex={1}
       spacing={2}
     >
-      <CustomizedCard borders boxShadows style={{ padding: '18px' }}>
-        <Breadcrumbs separator={<NavigateNextIcon />} >
-          <Link className={classes.link} underline="none" key="1" color="inherit" href="/">
-            <HomeIcon fontSize="small"/>
-          </Link>,
-          <Link
-            className={classes.link}
-            component="button"
-            underline="none"
-            key="2"
-            onClick={() => navigate(-1)}
-            variant="h1"
-          >
+      <CustomizedCard
+        borders
+        className={classes.title}
+      >
+        {isFetching
+          ? <Breadcrumbs separator={<NavigateNextIcon />}>
+            <Skeleton height={30} width={84} />
+            <Skeleton height={30} width={300} />
+          </Breadcrumbs>
+          : <Breadcrumbs separator={<NavigateNextIcon />}>
+            <Link
+              className={classes.link}
+              component="button"
+              underline="none"
+              key="2"
+              onClick={() => navigate(-1)}
+              variant="h1"
+            >
             Клиенты
-          </Link>
-          <Typography key="3" color="text.primary" variant="h1">
-            {customer?.NAME || '<Наменование>'}
-          </Typography>
-        </Breadcrumbs>
+            </Link>
+            <Typography
+              key="3"
+              color="text.primary"
+              variant="h1"
+            >
+              {customer?.NAME || '<Наименование>'}
+            </Typography>
+          </Breadcrumbs>
+        }
       </CustomizedCard>
       <CustomizedCard
         borders
@@ -93,7 +97,6 @@ export function CustomerDetails(props: CustomerDetailsProps) {
           direction="column"
           flex={1}
           display="flex"
-          // style={{ backgroundColor: 'purple' }}
         >
           <TabContext value={tabIndex}>
             <Box className={classes.tabsBox}>
