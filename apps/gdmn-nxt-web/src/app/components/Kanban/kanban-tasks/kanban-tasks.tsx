@@ -1,16 +1,13 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { DataGridPro, GridColDef, GridColumns, ruRU } from '@mui/x-data-grid-pro';
-import CustomNoRowsOverlay from '../../Styled/styled-grid/DataGridProOverlay/CustomNoRowsOverlay';
+import { GridColumns} from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './kanban-tasks.module.less';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useGetTasksQuery, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { IChanges } from '../../../pages/Managment/deals/deals';
 import { useSelector } from 'react-redux';
 import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '../../../store';
@@ -20,24 +17,6 @@ import { FormikProps } from 'formik';
 const useStyles = makeStyles(() => ({
   dataGrid: {
     border: 'none',
-    '& ::-webkit-scrollbar': {
-      width: '10px',
-      height: '10px',
-      backgroundColor: 'transparent',
-      borderRadius: '6px'
-    },
-    '& ::-webkit-scrollbar:hover': {
-      backgroundColor: '#f0f0f0',
-    },
-    '& ::-webkit-scrollbar-thumb': {
-      position: 'absolute',
-      right: 10,
-      borderRadius: '6px',
-      backgroundColor: 'rgba(170, 170, 170, 0.5)',
-    },
-    '& ::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: '#999',
-    },
     '& .MuiTypography-root, .MuiBox-root': {
       fontSize: '0.8rem'
     },
@@ -76,34 +55,34 @@ export function KanbanTasks(props: KanbanTasksProps) {
   const classes = useStyles();
 
   const [openEidtForm, setOpenEditForm] = useState(false);
-  const { data: tasks = [], refetch, isFetching } = useGetTasksQuery(card?.ID || -1);
-  const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
-  const [updateTask, { isSuccess: updatedTaskSuccess }] = useUpdateTaskMutation();
-  const [deleteTask, { isSuccess: deletedTaskSuccess }] = useDeleteTaskMutation();
+  const tasks = useMemo(() => card?.TASKS ?? [], [card?.TASKS]);
+
+  const addTask = (newTask: IKanbanTask) => {
+    const sortedTasks = [...tasks];
+    const lastId = sortedTasks.sort((a, b) => a.ID - b.ID).pop()?.ID ?? 0;
+    formik.setFieldValue('TASKS', [...tasks].concat({ ...newTask, ID: lastId + 1 }));
+  };
+
+  const updateTask = useCallback((newTask: IKanbanTask) => {
+    const newTasks = tasks.map(task => task.ID === newTask.ID ? newTask : task);
+    formik.setFieldValue('TASKS', [...newTasks]);
+  }, [tasks, formik]);
+
+  const deleteTask = (id: number) => {
+    const newTasks = tasks.filter(task => task.ID !== id);
+    formik.setFieldValue('TASKS', [...newTasks]);
+  };
   const user = useSelector<RootState, UserState>(state => state.user);
-
-  const changes = useRef<IChanges[]>([]);
-
   const currentTask = useRef<IKanbanTask | undefined>();
 
   const setTask = (task?: IKanbanTask) => {
     currentTask.current = task;
   };
 
-  useEffect(() => {
-    /** Надо сообщить формику, что мы изменили задачи */
-    if (isFetching) return;
-
-    if (updatedTaskSuccess || deletedTaskSuccess) {
-      formik.setFieldValue('TASKS', [...tasks]);
-    }
-  }, [isFetching, updatedTaskSuccess, deletedTaskSuccess]);
-
   const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
     const newTask = { ...row, USR$CLOSED: checked };
-
     updateTask(newTask);
-  }, []);
+  }, [updateTask]);
 
   const handleTaskEdit = ({ row }: any) => {
     setTask(row);
@@ -133,13 +112,6 @@ export function KanbanTasks(props: KanbanTasksProps) {
       return;
     };
 
-    changes.current.push({
-      id: card?.ID || -1,
-      fieldName: 'Задача',
-      oldValue: '',
-      newValue: newTask.USR$NAME || '',
-    });
-
     addTask(newTask);
     setOpenEditForm(false);
   };
@@ -149,7 +121,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
   };
 
   const initTask: IKanbanTask = useMemo(() => ({
-    ID: -1,
+    ID: -1 * (formik.values.TASKS?.length ?? 1),
     USR$CARDKEY: card?.ID || -1,
     USR$NAME: '',
     CREATOR: {
@@ -157,7 +129,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
       NAME: user.userProfile?.userName || ''
     },
     USR$CLOSED: false
-  }), []);
+  }), [formik.values.TASKS?.length]);
 
   const columns: GridColumns = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
@@ -192,7 +164,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
     { field: 'CREATOR', headerName: 'Создатель', width: 130,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value?.NAME}</Box>
     },
-  ], [card?.ID]);
+  ], [handleClosedChange]);
 
   const memoKanbanEditTask = useMemo(() =>
     <KanbanEditTask
@@ -209,15 +181,16 @@ export function KanbanTasks(props: KanbanTasksProps) {
       flex="1"
       display="flex"
       spacing={1}
+      height={'100%'}
     >
       <Stack direction="row">
         <Box flex={1} />
         <IconButton color="primary" onClick={handleTaskAdd}>
           <AddCircleRoundedIcon />
         </IconButton>
-        <IconButton color="primary" onClick={refetch} >
+        {/* <IconButton color="primary" onClick={refetch} >
           <RefreshIcon />
-        </IconButton>
+        </IconButton> */}
       </Stack>
       <CustomizedCard
         borders
@@ -229,7 +202,6 @@ export function KanbanTasks(props: KanbanTasksProps) {
           className={classes.dataGrid}
           rows={tasks || []}
           columns={columns}
-          loading={isFetching}
           hideFooter
           hideHeaderSeparator
           disableColumnSelector
