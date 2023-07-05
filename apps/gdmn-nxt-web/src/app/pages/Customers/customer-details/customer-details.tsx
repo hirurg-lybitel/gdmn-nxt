@@ -61,7 +61,6 @@ export function CustomerDetails(props: CustomerDetailsProps) {
     >
       <CustomizedCard
         borders
-        boxShadows
         className={classes.title}
       >
         {isFetching
