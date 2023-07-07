@@ -105,11 +105,11 @@ export function Customers(props: CustomersProps) {
     pageNo: 0,
     pageSize: 10
   });
-  const [dataWasChanged, setDataWasChanged] = useState(false);
+  const [changedData, setChangedData] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
 
   useEffect(() => {
-    setDataWasChanged(false);
+    setChangedData(false);
   }, [filteringData]);
 
   const filtersStorage = useSelector(
@@ -132,7 +132,7 @@ export function Customers(props: CustomersProps) {
       ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
       ...(sortingData ? { sort: sortingData } : {})
     },
-    { refetchOnMountOrArgChange: dataWasChanged }
+    { refetchOnMountOrArgChange: changedData }
   );
 
   const customersData: ICustomer[] = useMemo(
@@ -237,7 +237,7 @@ export function Customers(props: CustomersProps) {
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
-              >
+                >
                 {labels.map((label) => (
                   <ListItemButton
                     key={label.ID}
@@ -349,7 +349,7 @@ export function Customers(props: CustomersProps) {
     deleting: boolean
   ) => {
     setOpenEditForm(false);
-    setDataWasChanged(true);
+    setChangedData(true);
     if (deleting) {
       deleteCustomer(values.ID);
       return;
@@ -364,7 +364,7 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleAddOrganization = () => {
-    setDataWasChanged(true);
+    setChangedData(true);
     setCurrentOrganization(0);
     setOpenEditForm(true);
   };
@@ -375,7 +375,7 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
       return;
     }
-    setDataWasChanged(true);
+    setChangedData(true);
     deleteCustomer(currentOrganization);
   };
   const filterHandlers = {
