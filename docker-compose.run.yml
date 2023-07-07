@@ -1,11 +1,11 @@
 services:
   client:
-    image: client
+    image: hirurglybitel/gdmn-client:latest
     container_name: crm_client
     ports:
       - ${NX_APP_PORT}:80
   server:
-    image: server
+    image: hirurglybitel/gdmn-server:latest
     container_name: crm_server
     ports:
       - "${NX_SERVER_PORT}:${NX_SERVER_PORT}"
