@@ -117,7 +117,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string().matches(/@./),
-      PHONE: yup.string().matches(/^\+?\d{0,3}[-\ ]?\(?\d{0,3}\)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+      PHONE: yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ])?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
