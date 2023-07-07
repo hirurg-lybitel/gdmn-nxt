@@ -2,14 +2,13 @@ import { ClientToServerEvents, IMessage, ServerToClientEvents, getSocketClient, 
 import { Autocomplete, Box, Stack, TextField } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import NotificationList from '../../../layouts/MainLayout/Header/NotificationSection/notification-list/notification-list';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './view-user-notifications.module.less';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import CustomNoData from '../../../components/Styled/Icons/CustomNoData';
 import { Socket } from 'socket.io-client';
+import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
 
 /* eslint-disable-next-line */
 export interface ViewUserNotificationsProps {}
@@ -59,8 +58,14 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
       className={styles['item-card']}
       borders
       boxShadows
+
     >
-      <Stack direction="column" spacing={2} flex={1} style={{ display: 'flex' }}>
+      <Stack
+        direction="column"
+        spacing={2}
+        flex={1}
+        display="flex"
+      >
         <Autocomplete
           options={users}
           value={undefined}
@@ -83,19 +88,15 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
           }
         />
         <Box
-          style={{
-            height: 'calc(100vh - 410px)',
-            minHeight: '430px',
-            display: 'grid'
-          }}
+          flex={1}
         >
           {messages.length === 0
             ? <Box style={{ alignSelf: 'center' }}>
               <CustomNoData />
             </Box>
-            : <PerfectScrollbar>
+            : <CustomizedScrollBox>
               <NotificationList messages={messages} />
-            </PerfectScrollbar>}
+            </CustomizedScrollBox>}
         </Box>
       </Stack>
     </CustomizedCard>
