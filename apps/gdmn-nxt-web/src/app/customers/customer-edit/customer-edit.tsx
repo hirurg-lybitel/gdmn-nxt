@@ -84,7 +84,7 @@ const Transition = forwardRef(function Transition(
     direction="left"
     ref={ref}
     {...props}
-  />;
+         />;
 });
 
 export interface CustomerEditProps {
@@ -132,7 +132,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string()
-        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+]+)*@[a-zа-я0-9]+([.]?[a-zа-я0-9]+)*\.[a-zа-я]{2,}$/i,
+        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
           ({ value }) => {
             const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
             if (invalidChar) {
