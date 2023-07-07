@@ -1,7 +1,7 @@
 import styles from './send-message.module.less';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Alert, AlertColor, Autocomplete, Box, Button, CardActions, Checkbox, Chip, Divider, FormControlLabel, IconButton, InputBase, Slide, Snackbar, Stack, Tab, TextField } from '@mui/material';
-import React, { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Chip, Divider, FormControlLabel, IconButton, Stack, Tab, TextField } from '@mui/material';
+import { ChangeEvent, Fragment, useCallback, useEffect, useState } from 'react';
 import SendIcon from '@mui/icons-material/Send';
 import InfoIcon from '@mui/icons-material/Info';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -10,12 +10,11 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import ReactMarkdown from 'react-markdown';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import 'react-perfect-scrollbar/dist/css/styles.css';
 import { ClientToServerEvents, ServerToClientEvents, getSocketClient } from '@gdmn-nxt/socket';
 import CloseIcon from '@mui/icons-material/Close';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { Socket } from 'socket.io-client';
+import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
 
 /* eslint-disable-next-line */
 export interface SendMessageProps {}
@@ -78,87 +77,111 @@ export function SendMessage(props: SendMessageProps) {
 
 
   return (
-    <CustomizedCard borders boxShadows className={styles['item-card']}>
-      <Stack spacing={2} flex={1}>
-        <Stack direction="row">
-          <FormControlLabel
-            label="Все пользователи"
-            control={<Checkbox checked={allUser} onChange={(e, checked) => setAllUser(checked)} />}
-            style={{
-              minWidth: '190px',
-            }}
-          />
-          <Autocomplete
-            options={users}
-            multiple
-            disableCloseOnSelect
-            fullWidth
-            loading={usersIsFetching}
-            loadingText="Загрузка данных..."
-            getOptionLabel={option => option.NAME}
-            value={
-              users?.filter(u => selectedUsers?.find(el => el.ID === u.ID))
-            }
-            onChange={handleUsersChange}
-            renderInput={(params) => {
-              const { InputProps, ...paramsRest } = params;
-              const { startAdornment, ...InputPropsRest } = InputProps;
-
-              return (
-                <TextField
-                  {
-                    ...{
-                      ...paramsRest,
-                      InputProps: InputPropsRest
-                    }}
-                  label={selectedUsers?.length === 0 || params.inputProps['aria-expanded'] ? 'Получатели' : `Выбрано: ${selectedUsers?.length}`}
-                  placeholder={selectedUsers?.length === 0 ? 'Выберите получателей' : `Выбрано: ${selectedUsers?.length}`}
-                />);
-            }}
-            renderOption={(props, option, { selected }) => (
-              <li {...props} key={option.ID}>
-                <Checkbox
-                  icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                  checkedIcon={<CheckBoxIcon fontSize="small" />}
-                  checked={selected}
-                />
-                {option.NAME}
-              </li>
-            )}
-          />
-        </Stack>
-        <TabContext value={tabIndex}>
-          <Box>
-            <TabList onChange={handleTabsChange}>
-              <Tab label="Сообщение" value="1" />
-              <Tab label="Предпросмотр" value="2" />
-            </TabList>
-          </Box>
-          <Divider style={{ margin: 0 }} />
-          <TabPanel value="1" className={styles['tab-panel']} aria-label="myLabel">
-            <TextField
-              multiline
-              rows={4}
-              autoFocus
-              fullWidth
-              value={message}
-              onChange={handleTextOnChange}
+    <CustomizedCard
+      borders
+      boxShadows
+      className={styles['item-card']}
+    >
+      <CardContent
+        style={{
+          padding: 0
+        }}
+      >
+        <Stack
+          spacing={2}
+          height="100%"
+        >
+          <Stack direction="row">
+            <FormControlLabel
+              label="Все пользователи"
+              control={<Checkbox checked={allUser} onChange={(e, checked) => setAllUser(checked)} />}
+              style={{
+                minWidth: '190px',
+              }}
             />
-          </TabPanel>
-          <TabPanel value="2" className={styles['tab-panel']}>
-            <div style={{ height: '120px', overflow: 'auto', paddingLeft: '15px' }}>
-              <PerfectScrollbar>
-                <ReactMarkdown>
-                  {message}
-                </ReactMarkdown>
-              </PerfectScrollbar>
-            </div>
-          </TabPanel>
-        </TabContext>
-      </Stack>
+            <Autocomplete
+              options={users}
+              multiple
+              disableCloseOnSelect
+              fullWidth
+              loading={usersIsFetching}
+              loadingText="Загрузка данных..."
+              getOptionLabel={option => option.NAME}
+              value={
+                users?.filter(u => selectedUsers?.find(el => el.ID === u.ID))
+              }
+              onChange={handleUsersChange}
+              renderInput={(params) => {
+                const { InputProps, ...paramsRest } = params;
+                const { startAdornment, ...InputPropsRest } = InputProps;
+
+                return (
+                  <TextField
+                    {
+                      ...{
+                        ...paramsRest,
+                        InputProps: InputPropsRest
+                      }}
+                    label={selectedUsers?.length === 0 || params.inputProps['aria-expanded'] ? 'Получатели' : `Выбрано: ${selectedUsers?.length}`}
+                    placeholder={selectedUsers?.length === 0 ? 'Выберите получателей' : `Выбрано: ${selectedUsers?.length}`}
+                  />);
+              }}
+              renderOption={(props, option, { selected }) => (
+                <li {...props} key={option.ID}>
+                  <Checkbox
+                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                    checkedIcon={<CheckBoxIcon fontSize="small" />}
+                    checked={selected}
+                  />
+                  {option.NAME}
+                </li>
+              )}
+            />
+          </Stack>
+          <TabContext value={tabIndex}>
+            <Box>
+              <TabList onChange={handleTabsChange}>
+                <Tab label="Сообщение" value="1" />
+                <Tab label="Предпросмотр" value="2" />
+              </TabList>
+            </Box>
+            <Divider style={{ margin: 0 }} />
+            <TabPanel value="1" className={styles['tab-panel']}>
+              <TextField
+                className={styles.inputTextField}
+                multiline
+                rows={1}
+                autoFocus
+                fullWidth
+                value={message}
+                onChange={handleTextOnChange}
+              />
+            </TabPanel>
+            <TabPanel value="2" className={styles['tab-panel']}>
+              <div className={styles.preview}>
+                <CustomizedScrollBox>
+                  <ReactMarkdown>
+                    {message}
+                  </ReactMarkdown>
+                </CustomizedScrollBox>
+              </div>
+            </TabPanel>
+          </TabContext>
+        </Stack>
+      </CardContent>
       <CardActions className={styles.actions}>
-        <a href="https://www.markdownguide.org/basic-syntax/" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-          <Chip icon={<InfoIcon />} label="Поддерживаются стили Markdown " variant="outlined" style={{ border: 'none', cursor: 'pointer' }} />
+        <a
+          href="https://www.markdownguide.org/basic-syntax/"
+          target="_blank"
+          rel="noreferrer"
+          style={{ textDecoration: 'none' }}
+        >
+          <Chip
+            icon={<InfoIcon />}
+            label="Поддерживаются стили Markdown "
+            variant="outlined"
+            style={{ border: 'none', cursor: 'pointer' }}
+          />
         </a>
         <Box flex={1} />
         <Button
