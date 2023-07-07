@@ -9,9 +9,10 @@ import { useGetCustomersQuery } from '../../../features/customer/customerApi_new
 import { useEffect, useMemo, useState } from 'react';
 import { ICustomer } from '@gsbelarus/util-api-types';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
+import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 
 export interface IFilteringData {
-  [name: string] : any;
+  [name: string]: any;
 }
 
 export interface DealsFilterProps {
@@ -33,14 +34,15 @@ export function DealsFilter(props: DealsFilterProps) {
     onFilterClear
   } = props;
 
+  const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { data, isFetching: customerFetching } = useGetCustomersQuery();
   const { data: departments, isFetching: departmentsFetching } = useGetDepartmentsQuery();
   const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
 
   const handleOnChange = (entity: string, value: any) => {
-    const newObject = {...filteringData};
+    const newObject = { ...filteringData };
     delete newObject[entity];
-    onFilteringDataChange({ ...newObject, ...(value?.length > 0 ? { [entity]: value } : {})});
+    onFilteringDataChange({ ...newObject, ...(value?.length > 0 ? { [entity]: value } : {}) });
   };
 
   const [dealNumber, setDealNumber] = useState<string>(filteringData?.dealNumber);
@@ -49,16 +51,15 @@ export function DealsFilter(props: DealsFilterProps) {
     setDealNumber(filteringData?.dealNumber || '');
   }, [filteringData?.dealNumber]);
 
-  /**Debouncing enter deal number */
+  /** Debouncing enter deal number */
   useEffect(() => {
     if (!open) return;
 
     const sendRequestNumber = setTimeout(() => {
       handleOnChange('dealNumber', dealNumber);
-    }, 2000)
+    }, 2000);
 
     return () => clearTimeout(sendRequestNumber);
-
   }, [dealNumber]);
 
   return (
@@ -82,6 +83,11 @@ export function DealsFilter(props: DealsFilterProps) {
               label="Номер заявки"
               value={filteringData?.requestNumber || ''}
               onChange={(e) => handleOnChange('requestNumber', e.target.value)}
+            />
+            <TextField
+              label="Номер сделки"
+              value={dealNumber || ''}
+              onChange={(e) => setDealNumber(e.target.value)}
             />
             <Autocomplete
               options={customers}
@@ -145,16 +151,44 @@ export function DealsFilter(props: DealsFilterProps) {
               loading={departmentsFetching}
               loadingText="Загрузка данных..."
             />
-            <TextField
-              label="Номер сделки"
-              value={dealNumber || ''}
-              onChange={(e) => setDealNumber(e.target.value)}
+            <Autocomplete
+              options={employees}
+              value={
+                employees?.filter(employee => filteringData && (filteringData.performers)?.find((el: any) => el.ID === employee.ID))
+              }
+              onChange={(e, value) => handleOnChange('performers', value)}
+              multiple
+              limitTags={2}
+              getOptionLabel={option => option.NAME}
+              filterOptions={filterOptions(50, 'NAME')}
+              renderOption={(props, option, { selected }) => (
+                <li {...props} key={option.ID}>
+                  <Checkbox
+                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                    checkedIcon={<CheckBoxIcon fontSize="small" />}
+                    style={{ marginRight: 8 }}
+                    checked={selected}
+                  />
+                  {option.NAME}
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Исполнитель"
+                  placeholder="Выберите исполнителей"
+                />
+              )}
+              loading={employeesIsFetching}
+              loadingText="Загрузка данных..."
             />
           </Stack>
         </CardContent>
-        <CardActions style={{
-          padding: '16px'
-        }}>
+        <CardActions
+          style={{
+            padding: '16px'
+          }}
+        >
           <Button
             variant="contained"
             fullWidth

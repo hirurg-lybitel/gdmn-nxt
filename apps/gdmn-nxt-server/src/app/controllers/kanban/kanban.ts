@@ -61,7 +61,7 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber, dealNumber } = req.query;
+    const { departments, customers, requestNumber, dealNumber, performers } = req.query;
 
     const checkFullView = `
       EXISTS(
@@ -155,7 +155,8 @@ const get: RequestHandler = async (req, res) => {
         ${departments ? `AND dep.ID IN (${departments})` : ''}
         ${customers ? `AND con.ID IN (${customers})` : ''}
         ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
-        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''} `;
+        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
+        ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}`;
 
     const queries = [
       {
