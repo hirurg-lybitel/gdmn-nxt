@@ -126,8 +126,8 @@ export function Customers(props: CustomersProps) {
       pagination: paginationData,
       ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
       ...(sortingData ? { sort: sortingData } : {})
-    }
-    // { refetchOnMountOrArgChange: true }
+    },
+    { refetchOnMountOrArgChange: true }
   );
 
   const customersData: ICustomer[] = useMemo(
@@ -372,13 +372,14 @@ export function Customers(props: CustomersProps) {
 
     deleteCustomer(currentOrganization);
   };
-
+  console.log(filteringData);
   const filterHandlers = {
     handleFilter: async () => {
       setOpenFilters(!openFilters);
     },
     handleRequestSearch: async (value: string) => {
       const newObject = { ...filteringData };
+      console.log(filteringData);
       delete newObject.NAME;
       setFilteringData({
         ...newObject,
@@ -388,7 +389,7 @@ export function Customers(props: CustomersProps) {
     handleCancelSearch: async () => {
       const newObject = { ...filteringData };
       delete newObject.NAME;
-
+      console.log('delete');
       setFilteringData(newObject);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
@@ -534,7 +535,11 @@ export function Customers(props: CustomersProps) {
           </PermissionsGate>
           <Box flex={1} />
           <Box>{memoSearchBar}</Box>
-          <Box display="flex" justifyContent="center" width={30}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            width={30}
+          >
             <LoadingButton
               loading={customerFetching}
               onClick={() => customerRefetch()}
@@ -553,7 +558,11 @@ export function Customers(props: CustomersProps) {
               />
             </LoadingButton>
           </Box>
-          <Box display="flex" justifyContent="center" width={30}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            width={30}
+          >
             <IconButton
               onClick={filterHandlers.handleFilter}
               disabled={customerFetching}
@@ -584,25 +593,60 @@ export function Customers(props: CustomersProps) {
       >
         <Stack flex={1}>
           {Object.keys(filteringData || {}).length !== 0 &&
-            <Stack className={style.bodySelectedDataContainer} direction="row" spacing={2} p={3}>
+            <Stack
+              className={style.bodySelectedDataContainer}
+              direction="row"
+              spacing={2}
+              p={3}
+            >
               {filteringData?.DEPARTMENTS && (
-                <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Отдел"
+                  data={filteringData.DEPARTMENTS}
+                  masName={'DEPARTMENTS'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.CONTRACTS && (
-                <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Заказы"
+                  data={filteringData.CONTRACTS}
+                  masName={'CONTRACTS'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.WORKTYPES && (
-                <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Виды работ"
+                  data={filteringData.WORKTYPES}
+                  masName={'WORKTYPES'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.LABELS && (
-                <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Метки"
+                  data={filteringData.LABELS}
+                  masName={'LABELS'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.BUSINESSPROCESSES && (
-                <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Бизнес процессы"
+                  data={filteringData.BUSINESSPROCESSES}
+                  masName={'BUSINESSPROCESSES'}
+                  deleteField={handleOnChange}
+                />
               )}
             </Stack>
           }
-          <Stack direction="row" flex={1} display="flex" className={classes.row}>
+          <Stack
+            direction="row"
+            flex={1}
+            display="flex"
+            className={classes.row}
+          >
             <Box flex={1}>
               <StyledGrid
                 onRowDoubleClick={lineDoubleClick}
