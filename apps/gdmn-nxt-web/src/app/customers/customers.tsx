@@ -105,7 +105,12 @@ export function Customers(props: CustomersProps) {
     pageNo: 0,
     pageSize: 10
   });
+  const [dataWasChanged, setDataWasChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
+
+  useEffect(() => {
+    setDataWasChanged(false);
+  }, [filteringData]);
 
   const filtersStorage = useSelector(
     (state: RootState) => state.filtersStorage
@@ -127,7 +132,7 @@ export function Customers(props: CustomersProps) {
       ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
       ...(sortingData ? { sort: sortingData } : {})
     },
-    { refetchOnMountOrArgChange: true }
+    { refetchOnMountOrArgChange: dataWasChanged }
   );
 
   const customersData: ICustomer[] = useMemo(
@@ -344,7 +349,7 @@ export function Customers(props: CustomersProps) {
     deleting: boolean
   ) => {
     setOpenEditForm(false);
-
+    setDataWasChanged(true);
     if (deleting) {
       deleteCustomer(values.ID);
       return;
@@ -359,6 +364,7 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleAddOrganization = () => {
+    setDataWasChanged(true);
     setCurrentOrganization(0);
     setOpenEditForm(true);
   };
@@ -369,17 +375,15 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
       return;
     }
-
+    setDataWasChanged(true);
     deleteCustomer(currentOrganization);
   };
-  console.log(filteringData);
   const filterHandlers = {
     handleFilter: async () => {
       setOpenFilters(!openFilters);
     },
     handleRequestSearch: async (value: string) => {
       const newObject = { ...filteringData };
-      console.log(filteringData);
       delete newObject.NAME;
       setFilteringData({
         ...newObject,
@@ -389,7 +393,6 @@ export function Customers(props: CustomersProps) {
     handleCancelSearch: async () => {
       const newObject = { ...filteringData };
       delete newObject.NAME;
-      console.log('delete');
       setFilteringData(newObject);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
