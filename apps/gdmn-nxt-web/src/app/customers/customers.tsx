@@ -105,11 +105,11 @@ export function Customers(props: CustomersProps) {
     pageNo: 0,
     pageSize: 10
   });
-  const [changedData, setChangedData] = useState(false);
+  const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
 
   useEffect(() => {
-    setChangedData(false);
+    setDataChanged(false);
   }, [filteringData]);
 
   const filtersStorage = useSelector(
@@ -132,7 +132,7 @@ export function Customers(props: CustomersProps) {
       ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
       ...(sortingData ? { sort: sortingData } : {})
     },
-    { refetchOnMountOrArgChange: changedData }
+    { refetchOnMountOrArgChange: dataChanged }
   );
 
   const customersData: ICustomer[] = useMemo(
@@ -349,7 +349,7 @@ export function Customers(props: CustomersProps) {
     deleting: boolean
   ) => {
     setOpenEditForm(false);
-    setChangedData(true);
+    setDataChanged(true);
     if (deleting) {
       deleteCustomer(values.ID);
       return;
@@ -364,7 +364,7 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleAddOrganization = () => {
-    setChangedData(true);
+    setDataChanged(true);
     setCurrentOrganization(0);
     setOpenEditForm(true);
   };
@@ -375,7 +375,7 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
       return;
     }
-    setChangedData(true);
+    setDataChanged(true);
     deleteCustomer(currentOrganization);
   };
   const filterHandlers = {
@@ -445,6 +445,7 @@ export function Customers(props: CustomersProps) {
     () => (
       <CustomerEdit
         open={openEditForm}
+        deleteable
         customer={
           customers?.find((element) => element.ID === currentOrganization) ||
           null
