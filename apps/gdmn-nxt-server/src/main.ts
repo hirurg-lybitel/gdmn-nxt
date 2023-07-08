@@ -37,6 +37,9 @@ import { checkPermissions, setPermissonsCache } from './app/middlewares/permissi
 import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
 import path from 'path';
+import fs from 'fs';
+import https from 'https';
+import http from 'http';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -56,8 +59,8 @@ const cors = require('cors');
 
 app.use(cors({
   credentials: true,
-  secure: 'httpOnly',
-  origin: `http://${config.host}:${config.appPort}`
+  // secure: 'httpOnly',
+  origin: `https://${config.host}:${config.appPort}`
 }));
 
 if (config.serverStaticMode) {
@@ -327,9 +330,30 @@ if (config.serverStaticMode) {
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
+// const certPath = path.join(__dirname, '../../../sslcert', 'cert.pem');
+// console.log('certPath', __dirname, certPath);
+const privateKey = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem'));
+const certificate = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem'));
 
-server.on('[ error ]', console.error);
+const options = {
+  key: privateKey,
+  cert: certificate
+};
+
+// const server = https.createServer(options, app);
+// server.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at https://${config.host}:${config.serverPort}`));
+
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(options, app);
+
+// httpServer.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
+httpsServer.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at https://${config.host}:${config.serverPort}`));
+
+// httpServer.on('[ error ]', console.error);
+httpsServer.on('[ error ]', console.error);
+// const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
+
+// server.on('[ error ]', console.error);
 
 process
   .on('exit', code => {

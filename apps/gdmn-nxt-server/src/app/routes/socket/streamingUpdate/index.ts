@@ -1,16 +1,30 @@
 import { ServerToClientEvents, ClientToServerEvents, KanbanEvent, SocketRoom } from '@gdmn-nxt/socket';
 import { Server } from 'socket.io';
 import { config } from '@gdmn-nxt/config';
+import path from 'path';
+import fs from 'fs';
+import https, { ServerOptions } from 'https';
 
 
 export function StreamingUpdate() {
+  const privateKey = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem'));
+  const certificate = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem'));
+
+  // console.log('StreamingUpdate', certificate);
+
+  const options: ServerOptions = {
+    key: privateKey,
+    cert: certificate,
+  };
+  const httpsServer = https.createServer(options);
+
   const socketIO = new Server<
       ClientToServerEvents,
       ServerToClientEvents
-    >({
+    >(httpsServer, {
       cors: {
         credentials: true,
-        origin: `http://${config.host}:${config.appPort}`
+        origin: `https://${config.host}:${config.appPort}`
       }
     });
 
@@ -62,6 +76,5 @@ export function StreamingUpdate() {
     socket.on(KanbanEvent.DeleteTask, (taskId) => {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.DeleteTask, taskId);
     });
-
   });
 };

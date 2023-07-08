@@ -19,14 +19,14 @@ export function Notifications({ router }: NotificationsProps) {
   >({
     cors: {
       credentials: true,
-      origin: `http://${config.host}:${config.appPort}`
+      origin: `https://${config.host}:${config.appPort}`
     }
   });
 
   const sessionId = 'notification';
   const users: IUser[] = [];
 
-  console.log(`[ notifications ] socket running at http://localhost:${config.notificationPort}`);
+  console.log(`[ notifications ] socket running at https://localhost:${config.notificationPort}`);
 
   socketIO.listen(config.notificationPort);
 
