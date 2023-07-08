@@ -26,6 +26,8 @@ import { useGetDepartmentsQuery } from '../../features/departments/departmentsAp
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
+import { AnyObject } from 'yup/lib/types';
+import TextFieldMasked from '../../components/textField-masked/textField-masked';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -62,7 +64,11 @@ const Transition = forwardRef(function Transition(
   },
   ref: Ref<unknown>,
 ) {
-  return <Slide direction="left" ref={ref} {...props} />;
+  return <Slide
+    direction="left"
+    ref={ref}
+    {...props}
+  />;
 });
 
 
@@ -98,18 +104,34 @@ export function PersonEdit(props: PersonEditProps) {
     WCOMPANYKEY: person?.WCOMPANYKEY || -1,
   };
 
-  const formik = useFormik<IContactPerson>({
+  const [phoneCount, setPhoneCount] = useState(1);
+
+  const phonesValidation = () => {
+    const validationCount: {[U: string]: yup.StringSchema<string | undefined, AnyObject, string | undefined>} = {};
+    for (let i = 0;i < phoneCount;i++) {
+      const name = `PHONE${i + 1}`;
+      validationCount[name] = yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+        .max(40, 'Слишком длинный номер');
+    }
+    return validationCount;
+  };
+
+  interface IFrom extends IContactPerson {
+    [U: string]: any
+  }
+
+  const formik = useFormik<IFrom>({
     enableReinitialize: true,
     initialValues: {
       ...person,
       ...initValue
     },
-    validationSchema: yup.object().shape({
+    validationSchema: yup.object().shape(Object.assign({
       NAME: yup.string()
         .required('Не указано имя')
         .max(80, 'Слишком длинное имя'),
-      USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
-    }),
+      USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение')
+    }, phonesValidation())),
     onSubmit: (values) => {
       if (!confirmOpen) {
         setDeleting(false);
@@ -148,6 +170,7 @@ export function PersonEdit(props: PersonEditProps) {
     newPhones.push({ ID: -1, USR$PHONENUMBER: '' });
 
     formik.setFieldValue('PHONES', newPhones);
+    setPhoneCount(phoneCount + 1);
     setPhones(newPhones);
   };
 
@@ -175,6 +198,8 @@ export function PersonEdit(props: PersonEditProps) {
     setConfirmOpen(false);
   }, []);
 
+  const asd = 'PHONE1';
+
   return (
     <CustomizedDialog
       open={open}
@@ -188,7 +213,11 @@ export function PersonEdit(props: PersonEditProps) {
         className={classes.dialogContent}
       >
         <PerfectScrollbar>
-          <Stack direction="column" spacing={3} p="16px 24px">
+          <Stack
+            direction="column"
+            spacing={3}
+            p="16px 24px"
+          >
             <FormikProvider value={formik}>
               <Form id="mainForm" onSubmit={formik.handleSubmit}>
                 <Stack direction="column" spacing={3}>
@@ -212,26 +241,54 @@ export function PersonEdit(props: PersonEditProps) {
                     onChange={formik.handleChange}
                     value={formik.values.EMAIL}
                   />
-                  <TextField
+                  <TextFieldMasked
+                    mask={'+375 (99) 999-99-99'}
                     label="Телефон 1"
                     type="tel"
+                    name="PHONE1"
                     value={formik.values.PHONES?.length ? formik.values.PHONES[0].USR$PHONENUMBER : ''}
+                    onBlur={(e) => {
+                      formik.handleBlur(e);
+                      setTimeout(() => {
+                        formik.handleChange(e);
+                      }, 1);
+                    }}
                     onChange={(e) => {
+                      formik.handleChange(e);
                       handlePhoneChange(0, e.target.value);
                     }}
+                    helperText={String(formik.errors?.['PHONE1']) === 'undefined'
+                    || formik.values.PHONES?.[0].USR$PHONENUMBER === ''
+                      ? undefined
+                      : String(formik.errors?.['PHONE1'])
+                    }
                   />
                   {phones.slice(1)
                     .map((phone, index) => {
                       // console.log('phone', index, phone.USR$PHONENUMBER);
                       return (
-                        <TextField
+                        <TextFieldMasked
+                          mask={'+375 (99) 999-99-99'}
                           key={index}
                           label={`Телефон ${index + 2}`}
                           type="tel"
+                          name={`PHONE${index + 2}`}
                           value={phone.USR$PHONENUMBER}
+                          onBlur={(e) => {
+                            formik.handleBlur(e);
+                            setTimeout(() => {
+                              formik.handleChange(e);
+                            }, 1);
+                          }}
                           onChange={(e) => {
+                            formik.handleChange(e);
                             handlePhoneChange(index + 1, e.target.value);
                           }}
+                          helperText={String(formik.errors?.[`PHONE${index + 2}`]) === 'undefined'
+                          || phone.USR$PHONENUMBER === ''
+                            ? undefined
+                            : String(formik.errors?.[`PHONE${index + 2}`])
+                          }
                         />);
                     })}
                   <div>

@@ -117,7 +117,8 @@ export function CustomerEdit(props: CustomerEditProps) {
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
       EMAIL: yup.string().matches(/@./),
-      PHONE: yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ])?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+      'PHONE': yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+        .max(40, 'Слишком длинный номер')
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -244,18 +245,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                           value={formik.values.EMAIL}
                           fullWidth
                         />
-                        <TextField
-                          label="Телефон"
-                          className={classes.helperText}
-                          type="text"
-                          name="PHONE"
-                          onBlur={formik.handleBlur}
-                          onChange={formik.handleChange}
-                          value={formik.values.PHONE}
-                          helperText={formik.errors.PHONE}
-                          fullWidth
-                        />
-                        {/* <TextFieldMasked
+                        <TextFieldMasked
                           mask={'+375 (99) 999-99-99'}
                           fullWidth
                           name="PHONE"
@@ -264,7 +254,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                           value={formik.values.PHONE}
                           error={formik.touched.PHONE && Boolean(formik.errors.PHONE)}
                           helperText={formik.touched.PHONE && formik.errors.PHONE}
-                        /> */}
+                        />
                       </Stack>
                       <TextField
                         label="Адрес"
