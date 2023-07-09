@@ -6,6 +6,7 @@ import tasks from '../../controllers/kanban/task';
 import kanbanCatalogs from './kanbanCatalogs';
 import kanbanFilters from './kanbanFilters';
 import { kanbanController } from '../../controllers/kanban/kanban';
+import reads from '../../controllers/kanban/reads';
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.get('/data/deals?userID=:userID', kanbanController.get);
 router.put('/reordercolumns', kanbanController.reorderColumns);
 router.put('/reordercards', kanbanController.reorderCards);
 
+router.post('/deals/read', reads.upsert);
 router.get('/data/tasks', kanbanController.getTasks);
 
 router.post('/columns', columns.upsert);

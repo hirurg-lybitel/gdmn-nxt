@@ -300,6 +300,31 @@ const upsert: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
+    const deleteResult = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE LAB_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_CARDS_READS WHERE USR$CARDID = :ID INTO :LAB_ID AS CURSOR curCARDS_READ
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_CARDS_READS WHERE CURRENT OF curCARDS_READ;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [deal.ID]
+    );
+
+    deleteResult.fetchAsObject();
+
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
@@ -343,6 +368,31 @@ const remove: RequestHandler = async(req, res) => {
       END`,
       [id]
     );
+
+    const deleteResult = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE LAB_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_CARDS_READS WHERE USR$CARDID = :ID INTO :LAB_ID AS CURSOR curCARDS_READ
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_CARDS_READS WHERE CURRENT OF curCARDS_READ;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [id]
+    );
+
+    deleteResult.fetchAsObject();
 
     const data: { SUCCESS: number, USR$MASTERKEY: number }[] = await result.fetchAsObject();
 

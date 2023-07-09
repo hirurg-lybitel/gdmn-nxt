@@ -10,6 +10,8 @@ import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { UserState } from '../../../features/user/userSlice';
+import { useSetIsReadMutation } from '../../../features/kanban/kanbanApi';
 
 
 /* eslint-disable-next-line */
@@ -35,7 +37,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const colorModeIsLight = useMemo(() => colorMode === ColorMode.Light, [colorMode]);
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
-
+  const [setIsRead] = useSetIsReadMutation();
   const cardHandlers = {
     handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
       if (deleting) {
@@ -79,7 +81,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -110,7 +112,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -154,8 +156,12 @@ export function KanbanCard(props: KanbanCardProps) {
     );
   }, []);
 
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
+
   const doubleClick = useCallback(() => {
-    if (!card.USR$ISREAD) onEdit({ ...card, USR$ISREAD: true });
+    if (!card.USR$ISREAD && userId) {
+      setIsRead({ USR$USERID: userId, USR$CARDID: card.ID });
+    }
     setEditCard(true);
   }, [card]);
 

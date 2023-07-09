@@ -23,7 +23,7 @@ type IKanbanHistoryRequestResult = IRequestResult<IHistory>;
 type IDenyReasonRequestResult = IRequestResult<{ denyReasons: IDenyReason[] }>;
 
 interface IFilteringData {
-  [name: string] : any;
+  [name: string]: any;
 };
 export interface IDealsQueryOptions {
   userId?: number;
@@ -93,15 +93,15 @@ export const kanbanApi = createApi({
 
           socketClient.on(KanbanEvent.AddColumn, (column) => {
             updateCachedData((draft) => {
-              draft.push(column)
-            })
+              draft.push(column);
+            });
           });
 
           socketClient.on(KanbanEvent.UpdateColumn, (column) => {
             updateCachedData((draft) => {
               const findIndex = draft.findIndex(d => d.ID === column.ID);
-              draft[findIndex] = {...draft[findIndex], USR$NAME: column.USR$NAME};
-            })
+              draft[findIndex] = { ...draft[findIndex], USR$NAME: column.USR$NAME };
+            });
           });
 
           socketClient.on(KanbanEvent.DeleteColumn, (id) => {
@@ -109,7 +109,7 @@ export const kanbanApi = createApi({
               draft.splice(0, draft.length, ...draft.filter(column => {
                 return column.ID !== Number(id);
               }));
-            })
+            });
           });
 
           socketClient.on(KanbanEvent.AddCard, (columnId, card) => {
@@ -118,8 +118,8 @@ export const kanbanApi = createApi({
                 if (column.ID === Number(columnId)) {
                   column.CARDS.push(card);
                 }
-              })
-            })
+              });
+            });
           });
 
           socketClient.on(KanbanEvent.UpdateCard, (columnId, card) => {
@@ -142,15 +142,14 @@ export const kanbanApi = createApi({
 
                     const targetColumn = columns.find(c => c.ID === card.USR$MASTERKEY);
                     if (targetColumn) {
-                      targetColumn.CARDS.unshift({...findedCard, ...card});
+                      targetColumn.CARDS.unshift({ ...findedCard, ...card });
                     }
-
                   } else {
-                    column.CARDS[findCardIndex] = {...column.CARDS[findCardIndex], ...card};
+                    column.CARDS[findCardIndex] = { ...column.CARDS[findCardIndex], ...card };
                   }
                 }
-              })
-            })
+              });
+            });
           });
 
           socketClient.on(KanbanEvent.DeleteCard, (columnId, cardId) => {
@@ -158,8 +157,8 @@ export const kanbanApi = createApi({
               draft.forEach(column => {
                 if (column.ID !== Number(columnId)) return;
                 column.CARDS?.splice(0, column.CARDS?.length, ...column.CARDS?.filter(card => card.ID !== Number(cardId)));
-              })
-            })
+              });
+            });
           });
 
           socketClient.on(KanbanEvent.ReorderCards, (columnId, cards) => {
@@ -167,7 +166,7 @@ export const kanbanApi = createApi({
               const findIndex = draft.findIndex(d => d.ID === Number(columnId));
               if (!draft[findIndex]?.CARDS.length) return;
               draft[findIndex].CARDS = [...cards];
-            })
+            });
           });
 
           socketClient.on(KanbanEvent.AddTask, (cardId, task) => {
@@ -181,8 +180,8 @@ export const kanbanApi = createApi({
                 const tasks = column.CARDS[findCardIndex].TASKS;
                 column.CARDS[findCardIndex].TASKS = [...tasks || [], task];
                 return false;
-              })
-            })
+              });
+            });
           });
 
           socketClient.on(KanbanEvent.UpdateTask, (cardId, task) => {
@@ -197,9 +196,8 @@ export const kanbanApi = createApi({
                 const tasks = column.CARDS[findCardIndex].TASKS;
                 if (!tasks?.length) return;
 
-                tasks[findTaskIndex] = {...tasks[findTaskIndex], ...task};
-              })
-
+                tasks[findTaskIndex] = { ...tasks[findTaskIndex], ...task };
+              });
             });
           });
 
@@ -224,7 +222,6 @@ export const kanbanApi = createApi({
               });
             });
           });
-
         } catch (error) {
         }
         await cacheEntryRemoved;
@@ -357,7 +354,7 @@ export const kanbanApi = createApi({
         const result = response.queries?.cards || [];
 
         if (result.length) {
-          socketClient.emit(KanbanEvent.AddCard, result[0].USR$MASTERKEY, {...result[0], DEAL: body.DEAL});
+          socketClient.emit(KanbanEvent.AddCard, result[0].USR$MASTERKEY, { ...result[0], DEAL: body.DEAL });
         }
 
         return result;
@@ -535,7 +532,7 @@ export const kanbanApi = createApi({
         }
 
         return result;
-        },
+      },
       invalidatesTags: (result, error) => {
         return result
           ? [
@@ -613,7 +610,15 @@ export const kanbanApi = createApi({
           : error
             ? [{ type: 'Task', id: 'ERROR' }]
             : [{ type: 'Task', id: 'LIST' }]
-    })
+    }),
+    setIsRead: builder.mutation<{USR$USERID: number, USR$CARDID: number}, any>({
+      query: (body) => ({
+        url: 'kanban/deals/read',
+        method: 'POST',
+        body
+      }),
+      invalidatesTags: [{ type: 'Column', id: 'LIST' }]
+    }),
   })
 });
 
@@ -633,5 +638,6 @@ export const {
   useAddTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
-  useGetKanbanTasksQuery
+  useGetKanbanTasksQuery,
+  useSetIsReadMutation
 } = kanbanApi;
