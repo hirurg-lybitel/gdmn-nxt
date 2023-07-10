@@ -11,12 +11,20 @@ export function TabDescription(props: TabDescriptionProps) {
 
   return (
     <TextField
+      sx={{
+        height: '100%',
+        '& div': {
+          height: '100%'
+        },
+        '& textarea': {
+          height: '100% !important'
+        }
+      }}
       name="DEAL.DESCRIPTION"
       label="Описание"
       type="text"
       multiline
-      minRows={4}
-      maxRows={22}
+      rows={1}
       fullWidth
       value={formik.values.DEAL?.DESCRIPTION || ''}
       onChange={formik.handleChange}

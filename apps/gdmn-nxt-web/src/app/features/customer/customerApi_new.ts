@@ -52,8 +52,8 @@ export const customerApi = createApi({
     getCustomers: builder.query<{data: ICustomer[], count?: number}, Partial<IQueryOptions> | void>({
       query(options) {
         const params: string[] = [];
-
-        if (options) lastOptions = { ...options };
+        // if (options) {
+        lastOptions = { ...options };
 
         for (const [name, value] of Object.entries(options || {})) {
           switch (true) {
@@ -111,9 +111,9 @@ export const customerApi = createApi({
       },
       transformResponse: (response: ICustomerRequestResult) => response.queries?.contact,
       async onQueryStarted(newCustomer, { dispatch, queryFulfilled, getState, extra }) {
-        console.info('⏩ request', 'PUT', `${baseUrlApi}contacts`);
+        const options = Object.keys(lastOptions).length > 0 ? lastOptions : undefined;
         const patchResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
+          customerApi.util.updateQueryData('getCustomers', options, (draft) => {
             if (Array.isArray(draft.data)) {
               const findIndex = draft.data?.findIndex(c => c.ID === newCustomer.ID);
               if (findIndex >= 0) {
@@ -137,11 +137,11 @@ export const customerApi = createApi({
       }),
       transformResponse: (response: ICustomerRequestResult) => response.queries?.contact,
       async onQueryStarted({ ID, ...patch }, { dispatch, queryFulfilled }) {
-        console.info('⏩ request', 'POST', `${baseUrlApi}constacts`);
         try {
           const { data: addedCustomer } = await queryFulfilled;
+          const options = Object.keys(lastOptions).length > 0 ? lastOptions : undefined;
           dispatch(
-            customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
               draft.data.unshift(addedCustomer);
               if (draft.count) draft.count += 1;
             })
@@ -155,9 +155,9 @@ export const customerApi = createApi({
         method: 'DELETE'
       }),
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
-        console.log('⏩ request', 'DELETE', `${baseUrlApi}constacts/${id}`);
+        const options = Object.keys(lastOptions).length > 0 ? lastOptions : undefined;
         const deleteResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', lastOptions, (draft) => {
+          customerApi.util.updateQueryData('getCustomers', options, (draft) => {
             if (Array.isArray(draft.data)) {
               const findIndex = draft.data.findIndex(d => d.ID === id);
 

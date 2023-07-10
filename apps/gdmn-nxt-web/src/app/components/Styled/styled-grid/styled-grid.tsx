@@ -1,15 +1,17 @@
 import { DataGridPro, DataGridProProps, GridRenderCellParams, ruRU } from '@mui/x-data-grid-pro';
 import styles from './styled-grid.module.less';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
-import CustomLoadingOverlay from './DataGridProOverlay/CustomLoadingOverlay';
+import CustomLinearLoadingOverlay from './DataGridProOverlay/CustomLinearLoadingOverlay';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Popper, Typography } from '@mui/material';
 import CustomizedCard from '../customized-card/customized-card';
 import { theme } from '../../../theme';
 import { useTheme } from '@mui/material/styles';
+import CustomCircularLoadingOverlay from './DataGridProOverlay/CustomCircularLoadingOverlay';
 
 interface IStyledGridProps extends DataGridProProps{
   hideHeaderSeparator?: boolean;
+  loadingMode?: 'circular' | 'linear';
 }
 
 export default function StyledGrid(props: IStyledGridProps) {
@@ -71,12 +73,15 @@ export default function StyledGrid(props: IStyledGridProps) {
       padding: '24px',
     }
   });
+
+  const { loadingMode = 'linear' } = props;
+
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
       getRowId={row => row.ID}
       components={{
-        LoadingOverlay: CustomLoadingOverlay,
+        LoadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,
         NoRowsOverlay: CustomNoRowsOverlay,
         NoResultsOverlay: CustomNoRowsOverlay,
       }}

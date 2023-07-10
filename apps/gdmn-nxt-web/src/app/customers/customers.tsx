@@ -105,7 +105,12 @@ export function Customers(props: CustomersProps) {
     pageNo: 0,
     pageSize: 10
   });
+  const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
+
+  useEffect(() => {
+    setDataChanged(false);
+  }, [filteringData]);
 
   const filtersStorage = useSelector(
     (state: RootState) => state.filtersStorage
@@ -126,8 +131,8 @@ export function Customers(props: CustomersProps) {
       pagination: paginationData,
       ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
       ...(sortingData ? { sort: sortingData } : {})
-    }
-    // { refetchOnMountOrArgChange: true }
+    },
+    { refetchOnMountOrArgChange: dataChanged }
   );
 
   const customersData: ICustomer[] = useMemo(
@@ -232,7 +237,7 @@ export function Customers(props: CustomersProps) {
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
-              >
+                >
                 {labels.map((label) => (
                   <ListItemButton
                     key={label.ID}
@@ -344,7 +349,7 @@ export function Customers(props: CustomersProps) {
     deleting: boolean
   ) => {
     setOpenEditForm(false);
-
+    setDataChanged(true);
     if (deleting) {
       deleteCustomer(values.ID);
       return;
@@ -359,6 +364,7 @@ export function Customers(props: CustomersProps) {
   };
 
   const handleAddOrganization = () => {
+    setDataChanged(true);
     setCurrentOrganization(0);
     setOpenEditForm(true);
   };
@@ -369,10 +375,9 @@ export function Customers(props: CustomersProps) {
       setOpenSnackBar(true);
       return;
     }
-
+    setDataChanged(true);
     deleteCustomer(currentOrganization);
   };
-
   const filterHandlers = {
     handleFilter: async () => {
       setOpenFilters(!openFilters);
@@ -388,7 +393,6 @@ export function Customers(props: CustomersProps) {
     handleCancelSearch: async () => {
       const newObject = { ...filteringData };
       delete newObject.NAME;
-
       setFilteringData(newObject);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
@@ -441,6 +445,7 @@ export function Customers(props: CustomersProps) {
     () => (
       <CustomerEdit
         open={openEditForm}
+        deleteable
         customer={
           customers?.find((element) => element.ID === currentOrganization) ||
           null
@@ -534,7 +539,11 @@ export function Customers(props: CustomersProps) {
           </PermissionsGate>
           <Box flex={1} />
           <Box>{memoSearchBar}</Box>
-          <Box display="flex" justifyContent="center" width={30}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            width={30}
+          >
             <LoadingButton
               loading={customerFetching}
               onClick={() => customerRefetch()}
@@ -553,7 +562,11 @@ export function Customers(props: CustomersProps) {
               />
             </LoadingButton>
           </Box>
-          <Box display="flex" justifyContent="center" width={30}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            width={30}
+          >
             <IconButton
               onClick={filterHandlers.handleFilter}
               disabled={customerFetching}
@@ -584,25 +597,60 @@ export function Customers(props: CustomersProps) {
       >
         <Stack flex={1}>
           {Object.keys(filteringData || {}).length !== 0 &&
-            <Stack className={style.bodySelectedDataContainer} direction="row" spacing={2} p={3}>
+            <Stack
+              className={style.bodySelectedDataContainer}
+              direction="row"
+              spacing={2}
+              p={3}
+            >
               {filteringData?.DEPARTMENTS && (
-                <DataField name="Отдел" data={filteringData.DEPARTMENTS} masName={'DEPARTMENTS'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Отдел"
+                  data={filteringData.DEPARTMENTS}
+                  masName={'DEPARTMENTS'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.CONTRACTS && (
-                <DataField name="Заказы" data={filteringData.CONTRACTS} masName={'CONTRACTS'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Заказы"
+                  data={filteringData.CONTRACTS}
+                  masName={'CONTRACTS'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.WORKTYPES && (
-                <DataField name="Виды работ" data={filteringData.WORKTYPES} masName={'WORKTYPES'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Виды работ"
+                  data={filteringData.WORKTYPES}
+                  masName={'WORKTYPES'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.LABELS && (
-                <DataField name="Метки" data={filteringData.LABELS} masName={'LABELS'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Метки"
+                  data={filteringData.LABELS}
+                  masName={'LABELS'}
+                  deleteField={handleOnChange}
+                />
               )}
               {filteringData?.BUSINESSPROCESSES && (
-                <DataField name="Бизнес процессы" data={filteringData.BUSINESSPROCESSES} masName={'BUSINESSPROCESSES'} deleteField={handleOnChange}/>
+                <DataField
+                  name="Бизнес процессы"
+                  data={filteringData.BUSINESSPROCESSES}
+                  masName={'BUSINESSPROCESSES'}
+                  deleteField={handleOnChange}
+                />
               )}
             </Stack>
           }
-          <Stack direction="row" flex={1} display="flex" className={classes.row}>
+          <Stack
+            direction="row"
+            flex={1}
+            display="flex"
+            className={classes.row}
+          >
             <Box flex={1}>
               <StyledGrid
                 onRowDoubleClick={lineDoubleClick}

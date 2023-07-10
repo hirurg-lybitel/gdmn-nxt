@@ -8,13 +8,16 @@ import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
 import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import { useGetAllUpdatesQuery } from '../features/updates';
+import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery } from '../features/kanban/kanbanFiltersApi';
 
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
-  const { userProfile } = useSelector<RootState, UserState>(state => state.user);
-  const skip = !userProfile?.id;
+  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
+  const skip = userId < 0;
   const { } = useGetAllUpdatesQuery(undefined, { skip });
-  const { } = useGetKanbanDealsQuery({ userId: userProfile?.id || -1 }, { skip });
+  const { } = useGetFiltersDeadlineQuery(undefined, { skip });
+  const { } = useGetLastUsedFilterDeadlineQuery(userId, { skip });
+  const { } = useGetKanbanDealsQuery({ userId }, { skip });
   const { } = useGetCustomersCrossQuery(undefined, { skip });
   const { } = useGetWorkTypesQuery(undefined, { skip });
   const { } = useGetDepartmentsQuery(undefined, { skip });

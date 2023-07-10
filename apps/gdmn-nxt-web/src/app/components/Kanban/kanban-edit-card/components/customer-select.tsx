@@ -21,6 +21,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
     () => [...(customersResponse?.data || [])],
     [customersResponse?.data]
   );
+
   const [insertCustomer, { isSuccess: insertCustomerIsSuccess, isLoading: insertCustomerIsLoading, data: newCustomer }] = useAddCustomerMutation();
   const [updateCustomer] = useUpdateCustomerMutation();
 
@@ -33,7 +34,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
 
   const handleAddCustomer = useCallback(() => {
     setEditingCustomer(null);
-    setAddCustomer(true)
+    setAddCustomer(true);
   }, []);
   const handleEditCustomer = useCallback((customer: ICustomer) => () => {
     setEditingCustomer(customer);
@@ -41,10 +42,10 @@ export function CustomerSelect(props: CustomerSelectProps) {
   }, []);
 
   const handleSubmitCustomer = useCallback((customer: ICustomer) => {
-    if(!editingCustomer){
-      insertCustomer(customer)
-    }else{
-      updateCustomer(customer)
+    if (!editingCustomer) {
+      insertCustomer(customer);
+    } else {
+      updateCustomer(customer);
     }
     setAddCustomer(false);
   }, [editingCustomer]);
@@ -98,8 +99,8 @@ export function CustomerSelect(props: CustomerSelectProps) {
                 <div style={{ flex: 1 }}>
                   {option.NAME}
                 </div>
-                <IconButton size='small' onClick={handleEditCustomer(option)}>
-                  <EditIcon fontSize='small' />
+                <IconButton size="small" onClick={handleEditCustomer(option)}>
+                  <EditIcon fontSize="small" />
                 </IconButton>
               </div>
             </li>

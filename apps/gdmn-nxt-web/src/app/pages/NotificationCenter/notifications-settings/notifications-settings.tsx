@@ -7,7 +7,11 @@ export interface NotificationsSettingsProps {}
 
 export function NotificationsSettings(props: NotificationsSettingsProps) {
   return (
-    <CustomizedCard borders style={{ flex: 1, padding: 10, display: 'flex', flexDirection: 'column' }} boxShadows>
+    <CustomizedCard
+      className={styles['item-card']}
+      borders
+      boxShadows
+    >
       <Box flex={1}>
         <TextField
           label="Дней без срока"
