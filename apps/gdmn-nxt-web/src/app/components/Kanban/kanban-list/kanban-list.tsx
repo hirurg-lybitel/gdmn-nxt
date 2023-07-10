@@ -121,17 +121,11 @@ export function KanbanList(props: KanbanListProps) {
   };
 
   const onAddCard = async (newCard: IKanbanCard) => {
-    changes.current.push({
-      id: -1,
-      fieldName: 'Сделка',
-      oldValue: '',
-      newValue: (newCard as any).DEAL.USR$NAME || ''
-    });
     insertCard(newCard);
   };
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
+    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
       if (deleting) {
         onDelete(card);
       } else {
@@ -139,19 +133,15 @@ export function KanbanList(props: KanbanListProps) {
           onEditCard(card);
         };
         if (!card.ID) {
-          if (close || close === undefined) {
-            editCard && setEditCard(false);
-            addCard && setAddCard(false);
-            clearLastCard(true);
-          }
+          editCard && setEditCard(false);
+          addCard && setAddCard(false);
+          clearLastCard(true);
           onAddCard(card);
         }
       };
-      if (close || close === undefined) {
-        clearLastCard();
-        editCard && setEditCard(false);
-        addCard && setAddCard(false);
-      }
+      clearLastCard();
+      editCard && setEditCard(false);
+      addCard && setAddCard(false);
     },
     handleCancel: async (isFetching?: boolean) => {
       clearLastCard(!!isFetching);

@@ -10,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -47,23 +47,20 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
+    handleSubmit: async (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
-        onDeleteCard && onDeleteCard(card);
+        onDeleteCard && onDeleteCard(newCard);
         setUpsertCard(false);
         setAddTasks(false);
       };
-      if (card.ID && !deleting) {
-        onEditCard && onEditCard(card);
+      if (newCard.ID && !deleting) {
+        onEditCard && onEditCard(newCard);
         setUpsertCard(false);
         setAddTasks(false);
       } else {
-        onAddCard && onAddCard(card);
+        onAddCard && onAddCard(newCard);
         setAddTasks(true);
-        if (close || close === undefined) {
-          setAddTasks(false);
-          setUpsertCard(false);
-        }
+        setUpsertCard(false);
       }
     },
     handleCancel: async (isFetching?: boolean) => {
@@ -246,12 +243,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
       >
         {header()}
       </Box>
-      {isFetching ? <Skeleton
-        variant="rectangular"
-        height={'100%'}
-        style={{ borderRadius: '12px 12px 12px 12px' }}
-                    /> :
-        <>
+      {isFetching
+        ? <Skeleton
+          variant="rectangular"
+          height={'100%'}
+          style={{ borderRadius: '12px 12px 12px 12px' }}
+        />
+        : <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}
             style={{

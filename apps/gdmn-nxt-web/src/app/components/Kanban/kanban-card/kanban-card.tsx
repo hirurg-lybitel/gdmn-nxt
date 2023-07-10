@@ -4,7 +4,7 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
-import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
@@ -24,13 +24,17 @@ export interface KanbanCardProps {
   onDelete: (card: IKanbanCard) => void;
   addIsFetching?: boolean;
   lastCard?: IKanbanCard
+  clearLastCard?: (isAdd?: boolean) => void,
+  onAddTask: (task: IKanbanTask) => void;
+  onEditTask: (task: IKanbanTask) => void;
+  onDeleteTask: (task: IKanbanTask) => void;
 };
 
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
   const { card, columns, lastCard, addIsFetching } = props;
-  const { onAdd, onEdit, onDelete } = props;
+  const { onAdd, onEdit, onDelete, clearLastCard, onAddTask, onEditTask, onDeleteTask } = props;
   const theme = useTheme();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
@@ -39,23 +43,36 @@ export function KanbanCard(props: KanbanCardProps) {
   const [copyCard, setCopyCard] = useState(false);
   const [setIsRead] = useSetIsReadMutation();
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
+    handleSubmit: (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
-        onDelete(card);
+        onDelete(newCard);
         setEditCard(false);
         return;
       };
-      if (card.ID && !deleting) {
-        onEdit(card);
+
+      if (newCard.ID && !deleting) {
+        onEdit(newCard);
         copyCard && setCopyCard(false);
         setEditCard(false);
-        return;
+        clearLastCard && clearLastCard();
+
+        const deletedTasks = card.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
+        deletedTasks.forEach(task => onDeleteTask(task));
+
+        newCard.TASKS?.forEach(task => {
+          const oldTask = card.TASKS?.find(({ ID }) => ID === task.ID);
+          if (!oldTask) {
+            onAddTask({ ...task, ID: -1 });
+            return;
+          };
+
+          if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
+            onEditTask(task);
+          };
+        });
       } else {
-        onAdd(card);
-        if (close || close === undefined) {
-          copyCard && setCopyCard(false);
-        }
-        return;
+        onAdd(newCard);
+        copyCard && setCopyCard(false);
       }
     },
     handleCancel: async (isFetching?: boolean) => {
