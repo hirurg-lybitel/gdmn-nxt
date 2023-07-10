@@ -1,6 +1,5 @@
 import styles from './customized-scroll-box.module.less';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { styled } from '@mui/styles';
 import { ReactNode } from 'react';
 import PerfectScrollbar, { ScrollBarProps } from 'react-perfect-scrollbar';
 

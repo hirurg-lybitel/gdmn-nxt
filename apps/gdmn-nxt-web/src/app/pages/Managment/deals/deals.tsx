@@ -65,9 +65,9 @@ export function Deals(props: DealsProps) {
     refetch
   } = useGetKanbanDealsQuery({
     userId,
-    filter: {
-      ...filtersStorage.filterData.deals,
-    }
+    ...(Object.keys(filtersStorage.filterData.deals || {}).length > 0 ? { filter: filtersStorage.filterData.deals } : {}),
+  }, {
+    skip: Object.keys(filtersStorage.filterData.deals || {}).length === 0
   });
 
   const saveFilters = (filteringData: IFilteringData) => {
@@ -115,7 +115,7 @@ export function Deals(props: DealsProps) {
     />,
   [openFilters, filtersStorage.filterData.deals]);
 
-  const componentIsFetching = isLoading;
+  const componentIsFetching = isLoading || Object.keys(filtersStorage.filterData.deals || {}).length === 0;
 
   const Header = useMemo(() => {
     return (

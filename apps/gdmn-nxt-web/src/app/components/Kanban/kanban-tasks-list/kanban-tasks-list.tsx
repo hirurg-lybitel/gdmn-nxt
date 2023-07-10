@@ -55,7 +55,7 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
   const groupingColDef: DataGridProProps['groupingColDef'] = {
     headerName: 'Задача',
     width: 300,
-    minWidth: 250,
+    minWidth: 300,
     flex: 1,
     renderCell: (params) => <CustomGridTreeDataGroupingCell {...params} columns={columns} />,
   };

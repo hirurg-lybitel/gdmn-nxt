@@ -1,7 +1,7 @@
 import { LinearProgress, useTheme } from '@mui/material';
 import { GridOverlay } from '@mui/x-data-grid-pro';
 
-export default function CustomLoadingOverlay() {
+export default function CustomLinearLoadingOverlay() {
   const theme = useTheme();
   return (
     <GridOverlay style={{ backgroundColor: `${theme.palette.background.paper}` }}>

@@ -82,6 +82,7 @@ const Main = () => {
         background: settings.customization.colorMode === ColorMode.Dark ? '#424242' : '',
         height: '100%'
       }}
+      translate="no"
     >
       <CustomRouter>
         <StrictMode>

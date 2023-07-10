@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   client:
-    image: client
+    image: hirurglybitel/gdmn-client:latest
     container_name: crm_client
     build:
       context: .
@@ -21,7 +21,7 @@ services:
       - ./.env
       - ./.env.prod
   server:
-    image: server
+    image: hirurglybitel/gdmn-server:latest
     hostname: gdmn.crm
     build:
       context: .
