@@ -24,13 +24,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { TransitionProps } from '@mui/material/transitions';
 import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -39,7 +38,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 import ContactPersonList from '../contact-person-list/contact-person-list';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
-
+import TextFieldMasked from '../../components/textField-masked/textField-masked';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -73,19 +72,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingRight: 0,
   }
 }));
-
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: React.Ref<unknown>,
-) {
-  return <Slide
-    direction="left"
-    ref={ref}
-    {...props}
-         />;
-});
 
 export interface CustomerEditProps {
   open: boolean;
@@ -141,7 +127,8 @@ export function CustomerEdit(props: CustomerEditProps) {
             return 'Некорректный адрес';
           })
         .max(40, 'Слишком длинный email'),
-      PHONE: yup.string().matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im, 'Некорректный номер')
+      'PHONE': yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+        .max(40, 'Слишком длинный номер')
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -268,16 +255,15 @@ export function CustomerEdit(props: CustomerEditProps) {
                           error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
                           fullWidth
                         />
-                        <TextField
-                          label="Телефон"
-                          className={classes.helperText}
-                          type="text"
+                        <TextFieldMasked
+                          mask={'+375 (99) 999-99-99'}
+                          fullWidth
                           name="PHONE"
+                          label="Телефон"
                           onChange={formik.handleChange}
                           value={formik.values.PHONE}
-                          helperText={getIn(formik.touched, 'PHONE') && getIn(formik.errors, 'PHONE')}
-                          error={getIn(formik.touched, 'PHONE') && Boolean(getIn(formik.errors, 'PHONE'))}
-                          fullWidth
+                          error={formik.touched.PHONE && Boolean(formik.errors.PHONE)}
+                          helperText={formik.touched.PHONE && formik.errors.PHONE}
                         />
                       </Stack>
                       <TextField

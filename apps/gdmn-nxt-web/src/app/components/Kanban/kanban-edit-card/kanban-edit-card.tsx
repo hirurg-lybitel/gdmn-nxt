@@ -62,6 +62,7 @@ import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
+import TextFieldMasked from '../../textField-masked/textField-masked';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -232,7 +233,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 return 'Некорректный адрес';
               })
             .max(40, 'Слишком длинный email'),
-          CONTACT_PHONE: yup.string().nullable()
+          CONTACT_PHONE: yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
             .max(40, 'Слишком длинный номер'),
           REQUESTNUMBER: yup.string().nullable()
             .max(20, 'Слишком длинный номер'),
@@ -355,7 +356,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}
           />
-          <TextField
+          <TextFieldMasked
+            mask={'+375 (99) 999-99-99'}
             label="Телефон"
             type="text"
             fullWidth
