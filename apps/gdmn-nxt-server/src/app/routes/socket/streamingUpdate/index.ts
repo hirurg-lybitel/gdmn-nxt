@@ -19,6 +19,10 @@ export function StreamingUpdate() {
   socketIO.on('connection', (socket) => {
     console.log(`⚡ Streaming update: ${socket.id} user just connected!`);
 
+    // socket.on('delete', () => console.log('delete'));
+    // socket.on('disconnect', () => console.log('disconnect', socket.id, socket.rooms));
+    // socket.on('disconnecting', () => console.log('disconnecting', socket.id, socket.rooms));
+
     socket.on('joinToRoom', (roomName) => {
       socket.join(roomName);
     });
@@ -51,17 +55,16 @@ export function StreamingUpdate() {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.ReorderCards, columnId, cards);
     });
 
-    socket.on(KanbanEvent.AddTask, (cartId, task) => {
-      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTask, cartId, task);
+    socket.on(KanbanEvent.AddTask, (cardId, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTask, cardId, task);
     });
 
-    socket.on(KanbanEvent.UpdateTask, (cartId, task) => {
-      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.UpdateTask, cartId, task);
+    socket.on(KanbanEvent.UpdateTask, (cardId, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.UpdateTask, cardId, task);
     });
 
     socket.on(KanbanEvent.DeleteTask, (taskId) => {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.DeleteTask, taskId);
     });
-
   });
 };
