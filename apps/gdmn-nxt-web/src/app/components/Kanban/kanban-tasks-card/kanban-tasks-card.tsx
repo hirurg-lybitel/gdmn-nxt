@@ -116,6 +116,14 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               {truncate(card.DEAL?.CONTACT?.NAME || '', 50)}
             </Typography>
           </Box>
+          <Typography
+            display={!card.TASK?.CREATOR.NAME ? 'none' : 'inline'}
+            color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            variant="caption"
+            component="span"
+          >
+            {`${card.TASK?.CREATOR.NAME}`}
+          </Typography>
           <Typography variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'}>
             {card.TASK?.USR$DEADLINE
               ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
