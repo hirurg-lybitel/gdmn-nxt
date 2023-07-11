@@ -251,7 +251,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
 
-    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY', 'USR$ISREAD'];
+    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY'];
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     paramsValues = actualFields.map(field => {
@@ -293,12 +293,64 @@ const upsert: RequestHandler = async (req, res) => {
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
 
+    sql = `
+      EXECUTE BLOCK(
+        cardId INTEGER = ?,
+        userId INTEGER = ?
+      )
+      AS
+      DECLARE VARIABLE CON_ID INTEGER;
+      BEGIN
+        FOR
+          SELECT u.ID
+          FROM GD_CONTACT con
+          JOIN GD_USER u ON u.CONTACTKEY = con.ID
+          JOIN USR$CRM_DEALS deal
+            ON deal.USR$CREATORKEY = con.ID
+            OR deal.USR$PERFORMER = con.ID
+            OR deal.USR$SECOND_PERFORMER = con.ID
+          JOIN USR$CRM_KANBAN_CARDS card ON card.USR$DEALKEY = deal.ID
+          WHERE card.ID = :cardId AND u.ID != :userId
+          INTO :CON_ID
+        DO
+          UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_STATUS(USR$ISREAD, USR$CARDKEY, USR$USERKEY)
+          VALUES(0, :cardId, :CON_ID)
+          MATCHING(USR$CARDKEY, USR$USERKEY);
+      END`;
+
+    await attachment.executeQuery(transaction, sql, [cardRecord.ID, userId]);
+
     const result: IRequestResult<{ cards: IKanbanCard[] }> = {
       queries: {
         cards: [Object.fromEntries(allFields.map((field, idx) => ([field, cardRecord[field]]))) as IKanbanCard]
       },
       _schema: undefined
     };
+
+    const deleteResult = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE LAB_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_CARDS_READS WHERE USR$CARDID = :ID INTO :LAB_ID AS CURSOR curCARDS_READ
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_CARDS_READS WHERE CURRENT OF curCARDS_READ;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [deal.ID]
+    );
+
+    deleteResult.fetchAsObject();
 
     return res.status(200).json(result);
   } catch (error) {
@@ -343,6 +395,31 @@ const remove: RequestHandler = async(req, res) => {
       END`,
       [id]
     );
+
+    const deleteResult = await attachment.executeQuery(
+      transaction,
+      `EXECUTE BLOCK(
+        ID INTEGER = ?
+      )
+      RETURNS(SUCCESS SMALLINT)
+      AS
+      DECLARE VARIABLE LAB_ID INTEGER;
+      BEGIN
+        SUCCESS = 0;
+        FOR SELECT ID FROM USR$CRM_CARDS_READS WHERE USR$CARDID = :ID INTO :LAB_ID AS CURSOR curCARDS_READ
+        DO
+        BEGIN
+          DELETE FROM USR$CRM_CARDS_READS WHERE CURRENT OF curCARDS_READ;
+
+          SUCCESS = 1;
+        END
+
+        SUSPEND;
+      END`,
+      [id]
+    );
+
+    deleteResult.fetchAsObject();
 
     const data: { SUCCESS: number, USR$MASTERKEY: number }[] = await result.fetchAsObject();
 

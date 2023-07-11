@@ -224,6 +224,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .nullable()
             .max(80, 'Слишком длинное имя'),
           CONTACT_EMAIL: yup.string()
+            .nullable()
             .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
               ({ value }) => {
                 const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
@@ -233,7 +234,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 return 'Некорректный адрес';
               })
             .max(40, 'Слишком длинный email'),
-          CONTACT_PHONE: yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+          CONTACT_PHONE: yup.string()
+            .nullable()
+            .matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
             .max(40, 'Слишком длинный номер'),
           REQUESTNUMBER: yup.string().nullable()
             .max(20, 'Слишком длинный номер'),
