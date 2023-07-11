@@ -283,12 +283,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return skeletonFaqItems;
   }, []);
 
-  const lastCard = useMemo(() => {
-    if (!addedCard) return undefined;
-    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === addedCard?.[0]?.ID);
-    return cards;
-  }, [columns, addedCard]);
-
   const skeletonCount: IKanbanColumn[] = skeletonItems(5);
 
   return (
@@ -360,7 +354,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   onAddCard={cardHandlers.handleAddCard}
                                   isFetching={isLoading}
                                   addIsFetching={isLoadingAddCard}
-                                  lastCard={lastCard}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
@@ -389,7 +382,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onEditTask={cardHandlers.handleEditTask}
                                                 onDeleteTask={cardHandlers.handleDeleteTask}
                                                 addIsFetching={isLoadingAddCard || isLoadingEditCard}
-                                                lastCard={lastCard}
                                               />
                                             </Box>
                                           )}
