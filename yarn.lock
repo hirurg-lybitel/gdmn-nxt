@@ -4359,6 +4359,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-input-mask@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@types/react-input-mask@npm:3.0.2"
+  dependencies:
+    "@types/react": "*"
+  checksum: 1fadbba04b72a2898b2b85b9b62a8cbf8043ff98f503e23293f27d4e56843bbe2dd3da51f48de4bc3916aff31eb93083c6090090ce8b0837f1f174c447e81ad4
+  languageName: node
+  linkType: hard
+
 "@types/react-is@npm:^16.7.1 || ^17.0.0":
   version: 17.0.4
   resolution: "@types/react-is@npm:17.0.4"
@@ -9110,6 +9119,7 @@ __metadata:
     "@types/react": ^18.0.37
     "@types/react-color": ^3.0.6
     "@types/react-dom": 18.0.9
+    "@types/react-input-mask": ^3.0.2
     "@types/react-leaflet": ^2.8.2
     "@types/react-leaflet-markercluster": ^3.0.0
     "@typescript-eslint/eslint-plugin": ^5.59.9
@@ -9165,6 +9175,7 @@ __metadata:
     react-dnd-html5-backend: ^15.1.2
     react-dom: 18.2.0
     react-hook-form: ^7.41.0
+    react-input-mask: 3.0.0-alpha.2
     react-is: 18.2.0
     react-leaflet: ^4.0.0
     react-leaflet-markercluster: ^3.0.0-rc1
@@ -10024,6 +10035,15 @@ __metadata:
   version: 1.0.1
   resolution: "internmap@npm:1.0.1"
   checksum: 9d00f8c0cf873a24a53a5a937120dab634c41f383105e066bb318a61864e6292d24eb9516e8e7dccfb4420ec42ca474a0f28ac9a6cc82536898fa09bbbe53813
+  languageName: node
+  linkType: hard
+
+"invariant@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "invariant@npm:2.2.4"
+  dependencies:
+    loose-envify: ^1.0.0
+  checksum: cc3182d793aad82a8d1f0af697b462939cb46066ec48bbf1707c150ad5fad6406137e91a262022c269702e01621f35ef60269f6c0d7fd178487959809acdfb14
   languageName: node
   linkType: hard
 
@@ -11759,7 +11779,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
+"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -14454,6 +14474,20 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18
   checksum: 65b94de625f2b7921c4e856bf0abbe142bfe06c052217bd1bcc3a842e2cc37fa3a3e03758119dc038bbcf5edb49e02c29206528b80b201f9a4d601471ef78153
+  languageName: node
+  linkType: hard
+
+"react-input-mask@npm:3.0.0-alpha.2":
+  version: 3.0.0-alpha.2
+  resolution: "react-input-mask@npm:3.0.0-alpha.2"
+  dependencies:
+    invariant: ^2.2.4
+    prop-types: ^15.7.2
+    warning: ^4.0.3
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: 6631cd65a31316ba129e6b6edcca5b1e8def3b9e97ad46fdc2d41d18165635f7a2cd81791473d31a58d3fd0dab5f0be0af7bdcaf3ff66a0d4d123d7cb6c69c55
   languageName: node
   linkType: hard
 
@@ -17278,6 +17312,15 @@ __metadata:
   dependencies:
     makeerror: 1.0.12
   checksum: ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
+  languageName: node
+  linkType: hard
+
+"warning@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "warning@npm:4.0.3"
+  dependencies:
+    loose-envify: ^1.0.0
+  checksum: 4f2cb6a9575e4faf71ddad9ad1ae7a00d0a75d24521c193fa464f30e6b04027bd97aa5d9546b0e13d3a150ab402eda216d59c1d0f2d6ca60124d96cd40dfa35c
   languageName: node
   linkType: hard
 

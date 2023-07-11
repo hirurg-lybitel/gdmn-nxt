@@ -24,13 +24,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { TransitionProps } from '@mui/material/transitions';
 import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -39,7 +38,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 import ContactPersonList from '../contact-person-list/contact-person-list';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
-
+import TextFieldMasked from '../../components/textField-masked/textField-masked';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -73,19 +72,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingRight: 0,
   }
 }));
-
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: React.Ref<unknown>,
-) {
-  return <Slide
-    direction="left"
-    ref={ref}
-    {...props}
-         />;
-});
 
 export interface CustomerEditProps {
   open: boolean;
@@ -123,6 +109,7 @@ export function CustomerEdit(props: CustomerEditProps) {
 
   const formik = useFormik<ICustomer>({
     enableReinitialize: true,
+    validateOnBlur: false,
     initialValues: {
       ...customer,
       ...initValue
@@ -130,7 +117,18 @@ export function CustomerEdit(props: CustomerEditProps) {
     validationSchema: yup.object().shape({
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
-      EMAIL: yup.string().matches(/@./)
+      EMAIL: yup.string()
+        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
+          ({ value }) => {
+            const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
+            if (invalidChar) {
+              return `Адрес не может содержать символ "${invalidChar}"`;
+            }
+            return 'Некорректный адрес';
+          })
+        .max(40, 'Слишком длинный email'),
+      'PHONE': yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+        .max(40, 'Слишком длинный номер')
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -232,41 +230,40 @@ export function CustomerEdit(props: CustomerEditProps) {
                         required
                         autoFocus
                         name="NAME"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.NAME}
-                        helperText={formik.errors.NAME}
+                        helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
+                        error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
                       />
                       <TextField
                         label="УНП"
                         className={classes.helperText}
                         type="text"
                         name="TAXID"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.TAXID}
-                        helperText={formik.errors.TAXID}
                       />
                       <Stack direction="row" spacing={2}>
                         <TextField
                           label="Email"
-                          type="email"
-                          name="EMAIL"
-                          onBlur={formik.handleBlur}
-                          onChange={formik.handleChange}
-                          value={formik.values.EMAIL}
-                          fullWidth
-                        />
-                        <TextField
-                          label="Телефон"
                           className={classes.helperText}
                           type="text"
+                          name="EMAIL"
+                          onChange={formik.handleChange}
+                          value={formik.values.EMAIL}
+                          helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+                          error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
+                          fullWidth
+                        />
+                        <TextFieldMasked
+                          mask={'+375 (99) 999-99-99'}
+                          fullWidth
                           name="PHONE"
-                          onBlur={formik.handleBlur}
+                          label="Телефон"
                           onChange={formik.handleChange}
                           value={formik.values.PHONE}
-                          helperText={formik.errors.PHONE}
-                          fullWidth
+                          error={formik.touched.PHONE && Boolean(formik.errors.PHONE)}
+                          helperText={formik.touched.PHONE && formik.errors.PHONE}
                         />
                       </Stack>
                       <TextField
@@ -276,11 +273,11 @@ export function CustomerEdit(props: CustomerEditProps) {
                         minRows={1}
                         type="text"
                         name="ADDRESS"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.ADDRESS}
-                        helperText={formik.errors.ADDRESS}
                         placeholder="Введите адрес"
+                        helperText={getIn(formik.touched, 'ADDRESS') && getIn(formik.errors, 'ADDRESS')}
+                        error={getIn(formik.touched, 'ADDRESS') && Boolean(getIn(formik.errors, 'ADDRESS'))}
                       />
                       <Autocomplete
                         multiple
