@@ -173,7 +173,7 @@ const get: RequestHandler = async (req, res) => {
         name: 'cards',
         query:
           `SELECT
-            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY, read.USR$USERID,
+            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
             card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED,
             deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
             con.ID con_ID, con.NAME con_NAME,
@@ -211,7 +211,6 @@ const get: RequestHandler = async (req, res) => {
             LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
             LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
             LEFT JOIN USR$CRM_DEALS_SOURCE source ON source.ID = deal.USR$SOURCEKEY
-            LEFT JOIN USR$CRM_CARDS_READS read ON read.USR$USERID = ${userId} AND read.USR$CARDID = card.ID
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
