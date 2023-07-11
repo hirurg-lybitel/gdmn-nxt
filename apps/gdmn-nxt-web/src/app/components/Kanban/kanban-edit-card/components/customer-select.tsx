@@ -30,7 +30,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
 
   useEffect(() => {
     insertCustomerIsSuccess && (formik.values.DEAL?.CONTACT?.ID !== newCustomer?.ID) && formik.setFieldValue('DEAL.CONTACT', newCustomer);
-  }, [formik.values.DEAL?.CONTACT?.ID, insertCustomerIsSuccess, newCustomer]);
+  }, [insertCustomerIsSuccess, newCustomer]);
 
   const handleAddCustomer = useCallback(() => {
     setEditingCustomer(null);
@@ -68,7 +68,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
       customer={editingCustomer}
       onCancelClick={handleCancelCustomer}
       onSubmit={handleSubmitCustomer}
-    />, [addCustomer,editingCustomer]);
+    />, [addCustomer, editingCustomer]);
 
   return (
     <>
@@ -94,7 +94,11 @@ export function CustomerSelect(props: CustomerSelectProps) {
         }}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer) => {
           return (
-            <li {...props} key={option.ID} style={{ display: 'flex' }}>
+            <li
+              {...props}
+              key={option.ID}
+              style={{ display: 'flex' }}
+            >
               <div style={{ flex: 1, display: 'flex' }}>
                 <div style={{ flex: 1 }}>
                   {option.NAME}

@@ -59,7 +59,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         setAddTasks(false);
       } else {
         onAddCard && onAddCard(newCard);
-        setAddTasks(true);
+        setAddTasks(false);
         setUpsertCard(false);
       }
     },
@@ -248,7 +248,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           variant="rectangular"
           height={'100%'}
           style={{ borderRadius: '12px 12px 12px 12px' }}
-        />
+          />
         : <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}
