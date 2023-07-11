@@ -3,7 +3,7 @@ import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import styles from './kanban-tasks-list.module.less';
 import { IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams} from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import { Box, ButtonProps, Chip, IconButton, Stack } from '@mui/material';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -78,6 +78,15 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
     {
       field: 'PERFORMER',
       headerName: 'Исполнитель',
+      flex: 1,
+      minWidth: 200,
+      maxWidth: 300,
+      sortComparator: (a, b) => ('' + a?.NAME || '').localeCompare(b?.NAME || ''),
+      renderCell: (params) => renderCellExpand(params, params.value?.NAME),
+    },
+    {
+      field: 'CREATOR',
+      headerName: 'Постановщик',
       flex: 1,
       minWidth: 200,
       maxWidth: 300,
