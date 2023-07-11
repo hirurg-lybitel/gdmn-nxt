@@ -25,7 +25,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -109,6 +109,7 @@ export function CustomerEdit(props: CustomerEditProps) {
 
   const formik = useFormik<ICustomer>({
     enableReinitialize: true,
+    validateOnBlur: false,
     initialValues: {
       ...customer,
       ...initValue
@@ -116,7 +117,16 @@ export function CustomerEdit(props: CustomerEditProps) {
     validationSchema: yup.object().shape({
       NAME: yup.string().required('')
         .max(80, 'Слишком длинное наименование'),
-      EMAIL: yup.string().matches(/@./),
+      EMAIL: yup.string()
+        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
+          ({ value }) => {
+            const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
+            if (invalidChar) {
+              return `Адрес не может содержать символ "${invalidChar}"`;
+            }
+            return 'Некорректный адрес';
+          })
+        .max(40, 'Слишком длинный email'),
       'PHONE': yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
         .max(40, 'Слишком длинный номер')
     }),
@@ -220,29 +230,29 @@ export function CustomerEdit(props: CustomerEditProps) {
                         required
                         autoFocus
                         name="NAME"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.NAME}
-                        helperText={formik.errors.NAME}
+                        helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
+                        error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
                       />
                       <TextField
                         label="УНП"
                         className={classes.helperText}
                         type="text"
                         name="TAXID"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.TAXID}
-                        helperText={formik.errors.TAXID}
                       />
                       <Stack direction="row" spacing={2}>
                         <TextField
                           label="Email"
-                          type="email"
+                          className={classes.helperText}
+                          type="text"
                           name="EMAIL"
-                          onBlur={formik.handleBlur}
                           onChange={formik.handleChange}
                           value={formik.values.EMAIL}
+                          helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+                          error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
                           fullWidth
                         />
                         <TextFieldMasked
@@ -263,11 +273,11 @@ export function CustomerEdit(props: CustomerEditProps) {
                         minRows={1}
                         type="text"
                         name="ADDRESS"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.ADDRESS}
-                        helperText={formik.errors.ADDRESS}
                         placeholder="Введите адрес"
+                        helperText={getIn(formik.touched, 'ADDRESS') && getIn(formik.errors, 'ADDRESS')}
+                        error={getIn(formik.touched, 'ADDRESS') && Boolean(getIn(formik.errors, 'ADDRESS'))}
                       />
                       <Autocomplete
                         multiple
