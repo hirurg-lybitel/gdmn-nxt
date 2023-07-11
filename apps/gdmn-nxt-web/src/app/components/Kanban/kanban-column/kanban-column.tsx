@@ -24,7 +24,6 @@ export interface KanbanColumnProps {
   item: IKanbanColumn;
   isFetching: boolean,
   addIsFetching?: boolean,
-  lastCard?: IKanbanCard
   disabledAddDeal?: boolean;
   onEdit: (newColumn: IKanbanColumn) => void;
   onDelete?: (column: IKanbanColumn) => void;
@@ -35,9 +34,8 @@ export interface KanbanColumnProps {
 
 export function KanbanColumn(props: KanbanColumnProps) {
   const { provided, dragSnapshot, dropSnapshot, isFetching, addIsFetching = false, disabledAddDeal = false } = props;
-  const { children, item, columns, lastCard } = props;
+  const { children, item, columns } = props;
   const { onEdit, onDelete, onEditCard, onAddCard, onDeleteCard } = props;
-  const [addTasks, setAddTasks] = useState(false);
   const theme = useTheme();
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
@@ -51,20 +49,16 @@ export function KanbanColumn(props: KanbanColumnProps) {
       if (deleting) {
         onDeleteCard && onDeleteCard(newCard);
         setUpsertCard(false);
-        setAddTasks(false);
       };
       if (newCard.ID && !deleting) {
         onEditCard && onEditCard(newCard);
         setUpsertCard(false);
-        setAddTasks(false);
       } else {
         onAddCard && onAddCard(newCard);
-        setAddTasks(true);
         setUpsertCard(false);
       }
     },
     handleCancel: async (isFetching?: boolean) => {
-      setAddTasks(false);
       setUpsertCard(false);
     },
     handleClose: async (e: any, reason: string) => {
@@ -224,12 +218,11 @@ export function KanbanColumn(props: KanbanColumnProps) {
         open={upsertCard}
         currentStage={item}
         stages={columns}
-        card={addTasks ? lastCard : undefined}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [upsertCard, lastCard]);
+  }, [upsertCard]);
 
   return (
     <Box
@@ -248,7 +241,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           variant="rectangular"
           height={'100%'}
           style={{ borderRadius: '12px 12px 12px 12px' }}
-        />
+          />
         : <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}
