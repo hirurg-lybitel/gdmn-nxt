@@ -215,7 +215,7 @@ const get: RequestHandler = async (req, res) => {
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$ISREAD, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
+          ORDER BY card.USR$MASTERKEY, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
       },
       {
         name: 'tasks',
@@ -242,17 +242,40 @@ const get: RequestHandler = async (req, res) => {
           LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY`
       },
+      {
+        name: 'status',
+        query:
+          `SELECT
+            USR$CARDKEY,
+            USR$ISREAD
+          FROM USR$CRM_KANBAN_CARD_STATUS
+          WHERE USR$USERKEY = ${userId}
+          ORDER BY USR$CARDKEY`
+      },
     ];
 
-    const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
+    const [rawColumns, rawCards, rawTasks, rawStatus] = await Promise.all(queries.map(execQuery));
 
     interface IMapOfArrays {
       [key: string]: any[];
     };
 
+    interface IMapOfObjects {
+      [key: string]: any;
+    };
+
 
     const cards: IMapOfArrays = {};
     const tasks: IMapOfArrays = {};
+    const status: IMapOfObjects = {};
+
+    rawStatus.forEach(el => {
+      const newStatus = {
+        isRead: el['USR$ISREAD'] === 1
+      };
+
+      status[el['USR$CARDKEY']] = newStatus;
+    });
 
     rawTasks.forEach(el => {
       const newTask = {
@@ -351,7 +374,7 @@ const get: RequestHandler = async (req, res) => {
           DESCRIPTION: el['DESCRIPTION'],
         },
         TASKS: tasks[el['ID']],
-        USR$ISREAD: !!el['USR$USERID'],
+        STATUS: status[el['ID']]
       };
 
       if (cards[el['USR$MASTERKEY']]) {
