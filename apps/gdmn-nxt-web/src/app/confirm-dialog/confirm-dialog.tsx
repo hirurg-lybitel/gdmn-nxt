@@ -32,8 +32,16 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
   const classes = useStyles();
 
+  const handleOnClose = (event: object, reason: string) => {
+    if (reason === 'escapeKeyDown') cancelClick && cancelClick();
+  };
+
   return (
-    <Dialog open={open} TransitionComponent={Transition}>
+    <Dialog
+      open={open}
+      TransitionComponent={Transition}
+      onClose={handleOnClose}
+    >
       <DialogTitle className={classes.dialogTitle}>{title}</DialogTitle>
       <DialogContent dividers>
         <ReactMarkdown components={{ p: 'div' }}>
