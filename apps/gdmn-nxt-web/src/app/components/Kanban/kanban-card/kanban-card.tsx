@@ -10,9 +10,8 @@ import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
 
-
-/* eslint-disable-next-line */
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
   card: IKanbanCard;
@@ -39,6 +38,8 @@ export function KanbanCard(props: KanbanCardProps) {
   const colorModeIsLight = useMemo(() => colorMode === ColorMode.Light, [colorMode]);
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
+
+  const [upsertCardStatus] = useSetCardStatusMutation();
 
   const cardHandlers = {
     handleSubmit: (newCard: IKanbanCard, deleting: boolean) => {
@@ -96,7 +97,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -127,7 +128,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -171,8 +172,20 @@ export function KanbanCard(props: KanbanCardProps) {
     );
   }, []);
 
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
+  const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
+
   const doubleClick = useCallback(() => {
-    if (!card.USR$ISREAD) onEdit({ ...card, USR$ISREAD: true });
+    const isPerformer = card.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId);
+    const isCreator = card.DEAL?.CREATOR?.ID === contactId;
+
+    if (!card.STATUS?.isRead && (isCreator || isPerformer)) {
+      upsertCardStatus({
+        isRead: true,
+        userId,
+        cardId: card.ID
+      });
+    }
     setEditCard(true);
   }, [card]);
 
@@ -207,7 +220,7 @@ export function KanbanCard(props: KanbanCardProps) {
         <Typography variant="h2">
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
-            ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+            ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short', year: '2-digit' })
             : '-/-'}
         </Typography>
         <Box flex={1} />
@@ -238,14 +251,14 @@ export function KanbanCard(props: KanbanCardProps) {
           textOverflow: 'ellipsis',
           padding: 5,
           backgroundColor: colorMode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
-          ...(card?.USR$ISREAD || false
-            ? {}
-            : {
+          ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
+            ? {
               backgroundColor: 'rgba(193, 228, 250, 0.5)',
               borderTop: '1px solid rgb(13, 228, 250)',
               borderBottom: '1px solid rgb(13, 228, 250)',
               borderRight: '1px solid rgb(13, 228, 250)',
-            }),
+            }
+            : {}),
           ...(snapshot.isDragging
             ? {
               opacity: 0.7,

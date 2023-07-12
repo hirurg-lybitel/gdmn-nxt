@@ -1,4 +1,4 @@
-import { IDealSource, IDenyReason, IRequestResult, ITaskType } from '@gsbelarus/util-api-types';
+import { IDealDocument, IDealSource, IDenyReason, IRequestResult, ITaskType } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -16,6 +16,10 @@ type IDenyReasonRequestResult = IRequestResult<{
 
 type ITaskTypesRequestResult = IRequestResult<{
   taskTypes: ITaskType[]
+}>;
+
+type IDealDocumentsRequestResult = IRequestResult<{
+  documents: IDealDocument[];
 }>;
 
 export const kanbanCatalogsApi = createApi({
@@ -224,6 +228,10 @@ export const kanbanCatalogsApi = createApi({
             : [{ type: 'TaskTypes', id: 'LIST' }];
       },
     }),
+    getDocuments: builder.query<IDealDocument[], number>({
+      query: (dealId) => `kanban/catalogs/documents/${dealId}`,
+      transformResponse: (response: IDealDocumentsRequestResult) => response.queries.documents || [],
+    })
   })
 });
 
@@ -239,5 +247,6 @@ export const {
   useGetTaskTypesQuery,
   useAddTaskTypeMutation,
   useUpdateTaskTypeMutation,
-  useDeleteTaskTypeMutation
+  useDeleteTaskTypeMutation,
+  useGetDocumentsQuery
 } = kanbanCatalogsApi;

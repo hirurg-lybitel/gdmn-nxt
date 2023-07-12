@@ -95,7 +95,7 @@ export interface IKanbanCard extends IWithID {
   DEAL?: IDeal;
   TASKS?: IKanbanTask[];
   TASK?: IKanbanTask;
-  USR$ISREAD?: boolean;
+  STATUS?: IKanbanCardStatus;
 };
 
 export interface IKanbanColumn extends IWithID {
@@ -287,4 +287,14 @@ export interface IUpdateHistory extends IWithID {
   VERSION: string;
   CHANGES: string;
   ONDATE: Date;
+}
+
+export interface IKanbanCardStatus {
+  isRead?: boolean;
+  userId?: number;
+  cardId?: number;
+}
+
+export interface IDealDocument extends IWithID {
+  DESCRIPTION: string;
 }

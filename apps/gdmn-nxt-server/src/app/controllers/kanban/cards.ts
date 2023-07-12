@@ -251,7 +251,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
 
-    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY', 'USR$ISREAD'];
+    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY'];
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     paramsValues = actualFields.map(field => {
@@ -292,6 +292,33 @@ const upsert: RequestHandler = async (req, res) => {
 
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
+
+    sql = `
+      EXECUTE BLOCK(
+        cardId INTEGER = ?,
+        userId INTEGER = ?
+      )
+      AS
+      DECLARE VARIABLE CON_ID INTEGER;
+      BEGIN
+        FOR
+          SELECT u.ID
+          FROM GD_CONTACT con
+          JOIN GD_USER u ON u.CONTACTKEY = con.ID
+          JOIN USR$CRM_DEALS deal
+            ON deal.USR$CREATORKEY = con.ID
+            OR deal.USR$PERFORMER = con.ID
+            OR deal.USR$SECOND_PERFORMER = con.ID
+          JOIN USR$CRM_KANBAN_CARDS card ON card.USR$DEALKEY = deal.ID
+          WHERE card.ID = :cardId AND u.ID != :userId
+          INTO :CON_ID
+        DO
+          UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_STATUS(USR$ISREAD, USR$CARDKEY, USR$USERKEY)
+          VALUES(0, :cardId, :CON_ID)
+          MATCHING(USR$CARDKEY, USR$USERKEY);
+      END`;
+
+    await attachment.executeQuery(transaction, sql, [cardRecord.ID, userId]);
 
     const result: IRequestResult<{ cards: IKanbanCard[] }> = {
       queries: {
