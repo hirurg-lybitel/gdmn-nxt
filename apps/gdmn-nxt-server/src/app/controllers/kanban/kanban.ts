@@ -625,7 +625,7 @@ const getTasks: RequestHandler = async (req, res) => {
           WHERE 1 = 1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, card.ID`
+          ORDER BY task.USR$DEADLINE DESC, card.USR$MASTERKEY `
       },
     ];
 
