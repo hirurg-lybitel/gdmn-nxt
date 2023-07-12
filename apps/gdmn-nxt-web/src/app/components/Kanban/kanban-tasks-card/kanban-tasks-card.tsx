@@ -127,7 +127,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
                   ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
               : '-/-'}
           </Typography>
-          {!!card.TASK?.PERFORMER?.NAME &&
+          {(!!card.TASK?.PERFORMER?.NAME || !!card.TASK?.CREATOR?.NAME) &&
           <Stack
             direction="row"
             display="inline-flex"
@@ -145,7 +145,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
                   ?.join(' ')
               }
             </Typography>
-            <ForwardIcon fontSize='small'/>
+            <ForwardIcon fontSize="small"/>
             <Typography variant="h2">
               {
                 card.TASK?.PERFORMER?.NAME
@@ -153,6 +153,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
                   .map((el, idx) => idx === 0 ? el : (el[0] && `${el[0]}.`))
                   ?.filter(Boolean)
                   ?.join(' ')
+                  ?? 'не указан'
               }
             </Typography>
           </Stack>}
