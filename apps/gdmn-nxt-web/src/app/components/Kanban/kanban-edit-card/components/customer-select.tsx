@@ -1,5 +1,5 @@
 import { ICustomer, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, IconButton, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, FilterOptionsState, IconButton, TextField, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { FormikProps, getIn } from 'formik';
@@ -70,13 +70,47 @@ export function CustomerSelect(props: CustomerSelectProps) {
       onSubmit={handleSubmitCustomer}
     />, [addCustomer, editingCustomer]);
 
+  // const filterOptions = (options, { inputValue }) => {
+  //   return options.filter((option) => {
+  //     const fullName = ${option.firstName} ${option.lastName}.toLowerCase();
+  //     const searchValue = inputValue.toLowerCase();
+
+  //     // Фильтрация по фамилии или имени
+  //     return fullName.includes(searchValue);
+  //   });
+  // };
+
+  // (option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase())
+
+  // const filterOptions = (options: ICustomer[], { inputValue }: FilterOptionsState<ICustomer>) => {
+  //   const search = inputValue.toLowerCase() ?? '';
+  //   console.log('filterOptions', inputValue, search, search === '');
+  //   if (search === '') {
+  //     return options;
+  //   };
+  //   const filteredOptions = options.filter(customer => customer.NAME.toLowerCase().includes(search) || customer.TAXID?.toLowerCase().includes(search)) ?? [];
+  //   return filteredOptions;
+  // };
+
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: 50,
+    ignoreCase: true,
+    stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
+    // stringify: (option: ICustomer) => {
+    //   console.log('filterOptions', option['NAME'], option);
+    //   return [option['NAME'], option['TAXID']];
+    //   // return option['NAME'] ? option['NAME'] : ''
+    // },
+  });
+
   return (
     <>
       <Autocomplete
         fullWidth
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
-        filterOptions={filterOptions(50, 'NAME')}
+        filterOptions={filterOptions}
         loading={customersIsFetching || insertCustomerIsLoading}
         {...(insertCustomerIsLoading
           ? {
@@ -99,14 +133,19 @@ export function CustomerSelect(props: CustomerSelectProps) {
               key={option.ID}
               style={{ display: 'flex' }}
             >
-              <div style={{ flex: 1, display: 'flex' }}>
-                <div style={{ flex: 1 }}>
-                  {option.NAME}
+              <Box flex={1}>
+                <div style={{ flex: 1, display: 'flex' }}>
+                  <div style={{ flex: 1 }}>
+                    {option.NAME}
+                  </div>
+                  <IconButton size="small" onClick={handleEditCustomer(option)}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
                 </div>
-                <IconButton size="small" onClick={handleEditCustomer(option)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </div>
+                {option.TAXID
+                  ? <Typography variant="caption">{`УНП: ${option.TAXID}`}</Typography>
+                  : <></>}
+              </Box>
             </li>
           );
         }, [])}
