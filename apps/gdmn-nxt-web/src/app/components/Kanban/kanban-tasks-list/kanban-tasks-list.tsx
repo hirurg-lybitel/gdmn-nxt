@@ -82,7 +82,10 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
       minWidth: 200,
       maxWidth: 300,
       sortComparator: (a, b) => ('' + a?.NAME || '').localeCompare(b?.NAME || ''),
-      renderCell: (params) => renderCellExpand(params, params.value?.NAME),
+      renderCell: (params) => renderCellExpand(params, params.value?.NAME.split(' ')
+        .map((el: string[], idx: number) => idx === 0 ? el : (el[0] && `${el[0]}.`))
+        ?.filter(Boolean)
+        ?.join(' ')),
     },
     {
       field: 'CREATOR',
@@ -91,7 +94,10 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
       minWidth: 200,
       maxWidth: 300,
       sortComparator: (a, b) => ('' + a?.NAME || '').localeCompare(b?.NAME || ''),
-      renderCell: (params) => renderCellExpand(params, params.value?.NAME),
+      renderCell: (params) => renderCellExpand(params, params.value?.NAME.split(' ')
+        .map((el: string[], idx: number) => idx === 0 ? el : (el[0] && `${el[0]}.`))
+        ?.filter(Boolean)
+        ?.join(' ')),
     },
     {
       field: 'DEAL',
