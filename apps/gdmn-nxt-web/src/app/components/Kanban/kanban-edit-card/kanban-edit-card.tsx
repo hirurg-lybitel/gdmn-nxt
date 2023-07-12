@@ -63,6 +63,7 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import TextFieldMasked from '../../textField-masked/textField-masked';
+import { DealDocuments } from './components/deal-documents';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -424,8 +425,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <Tab label="Сведения" value="1" />
                       <Tab label="Заявка" value="2" />
                       <Tab label="Задачи" value="3" />
-                      <Tab label="Хронология" value="4" />
-                      <Tab label="Описание" value="5" />
+                      <Tab label="Документы" value="4" />
+                      <Tab label="Хронология" value="5" />
+                      <Tab label="Описание" value="6" />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -804,6 +806,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     <KanbanTasks card={formik.values} formik={formik} />
                   </TabPanel>
                   <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''}>
+                    <DealDocuments dealId={card?.DEAL?.ID ?? -1}/>
+                  </TabPanel>
+                  <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''}>
                     <CustomizedCard
                       borders
                       style={{
@@ -819,9 +824,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           : <></>}
                       </CustomizedScrollBox>
                     </CustomizedCard>
-
                   </TabPanel>
-                  <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''}>
+                  <TabPanel value="6" className={tabIndex === '6' ? classes.tabPanel : ''}>
                     <TabDescription formik={formik} />
                   </TabPanel>
                 </TabContext>

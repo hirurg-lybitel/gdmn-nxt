@@ -294,3 +294,7 @@ export interface IKanbanCardStatus {
   userId?: number;
   cardId?: number;
 }
+
+export interface IDealDocument extends IWithID {
+  DESCRIPTION: string;
+}
