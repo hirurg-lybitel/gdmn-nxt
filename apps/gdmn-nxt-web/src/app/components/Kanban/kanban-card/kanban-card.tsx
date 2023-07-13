@@ -98,7 +98,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -129,7 +129,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -238,12 +238,17 @@ export function KanbanCard(props: KanbanCardProps) {
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
     const isFirstColumn = columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0;
-
     return (
       <Tolltip
         title={
           card?.TASKS && card?.TASKS.findIndex((el) => !el.USR$DATECLOSE) !== -1 ?
-            <ol style={{ fontSize: '15px', padding: 0, paddingLeft: '15px', margin: '5px' }}>
+            <ol
+              style={{
+                fontSize: '15px',
+                padding: 0,
+                paddingLeft: card?.TASKS?.length < 10 ? '15px' : '25px',
+                margin: '5px' }}
+            >
               {card?.TASKS?.map((el) => {
                 const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
                 if (!el.USR$DATECLOSE) {
