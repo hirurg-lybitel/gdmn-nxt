@@ -98,7 +98,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -129,7 +129,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-        >
+          >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -358,11 +358,6 @@ export function KanbanCard(props: KanbanCardProps) {
             >
               {card?.TASKS?.map((el) => {
                 const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
-                console.log(el.USR$DEADLINE);
-                console.log(deadline);
-                console.log(el.USR$NAME);
-                console.log(!!el.USR$DEADLINE);
-                console.log(!!deadline);
                 return (<li key={el.ID}>
                   <Stack direction="row">
                     <Typography variant="h2" style={{ color: 'white' }}>
@@ -393,7 +388,7 @@ export function KanbanCard(props: KanbanCardProps) {
                           alignItems: 'center',
                           paddingLeft: '10px',
                         }}
-                      >
+                        >
                         Без срока
                       </Typography>
                     }
