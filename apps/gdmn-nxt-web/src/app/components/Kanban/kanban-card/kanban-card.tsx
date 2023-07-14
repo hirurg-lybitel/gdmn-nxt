@@ -98,7 +98,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -129,7 +129,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -213,7 +213,7 @@ export function KanbanCard(props: KanbanCardProps) {
   };
   const deadLine = useMemo(() => {
     if (!card.DEAL?.USR$DEADLINE) return null;
-    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
+    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
       <Stack direction="row">
         <Typography variant="h2">
@@ -393,7 +393,7 @@ export function KanbanCard(props: KanbanCardProps) {
                           alignItems: 'center',
                           paddingLeft: '10px',
                         }}
-                        >
+                      >
                         Без срока
                       </Typography>
                     }
