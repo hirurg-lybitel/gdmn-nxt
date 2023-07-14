@@ -1,7 +1,7 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
@@ -10,8 +10,12 @@ import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';import Tolltip from '@mui/material/Tooltip';
-
+import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
+import Tolltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
+import { margin } from '@mui/system';
 
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
@@ -27,7 +31,6 @@ export interface KanbanCardProps {
   onEditTask: (task: IKanbanTask) => void;
   onDeleteTask: (task: IKanbanTask) => void;
 };
-
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
@@ -343,64 +346,97 @@ export function KanbanCard(props: KanbanCardProps) {
     );
   }, [card, snapshot.isDragging, addIsFetching]);
 
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tolltip {...props} classes={{ popper: className }} />
+  ))(() => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      maxHeight: '90vh',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    [`& .${tooltipClasses.popper}`]: {
+      height: '100',
+    },
+  }));
+
+  const tolltipContent = useMemo(() => {
+    if (!card?.TASKS) return null;
+    return (
+      <ol
+
+        style={{
+          fontSize: '0.8rem',
+          padding: 0,
+          paddingLeft: card?.TASKS?.length < 10 ? '15px' : '25px',
+          margin: '5px',
+          marginRight: '20px',
+          marginBottom: '5px',
+        }}
+      >
+        {card?.TASKS?.map((el) => {
+          const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
+          return (<li key={el.ID}>
+            <Stack direction="row">
+              <Typography variant="h2" style={{ color: 'white' }}>
+                {el.USR$NAME}
+              </Typography>
+              <Box flex={1} />
+              {(el.USR$DEADLINE && deadline !== undefined) ?
+                <Typography
+                  variant="h2"
+                  style={{
+                    color: el.USR$DATECLOSE ? 'lightgreen' : dayColor(deadline, 'white'),
+                    paddingLeft: '10px',
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  {el.USR$DATECLOSE
+                    ? 'Выполнено'
+                    : deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
+                </Typography>
+                :
+                <Typography
+                  variant="h2"
+                  style={{
+                    color: 'white',
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '10px',
+                  }}
+                >
+                  Без срока
+                </Typography>
+              }
+            </Stack>
+          </li>);
+        })}
+      </ol>
+    );
+  }, [card]);
+
   return (
     <>
       {card?.TASKS ?
-        <Tolltip
+        <LightTooltip
           title={
-
-            <ol
-              style={{
-                fontSize: '0.8rem',
-                padding: 0,
-                paddingLeft: card?.TASKS?.length < 10 ? '15px' : '25px',
-                margin: '5px' }}
-            >
-              {card?.TASKS?.map((el) => {
-                const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
-                return (<li key={el.ID}>
-                  <Stack direction="row">
-                    <Typography variant="h2" style={{ color: 'white' }}>
-                      {el.USR$NAME}
-                    </Typography>
-                    <Box flex={1} />
-                    {(el.USR$DEADLINE && deadline !== undefined) ?
-                      <Typography
-                        variant="h2"
-                        style={{
-                          color: el.USR$DATECLOSE ? 'lightgreen' : dayColor(deadline, 'white'),
-                          paddingLeft: '10px',
-                          whiteSpace: 'nowrap',
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}
-                      >
-                        {el.USR$DATECLOSE
-                          ? 'Выполнено'
-                          : deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
-                      </Typography>
-                      : <Typography
-                        variant="h2"
-                        style={{
-                          color: 'white',
-                          whiteSpace: 'nowrap',
-                          display: 'flex',
-                          alignItems: 'center',
-                          paddingLeft: '10px',
-                        }}
-                        >
-                        Без срока
-                      </Typography>
-                    }
-                  </Stack>
-                </li>);
-              })}
-            </ol>
+            <>
+              <div style={{ opacity: 0 }}>
+                {tolltipContent}
+              </div>
+              <div style={{ position: 'absolute', top: 0, right: 0, left: 0, bottom: 0 }}>
+                <PerfectScrollbar options={{ suppressScrollX: true }}>
+                  {tolltipContent}
+                </PerfectScrollbar>
+              </div>
+            </>
           }
           placement="right"
         >
           {memoCard}
-        </Tolltip>
+        </LightTooltip>
         : memoCard
       }
       {memoEditCard}
