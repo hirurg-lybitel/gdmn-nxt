@@ -206,10 +206,10 @@ export function KanbanCard(props: KanbanCardProps) {
     }
     return '';
   };
-  const dayColor = (days: number): string => {
+  const dayColor = (days: number, baseColor?: string): string => {
     if (days === 1) return 'rgb(255, 214, 0)';
     if (days <= 0) return 'rgb(255, 82, 82)';
-    return colorModeIsLight ? 'GrayText' : 'lightgray';
+    return baseColor ? baseColor : colorModeIsLight ? 'GrayText' : 'lightgray';
   };
   const deadLine = useMemo(() => {
     if (!card.DEAL?.USR$DEADLINE) return null;
@@ -239,146 +239,175 @@ export function KanbanCard(props: KanbanCardProps) {
 
     const isFirstColumn = columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0;
     return (
-      <Tolltip
-        title={
-          card?.TASKS && card?.TASKS.findIndex((el) => !el.USR$DATECLOSE) !== -1 ?
-            <ol
-              style={{
-                fontSize: '15px',
-                padding: 0,
-                paddingLeft: card?.TASKS?.length < 10 ? '15px' : '25px',
-                margin: '5px' }}
-            >
-              {card?.TASKS?.map((el) => {
-                const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
-                if (!el.USR$DATECLOSE) {
-                  return (<li key={el.ID}>
-                    <Stack direction="row">
-                      <Typography variant="h2">
-                        {el.USR$NAME}
-                      </Typography>
-                      <Box flex={1} />
-                      {deadline &&
-                    <Typography variant="h2" style={{ color: dayColor(deadline), paddingLeft: '10px' }}>
-                      {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
-                    </Typography>}
-                    </Stack>
-                  </li>);
-                } return null;
-              })}
-            </ol>
-            : <div style={{ fontSize: '15px' }}>Нет активных задач</div>
-        }
-        placement="right"
-      >
-        <CustomizedCard
-          borders={colorMode === ColorMode.Light}
-          // boxShadows
-          key={card.ID}
-          style={{
-            width: '100%',
-            textOverflow: 'ellipsis',
-            padding: 5,
-            backgroundColor: colorMode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
-            ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
-              ? {
-                backgroundColor: 'rgba(193, 228, 250, 0.5)',
-                borderTop: '1px solid rgb(13, 228, 250)',
-                borderBottom: '1px solid rgb(13, 228, 250)',
-                borderRight: '1px solid rgb(13, 228, 250)',
-              }
-              : {}),
-            ...(snapshot.isDragging
-              ? {
-                opacity: 0.7,
-                border: `solid ${theme.menu?.backgroundColor}`
-              }
-              : {
-                borderLeft: `0.5rem solid ${
-                  (() => {
-                    if (card.DEAL?.USR$DONE) return theme.palette.primary.main;
-                    switch (true) {
-                      case dateDiff <= 0:
-                        return theme.color.red.A200;
-                      case dateDiff > 1:
-                        return theme.palette.primary.main;
-                      case dateDiff > 0:
-                      case dateDiff < 1:
-                        return theme.color.yellow.A700;
-                      default:
-                        return theme.palette.primary.main;
-                    }
-                  })()
-                }`,
-              }
-            )
-          }}
-          sx={{
-            '&:hover .actions': {
-              display: 'inline',
-              position: 'absolute',
-              right: 0,
-            },
-            '&:hover .number': {
-              display: isFirstColumn ? 'none' : 'inline',
-            },
-            '&:hover': {
-              boxShadow: '0 4px 18px rgba(0,0,0,.3)'
+      <CustomizedCard
+        borders={colorMode === ColorMode.Light}
+        // boxShadows
+        key={card.ID}
+        style={{
+          width: '100%',
+          textOverflow: 'ellipsis',
+          padding: 5,
+          backgroundColor: colorMode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
+          ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
+            ? {
+              backgroundColor: 'rgba(193, 228, 250, 0.5)',
+              borderTop: '1px solid rgb(13, 228, 250)',
+              borderBottom: '1px solid rgb(13, 228, 250)',
+              borderRight: '1px solid rgb(13, 228, 250)',
             }
-          }}
-          onDoubleClick={doubleClick}
-        >
-          <Stack direction="column" spacing={0.5}>
-            <Stack
-              direction="row"
-              style={{ position: 'relative' }}
-            >
-              <Typography variant="h4" flex={1}>{card.DEAL?.USR$NAME}</Typography>
-              <Typography
-                className="number"
-                variant="caption"
-                color={colorModeIsLight ? 'GrayText' : 'lightgray'}
-              >{'#' + card.DEAL?.USR$NUMBER}</Typography>
-              {isFirstColumn
-                ?
-                <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
-                  <div
-                    className="actions"
-                    hidden
+            : {}),
+          ...(snapshot.isDragging
+            ? {
+              opacity: 0.7,
+              border: `solid ${theme.menu?.backgroundColor}`
+            }
+            : {
+              borderLeft: `0.5rem solid ${
+                (() => {
+                  if (card.DEAL?.USR$DONE) return theme.palette.primary.main;
+                  switch (true) {
+                    case dateDiff <= 0:
+                      return theme.color.red.A200;
+                    case dateDiff > 1:
+                      return theme.palette.primary.main;
+                    case dateDiff > 0:
+                    case dateDiff < 1:
+                      return theme.color.yellow.A700;
+                    default:
+                      return theme.palette.primary.main;
+                  }
+                })()
+              }`,
+            }
+          )
+        }}
+        sx={{
+          '&:hover .actions': {
+            display: 'inline',
+            position: 'absolute',
+            right: 0,
+          },
+          '&:hover .number': {
+            display: isFirstColumn ? 'none' : 'inline',
+          },
+          '&:hover': {
+            boxShadow: '0 4px 18px rgba(0,0,0,.3)'
+          }
+        }}
+        onDoubleClick={doubleClick}
+      >
+        <Stack direction="column" spacing={0.5}>
+          <Stack
+            direction="row"
+            style={{ position: 'relative' }}
+          >
+            <Typography variant="h4" flex={1}>{card.DEAL?.USR$NAME}</Typography>
+            <Typography
+              className="number"
+              variant="caption"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            >{'#' + card.DEAL?.USR$NUMBER}</Typography>
+            {isFirstColumn
+              ?
+              <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
+                <div
+                  className="actions"
+                  hidden
+                >
+                  <IconButton
+                    size="small"
+                    disabled={addIsFetching}
+                    onClick={handleCopyCard}
                   >
-                    <IconButton
-                      size="small"
-                      disabled={addIsFetching}
-                      onClick={handleCopyCard}
-                    >
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </div>
-                </PermissionsGate>
-                : null
-              }
-            </Stack>
-            <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
-            <Stack direction="row">
-              <Typography variant="h2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
-              <Box flex={1} />
-              <Typography variant="h2">
-                {card.DEAL?.CREATIONDATE
-                  ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
-                  : '-/-'}
-              </Typography>
-            </Stack>
-            {deadLine}
-            {TaskStatus}
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              </PermissionsGate>
+              : null
+            }
           </Stack>
-        </CustomizedCard>
-      </Tolltip>
+          <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+          <Stack direction="row">
+            <Typography variant="h2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+            <Box flex={1} />
+            <Typography variant="h2">
+              {card.DEAL?.CREATIONDATE
+                ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+                : '-/-'}
+            </Typography>
+          </Stack>
+          {deadLine}
+          {TaskStatus}
+        </Stack>
+      </CustomizedCard>
     );
   }, [card, snapshot.isDragging, addIsFetching]);
 
   return (
     <>
-      {memoCard}
+      {card?.TASKS ?
+        <Tolltip
+          title={
+
+            <ol
+              style={{
+                fontSize: '0.8rem',
+                padding: 0,
+                paddingLeft: card?.TASKS?.length < 10 ? '15px' : '25px',
+                margin: '5px' }}
+            >
+              {card?.TASKS?.map((el) => {
+                const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
+                console.log(el.USR$DEADLINE);
+                console.log(deadline);
+                console.log(el.USR$NAME);
+                console.log(!!el.USR$DEADLINE);
+                console.log(!!deadline);
+                return (<li key={el.ID}>
+                  <Stack direction="row">
+                    <Typography variant="h2" style={{ color: 'white' }}>
+                      {el.USR$NAME}
+                    </Typography>
+                    <Box flex={1} />
+                    {(el.USR$DEADLINE && deadline !== undefined) ?
+                      <Typography
+                        variant="h2"
+                        style={{
+                          color: el.USR$DATECLOSE ? 'lightgreen' : dayColor(deadline, 'white'),
+                          paddingLeft: '10px',
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {el.USR$DATECLOSE
+                          ? 'Выполнено'
+                          : deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
+                      </Typography>
+                      : <Typography
+                        variant="h2"
+                        style={{
+                          color: 'white',
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          alignItems: 'center',
+                          paddingLeft: '10px',
+                        }}
+                        >
+                        Без срока
+                      </Typography>
+                    }
+                  </Stack>
+                </li>);
+              })}
+            </ol>
+          }
+          placement="right"
+        >
+          {memoCard}
+        </Tolltip>
+        : memoCard
+      }
       {memoEditCard}
       {memoCopyCard}
     </>
