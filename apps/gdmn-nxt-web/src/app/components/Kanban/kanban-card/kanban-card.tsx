@@ -1,21 +1,16 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, CircularProgress, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
-import Tolltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import { makeStyles } from '@mui/styles';
-import { styled } from '@mui/material/styles';
-import { margin } from '@mui/system';
+import { TaskStatus } from './task-status';
 
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
@@ -88,59 +83,6 @@ export function KanbanCard(props: KanbanCardProps) {
   };
 
   const handleCopyCard = useCallback(() => setCopyCard(true), []);
-
-  const TaskStatus = useMemo(() => {
-    const tasks = card.TASKS;
-    if (!tasks || !tasks?.length) return <></>;
-
-    const allTasks = tasks?.length;
-    const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
-    return (
-      closedTasks
-        ? <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-        >
-          <Box sx={{ position: 'relative', display: 'flex' }}>
-            <CircularProgress
-              variant="determinate"
-              size={15}
-              thickness={7}
-              value={100}
-              sx={{
-                color: (theme) =>
-                  theme.palette.grey[200],
-              }}
-            />
-            <CircularProgress
-              variant="determinate"
-              size={15}
-              thickness={7}
-              value={closedTasks / allTasks * 100}
-              sx={{
-                position: 'absolute',
-                left: 0,
-              }}
-            />
-          </Box>
-          <Typography variant="caption">
-            {`${closedTasks} из ${allTasks} задач`}
-          </Typography>
-        </Stack>
-        : <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-        >
-          <FactCheckOutlinedIcon color="action" fontSize="small" />
-          <Typography variant="caption">
-            {`${allTasks} задач`}
-          </Typography>
-        </Stack>
-    );
-  },
-  [card]);
 
   const memoEditCard = useMemo(() => {
     return (
@@ -244,7 +186,6 @@ export function KanbanCard(props: KanbanCardProps) {
     return (
       <CustomizedCard
         borders={colorMode === ColorMode.Light}
-        // boxShadows
         key={card.ID}
         style={{
           width: '100%',
@@ -340,103 +281,15 @@ export function KanbanCard(props: KanbanCardProps) {
             </Typography>
           </Stack>
           {deadLine}
-          {TaskStatus}
+          <TaskStatus tasks={card.TASKS ?? []} />
         </Stack>
       </CustomizedCard>
     );
   }, [card, snapshot.isDragging, addIsFetching]);
 
-  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tolltip {...props} classes={{ popper: className }} />
-  ))(() => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      maxHeight: '90vh',
-      padding: 0,
-      overflow: 'hidden',
-      position: 'relative',
-    }
-  }));
-
-  const tolltipContent = useMemo(() => {
-    if (!card?.TASKS) return null;
-    return (
-      <ol
-
-        style={{
-          fontSize: '0.8rem',
-          padding: 0,
-          paddingLeft: card?.TASKS?.length < 10 ? '15px' : '25px',
-          margin: '5px',
-          marginRight: '20px',
-          marginBottom: '5px',
-        }}
-      >
-        {card?.TASKS?.map((el) => {
-          const deadline = el.USR$DEADLINE && Number(Math.ceil((new Date(el.USR$DEADLINE || 0).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
-          return (<li key={el.ID}>
-            <Stack direction="row">
-              <Typography variant="h2" style={{ color: 'white' }}>
-                {el.USR$NAME}
-              </Typography>
-              <Box flex={1} />
-              {(el.USR$DEADLINE && deadline !== undefined) ?
-                <Typography
-                  variant="h2"
-                  style={{
-                    color: el.USR$DATECLOSE ? 'lightgreen' : dayColor(deadline, 'white'),
-                    paddingLeft: '10px',
-                    whiteSpace: 'nowrap',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  {el.USR$DATECLOSE
-                    ? 'Выполнено'
-                    : deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
-                </Typography>
-                :
-                <Typography
-                  variant="h2"
-                  style={{
-                    color: 'white',
-                    whiteSpace: 'nowrap',
-                    display: 'flex',
-                    alignItems: 'center',
-                    paddingLeft: '10px',
-                  }}
-                >
-                  Без срока
-                </Typography>
-              }
-            </Stack>
-          </li>);
-        })}
-      </ol>
-    );
-  }, [card]);
-
   return (
     <>
-      {card?.TASKS ?
-        <LightTooltip
-          title={
-            <>
-              <div style={{ opacity: 0 }}>
-                {tolltipContent}
-              </div>
-              <div style={{ position: 'absolute', top: 0, right: 0, left: 0, bottom: 0 }}>
-                <PerfectScrollbar options={{ suppressScrollX: true }}>
-                  {tolltipContent}
-                </PerfectScrollbar>
-              </div>
-            </>
-          }
-          placement="right"
-        >
-          {memoCard}
-        </LightTooltip>
-        : memoCard
-      }
+      {memoCard}
       {memoEditCard}
       {memoCopyCard}
     </>
