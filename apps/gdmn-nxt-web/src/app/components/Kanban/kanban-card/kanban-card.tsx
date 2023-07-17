@@ -101,7 +101,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <CircularProgress
               variant="determinate"
@@ -132,7 +132,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="row"
           alignItems="center"
           spacing={0.5}
-          >
+        >
           <FactCheckOutlinedIcon color="action" fontSize="small" />
           <Typography variant="caption">
             {`${allTasks} задач`}
@@ -351,12 +351,10 @@ export function KanbanCard(props: KanbanCardProps) {
   ))(() => ({
     [`& .${tooltipClasses.tooltip}`]: {
       maxHeight: '90vh',
+      padding: 0,
       overflow: 'hidden',
       position: 'relative',
-    },
-    [`& .${tooltipClasses.popper}`]: {
-      height: '100',
-    },
+    }
   }));
 
   const tolltipContent = useMemo(() => {
