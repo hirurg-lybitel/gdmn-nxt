@@ -35,13 +35,16 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
     {
       field: 'USR$CLOSED',
       headerName: '',
-      width: 30,
+      maxWidth: 25,
+      minWidth: 25,
       renderCell: ({ value, row }) =>
-        <Checkbox
-          style={{ padding: 0 }}
-          checked={value}
-          onChange={handleClosedChange(row)}
-        />
+        <div style={{ position: 'absolute', left: '-2px', display: 'flex', alignItems: 'center' }}>
+          <Checkbox
+            style={{ padding: 0 }}
+            checked={value}
+            onChange={handleClosedChange(row)}
+          />
+        </div>
     },
     {
       field: 'USR$NAME',
@@ -58,30 +61,33 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
     {
       field: 'USR$DEADLINE',
       headerName: 'Срок',
-      maxWidth: 70,
+      maxWidth: 80,
       renderCell: ({ value, row }) => {
         const closed = row.USR$CLOSED;
         const { days, postfix } = getDayDiff(new Date(value), new Date(), { withText: true });
 
         return (
-          !value
-            ? <Typography
-              variant="caption"
-              fontWeight={800}
-            >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+            {
+              !value
+                ? <Typography
+                  variant="caption"
+                  fontWeight={800}
+                >
               Без срока
-            </Typography>
-            :
-            <Typography
-              variant="caption"
-              fontWeight={800}
-              color={closed ? colorMode === ColorMode.Light ? 'green' : 'lightgreen' : daysColor(days)}
-            >
-              {row.USR$CLOSED
-                ? 'Выполнена'
-                : days === 0 ? 'Сегодня' : `${Math.abs(days)} ${postfix}`}
-            </Typography>
-
+                </Typography>
+                :
+                <Typography
+                  variant="caption"
+                  fontWeight={800}
+                  color={closed ? colorMode === ColorMode.Light ? 'green' : 'lightgreen' : daysColor(days)}
+                >
+                  {row.USR$CLOSED
+                    ? 'Выполнена'
+                    : days === 0 ? 'Сегодня' : `${Math.abs(days)} ${postfix}`}
+                </Typography>
+            }
+          </div>
         );
       }
     },
@@ -100,7 +106,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       <StyledGrid
         sx={{
           '& .MuiDataGrid-cell': {
-            paddingLeft: 0,
+            padding: 0,
           },
         }}
         onRowDoubleClick={(p, e) => e.stopPropagation()}
@@ -137,10 +143,10 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
       >
         {closedTasks
           ? <>
-            <Box sx={{ position: 'relative', display: 'flex' }}>
+            <Box sx={{ position: 'relative', display: 'flex', paddingLeft: '1px', paddingRight: '1px' }}>
               <CircularProgress
                 variant="determinate"
-                size={15}
+                size={18}
                 thickness={7}
                 value={100}
                 sx={{
@@ -150,7 +156,7 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
               />
               <CircularProgress
                 variant="determinate"
-                size={15}
+                size={18}
                 thickness={7}
                 value={closedTasks / allTasks * 100}
                 sx={{
