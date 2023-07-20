@@ -1,7 +1,7 @@
 import { ColorMode, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Checkbox, CircularProgress, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
-import { ChangeEvent, useCallback, useState } from 'react';
+import { ChangeEvent, WheelEvent, useCallback, useState } from 'react';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
 import { GridColumns } from '@mui/x-data-grid-pro';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -95,6 +95,13 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   const rowHeight = 50;
   const maxLines = 4;
+
+  const handleScroll = (e: WheelEvent<HTMLDivElement>) => {
+    if (tasks.length > maxLines) {
+      e.stopPropagation();
+    }
+  };
+
   return (
     <div
       hidden={!open}
@@ -102,6 +109,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
         height: tasks.length * rowHeight,
         maxHeight: maxLines * rowHeight
       }}
+      onWheelCapture={handleScroll}
     >
       <StyledGrid
         sx={{
@@ -143,10 +151,10 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
       >
         {closedTasks
           ? <>
-            <Box sx={{ position: 'relative', display: 'flex', paddingLeft: '1px', paddingRight: '1px' }}>
+            <Box sx={{ position: 'relative', display: 'flex', }}>
               <CircularProgress
                 variant="determinate"
-                size={18}
+                size={15}
                 thickness={7}
                 value={100}
                 sx={{
@@ -156,7 +164,7 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
               />
               <CircularProgress
                 variant="determinate"
-                size={18}
+                size={15}
                 thickness={7}
                 value={closedTasks / allTasks * 100}
                 sx={{
