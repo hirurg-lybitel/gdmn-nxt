@@ -14,14 +14,15 @@ const get: RequestHandler = async (req, res) => {
   try {
     const sqlResult = await fetchAsObject(`
       SELECT
-        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION
+        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION,
+        ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
+      JOIN GD_CONTACT c ON c.ID = u.CONTACTKEY
       LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
       WHERE u.ID = :userId`, { userId });
 
     for (const r of sqlResult) {
-      // eslint-disable-next-line dot-notation
       if (r['AVATAR_BLOB'] !== null && typeof r['AVATAR_BLOB'] === 'object') {
         // eslint-disable-next-line dot-notation
         const readStream = await attachment.openBlob(transaction, r['AVATAR_BLOB']);
@@ -38,7 +39,8 @@ const get: RequestHandler = async (req, res) => {
         // eslint-disable-next-line dot-notation
         r['AVATAR'] = bin2String(blob2String.split(','));
       };
-      // eslint-disable-next-line dot-notation
+      r['SEND_EMAIL_NOTIFICATIONS'] = (r['SEND_EMAIL_NOTIFICATIONS'] ?? 0) === 1;
+
       delete r['AVATAR_BLOB'];
     };
 
@@ -58,11 +60,19 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const set: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   const userId = parseIntDef(req.params.userId, -1);
 
-  const { AVATAR: avatar, COLORMODE: colorMode, LASTVERSION: lastVersion } = req.body;
+  const {
+    AVATAR: avatar,
+    COLORMODE: colorMode,
+    LASTVERSION: lastVersion,
+    SEND_EMAIL_NOTIFICATIONS,
+    EMAIL
+  } = req.body;
+
+  // console.log('set', req.body);
 
   try {
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
@@ -70,12 +80,20 @@ const set: RequestHandler = async (req, res) => {
     const blob = await attachment.createBlob(transaction);
     await blob.write(blobBuffer);
     await blob.close();
-    const sqlResult = await fetchAsObject(`
-      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION)
-      VALUES(:userId, :avatar, :colorMode, :lastVersion)
+
+    const updateEmail = await fetchAsObject(`
+      UPDATE GD_CONTACT c
+      SET EMAIL = :EMAIL
+      WHERE EXISTS(SELECT ID FROM GD_USER u WHERE u.CONTACTKEY = c.ID AND u.ID = :userId)
+      RETURNING EMAIL`,
+    { userId, EMAIL });
+
+    const sqlResult = await fetchAsSingletonObject(`
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
-    { userId, avatar: blob, colorMode, lastVersion });
+    { userId, avatar: blob, colorMode, lastVersion, SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS) });
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },

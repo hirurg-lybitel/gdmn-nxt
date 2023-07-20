@@ -13,4 +13,4 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = (from: string, to: string, subject: string, text: string) => transporter.sendMail({ from, to, subject, text });
+export const sendEmail = (from: string, to: string, subject: string, text?: string, html?: string) => transporter.sendMail({ from, to, subject, text, html });
