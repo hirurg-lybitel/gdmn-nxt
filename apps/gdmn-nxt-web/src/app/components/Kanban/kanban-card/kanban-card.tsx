@@ -1,16 +1,16 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
+import { TaskStatus } from './task-status';
 
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
@@ -26,7 +26,6 @@ export interface KanbanCardProps {
   onEditTask: (task: IKanbanTask) => void;
   onDeleteTask: (task: IKanbanTask) => void;
 };
-
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
@@ -84,59 +83,6 @@ export function KanbanCard(props: KanbanCardProps) {
   };
 
   const handleCopyCard = useCallback(() => setCopyCard(true), []);
-
-  const TaskStatus = useMemo(() => {
-    const tasks = card.TASKS;
-    if (!tasks || !tasks?.length) return <></>;
-
-    const allTasks = tasks?.length;
-    const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
-    return (
-      closedTasks
-        ? <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-          >
-          <Box sx={{ position: 'relative', display: 'flex' }}>
-            <CircularProgress
-              variant="determinate"
-              size={15}
-              thickness={7}
-              value={100}
-              sx={{
-                color: (theme) =>
-                  theme.palette.grey[200],
-              }}
-            />
-            <CircularProgress
-              variant="determinate"
-              size={15}
-              thickness={7}
-              value={closedTasks / allTasks * 100}
-              sx={{
-                position: 'absolute',
-                left: 0,
-              }}
-            />
-          </Box>
-          <Typography variant="caption">
-            {`${closedTasks} из ${allTasks} задач`}
-          </Typography>
-        </Stack>
-        : <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-          >
-          <FactCheckOutlinedIcon color="action" fontSize="small" />
-          <Typography variant="caption">
-            {`${allTasks} задач`}
-          </Typography>
-        </Stack>
-    );
-  },
-  [card]);
 
   const memoEditCard = useMemo(() => {
     return (
@@ -205,16 +151,14 @@ export function KanbanCard(props: KanbanCardProps) {
     }
     return '';
   };
-
+  const dayColor = (days: number, baseColor?: string): string => {
+    if (days === 1) return 'rgb(255, 214, 0)';
+    if (days <= 0) return 'rgb(255, 82, 82)';
+    return baseColor ? baseColor : colorModeIsLight ? 'GrayText' : 'lightgray';
+  };
   const deadLine = useMemo(() => {
-    const dayColor = (days: number): string => {
-      if (days === 1) return 'rgb(255, 214, 0)';
-      if (days <= 0) return 'rgb(255, 82, 82)';
-      return colorModeIsLight ? 'GrayText' : 'lightgray';
-    };
-
     if (!card.DEAL?.USR$DEADLINE) return null;
-    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
+    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
       <Stack direction="row">
         <Typography variant="h2">
@@ -230,7 +174,6 @@ export function KanbanCard(props: KanbanCardProps) {
       </Stack>
     );
   }, [card, colorModeIsLight]);
-
   const memoCard = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -240,11 +183,9 @@ export function KanbanCard(props: KanbanCardProps) {
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
     const isFirstColumn = columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0;
-
     return (
       <CustomizedCard
         borders={colorMode === ColorMode.Light}
-        // boxShadows
         key={card.ID}
         style={{
           width: '100%',
@@ -340,7 +281,7 @@ export function KanbanCard(props: KanbanCardProps) {
             </Typography>
           </Stack>
           {deadLine}
-          {TaskStatus}
+          <TaskStatus tasks={card.TASKS ?? []} />
         </Stack>
       </CustomizedCard>
     );
