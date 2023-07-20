@@ -37,6 +37,7 @@ import { checkPermissions, setPermissonsCache } from './app/middlewares/permissi
 import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
 import path from 'path';
+import { sendEmail } from './app/utils/mail';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -317,7 +318,6 @@ router.get('/er-model/make-sql', async (_, res) => {
   const { erModel } = await importedModels;
   res.json(erModel);
 });
-
 
 if (config.serverStaticMode) {
   app.get('*', (req, res) => {

@@ -1,6 +1,6 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Avatar, Box, Button, CardActions, CardContent, CardHeader, Divider, Fab, Skeleton, Stack, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, CardActions, CardContent, CardHeader, Checkbox, Chip, Divider, Fab, FormControlLabel, Icon, IconButton, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -10,6 +10,10 @@ import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import InfoIcon from '@mui/icons-material/Info';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
+import { IProfileSettings } from '@gsbelarus/util-api-types';
+import * as yup from 'yup';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -67,6 +71,40 @@ export function Profile(props: ProfileProps) {
   useEffect(() => {
     settings?.AVATAR && setImage(settings?.AVATAR);
   }, [settings?.AVATAR]);
+
+  const initValue: Partial<IProfileSettings> = {
+    SEND_EMAIL_NOTIFICATIONS: settings?.SEND_EMAIL_NOTIFICATIONS ?? false,
+  };
+
+  const formik = useFormik<IProfileSettings>({
+    enableReinitialize: true,
+    validateOnBlur: false,
+    initialValues: {
+      ...settings,
+      ...initValue
+    },
+    validationSchema: yup.object().shape({
+      EMAIL: yup.string()
+        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
+          ({ value }) => {
+            const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
+            if (invalidChar) {
+              return `Адрес не может содержать символ "${invalidChar}"`;
+            }
+            return 'Некорректный адрес';
+          })
+        .max(40, 'Слишком длинный email'),
+    }),
+    onSubmit: (value) => {
+      setSettings({
+        userId: userProfile?.id ?? -1,
+        body: {
+          ...value
+        }
+      });
+    }
+  });
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
@@ -79,7 +117,8 @@ export function Profile(props: ProfileProps) {
   , [confirmOpen]);
 
   return (
-    <>{memoConfirmDialog}
+    <>
+      {memoConfirmDialog}
       <CustomizedCard className={styles.mainCard} borders>
         <CardHeader title={<Typography variant="h3">Аккаунт</Typography>} />
         <Divider />
@@ -95,7 +134,7 @@ export function Profile(props: ProfileProps) {
                   variant="circular"
                   height={300}
                   width={300}
-                  />
+                />
                 :
                 <Avatar
                   className={styles.image}
@@ -137,19 +176,64 @@ export function Profile(props: ProfileProps) {
               />
             </Box>
             <Divider orientation="vertical" flexItem />
-            <Stack
-              direction="column"
-              spacing={2}
-              flex={1}
-            >
-              <TextField
-                label="Должность"
-                value={settings?.RANK || ''}
-                disabled
-              />
-              <Box flex={1} />
-              <Button variant="contained" style={{ alignSelf: 'flex-start' }}>Сохранить</Button>
-            </Stack>
+            <Box display="flex" flex={1}>
+              <FormikProvider value={formik}>
+                <Form id="profileForm" onSubmit={formik.handleSubmit}>
+                  <Stack
+                    direction="column"
+                    spacing={2}
+                    flex={1}
+                    height={'100%'}
+                  >
+                    <TextField
+                      label="Должность"
+                      value={settings?.RANK || ''}
+                      disabled
+                    />
+                    <TextField
+                      disabled={isLoading}
+                      label="Email"
+                      name="EMAIL"
+                      onChange={formik.handleChange}
+                      value={formik.values.EMAIL ?? ''}
+                      helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+                      error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
+                    />
+                    <Stack direction="row" alignItems="center">
+                      <FormControlLabel
+                        disabled={isLoading}
+                        label="Получать уведомления по почте"
+                        control={<Checkbox
+                          name="SEND_EMAIL_NOTIFICATIONS"
+                          checked={formik.values.SEND_EMAIL_NOTIFICATIONS}
+                          onChange={formik.handleChange}
+                        />}
+                        style={{
+                          minWidth: '190px',
+                        }}
+                      />
+                      <Tooltip
+                        style={{ cursor: 'help' }}
+                        arrow
+                        title="Новые уведомления будут приходить списком каждый час с 9:00 до 17:00"
+                      >
+                        <InfoIcon color="action" />
+                      </Tooltip>
+                    </Stack>
+                    <Box flex={1} />
+                    <Button
+                      variant="contained"
+                      type="submit"
+                      disabled={(JSON.stringify(formik.values) === JSON.stringify(settings)) || isLoading}
+                      style={{ alignSelf: 'flex-start' }}
+                    >
+                      Сохранить
+                      {/* {(JSON.stringify(formik.values) === JSON.stringify(settings)) || isLoading ? 'Нет изменений' : 'Сохранить'} */}
+                    </Button>
+                  </Stack>
+                </Form>
+              </FormikProvider>
+            </Box>
           </Stack>
         </CardContent>
       </CustomizedCard>
