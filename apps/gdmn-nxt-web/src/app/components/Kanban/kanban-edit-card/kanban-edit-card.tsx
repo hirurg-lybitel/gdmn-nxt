@@ -183,7 +183,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       ID: card?.DEAL?.ID || -1,
       USR$NAME: card?.DEAL?.USR$NAME || '',
       CREATOR:
-        card?.ID
+        (card?.ID && card?.ID !== -1)
           ? card?.DEAL?.CREATOR
           : {
             ID: user.userProfile?.contactkey || -1,

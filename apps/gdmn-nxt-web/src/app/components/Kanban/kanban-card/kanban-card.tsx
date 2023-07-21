@@ -101,7 +101,25 @@ export function KanbanCard(props: KanbanCardProps) {
     return (
       <KanbanEditCard
         open={copyCard}
-        card={lastCard || { ...card, ID: -1, DEAL: { ...card.DEAL, ID: -1, USR$NAME: undefined } }}
+        card={{
+          ID: -1,
+          USR$INDEX: 0,
+          USR$MASTERKEY: 0,
+          DEAL: {
+            ID: -1,
+            CONTACT: card?.DEAL?.CONTACT,
+            SOURCE: card?.DEAL?.SOURCE,
+            USR$AMOUNT: card?.DEAL?.USR$AMOUNT,
+            USR$DEADLINE: card?.DEAL?.USR$DEADLINE,
+            DEPARTMENT: card?.DEAL?.DEPARTMENT,
+            PERFORMERS: card?.DEAL?.PERFORMERS,
+            PRODUCTNAME: card?.DEAL?.PRODUCTNAME,
+            REQUESTNUMBER: card?.DEAL?.REQUESTNUMBER,
+            CONTACT_NAME: card?.DEAL?.CONTACT_NAME,
+            CONTACT_EMAIL: card?.DEAL?.CONTACT_EMAIL,
+            CONTACT_PHONE: card?.DEAL?.CONTACT_PHONE,
+          },
+        }}
         currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
