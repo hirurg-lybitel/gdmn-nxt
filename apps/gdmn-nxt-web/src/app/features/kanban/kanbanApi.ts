@@ -24,7 +24,6 @@ type IDenyReasonRequestResult = IRequestResult<{ denyReasons: IDenyReason[] }>;
 
 interface IFilteringData {
   [name: string]: any;
-  [name: string]: any;
 };
 export interface IDealsQueryOptions {
   userId?: number;
