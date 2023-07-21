@@ -26,6 +26,7 @@ FROM hirurglybitel/gdmn-firebird-pm2:latest AS server
 WORKDIR /usr/app
 COPY --from=builder /usr/app/dist/apps/gdmn-nxt-server /usr/app/dist/apps/gdmn-nxt-server
 COPY --from=builder /usr/app/node_modules /usr/app/node_modules
+COPY sslcert/* /usr/app/sslcert
 COPY pm2.config.js .
 
 ENV PM2_PUBLIC_KEY 2g0zthb6mp3oq16
@@ -35,5 +36,9 @@ ENTRYPOINT ["pm2-runtime", "start", "pm2.config.js"]
 
 FROM nginx:stable-alpine3.17-slim AS client
 COPY --from=builder /usr/app/dist/apps/gdmn-nxt-web  /usr/share/nginx/html
+COPY sslcert /etc/nginx/sslcert
+COPY nginx.conf /etc/nginx/conf.d/
+
+RUN rm /etc/nginx/conf.d/default.conf
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
