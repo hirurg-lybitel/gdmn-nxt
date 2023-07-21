@@ -2,21 +2,15 @@ import { ServerToClientEvents, ClientToServerEvents, KanbanEvent, SocketRoom } f
 import { Server } from 'socket.io';
 import { config } from '@gdmn-nxt/config';
 import path from 'path';
-import fs from 'fs';
-import https, { ServerOptions } from 'https';
+import { readFileSync } from 'fs';
+import { createServer } from 'https';
 
 
 export function StreamingUpdate() {
-  const privateKey = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem'));
-  const certificate = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem'));
-
-  // console.log('StreamingUpdate', certificate);
-
-  const options: ServerOptions = {
-    key: privateKey,
-    cert: certificate,
-  };
-  const httpsServer = https.createServer(options);
+  const httpsServer = createServer({
+    key: readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem')),
+    cert: readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem')),
+  });
 
   const socketIO = new Server<
       ClientToServerEvents,
@@ -28,7 +22,7 @@ export function StreamingUpdate() {
       }
     });
 
-  socketIO.listen(config.streamingUpdatePort);
+  httpsServer.listen(config.streamingUpdatePort);
 
   socketIO.on('connection', (socket) => {
     console.log(`⚡ Streaming update: ${socket.id} user just connected!`);

@@ -114,7 +114,7 @@ export function Notification(props: NotificationProps) {
     if (userId <= 0) return;
 
     const socket = setSocketClient('notifications', {
-      url: `http://${config.host}:${config.notificationPort}`,
+      url: `https://${config.host}:${config.notificationPort}`,
       userId
     });
 
@@ -282,7 +282,7 @@ export function Notification(props: NotificationProps) {
                         alignItems="center"
                         justifyContent="center"
                         spacing={1}
-                        >
+                      >
                         <img
                           src={logo}
                           alt=""

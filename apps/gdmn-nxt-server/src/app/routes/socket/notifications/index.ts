@@ -7,16 +7,25 @@ import { deleteNotification } from '../../../controllers/socket/notifications/de
 import { updateNotifications } from '../../../controllers/socket/notifications//updateNotifications';
 import { getMessagesByUser } from '../../../controllers/socket/notifications//getMessagesByUser';
 import { insertNotification } from '../../../controllers/socket/notifications//insertNotification';
+import { readFileSync } from 'fs';
+import { createServer } from 'https';
+import path from 'path';
 
 interface NotificationsProps {
   router: Router;
 }
 
+
 export function Notifications({ router }: NotificationsProps) {
+  const httpsServer = createServer({
+    key: readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem')),
+    cert: readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem')),
+  });
+
   const socketIO = new Server<
     ClientToServerEvents,
     ServerToClientEvents
-  >({
+  >(httpsServer, {
     cors: {
       credentials: true,
       origin: `https://${config.host}:${config.appPort}`
@@ -28,7 +37,7 @@ export function Notifications({ router }: NotificationsProps) {
 
   console.log(`[ notifications ] socket running at https://localhost:${config.notificationPort}`);
 
-  socketIO.listen(config.notificationPort);
+  httpsServer.listen(config.notificationPort);
 
   socketIO.on('connection', (socket) => {
     console.log(`⚡ Notifications: ${socket.id} user just connected!`);
