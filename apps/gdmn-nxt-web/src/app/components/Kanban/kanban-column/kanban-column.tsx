@@ -10,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -24,7 +24,6 @@ export interface KanbanColumnProps {
   item: IKanbanColumn;
   isFetching: boolean,
   addIsFetching?: boolean,
-  lastCard?: IKanbanCard
   disabledAddDeal?: boolean;
   onEdit: (newColumn: IKanbanColumn) => void;
   onDelete?: (column: IKanbanColumn) => void;
@@ -35,9 +34,8 @@ export interface KanbanColumnProps {
 
 export function KanbanColumn(props: KanbanColumnProps) {
   const { provided, dragSnapshot, dropSnapshot, isFetching, addIsFetching = false, disabledAddDeal = false } = props;
-  const { children, item, columns, lastCard } = props;
+  const { children, item, columns } = props;
   const { onEdit, onDelete, onEditCard, onAddCard, onDeleteCard } = props;
-  const [addTasks, setAddTasks] = useState(false);
   const theme = useTheme();
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
@@ -47,27 +45,20 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
+    handleSubmit: async (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
-        onDeleteCard && onDeleteCard(card);
+        onDeleteCard && onDeleteCard(newCard);
         setUpsertCard(false);
-        setAddTasks(false);
       };
-      if (card.ID && !deleting) {
-        onEditCard && onEditCard(card);
+      if (newCard.ID && !deleting) {
+        onEditCard && onEditCard(newCard);
         setUpsertCard(false);
-        setAddTasks(false);
       } else {
-        onAddCard && onAddCard(card);
-        setAddTasks(true);
-        if (close || close === undefined) {
-          setAddTasks(false);
-          setUpsertCard(false);
-        }
+        onAddCard && onAddCard(newCard);
+        setUpsertCard(false);
       }
     },
     handleCancel: async (isFetching?: boolean) => {
-      setAddTasks(false);
       setUpsertCard(false);
     },
     handleClose: async (e: any, reason: string) => {
@@ -227,12 +218,11 @@ export function KanbanColumn(props: KanbanColumnProps) {
         open={upsertCard}
         currentStage={item}
         stages={columns}
-        card={addTasks ? lastCard : undefined}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [upsertCard, lastCard]);
+  }, [upsertCard]);
 
   return (
     <Box
@@ -246,12 +236,13 @@ export function KanbanColumn(props: KanbanColumnProps) {
       >
         {header()}
       </Box>
-      {isFetching ? <Skeleton
-        variant="rectangular"
-        height={'100%'}
-        style={{ borderRadius: '12px 12px 12px 12px' }}
-                    /> :
-        <>
+      {isFetching
+        ? <Skeleton
+          variant="rectangular"
+          height={'100%'}
+          style={{ borderRadius: '12px 12px 12px 12px' }}
+          />
+        : <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}
             style={{

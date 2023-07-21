@@ -26,6 +26,8 @@ import { useGetDepartmentsQuery } from '../../features/departments/departmentsAp
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
+import { AnyObject } from 'yup/lib/types';
+import TextFieldMasked from '../../components/textField-masked/textField-masked';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -62,7 +64,11 @@ const Transition = forwardRef(function Transition(
   },
   ref: Ref<unknown>,
 ) {
-  return <Slide direction="left" ref={ref} {...props} />;
+  return <Slide
+    direction="left"
+    ref={ref}
+    {...props}
+         />;
 });
 
 
@@ -98,17 +104,35 @@ export function PersonEdit(props: PersonEditProps) {
     WCOMPANYKEY: person?.WCOMPANYKEY || -1,
   };
 
+  const [phoneCount, setPhoneCount] = useState(1);
+
+  const phonesValidation = yup.object().shape({
+    USR$PHONENUMBER: yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
+  });
+
   const formik = useFormik<IContactPerson>({
     enableReinitialize: true,
+    validateOnBlur: false,
     initialValues: {
       ...person,
       ...initValue
     },
     validationSchema: yup.object().shape({
+      Email: yup.string()
+        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
+          ({ value }) => {
+            const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
+            if (invalidChar) {
+              return `Адрес не может содержать символ "${invalidChar}"`;
+            }
+            return 'Некорректный адрес';
+          })
+        .max(40, 'Слишком длинный email'),
       NAME: yup.string()
         .required('Не указано имя')
         .max(80, 'Слишком длинное имя'),
       USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
+      PHONES: yup.array().of(phonesValidation)
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -148,6 +172,7 @@ export function PersonEdit(props: PersonEditProps) {
     newPhones.push({ ID: -1, USR$PHONENUMBER: '' });
 
     formik.setFieldValue('PHONES', newPhones);
+    setPhoneCount(phoneCount + 1);
     setPhones(newPhones);
   };
 
@@ -188,50 +213,68 @@ export function PersonEdit(props: PersonEditProps) {
         className={classes.dialogContent}
       >
         <PerfectScrollbar>
-          <Stack direction="column" spacing={3} p="16px 24px">
+          <Stack
+            direction="column"
+            spacing={3}
+            p="16px 24px"
+          >
             <FormikProvider value={formik}>
-              <Form id="mainForm" onSubmit={formik.handleSubmit}>
+              <Form id="personForm" onSubmit={formik.handleSubmit}>
                 <Stack direction="column" spacing={3}>
                   <TextField
                     label="Имя"
                     type="text"
-                    required
                     autoFocus
                     name="NAME"
-                    onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.NAME}
-                    helperText={formik.errors.NAME}
-                    error={Boolean(formik.errors.NAME)}
+                    helperText={formik.touched.NAME && formik.errors.NAME}
+                    error={formik.touched.NAME && Boolean(formik.errors.NAME)}
                   />
                   <TextField
                     label="Email"
-                    type="email"
+                    type="text"
                     name="EMAIL"
-                    onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.EMAIL}
                   />
-                  <TextField
+                  <TextFieldMasked
+                    mask={'+375 (99) 999-99-99'}
                     label="Телефон 1"
-                    type="tel"
+                    name="PHONES[0]"
                     value={formik.values.PHONES?.length ? formik.values.PHONES[0].USR$PHONENUMBER : ''}
                     onChange={(e) => {
                       handlePhoneChange(0, e.target.value);
                     }}
+                    helperText={(() => {
+                      const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[0]?.USR$PHONENUMBER);
+                      const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[0] as unknown as IPhone)?.USR$PHONENUMBER;
+                      return isTouched ? error : '';
+                    })()}
+                    error={(() => {
+                      const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[0]?.USR$PHONENUMBER);
+                      const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[0] as unknown as IPhone)?.USR$PHONENUMBER;
+                      return isTouched && Boolean(error);
+                    })()}
                   />
                   {phones.slice(1)
-                    .map((phone, index) => {
-                      // console.log('phone', index, phone.USR$PHONENUMBER);
+                    .map((phone, index, { length }) => {
+                      const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[index + 1]?.USR$PHONENUMBER);
+                      const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[index + 1] as unknown as IPhone)?.USR$PHONENUMBER;
+
                       return (
-                        <TextField
+                        <TextFieldMasked
+                          mask={'+375 (99) 999-99-99'}
                           key={index}
                           label={`Телефон ${index + 2}`}
                           type="tel"
+                          name={`PHONE${index + 2}`}
                           value={phone.USR$PHONENUMBER}
                           onChange={(e) => {
                             handlePhoneChange(index + 1, e.target.value);
                           }}
+                          error={isTouched && Boolean(error)}
+                          helperText={isTouched && error}
                         />);
                     })}
                   <div>
@@ -246,7 +289,6 @@ export function PersonEdit(props: PersonEditProps) {
                     label="Должность"
                     type="text"
                     name="RANK"
-                    onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.RANK}
                   />
@@ -254,7 +296,6 @@ export function PersonEdit(props: PersonEditProps) {
                     label="Адрес"
                     type="text"
                     name="ADDRESS"
-                    onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.ADDRESS}
                   />
@@ -262,7 +303,6 @@ export function PersonEdit(props: PersonEditProps) {
                     label="Доверенность"
                     type="text"
                     name="USR$LETTER_OF_AUTHORITY"
-                    onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.USR$LETTER_OF_AUTHORITY}
                   />
@@ -287,7 +327,6 @@ export function PersonEdit(props: PersonEditProps) {
                         label="Отдел"
                         type="text"
                         name="USR$BG_OTDEL"
-                        onBlur={formik.handleBlur}
                         onChange={formik.handleChange}
                         value={formik.values.USR$BG_OTDEL}
                         helperText={formik.errors.USR$BG_OTDEL}
@@ -301,7 +340,6 @@ export function PersonEdit(props: PersonEditProps) {
                     label="Комментарий"
                     type="text"
                     name="NOTE"
-                    onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.NOTE}
                   />
@@ -326,12 +364,8 @@ export function PersonEdit(props: PersonEditProps) {
         </Button>
         <Button
           className={classes.button}
-          // type={!formik.isValid ? 'submit' : 'button'}
-          // form="mainForm"
-          onClick={() => {
-            setDeleting(false);
-            setConfirmOpen(formik.isValid);
-          }}
+          form="personForm"
+          type={'submit'}
           variant="contained"
         >
             Сохранить

@@ -6,17 +6,20 @@ import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
 // import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from 'react-beautiful-dnd';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided } from '@hello-pangea/dnd';
-import { IKanbanCard, IKanbanColumn, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IKanbanTask, IPermissionByUser } from '@gsbelarus/util-api-types';
 import {
   useAddCardMutation,
   useAddColumnMutation,
   useAddHistoryMutation,
+  useAddTaskMutation,
   useDeleteCardMutation,
   useDeleteColumnMutation,
+  useDeleteTaskMutation,
   useReorderCardsMutation,
   useReorderColumnsMutation,
   useUpdateCardMutation,
-  useUpdateColumnMutation
+  useUpdateColumnMutation,
+  useUpdateTaskMutation
 } from '../../../features/kanban/kanbanApi';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
@@ -46,7 +49,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [deleteCard] = useDeleteCardMutation();
   const [reorderCard] = useReorderCardsMutation();
 
-  const [addHistory] = useAddHistoryMutation();
+  const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
+  const [updateTask] = useUpdateTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+
+  const addingCard = useRef<IKanbanCard>();
 
   const dispatch = useDispatch();
 
@@ -99,13 +106,57 @@ export function KanbanBoard(props: KanbanBoardProps) {
         return true;
       });
     },
-    handleDeleteCard: async (deletinCard: IKanbanCard) => {
-      deleteCard(deletinCard.ID);
+    handleDeleteCard: async (deletingCard: IKanbanCard) => {
+      deleteCard(deletingCard.ID);
     },
     handleAddCard: async (newCard: IKanbanCard) => {
+      addingCard.current = newCard;
       addCard(newCard);
-    }
+    },
+    handleAddTask: (newTask: IKanbanTask) => addTask(newTask),
+    handleEditTask: (newTask: IKanbanTask) => updateTask(newTask),
+    handleDeleteTask: (deletingTask: IKanbanTask) => deleteTask(deletingTask.ID)
   };
+
+  // console.log('columns', columns[0]);
+  useEffect(() => {
+    // console.log('useEffect', addCardSuccess, addedCard, addingCard.current?.TASKS);
+    if (!addedCard) return;
+    const cardId = addedCard[0].ID;
+    const cardParentId = addedCard[0].USR$MASTERKEY;
+    // const taskIsAddedToCache = !columns.every(({ CARDS }) => CARDS?.every(({ TASKS }) => (TASKS?.findIndex(({ ID }) => ID === cardId) ?? -1) < 0) ?? true);
+    // console.log('taskIsAddedToCache', taskIsAddedToCache, columns);
+
+    const column = columns.find(({ ID }) => ID === cardParentId);
+    const cardFindIndex = column?.CARDS?.findIndex(({ ID }) => ID === cardId) ?? -1;
+    const cachedCard = column?.CARDS[cardFindIndex];
+
+    // console.log('cachedCard', cachedCard);
+    // console.log('add_new_tasks_1', cachedCard?.TASKS?.length, addingCard.current?.TASKS?.length);
+
+    if (!((addingCard.current?.TASKS?.length ?? 0) > (cachedCard?.TASKS?.length ?? 0))) return;
+    // console.log('add_new_tasks_2', cachedCard?.TASKS?.length, addingCard.current?.TASKS?.length);
+
+    addingCard.current?.TASKS?.forEach(task => cardHandlers.handleAddTask({ ...task, USR$CARDKEY: cardId }));
+  }, [addCardSuccess, addedCard]);
+
+  // useEffect(() => {
+  //   console.log('useEffect_addTaskSuccess', addTaskSuccess);
+  //   if (addTaskSuccess) return;
+  //   console.log('useEffect_addCardSuccess', addCardSuccess);
+  //   if (!addCardSuccess) return;
+  //   console.log('useEffect_addedCard', addedCard);
+  //   if (!Array.isArray(addedCard)) return;
+  //   const cardId = addedCard[0].ID;
+  //   const cardIsAddedToCache = !columns.every(({ CARDS }) => CARDS.findIndex(({ ID }) => ID === cardId) < 0);
+  //   console.log('useEffect_cardIsAddedToCache', cardIsAddedToCache);
+  //   if (!cardIsAddedToCache) return;
+  //   // const taskIsAddedToCache = !columns.every(({ CARDS }) => CARDS?.every(({ TASKS }) => (TASKS?.findIndex(({ ID }) => ID === cardId) ?? -1) < 0) ?? true);
+  //   // if (!taskIsAddedToCache) return;
+  //   console.log('useEffect', addingCard.current?.TASKS);
+  //   addingCard.current?.TASKS?.forEach(task => cardHandlers.handleAddTask({ ...task, USR$CARDKEY: addedCard[0].ID }));
+  //   // console.log('useEffect', addingCard.current, isLoadingAddCard, addedCard, addCardSuccess, columns);
+  // }, [columns, addCardSuccess, addedCard, addTaskSuccess]);
 
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
     const result = Array.from(list);
@@ -232,12 +283,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return skeletonFaqItems;
   }, []);
 
-  const lastCard = useMemo(() => {
-    if (!addedCard) return undefined;
-    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === addedCard?.[0]?.ID);
-    return cards;
-  }, [columns, addedCard]);
-
   const skeletonCount: IKanbanColumn[] = skeletonItems(5);
 
   return (
@@ -309,7 +354,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                   onAddCard={cardHandlers.handleAddCard}
                                   isFetching={isLoading}
                                   addIsFetching={isLoadingAddCard}
-                                  lastCard={lastCard}
                                 >
                                   {column.CARDS
                                     ?.map((card, index) => {
@@ -334,8 +378,10 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                                 onAdd={cardHandlers.handleAddCard}
                                                 onEdit={cardHandlers.handleEditCard}
                                                 onDelete={cardHandlers.handleDeleteCard}
+                                                onAddTask={cardHandlers.handleAddTask}
+                                                onEditTask={cardHandlers.handleEditTask}
+                                                onDeleteTask={cardHandlers.handleDeleteTask}
                                                 addIsFetching={isLoadingAddCard || isLoadingEditCard}
-                                                lastCard={lastCard}
                                               />
                                             </Box>
                                           )}

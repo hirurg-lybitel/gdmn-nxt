@@ -94,6 +94,8 @@ export interface IProfileSettings {
   RANK?: string;
   COLORMODE?: ColorMode;
   LASTVERSION?: string;
+  EMAIL?: string;
+  SEND_EMAIL_NOTIFICATIONS?: boolean;
 }
 
 export enum ColorMode {

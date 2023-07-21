@@ -7,6 +7,9 @@ interface IMapOfNotifications {
   [key: string]: INotification[];
 };
 
+/**
+ * Get notifications list by userIds
+ */
 export const getNotifications = async (sessionId: string) => {
   // const { attachment, transaction } = await getReadTransaction(sessionId);
   const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(sessionId);

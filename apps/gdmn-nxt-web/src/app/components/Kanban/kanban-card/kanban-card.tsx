@@ -1,18 +1,17 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, CircularProgress, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
-import { ColorMode, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
+import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
+import { TaskStatus } from './task-status';
 
-
-/* eslint-disable-next-line */
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
   card: IKanbanCard;
@@ -22,13 +21,16 @@ export interface KanbanCardProps {
   onDelete: (card: IKanbanCard) => void;
   addIsFetching?: boolean;
   lastCard?: IKanbanCard
+  clearLastCard?: (isAdd?: boolean) => void,
+  onAddTask: (task: IKanbanTask) => void;
+  onEditTask: (task: IKanbanTask) => void;
+  onDeleteTask: (task: IKanbanTask) => void;
 };
-
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
   const { card, columns, lastCard, addIsFetching } = props;
-  const { onAdd, onEdit, onDelete } = props;
+  const { onAdd, onEdit, onDelete, clearLastCard, onAddTask, onEditTask, onDeleteTask } = props;
   const theme = useTheme();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
@@ -36,24 +38,39 @@ export function KanbanCard(props: KanbanCardProps) {
   const [editCard, setEditCard] = useState(false);
   const [copyCard, setCopyCard] = useState(false);
 
+  const [upsertCardStatus] = useSetCardStatusMutation();
+
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean, close?: boolean) => {
+    handleSubmit: (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
-        onDelete(card);
+        onDelete(newCard);
         setEditCard(false);
         return;
       };
-      if (card.ID && !deleting) {
-        onEdit(card);
+
+      if (newCard.ID && !deleting) {
+        onEdit(newCard);
         copyCard && setCopyCard(false);
         setEditCard(false);
-        return;
+        clearLastCard && clearLastCard();
+
+        const deletedTasks = card.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
+        deletedTasks.forEach(task => onDeleteTask(task));
+
+        newCard.TASKS?.forEach(task => {
+          const oldTask = card.TASKS?.find(({ ID }) => ID === task.ID);
+          if (!oldTask) {
+            onAddTask({ ...task, ID: -1 });
+            return;
+          };
+
+          if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
+            onEditTask(task);
+          };
+        });
       } else {
-        onAdd(card);
-        if (close || close === undefined) {
-          copyCard && setCopyCard(false);
-        }
-        return;
+        onAdd(newCard);
+        copyCard && setCopyCard(false);
       }
     },
     handleCancel: async (isFetching?: boolean) => {
@@ -66,59 +83,6 @@ export function KanbanCard(props: KanbanCardProps) {
   };
 
   const handleCopyCard = useCallback(() => setCopyCard(true), []);
-
-  const TaskStatus = useMemo(() => {
-    const tasks = card.TASKS;
-    if (!tasks || !tasks?.length) return <></>;
-
-    const allTasks = tasks?.length;
-    const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
-    return (
-      closedTasks
-        ? <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-          >
-          <Box sx={{ position: 'relative', display: 'flex' }}>
-            <CircularProgress
-              variant="determinate"
-              size={15}
-              thickness={7}
-              value={100}
-              sx={{
-                color: (theme) =>
-                  theme.palette.grey[200],
-              }}
-            />
-            <CircularProgress
-              variant="determinate"
-              size={15}
-              thickness={7}
-              value={closedTasks / allTasks * 100}
-              sx={{
-                position: 'absolute',
-                left: 0,
-              }}
-            />
-          </Box>
-          <Typography variant="caption">
-            {`${closedTasks} из ${allTasks} задач`}
-          </Typography>
-        </Stack>
-        : <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-          >
-          <FactCheckOutlinedIcon color="action" fontSize="small" />
-          <Typography variant="caption">
-            {`${allTasks} задач`}
-          </Typography>
-        </Stack>
-    );
-  },
-  [card]);
 
   const memoEditCard = useMemo(() => {
     return (
@@ -137,7 +101,25 @@ export function KanbanCard(props: KanbanCardProps) {
     return (
       <KanbanEditCard
         open={copyCard}
-        card={lastCard || { ...card, ID: -1, DEAL: { ...card.DEAL, ID: -1, USR$NAME: undefined } }}
+        card={{
+          ID: -1,
+          USR$INDEX: 0,
+          USR$MASTERKEY: 0,
+          DEAL: {
+            ID: -1,
+            CONTACT: card?.DEAL?.CONTACT,
+            SOURCE: card?.DEAL?.SOURCE,
+            USR$AMOUNT: card?.DEAL?.USR$AMOUNT,
+            USR$DEADLINE: card?.DEAL?.USR$DEADLINE,
+            DEPARTMENT: card?.DEAL?.DEPARTMENT,
+            PERFORMERS: card?.DEAL?.PERFORMERS,
+            PRODUCTNAME: card?.DEAL?.PRODUCTNAME,
+            REQUESTNUMBER: card?.DEAL?.REQUESTNUMBER,
+            CONTACT_NAME: card?.DEAL?.CONTACT_NAME,
+            CONTACT_EMAIL: card?.DEAL?.CONTACT_EMAIL,
+            CONTACT_PHONE: card?.DEAL?.CONTACT_PHONE,
+          },
+        }}
         currentStage={columns.find(column => column.ID === card.USR$MASTERKEY)}
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
@@ -154,8 +136,20 @@ export function KanbanCard(props: KanbanCardProps) {
     );
   }, []);
 
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
+  const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
+
   const doubleClick = useCallback(() => {
-    if (!card.USR$ISREAD) onEdit({ ...card, USR$ISREAD: true });
+    const isPerformer = card.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId);
+    const isCreator = card.DEAL?.CREATOR?.ID === contactId;
+
+    if (!card.STATUS?.isRead && (isCreator || isPerformer)) {
+      upsertCardStatus({
+        isRead: true,
+        userId,
+        cardId: card.ID
+      });
+    }
     setEditCard(true);
   }, [card]);
 
@@ -175,22 +169,20 @@ export function KanbanCard(props: KanbanCardProps) {
     }
     return '';
   };
-
+  const dayColor = (days: number, baseColor?: string): string => {
+    if (days === 1) return 'rgb(255, 214, 0)';
+    if (days <= 0) return 'rgb(255, 82, 82)';
+    return baseColor ? baseColor : colorModeIsLight ? 'GrayText' : 'lightgray';
+  };
   const deadLine = useMemo(() => {
-    const dayColor = (days: number): string => {
-      if (days === 1) return 'rgb(255, 214, 0)';
-      if (days <= 0) return 'rgb(255, 82, 82)';
-      return colorModeIsLight ? 'GrayText' : 'lightgray';
-    };
-
     if (!card.DEAL?.USR$DEADLINE) return null;
-    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)));
+    const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
       <Stack direction="row">
         <Typography variant="h2">
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
-            ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+            ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short', year: '2-digit' })
             : '-/-'}
         </Typography>
         <Box flex={1} />
@@ -200,7 +192,6 @@ export function KanbanCard(props: KanbanCardProps) {
       </Stack>
     );
   }, [card, colorModeIsLight]);
-
   const memoCard = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -210,25 +201,23 @@ export function KanbanCard(props: KanbanCardProps) {
     const dateDiff = getDayDiff(card.DEAL?.USR$DEADLINE ? new Date(card.DEAL.USR$DEADLINE) : tomorrow, today);
 
     const isFirstColumn = columns.find(column => column.ID === card.USR$MASTERKEY)?.USR$INDEX === 0;
-
     return (
       <CustomizedCard
         borders={colorMode === ColorMode.Light}
-        // boxShadows
         key={card.ID}
         style={{
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
           backgroundColor: colorMode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
-          ...(card?.USR$ISREAD || false
-            ? {}
-            : {
+          ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
+            ? {
               backgroundColor: 'rgba(193, 228, 250, 0.5)',
               borderTop: '1px solid rgb(13, 228, 250)',
               borderBottom: '1px solid rgb(13, 228, 250)',
               borderRight: '1px solid rgb(13, 228, 250)',
-            }),
+            }
+            : {}),
           ...(snapshot.isDragging
             ? {
               opacity: 0.7,
@@ -310,7 +299,7 @@ export function KanbanCard(props: KanbanCardProps) {
             </Typography>
           </Stack>
           {deadLine}
-          {TaskStatus}
+          <TaskStatus tasks={card.TASKS ?? []} />
         </Stack>
       </CustomizedCard>
     );

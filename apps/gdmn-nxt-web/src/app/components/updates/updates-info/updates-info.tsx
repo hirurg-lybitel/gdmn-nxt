@@ -51,8 +51,8 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       PaperProps={{
         sx: {
           height: '80%',
-          width: '80%',
-          maxWidth: '100%'
+          width: '50%',
+          // maxWidth: '100%'
         }
       }}
     >

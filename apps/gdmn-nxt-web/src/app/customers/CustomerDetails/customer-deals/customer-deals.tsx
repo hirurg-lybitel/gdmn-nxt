@@ -66,7 +66,7 @@ export function CustomerDeals(props: CustomerDealsProps) {
           />;
         }
 
-        const dayDiff = getDayDiff(new Date(value), new Date(currentDate.current));
+        const { days: dayDiff } = getDayDiff(new Date(value), new Date(currentDate.current));
 
         switch (true) {
           case dayDiff > 0:

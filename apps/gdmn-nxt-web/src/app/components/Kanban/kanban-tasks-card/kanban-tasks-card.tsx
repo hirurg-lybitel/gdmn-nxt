@@ -4,7 +4,7 @@ import { ColorMode, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Icon, Stack, Typography } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
@@ -13,6 +13,7 @@ import { UserState } from '../../../features/user/userSlice';
 import useTruncate from '../../helpers/hooks/useTruncate';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
+import ForwardIcon from '@mui/icons-material/Forward';
 
 export interface KanbanTasksCardProps {
   card: IKanbanCard;
@@ -126,7 +127,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
                   ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
               : '-/-'}
           </Typography>
-          {!!card.TASK?.PERFORMER?.NAME &&
+          {(!!card.TASK?.PERFORMER?.NAME || !!card.TASK?.CREATOR?.NAME) &&
           <Stack
             direction="row"
             display="inline-flex"
@@ -135,7 +136,26 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             ml={-0.2}
           >
             <AccountCircleIcon color="primary" fontSize="small" />
-            <Typography variant="h2">{card.TASK?.PERFORMER?.NAME}</Typography>
+            <Typography variant="h2">
+              {
+                card.TASK?.CREATOR?.NAME
+                  .split(' ')
+                  .map((el, idx) => idx === 0 ? el : (el[0] && `${el[0]}.`))
+                  ?.filter(Boolean)
+                  ?.join(' ')
+              }
+            </Typography>
+            <ForwardIcon fontSize="small"/>
+            <Typography variant="h2">
+              {
+                card.TASK?.PERFORMER?.NAME
+                  .split(' ')
+                  .map((el, idx) => idx === 0 ? el : (el[0] && `${el[0]}.`))
+                  ?.filter(Boolean)
+                  ?.join(' ')
+                  ?? 'не указан'
+              }
+            </Typography>
           </Stack>}
           <Typography variant="body1">{card.DEAL?.USR$NAME}</Typography>
         </Stack>

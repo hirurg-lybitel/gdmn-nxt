@@ -71,7 +71,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   const [cards, setCards] = useState<IKanbanCard[]>([]);
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
-  const { data: deals = [], isLoading: dealsIsLoading } = useGetKanbanDealsQuery({ userId: -1 });
+  const { data: deals = [], isLoading: dealsIsLoading } = useGetKanbanDealsQuery({ userId: -2 });
   const { data: taskTypes = [], isFetching: taskTypesFetching } = useGetTaskTypesQuery();
 
   useEffect(() => {
@@ -112,9 +112,9 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       USR$NAME: yup.string()
         .required('')
         .max(80, 'Слишком длинное описание'),
-      USR$CARDKEY: yup.number()
-        .required()
-        .moreThan(-1),
+      // USR$CARDKEY: yup.number()
+      //   .required()
+      //   .moreThan(-1),
       // TASKTYPE: yup.object().shape({
       //   ID: yup.number()
       //     .required()
@@ -132,7 +132,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     validateOnMount: true,
   });
 
-  // console.log('task', formik.values);
+  // console.log('KanbanEditTask', formik.values);
   // console.log('cards', cards);
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       width={500}
     >
       <DialogTitle>
-        {Number(task?.ID) ? `Редактирование: ${task?.USR$NAME}` : 'Добавление задачи'}
+        {Number(task?.ID) > 0 ? `Редактирование: ${task?.USR$NAME}` : 'Добавление задачи'}
       </DialogTitle>
       <DialogContent
         dividers
@@ -316,7 +316,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         {...params}
                         label="Сделка"
                         placeholder="Выберите сделку"
-                        required
+                        // required
                       />
                     )}
                     loading={dealsIsLoading}

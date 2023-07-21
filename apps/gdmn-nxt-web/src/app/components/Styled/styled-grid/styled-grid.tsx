@@ -5,11 +5,11 @@ import CustomLinearLoadingOverlay from './DataGridProOverlay/CustomLinearLoading
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Popper, Typography } from '@mui/material';
 import CustomizedCard from '../customized-card/customized-card';
-import { theme } from '../../../theme';
 import { useTheme } from '@mui/material/styles';
 import CustomCircularLoadingOverlay from './DataGridProOverlay/CustomCircularLoadingOverlay';
 
 interface IStyledGridProps extends DataGridProProps{
+  hideColumnHeaders?: boolean;
   hideHeaderSeparator?: boolean;
   loadingMode?: 'circular' | 'linear';
 }
@@ -32,7 +32,7 @@ export default function StyledGrid(props: IStyledGridProps) {
     },
     '& .MuiDataGrid-columnHeader': {
       paddingLeft: '24px',
-      paddingRight: '24px'
+      paddingRight: '24px',
     },
     '& ::-webkit-scrollbar': {
       width: '6px',
@@ -71,10 +71,15 @@ export default function StyledGrid(props: IStyledGridProps) {
     '.MuiDataGrid-detailPanel': {
       backgroundColor: 'inherit',
       padding: '24px',
-    }
+    },
+    ...(hideColumnHeaders && {
+      '& .MuiDataGrid-columnHeaders': {
+        display: 'none'
+      },
+    })
   });
 
-  const { loadingMode = 'linear' } = props;
+  const { loadingMode = 'linear', hideColumnHeaders } = props;
 
   return (
     <DataGridPro
@@ -85,7 +90,7 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoRowsOverlay: CustomNoRowsOverlay,
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
-      headerHeight={50}
+      headerHeight={hideColumnHeaders ? 0 : 50}
       {...props}
       sx={{
         ...defaultTheme(props),

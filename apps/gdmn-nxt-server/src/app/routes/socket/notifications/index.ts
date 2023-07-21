@@ -7,9 +7,18 @@ import { deleteNotification } from '../../../controllers/socket/notifications/de
 import { updateNotifications } from '../../../controllers/socket/notifications//updateNotifications';
 import { getMessagesByUser } from '../../../controllers/socket/notifications//getMessagesByUser';
 import { insertNotification } from '../../../controllers/socket/notifications//insertNotification';
+import { getEmailUsers } from '../../../controllers/socket/notifications/getEmailUsers';
+import { sendEmail } from '../../../utils/mail';
+import { marked } from 'marked';
+import cron from 'cron';
 import { readFileSync } from 'fs';
 import { createServer } from 'https';
 import path from 'path';
+
+marked.use({
+  mangle: false,
+  headerIds: false
+});
 
 interface NotificationsProps {
   router: Router;
@@ -115,6 +124,65 @@ export function Notifications({ router }: NotificationsProps) {
       }) || []);
     });
   }
+
+  async function sendEmailNotifications() {
+    const sessionId = 'mailing';
+    try {
+      const users = await getEmailUsers(sessionId);
+      const notifications = await getNotifications(sessionId);
+
+      users.forEach(user => {
+        const { EMAIL, NAME } = user;
+        const userNotifications: INotification[] = notifications[user.ID];
+
+        if (userNotifications?.length === 0) return;
+
+        const styles = {
+          main: `
+            font-family: Montserrat;
+            font-weight: 400`,
+          item: `
+            border: 2px solid rgb(100, 181, 246);
+            background-color: rgb(236, 246, 255);
+            border-radius: 5px;
+            padding: 0 1em;
+            margin: 0.3em 0;`,
+        };
+
+        /** markdown -> html */
+        const htmlText = userNotifications.map(n => `
+          <li style="${styles.item}">
+            <strong>${marked(n.title)}</strong>
+            ${marked(n.message)}
+          </li>`)
+          .join('');
+
+        const messageText = `
+          <div style="${styles.main}">
+            Добрый день, <strong>${NAME}</strong>.
+            <p>Вот ваш список уведомлений:</p>
+            <ol>
+              ${htmlText}
+            </ol>
+            <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="http://localhost:4201/">CRM системе</a>.</p>
+          </div>`;
+
+        const from = `CRM система БелГИСС <${process.env.SMTP_USER}>`;
+
+        const result = sendEmail(
+          from,
+          EMAIL,
+          `У вас ${userNotifications.length} активных уведомлений`,
+          '',
+          messageText);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const job = new cron.CronJob('0 9-17 * * 1-5', sendEmailNotifications);
+  job.start();
 
   setInterval(sendMessages, 15000);
 

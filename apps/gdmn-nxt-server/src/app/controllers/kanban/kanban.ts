@@ -61,7 +61,7 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber, dealNumber } = req.query;
+    const { departments, customers, requestNumber, dealNumber, performers } = req.query;
 
     const checkFullView = `
       EXISTS(
@@ -155,7 +155,8 @@ const get: RequestHandler = async (req, res) => {
         ${departments ? `AND dep.ID IN (${departments})` : ''}
         ${customers ? `AND con.ID IN (${customers})` : ''}
         ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
-        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''} `;
+        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
+        ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}`;
 
     const queries = [
       {
@@ -172,7 +173,7 @@ const get: RequestHandler = async (req, res) => {
         name: 'cards',
         query:
           `SELECT
-            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY, card.USR$ISREAD,
+            card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
             card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED,
             deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
             con.ID con_ID, con.NAME con_NAME,
@@ -213,7 +214,7 @@ const get: RequestHandler = async (req, res) => {
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, USR$ISREAD, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
+          ORDER BY card.USR$MASTERKEY, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
       },
       {
         name: 'tasks',
@@ -240,17 +241,40 @@ const get: RequestHandler = async (req, res) => {
           LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY`
       },
+      {
+        name: 'status',
+        query:
+          `SELECT
+            USR$CARDKEY,
+            USR$ISREAD
+          FROM USR$CRM_KANBAN_CARD_STATUS
+          WHERE USR$USERKEY = ${userId}
+          ORDER BY USR$CARDKEY`
+      },
     ];
 
-    const [rawColumns, rawCards, rawTasks] = await Promise.all(queries.map(execQuery));
+    const [rawColumns, rawCards, rawTasks, rawStatus] = await Promise.all(queries.map(execQuery));
 
     interface IMapOfArrays {
       [key: string]: any[];
     };
 
+    interface IMapOfObjects {
+      [key: string]: any;
+    };
+
 
     const cards: IMapOfArrays = {};
     const tasks: IMapOfArrays = {};
+    const status: IMapOfObjects = {};
+
+    rawStatus.forEach(el => {
+      const newStatus = {
+        isRead: el['USR$ISREAD'] === 1
+      };
+
+      status[el['USR$CARDKEY']] = newStatus;
+    });
 
     rawTasks.forEach(el => {
       const newTask = {
@@ -349,7 +373,7 @@ const get: RequestHandler = async (req, res) => {
           DESCRIPTION: el['DESCRIPTION'],
         },
         TASKS: tasks[el['ID']],
-        USR$ISREAD: el['USR$ISREAD'] === 1,
+        STATUS: status[el['ID']]
       };
 
       if (cards[el['USR$MASTERKEY']]) {
@@ -601,7 +625,7 @@ const getTasks: RequestHandler = async (req, res) => {
           WHERE 1 = 1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, card.ID`
+          ORDER BY task.USR$DEADLINE DESC, card.USR$MASTERKEY `
       },
     ];
 
