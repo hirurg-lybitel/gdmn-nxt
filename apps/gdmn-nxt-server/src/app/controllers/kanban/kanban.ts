@@ -9,6 +9,10 @@ interface IMapOfArrays {
   [key: string]: any;
 };
 
+interface IMapOfObjects {
+  [key: string]: any;
+};
+
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction, fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
 
@@ -627,12 +631,31 @@ const getTasks: RequestHandler = async (req, res) => {
           ${filter}
           ORDER BY task.USR$DEADLINE DESC, card.USR$MASTERKEY `
       },
+      {
+        name: 'status',
+        query:
+          `SELECT
+            USR$CARDKEY,
+            USR$ISREAD
+          FROM USR$CRM_KANBAN_CARD_STATUS
+          WHERE USR$USERKEY = ${userId}
+          ORDER BY USR$CARDKEY`
+      },
     ];
 
-    const [rawColumns, rawCards] = await Promise.all(queries.map(execQuery));
+    const [rawColumns, rawCards, rawStatus] = await Promise.all(queries.map(execQuery));
 
     const columnsIDs: IMapOfArrays = {};
     const cards: IMapOfArrays = {};
+    const status: IMapOfObjects = {};
+
+    rawStatus.forEach(el => {
+      const newStatus = {
+        isRead: el['USR$ISREAD'] === 1
+      };
+
+      status[el['USR$CARDKEY']] = newStatus;
+    });
 
     rawColumns.forEach(el => {
       columnsIDs[el['USR$INDEX']] = el['ID'];
@@ -709,7 +732,8 @@ const getTasks: RequestHandler = async (req, res) => {
           }),
           CONTACT_NAME: el['REQUEST_CONTACT_NAME'],
           USR$NAME: el['DEAL_NAME']
-        }
+        },
+        STATUS: status[el['TASK_ID']]
       };
 
       if (cards[columnsIDs[columnIndex]]) {
@@ -722,7 +746,7 @@ const getTasks: RequestHandler = async (req, res) => {
     const columns = rawColumns.map(el => {
       return {
         ...el,
-        CARDS: cards[el.ID] ?? []
+        CARDS: cards[el.ID]?.sort((a, b) => Number(a.STATUS?.isRead ?? true) - Number(b.STATUS?.isRead ?? true)) ?? []
       };
     });
 

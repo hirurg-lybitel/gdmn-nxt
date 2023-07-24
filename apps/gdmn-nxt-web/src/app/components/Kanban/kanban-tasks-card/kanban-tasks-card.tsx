@@ -7,7 +7,7 @@ import { RootState } from '../../../store';
 import { Box, Icon, Stack, Typography } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
+import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import { IChanges } from '../../../pages/Managment/deals/deals';
 import { UserState } from '../../../features/user/userSlice';
 import useTruncate from '../../helpers/hooks/useTruncate';
@@ -27,7 +27,12 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
   const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
   const [updateTask, { isSuccess: updatedTaskSuccess }] = useUpdateTaskMutation();
   const [deleteTask, { isSuccess: deletedTaskSuccess }] = useDeleteTaskMutation();
+  const [upsertCardStatus] = useSetCardStatusMutation();
+
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
+  const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
+
   const userPermissions = usePermissions();
 
   const colorModeIsLight = useMemo(() => colorMode === ColorMode.Light, [colorMode]);
@@ -56,7 +61,18 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
 
   const doubleClick = useCallback(() => {
     setOpenEditForm(true);
-  }, []);
+
+    const isPerformer = card.TASK?.PERFORMER?.ID === contactId;
+    const isCreator = card.TASK?.CREATOR?.ID === contactId;
+
+    if (!card.STATUS?.isRead && (isCreator || isPerformer)) {
+      upsertCardStatus({
+        isRead: true,
+        userId,
+        cardId: card.TASK!.ID
+      });
+    }
+  }, [card]);
 
   const handleTaskEditCancelClick = useCallback(() => setOpenEditForm(false), []);
 
@@ -78,6 +94,12 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           backgroundColor: colorModeIsLight ? 'whitesmoke' : 'dimgrey',
           padding: '12px',
           cursor: 'pointer',
+          ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
+            ? {
+              backgroundColor: 'rgba(193, 228, 250, 0.5)',
+              border: '1px solid rgb(13, 228, 250)',
+            }
+            : {}),
         }}
         sx={{
           '&:hover': {
