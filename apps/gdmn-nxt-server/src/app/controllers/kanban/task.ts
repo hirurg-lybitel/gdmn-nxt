@@ -270,6 +270,33 @@ const upsert: RequestHandler = async (req, res) => {
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
 
+
+    /** Изменение статуса карточки */
+    sql = `
+      EXECUTE BLOCK(
+        cardId INTEGER = ?,
+        userId INTEGER = ?
+      )
+      AS
+      DECLARE VARIABLE CON_ID INTEGER;
+      BEGIN
+        FOR
+          SELECT u.ID
+          FROM GD_CONTACT con
+          JOIN GD_USER u ON u.CONTACTKEY = con.ID
+          JOIN USR$CRM_KANBAN_CARD_TASKS task
+            ON task.USR$CREATORKEY = con.ID
+            OR task.USR$PERFORMER = con.ID
+          WHERE task.ID = :cardId AND u.ID != :userId
+          INTO :CON_ID
+        DO
+          UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_STATUS(USR$ISREAD, USR$CARDKEY, USR$USERKEY)
+          VALUES(0, :cardId, :CON_ID)
+          MATCHING(USR$CARDKEY, USR$USERKEY);
+      END`;
+
+    await executeSingletonAsObject(sql, [task.ID, userId]);
+
     const result: IRequestResult = {
       queries: { tasks: [taskRecord] },
       _schema

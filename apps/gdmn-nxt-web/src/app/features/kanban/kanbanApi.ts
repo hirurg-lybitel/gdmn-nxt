@@ -656,7 +656,7 @@ export const kanbanApi = createApi({
           method: 'POST'
         };
       },
-      invalidatesTags: [{ type: 'Column', id: 'LIST' }]
+      invalidatesTags: [{ type: 'Column', id: 'LIST' }, { type: 'Task', id: 'LIST' }]
     }),
   })
 });
