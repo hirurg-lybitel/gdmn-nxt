@@ -61,14 +61,15 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
   },
   mainPaper: {
-    marginRight: 20,
+    marginLeft: 16,
+    marginRight: 16,
     width: '20vw',
     minWidth: '400px',
     minHeight: '300px',
     display: 'flex'
   },
   header: {
-    padding: '16px 24px'
+    padding: '8px 16px'
   },
   badgeFadeIn: {
     animationName: '$fadeIn',
@@ -262,7 +263,7 @@ export function Notification(props: NotificationProps) {
                       spacing={1}
                       alignItems="center"
                     >
-                      <Typography variant="h3">
+                      <Typography variant="h4">
                         Уведомления
                       </Typography>
                     </Stack>
@@ -282,7 +283,7 @@ export function Notification(props: NotificationProps) {
                         alignItems="center"
                         justifyContent="center"
                         spacing={1}
-                        >
+                      >
                         <img
                           src={logo}
                           alt=""

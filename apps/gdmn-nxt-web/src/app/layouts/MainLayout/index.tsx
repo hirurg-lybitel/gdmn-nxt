@@ -1,4 +1,4 @@
-import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
+import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, Stack, SvgIconTypeMap, Toolbar } from '@mui/material';
 import Logout from '@mui/icons-material/Logout';
 import Settings from '@mui/icons-material/Settings';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -178,7 +178,7 @@ export const MainLayout = (props: MainLayoutProps) => {
     <>
       <UpdatesInfo />
       <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
-        <AppBar
+        {/* <AppBar
           position="fixed"
           elevation={0}
           sx={{
@@ -188,16 +188,21 @@ export const MainLayout = (props: MainLayoutProps) => {
           <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
             <Header onDrawerToggle={handleDrawerToggle} />
           </Toolbar>
-        </AppBar>
-        <CustomMenu
+        </AppBar> */}
+        {/* <CustomMenu
           anchorEl={anchorProfileEl}
           handleClose={() => setAnchorProfileEl(null)}
           items={profileMenuItems}
-        />
-        <Sidebar
-          open={menuOpened}
-          onToogle={handleDrawerToggle}
-        />
+        /> */}
+        {/* <Stack> */}
+          {/* <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
+            <Header onDrawerToggle={handleDrawerToggle} />
+          </Toolbar> */}
+          <Sidebar
+            open={menuOpened}
+            onToogle={handleDrawerToggle}
+          />
+        {/* </Stack> */}
         <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
           <Outlet />
         </Main>

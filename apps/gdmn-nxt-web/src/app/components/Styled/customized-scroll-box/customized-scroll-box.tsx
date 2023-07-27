@@ -8,7 +8,7 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
-  const { children } = props;
+  const { children, ...style} = props;
   return (
     <div
       aria-label="CustomizedScrollBox"
@@ -17,7 +17,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
       <div
         className={styles.scrollBox}
       >
-        <PerfectScrollbar>
+        <PerfectScrollbar {...style}>
           {children}
         </PerfectScrollbar>
       </div>
