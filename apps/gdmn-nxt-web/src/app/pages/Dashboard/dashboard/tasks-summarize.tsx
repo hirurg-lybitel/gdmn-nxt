@@ -1,12 +1,11 @@
 import { CardContent, CardHeader, Grid, Stack, Typography, useTheme } from '@mui/material';
-import ChartDonut from '../../../components/Charts/chart-donut/chart-donut';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useGetKanbanDealsQuery, useGetKanbanTasksQuery } from '../../../features/kanban/kanbanApi';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { DateRange } from '@mui/x-date-pickers-pro';
 

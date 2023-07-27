@@ -1,16 +1,14 @@
-import { Box, Button, ClickAwayListener, Grid, Popper, TextField, ToggleButton, ToggleButtonGroup, Tooltip, useTheme } from '@mui/material';
+import { Box, ClickAwayListener, Grid, Popper, TextField, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import ChartColumn from '../../../components/Charts/chart-column/chart-column';
 import ChartDonut from '../../../components/Charts/chart-donut/chart-donut';
 import EarningCard from '../../../components/Charts/earning-card/earning-card';
 import OrderCard from '../../../components/Charts/order-card/order-card';
 import './dashboard.module.less';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { useSelector } from 'react-redux';
 import { DealsSummarize } from './deals-summarize';
 import { TasksSummarize } from './tasks-summarize';
-import { Fragment, KeyboardEvent, MouseEvent, useRef, useState } from 'react';
-import { DateRange, DateRangePicker, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
+import { Fragment, KeyboardEvent, useRef, useState } from 'react';
+import { DateRange, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from 'dayjs';
 import { ColorMode } from '@gsbelarus/util-api-types';
 
