@@ -73,6 +73,7 @@ export function AccountSettings(props: AccountSettingsProps) {
     setSettings({
       userId,
       body: {
+        ...settings,
         AVATAR: settings?.AVATAR || '',
         COLORMODE: typeTheme,
         LASTVERSION: settings?.LASTVERSION || ''

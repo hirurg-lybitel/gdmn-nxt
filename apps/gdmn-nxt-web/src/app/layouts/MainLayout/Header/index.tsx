@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import Notification from './NotificationSection/notification/notification';
 import Profile from './profile/profile';
+import ToggleTheme from './toggle-theme/toggle-theme';
 
 interface IHeaderProps {
   onDrawerToggle: () => void;
@@ -13,7 +14,7 @@ export const Header = (props: IHeaderProps) => {
 
   return (
     <>
-      <IconButton
+      {/* <IconButton
         size="large"
         edge="start"
         color="inherit"
@@ -23,13 +24,15 @@ export const Header = (props: IHeaderProps) => {
         onClick={onDrawerToggle}
       >
         <MenuIcon />
-      </IconButton>
+      </IconButton> */}
       {/* <ButtonBase disableRipple component={Link} to={'/'} >
         <BelgissLogo />
       </ButtonBase> */}
-      <Box sx={{ flexGrow: 1 }} />
-      <Notification />
+      {/* <Box sx={{ flexGrow: 1 }} /> */}
+
       <Profile />
+      <Notification />
+      <ToggleTheme />
     </>
   );
 };
