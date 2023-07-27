@@ -7,6 +7,8 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { ColorMode } from '@gsbelarus/util-api-types';
 import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { useCallback, useMemo } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 interface TaskCardProps {
   title: string;
@@ -46,10 +48,36 @@ const TaskCard = ({ title, quantity = 0, color, loading = true }: TaskCardProps)
   );
 };
 
-export const TasksSummarize = () => {
+interface TasksSummarizeProps {
+  period: DateRange<Dayjs>
+}
+
+export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
-  const { data: tasks = [], isFetching } = useGetKanbanTasksQuery({ userId });
-  const { data: deals = [], isFetching: dealsIsFetching } = useGetKanbanDealsQuery({ userId });
+  const { data: tasks = [], isFetching } = useGetKanbanTasksQuery({
+    userId,
+    period: [
+      dayjs(period[0])
+        .toDate()
+        .getTime(),
+      dayjs(period[1])
+        .toDate()
+        .getTime()
+    ]
+  });
+  const { data: deals = [], isFetching: dealsIsFetching } = useGetKanbanDealsQuery({
+    userId,
+    filter: {
+      period: [
+        dayjs(period[0])
+          .toDate()
+          .getTime(),
+        dayjs(period[1])
+          .toDate()
+          .getTime()
+      ]
+    }
+  });
 
   const tasksResults = useMemo(() => {
     const completed = tasks[tasks.length - 1]?.CARDS.length ?? 0;

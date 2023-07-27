@@ -6,15 +6,30 @@ import { Box, Stack, Typography, useMediaQuery, useTheme, Theme } from '@mui/mat
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import ChartSkeleton from './chart-skeleton';
 import { ColorMode } from '@gsbelarus/util-api-types';
+import { DateRange } from '@mui/x-date-pickers-pro';
+import dayjs, { Dayjs } from 'dayjs';
 
-/* eslint-disable-next-line */
-export interface ChartDonutProps {}
+export interface ChartDonutProps {
+  period: DateRange<Dayjs>
+}
 
-export function ChartDonut(props: ChartDonutProps) {
+export function ChartDonut({ period }: ChartDonutProps) {
   const theme = useTheme();
   const matchUpLg = useMediaQuery(theme.breakpoints.up('lg'));
 
-  const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({ userId: -1 });
+  const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({
+    userId: -1,
+    filter: {
+      period: [
+        dayjs(period[0])
+          .toDate()
+          .getTime(),
+        dayjs(period[1])
+          .toDate()
+          .getTime()
+      ]
+    }
+  });
 
   const series = stages?.map(stage => stage.CARDS?.length || 0) || [];
 

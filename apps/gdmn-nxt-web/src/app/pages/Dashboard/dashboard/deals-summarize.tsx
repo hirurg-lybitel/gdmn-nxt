@@ -6,11 +6,29 @@ import CircularIndeterminate from '../../../components/helpers/circular-indeterm
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
 import { ColorMode } from '@gsbelarus/util-api-types';
+import { DateRange } from '@mui/x-date-pickers-pro';
+import dayjs, { Dayjs } from 'dayjs';
 
-export const DealsSummarize = () => {
+interface DealsSummarizeProps {
+  period: DateRange<Dayjs>
+}
+export const DealsSummarize = ({ period }: DealsSummarizeProps) => {
   const theme = useTheme();
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
-  const { data: deals, isFetching } = useGetKanbanDealsQuery({ userId });
+
+  const { data: deals, isFetching } = useGetKanbanDealsQuery({
+    userId,
+    filter: {
+      period: [
+        dayjs(period[0])
+          .toDate()
+          .getTime(),
+        dayjs(period[1])
+          .toDate()
+          .getTime()
+      ]
+    }
+  });
   return (
     <CustomizedCard style={{ flex: 1, height: '10em', padding: '16px 16px 0 16px' }} boxShadows={theme.palette.mode === ColorMode.Light}>
       {isFetching

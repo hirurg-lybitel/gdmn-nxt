@@ -124,6 +124,7 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.4.0",
     "cypress": "^8.3.0",
+    "dayjs": "^1.11.9",
     "eslint": "8.15.0",
     "eslint-config-prettier": "8.1.0",
     "eslint-plugin-cypress": "^2.10.3",

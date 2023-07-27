@@ -1,4 +1,4 @@
-import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Button, ClickAwayListener, Grid, Popper, TextField, ToggleButton, ToggleButtonGroup, Tooltip, useTheme } from '@mui/material';
 import ChartColumn from '../../../components/Charts/chart-column/chart-column';
 import ChartDonut from '../../../components/Charts/chart-donut/chart-donut';
 import EarningCard from '../../../components/Charts/earning-card/earning-card';
@@ -9,11 +9,65 @@ import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { useSelector } from 'react-redux';
 import { DealsSummarize } from './deals-summarize';
 import { TasksSummarize } from './tasks-summarize';
+import { Fragment, KeyboardEvent, MouseEvent, useRef, useState } from 'react';
+import { DateRange, DateRangePicker, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
+import dayjs, { Dayjs } from 'dayjs';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
 
 export function Dashboard(props: DashboardProps) {
+  const theme = useTheme();
+
+  const [periodType, setPeriodType] = useState('1');
+  const [openDateRange, setOpenDateRange] = useState(true);
+  const [period, setPeriod] = useState<DateRange<Dayjs>>([dayjs().add(-1, 'week'), dayjs()]);
+
+  const handleChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newAlignment: string,
+  ) => {
+    if (!newAlignment) return;
+    setPeriodType(newAlignment);
+    if (newAlignment === '5') {
+      setOpenDateRange(true);
+    };
+
+    const newPeriod: DateRange<Dayjs> = (() => {
+      switch (newAlignment) {
+        case '1':
+          return [dayjs(), dayjs()];
+        case '2':
+          return [dayjs().add(-1, 'day'), dayjs().add(-1, 'day')];
+        case '3':
+          return [dayjs().add(-1, 'week'), dayjs()];
+        case '4':
+          return [dayjs().add(-1, 'month'), dayjs()];
+        default:
+          return [dayjs(), dayjs()];
+      }
+    })();
+
+    setPeriod(newPeriod);
+  };
+
+  const periodButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeDateRangeCardByKey = (e: KeyboardEvent<HTMLDivElement | HTMLButtonElement>) => {
+    if (e.code !== 'Escape') return;
+    setOpenDateRange(false);
+  };
+
+  const closeDateRangeCardByMouse = (e: any) => {
+    setOpenDateRange(false);
+  };
+
+  const dateRangePickerChange = (newValue: DateRange<dayjs.Dayjs>) => {
+    if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
+    setPeriod(newValue);
+  };
+
   return (
     <Grid
       container
@@ -27,21 +81,78 @@ export function Dashboard(props: DashboardProps) {
         item
         justifyContent="center"
       >
-        <ToggleButtonGroup
-          color="primary"
-          // value={alignment}
-          exclusive
-          // onChange={handleChange}
+        <CustomizedCard
+          boxShadows={theme.palette.mode === ColorMode.Light}
+          style={{ borderRadius: '4px' }}
         >
-          <ToggleButton value="web">Сегодня</ToggleButton>
-          <ToggleButton value="android">Вчера</ToggleButton>
-          <ToggleButton value="ios">Неделя</ToggleButton>
-          <ToggleButton value="ios">Месяц</ToggleButton>
-          <ToggleButton value="ios">Период</ToggleButton>
-        </ToggleButtonGroup>
+          <ToggleButtonGroup
+            style={{
+              borderRadius: '12px',
+              height: '50px',
+            }}
+            color="primary"
+            value={periodType}
+            exclusive
+            onChange={handleChange}
+          >
+            <ToggleButton value="1">Сегодня</ToggleButton>
+            <ToggleButton value="2">Вчера</ToggleButton>
+            <ToggleButton value="3">Неделя</ToggleButton>
+            <ToggleButton value="4">Месяц</ToggleButton>
+            <ToggleButton
+              value="5"
+              ref={periodButtonRef}
+              onKeyDown={closeDateRangeCardByKey}
+            >
+              {periodType === '5' ?
+                <div>
+                  <TextField
+                    variant="standard"
+                    style={{ height: '26px', width: '180px' }}
+                    value={`${dayjs(period[0])?.toDate().toLocaleDateString()} - ${dayjs(period[1])?.toDate().toLocaleDateString()}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenDateRange(true);
+                    }}
+                    // onChange={(e) => {
+                    //   const value = e.target.value ?? '';
+                    //   // value.split(' - ')
+
+                    //   console.log('onChange', value.split(' - ')[0], dayjs(value.split(' - ')[0], 'DD.MM.YYYY').isValid());
+                    // }}
+                  />
+                  <ClickAwayListener
+                    onClickAway={closeDateRangeCardByMouse}
+                  >
+                    <Popper
+                      open={openDateRange}
+                      anchorEl={periodButtonRef.current}
+                      onKeyDown={closeDateRangeCardByKey}
+                    >
+                      <CustomizedCard borders>
+                        <StaticDateRangePicker
+                          displayStaticWrapperAs="desktop"
+                          value={period}
+                          onChange={dateRangePickerChange}
+                          renderInput={(startProps, endProps) => (
+                            <Fragment>
+                              <TextField {...startProps} />
+                              <Box sx={{ mx: 2 }}> to </Box>
+                              <TextField {...endProps} />
+                            </Fragment>
+                          )}
+                        />
+                      </CustomizedCard>
+                    </Popper>
+                  </ClickAwayListener>
+                </div>
+                : 'Период'}
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </CustomizedCard>
       </Grid>
       <Grid container item>
-        <DealsSummarize />
+        <DealsSummarize period={period} />
       </Grid>
       <Grid
         container
@@ -57,7 +168,7 @@ export function Dashboard(props: DashboardProps) {
           xs={12}
           lg={5}
         >
-          <TasksSummarize />
+          <TasksSummarize period={period} />
         </Grid>
         <Grid
           container
@@ -65,7 +176,7 @@ export function Dashboard(props: DashboardProps) {
           xs={12}
           lg={7}
         >
-          <ChartDonut />
+          <ChartDonut period={period} />
         </Grid>
       </Grid>
       <Grid container item>
