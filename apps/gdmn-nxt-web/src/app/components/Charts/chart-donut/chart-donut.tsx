@@ -63,7 +63,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
         console.log('formatter', legendName, opts);
         return (
-          `<div style="display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-item: center">
+          `<div style="display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
             <div>${legendName}</div>
             <div ${seriesSum > 0 ? '' : 'hidden'} style="text-align: right; font-size: 15px">${seriesValue}</div>
           </div>`);
