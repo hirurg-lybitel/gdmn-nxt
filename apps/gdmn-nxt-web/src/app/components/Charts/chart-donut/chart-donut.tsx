@@ -61,13 +61,11 @@ export function ChartDonut({ period }: ChartDonutProps) {
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
-        console.log('formatter', legendName, opts);
         return (
           `<div style="display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
             <div>${legendName}</div>
             <div ${seriesSum > 0 ? '' : 'hidden'} style="text-align: right; font-size: 15px">${seriesValue}</div>
           </div>`);
-        // (${(seriesValue * 100 / seriesSum).toFixed(1)}%)
       },
       // itemMargin: {
       //   vertical: 10,
