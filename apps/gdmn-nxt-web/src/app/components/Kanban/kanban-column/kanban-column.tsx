@@ -226,7 +226,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   return (
     <Box
-      style={{ display: 'flex', flex: 1, height: 'calc(100vh - 255px)', }}
+      style={{ display: 'flex', flex: 1, height: 'calc(100vh - 180px)', }}
       flexDirection={'column'}
     >
       <Box
