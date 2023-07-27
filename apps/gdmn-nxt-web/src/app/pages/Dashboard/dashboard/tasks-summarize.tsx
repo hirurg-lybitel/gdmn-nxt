@@ -101,7 +101,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="Выполненные"
+          title="Выполненные задачи"
           loading={isFetching}
           quantity={tasksResults.completed}
           color="lightgreen"
@@ -114,7 +114,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="В работе"
+          title="Задачи в работе"
           loading={isFetching}
           quantity={tasksResults.inProgress}
         />
@@ -126,7 +126,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="Просроченные"
+          title="Просроченные задачи"
           loading={isFetching}
           quantity={tasksResults.overdued}
         />
