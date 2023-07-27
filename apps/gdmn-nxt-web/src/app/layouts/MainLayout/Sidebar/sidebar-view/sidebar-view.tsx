@@ -6,7 +6,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import { makeStyles } from '@mui/styles';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { IPermissionByUser } from '@gsbelarus/util-api-types';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { margin } from '@mui/system';
 import CustomizedScrollBox from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-scroll-box/customized-scroll-box';
 import { Header } from '../../Header';
@@ -39,56 +39,16 @@ export function Sidebar(props: SidebarProps) {
   const theme = useTheme();
 
   const classes = useStyles();
-
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-
-  const containerRef = useRef<HTMLElement | null>(null);
-
-  console.log('containerRef', containerRef.current?.scrollHeight, containerRef.current?.clientHeight);
-
   const drawer = (
     <>
       <BrowserView style={{ position: 'relative', flex: 1 }}>
-        <div
-          style={{
-            position: 'absolute',
-            zIndex: 10,
-            top: 0,
-            left: 0,
-            right: '15px',
-            height: '50px',
-            background: 'linear-gradient(to bottom,rgb(100, 181, 246) 0%,rgba(100,181,246,.79) 67%,rgba(27,52,70,0) 100%)'
-          }}
-          hidden
-        />
-        {/* <PerfectScrollbar
-          // onScrollCapture={(e) => console.log('onScrollCapture', e)}
-          containerRef={(ref) => (containerRef.current = ref)}
+        <CustomizedScrollBox
           className={classes.scroll}
-          style={{
-            height: matchDownMd ? '100vh' : 'calc(100vh - 70px)',
-            paddingTop: matchDownMd ? '16px' : 0,
-          }}
+          withBlur
         >
           <MenuList />
-        </PerfectScrollbar> */}
-        <CustomizedScrollBox className={classes.scroll}>
-          <MenuList />
-
         </CustomizedScrollBox>
-        <div
-          aria-label="dibdown"
-          style={{
-            position: 'absolute',
-            zIndex: 10,
-            bottom: 0,
-            left: 0,
-            right: '15px',
-            height: '50px',
-            background: 'linear-gradient(to bottom,rgba(27,52,70,0) 0%,rgba(100,181,246,.79) 33%,rgb(100, 181, 246) 100%)'
-          }}
-          hidden
-        />
       </BrowserView>
       <MobileView>
         <Box sx={{ px: 2 }}>
@@ -99,29 +59,6 @@ export function Sidebar(props: SidebarProps) {
   );
 
   const container = window !== undefined ? () => window.document.body : undefined;
-
-  // return (
-  //   <div
-  //     style={{
-  //       ...theme.menu,
-  //       width: theme.drawerWidth,
-  //       display: 'flex',
-  //       flex: 1,
-  //       paddingLeft: '16px',
-  //       height: matchDownMd ? '100vh' : 'calc(100vh - 70px)'
-  //       // padding: '0 16px'
-
-
-  //     }}
-  //     // onWheelCapture={(e) => {
-  //     //   console.log('onWheelCapture');
-  //     //   // e.preventDefault()
-  //     //   // e.stopPropagation()
-  //     // }}
-  //   >
-  //     {drawer}
-  //   </div>
-  // );
 
   return (
     <Box
@@ -135,15 +72,16 @@ export function Sidebar(props: SidebarProps) {
         onClose={onToogle}
         anchor="left"
         ModalProps={{ keepMounted: true }}
+
         sx={{
           '& .MuiDrawer-paper': {
             ...theme.menu,
             width: theme.drawerWidth,
             borderRight: 'none',
-            [theme.breakpoints.up('md')]: {
-              // top: '50px',
-              // marginTop: '25px'
-            }
+            // [theme.breakpoints.up('md')]: {
+            //   top: '50px',
+            //   marginTop: '25px'
+            // }
           }
         }}
       >
