@@ -49,16 +49,16 @@ export enum SocketRoom {
 }
 
 export enum KanbanEvent {
-  AddColumn     = 'add_column',
-  UpdateColumn  = 'update_column',
-  DeleteColumn  = 'delete_column',
-  AddCard       = 'add_card',
-  UpdateCard    = 'update_card',
-  DeleteCard    = 'delete_card',
-  ReorderCards  = 'reorder_card',
-  AddTask       = 'add_task',
-  UpdateTask    = 'update_task',
-  DeleteTask    = 'delete_task',
+  AddColumn = 'add_column',
+  UpdateColumn = 'update_column',
+  DeleteColumn = 'delete_column',
+  AddCard = 'add_card',
+  UpdateCard = 'update_card',
+  DeleteCard = 'delete_card',
+  ReorderCards = 'reorder_card',
+  AddTask = 'add_task',
+  UpdateTask = 'update_task',
+  DeleteTask = 'delete_task',
 }
 
 interface KanbanEvents {
@@ -69,7 +69,7 @@ interface KanbanEvents {
   [KanbanEvent.UpdateCard]: (columnId: number, card: Partial<IKanbanCard>) => void;
   [KanbanEvent.DeleteCard]: (columnId: number, id: number) => void;
   [KanbanEvent.ReorderCards]: (columnId: number, cards: IKanbanCard[]) => void;
-  [KanbanEvent.AddTask]: (cardId: number, task: IKanbanTask) => void;
+  [KanbanEvent.AddTask]: (cardId: number, task: IKanbanTask, fullTask: IKanbanCard) => void;
   [KanbanEvent.UpdateTask]: (cardId: number, task: Partial<IKanbanTask>) => void;
   [KanbanEvent.DeleteTask]: (id: number) => void;
 }

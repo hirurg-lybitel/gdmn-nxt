@@ -463,6 +463,34 @@ const reorderColumns: RequestHandler = async (req, res) => {
   };
 };
 
+export const findColumnIndex = (el) => {
+  if (el['USR$CLOSED']) return 5;
+  if (!el['USR$DEADLINE']) return 4;
+
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+
+  const deadline = new Date(el['USR$DEADLINE']);
+  deadline.setHours(0, 0, 0, 0);
+
+  const daysInmonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+  const diffTime = getDayDiff(deadline, currentDate);
+
+  switch (true) {
+    case diffTime < 0:
+      return 0;
+    case diffTime === 0:
+      return 1;
+    case diffTime === 1:
+      return 2;
+    case diffTime <= daysInmonth - currentDate.getDate():
+      return 3;
+    default:
+      return 4;
+  };
+};
+
 const reorderCards: RequestHandler = async (req, res) => {
   const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
@@ -662,33 +690,7 @@ const getTasks: RequestHandler = async (req, res) => {
     });
 
     rawCards.forEach(el => {
-      const columnIndex = (() => {
-        if (el['USR$CLOSED']) return 5;
-        if (!el['USR$DEADLINE']) return 4;
-
-        const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0);
-
-        const deadline = new Date(el['USR$DEADLINE']);
-        deadline.setHours(0, 0, 0, 0);
-
-        const daysInmonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-
-        const diffTime = getDayDiff(deadline, currentDate);
-
-        switch (true) {
-          case diffTime < 0:
-            return 0;
-          case diffTime === 0:
-            return 1;
-          case diffTime === 1:
-            return 2;
-          case diffTime <= daysInmonth - currentDate.getDate():
-            return 3;
-          default:
-            return 4;
-        };
-      })();
+      const columnIndex = findColumnIndex(el);
 
       const newCard: IKanbanCard = {
         ID: el['CARD_ID'],

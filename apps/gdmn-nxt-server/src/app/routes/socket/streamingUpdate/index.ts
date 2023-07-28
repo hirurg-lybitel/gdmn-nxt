@@ -55,8 +55,8 @@ export function StreamingUpdate() {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.ReorderCards, columnId, cards);
     });
 
-    socket.on(KanbanEvent.AddTask, (cardId, task) => {
-      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTask, cardId, task);
+    socket.on(KanbanEvent.AddTask, (cardId, task, fullTask) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTask, cardId, task, fullTask);
     });
 
     socket.on(KanbanEvent.UpdateTask, (cardId, task) => {
