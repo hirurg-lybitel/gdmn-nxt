@@ -33,6 +33,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
 
   const series = stages?.map(stage => stage.CARDS?.length || 0) || [];
 
+
   const colors = [
     theme.color.purple[500],
     theme.color.red.A200,
@@ -55,16 +56,27 @@ export function ChartDonut({ period }: ChartDonutProps) {
     legend: {
       offsetY: 0,
       fontSize: '18',
-      width: 220,
+      width: 260,
       fontWeight: 600,
       position: 'left',
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
+        const procentValue = (seriesValue / seriesSum) * 100;
+        const procent = () => {
+          if (seriesSum === 1) {
+            if (seriesValue === 0) return '(0.0%)    ';
+            return '(100.0%)';
+          }
+          if (procentValue < 9) {
+            return `(${procentValue.toFixed(1)}%)  `;
+          }
+          return '(' + procentValue.toFixed(1) + '%)';
+        };
         return (
-          `<div style="display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
+          `<div style=" position:relavite;display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
             <div>${legendName}</div>
-            <div ${seriesSum > 0 ? '' : 'hidden'} style="text-align: right; font-size: 15px">${seriesValue}</div>
+            <div ${seriesSum > 0 ? '' : 'hidden'} style="white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${procent()}</span></div>
           </div>`);
       },
       // itemMargin: {
