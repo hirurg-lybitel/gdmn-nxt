@@ -7229,6 +7229,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dayjs@npm:^1.11.9":
+  version: 1.11.9
+  resolution: "dayjs@npm:1.11.9"
+  checksum: a4844d83dc87f921348bb9b1b93af851c51e6f71fa259604809cfe1b49d1230e6b0212dab44d1cb01994c096ad3a77ea1cf18fa55154da6efcc9d3610526ac38
+  languageName: node
+  linkType: hard
+
 "dayjs@npm:~1.8.24":
   version: 1.8.36
   resolution: "dayjs@npm:1.8.36"
@@ -9173,6 +9180,7 @@ __metadata:
     cypress: ^8.3.0
     dagre: ^0.8.5
     date-fns: ^2.28.0
+    dayjs: ^1.11.9
     dotenv: ^10.0.0
     dotenv-cli: ^7.2.1
     eslint: 8.15.0

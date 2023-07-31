@@ -6,7 +6,7 @@ import { Autocomplete, Box, Checkbox, createFilterOptions, Grid, MenuItem, Stack
 import { useEffect, useRef, useState } from 'react';
 import { IChartFilter, useGetSumByPeriodQuery } from '../../../features/charts/chartDataApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import { IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
+import { ColorMode, IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import LinearIndeterminate from '../../linear-indeterminate/linear-indeterminate';
@@ -261,16 +261,16 @@ export function ChartColumn(props: ChartColumnProps) {
   return (
     <CustomizedCard
       borders
-      boxShadows
+      boxShadows={theme.palette.mode === ColorMode.Light}
       ref={ref2}
       sx={(theme: any) => ({
         flex: 1,
         display: 'flex',
-        [theme.breakpoints.down('xl')]: {
-          minHeight: 'calc(100vh - 130px)',
-        },
-        [theme.breakpoints.up('xl')]: {
+        [theme.breakpoints.down('lg')]: {
           minHeight: 'calc(100vh - 300px)',
+        },
+        [theme.breakpoints.up('lg')]: {
+          minHeight: 'calc(100vh - 130px)',
         },
         maxHeight: 'calc(100vh - 130px)',
       })}

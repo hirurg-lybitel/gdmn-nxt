@@ -67,6 +67,10 @@ export interface IDealsQueryOptions {
   filter?: IFilteringData;
 };
 
+export interface ITasksQueryOptions extends IFilteringData {
+  userId?: number;
+};
+
 const socketClient = setSocketClient('streamingUpdate', {
   url: `http://${config.host}:${config.streamingUpdatePort}`,
   userId: -1
@@ -613,7 +617,7 @@ export const kanbanApi = createApi({
       }
 
     }),
-    getKanbanTasks: builder.query<IKanbanColumn[], IDealsQueryOptions | void>({
+    getKanbanTasks: builder.query<IKanbanColumn[], ITasksQueryOptions | void>({
       query(options) {
         const params: string[] = [];
 

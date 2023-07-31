@@ -14,7 +14,7 @@ interface IMapOfObjects {
 };
 
 const get: RequestHandler = async (req, res) => {
-  const { attachment, transaction, fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
+  const { fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema: IDataSchema = {
@@ -39,8 +39,6 @@ const get: RequestHandler = async (req, res) => {
 
 
     const execQuery = async ({ name, query }) => {
-      // const rs = await attachment.executeQuery(transaction, query);
-
       try {
         const data = await fetchAsObject(query);
         const sch = _schema[name];
@@ -65,7 +63,9 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber, dealNumber, performers } = req.query;
+    const { departments, customers, requestNumber, dealNumber, performers, period } = req.query;
+
+    const periods = period ? (period as string)?.split(',') : [];
 
     const checkFullView = `
       EXISTS(
@@ -160,7 +160,8 @@ const get: RequestHandler = async (req, res) => {
         ${customers ? `AND con.ID IN (${customers})` : ''}
         ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
         ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
-        ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}`;
+        ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}
+        ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
     const queries = [
       {
@@ -585,10 +586,14 @@ const getTasks: RequestHandler = async (req, res) => {
     };
 
     const userId = parseInt(req.query.userId as string);
-    const { taskNumber, performers } = req.query;
+    const { taskNumber, performers, period } = req.query;
+
+    const periods = period ? (period as string)?.split(',') : [];
+
     const filter = `
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
-      ${performers ? ` AND performer.ID IN (${performers}) ` : ''}`;
+      ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
+      ${periods.length === 2 ? ` AND CAST(task.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
 
     const checkFullView = `
