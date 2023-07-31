@@ -142,8 +142,11 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           <Typography
             variant="caption"
             color={colorModeIsLight ? 'GrayText' : 'lightgray'}
-            style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date() ? { color: 'red', margin: 0 } :
-              new Date(card.TASK?.USR$DEADLINE).getDay() === new Date().getDay() ? { color: 'orange', margin: 0 } : { margin: 0 })}
+            style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
+              ? { color: 'red', margin: 0 }
+              : new Date(card.TASK?.USR$DEADLINE).getDay() === new Date().getDay()
+                ? { color: 'orange', margin: 0 }
+                : { margin: 0 })}
           >
             {card.TASK?.USR$DEADLINE
               ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
@@ -163,7 +166,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             alignItems="center"
             spacing={0.5}
             ml={-0.2}
-            style={{ margin: 0 }}
+            style={{ marginTop: 4 }}
           >
             <AccountCircleIcon color="primary" fontSize="small" />
             <Typography variant="h2">
@@ -187,7 +190,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               }
             </Typography>
           </Stack>}
-          <Typography style={{ margin: 0 }} variant="body1">{card.DEAL?.USR$NAME}</Typography>
+          <Typography style={{ marginTop: 4 }} variant="h2">{card.DEAL?.USR$NAME}</Typography>
         </Stack>
       </CustomizedCard>
       <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>
