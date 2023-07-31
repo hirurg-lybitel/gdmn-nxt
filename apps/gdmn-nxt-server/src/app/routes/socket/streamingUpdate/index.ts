@@ -55,8 +55,8 @@ export function StreamingUpdate() {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.ReorderCards, columnId, cards);
     });
 
-    socket.on(KanbanEvent.AddTask, (cardId, task, fullTask) => {
-      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTask, cardId, task, fullTask);
+    socket.on(KanbanEvent.AddTask, (cardId, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTask, cardId, task);
     });
 
     socket.on(KanbanEvent.UpdateTask, (cardId, task) => {
@@ -65,6 +65,16 @@ export function StreamingUpdate() {
 
     socket.on(KanbanEvent.DeleteTask, (taskId) => {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.DeleteTask, taskId);
+    });
+
+    socket.on(KanbanEvent.AddTaskCard, (columnIndex, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTaskCard, columnIndex, task);
+    });
+    socket.on(KanbanEvent.UpdateTaskCard, (columnIndex, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.UpdateTaskCard, columnIndex, task);
+    });
+    socket.on(KanbanEvent.DeleteTaskCard, (taskId) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.DeleteTaskCard, taskId);
     });
   });
 };

@@ -59,6 +59,9 @@ export enum KanbanEvent {
   AddTask = 'add_task',
   UpdateTask = 'update_task',
   DeleteTask = 'delete_task',
+  AddTaskCard = 'add_task_card',
+  UpdateTaskCard = 'update_task_card',
+  DeleteTaskCard = 'delete_task_card',
 }
 
 interface KanbanEvents {
@@ -69,7 +72,10 @@ interface KanbanEvents {
   [KanbanEvent.UpdateCard]: (columnId: number, card: Partial<IKanbanCard>) => void;
   [KanbanEvent.DeleteCard]: (columnId: number, id: number) => void;
   [KanbanEvent.ReorderCards]: (columnId: number, cards: IKanbanCard[]) => void;
-  [KanbanEvent.AddTask]: (cardId: number, task: IKanbanTask, fullTask: IKanbanCard) => void;
-  [KanbanEvent.UpdateTask]: (cardId: number, task: Partial<IKanbanTask>) => void;
+  [KanbanEvent.AddTask]: (cardId: number, task: IKanbanTask) => void;
+  [KanbanEvent.UpdateTask]: (cardId: number, task: IKanbanTask) => void;
   [KanbanEvent.DeleteTask]: (id: number) => void;
+  [KanbanEvent.AddTaskCard]: (columnIndex: number, task: IKanbanTask) => void;
+  [KanbanEvent.UpdateTaskCard]: (columnIndex: number, taskCard: IKanbanTask) => void;
+  [KanbanEvent.DeleteTaskCard]: (id: number) => void;
 }

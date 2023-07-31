@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import styles from './kanban-tasks-card.module.less';
 import { ColorMode, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
@@ -7,9 +7,7 @@ import { RootState } from '../../../store';
 import { Box, Icon, Stack, Typography } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import { IChanges } from '../../../pages/Managment/deals/deals';
-import { UserState } from '../../../features/user/userSlice';
+import { useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import useTruncate from '../../helpers/hooks/useTruncate';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';

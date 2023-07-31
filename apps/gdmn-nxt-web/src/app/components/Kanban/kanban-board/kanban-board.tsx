@@ -10,7 +10,6 @@ import { IKanbanCard, IKanbanColumn, IKanbanTask, IPermissionByUser } from '@gsb
 import {
   useAddCardMutation,
   useAddColumnMutation,
-  useAddHistoryMutation,
   useAddTaskMutation,
   useDeleteCardMutation,
   useDeleteColumnMutation,
@@ -107,7 +106,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
       });
     },
     handleDeleteCard: async (deletingCard: IKanbanCard) => {
-      deleteCard(deletingCard.ID);
+      deleteCard(deletingCard);
     },
     handleAddCard: async (newCard: IKanbanCard) => {
       addingCard.current = newCard;

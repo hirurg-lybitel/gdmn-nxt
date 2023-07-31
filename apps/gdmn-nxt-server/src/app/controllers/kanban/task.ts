@@ -5,7 +5,6 @@ import { resultError } from '../../responseMessages';
 import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
 import { genId } from '../../utils/genId';
 import { addHistory } from './history';
-import { findColumnIndex } from './kanban';
 
 const get: RequestHandler = async (req, res) => {
   const cardId = parseInt(req.params.cardId);
@@ -129,7 +128,7 @@ const upsert: RequestHandler = async (req, res) => {
 
   if (isNaN(cardId)) return res.status(422).send(resultError('Не указано поле "cardId"'));
 
-  const { fetchAsObject, attachment, transaction, executeSingletonAsObject, fetchAsSingletonObject, releaseTransaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, executeSingletonAsObject, fetchAsSingletonObject, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
@@ -228,6 +227,7 @@ const upsert: RequestHandler = async (req, res) => {
       )
       RETURNS(
         ID INTEGER,
+        USR$NUMBER TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$NUMBER,
         USR$CARDKEY INTEGER
       )
       AS
@@ -249,8 +249,8 @@ const upsert: RequestHandler = async (req, res) => {
         (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER, USR$INPROGRESS)
         VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER, :INPROGRESS)
         MATCHING(ID)
-        RETURNING ID, USR$CARDKEY
-        INTO :ID, :USR$CARDKEY;
+        RETURNING ID, USR$NUMBER, USR$CARDKEY
+        INTO :ID, :USR$NUMBER, :USR$CARDKEY;
 
         SUSPEND;
       END`;
@@ -297,106 +297,8 @@ const upsert: RequestHandler = async (req, res) => {
 
     await executeSingletonAsObject(sql, [task.ID, userId]);
 
-    const findNewCard = async () => {
-      const query =
-        `SELECT
-          task.ID,
-          task.ID as TASK_ID,
-          card.ID as CARD_ID,
-          deal.ID as DEAL_ID,
-          deal.USR$CONTACTKEY CONTACT_ID,
-          deal.USR$NAME as DEAL_NAME,
-          deal.USR$CONTACT_NAME REQUEST_CONTACT_NAME,
-          task.USR$NUMBER,
-          task.USR$DEADLINE,
-          task.USR$DATECLOSE,
-          task.USR$INPROGRESS,
-          task.USR$PERFORMER PERFORMER_ID,
-          task.USR$NAME as TASK_NAME,
-          task.USR$CLOSED,
-          task.USR$TASKTYPEKEY AS TYPE_ID,
-          tt.USR$NAME AS TYPE_NAME,
-          creator.ID AS CREATOR_ID,
-          creator.NAME AS CREATOR_NAME,
-          con.NAME as CONTACT_NAME,
-          performer.NAME AS PERFORMER_NAME
-        FROM USR$CRM_KANBAN_CARD_TASKS task
-        JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
-        JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
-        JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
-        LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
-        LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
-        LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
-        WHERE task.ID = ${taskRecord.ID}`;
-
-      const el = await executeSingletonAsObject(query);
-
-      const columnsSql = `SELECT col.ID, col.USR$INDEX, col.USR$NAME
-    FROM USR$CRM_KANBAN_TEMPLATE temp
-      JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
-      JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
-      WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 358029675 AND DBID = 1972632332 ROWS 1)
-    ORDER BY col.USR$INDEX `;
-
-      const columns = await fetchAsObject(columnsSql);
-      const columnsIDs: {[key: string]: any} = {};
-      columns.forEach(el => {
-        columnsIDs[el['USR$INDEX']] = el['ID'];
-      });
-
-      const newTask = {
-        ID: el['TASK_ID'],
-        USR$NAME: el['TASK_NAME'],
-        USR$NUMBER: el['USR$NUMBER'],
-        USR$INPROGRESS: el['USR$INPROGRESS'],
-        USR$DEADLINE: el['USR$DEADLINE'],
-        USR$DATECLOSE: el['USR$DATECLOSE'],
-        USR$CARDKEY: el['CARD_ID'],
-        ...(el['CREATOR_ID'] && {
-          CREATOR: {
-            ID: el['CREATOR_ID'],
-            NAME: el['CREATOR_NAME'],
-          },
-        }),
-        ...(el['PERFORMER_ID'] && {
-          PERFORMER: {
-            ID: el['PERFORMER_ID'],
-            NAME: el['PERFORMER_NAME'],
-          },
-        }),
-        ...(el['TYPE_ID'] && {
-          TASKTYPE: {
-            ID: el['TYPE_ID'],
-            NAME: el['TYPE_NAME'],
-          },
-        }),
-        USR$CLOSED: el['USR$CLOSED'],
-      };
-
-      return {
-        ID: el['CARD_ID'],
-        USR$INDEX: el['USR$INDEX'],
-        USR$MASTERKEY: columnsIDs[findColumnIndex(newTask)],
-        TASK: newTask,
-        DEAL: {
-          ID: el['DEAL_ID'],
-          ...(el['CONTACT_ID'] && {
-            CONTACT: {
-              ID: el['CONTACT_ID'],
-              NAME: el['CONTACT_NAME'],
-            },
-          }),
-          CONTACT_NAME: el['REQUEST_CONTACT_NAME'],
-          USR$NAME: el['DEAL_NAME']
-        },
-        STATUS: el['USR$ISREAD'] === 1
-      };
-    };
-
-    const newCard = await findNewCard();
-
     const result: IRequestResult = {
-      queries: { tasks: [taskRecord, newCard] },
+      queries: { tasks: [taskRecord] },
       _schema
     };
 
