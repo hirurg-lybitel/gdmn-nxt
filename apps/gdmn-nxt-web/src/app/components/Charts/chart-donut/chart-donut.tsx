@@ -62,21 +62,21 @@ export function ChartDonut({ period }: ChartDonutProps) {
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
-        const procentValue = (seriesValue / seriesSum) * 100;
-        const procent = () => {
+        const percentValue = (seriesValue / seriesSum) * 100;
+        const percentString = (() => {
           if (seriesSum === 1) {
             if (seriesValue === 0) return '(0.0%)    ';
             return '(100.0%)';
           }
-          if (procentValue < 9) {
-            return `(${procentValue.toFixed(1)}%)  `;
+          if (percentValue < 9) {
+            return `(${percentValue.toFixed(1)}%)  `;
           }
-          return '(' + procentValue.toFixed(1) + '%)';
-        };
+          return '(' + percentValue.toFixed(1) + '%)';
+        })();
         return (
           `<div style=" position:relavite;display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
             <div>${legendName}</div>
-            <div ${seriesSum > 0 ? '' : 'hidden'} style="white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${procent()}</span></div>
+            <div ${seriesSum > 0 ? '' : 'hidden'} style="white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${percentString}</span></div>
           </div>`);
       },
       // itemMargin: {
@@ -113,7 +113,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
             show: true,
             name: {
               show: true,
-              fontSize: '2em'
+              fontSize: matchUpLg ? '0.85em' : '2em'
             },
             value: {
               show: true,
