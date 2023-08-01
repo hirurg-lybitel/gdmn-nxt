@@ -135,7 +135,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const refComment = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
-    refComment && refComment.current && refComment.current.scrollIntoView({ behavior: 'smooth' });
+    refComment?.current && refComment.current.scrollIntoView({ behavior: 'smooth' });
   }, [refComment.current]);
 
   useEffect(() => {
@@ -699,7 +699,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                   label="В работе"
                                 />
                                 : <></>}
-                              {(formik.values.USR$MASTERKEY === stages[2]?.ID || formik.values.USR$MASTERKEY === stages[3]?.ID)
+                              {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
+                                formik.values.USR$MASTERKEY === stages[3]?.ID ||
+                                formik.values.DEAL?.USR$DONE)
                                 ? <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
                                   <FormControlLabel
                                     disabled={checkDoneAndTasks}
@@ -744,6 +746,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                         })();
                                         formik.setFieldValue('USR$MASTERKEY', newMasterKey);
                                         if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
+                                        if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
                                       }}
                                     />
                                   }
@@ -758,43 +761,23 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           {formik.values.DEAL?.DENIED &&
                             <Stack flex={1} spacing={3}>
                               <DenyReasonsSelect formik={formik} />
-                              <TextField
-                                label="Комментарий"
-                                ref={refComment}
-                                type="text"
-                                name="COMMENT"
-                                multiline
-                                minRows={4}
-                                // onChange={formik.handleChange}
-                                onChange={(e) => {
-                                  formik.setFieldValue('DEAL.COMMENT', e.target.value);
-                                }}
-                                value={formik.values.DEAL.COMMENT}
-                                // helperText={formik.errors.USR$DESCRIPTION}
-                              />
                             </Stack>}
-
                         </Stack>
-
-                        {/* <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={formik.values.DEAL?.DENIED}
-                              onChange={(e) => {
-                                const value = e.target.checked;
-                                formik.setFieldValue(
-                                  'DEAL',
-                                  { ...formik.values.DEAL, DENIED: value }
-                                );
-                                formik.setFieldValue(
-                                  'USR$MASTERKEY',
-                                  value ? stages[4].ID : stages[4].ID
-                                );
-                              }}
-                            />
-                          }
-                          label="Отказ"
-                        /> */}
+                        {(formik.values.DEAL?.DENIED || formik.values.DEAL?.USR$DONE) &&
+                          <TextField
+                            label="Комментарий"
+                            ref={refComment}
+                            type="text"
+                            name="COMMENT"
+                            multiline
+                            minRows={4}
+                            // onChange={formik.handleChange}
+                            onChange={(e) => {
+                              formik.setFieldValue('DEAL.COMMENT', e.target.value);
+                            }}
+                            value={formik.values.DEAL?.COMMENT}
+                          />
+                        }
                       </Stack>
                     </CustomizedScrollBox>
                   </TabPanel>

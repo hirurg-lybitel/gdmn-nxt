@@ -1,6 +1,6 @@
 import { Autocomplete, Box, Button, Checkbox, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Slide, Stack, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useState } from 'react';
+import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
@@ -76,6 +76,12 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   const { data: deals = [], isLoading: dealsIsLoading } = useGetKanbanDealsQuery({ userId: -1 });
   const { data: taskTypes = [], isFetching: taskTypesFetching } = useGetTaskTypesQuery();
 
+  const refComment = useRef<null | HTMLDivElement>(null);
+
+  useEffect(() => {
+    refComment?.current && refComment.current.scrollIntoView({ behavior: 'smooth' });
+  }, [refComment.current]);
+
   useEffect(() => {
     if (dealsIsLoading) return;
     setCards(deals.map(d => d.CARDS)?.flat());
@@ -101,7 +107,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         ID: -1,
         NAME: ''
       },
-    USR$INPROGRESS: task?.USR$INPROGRESS || false
+    USR$INPROGRESS: task?.USR$INPROGRESS || false,
+    DESCRIPTION: task?.DESCRIPTION ?? ''
   };
 
   const formik = useFormik<IKanbanTask>({
@@ -458,12 +465,29 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         <Checkbox
                           name="USR$CLOSED"
                           checked={!!formik.values.USR$CLOSED}
-                          onChange={formik.handleChange}
+                          // onChange={formik.handleChange}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            formik.setFieldValue('USR$CLOSED', checked);
+                            if (checked) formik.setFieldValue('USR$INPROGRESS', false);
+                          }}
                         />
                       }
                       label="Выполнена"
                     />
                   </Stack>
+                  {formik.values.USR$CLOSED &&
+                    <TextField
+                      label="Комментарий"
+                      ref={refComment}
+                      type="text"
+                      name="DESCRIPTION"
+                      multiline
+                      minRows={4}
+                      onChange={formik.handleChange}
+                      value={formik.values.DESCRIPTION}
+                    />
+                  }
                 </Stack>
               </Form>
             </FormikProvider>

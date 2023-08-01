@@ -619,6 +619,7 @@ const getTasks: RequestHandler = async (req, res) => {
             task.USR$NAME as TASK_NAME,
             task.USR$CLOSED,
             task.USR$TASKTYPEKEY AS TYPE_ID,
+            task.USR$DESCRIPTION DESCRIPTION,
             tt.USR$NAME AS TYPE_NAME,
             creator.ID AS CREATOR_ID,
             creator.NAME AS CREATOR_NAME,
@@ -726,6 +727,7 @@ const getTasks: RequestHandler = async (req, res) => {
             },
           }),
           USR$CLOSED: el['USR$CLOSED'],
+          DESCRIPTION: el['DESCRIPTION']
         },
         DEAL: {
           ID: el['DEAL_ID'],
