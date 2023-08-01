@@ -11,10 +11,11 @@ interface IScrollBlurs {
 export interface CustomizedScrollBoxProps extends ScrollBarProps {
   children: ReactNode;
   withBlur?: boolean;
+  backgroundColor?: string;
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
-  const { children, withBlur = false, ...style } = props;
+  const { children, withBlur = false, backgroundColor = 'rgba(0, 0, 0, 0)', ...style } = props;
 
   const theme = useTheme();
   const containerRef = useRef<HTMLElement | null>(null);
@@ -46,7 +47,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
         className={styles.scrollerTop}
         style={{
           /** There is no way to pass system color to less file */
-          background: `linear-gradient(to bottom,${theme.menu?.backgroundColor} 0% 20%, rgba(0,0,0,0) 100%)`
+          background: `linear-gradient(to bottom,${backgroundColor} 0% 20%, rgba(0,0,0,0) 100%)`
         }}
         hidden={!showScrollBlurs.top}
       />
@@ -65,7 +66,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
         aria-label="scroller-bottom"
         className={styles.scrollerBottom}
         style={{
-          background: `linear-gradient(to bottom,rgba(0,0,0,0) 0%, ${theme.menu?.backgroundColor} 70% 100%)`
+          background: `linear-gradient(to bottom, rgba(0,0,0,0) 0%, ${backgroundColor} 70% 100%)`
         }}
         hidden={!showScrollBlurs.bottom}
       />

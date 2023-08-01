@@ -11,6 +11,10 @@ import { Fragment, KeyboardEvent, useRef, useState } from 'react';
 import { DateRange, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from 'dayjs';
 import { ColorMode } from '@gsbelarus/util-api-types';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
+const dateFormat = 'DD.MM.YYYY';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
@@ -62,7 +66,7 @@ export function Dashboard(props: DashboardProps) {
   };
 
   const dateRangePickerChange = (newValue: DateRange<dayjs.Dayjs>) => {
-    if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
+    if (!dayjs(newValue[0], dateFormat)?.isValid() || !dayjs(newValue[1], dateFormat)?.isValid()) return;
     setPeriod(newValue);
   };
 
@@ -107,17 +111,17 @@ export function Dashboard(props: DashboardProps) {
                   <TextField
                     variant="standard"
                     style={{ height: '26px', width: '180px' }}
-                    value={`${dayjs(period[0])?.toDate().toLocaleDateString()} - ${dayjs(period[1])?.toDate().toLocaleDateString()}`}
+                    value={`${dayjs(period[0], dateFormat)?.toDate().toLocaleDateString()} - ${dayjs(period[1], dateFormat)?.toDate().toLocaleDateString()}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setOpenDateRange(true);
                     }}
-                    // onChange={(e) => {
-                    //   const value = e.target.value ?? '';
-                    //   // value.split(' - ')
+                    onChange={(e) => {
+                      const period = e.target.value.split(' - ');
 
-                    //   console.log('onChange', value.split(' - ')[0], dayjs(value.split(' - ')[0], 'DD.MM.YYYY').isValid());
-                    // }}
+                      if (!dayjs(period[0], dateFormat)?.isValid() || !dayjs(period[1], dateFormat)?.isValid()) return;
+                      setPeriod([dayjs(period[0], dateFormat), dayjs(period[1], dateFormat)]);
+                    }}
                   />
                   <ClickAwayListener
                     onClickAway={closeDateRangeCardByMouse}
