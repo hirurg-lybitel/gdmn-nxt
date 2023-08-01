@@ -46,6 +46,7 @@ export function Sidebar(props: SidebarProps) {
         <CustomizedScrollBox
           className={classes.scroll}
           withBlur
+          backgroundColor={theme.menu?.backgroundColor}
         >
           <MenuList />
         </CustomizedScrollBox>
