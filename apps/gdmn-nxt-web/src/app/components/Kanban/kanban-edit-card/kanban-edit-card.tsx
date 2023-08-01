@@ -106,12 +106,13 @@ export interface KanbanEditCardProps {
   currentStage?: IKanbanColumn;
   card?: IKanbanCard;
   stages: IKanbanColumn[];
+  deleteable?: boolean;
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: (isFetching?: boolean) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
-  const { open, currentStage, card, stages } = props;
+  const { open, currentStage, card, stages, deleteable = true } = props;
   const { onSubmit, onCancelClick } = props;
 
   const classes = useStyles();
@@ -836,7 +837,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
         <PermissionsGate actionAllowed={userPermissions?.deals.DELETE}>
-          {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) &&
+          {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) && deleteable &&
             <IconButton onClick={handleDeleteClick} size="small">
               <DeleteIcon />
             </IconButton>
