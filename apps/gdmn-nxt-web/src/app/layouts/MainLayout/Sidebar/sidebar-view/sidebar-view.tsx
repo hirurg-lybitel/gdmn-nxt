@@ -1,5 +1,5 @@
 import { BrowserView, MobileView } from 'react-device-detect';
-import { Box, Drawer, Toolbar, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Drawer, IconButton, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import styles from './sidebar-view.module.less';
 import MenuList from '../menu-list/menu-list';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -10,12 +10,13 @@ import { useRef, useState } from 'react';
 import { margin } from '@mui/system';
 import CustomizedScrollBox from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-scroll-box/customized-scroll-box';
 import { Header } from '../../Header';
+import MenuIcon from '@mui/icons-material/Menu';
 
 /* eslint-disable-next-line */
 export interface SidebarProps {
   open: boolean;
   onToogle: () => void;
-  window?: any;
+  windowProp?: any;
 }
 
 const useStyles = makeStyles(() => ({
@@ -35,7 +36,7 @@ const useStyles = makeStyles(() => ({
 
 
 export function Sidebar(props: SidebarProps) {
-  const { open, onToogle, window } = props;
+  const { open, onToogle, windowProp } = props;
   const theme = useTheme();
 
   const classes = useStyles();
@@ -59,15 +60,26 @@ export function Sidebar(props: SidebarProps) {
     </>
   );
 
-  const container = window !== undefined ? () => window.document.body : undefined;
-
+  const container = windowProp !== undefined ? () => windowProp.document.body : undefined;
   return (
     <Box
       component="nav"
       sx={{ flexShrink: { md: 0 }, width: theme.drawerWidth }}
     >
+      <IconButton
+        style={{ marginLeft: '5px', marginTop: '5px' }}
+        size="large"
+        edge="start"
+        color="secondary"
+        aria-label="menu"
+        sx={{ mr: 2 }}
+        // onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
+        onClick={onToogle}
+      >
+        <MenuIcon />
+      </IconButton>
       <Drawer
-        open={open}
+        open={window.innerWidth < 900 ? open : true}
         container={container}
         variant={matchDownMd ? 'temporary' : 'persistent'}
         onClose={onToogle}
