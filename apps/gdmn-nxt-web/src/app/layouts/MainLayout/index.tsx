@@ -95,6 +95,14 @@ export const MainLayout = (props: MainLayoutProps) => {
     setOpenSnackBar(false);
   };
 
+  const [isModal, setIsModal] = useState<boolean>(!(window.innerWidth < 900));
+
+  const resize = () => {
+    setIsModal(!(window.innerWidth < 900));
+  };
+
+  window.addEventListener('resize', resize);
+
   return (
     <>
       <UpdatesInfo />
@@ -103,7 +111,7 @@ export const MainLayout = (props: MainLayoutProps) => {
           open={menuOpened}
           onToogle={handleDrawerToggle}
         />
-        <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
+        <Main menuOpened={isModal} style={{ display: 'flex' }}>
           <Outlet />
         </Main>
         <Snackbar
