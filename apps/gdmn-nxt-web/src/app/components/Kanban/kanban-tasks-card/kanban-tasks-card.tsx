@@ -143,7 +143,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             variant="caption"
             color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
-              ? { color: 'rgb(254, 98, 87)', fontWeight: '600', margin: 0 }
+              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', fontWeight: '600', margin: 0 }
               : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
                 ? { color: 'orange', fontWeight: '600', margin: 0 }
                 : { margin: 0 })}
