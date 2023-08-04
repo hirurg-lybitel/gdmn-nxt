@@ -83,7 +83,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
     />,
   [openEditForm]);
 
-  const getDayFrom = (msec: Date): number => Number((msec.getTime() / (1000 * 60 * 60 * 24)).toFixed(0));
+  const getDayFrom = (msec: Date): number => Math.ceil((msec.getTime() / (1000 * 60 * 60 * 24)));
 
   return (
     <>
