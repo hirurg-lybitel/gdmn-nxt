@@ -1,4 +1,4 @@
-import { Alert, Box, MenuItem, Snackbar, SvgIconTypeMap } from '@mui/material';
+import { Alert, Box, MenuItem, Snackbar, SvgIconTypeMap, useMediaQuery } from '@mui/material';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
@@ -32,7 +32,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen
       }),
-      marginLeft: -(theme.drawerWidth - (window.innerWidth < 900 ? 60 : 20)),
+      marginLeft: -(theme.drawerWidth - (theme.breakpoints.down('md') ? 60 : 20)),
       width: `calc(100% - ${theme.drawerWidth}px)`,
       [theme.breakpoints.up('md')]: {
         marginLeft: -(theme.drawerWidth - 20),
@@ -72,6 +72,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
 
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const { errorMessage } = useSelector((state: RootState) => state.error);
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
@@ -95,14 +96,6 @@ export const MainLayout = (props: MainLayoutProps) => {
     setOpenSnackBar(false);
   };
 
-  const [isModal, setIsModal] = useState<boolean>(!(window.innerWidth < 900));
-
-  const resize = () => {
-    setIsModal(!(window.innerWidth < 900));
-  };
-
-  window.addEventListener('resize', resize);
-
   return (
     <>
       <UpdatesInfo />
@@ -111,7 +104,7 @@ export const MainLayout = (props: MainLayoutProps) => {
           open={menuOpened}
           onToogle={handleDrawerToggle}
         />
-        <Main menuOpened={isModal} style={{ display: 'flex' }}>
+        <Main menuOpened={!matchDownMd} style={{ display: 'flex' }}>
           <Outlet />
         </Main>
         <Snackbar

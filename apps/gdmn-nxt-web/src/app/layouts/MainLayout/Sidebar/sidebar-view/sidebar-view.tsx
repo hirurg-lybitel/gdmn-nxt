@@ -79,7 +79,7 @@ export function Sidebar(props: SidebarProps) {
         <MenuIcon />
       </IconButton>
       <Drawer
-        open={window.innerWidth < 900 ? open : true}
+        open={matchDownMd ? open : true}
         container={container}
         variant={matchDownMd ? 'temporary' : 'persistent'}
         onClose={onToogle}
