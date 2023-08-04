@@ -32,7 +32,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen
       }),
-      marginLeft: -(theme.drawerWidth - (theme.breakpoints.down('md') ? 60 : 20)),
+      marginLeft: -(theme.drawerWidth - 60),
       width: `calc(100% - ${theme.drawerWidth}px)`,
       [theme.breakpoints.up('md')]: {
         marginLeft: -(theme.drawerWidth - 20),
