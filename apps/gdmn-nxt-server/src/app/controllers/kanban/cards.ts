@@ -74,6 +74,24 @@ const upsert: RequestHandler = async (req, res) => {
   try {
     const isInsertMode = !id;
 
+    const sqlOldIndex = `
+    SELECT columns.USR$INDEX FROM
+    USR$CRM_KANBAN_COLUMNS columns
+    JOIN USR$CRM_KANBAN_CARDS card ON card.ID = ${req.body.ID}
+    WHERE columns.ID = card.USR$MASTERKEY
+    `;
+
+    const sqlNewIndex = `
+      SELECT USR$INDEX FROM
+      USR$CRM_KANBAN_COLUMNS
+      WHERE ID = ${req.body.USR$MASTERKEY}
+    `;
+
+    const oldIndex = (await executeSingletonAsObject(sqlOldIndex))['USR$INDEX'];
+    const newIndex = (await executeSingletonAsObject(sqlNewIndex))['USR$INDEX'];
+
+    if (!(newIndex === oldIndex + 1 || newIndex === oldIndex - 1)) throw { message: 'Сделку можно перемещать только на один этап' };
+
     const deal: IDeal = req.body['DEAL'];
     const card: IKanbanCard = { ...req.body };
 

@@ -57,7 +57,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
   const dispatch = useDispatch();
 
-  const dragToColumnsEnable = false;
+  const dragToColumnsEnable = true;
   const dragColumnsEnable = false;
   const addColumnEnable = false;
   const deleteColumnEnable = false;
