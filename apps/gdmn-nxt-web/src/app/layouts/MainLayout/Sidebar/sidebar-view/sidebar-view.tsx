@@ -2,26 +2,18 @@ import { BrowserView, MobileView } from 'react-device-detect';
 import { Box, Drawer, IconButton, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import styles from './sidebar-view.module.less';
 import MenuList from '../menu-list/menu-list';
-import PerfectScrollbar from 'react-perfect-scrollbar';
 import { makeStyles } from '@mui/styles';
-import 'react-perfect-scrollbar/dist/css/styles.css';
-import { IPermissionByUser } from '@gsbelarus/util-api-types';
-import { useRef, useState } from 'react';
-import { margin } from '@mui/system';
 import CustomizedScrollBox from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-scroll-box/customized-scroll-box';
 import { Header } from '../../Header';
 import MenuIcon from '@mui/icons-material/Menu';
 
-/* eslint-disable-next-line */
 export interface SidebarProps {
   open: boolean;
   onToogle: () => void;
-  windowProp?: any;
 }
 
 const useStyles = makeStyles(() => ({
   scroll: {
-    // height: 'calc(100vh - 70px)',
     paddingLeft: '16px',
     paddingRight: '16px',
     '& .ps__rail-y': {
@@ -36,7 +28,7 @@ const useStyles = makeStyles(() => ({
 
 
 export function Sidebar(props: SidebarProps) {
-  const { open, onToogle, windowProp } = props;
+  const { open, onToogle } = props;
   const theme = useTheme();
 
   const classes = useStyles();
@@ -60,27 +52,24 @@ export function Sidebar(props: SidebarProps) {
     </>
   );
 
-  const container = windowProp !== undefined ? () => windowProp.document.body : undefined;
   return (
     <Box
       component="nav"
       sx={{ flexShrink: { md: 0 }, width: theme.drawerWidth }}
     >
-      <IconButton
-        style={{ marginLeft: '5px', marginTop: '5px' }}
-        size="large"
-        edge="start"
-        color="secondary"
-        aria-label="menu"
-        sx={{ mr: 2 }}
-        // onClick={ (event: any) => setAnchorMenuEl(event.currentTarget) }
-        onClick={onToogle}
-      >
-        <MenuIcon />
-      </IconButton>
+      {
+        matchDownMd &&
+        <IconButton
+          style={{ margin: '5px' }}
+          size="large"
+          color="secondary"
+          onClick={onToogle}
+        >
+          <MenuIcon />
+        </IconButton>
+      }
       <Drawer
         open={matchDownMd ? open : true}
-        container={container}
         variant={matchDownMd ? 'temporary' : 'persistent'}
         onClose={onToogle}
         anchor="left"
@@ -91,10 +80,6 @@ export function Sidebar(props: SidebarProps) {
             ...theme.menu,
             width: theme.drawerWidth,
             borderRight: 'none',
-            // [theme.breakpoints.up('md')]: {
-            //   top: '50px',
-            //   marginTop: '25px'
-            // }
           }
         }}
       >
