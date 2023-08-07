@@ -249,7 +249,7 @@ export const kanbanCatalogsApi = createApi({
       transformResponse: (response: IDealDocumentsRequestResult) => response.queries.documents || [],
     }),
     getClientHistory: builder.query<IClientHistory[], number>({
-      query: (clientId) => `kanban/catalogs/client-history/${clientId}`,
+      query: (cardId) => `kanban/catalogs/client-history/${cardId}`,
       transformResponse: (response: IClientHistoryRequestResult) => response.queries.clientHistory || [],
       providesTags: (result, error) =>
         result

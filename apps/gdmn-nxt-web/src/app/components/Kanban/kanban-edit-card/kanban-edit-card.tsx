@@ -430,7 +430,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <Tab label="Документы" value="4" />
                       <Tab label="Хронология" value="5" />
                       <Tab label="Описание" value="6" />
-                      <Tab label="История клиента" value="7" />
+                      <Tab label="История клиента" value="7" disabled={(card?.ID ?? -1) <= 0} />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -812,7 +812,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     <TabDescription formik={formik} />
                   </TabPanel>
                   <TabPanel value="7" className={tabIndex === '7' ? classes.tabPanel : ''}>
-                    <ClientHistory client={formik.values.DEAL?.CONTACT} />
+                    <ClientHistory card={formik.values} />
                   </TabPanel>
                 </TabContext>
               </Stack>

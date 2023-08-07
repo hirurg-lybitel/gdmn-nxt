@@ -6,7 +6,7 @@ import { IClientHistory, IDataSchema, IRequestResult } from '@gsbelarus/util-api
 const get: RequestHandler = async (req, res) => {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
-  const { clientId } = req.params;
+  const { cardId } = req.params;
 
   try {
     const _schema: IDataSchema = {
@@ -43,31 +43,41 @@ const get: RequestHandler = async (req, res) => {
           story.USR$CREATIONDATE CREATIONDATE,
           creator.ID CREATOR_ID,
           creator.NAME CREATOR_NAME,
-          client.ID CLIENT_ID,
-          client.NAME CLIENT_NAME,
           stype.ID AS STYPE_ID,
           stype.USR$NAME AS STYPE_NAME,
           stype.USR$ICON_KEY AS STYPE_ICON_KEY
         FROM USR$CRM_DEALS_CLIENT_STORY story
-        JOIN USR$CRM_DEALS_CLIENT_STORY_TYPE stype ON stype.ID = story.USR$STORY_TYPE_KEY
-        JOIN GD_CONTACT creator ON creator.ID = story.USR$CREATORKEY
-        JOIN GD_CONTACT client ON client.ID = story.USR$CONTACTKEY
+          JOIN USR$CRM_DEALS_CLIENT_STORY_TYPE stype ON stype.ID = story.USR$STORY_TYPE_KEY
+          JOIN GD_CONTACT creator ON creator.ID = story.USR$CREATORKEY
         WHERE
-          story.USR$CONTACTKEY = :clientId
-        ORDER BY story.USR$CREATIONDATE DESC`,
-      params: { clientId }
+          story.USR$CARDKEY = :cardId
+        UNION ALL
+        SELECT
+          t.ID,
+          t.USR$NAME,
+          t.USR$DATECLOSE,
+          creator.ID CREATOR_ID,
+          creator.NAME CREATOR_NAME,
+          6,
+          'Задача',
+          6
+        FROM USR$CRM_KANBAN_CARD_TASKS t
+          JOIN USR$CRM_KANBAN_CARDS card ON card.ID = t.USR$CARDKEY
+          JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+          JOIN GD_CONTACT creator ON creator.ID = t.USR$CREATORKEY
+        WHERE
+          card.ID = :cardId
+          AND t.USR$CLOSED = 1
+        ORDER BY 3 DESC`,
+      params: { cardId }
     };
 
     const rawClientHistory = await Promise.resolve(execQuery(query));
 
     const clientHistory: IClientHistory[] = rawClientHistory.map((r: any) => {
-      const { CLIENT_ID, CLIENT_NAME, CREATOR_ID, CREATOR_NAME, STYPE_ID, STYPE_NAME, STYPE_ICON_KEY, ...rest } = r;
+      const { CREATOR_ID, CREATOR_NAME, STYPE_ID, STYPE_NAME, STYPE_ICON_KEY, ...rest } = r;
       return {
         ...rest,
-        CONTACT: {
-          ID: CLIENT_ID,
-          NAME: CLIENT_NAME
-        },
         CREATOR: {
           ID: CREATOR_ID,
           NAME: CREATOR_NAME
@@ -84,7 +94,7 @@ const get: RequestHandler = async (req, res) => {
       queries: {
         clientHistory
       },
-      _params: [{ clientId }],
+      _params: [{ cardId }],
       _schema
     };
     return res.status(200).json(result);
@@ -108,7 +118,7 @@ const upsert: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const { CONTENT, historyType, CONTACT, CREATOR } = req.body;
+    const { CONTENT, historyType, CARDKEY, CREATOR } = req.body;
 
     const ID = await (() => {
       if (isNaN(id) || id <= 0) {
@@ -119,15 +129,15 @@ const upsert: RequestHandler = async (req, res) => {
 
     const sql = isInsertMode
       ? `
-        INSERT INTO USR$CRM_DEALS_CLIENT_STORY(ID, USR$STORY_TYPE_KEY, USR$CONTENT, USR$CONTACTKEY, USR$CREATORKEY)
-        VALUES(:ID, :STORY_TYPE_KEY, :CONTENT, :CONTACTKEY, :CREATORKEY)
+        INSERT INTO USR$CRM_DEALS_CLIENT_STORY(ID, USR$STORY_TYPE_KEY, USR$CONTENT, USR$CARDKEY, USR$CREATORKEY)
+        VALUES(:ID, :STORY_TYPE_KEY, :CONTENT, :CARDKEY, :CREATORKEY)
         RETURNING ID`
       : `
         UPDATE USR$CRM_DEALS_CLIENT_STORY
         SET
           USR$STORY_TYPE_KEY = :STORY_TYPE_KEY,
           USR$CONTENT = :CONTENT,
-          USR$CONTACTKEY = :CONTACTKEY,
+          USR$CARDKEY = :CARDKEY,
           USR$CREATORKEY = :CREATORKEY
         WHERE ID = :ID
         RETURNING ID`;
@@ -136,7 +146,7 @@ const upsert: RequestHandler = async (req, res) => {
       ID,
       CONTENT,
       STORY_TYPE_KEY: historyType.ID,
-      CONTACTKEY: CONTACT.ID,
+      CARDKEY: CARDKEY,
       CREATORKEY: CREATOR.ID
     };
 

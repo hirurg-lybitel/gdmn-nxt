@@ -38,7 +38,6 @@ const get: RequestHandler = async (req, res) => {
         const blob2String = resultBuffer.toString();
         // eslint-disable-next-line dot-notation
         r['AVATAR'] = bin2String(blob2String.split(','));
-        // console.log('456', r['AVATAR'], r['AVATAR_BLOB']);
       };
       r['SEND_EMAIL_NOTIFICATIONS'] = (r['SEND_EMAIL_NOTIFICATIONS'] ?? 0) === 1;
 
@@ -73,8 +72,6 @@ const set: RequestHandler = async (req, res) => {
     EMAIL
   } = req.body;
 
-  // console.log('set', req.body);
-
   try {
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
     const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString?.length : 0, charArrayString);
@@ -82,28 +79,19 @@ const set: RequestHandler = async (req, res) => {
     await blob.write(blobBuffer);
     await blob.close();
 
-    // const updateEmail = await fetchAsObject(`
-    //   UPDATE GD_CONTACT c
-    //   SET EMAIL = :EMAIL
-    //   WHERE EXISTS(SELECT ID FROM GD_USER u WHERE u.CONTACTKEY = c.ID AND u.ID = :userId)
-    //   RETURNING EMAIL`,
-    // { userId, EMAIL });
-
-    // const sqlResult = await fetchAsSingletonObject(`
-    //   UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS)
-    //   VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS)
-    //   MATCHING(USR$USERKEY)
-    //   RETURNING ID`,
-    // { userId, avatar: blob, colorMode, lastVersion, SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS) });
-
+    const updateEmail = await fetchAsObject(`
+      UPDATE GD_CONTACT c
+      SET EMAIL = :EMAIL
+      WHERE EXISTS(SELECT ID FROM GD_USER u WHERE u.CONTACTKEY = c.ID AND u.ID = :userId)
+      RETURNING EMAIL`,
+    { userId, EMAIL });
 
     const sqlResult = await fetchAsSingletonObject(`
-      update USR$CRM_DEALS_CLIENT_STORY_TYPE
-      set
-      USR$ICON = :icon
-      where
-        id = 147006504
-      RETURNING ID`, { userId, icon: blob })
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS)
+      MATCHING(USR$USERKEY)
+      RETURNING ID`,
+    { userId, avatar: blob, colorMode, lastVersion, SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS) });
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },

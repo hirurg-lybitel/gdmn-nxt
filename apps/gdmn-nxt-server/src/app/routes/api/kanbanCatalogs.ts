@@ -30,7 +30,7 @@ router.delete('/tasktypes/:id', taskTypesController.remove);
 router.get('/documents/:id', documentsCatalog.get);
 
 /** История обращений */
-router.get('/client-history/:clientId', clientHistoryController.get);
+router.get('/client-history/:cardId', clientHistoryController.get);
 router.put('/client-history/:id', clientHistoryController.upsert);
 router.post('/client-history', clientHistoryController.upsert);
 

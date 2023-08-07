@@ -10,21 +10,24 @@ import MessageIcon from '@mui/icons-material/Message';
 import TourIcon from '@mui/icons-material/Tour';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import LensOutlinedIcon from '@mui/icons-material/LensOutlined';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useGetEmployeesQuery } from 'apps/gdmn-nxt-web/src/app/features/contact/contactApi';
-import { IClientHistoryType, IContactWithID } from '@gsbelarus/util-api-types';
+import { IClientHistoryType, IContactWithID, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { useAddClientHistoryMutation, useGetClientHistoryQuery, useGetClientHistoryTypeQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
 
 interface ClientHistoryProps {
-  client?: IContactWithID;
+  card?: IKanbanCard;
 }
 
-export const ClientHistory = ({ client }: ClientHistoryProps) => {
+export const ClientHistory = ({ card }: ClientHistoryProps) => {
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { data: historyType = [], isFetching: historyTypeIsFetching } = useGetClientHistoryTypeQuery();
-  const { data: clientHistory = [], isFetching: clientHistoryFetching } = useGetClientHistoryQuery(client?.ID ?? -1);
+  const { data: clientHistory = [], isFetching: clientHistoryFetching } = useGetClientHistoryQuery(card?.ID ?? -1, {
+    refetchOnMountOrArgChange: true
+  });
   const [addClientHistory, { isSuccess }] = useAddClientHistoryMutation();
 
   const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
@@ -53,11 +56,7 @@ export const ClientHistory = ({ client }: ClientHistoryProps) => {
     if (!inputRef.current?.value) return;
 
     addClientHistory({
-      CONTACT: {
-        ID: -1,
-        NAME: '',
-        ...client
-      },
+      CARDKEY: card?.ID ?? -1,
       CREATOR: {
         ...message.creator
       },
@@ -138,6 +137,8 @@ export const ClientHistory = ({ client }: ClientHistoryProps) => {
                             return <AssignmentIcon />;
                           case 5:
                             return <EmailIcon />;
+                          case 6:
+                            return <TaskAltIcon />;
                           default:
                             return <LensOutlinedIcon />;
                         }

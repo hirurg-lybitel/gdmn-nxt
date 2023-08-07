@@ -309,6 +309,6 @@ export interface IClientHistory extends IWithID {
   CREATIONDATE?: Date;
   CONTENT: string;
   CREATOR: IContactWithID;
-  CONTACT: IContactWithID;
+  CARDKEY: number,
   historyType: IClientHistoryType;
 }
