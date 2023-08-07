@@ -15,6 +15,7 @@ import { IClientHistoryType, IContactWithID } from '@gsbelarus/util-api-types';
 import { useAddClientHistoryMutation, useGetClientHistoryQuery, useGetClientHistoryTypeQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
 
 interface ClientHistoryProps {
   client?: IContactWithID;
@@ -23,7 +24,7 @@ interface ClientHistoryProps {
 export const ClientHistory = ({ client }: ClientHistoryProps) => {
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { data: historyType = [], isFetching: historyTypeIsFetching } = useGetClientHistoryTypeQuery();
-  const { data: clientHistory = [] } = useGetClientHistoryQuery(client?.ID ?? -1);
+  const { data: clientHistory = [], isFetching: clientHistoryFetching } = useGetClientHistoryQuery(client?.ID ?? -1);
   const [addClientHistory, { isSuccess }] = useAddClientHistoryMutation();
 
   const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
@@ -82,93 +83,97 @@ export const ClientHistory = ({ client }: ClientHistoryProps) => {
     >
       <CustomizedCard
         borders
-        style={{ flex: 1, paddingTop: '5px' }}
+        style={{ flex: 1, paddingTop: '5px', paddingBottom: '5px' }}
         boxShadows
       >
-        <CustomizedScrollBox>
-          {clientHistory.map(d =>
-            <Accordion
-              key={d.ID}
-              defaultExpanded
-              TransitionProps={{ unmountOnExit: true }}
-              sx={{
-
-                '&.Mui-expanded': {
-                  margin: 0,
-                },
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                style={{
-                  flexDirection: 'row-reverse',
-                }}
+        {clientHistoryFetching
+          ? <Box height={'100%'} display="flex">
+            <CircularIndeterminate open={true} size={70} />
+          </Box>
+          : <CustomizedScrollBox>
+            {clientHistory.map(d =>
+              <Accordion
+                key={d.ID}
+                defaultExpanded
+                TransitionProps={{ unmountOnExit: true }}
                 sx={{
-                  height: '50px',
+
                   '&.Mui-expanded': {
                     margin: 0,
-                    minHeight: '50px',
                   },
                 }}
               >
-                <Stack
-                  direction={'row'}
-                  spacing={1}
-                  display={'flex'}
-                  flex={1}
-                  alignItems={'center'}
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  style={{
+                    flexDirection: 'row-reverse',
+                  }}
+                  sx={{
+                    height: '50px',
+                    '&.Mui-expanded': {
+                      margin: 0,
+                      minHeight: '50px',
+                    },
+                  }}
                 >
-                  <Icon
-                    color="action"
+                  <Stack
+                    direction={'row'}
+                    spacing={1}
+                    display={'flex'}
+                    flex={1}
+                    alignItems={'center'}
                   >
-                    {(() => {
-                      switch (d.historyType.ICON) {
-                        case 1:
-                          return <TourIcon />;
-                        case 2:
-                          return <CallIcon />;
-                        case 3:
-                          return <MessageIcon />;
-                        case 4:
-                          return <AssignmentIcon />;
-                        case 5:
-                          return <EmailIcon />;
-                        default:
-                          return <LensOutlinedIcon />;
-                      }
-                    })()}
-                  </Icon>
-                  <Stack>
-                    <div>
-                      {d.historyType.NAME}
-                    </div>
-                    <Typography
-                      variant="caption"
-                      color={'GrayText'}
-                      maxWidth={'300px'}
-                      noWrap
-                      overflow="hidden"
-                      textOverflow="ellipsis"
-                    >{d.CONTENT}</Typography>
+                    <Icon
+                      color="action"
+                    >
+                      {(() => {
+                        switch (d.historyType.ICON) {
+                          case 1:
+                            return <TourIcon />;
+                          case 2:
+                            return <CallIcon />;
+                          case 3:
+                            return <MessageIcon />;
+                          case 4:
+                            return <AssignmentIcon />;
+                          case 5:
+                            return <EmailIcon />;
+                          default:
+                            return <LensOutlinedIcon />;
+                        }
+                      })()}
+                    </Icon>
+                    <Stack>
+                      <div>
+                        {d.historyType.NAME}
+                      </div>
+                      <Typography
+                        variant="caption"
+                        color={'GrayText'}
+                        maxWidth={'300px'}
+                        noWrap
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                      >{d.CONTENT}</Typography>
+                    </Stack>
+                    <Box flex={1} />
+                    <Stack>
+                      {d.CREATIONDATE && <Typography variant="caption" textAlign={'right'}>{new Date(d.CREATIONDATE).toLocaleDateString()}</Typography>}
+                      <Typography variant="caption" textAlign={'right'}>{d.CREATOR.NAME}</Typography>
+                    </Stack>
                   </Stack>
-                  <Box flex={1} />
-                  <Stack>
-                    {d.CREATIONDATE && <Typography variant="caption" textAlign={'right'}>{new Date(d.CREATIONDATE).toLocaleDateString()}</Typography>}
-                    <Typography variant="caption" textAlign={'right'}>{d.CREATOR.NAME}</Typography>
-                  </Stack>
-                </Stack>
 
-              </AccordionSummary>
-              <AccordionDetails
-                sx={{
-                  borderBottom: '1px solid rgba(0, 0, 0, .125)',
-                }}
-              >
-                <Typography whiteSpace={'pre-wrap'}>{d.CONTENT}</Typography>
-              </AccordionDetails>
-            </Accordion>
-          )}
-        </CustomizedScrollBox>
+                </AccordionSummary>
+                <AccordionDetails
+                  sx={{
+                    borderBottom: '1px solid rgba(0, 0, 0, .125)',
+                  }}
+                >
+                  <Typography whiteSpace={'pre-wrap'}>{d.CONTENT}</Typography>
+                </AccordionDetails>
+              </Accordion>
+            )}
+          </CustomizedScrollBox>}
       </CustomizedCard>
       <CustomizedCard borders boxShadows>
         <CardContent>
@@ -234,7 +239,7 @@ export const ClientHistory = ({ client }: ClientHistoryProps) => {
                         <IconButton
                           color="primary"
                           onClick={sendMessage}
-                          disabled={!message.creator || !message.selectedType}
+                          disabled={!message.creator || !message.selectedType || clientHistoryFetching}
                         >
                           <SendIcon />
                         </IconButton>
