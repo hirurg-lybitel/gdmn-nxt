@@ -83,6 +83,8 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
     />,
   [openEditForm]);
 
+  const getDayFrom = (msec: Date): number => Math.ceil((msec.getTime() / (1000 * 60 * 60 * 24)));
+
   return (
     <>
       <CustomizedCard
@@ -110,7 +112,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             direction="row"
             style={{ justifyContent: 'space-between' }}
           >
-            <Typography variant="h4">{truncate(card.TASK?.USR$NAME || '', 60)}</Typography>
+            <Typography variant="h4"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 60)}</Typography>
             <Typography
               className="number"
               variant="caption"
@@ -141,9 +143,9 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             variant="caption"
             color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
-              ? { color: 'red', margin: 0 }
-              : new Date(card.TASK?.USR$DEADLINE).getDay() === new Date().getDay()
-                ? { color: 'orange', margin: 0 }
+              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', fontWeight: '600', margin: 0 }
+              : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
+                ? { color: 'orange', fontWeight: '600', margin: 0 }
                 : { margin: 0 })}
           >
             {card.TASK?.USR$DEADLINE
