@@ -64,6 +64,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import TextFieldMasked from '../../textField-masked/textField-masked';
 import { DealDocuments } from './components/deal-documents';
+import { ClientHistory } from './components/client-history';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -73,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: 0,
     height: '100%',
     maxHeight: '100%',
-    width: '40vw',
+    width: '45vw',
     [theme.breakpoints.down('ultraWide')]: {
       width: '50vw'
     },
@@ -96,7 +97,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     flex: 1,
     // display: 'flex',
     padding: 0,
-    paddingBottom: 16,
+    // paddingBottom: 16,
     marginTop: '12px !important',
   },
 }));
@@ -393,7 +394,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     <CustomizedDialog
       open={open}
       onClose={handleOnClose}
-      width={useMediaQuery(theme.breakpoints.down('ultraWide')) ? '50vw' : '40vw'}
+      width={useMediaQuery(theme.breakpoints.down('ultraWide')) ? '50vw' : '45vw'}
       minWidth={400}
     >
       <DialogTitle>
@@ -429,6 +430,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       <Tab label="Документы" value="4" />
                       <Tab label="Хронология" value="5" />
                       <Tab label="Описание" value="6" />
+                      <Tab label="История клиента" value="7" />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -503,7 +505,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             <DesktopDatePicker
                               label="Срок"
                               value={formik.values.DEAL?.USR$DEADLINE || null}
-                              // mask="__.__.____"
                               inputFormat="dd.MM.yyyy"
                               onChange={(value) => {
                                 formik.setFieldValue(
@@ -526,7 +527,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             value={employees?.find(el => el.ID === formik.values.DEAL?.CREATOR?.ID) || null}
                             loading={employeesIsFetching}
                             loadingText="Загрузка данных..."
-                            // onOpen={formik.handleBlur}
                             onChange={(event, value) => {
                               formik.setFieldValue('DEAL.CREATOR', value);
                             }}
@@ -541,7 +541,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               <TextField
                                 {...params}
                                 label="Создал"
-                                // name="DEAL.CREATOR"
+
                                 required
                                 placeholder="Выберите сотрудника"
                                 error={getIn(formik.touched, 'DEAL.CREATOR') && Boolean(getIn(formik.errors, 'DEAL.CREATOR'))}
@@ -771,7 +771,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             name="COMMENT"
                             multiline
                             minRows={4}
-                            // onChange={formik.handleChange}
                             onChange={(e) => {
                               formik.setFieldValue('DEAL.COMMENT', e.target.value);
                             }}
@@ -811,6 +810,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                   </TabPanel>
                   <TabPanel value="6" className={tabIndex === '6' ? classes.tabPanel : ''}>
                     <TabDescription formik={formik} />
+                  </TabPanel>
+                  <TabPanel value="7" className={tabIndex === '7' ? classes.tabPanel : ''}>
+                    <ClientHistory client={formik.values.DEAL?.CONTACT} />
                   </TabPanel>
                 </TabContext>
               </Stack>
