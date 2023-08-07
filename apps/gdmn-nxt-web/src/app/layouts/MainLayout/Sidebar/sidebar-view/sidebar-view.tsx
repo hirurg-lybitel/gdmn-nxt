@@ -2,12 +2,7 @@ import { BrowserView, MobileView } from 'react-device-detect';
 import { Box, Drawer, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import styles from './sidebar-view.module.less';
 import MenuList from '../menu-list/menu-list';
-import PerfectScrollbar from 'react-perfect-scrollbar';
 import { makeStyles } from '@mui/styles';
-import 'react-perfect-scrollbar/dist/css/styles.css';
-import { IPermissionByUser } from '@gsbelarus/util-api-types';
-import { useRef, useState } from 'react';
-import { margin } from '@mui/system';
 import CustomizedScrollBox from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-scroll-box/customized-scroll-box';
 import { Header } from '../../Header';
 
