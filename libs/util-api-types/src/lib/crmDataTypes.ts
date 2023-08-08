@@ -86,6 +86,7 @@ export interface IDeal extends IWithID {
   CREATIONDATE?: Date;
   DESCRIPTION?: string;
   USR$NUMBER?: number;
+  PREPAID?: boolean;
 };
 
 export interface IKanbanCard extends IWithID {

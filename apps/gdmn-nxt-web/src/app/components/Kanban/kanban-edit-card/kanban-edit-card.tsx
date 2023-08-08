@@ -2,13 +2,11 @@ import './kanban-edit-card.module.less';
 import {
   Autocomplete,
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   InputAdornment,
-  Slide,
   Stack,
   TextField,
   Theme,
@@ -22,25 +20,24 @@ import {
   Tab,
   useMediaQuery,
   useTheme,
-  Paper,
-  Tooltip
+  Tooltip,
+  StepButton,
+  LinearProgress
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { forwardRef, ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TransitionProps } from '@mui/material/transitions';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IKanbanCard, IKanbanColumn, IPermissionByUser, Permissions } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { ICustomer } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { DateTimePicker, DesktopDatePicker } from '@mui/x-date-pickers-pro';
+import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
@@ -48,10 +45,6 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import filterOptions from '../../helpers/filter-options';
-// import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanApi';
-import AlarmIcon from '@mui/icons-material/Alarm';
-import SnoozeIcon from '@mui/icons-material/Snooze';
-import ClockIcon from '@mui/icons-material/AccessTime';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DealSourcesSelect } from './components/deal-sources-select';
 import { CustomerSelect } from './components/customer-select';
@@ -65,24 +58,11 @@ import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-s
 import TextFieldMasked from '../../textField-masked/textField-masked';
 import { DealDocuments } from './components/deal-documents';
 import { ClientHistory } from './components/client-history';
+import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
+import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 
 
 const useStyles = makeStyles((theme: Theme) => ({
-  dialog: {
-    position: 'absolute',
-    right: 0,
-    margin: 0,
-    height: '100%',
-    maxHeight: '100%',
-    width: '45vw',
-    [theme.breakpoints.down('ultraWide')]: {
-      width: '50vw'
-    },
-    maxWidth: '100%',
-    minWidth: 400,
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0
-  },
   accordionTitle: {
     width: '33%',
     flexShrink: 0
@@ -144,8 +124,20 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, [open]);
 
   const theme = useTheme();
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const matchDownUW = useMediaQuery(theme.breakpoints.down('ultraWide'));
+  const matchBetweenLgUw = useMediaQuery(theme.breakpoints.between('lg', 'ultraWide'));
+
+  const windowWidth = useMemo(() => {
+    switch (true) {
+      case matchBetweenLgUw:
+        return '70vw';
+      case matchDownUW:
+        return '60vw';
+      default:
+        return '50vw';
+    }
+  }, [matchBetweenLgUw, matchDownUW]);
 
   const handleChangeAccordion = (panel: string) => (event: any, newExpanded: any) => {
     if (newExpanded) setExpanded(panel);
@@ -196,6 +188,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       CONTACT: card?.DEAL?.CONTACT,
       COMMENT: card?.DEAL?.COMMENT || '',
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
+      PREPAID: card?.DEAL?.PREPAID ?? false,
     },
     TASKS: card?.TASKS || undefined,
   };
@@ -283,6 +276,24 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       setTabIndex('2');
     };
   }, [formik.touched, formik.errors]);
+
+  const handleStep = (stageId: number) => () => {
+    formik.setFieldValue('USR$MASTERKEY', stageId);
+  };
+
+  const handleStepBack = () => {
+    const currentIndex = stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY);
+
+    if (currentIndex < 1) return;
+    formik.setFieldValue('USR$MASTERKEY', stages[currentIndex - 1].ID);
+  };
+
+  const handleStepNext = () => {
+    const currentIndex = stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY);
+
+    if (currentIndex >= stages.length - 1) return;
+    formik.setFieldValue('USR$MASTERKEY', stages[currentIndex + 1].ID);
+  };
 
   const checkDoneAndTasks = useMemo(() =>
     !(formik.values.DEAL?.USR$DONE) &&
@@ -390,11 +401,13 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     />,
   [confirmOpen, deleting, handleConfirmOkClick, handleConfirmCancelClick]);
 
+  const currentStageIndex = useMemo(() => stages.findIndex(s => s.ID === formik.values.USR$MASTERKEY), [stages, formik.values.USR$MASTERKEY]);
+
   return (
     <CustomizedDialog
       open={open}
       onClose={handleOnClose}
-      width={useMediaQuery(theme.breakpoints.down('ultraWide')) ? '50vw' : '45vw'}
+      width={windowWidth}
       minWidth={400}
     >
       <DialogTitle>
@@ -409,28 +422,71 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
               style={{ flex: 1, display: 'flex' }}
             >
               <Stack spacing={3} flex={1}>
-                <Stepper
-                  activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
-                  alternativeLabel
-                  style={{
-                    ...(matchDownLg ? { display: 'none' } : '')
-                  }}
-                >
-                  {stages.map(stage =>
-                    <Step key={stage.ID}>
-                      <StepLabel>{stage.USR$NAME}</StepLabel>
-                    </Step>)}
-                </Stepper>
+                {matchDownLg
+                  ? <Stack
+                    direction="row"
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                    spacing={2}
+                  >
+                    <IconButton
+                      color="primary"
+                      onClick={handleStepBack}
+                      disabled={currentStageIndex < 1}
+                    >
+                      <ArrowCircleLeftOutlinedIcon />
+                    </IconButton>
+                    <Stack>
+                      <Box
+                        width={200}
+                        textAlign={'center'}
+                        fontWeight={500}
+                      >
+                        {stages.find(stage => stage.ID === formik.values.USR$MASTERKEY)?.USR$NAME ?? ''}
+                      </Box>
+                      <LinearProgress variant="determinate" value={Math.ceil(currentStageIndex / (stages.length - 1) * 100)} />
+                    </Stack>
+                    <IconButton
+                      color="primary"
+                      onClick={handleStepNext}
+                      disabled={currentStageIndex >= (stages.length - 1)}
+                    >
+                      <ArrowCircleRightOutlinedIcon />
+                    </IconButton>
+                  </Stack>
+                  : <Stepper
+                    activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
+                    alternativeLabel
+                    nonLinear
+                  >
+                    {stages.map((stage, idx) =>
+                      <Step
+                        key={stage.ID}
+                        completed={idx < stages.findIndex(s => s.ID === formik.values.USR$MASTERKEY)}
+                      >
+                        <StepButton onClick={handleStep(stage.ID)}>
+                          {stage.USR$NAME}
+                        </StepButton>
+                      </Step>)}
+                  </Stepper>}
                 <TabContext value={tabIndex}>
-                  <Box>
-                    <TabList onChange={handleTabsChange}>
+                  <Box style={{ width: `calc(${windowWidth} - 5vw)` }}>
+                    <TabList
+                      onChange={handleTabsChange}
+                      scrollButtons="auto"
+                      variant="scrollable"
+                    >
                       <Tab label="Сведения" value="1" />
                       <Tab label="Заявка" value="2" />
                       <Tab label="Задачи" value="3" />
                       <Tab label="Документы" value="4" />
                       <Tab label="Хронология" value="5" />
                       <Tab label="Описание" value="6" />
-                      <Tab label="История клиента" value="7" disabled={(card?.ID ?? -1) <= 0} />
+                      <Tab
+                        label="История клиента"
+                        value="7"
+                        disabled={(card?.ID ?? -1) <= 0}
+                      />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -518,7 +574,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           </Stack>
                         </Stack>
                         <Divider variant="middle" />
-                        <Stack direction={matchDownMd ? 'column' : 'column'} spacing={3}>
+                        <Stack direction={'column'} spacing={3}>
                           <Autocomplete
                             fullWidth
                             options={employees || []}
@@ -675,85 +731,96 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             )}
                           />
                         </Stack>
-                        <Stack direction="row" spacing={3}>
+                        <Stack direction="row" spacing={3} alignItems="center">
                           <Stack>
                             <Stack direction="row" spacing={3}>
-                              {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ?
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    name="DEAL.PREPAID"
+                                    checked={formik.values.DEAL?.PREPAID}
+                                    onChange={formik.handleChange}
+                                  />
+                                }
+                                label="Предоплачено"
+                              />
+                              {/* {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ? */}
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={formik.values.DEAL?.USR$READYTOWORK || false}
+                                    onChange={(e) => {
+                                      const value = e.target.checked;
+                                      formik.setFieldValue(
+                                        'DEAL',
+                                        { ...formik.values.DEAL, USR$READYTOWORK: value }
+                                      );
+                                      // formik.setFieldValue(
+                                      //   'USR$MASTERKEY',
+                                      //   value ? stages[2].ID : stages[1].ID
+                                      // );
+                                    }}
+                                  />
+                                }
+                                label="В работе"
+                              />
+                              {/* : <></>} */}
+                              {/* {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
+                                formik.values.USR$MASTERKEY === stages[3]?.ID ||
+                                formik.values.DEAL?.USR$DONE)
+                                ?  */}
+                              <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
                                 <FormControlLabel
+                                  disabled={checkDoneAndTasks}
                                   control={
                                     <Checkbox
-                                      checked={formik.values.DEAL?.USR$READYTOWORK || false}
+                                      checked={formik.values.DEAL?.USR$DONE || false}
                                       onChange={(e) => {
                                         const value = e.target.checked;
                                         formik.setFieldValue(
                                           'DEAL',
-                                          { ...formik.values.DEAL, USR$READYTOWORK: value }
+                                          { ...formik.values.DEAL, USR$DONE: value }
                                         );
-                                        formik.setFieldValue(
-                                          'USR$MASTERKEY',
-                                          value ? stages[2].ID : stages[1].ID
-                                        );
+                                        // formik.setFieldValue(
+                                        //   'USR$MASTERKEY',
+                                        //   value ? stages[3].ID : stages[2].ID
+                                        // );
                                       }}
                                     />
                                   }
-                                  label="В работе"
+                                  label="Исполнено"
                                 />
-                                : <></>}
-                              {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
-                                formik.values.USR$MASTERKEY === stages[3]?.ID ||
-                                formik.values.DEAL?.USR$DONE)
-                                ? <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
-                                  <FormControlLabel
-                                    disabled={checkDoneAndTasks}
-                                    control={
-                                      <Checkbox
-                                        checked={formik.values.DEAL?.USR$DONE || false}
-                                        onChange={(e) => {
-                                          const value = e.target.checked;
-                                          formik.setFieldValue(
-                                            'DEAL',
-                                            { ...formik.values.DEAL, USR$DONE: value }
-                                          );
-                                          formik.setFieldValue(
-                                            'USR$MASTERKEY',
-                                            value ? stages[3].ID : stages[2].ID
-                                          );
-                                        }}
-                                      />
-                                    }
-                                    label="Исполнено"
+                              </Tooltip>
+                              {/* : <></> */}
+                              {/* } */}
+                              {/* {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ? */}
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={formik.values.DEAL?.DENIED || false}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      formik.setFieldValue(
+                                        'DEAL',
+                                        { ...formik.values.DEAL, DENIED: checked }
+                                      );
+                                      // const newMasterKey = (() => {
+                                      //   if (checked) return stages[4].ID;
+                                      //   if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
+                                      //   if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
+                                      //   if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
+                                      //   return stages[0].ID;
+                                      // })();
+                                      // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
+                                      if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
+                                      if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
+                                    }}
                                   />
-                                </Tooltip>
-                                : <></>
-                              }
-                              {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ?
-                                <FormControlLabel
-                                  control={
-                                    <Checkbox
-                                      checked={formik.values.DEAL?.DENIED || false}
-                                      onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        formik.setFieldValue(
-                                          'DEAL',
-                                          { ...formik.values.DEAL, DENIED: checked }
-                                        );
-                                        const newMasterKey = (() => {
-                                          if (checked) return stages[4].ID;
-                                          if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
-                                          if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
-                                          if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
-                                          return stages[0].ID;
-                                        })();
-                                        formik.setFieldValue('USR$MASTERKEY', newMasterKey);
-                                        if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
-                                        if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
-                                      }}
-                                    />
-                                  }
-                                  label="Отказ"
-                                />
-                                : <></>
-                              }
+                                }
+                                label="Отказ"
+                              />
+                              {/* : <></> */}
+                              {/* } */}
                             </Stack>
                             <Box flex={1} />
                           </Stack>

@@ -171,7 +171,7 @@ const get: RequestHandler = async (req, res) => {
           FROM USR$CRM_KANBAN_TEMPLATE temp
             JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
             JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
-          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 370480752 AND DBID = 1811180906 ROWS 1)
+          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
           ORDER BY col.USR$INDEX`
       },
       {
@@ -198,6 +198,7 @@ const get: RequestHandler = async (req, res) => {
             deny.ID DENY_ID,
             deny.USR$NAME AS DENY_NAME,
             deal.USR$DENIED DENIED,
+            deal.USR$PREPAID PREPAID,
             deal.USR$COMMENT COMMENT,
             deal.USR$DESCRIPTION DESCRIPTION,
             deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
@@ -376,6 +377,7 @@ const get: RequestHandler = async (req, res) => {
           CONTACT_PHONE: el['CONTACT_PHONE'],
           CREATIONDATE: el['CREATIONDATE'],
           DESCRIPTION: el['DESCRIPTION'],
+          PREPAID: el['PREPAID'] === 1,
         },
         TASKS: tasks[el['ID']],
         STATUS: status[el['ID']]
