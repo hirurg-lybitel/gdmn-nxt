@@ -82,6 +82,7 @@ const upsert: RequestHandler = async (req, res) => {
     const cardId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
     const dealId = await (() => isInsertMode ? genId(attachment, transaction) : deal.ID)();
 
+
     let paramsValues;
     let sql;
 
@@ -100,7 +101,7 @@ const upsert: RequestHandler = async (req, res) => {
       const checkTasks: { COUNT: number} = await executeSingletonAsObject(sql);
 
       if ((checkTasks.COUNT || 0) > 0) {
-        throw new Error('Не может быть исполнено. Есть незакрытые задачи');
+        return res.status(400).send(resultError('Не может быть исполнено. Есть незакрытые задачи'));
       }
     }
 
@@ -129,10 +130,22 @@ const upsert: RequestHandler = async (req, res) => {
     const oldCardRecord = await fetchAsSingletonObject(sql, { cardId });
 
     sql = `
-      SELECT ID, USR$NAME
-      FROM USR$CRM_KANBAN_COLUMNS`;
+      SELECT col.ID, col.USR$NAME
+      FROM USR$CRM_KANBAN_TEMPLATE temp
+        JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
+        JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
+      WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+      ORDER BY col.USR$INDEX`;
 
     const columns = await fetchAsObject(sql);
+
+    const newStageIndex = columns.findIndex(stage => stage['ID'] === card.USR$MASTERKEY);
+    const oldStageIndex = columns.findIndex(stage => stage['ID'] === oldCardRecord?.USR$MASTERKEY);
+
+    /** Отключено на время продумывания перехода с этапа на этап */
+    // if (Math.abs(newStageIndex - oldStageIndex) > 1) {
+    //   return res.status(400).send(resultError('Сделку можно перемещать только на один этап'));
+    // }
 
     const changes: IKanbanHistory[] = [];
     if ((Number(deal.USR$AMOUNT) || 0) !== (Number(oldDealRecord?.USR$AMOUNT) || 0)) {
