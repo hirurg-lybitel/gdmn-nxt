@@ -31,7 +31,7 @@ import Logout from '@mui/icons-material/Logout';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   popper: {
     zIndex: 2000,
     minWidth: 250,

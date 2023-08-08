@@ -299,3 +299,16 @@ export interface IKanbanCardStatus {
 export interface IDealDocument extends IWithID {
   DESCRIPTION: string;
 }
+
+export interface IClientHistoryType extends IWithID {
+  NAME: string;
+  ICON?: number;
+}
+
+export interface IClientHistory extends IWithID {
+  CREATIONDATE?: Date;
+  CONTENT: string;
+  CREATOR: IContactWithID;
+  CARDKEY: number,
+  historyType: IClientHistoryType;
+}

@@ -3,6 +3,8 @@ import { denyReasons } from '../../controllers/deals/denyReasons';
 import { sourceCatalog } from '../../controllers/deals/sourceCatalog';
 import { taskTypesController } from '../../controllers/tasks/taskTypes';
 import { documentsCatalog } from '../../controllers/deals/documents';
+import { clientHistoryController } from '../../controllers/deals/clientHistory';
+import { clientHistoryTypesController } from '../../controllers/deals/clientHistoryType';
 
 const router = express.Router();
 
@@ -26,5 +28,15 @@ router.delete('/tasktypes/:id', taskTypesController.remove);
 
 /** Список документов */
 router.get('/documents/:id', documentsCatalog.get);
+
+/** История обращений */
+router.get('/client-history/:cardId', clientHistoryController.get);
+router.put('/client-history/:id', clientHistoryController.upsert);
+router.post('/client-history', clientHistoryController.upsert);
+
+/** История обращений (типы) */
+router.get('/client-history-types', clientHistoryTypesController.get);
+router.put('/client-history-types/:id', clientHistoryTypesController.upsert);
+router.post('/client-history-types', clientHistoryTypesController.upsert);
 
 export default router;
