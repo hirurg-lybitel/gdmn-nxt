@@ -128,7 +128,8 @@ const upsert: RequestHandler = async (req, res) => {
         d.USR$AMOUNT, d.USR$CONTACTKEY, d.USR$NAME, d.USR$PERFORMER, d.USR$SECOND_PERFORMER,
         con.ID AS CONTACT_ID, con.NAME AS CONTACT_NAME,
         performer_1.ID AS PERMORMER_1_ID, performer_1.NAME AS PERMORMER_1_NAME,
-        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME
+        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME,
+        d.USR$PREPAID AS PREPAID
       FROM USR$CRM_DEALS d
         LEFT JOIN GD_CONTACT con ON con.ID = d.USR$CONTACTKEY
         LEFT JOIN GD_CONTACT performer_1 ON performer_1.ID = d.USR$PERFORMER
@@ -218,12 +219,23 @@ const upsert: RequestHandler = async (req, res) => {
         USR$USERKEY: userId
       });
     };
+    if (deal.PREPAID !== (oldDealRecord?.PREPAID === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Предоплачено',
+        USR$OLD_VALUE: oldDealRecord.PREPAID === 1 ? 'Истина' : 'Ложь',
+        USR$NEW_VALUE: deal.PREPAID ? 'Истина' : 'Ложь',
+        USR$USERKEY: userId
+      });
+    };
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
         USR$PERFORMER, USR$SECOND_PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
-        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION, USR$PREPAID)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
@@ -250,7 +262,8 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CONTACT_EMAIL,
       deal.CONTACT_PHONE,
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
-      deal.DESCRIPTION || ''
+      deal.DESCRIPTION || '',
+      deal.PREPAID ?? false
     ];
 
     const dealRecord: IDeal = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
