@@ -319,7 +319,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging, addIsFetching]);
+  }, [card, snapshot.isDragging, addIsFetching, theme]);
 
   return (
     <>
