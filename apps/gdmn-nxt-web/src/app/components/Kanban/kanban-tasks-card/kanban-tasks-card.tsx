@@ -112,7 +112,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             direction="row"
             style={{ justifyContent: 'space-between' }}
           >
-            <Typography variant="h4"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 40)}</Typography>
+            <Typography variant="h4"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 39)}</Typography>
             <Typography
               className="number"
               variant="caption"
