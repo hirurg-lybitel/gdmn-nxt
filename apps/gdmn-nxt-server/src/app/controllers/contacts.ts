@@ -208,16 +208,14 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    interface IFolders {
-      [id: string]: string;
-    };
+    // interface IFolders {
+    //   [id: string]: string;
+    // };
 
-    const folders: IFolders = rawFolders.reduce((p, f) => {
-      p[f.ID] = f.NAME;
-      return p;
-    }, {});
-
-    const tCon = new Date().getTime();
+    // const folders: IFolders = rawFolders.reduce((p, f) => {
+    //   p[f.ID] = f.NAME;
+    //   return p;
+    // }, {});
 
     const contacts: ICustomer[] = rawContacts.map(c => {
       const LABELS = labels[c.ID] ?? null;
@@ -241,7 +239,6 @@ export const getContacts: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    const a = 'a';
     await releaseReadTransaction();
     // await releaseReadTransaction(req.sessionID);
   }
