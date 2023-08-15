@@ -2,6 +2,7 @@ import { wrapForNamedParams } from '@gsbelarus/util-helpers';
 import { Semaphore } from '@gsbelarus/util-useful';
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation } from 'node-firebird-driver-native';
 import { config } from './db-config';
+import { genId } from './genId';
 
 const { host, port, db, username, password } = config;
 
@@ -61,7 +62,7 @@ const cleanupInterval = setInterval(
 
       for (const sessionId of Object.keys(sessions)) {
         if (!sessions[sessionId].attachment.isValid) {
-          console.log(`DB Session ${sessionId} has been deleted due to inactivity...`);
+          console.log(new Date().toLocaleTimeString(), `DB Session ${sessionId} has been deleted due to inactivity...`);
           delete sessions[sessionId];
         }
       }
@@ -224,6 +225,8 @@ export const acquireReadTransaction = async (sessionId: string) => {
   };
 
   return {
+    attachment,
+    transaction,
     releaseReadTransaction,
     ...wrapForNamedParams(attachment, transaction)
   };
@@ -256,10 +259,13 @@ export const startTransaction = async (sessionId: string) => {
     released = true;
   };
 
+  const generateId = () => genId(attachment, transaction);
+
   return {
     attachment,
     transaction,
     releaseTransaction,
+    generateId,
     ...wrapForNamedParams(attachment, transaction)
   };
 };

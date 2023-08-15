@@ -82,6 +82,7 @@ const upsert: RequestHandler = async (req, res) => {
     const cardId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
     const dealId = await (() => isInsertMode ? genId(attachment, transaction) : deal.ID)();
 
+
     let paramsValues;
     let sql;
 
@@ -100,7 +101,7 @@ const upsert: RequestHandler = async (req, res) => {
       const checkTasks: { COUNT: number} = await executeSingletonAsObject(sql);
 
       if ((checkTasks.COUNT || 0) > 0) {
-        throw new Error('Не может быть исполнено. Есть незакрытые задачи');
+        return res.status(400).send(resultError('Не может быть исполнено. Есть незакрытые задачи'));
       }
     }
 
@@ -110,7 +111,8 @@ const upsert: RequestHandler = async (req, res) => {
         d.USR$AMOUNT, d.USR$CONTACTKEY, d.USR$NAME, d.USR$PERFORMER, d.USR$SECOND_PERFORMER,
         con.ID AS CONTACT_ID, con.NAME AS CONTACT_NAME,
         performer_1.ID AS PERMORMER_1_ID, performer_1.NAME AS PERMORMER_1_NAME,
-        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME
+        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME,
+        d.USR$PREPAID AS PREPAID
       FROM USR$CRM_DEALS d
         LEFT JOIN GD_CONTACT con ON con.ID = d.USR$CONTACTKEY
         LEFT JOIN GD_CONTACT performer_1 ON performer_1.ID = d.USR$PERFORMER
@@ -128,10 +130,22 @@ const upsert: RequestHandler = async (req, res) => {
     const oldCardRecord = await fetchAsSingletonObject(sql, { cardId });
 
     sql = `
-      SELECT ID, USR$NAME
-      FROM USR$CRM_KANBAN_COLUMNS`;
+      SELECT col.ID, col.USR$NAME
+      FROM USR$CRM_KANBAN_TEMPLATE temp
+        JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
+        JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
+      WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+      ORDER BY col.USR$INDEX`;
 
     const columns = await fetchAsObject(sql);
+
+    const newStageIndex = columns.findIndex(stage => stage['ID'] === card.USR$MASTERKEY);
+    const oldStageIndex = columns.findIndex(stage => stage['ID'] === oldCardRecord?.USR$MASTERKEY);
+
+    /** Отключено на время продумывания перехода с этапа на этап */
+    // if (Math.abs(newStageIndex - oldStageIndex) > 1) {
+    //   return res.status(400).send(resultError('Сделку можно перемещать только на один этап'));
+    // }
 
     const changes: IKanbanHistory[] = [];
     if ((Number(deal.USR$AMOUNT) || 0) !== (Number(oldDealRecord?.USR$AMOUNT) || 0)) {
@@ -200,12 +214,23 @@ const upsert: RequestHandler = async (req, res) => {
         USR$USERKEY: userId
       });
     };
+    if (deal.PREPAID !== (oldDealRecord?.PREPAID === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Предоплачено',
+        USR$OLD_VALUE: oldDealRecord.PREPAID === 1 ? 'Истина' : 'Ложь',
+        USR$NEW_VALUE: deal.PREPAID ? 'Истина' : 'Ложь',
+        USR$USERKEY: userId
+      });
+    };
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
         USR$PERFORMER, USR$SECOND_PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
-        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION, USR$PREPAID)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
@@ -232,7 +257,8 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CONTACT_EMAIL,
       deal.CONTACT_PHONE,
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
-      deal.DESCRIPTION || ''
+      deal.DESCRIPTION || '',
+      deal.PREPAID ?? false
     ];
 
     const dealRecord: IDeal = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);

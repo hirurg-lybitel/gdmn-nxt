@@ -1,4 +1,4 @@
-import { IDealDocument, IDealSource, IDenyReason, IRequestResult, ITaskType } from '@gsbelarus/util-api-types';
+import { IClientHistory, IClientHistoryType, IDealDocument, IDealSource, IDenyReason, IRequestResult, ITaskType } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -22,9 +22,25 @@ type IDealDocumentsRequestResult = IRequestResult<{
   documents: IDealDocument[];
 }>;
 
+type IClientHistoryRequestResult = IRequestResult<{
+  clientHistory: IClientHistory[];
+}>;
+
+type IClientHistoryMutationRequestResult = IRequestResult<{
+  clientHistory: IClientHistory;
+}>;
+
+type IClientHistoryTypesRequestResult = IRequestResult<{
+  clientHistoryTypes: IClientHistoryType[];
+}>;
+
+type IClientHistoryTypesMutationRequestResult = IRequestResult<{
+  clientHistoryTypes: IClientHistoryType;
+}>;
+
 export const kanbanCatalogsApi = createApi({
   reducerPath: 'kanbanCatalogs',
-  tagTypes: ['DealSource', 'DenyReasons', 'TaskTypes'],
+  tagTypes: ['DealSource', 'DenyReasons', 'TaskTypes', 'ClientHistory'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: builder => ({
     getDealSources: builder.query<IDealSource[], void>({
@@ -231,7 +247,56 @@ export const kanbanCatalogsApi = createApi({
     getDocuments: builder.query<IDealDocument[], number>({
       query: (dealId) => `kanban/catalogs/documents/${dealId}`,
       transformResponse: (response: IDealDocumentsRequestResult) => response.queries.documents || [],
-    })
+    }),
+    getClientHistory: builder.query<IClientHistory[], number>({
+      query: (cardId) => `kanban/catalogs/client-history/${cardId}`,
+      transformResponse: (response: IClientHistoryRequestResult) => response.queries.clientHistory || [],
+      providesTags: (result, error) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'ClientHistory' as const, ID })),
+            { type: 'ClientHistory', id: 'LIST' }
+          ]
+          : error
+            ? [{ type: 'ClientHistory', id: 'ERROR' }]
+            : [{ type: 'ClientHistory', id: 'LIST' }]
+    }),
+    addClientHistory: builder.mutation<IClientHistory, Partial<IClientHistory>>({
+      query: (body) => ({
+        url: 'kanban/catalogs/client-history',
+        method: 'POST',
+        body
+      }),
+      transformResponse: (response: IClientHistoryMutationRequestResult) => response.queries.clientHistory,
+      invalidatesTags: (result, error) => [{ type: 'ClientHistory', id: 'LIST' }]
+    }),
+    updateClientHistory: builder.mutation<IClientHistory, Partial<IClientHistory>>({
+      query (body) {
+        const { ID: id, ...rest } = body;
+        return {
+          url: `kanban/catalogs/client-history/${id}`,
+          method: 'PUT',
+          body: rest
+        };
+      },
+      transformResponse: (response: IClientHistoryMutationRequestResult) => response.queries.clientHistory,
+      invalidatesTags: (result, error) => [{ type: 'ClientHistory', id: result?.ID }]
+    }),
+    getClientHistoryType: builder.query<IClientHistoryType[], void>({
+      query: () => 'kanban/catalogs/client-history-types',
+      transformResponse: (response: IClientHistoryTypesRequestResult) => response.queries.clientHistoryTypes || [],
+    }),
+    updateClientHistoryType: builder.mutation<IClientHistoryType, Partial<IClientHistoryType>>({
+      query (body) {
+        const { ID, ...rest } = body;
+        return {
+          url: `kanban/catalogs/client-history-types/${ID}`,
+          method: 'PUT',
+          body: rest
+        };
+      },
+      transformResponse: (response: IClientHistoryTypesMutationRequestResult) => response.queries.clientHistoryTypes,
+    }),
   })
 });
 
@@ -248,5 +313,10 @@ export const {
   useAddTaskTypeMutation,
   useUpdateTaskTypeMutation,
   useDeleteTaskTypeMutation,
-  useGetDocumentsQuery
+  useGetDocumentsQuery,
+  useAddClientHistoryMutation,
+  useUpdateClientHistoryMutation,
+  useGetClientHistoryQuery,
+  useGetClientHistoryTypeQuery,
+  useUpdateClientHistoryTypeMutation
 } = kanbanCatalogsApi;

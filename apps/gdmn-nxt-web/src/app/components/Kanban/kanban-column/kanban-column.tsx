@@ -14,6 +14,7 @@ import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from 
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
+import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 
 export interface KanbanColumnProps {
   provided?: DraggableProvided;
@@ -81,8 +82,12 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const [titleText, setTitleText] = useState(item.USR$NAME);
 
   const header = () => {
-    const handleEditTitle = () => {
+    const handleEditColumn = () => {
       setEditTitleText(true);
+    };
+
+    const handleDeleteColumn = () => {
+      setConfirmOpen(true);
     };
 
     const handleTitleKeyPress = (event: any) => {
@@ -202,12 +207,16 @@ export function KanbanColumn(props: KanbanColumnProps) {
           className="actions"
           hidden
         >
-          <IconButton size="small" onClick={() => handleEditTitle()}>
-            <EditIcon fontSize="small" />
-          </IconButton >
-          <IconButton size="small" onClick={() => setConfirmOpen(true)}>
-            <DeleteIcon fontSize="small" />
-          </IconButton >
+          <PermissionsGate actionAllowed={userPermissions?.stages?.PUT}>
+            <IconButton size="small" onClick={handleEditColumn}>
+              <EditIcon fontSize="small" />
+            </IconButton >
+          </PermissionsGate>
+          <PermissionsGate actionAllowed={userPermissions?.stages?.DELETE}>
+            <IconButton size="small" onClick={handleDeleteColumn}>
+              <DeleteIcon fontSize="small" />
+            </IconButton >
+          </PermissionsGate>
         </div>
       </Stack>
     );
@@ -226,7 +235,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   return (
     <Box
-      style={{ display: 'flex', flex: 1, height: 'calc(100vh - 180px)', }}
+      style={{ display: 'flex', flex: 1, height: 'calc(100vh - 140px)', }}
       flexDirection={'column'}
     >
       <Box
@@ -240,8 +249,8 @@ export function KanbanColumn(props: KanbanColumnProps) {
         ? <Skeleton
           variant="rectangular"
           height={'100%'}
-          style={{ borderRadius: '12px 12px 12px 12px' }}
-          />
+          style={{ borderRadius: '12px' }}
+        />
         : <>
           <CustomizedCard
             borders={colorMode === ColorMode.Light}
@@ -278,12 +287,10 @@ export function KanbanColumn(props: KanbanColumnProps) {
                   })
               }}
             >
-              <PerfectScrollbar
-                style={{
-                  overflow: 'auto',
-                  paddingRight: '16px',
-                  paddingLeft: '16px'
-                }}
+              <CustomizedScrollBox
+                withBlur
+                backgroundColor={theme.palette.background.paper}
+                style={{ paddingRight: '16px', paddingLeft: '16px' }}
               >
                 <Stack
                   direction="column"
@@ -291,7 +298,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
                 >
                   {children}
                 </Stack>
-              </PerfectScrollbar>
+              </CustomizedScrollBox>
             </CardContent>
             <CardActions>
               <PermissionsGate actionAllowed={userPermissions?.deals.POST}>

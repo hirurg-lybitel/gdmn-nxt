@@ -49,12 +49,14 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query }) => {
-      const startTime = new Date().getTime();
+      // const startTime = new Date().getTime();
+      console.time(`${name} fetch time`);
       // const rs = await attachment.executeQuery(transaction, query, []);
       const data = await fetchAsObject(query);
       // const data = await rs.fetchAsObject();
-      const endTime = new Date().getTime();
-      console.log(`${name} fetch time ms`, endTime - startTime);
+      // const endTime = new Date().getTime();
+      // console.log(`${name} fetch time ms`, endTime - startTime);
+      console.timeEnd(`${name} fetch time`);
       // await rs.close();
 
       return data as any;
@@ -167,12 +169,12 @@ export const getContacts: RequestHandler = async (req, res) => {
       // }
     ];
 
-    let startTime = new Date().getTime();
+    console.time('Promise time');
     const [rawFolders, rawContacts, rawLabels, rawBusinessProcesses, rowCount] = await Promise.all(queries.map(execQuery));
 
-    let endTime = new Date().getTime();
+    // let endTime = new Date().getTime();
 
-    console.log('Promise time ms', endTime - startTime);
+    console.timeEnd('Promise time');
 
     // const [rawContacts] = await Promise.all(queries.map(execQuery));
     // const rawContacts = await Promise.resolve(execQuery(q[2]));
@@ -206,16 +208,14 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    interface IFolders {
-      [id: string]: string;
-    };
+    // interface IFolders {
+    //   [id: string]: string;
+    // };
 
-    const folders: IFolders = rawFolders.reduce((p, f) => {
-      p[f.ID] = f.NAME;
-      return p;
-    }, {});
-
-    const tCon = new Date().getTime();
+    // const folders: IFolders = rawFolders.reduce((p, f) => {
+    //   p[f.ID] = f.NAME;
+    //   return p;
+    // }, {});
 
     const contacts: ICustomer[] = rawContacts.map(c => {
       const LABELS = labels[c.ID] ?? null;
@@ -239,7 +239,6 @@ export const getContacts: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    const a = 'a';
     await releaseReadTransaction();
     // await releaseReadTransaction(req.sessionID);
   }

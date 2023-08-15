@@ -223,7 +223,8 @@ const upsert: RequestHandler = async (req, res) => {
         PERFORMER INTEGER = ?,
         CREATOR INTEGER = ?,
         TASKTYPEKEY INTEGER = ?,
-        INPROGRESS SMALLINT = ?
+        INPROGRESS SMALLINT = ?,
+        DESCRIPTION TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$DESCRIPTION = ?
       )
       RETURNS(
         ID INTEGER,
@@ -246,8 +247,8 @@ const upsert: RequestHandler = async (req, res) => {
 
 
         UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_TASKS
-        (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER, USR$INPROGRESS)
-        VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER, :INPROGRESS)
+        (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER, USR$INPROGRESS, USR$DESCRIPTION)
+        VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER, :INPROGRESS, :DESCRIPTION)
         MATCHING(ID)
         RETURNING ID, USR$NUMBER, USR$CARDKEY
         INTO :ID, :USR$NUMBER, :USR$CARDKEY;
@@ -265,6 +266,7 @@ const upsert: RequestHandler = async (req, res) => {
       task.CREATOR?.ID > 0 ? task.CREATOR?.ID : null,
       task.TASKTYPE?.ID > 0 ? task.TASKTYPE?.ID : null,
       Number(task.USR$INPROGRESS),
+      task.DESCRIPTION
     ];
     const taskRecord = await executeSingletonAsObject(sql, paramsValues);
 

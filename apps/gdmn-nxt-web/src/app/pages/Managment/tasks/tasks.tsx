@@ -2,7 +2,7 @@ import styles from './tasks.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import { useAddTaskMutation, useGetKanbanTasksQuery } from '../../../features/kanban/kanbanApi';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Box, CircularProgress, IconButton, Skeleton, Stack, Tooltip } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Box, CircularProgress, Divider, IconButton, Skeleton, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
@@ -23,7 +23,7 @@ import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 export interface TasksProps {}
 
 export function Tasks(props: TasksProps) {
-  const [tabNo, setTabNo] = useState(0);
+  const [tabNo, setTabNo] = useState('0');
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.tasks);
   const { data: columns = [], isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanTasksQuery({
@@ -89,6 +89,27 @@ export function Tasks(props: TasksProps) {
           borders
           className={styles.headerCard}
         >
+          <ToggleButtonGroup
+            color="primary"
+            value={tabNo}
+            exclusive
+            size="small"
+            onChange={(e, value) => {
+              if (!value) return;
+              setTabNo(value);
+            }}
+          >
+            <ToggleButton value="0" className={styles.toggleButton}>
+              <Tooltip title="Доска" arrow>
+                <ViewWeekIcon />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="1" className={styles.toggleButton}>
+              <Tooltip title="Список" arrow>
+                <ViewStreamIcon />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
           <Box flex={1} />
           <PermissionsGate actionAllowed={userPermissions?.tasks?.POST}>
             <IconButton
@@ -112,25 +133,6 @@ export function Tasks(props: TasksProps) {
             </Badge>
           </IconButton>
         </CustomizedCard>
-        <CustomizedCard
-          borders
-          className={styles.switchViewCard}
-        >
-          <BottomNavigation
-            value={tabNo}
-            className={styles.bottomNavigation}
-            onChange={(e, newValue: number) => {
-              setTabNo(newValue);
-            }}
-          >
-            <Tooltip title="Доска" arrow>
-              <BottomNavigationAction className={styles.navigation} icon={<ViewWeekIcon />} />
-            </Tooltip>
-            <Tooltip title="Список" arrow>
-              <BottomNavigationAction className={styles.navigation} icon={<ViewStreamIcon />} />
-            </Tooltip>
-          </BottomNavigation>
-        </CustomizedCard>
       </>
     );
   }
@@ -153,9 +155,9 @@ export function Tasks(props: TasksProps) {
       <div className={styles.dataContainer}>
         {(() => {
           switch (tabNo) {
-            case 0:
+            case '0':
               return KanbanBoardMemo;
-            case 1:
+            case '1':
               return KanbanListMemo;
             default:
               return <></>;

@@ -1,11 +1,12 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Theme, Tooltip, Icon } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -288,7 +289,22 @@ export function KanbanCard(props: KanbanCardProps) {
               : null
             }
           </Stack>
-          <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+          <Stack direction="row" spacing={1}>
+            <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+            <Box flex={1} />
+            {
+              card.DEAL?.PREPAID &&
+              <Tooltip title={'Предоплачено'} arrow>
+                <Icon
+                  fontSize="small"
+                  color={'success'}
+                  style={{ marginTop: '-4px' }}
+                >
+                  <PaidOutlinedIcon fontSize="small" />
+                </Icon>
+              </Tooltip>
+            }
+          </Stack>
           <Stack direction="row">
             <Typography variant="h2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
             <Box flex={1} />
@@ -303,7 +319,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging, addIsFetching]);
+  }, [card, snapshot.isDragging, addIsFetching, theme]);
 
   return (
     <>

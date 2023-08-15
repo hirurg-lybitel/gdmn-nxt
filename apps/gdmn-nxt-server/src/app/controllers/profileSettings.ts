@@ -72,8 +72,6 @@ const set: RequestHandler = async (req, res) => {
     EMAIL
   } = req.body;
 
-  // console.log('set', req.body);
-
   try {
     const charArrayString = avatar !== null ? string2Bin(avatar).toString() : null;
     const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString?.length : 0, charArrayString);
