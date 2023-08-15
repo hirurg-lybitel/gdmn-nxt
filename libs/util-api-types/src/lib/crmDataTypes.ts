@@ -276,7 +276,7 @@ export type ActionName =
   'tasks' |
   'customers' |
   'updates' |
-  'tables' |
+  'stages' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
