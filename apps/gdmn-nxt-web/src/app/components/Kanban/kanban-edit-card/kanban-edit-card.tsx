@@ -731,104 +731,111 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             )}
                           />
                         </Stack>
-                        <Stack direction="row" spacing={3} alignItems="center">
-                          <Stack>
-                            <Stack direction="row" spacing={3}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    name="DEAL.PREPAID"
-                                    checked={formik.values.DEAL?.PREPAID}
-                                    onChange={formik.handleChange}
-                                  />
-                                }
-                                label="Предоплачено"
-                              />
-                              {/* {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ? */}
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={formik.values.DEAL?.USR$READYTOWORK || false}
-                                    onChange={(e) => {
-                                      const value = e.target.checked;
-                                      formik.setFieldValue(
-                                        'DEAL',
-                                        { ...formik.values.DEAL, USR$READYTOWORK: value }
-                                      );
-                                      // formik.setFieldValue(
-                                      //   'USR$MASTERKEY',
-                                      //   value ? stages[2].ID : stages[1].ID
-                                      // );
-                                    }}
-                                  />
-                                }
-                                label="В работе"
-                              />
-                              {/* : <></>} */}
-                              {/* {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
-                                formik.values.USR$MASTERKEY === stages[3]?.ID ||
-                                formik.values.DEAL?.USR$DONE)
-                                ?  */}
-                              <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
+                        <Stack
+                          direction="row"
+                          spacing={3}
+                          alignItems="center"
+                        >
+                          <Stack flex={1}>
+                            <Stack direction="column" spacing={2}>
+                              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                 <FormControlLabel
-                                  disabled={checkDoneAndTasks}
                                   control={
                                     <Checkbox
-                                      checked={formik.values.DEAL?.USR$DONE || false}
+                                      name="DEAL.PREPAID"
+                                      checked={formik.values.DEAL?.PREPAID}
+                                      onChange={formik.handleChange}
+                                    />
+                                  }
+                                  label="Оплачено"
+                                />
+                                {/* {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ? */}
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={formik.values.DEAL?.USR$READYTOWORK || false}
                                       onChange={(e) => {
                                         const value = e.target.checked;
                                         formik.setFieldValue(
                                           'DEAL',
-                                          { ...formik.values.DEAL, USR$DONE: value }
+                                          { ...formik.values.DEAL, USR$READYTOWORK: value }
                                         );
                                         // formik.setFieldValue(
                                         //   'USR$MASTERKEY',
-                                        //   value ? stages[3].ID : stages[2].ID
+                                        //   value ? stages[2].ID : stages[1].ID
                                         // );
                                       }}
                                     />
                                   }
-                                  label="Исполнено"
+                                  label="В работе"
                                 />
-                              </Tooltip>
+                                {/* : <></>} */}
+                                {/* {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
+                                  formik.values.USR$MASTERKEY === stages[3]?.ID ||
+                                  formik.values.DEAL?.USR$DONE)
+                                  ?  */}
+                                <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
+                                  <FormControlLabel
+                                    disabled={checkDoneAndTasks}
+                                    control={
+                                      <Checkbox
+                                        checked={formik.values.DEAL?.USR$DONE || false}
+                                        onChange={(e) => {
+                                          const value = e.target.checked;
+                                          formik.setFieldValue(
+                                            'DEAL',
+                                            { ...formik.values.DEAL, USR$DONE: value }
+                                          );
+                                          // formik.setFieldValue(
+                                          //   'USR$MASTERKEY',
+                                          //   value ? stages[3].ID : stages[2].ID
+                                          // );
+                                        }}
+                                      />
+                                    }
+                                    label="Исполнено"
+                                  />
+                                </Tooltip>
+                              </Stack>
                               {/* : <></> */}
                               {/* } */}
                               {/* {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ? */}
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={formik.values.DEAL?.DENIED || false}
-                                    onChange={(e) => {
-                                      const checked = e.target.checked;
-                                      formik.setFieldValue(
-                                        'DEAL',
-                                        { ...formik.values.DEAL, DENIED: checked }
-                                      );
-                                      // const newMasterKey = (() => {
-                                      //   if (checked) return stages[4].ID;
-                                      //   if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
-                                      //   if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
-                                      //   if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
-                                      //   return stages[0].ID;
-                                      // })();
-                                      // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
-                                      if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
-                                      if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
-                                    }}
-                                  />
-                                }
-                                label="Отказ"
-                              />
+                              <Stack direction="row" spacing={2}>
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={formik.values.DEAL?.DENIED || false}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        formik.setFieldValue(
+                                          'DEAL',
+                                          { ...formik.values.DEAL, DENIED: checked }
+                                        );
+                                        // const newMasterKey = (() => {
+                                        //   if (checked) return stages[4].ID;
+                                        //   if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
+                                        //   if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
+                                        //   if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
+                                        //   return stages[0].ID;
+                                        // })();
+                                        // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
+                                        if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
+                                        if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
+                                      }}
+                                    />
+                                  }
+                                  label="Отказ"
+                                />
+                                {formik.values.DEAL?.DENIED &&
+                                  <Stack flex={1} spacing={3}>
+                                    <DenyReasonsSelect formik={formik} />
+                                  </Stack>}
+                              </Stack>
                               {/* : <></> */}
                               {/* } */}
                             </Stack>
                             <Box flex={1} />
                           </Stack>
-
-                          {formik.values.DEAL?.DENIED &&
-                            <Stack flex={1} spacing={3}>
-                              <DenyReasonsSelect formik={formik} />
-                            </Stack>}
                         </Stack>
                         {(formik.values.DEAL?.DENIED || formik.values.DEAL?.USR$DONE) &&
                           <TextField
