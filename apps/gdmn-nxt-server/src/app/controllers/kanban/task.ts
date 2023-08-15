@@ -228,6 +228,7 @@ const upsert: RequestHandler = async (req, res) => {
       )
       RETURNS(
         ID INTEGER,
+        USR$NUMBER TYPE OF COLUMN USR$CRM_KANBAN_CARD_TASKS.USR$NUMBER,
         USR$CARDKEY INTEGER
       )
       AS
@@ -249,8 +250,8 @@ const upsert: RequestHandler = async (req, res) => {
         (ID, USR$CARDKEY, USR$NAME, USR$CLOSED, USR$DEADLINE, USR$PERFORMER, USR$CREATORKEY, USR$TASKTYPEKEY, USR$NUMBER, USR$INPROGRESS, USR$DESCRIPTION)
         VALUES(:IN_ID, :CARDKEY, :NAME, :CLOSED, :DEADLINE, :PERFORMER, :CREATOR, :TASKTYPEKEY, :NEW_NUMBER, :INPROGRESS, :DESCRIPTION)
         MATCHING(ID)
-        RETURNING ID, USR$CARDKEY
-        INTO :ID, :USR$CARDKEY;
+        RETURNING ID, USR$NUMBER, USR$CARDKEY
+        INTO :ID, :USR$NUMBER, :USR$CARDKEY;
 
         SUSPEND;
       END`;
@@ -271,7 +272,6 @@ const upsert: RequestHandler = async (req, res) => {
 
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
-
 
     /** Изменение статуса карточки */
     sql = `
