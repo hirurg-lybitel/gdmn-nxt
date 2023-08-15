@@ -611,7 +611,7 @@ export const kanbanApi = createApi({
       },
       async onCacheEntryAdded(
         arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, requestId, getCacheEntry, getState }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, requestId, getCacheEntry, getState, extra, dispatch }
       ) {
         let addTaskCardListener;
         let updateTaskCardListener;
@@ -621,34 +621,36 @@ export const kanbanApi = createApi({
           await cacheDataLoaded;
 
           addTaskCardListener = (columnIndex: number, task: IKanbanTask) => {
-            updateCachedData((draft) => {
-              draft[columnIndex].CARDS.unshift({
-                ID: -1,
-                USR$MASTERKEY: draft[columnIndex].ID,
-                USR$INDEX: 0,
-                TASK: { ...task },
-                STATUS: { isRead: false },
-              });
-            });
+            dispatch(kanbanApi.util.invalidateTags([{ type: 'Task', id: 'LIST' }]));
+            // updateCachedData((draft) => {
+            //   draft[columnIndex].CARDS.unshift({
+            //     ID: -1,
+            //     USR$MASTERKEY: draft[columnIndex].ID,
+            //     USR$INDEX: 0,
+            //     TASK: { ...task },
+            //     STATUS: { isRead: false },
+            //   });
+            // });
           };
           socketClient.on(KanbanEvent.AddTaskCard, addTaskCardListener);
 
           updateTaskCardListener = (columnIndex: number, newTask: IKanbanTask) => {
-            updateCachedData((draft) => {
-              draft?.every(column => {
-                const findTaskCardIndex = column.CARDS.findIndex(({ TASK }) => TASK?.ID === newTask.ID);
-                if (findTaskCardIndex < 0) return true;
+            dispatch(kanbanApi.util.invalidateTags([{ type: 'Task', id: newTask.ID }]));
+            // updateCachedData((draft) => {
+            //   draft?.every(column => {
+            //     const findTaskCardIndex = column.CARDS.findIndex(({ TASK }) => TASK?.ID === newTask.ID);
+            //     if (findTaskCardIndex < 0) return true;
 
-                const deletedCard = column.CARDS.splice(findTaskCardIndex, 1)[0];
-                draft[columnIndex].CARDS.unshift({
-                  ...deletedCard,
-                  STATUS: { ...deletedCard.STATUS, isRead: false },
-                  TASK: { ...deletedCard.TASK, ...newTask }
-                });
+            //     const deletedCard = column.CARDS.splice(findTaskCardIndex, 1)[0];
+            //     draft[columnIndex].CARDS.unshift({
+            //       ...deletedCard,
+            //       STATUS: { ...deletedCard.STATUS, isRead: false },
+            //       TASK: { ...deletedCard.TASK, ...newTask }
+            //     });
 
-                return false;
-              });
-            });
+            //     return false;
+            //   });
+            // });
           };
           socketClient.on(KanbanEvent.UpdateTaskCard, updateTaskCardListener);
 
