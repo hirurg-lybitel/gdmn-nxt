@@ -82,8 +82,12 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const [titleText, setTitleText] = useState(item.USR$NAME);
 
   const header = () => {
-    const handleEditTitle = () => {
+    const handleEditColumn = () => {
       setEditTitleText(true);
+    };
+
+    const handleDeleteColumn = () => {
+      setConfirmOpen(true);
     };
 
     const handleTitleKeyPress = (event: any) => {
@@ -203,12 +207,16 @@ export function KanbanColumn(props: KanbanColumnProps) {
           className="actions"
           hidden
         >
-          <IconButton size="small" onClick={() => handleEditTitle()}>
-            <EditIcon fontSize="small" />
-          </IconButton >
-          <IconButton size="small" onClick={() => setConfirmOpen(true)}>
-            <DeleteIcon fontSize="small" />
-          </IconButton >
+          <PermissionsGate actionAllowed={userPermissions?.stages?.PUT}>
+            <IconButton size="small" onClick={handleEditColumn}>
+              <EditIcon fontSize="small" />
+            </IconButton >
+          </PermissionsGate>
+          <PermissionsGate actionAllowed={userPermissions?.stages?.DELETE}>
+            <IconButton size="small" onClick={handleDeleteColumn}>
+              <DeleteIcon fontSize="small" />
+            </IconButton >
+          </PermissionsGate>
         </div>
       </Stack>
     );
