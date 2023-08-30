@@ -211,20 +211,11 @@ const router = express.Router();
 export const apiVersion = apiRoot.v1;
 
 router.use(authRouter);
-/** Подключаем мидлвар после роутов, на котоыре он не должен распространятсься */
+/** Подключаем мидлвар после роутов, на которые он не должен распространятсься */
 router.use(checkPermissions);
 
 app.use(middlewares);
 app.use(apiVersion, router);
-
-// router.use(
-//   (req, res, next) => {
-//     if (!req.isAuthenticated()) {
-//       return res.send('Not authenticated!');
-//     }
-//     next();
-//   }
-// );
 
 /** Write permissions to cache when server is starting */
 setPermissonsCache();

@@ -478,11 +478,16 @@ const reorderCards: RequestHandler = async (req, res) => {
     const cards: IKanbanCard[] = req.body;
 
     if (!cards.length) {
-      // return res.status(422).send(resultError('Нет данных'));
-      return res.status(204).send([]);
+      const result: IRequestResult = {
+        queries: {
+          cards: []
+        },
+        _schema: undefined
+      };
+      return res.status(200).json(result);
     };
 
-    const allFields = ['ID', 'USR$INDEX'];
+    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY'];
     const actualFields = allFields.filter(field => typeof cards[0][field] !== 'undefined');
     const actualFieldsNames = actualFields.join(',');
     const paramsString = actualFields.map(_ => '?').join(',');

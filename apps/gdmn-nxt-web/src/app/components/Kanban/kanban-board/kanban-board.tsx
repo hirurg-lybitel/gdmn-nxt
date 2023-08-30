@@ -1,6 +1,6 @@
 import styles from './kanban-board.module.less';
 import { Box, Button, Stack } from '@mui/material';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useLayoutEffect } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
 import AddIcon from '@mui/icons-material/Add';
@@ -35,18 +35,23 @@ export interface KanbanBoardProps {
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {
-  const { columns = [], isLoading } = props;
+  const { columns: sourceColumns = [], isLoading } = props;
 
-  const user = useSelector<RootState, UserState>(state => state.user);
+  const [columns, setColumns] = useState(sourceColumns);
+
+  useLayoutEffect(() => {
+    setColumns(sourceColumns);
+  }, [sourceColumns]);
+
   const [updateColumn] = useUpdateColumnMutation();
   const [addColumn] = useAddColumnMutation();
   const [deleteColumn] = useDeleteColumnMutation();
   const [reorderColumn] = useReorderColumnsMutation();
 
   const [addCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: isLoadingAddCard }] = useAddCardMutation();
-  const [updateCard, { isSuccess: updateCardSuccess, isLoading: isLoadingEditCard }] = useUpdateCardMutation();
+  const [updateCard, { isSuccess: updateCardSuccess, isLoading: isLoadingEditCard, isError: updateCardIsError }] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
-  const [reorderCard] = useReorderCardsMutation();
+  const [reorderCard, { isSuccess: reorderCardIsSuccess, isError: reorderCardIserror }] = useReorderCardsMutation();
 
   const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
   const [updateTask] = useUpdateTaskMutation();
@@ -60,8 +65,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const dragColumnsEnable = false;
   const addColumnEnable = false;
   const deleteColumnEnable = false;
-
-  const changes = useRef<IChanges[]>([]);
 
   const columnHandlers = {
     handleTitleEdit: async (newColumn: IKanbanColumn) => {
@@ -117,7 +120,6 @@ export function KanbanBoard(props: KanbanBoardProps) {
     handleDeleteTask: (deletingTask: IKanbanTask) => deleteTask(deletingTask.ID)
   };
 
-  // console.log('columns', columns[0]);
   useEffect(() => {
     // console.log('useEffect', addCardSuccess, addedCard, addingCard.current?.TASKS);
     if (!addedCard) return;
@@ -139,23 +141,11 @@ export function KanbanBoard(props: KanbanBoardProps) {
     addingCard.current?.TASKS?.forEach(task => cardHandlers.handleAddTask({ ...task, USR$CARDKEY: cardId }));
   }, [addCardSuccess, addedCard]);
 
-  // useEffect(() => {
-  //   console.log('useEffect_addTaskSuccess', addTaskSuccess);
-  //   if (addTaskSuccess) return;
-  //   console.log('useEffect_addCardSuccess', addCardSuccess);
-  //   if (!addCardSuccess) return;
-  //   console.log('useEffect_addedCard', addedCard);
-  //   if (!Array.isArray(addedCard)) return;
-  //   const cardId = addedCard[0].ID;
-  //   const cardIsAddedToCache = !columns.every(({ CARDS }) => CARDS.findIndex(({ ID }) => ID === cardId) < 0);
-  //   console.log('useEffect_cardIsAddedToCache', cardIsAddedToCache);
-  //   if (!cardIsAddedToCache) return;
-  //   // const taskIsAddedToCache = !columns.every(({ CARDS }) => CARDS?.every(({ TASKS }) => (TASKS?.findIndex(({ ID }) => ID === cardId) ?? -1) < 0) ?? true);
-  //   // if (!taskIsAddedToCache) return;
-  //   console.log('useEffect', addingCard.current?.TASKS);
-  //   addingCard.current?.TASKS?.forEach(task => cardHandlers.handleAddTask({ ...task, USR$CARDKEY: addedCard[0].ID }));
-  //   // console.log('useEffect', addingCard.current, isLoadingAddCard, addedCard, addCardSuccess, columns);
-  // }, [columns, addCardSuccess, addedCard, addTaskSuccess]);
+  useEffect(() => {
+    if (updateCardIsError || reorderCardIserror) {
+      setColumns(sourceColumns);
+    };
+  }, [updateCardIsError, reorderCardIserror]);
 
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
     const result = Array.from(list);
@@ -165,22 +155,27 @@ export function KanbanBoard(props: KanbanBoardProps) {
     return result;
   };
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    if (!result.destination) {
+  const onDragEnd = useCallback(({ type, destination, source }: DropResult) => {
+    if (!destination) {
       return;
     };
 
-    if ((result.type === 'board') && (result.destination.index === result.source.index || !dragColumnsEnable)) {
+    if ((type === 'board') && (destination.index === source.index || !dragColumnsEnable)) {
+      return;
+    };
+
+    /** Checking for moving to the same location */
+    if (destination.droppableId === source.droppableId && destination.index === source.index) {
       return;
     };
 
     let newColumns: IKanbanColumn[] = columns || [] as IKanbanColumn[];
 
-    if (result.type === 'board') {
+    if (type === 'board') {
       newColumns = reorder(
         columns,
-        result.source.index,
-        result.destination.index
+        source.index,
+        destination.index
       );
 
       newColumns = newColumns.map((el, index) => {
@@ -191,13 +186,13 @@ export function KanbanBoard(props: KanbanBoardProps) {
       reorderColumn(newColumns);
     };
 
-    if (result.type === 'column') {
+    if (type === 'column') {
       /** если перемешаем внутри одной колонки */
-      if (result.destination.droppableId === result.source.droppableId) {
+      if (destination.droppableId === source.droppableId) {
         let newCards = reorder(
-          columns[Number(result.source.droppableId)].CARDS,
-          result.source.index,
-          result.destination.index
+          columns[Number(source.droppableId)].CARDS,
+          source.index,
+          destination.index
         );
 
         newCards = newCards.map((el, index) => {
@@ -205,42 +200,43 @@ export function KanbanBoard(props: KanbanBoardProps) {
         });
 
         newColumns = columns.map((column, index) =>
-          index === Number(result.source.droppableId) ? { ...column, CARDS: newCards } : column
+          index === Number(source.droppableId) ? { ...column, CARDS: newCards } : column
         );
 
-        // setColumns(newColumns);
+        setColumns(newColumns);
         reorderCard(newCards);
       } else {
         /** перемещаем в другую колонку */
         if (!dragToColumnsEnable) return;
 
         const moveCard: IKanbanCard = {
-          ...columns[Number(result.source.droppableId)].CARDS[result.source.index],
-          USR$MASTERKEY: columns[Number(result.destination.droppableId)].ID,
-          USR$INDEX: result.destination.index
+          ...columns[Number(source.droppableId)].CARDS[source.index],
+          USR$MASTERKEY: columns[Number(destination.droppableId)].ID,
+          USR$INDEX: destination.index
         };
 
         newColumns = columns.map((column, index) => {
           const cards = [...column.CARDS];
           let newCards = [...cards];
           switch (index) {
-            case Number(result.source.droppableId):
-              cards.splice(result.source.index, 1);
+            case Number(source.droppableId):
+              cards.splice(source.index, 1);
               newCards = cards.map((card, index) => ({ ...card, USR$INDEX: index }));
 
-              reorderCard(newCards);
+              // reorderCard(newCards);
               break;
 
-            case Number(result.destination!.droppableId):
-              cards.splice(result.destination!.index, 0, moveCard);
+            case Number(destination!.droppableId):
+              cards.splice(destination!.index, 0, moveCard);
               newCards = cards.map((card, index) => ({ ...card, USR$INDEX: index }));
 
-              reorderCard(newCards);
+              // reorderCard(newCards);
               break;
           }
           return { ...column, CARDS: newCards };
         });
 
+        setColumns(newColumns);
         updateCard(moveCard);
       }
     }
