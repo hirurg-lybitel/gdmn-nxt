@@ -460,21 +460,21 @@ export const kanbanApi = createApi({
       transformResponse: (response: IKanbanRequestResult) => {
         const result = response.queries?.cards || [];
 
-        if (result.length) {
-          socketClient.emit(KanbanEvent.ReorderCards, result[0].USR$MASTERKEY, result);
-        }
+        // if (result.length) {
+        //   socketClient.emit(KanbanEvent.ReorderCards, result[0].USR$MASTERKEY, arg);
+        // }
         return result;
       },
-      invalidatesTags: (result, error) => {
-        return result
-          ? [
-            ...result.map(({ USR$MASTERKEY }) => ({ type: 'Column' as const, USR$MASTERKEY })),
-            { type: 'Column', id: 'LIST' }
-          ]
-          : error
-            ? [{ type: 'Column', id: 'LIST' }]
-            : [{ type: 'Column', id: 'ERROR' }];
-      },
+      // invalidatesTags: (result, error) => {
+      //   return result
+      //     ? [
+      //       ...result.map(({ USR$MASTERKEY }) => ({ type: 'Column' as const, USR$MASTERKEY })),
+      //       { type: 'Column', id: 'LIST' }
+      //     ]
+      //     : error
+      //       ? [{ type: 'Column', id: 'LIST' }]
+      //       : [{ type: 'Column', id: 'ERROR' }];
+      // },
     }),
     getHistory: builder.query<IKanbanHistory[], number>({
       query: (cardId) => `kanban/history/${cardId}`,

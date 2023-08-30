@@ -65,7 +65,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction, executeSingletonAsObject, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
+  const { releaseTransaction, executeSingletonAsObject, fetchAsObject, fetchAsSingletonObject, generateId } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -79,9 +79,8 @@ const upsert: RequestHandler = async (req, res) => {
 
     const userId = req.session.userId || -1;
 
-    const cardId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
-    const dealId = await (() => isInsertMode ? genId(attachment, transaction) : deal.ID)();
-
+    const cardId = await (() => isInsertMode ? generateId() : Number(id))();
+    const dealId = await (() => isInsertMode ? generateId() : deal.ID)();
 
     let paramsValues;
     let sql;
@@ -261,7 +260,7 @@ const upsert: RequestHandler = async (req, res) => {
       deal.PREPAID ?? false
     ];
 
-    const dealRecord: IDeal = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
     sql = `
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
@@ -275,7 +274,7 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
 
-    await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    await executeSingletonAsObject(sql, paramsValues);
 
     const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY'];
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
@@ -313,8 +312,7 @@ const upsert: RequestHandler = async (req, res) => {
       MATCHING (ID)
       RETURNING ${returnFieldsNames}`;
 
-    const cardRecord: IKanbanCard = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
-
+    const cardRecord: IKanbanCard = await fetchAsSingletonObject(sql, paramsValues);
 
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
@@ -344,7 +342,7 @@ const upsert: RequestHandler = async (req, res) => {
           MATCHING(USR$CARDKEY, USR$USERKEY);
       END`;
 
-    await attachment.executeQuery(transaction, sql, [cardRecord.ID, userId]);
+    await executeSingletonAsObject(sql, [cardRecord.ID, userId]);
 
     const result: IRequestResult<{ cards: IKanbanCard[] }> = {
       queries: {
