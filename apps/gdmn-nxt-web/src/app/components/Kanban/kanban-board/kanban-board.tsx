@@ -51,7 +51,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
   const [addCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: isLoadingAddCard }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: isLoadingEditCard, isError: updateCardIsError }] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
-  const [reorderCard, { isSuccess: reorderCardIsSuccess, isError: reorderCardIserror }] = useReorderCardsMutation();
+  const [reorderCard, { isSuccess: reorderCardIsSuccess, isError: reorderCardIsError }] = useReorderCardsMutation();
 
   const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
   const [updateTask] = useUpdateTaskMutation();
@@ -142,10 +142,10 @@ export function KanbanBoard(props: KanbanBoardProps) {
   }, [addCardSuccess, addedCard]);
 
   useEffect(() => {
-    if (updateCardIsError || reorderCardIserror) {
+    if (updateCardIsError || reorderCardIsError) {
       setColumns(sourceColumns);
     };
-  }, [updateCardIsError, reorderCardIserror]);
+  }, [updateCardIsError, reorderCardIsError]);
 
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
     const result = Array.from(list);
