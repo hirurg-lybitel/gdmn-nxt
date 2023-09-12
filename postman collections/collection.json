@@ -1285,7 +1285,7 @@
 	"auth": {
 		"type": "apikey",
 		"apikey": {
-			"value": "123",
+			"value": "{{a",
 			"key": "x-api-key"
 		}
 	},
@@ -1293,7 +1293,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "f112255c-b33d-4b98-a28d-77bfc818cfa3",
+				"id": "683ddf7f-47b8-4ad7-abfb-1248afcf32d8",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1303,7 +1303,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "1ab4a6f4-1767-4135-ad25-a97fb4aabc97",
+				"id": "2298fb18-2bfe-40fa-b8b9-ebaa25edf820",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1313,9 +1313,15 @@
 	],
 	"variable": [
 		{
-			"id": "0b291734-35ed-4f27-a034-c9d992dd3261",
+			"id": "d41e1e4b-9cda-4204-938b-3a3868b155b6",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
+			"type": "string"
+		},
+		{
+			"id": "e61a855f-eb11-46df-a500-087ca7223517",
+			"key": "apiKey",
+			"value": "123",
 			"type": "string"
 		}
 	]
