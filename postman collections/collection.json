@@ -1293,7 +1293,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "6456bf50-f3c0-476a-9c30-2de19260d0a4",
+				"id": "1e009cb6-c3f9-43c6-b0ec-bec052156fd5",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1303,7 +1303,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "838d06b4-a0d2-455e-a8ca-24b50d409625",
+				"id": "e37cb9a5-2462-48fb-9790-cdeee65d04cb",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1313,13 +1313,13 @@
 	],
 	"variable": [
 		{
-			"id": "58332f59-6870-4cfe-b45f-e05708ea0284",
+			"id": "947896ba-1320-40c1-81bf-798205fe5e5c",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "25abb52a-9f6f-42e8-b6a3-2552ea9f0257",
+			"id": "8916453a-6d79-406f-8387-1e4d3b0b4c0d",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
