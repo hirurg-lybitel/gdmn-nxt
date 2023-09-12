@@ -130,7 +130,7 @@
 					"response": []
 				},
 				{
-					"name": "Обновить клиента",
+					"name": "Обновить1 клиента",
 					"id": "96a7d94a-45df-4916-bb5d-7cb7fed14bc5",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1313,7 +1313,7 @@
 	],
 	"variable": [
 		{
-			"id": "dc637e81-02f2-4e88-b1db-bce1dc9170c4",
+			"id": "83b7ca80-31c3-4de6-b933-1747ffee5f47",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
