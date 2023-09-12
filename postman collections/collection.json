@@ -130,7 +130,7 @@
 					"response": []
 				},
 				{
-					"name": "Обновить1 клиента",
+					"name": "Обновить клиента",
 					"id": "96a7d94a-45df-4916-bb5d-7cb7fed14bc5",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1293,7 +1293,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "fbf687d5-dfad-49a5-a366-e9a55540cf30",
+				"id": "f112255c-b33d-4b98-a28d-77bfc818cfa3",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1303,7 +1303,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "630def5a-4096-4ac6-b03f-6603cc58819b",
+				"id": "1ab4a6f4-1767-4135-ad25-a97fb4aabc97",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1313,7 +1313,7 @@
 	],
 	"variable": [
 		{
-			"id": "83b7ca80-31c3-4de6-b933-1747ffee5f47",
+			"id": "0b291734-35ed-4f27-a034-c9d992dd3261",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
