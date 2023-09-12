@@ -1,5 +1,5 @@
 import TreeItem from '@mui/lab/TreeItem/TreeItem';
-import treeItemClasses from '@mui/lab/TreeItem/treeItemClasses';
+import { treeItemClasses } from '@mui/lab';
 import TreeView from '@mui/lab/TreeView/TreeView';
 import { alpha, styled } from '@mui/material/styles';
 import { gdmnTheme } from '../../../theme/gdmn-theme';
