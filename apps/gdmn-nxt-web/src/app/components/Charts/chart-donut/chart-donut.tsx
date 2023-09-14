@@ -75,19 +75,24 @@ export function ChartDonut({ period }: ChartDonutProps) {
       position: 'left',
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
+        const oneValue = opts.w.globals.series.filter((item: number) => item > 0);
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
         const percentValue = (seriesValue / seriesSum) * 100;
+        console.log(oneValue);
         const percentString = (() => {
-          if (seriesSum === 1) {
-            if (seriesValue === 0) return '(0.0%)    ';
+          if (oneValue.length === 1) {
+            if (seriesValue === 0) return '    (0.0%)';
             return '(100.0%)';
           }
-          return `(${percentValue.toFixed(1)}%)  `;
+          if (percentValue < 9) {
+            return `  (${percentValue.toFixed(1)}%)`;
+          }
+          return `(${percentValue.toFixed(1)}%)`;
         })();
         return (
-          `<div style="padding-left:5px; position:relavite; display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
+          `<div style="position:relavite; display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
             <div>${legendName}</div>
-            <div style=" ${seriesSum > 0 ? '' : 'visibility: hidden;}'} display: flex; justify-content: end; white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${percentString}</span></div>
+            <div style=" ${seriesSum > 0 ? '' : 'visibility: hidden;}'} padding-left:10px; display: flex; justify-content: end; white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${percentString}</span></div>
           </div>`);
       },
       // itemMargin: {
