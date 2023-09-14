@@ -111,7 +111,7 @@ const upsert: RequestHandler = async (req, res) => {
         con.ID AS CONTACT_ID, con.NAME AS CONTACT_NAME,
         performer_1.ID AS PERMORMER_1_ID, performer_1.NAME AS PERMORMER_1_NAME,
         performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME,
-        d.USR$PREPAID AS PREPAID
+        d.USR$PREPAID AS PREPAID, USR$DENIED DENIED, USR$DONE, USR$READYTOWORK
       FROM USR$CRM_DEALS d
         LEFT JOIN GD_CONTACT con ON con.ID = d.USR$CONTACTKEY
         LEFT JOIN GD_CONTACT performer_1 ON performer_1.ID = d.USR$PERFORMER
@@ -218,9 +218,42 @@ const upsert: RequestHandler = async (req, res) => {
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
         USR$CARDKEY: cardId,
-        USR$DESCRIPTION: 'Предоплачено',
-        USR$OLD_VALUE: oldDealRecord.PREPAID === 1 ? 'Истина' : 'Ложь',
-        USR$NEW_VALUE: deal.PREPAID ? 'Истина' : 'Ложь',
+        USR$DESCRIPTION: 'Оплачено',
+        USR$OLD_VALUE: oldDealRecord.PREPAID === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.PREPAID ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.USR$READYTOWORK !== (oldDealRecord?.USR$READYTOWORK === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'В работе',
+        USR$OLD_VALUE: oldDealRecord.USR$READYTOWORK === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.USR$READYTOWORK ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.USR$DONE !== (oldDealRecord?.USR$DONE === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Исполнено',
+        USR$OLD_VALUE: oldDealRecord.USR$DONE === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.USR$DONE ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.DENIED !== (oldDealRecord?.DENIED === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Отказано',
+        USR$OLD_VALUE: oldDealRecord.DENIED === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.DENIED ? 'Да' : 'Нет',
         USR$USERKEY: userId
       });
     };

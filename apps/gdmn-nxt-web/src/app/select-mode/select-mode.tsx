@@ -10,7 +10,7 @@ export interface SelectModeProps {
 export function SelectMode({ employeeModeSelected, customerModeSelected }: SelectModeProps) {
   return (
     <Stack direction="column" alignItems="center" spacing={2}>
-      <Typography variant="h1">
+      <Typography variant="h6">
         Добро пожаловать на портал БелГИСС
       </Typography>
       <Stack direction="row" justifyContent="center" alignContent="stretch" spacing={2}>

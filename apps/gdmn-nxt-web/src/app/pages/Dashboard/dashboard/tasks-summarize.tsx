@@ -1,4 +1,4 @@
-import { CardContent, CardHeader, Grid, Stack, Typography, useTheme } from '@mui/material';
+import { Box, CardContent, CardHeader, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useGetKanbanDealsQuery, useGetKanbanTasksQuery } from '../../../features/kanban/kanbanApi';
@@ -18,8 +18,9 @@ interface TaskCardProps {
 
 const TaskCard = ({ title, quantity = 0, color, loading = true }: TaskCardProps) => {
   const theme = useTheme();
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
   return (
-    <CustomizedCard boxShadows={theme.palette.mode === ColorMode.Light} style={{ minHeight: '180px' }}>
+    <CustomizedCard boxShadows={theme.palette.mode === ColorMode.Light} style={{ minHeight: '180px', padding: '5px 0' }}>
       <CardHeader
         sx={{
           '.MuiCardHeader-content': {
@@ -27,6 +28,7 @@ const TaskCard = ({ title, quantity = 0, color, loading = true }: TaskCardProps)
           }
         }}
         title={<Typography
+          variant={matchDownLg ? 'subtitle1' : 'h6'}
           noWrap
           overflow="hidden"
           textOverflow="ellipsis"
@@ -34,13 +36,13 @@ const TaskCard = ({ title, quantity = 0, color, loading = true }: TaskCardProps)
           {title}
         </Typography>}
       />
-      <CardContent style={{ paddingTop: 0, display: 'inline' }}>
-        <Stack alignItems="center">
+      <CardContent>
+        <Box textAlign="center">
           {loading
             ? <CircularIndeterminate open={true} />
-            : <Typography variant="h6" {...(color && { color: color })}>{quantity}</Typography>}
+            : <Typography fontSize="2.75rem" {...(color && { color: color })}>{quantity}</Typography>}
 
-        </Stack>
+        </Box>
       </CardContent>
 
     </CustomizedCard>
@@ -101,7 +103,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="Выполненные задачи"
+          title="Выполнено задач"
           loading={isFetching}
           quantity={tasksResults.completed}
           color="lightgreen"
@@ -114,7 +116,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="Задачи в работе"
+          title="Задач в работе"
           loading={isFetching}
           quantity={tasksResults.inProgress}
         />
@@ -126,7 +128,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="Просроченные задачи"
+          title="Просрочено задач"
           loading={isFetching}
           quantity={tasksResults.overdued}
         />
@@ -138,7 +140,7 @@ export const TasksSummarize = ({ period }: TasksSummarizeProps) => {
         lg={6}
       >
         <TaskCard
-          title="Сделки без задач"
+          title="Сделок без задач"
           loading={dealsIsFetching}
           quantity={tasksResults.dealWithoutTasks}
           color="rgb(255, 82, 82)"

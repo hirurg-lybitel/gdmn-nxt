@@ -13,7 +13,11 @@ export default function NotFound() {
       sx={{ height: '100%' }}
     >
       <Grid item>
-        <CustomizedCard borders boxShadows sx={{ width: 700 }}>
+        <CustomizedCard
+          borders
+          boxShadows
+          sx={{ width: 700 }}
+        >
           <CardContent>
             <Grid
               container
@@ -27,12 +31,12 @@ export default function NotFound() {
                 <Typography align="center" sx={{ fontSize: 100, fontWeight: 700, color: '#dbdee3' }}>404</Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography align="center" variant="h1" width={500}>
+                <Typography align="center" variant="h6" width={500}>
                     Запрошенная страница не найдена.
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography align="center" variant="h4" width={600} sx={{ color: 'text.secondary' }}>
+                <Typography align="center" variant="body1" width={600} fontWeight={600} color={'text.secondary'}>
                     Извините, мы не смогли найти страницу, которую вы ищете.
                     Возможно, вы ошиблись адресом? Обязательно проверьте путь.
                 </Typography>

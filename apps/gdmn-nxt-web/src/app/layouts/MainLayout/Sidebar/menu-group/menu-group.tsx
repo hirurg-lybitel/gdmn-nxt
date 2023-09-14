@@ -49,7 +49,12 @@ export function MenuGroup(props: MenuGroupProps) {
       <List
         subheader={
           item.title && (
-            <Typography variant="h2" color="inherit" display="block" gutterBottom>
+            <Typography
+              color="inherit"
+              variant="subtitle2"
+              display="block"
+              gutterBottom
+            >
               {item.title}
             </Typography>
           )

@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInCustomer, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
@@ -13,7 +13,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
-import menuItems, { IMenuItem } from './menu-items';
 import { getCookie } from './features/common/getCookie';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
@@ -38,14 +37,14 @@ export interface AppProps {}
 
 export default function App(props: AppProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { loginStage, userProfile } = useSelector<RootState, UserState>(state => state.user);
+  const { loginStage } = useSelector<RootState, UserState>(state => state.user);
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
-  
-  const navigate = useNavigate()
 
-  const pathName:string[] = window.location.pathname.split('/');
+  const navigate = useNavigate();
+
+  const pathName: string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
   // Поиск и установка id страницы, который соответствует url, в state
   type User = IUserProfile & UserState;
@@ -87,12 +86,12 @@ export default function App(props: AppProps) {
             default:
               dispatch(setColorMode(ColorMode.Light));
               break;
-        }
-        break;
+          }
+          break;
         }
         case 'OTHER_LOADINGS': {
-          dispatch(renderApp())
-          break
+          dispatch(renderApp());
+          break;
         }
       }
     })();
@@ -103,8 +102,7 @@ export default function App(props: AppProps) {
   useEffect(() => {
     if (loginStage === 'QUERY_LOGIN' &&
         theme.palette.mode === getCookie('color-mode') &&
-        !!user)
-    {
+        !!user) {
       if (user.gedeminUser) {
         dispatch(signedInEmployee({ ...user }));
       } else {
@@ -146,15 +144,19 @@ export default function App(props: AppProps) {
   };
 
   const loadingPage = useMemo(() => {
-    return(
+    return (
       <Stack spacing={2}>
         <CircularIndeterminate open={true} size={100} />
-        <Typography variant="overline" color="gray" align="center">
+        <Typography
+          variant="overline"
+          color="gray"
+          align="center"
+        >
           подключение
         </Typography>
       </Stack>
-    )
-  },[])
+    );
+  }, []);
 
   const renderLoginStage = useMemo(() => {
     switch (loginStage) {
@@ -173,14 +175,14 @@ export default function App(props: AppProps) {
       case 'SIGN_IN_EMPLOYEE':
         return (
           <SignInSignUp
-            checkCredentials={(userName, password) => post(`user/signin`, { userName, password, employeeMode: true })}
+            checkCredentials={(userName, password) => post('user/signin', { userName, password, employeeMode: true })}
             onSignIn={handleSignIn}
           />
         );
       case 'SIGN_IN_CUSTOMER':
         return (
           <SignInSignUp
-            checkCredentials={(userName, password) => post(`user/signin`, { userName, password })}
+            checkCredentials={(userName, password) => post('user/signin', { userName, password })}
             newPassword={(email) => post('user/forgot-password', { email })}
             onSignIn={handleSignIn}
             bottomDecorator={() =>
@@ -208,7 +210,12 @@ export default function App(props: AppProps) {
   }, [loginStage]);
 
   const result =
-    <Stack direction="column" justifyContent="center" alignContent="center" sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}>
+    <Stack
+      direction="column"
+      justifyContent="center"
+      alignContent="center"
+      sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}
+    >
       {renderLoginStage}
     </Stack>;
 

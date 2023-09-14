@@ -49,7 +49,7 @@ export const DealsSummarize = ({ period }: DealsSummarizeProps) => {
                 key={deal.ID}
                 alignItems="center"
               >
-                <div>{deal.USR$NAME}</div>
+                <Typography variant="subtitle1">{deal.USR$NAME}</Typography>
                 <CustomizedCard
                   borders={theme.palette.mode === ColorMode.Light}
                   style={{
@@ -63,10 +63,10 @@ export const DealsSummarize = ({ period }: DealsSummarizeProps) => {
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Typography variant="h6">
+                    <Typography fontSize="2.75rem">
                       {deal.CARDS.length}
                     </Typography>
-                    <Typography variant="h2">
+                    <Typography variant="body2" fontWeight={600}>
                       {deal.CARDS.reduce((acc, { DEAL }) => Math.round((acc + (DEAL?.USR$AMOUNT ?? 0)) * 100) / 100, 0).toLocaleString()} Br
                     </Typography>
                   </Stack>

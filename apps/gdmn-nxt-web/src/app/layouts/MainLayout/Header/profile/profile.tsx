@@ -175,7 +175,7 @@ export function Profile(props: ProfileProps) {
                     <ListItem>
                       <Stack direction="column">
                         <Stack direction="row" spacing={0.5}>
-                          <Typography variant="h4">{welcomeText()}</Typography>
+                          <Typography variant="subtitle1">{welcomeText()}</Typography>
                           <Typography variant="body1">
                             {user.userProfile?.userName ?? 'Неизвестный пользователь'}
                           </Typography>

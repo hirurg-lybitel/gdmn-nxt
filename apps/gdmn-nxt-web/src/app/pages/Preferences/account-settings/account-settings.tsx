@@ -98,7 +98,7 @@ export function AccountSettings(props: AccountSettingsProps) {
       <CardHeader
         title={
           <div className={style.title}>
-            <Typography variant="h3">
+            <Typography variant="pageHeader">
                 Настройки
             </Typography>
           </div>

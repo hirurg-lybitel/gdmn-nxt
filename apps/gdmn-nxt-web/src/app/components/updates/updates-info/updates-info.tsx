@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
-import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import styles from './updates-info.module.less';
 import { useGetAllUpdatesQuery } from '../../../features/updates';
 import { useSelector } from 'react-redux';
@@ -52,11 +51,10 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
         sx: {
           height: '80%',
           width: '50%',
-          // maxWidth: '100%'
         }
       }}
     >
-      <DialogTitle variant="h3">
+      <DialogTitle>
         <span>Gedemin CRM обновилась до версии {lastUpdate?.VERSION}</span>
         <IconButton
           style={{ position: 'absolute', top: 3, right: 5 }}
@@ -73,6 +71,9 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
           </ReactMarkdown>
         </CustomizedScrollBox>
       </DialogContent>
+      <DialogActions>
+        <Button variant="contained" onClick={onClose}>Понятно</Button>
+      </DialogActions>
 
     </Dialog>
   );

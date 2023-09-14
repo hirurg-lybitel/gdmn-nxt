@@ -287,7 +287,7 @@ export function TaskTypes(props: TaskTypesProps) {
         borders
         className={styles.card}
       >
-        <CardHeader title={<Typography variant="h3">Типы задач</Typography>} />
+        <CardHeader title={<Typography variant="pageHeader">Типы задач</Typography>} />
         <Divider />
         <CardToolbar>
           <Button

@@ -24,43 +24,50 @@ declare module '@mui/material/styles' {
 };
 
 export const theme = (customization: ICustomization) => {
-  const themeOption = (customization.colorMode === ColorMode.Light
-    ? {
-      backgroundColor: colors.grey[100],
-      backgroundDefault: colors.blue[300],
-      backgroundSecond: colors.blue[300],
-      textColor: colors.grey[900],
-      secondaryColor: colors.common.white,
-      headColor: colors.common.white,
-      paper: colors.common.white,
-      customization,
-      borderColor: '#f0f0f0',
-      buttonTextColor: 'white'
-    }
-    : {
-      backgroundColor: colors.grey[900],
-      backgroundDefault: colors.blueGrey[900],
-      backgroundSecond: colors.blue[300],
-      textColor: colors.common.white,
-      secondaryColor: colors.grey[300],
-      headColor: colors.grey[300],
-      paper: colors.grey[800],
-      customization,
-      borderColor: '#303030',
-      buttonTextColor: 'black'
-    }
-  );
+  const themeOption = {
+    // fontFamily: '"Roboto Condensed", sans-serif',
+    // fontFamily: '"Lato", sans-serif',
+    // fontFamily: '"PT Sans", sans-serif',
+    fontFamily: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"'].join(','),
+    ...(customization.colorMode === ColorMode.Light
+      ? {
+        backgroundColor: colors.grey[100],
+        backgroundDefault: colors.blue[300],
+        backgroundSecond: colors.blue[300],
+        textColor: colors.grey[800],
+        secondaryColor: colors.common.white,
+        headColor: colors.common.white,
+        paper: colors.common.white,
+        customization,
+        borderColor: '#f0f0f0',
+        buttonTextColor: 'white'
+      }
+      : {
+        backgroundColor: colors.grey[900],
+        backgroundDefault: colors.blueGrey[900],
+        backgroundSecond: colors.blue[300],
+        textColor: colors.common.white,
+        secondaryColor: colors.grey[300],
+        headColor: colors.grey[300],
+        paper: colors.grey[800],
+        customization,
+        borderColor: '#303030',
+        buttonTextColor: 'black'
+      }
+    )
+  };
 
   const themeOptions: ThemeOptions = {
     color: colors,
     drawerWidth: 260,
     headColor: themeOption.headColor,
     textColor: themeOption.textColor,
+    fontFamily: themeOption.fontFamily,
     palette: {
       mode: themeOption.customization.colorMode,
       background: {
         paper: themeOption.paper,
-        default: colors.common.white
+        default: colors.common.white,
       },
       primary: {
         main: themeOption.backgroundSecond,
@@ -103,8 +110,11 @@ export const theme = (customization: ICustomization) => {
     }
   };
 
-  const themes = createTheme(themeOptions, locales.ruRU);
-  themes.typography = { ...themes.typography, ...themeTypography(themeOptions) };
+  // const themes = createTheme({...themeOptions, typography: { fontFamily: 'fantasy' }}, locales.ruRU);
+  // console.log('themeTypography(themeOptions)', themeTypography(themeOptions));
+  const themes = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
+  // themes.typography = { ...themeTypography(themeOptions), fontFamily: 'fantasy', fontSize: 30 };
+  // themes.typography = { ...themes.typography, fontFamily: 'fantasy' };
   themes.components = { ...locales.ruRU.components, ...componentStyleOverrides(themeOptions) };
   themes.shadows[1] = themeOption.customization.colorMode === ColorMode.Dark
     ? '0px 4px 20px rgba(100, 110, 120, 0.3)'

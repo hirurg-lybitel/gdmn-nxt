@@ -85,7 +85,7 @@ export function DealSources(props: DealSourcesProps) {
       borders
       className={styles.Card}
     >
-      <CardHeader title={<Typography variant="h3">Источники заявок</Typography>} />
+      <CardHeader title={<Typography variant="pageHeader">Источники заявок</Typography>} />
       <Divider />
       <CardToolbar>
         <Stack direction="row">

@@ -290,7 +290,7 @@ export function ChartColumn(props: ChartColumnProps) {
               <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
                   style={{ paddingLeft: '15.8px' }}
-                  variant="h1"
+                  variant="h6"
                   onClick={() => {
                     analyticsDataRefetch();
                     departmentsRefetch();

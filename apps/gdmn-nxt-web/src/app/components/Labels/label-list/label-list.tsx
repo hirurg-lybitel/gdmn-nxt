@@ -1,4 +1,4 @@
-import { Box, Button, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { useAddLabelMutation, useDeleteLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from 'apps/gdmn-nxt-web/src/app/features/labels';
@@ -18,9 +18,24 @@ import { RootState } from '../../../store';
 
 const ItemSkeleton = () => {
   return (
-    <Stack direction="row" spacing={6} height={68.5} p={2} alignItems="center">
-      <Skeleton variant="rectangular" width={60} height={20} style={{ borderRadius: '12px' }} />
-      <Skeleton variant="text" height={30} width={'100%'} />
+    <Stack
+      direction="row"
+      spacing={6}
+      height={68.5}
+      p={2}
+      alignItems="center"
+    >
+      <Skeleton
+        variant="rectangular"
+        width={60}
+        height={20}
+        style={{ borderRadius: '12px' }}
+      />
+      <Skeleton
+        variant="text"
+        height={30}
+        width={'100%'}
+      />
     </Stack>
   );
 };
@@ -83,7 +98,7 @@ export function LabelList(props: LabelListProps) {
         style={{ height: '100%' }}
       >
         <CardHeader
-          title={<Typography variant="h3">Метки</Typography>}
+          title={<Typography variant="pageHeader">Метки</Typography>}
         />
         <Divider />
         <CardToolbar>

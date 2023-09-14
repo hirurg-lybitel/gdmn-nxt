@@ -146,7 +146,7 @@ export default function FAQ() {
       <div className={style.body} >
         <CustomizedCard className={style.card} borders>
           <CardHeader
-            title={<Typography variant="h3">База знаний</Typography>}
+            title={<Typography variant="pageHeader">База знаний</Typography>}
           />
           <Divider />
           <CardToolbar>
@@ -187,8 +187,8 @@ export default function FAQ() {
                             <AccordionSummary
                               expandIcon={<ExpandMoreIcon />}
                             >
-                              <Typography variant="h4">
-                                {/* {item.USR$QUESTION} */}
+                              <Typography variant="h6">
+
                                 <ReactMarkdown>
                                   {item.USR$QUESTION}
                                 </ReactMarkdown>
