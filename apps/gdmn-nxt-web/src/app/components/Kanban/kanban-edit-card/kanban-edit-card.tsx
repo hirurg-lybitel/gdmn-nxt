@@ -877,9 +877,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       }}
                     >
                       <CustomizedScrollBox>
-                        {card?.ID
-                          ? <KanbanHistory cardId={card.ID} />
-                          : <></>}
+                        <div style={{ height: '100%', width: '100%' }}>
+                          {card?.ID
+                            ? <KanbanHistory cardId={card.ID} />
+                            : <></>}
+                        </div>
                       </CustomizedScrollBox>
                     </CustomizedCard>
                   </TabPanel>
