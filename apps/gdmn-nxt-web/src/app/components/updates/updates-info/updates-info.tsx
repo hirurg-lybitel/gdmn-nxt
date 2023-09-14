@@ -49,7 +49,7 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       open={open}
       PaperProps={{
         sx: {
-          height: '80%',
+          maxHeight: '80%',
           width: '50%',
         }
       }}
@@ -64,14 +64,21 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <CustomizedScrollBox>
+      <DialogContent className={styles.content}>
+        <div style={{ visibility: 'hidden' }}>
           <ReactMarkdown>
             {lastUpdate?.CHANGES || ''}
           </ReactMarkdown>
-        </CustomizedScrollBox>
+        </div>
+        <div className={styles.scrollContainer}>
+          <CustomizedScrollBox>
+            <ReactMarkdown>
+              {lastUpdate?.CHANGES || ''}
+            </ReactMarkdown>
+          </CustomizedScrollBox>
+        </div>
       </DialogContent>
-      <DialogActions>
+      <DialogActions className={styles.action}>
         <Button variant="contained" onClick={onClose}>Понятно</Button>
       </DialogActions>
 
