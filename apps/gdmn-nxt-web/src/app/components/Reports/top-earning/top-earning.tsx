@@ -41,10 +41,10 @@ export function TopEarning({params}: TopEarningProps) {
         ? <><Grid container className={styles['table']} >
           <Grid container item className={`${styles['header']} ${colorMode === ColorMode.Dark ? styles['headerDark'] : ''}`}>
             <Grid item xs={9}>
-              <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} variant="h4">Наименование</Typography>
+              <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} fontWeight={600}>Наименование</Typography>
             </Grid>
             <Grid item xs={3}>
-              <Typography className={`${styles['cell']} ${styles['noTopBorder']} ${styles['noRightBorder']}`} variant="h4">Сумма</Typography>
+              <Typography className={`${styles['cell']} ${styles['noTopBorder']} ${styles['noRightBorder']}`} fontWeight={600}>Сумма</Typography>
             </Grid>
           </Grid>
           <>

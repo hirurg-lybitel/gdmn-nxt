@@ -520,7 +520,7 @@ export function Customers(props: CustomersProps) {
           })
       }}
     >
-      <CardHeader title={<Typography variant="h3">Клиенты</Typography>} />
+      <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>
         <Stack direction="row" spacing={2}>

@@ -112,7 +112,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             direction="row"
             style={{ justifyContent: 'space-between' }}
           >
-            <Typography variant="h4"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 39)}</Typography>
+            <Typography variant="subtitle1"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 39)}</Typography>
             <Typography
               className="number"
               variant="caption"
@@ -125,7 +125,8 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           <Box style={{ margin: 0 }}>
             <Typography
               display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
-              variant="h2"
+              variant="body2"
+              fontWeight={600}
               component="span"
             >
               {`${card.DEAL?.CONTACT_NAME}, `}
@@ -169,7 +170,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             style={{ marginTop: 4 }}
           >
             <AccountCircleIcon color="primary" fontSize="small" />
-            <Typography variant="h2">
+            <Typography variant="body2" fontWeight={600}>
               {
                 card.TASK?.CREATOR?.NAME
                   .split(' ')
@@ -179,7 +180,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               }
             </Typography>
             <ForwardIcon fontSize="small"/>
-            <Typography variant="h2">
+            <Typography variant="body2" fontWeight={600}>
               {
                 card.TASK?.PERFORMER?.NAME
                   .split(' ')
@@ -190,7 +191,13 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               }
             </Typography>
           </Stack>}
-          <Typography style={{ marginTop: 4 }} variant="h2">{card.DEAL?.USR$NAME}</Typography>
+          <Typography
+            style={{ marginTop: 4 }}
+            variant="body2"
+            fontWeight={600}
+          >
+            {card.DEAL?.USR$NAME}
+          </Typography>
         </Stack>
       </CustomizedCard>
       <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>

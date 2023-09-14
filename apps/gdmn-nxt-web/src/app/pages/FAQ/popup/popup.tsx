@@ -173,7 +173,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
           >
             <Card className={style.card}>
               <CardHeader
-                title={<Typography variant="h4">{
+                title={<Typography variant="h6">{
                   isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
                 }</Typography>}
               />

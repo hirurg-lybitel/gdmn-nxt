@@ -167,7 +167,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         ?
         <Stack direction="column" spacing={2}>
           {topDecorator?.(stage)}
-          <Typography variant="h1">
+          <Typography variant="h6">
           New user
           </Typography>
           <TextField
@@ -224,7 +224,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
             <BelgissLogo color="#64b5f6" scale={1.5}/>
           </Box>
           <Box textAlign={'center'}>
-            <Typography variant="h1" fontSize={'2rem'}>
+            <Typography variant="h6" fontSize={'2rem'}>
               Вход в систему
             </Typography>
           </Box>

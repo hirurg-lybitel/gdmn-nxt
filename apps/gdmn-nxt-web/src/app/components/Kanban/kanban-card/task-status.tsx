@@ -72,14 +72,14 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
               !value
                 ? <Typography
                   variant="caption"
-                  fontWeight={800}
+                  fontWeight={600}
                 >
               Без срока
                 </Typography>
                 :
                 <Typography
                   variant="caption"
-                  fontWeight={800}
+                  fontWeight={600}
                   color={closed ? colorMode === ColorMode.Light ? 'green' : 'lightgreen' : daysColor(days)}
                 >
                   {row.USR$CLOSED

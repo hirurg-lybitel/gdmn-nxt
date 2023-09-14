@@ -29,10 +29,10 @@ export function RemainsByInvoicesReport(props: RemainsByInvoicesReportProps) {
         ? <><Grid container className={styles['table']} >
           <Grid container item className={`${styles['header']} ${colorMode === ColorMode.Dark ? styles['headerDark'] : ''}`}>
             <Grid item xs={8}>
-              <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} variant="h4">Расчётный счёт</Typography>
+              <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} fontWeight={600}>Расчётный счёт</Typography>
             </Grid>
             <Grid item xs={4}>
-              <Typography className={`${styles['cell']} ${styles['noTopBorder']} ${styles['noRightBorder']}`} variant="h4">Остаток</Typography>
+              <Typography className={`${styles['cell']} ${styles['noTopBorder']} ${styles['noRightBorder']}`} fontWeight={600}>Остаток</Typography>
             </Grid>
           </Grid>
           <>
@@ -47,10 +47,10 @@ export function RemainsByInvoicesReport(props: RemainsByInvoicesReportProps) {
                 {arr[idx + 1]?.CODE !== el.CODE
                   ? <>
                     <Grid className={styles['cell']} item xs={8} textAlign="right">
-                      <Typography variant="h4">{`Итого по ${el.CODE}:`}</Typography>
+                      <Typography fontWeight={600}>{`Итого по ${el.CODE}:`}</Typography>
                     </Grid>
                     <Grid className={`${styles['cell']} ${styles['noRightBorder']}`} item xs={4} textAlign="right">
-                      <Typography variant="h4">{(Math.round(groupSums[el.CODE] * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Typography>
+                      <Typography fontWeight={600}>{(Math.round(groupSums[el.CODE] * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Typography>
 
                     </Grid>
                   </>

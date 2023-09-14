@@ -90,7 +90,7 @@ export function MenuItem(props: MenuItemProps) {
       <ListItemIcon sx={{ minWidth: !item?.icon && level > 1 ? 18 : 36 }}>{itemIcon}</ListItemIcon>
       <ListItemText
         primary={
-          <Typography variant="h4" color="inherit">
+          <Typography variant="subtitle1" color="inherit">
             {item.title}
           </Typography>
         }

@@ -16,6 +16,7 @@ export interface ChartDonutProps {
 export function ChartDonut({ period }: ChartDonutProps) {
   const theme = useTheme();
   const matchUpLg = useMediaQuery(theme.breakpoints.up('lg'));
+  const matchDownUW = useMediaQuery(theme.breakpoints.down('ultraWide'));
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({
     userId: -1,
@@ -55,9 +56,10 @@ export function ChartDonut({ period }: ChartDonutProps) {
     colors,
     legend: {
       offsetY: 0,
+      fontFamily: theme.fontFamily,
       fontSize: '18',
       width: 260,
-      fontWeight: 600,
+      fontWeight: 400,
       position: 'left',
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
@@ -157,7 +159,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
         {stagesIsLoading
           ? <ChartSkeleton />
           : <>
-            <Typography variant="h1" style={{ paddingLeft: '15px' }}>Статус сделок</Typography>
+            <Typography variant="h6" style={{ paddingLeft: '15px' }}>Статус сделок</Typography>
             <Box flex={1} style={{ color: 'black', paddingLeft: '1px', paddingRight: '5px', marginTop: 0 }} >
               <Chart
                 type="donut"

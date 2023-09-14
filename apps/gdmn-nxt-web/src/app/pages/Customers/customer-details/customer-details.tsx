@@ -75,14 +75,14 @@ export function CustomerDetails(props: CustomerDetailsProps) {
               underline="none"
               key="2"
               onClick={() => navigate(-1)}
-              variant="h1"
+              variant="h6"
             >
             Клиенты
             </Link>
             <Typography
               key="3"
               color="text.primary"
-              variant="h1"
+              variant="h6"
             >
               {customer?.NAME || '<Наименование>'}
             </Typography>
