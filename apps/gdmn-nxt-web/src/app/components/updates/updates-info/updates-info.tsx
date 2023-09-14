@@ -64,21 +64,21 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent style={{ position: 'relative', overflow: 'hidden' }}>
+      <DialogContent className={styles.content}>
         <div style={{ visibility: 'hidden' }}>
           <ReactMarkdown>
             {lastUpdate?.CHANGES || ''}
           </ReactMarkdown>
         </div>
-        <div style={{ position: 'absolute', top: 0, right: 0, left: 0, bottom: 0 }}>
-          <CustomizedScrollBox style={{ padding: '0 25px 0px 25px' }}>
+        <div className={styles.scrollContainer}>
+          <CustomizedScrollBox>
             <ReactMarkdown>
               {lastUpdate?.CHANGES || ''}
             </ReactMarkdown>
           </CustomizedScrollBox>
         </div>
       </DialogContent>
-      <DialogActions>
+      <DialogActions className={styles.action}>
         <Button variant="contained" onClick={onClose}>Понятно</Button>
       </DialogActions>
 
