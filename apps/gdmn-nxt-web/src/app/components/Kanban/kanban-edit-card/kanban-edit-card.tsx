@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   tabPanel: {
     flex: 1,
     // display: 'flex',
-    padding: 0,
+    padding: '0px 4px 0px 24px',
     // paddingBottom: 16,
     marginTop: '12px !important',
   },
@@ -414,7 +414,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
-        <PerfectScrollbar style={{ padding: '16px 24px', display: 'flex' }}>
+        <PerfectScrollbar style={{ padding: '16px 0px', display: 'flex' }} options={{ suppressScrollX: true }}>
           <FormikProvider value={formik}>
             <Form
               id="mainForm"
@@ -428,7 +428,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     alignItems={'center'}
                     justifyContent={'center'}
                     spacing={2}
-                    >
+                  >
                     <IconButton
                       color="primary"
                       onClick={handleStepBack}
@@ -458,7 +458,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
                     alternativeLabel
                     nonLinear
-                    >
+                  >
                     {stages.map((stage, idx) =>
                       <Step
                         key={stage.ID}
@@ -472,6 +472,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 <TabContext value={tabIndex}>
                   <Box style={{ width: `calc(${windowWidth} - 5vw)` }}>
                     <TabList
+                      style={{ margin: 0, padding: '0px 24px' }}
                       onChange={handleTabsChange}
                       scrollButtons="auto"
                       variant="scrollable"
@@ -489,9 +490,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       />
                     </TabList>
                   </Box>
-                  <Divider style={{ margin: 0 }} />
+                  <div style={{ margin: 0, padding: '0px 24px' }}>
+                    <Divider />
+                  </div>
+
                   <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
-                    <CustomizedScrollBox>
+                    <CustomizedScrollBox options={{ suppressScrollX: true }} >
                       <Stack
                         flex={1}
                         spacing={3}
@@ -856,40 +860,52 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </CustomizedScrollBox>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
-                    <CustomizedScrollBox>
+                    <CustomizedScrollBox style={{ paddingRight: '20px' }}>
                       {KanbanRequestInfo}
                     </CustomizedScrollBox>
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''}>
-                    <KanbanTasks card={formik.values} formik={formik} />
+                    <div style={{ paddingRight: '20px', height: '100%', width: '100%' }}>
+                      <KanbanTasks card={formik.values} formik={formik} />
+                    </div>
+
                   </TabPanel>
                   <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''}>
-                    <DealDocuments dealId={card?.DEAL?.ID ?? -1}/>
+                    <div style={{ paddingRight: '20px', height: '100%', width: '100%' }}>
+                      <DealDocuments dealId={card?.DEAL?.ID ?? -1}/>
+                    </div>
                   </TabPanel>
                   <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''}>
-                    <CustomizedCard
-                      borders
-                      style={{
-                        borderColor: 'lightgrey',
-                        flex: 1,
-                        marginBottom: '16px',
-                        height: '100%'
-                      }}
-                    >
-                      <CustomizedScrollBox>
-                        <div style={{ height: '100%', width: '100%' }}>
-                          {card?.ID
-                            ? <KanbanHistory cardId={card.ID} />
-                            : <></>}
-                        </div>
-                      </CustomizedScrollBox>
-                    </CustomizedCard>
+                    <div style={{ height: '100%', width: '100%', paddingRight: '20px' }}>
+
+                      <CustomizedCard
+                        borders
+                        style={{
+                          borderColor: 'lightgrey',
+                          flex: 1,
+                          marginBottom: '16px',
+                          height: '100%'
+                        }}
+                      >
+                        <CustomizedScrollBox>
+                          <div style={{ height: '100%', width: '100%' }}>
+                            {card?.ID
+                              ? <KanbanHistory cardId={card.ID} />
+                              : <></>}
+                          </div>
+                        </CustomizedScrollBox>
+                      </CustomizedCard>
+                    </div>
                   </TabPanel>
                   <TabPanel value="6" className={tabIndex === '6' ? classes.tabPanel : ''}>
-                    <TabDescription formik={formik} />
+                    <div style={{ paddingRight: '20px', height: '100%', width: '100%' }}>
+                      <TabDescription formik={formik} />
+                    </div>
                   </TabPanel>
                   <TabPanel value="7" className={tabIndex === '7' ? classes.tabPanel : ''}>
-                    <ClientHistory card={formik.values} />
+                    <div style={{ paddingRight: '20px', height: '100%', width: '100%' }}>
+                      <ClientHistory card={formik.values} />
+                    </div>
                   </TabPanel>
                 </TabContext>
               </Stack>
