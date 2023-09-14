@@ -1,6 +1,6 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Avatar, Box, Button, CardActions, CardContent, CardHeader, Checkbox, Chip, Divider, Fab, FormControlLabel, Icon, IconButton, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Divider, Fab, FormControlLabel, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -37,9 +37,8 @@ export function Profile(props: ProfileProps) {
       setSettings({
         userId: userProfile?.id || -1,
         body: {
-          AVATAR: reader.result?.toString() || '',
-          COLORMODE: settings?.COLORMODE,
-          LASTVERSION: settings?.LASTVERSION || ''
+          ...settings,
+          AVATAR: reader.result?.toString() || ''
         }
       });
     };
@@ -54,8 +53,8 @@ export function Profile(props: ProfileProps) {
     setSettings({
       userId: userProfile?.id || -1,
       body: {
+        ...settings,
         AVATAR: null,
-        COLORMODE: settings?.COLORMODE
       }
     });
   };
