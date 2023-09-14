@@ -275,15 +275,22 @@ export function ChartColumn(props: ChartColumnProps) {
         maxHeight: 'calc(100vh - 130px)',
       })}
     >
-      <Stack direction="column" spacing={3} p={2} flex={1} display="flex" style={{ maxWidth: '100%', padding: analyticsDataIsLoading ? '15.8px 15.8px' : '15.8px 0'  }} >
+      <Stack
+        direction="column"
+        spacing={3}
+        p={2}
+        flex={1}
+        display="flex"
+        style={{ maxWidth: '100%', padding: analyticsDataIsLoading ? '15.8px 15.8px' : '15.8px 0' }}
+      >
         {analyticsDataIsLoading
           ? <ChartSkeleton />
           : <>
             <Stack direction="row" spacing={1}>
               <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
-                  style={{paddingLeft:'15.8px'}}
-                  variant="h1"
+                  style={{ paddingLeft: '15.8px' }}
+                  variant="h6"
                   onClick={() => {
                     analyticsDataRefetch();
                     departmentsRefetch();
@@ -295,7 +302,7 @@ export function ChartColumn(props: ChartColumnProps) {
                 <TextField
                   style={{
                     width: '100px',
-                    marginRight:'15.8px'
+                    marginRight: '15.8px'
                   }}
                   select
                   value={periodType?.value}
@@ -316,8 +323,8 @@ export function ChartColumn(props: ChartColumnProps) {
               ref={ref}
               style={{
                 width: '100%',
-                paddingRight:'15.8px',
-                paddingLeft:'7.8px'
+                paddingRight: '15.8px',
+                paddingLeft: '7.8px'
               }}
             >
               <Grid item xs={4}>
@@ -407,7 +414,7 @@ export function ChartColumn(props: ChartColumnProps) {
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Box flex={1} style={{ color: 'black', paddingRight:'6px ' }}>
+            <Box flex={1} style={{ color: 'black', paddingRight: '6px ' }}>
               <Chart
                 options={chartOptions}
                 series={chartData.series}
@@ -416,7 +423,7 @@ export function ChartColumn(props: ChartColumnProps) {
               />
             </Box>
             <Autocomplete
-              style={{paddingLeft:'15.8px', paddingRight:'15.8px'}}
+              style={{ paddingLeft: '15.8px', paddingRight: '15.8px' }}
               multiple
               disableCloseOnSelect
               options={[...years].sort((a, b) => b - a) || []}

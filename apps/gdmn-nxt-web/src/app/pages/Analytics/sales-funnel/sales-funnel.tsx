@@ -29,8 +29,12 @@ export function SalesFunnel(props: SalesFunnelProps) {
   })) ?? [];
 
   return (
-    <CustomizedCard borders boxShadows style={{ height: 'calc(100vh - 50px)', flex: 1 }}>
-      <CardHeader title={<Typography variant="h3">Воронка продаж</Typography>} />
+    <CustomizedCard
+      borders
+      boxShadows
+      style={{ height: 'calc(100vh - 50px)', flex: 1 }}
+    >
+      <CardHeader title={<Typography variant="pageHeader">Воронка продаж</Typography>} />
       {isFetching
         ? <></>
         : <ResponsiveFunnel

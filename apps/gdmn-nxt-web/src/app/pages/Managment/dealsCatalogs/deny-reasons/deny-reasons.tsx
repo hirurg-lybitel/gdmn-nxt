@@ -85,7 +85,7 @@ export function DenyReasons(props: DenyReasonsProps) {
       borders
       className={styles.Card}
     >
-      <CardHeader title={<Typography variant="h3">Причины отказа</Typography>} />
+      <CardHeader title={<Typography variant="pageHeader">Причины отказа</Typography>} />
       <Divider />
       <CardToolbar>
         <Stack direction="row">

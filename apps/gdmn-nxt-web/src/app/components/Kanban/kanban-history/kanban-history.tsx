@@ -85,7 +85,7 @@ export function KanbanHistory(props: KanbanHistoryProps) {
                     <Stack direction="row" spacing={0.7} alignItems={'end'}>
                       <Typography>{`${el.USR$DESCRIPTION}:`}</Typography>
                       <Typography>{`${el.USR$TYPE === '1' ? 'добавил' : el.USR$TYPE === '2' ? 'обновил' : 'удалил'}`}</Typography>
-                      <Typography variant="h4">{el.USERNAME}</Typography>
+                      <Typography fontWeight={600}>{el.USERNAME}</Typography>
                     </Stack>
                     <Stack direction={(el.USR$OLD_VALUE?.length + el.USR$NEW_VALUE?.length) > 25 ? 'column' : 'row'} spacing={0.7} width="100%">
                       {(el.USR$TYPE !== '1' && el.USR$TYPE !== '3')

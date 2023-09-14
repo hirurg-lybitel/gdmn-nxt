@@ -124,6 +124,7 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                   >
                     <Icon
                       color="action"
+                      style={{ height: '26px' }}
                     >
                       {(() => {
                         switch (d.historyType.ICON) {

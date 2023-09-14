@@ -61,7 +61,7 @@ export function NotificationCenter(props: NotificationCenterProps) {
       borders
       className={styles['main-card']}
     >
-      <CardHeader title={<Typography variant="h3">Центр уведомлений</Typography>} />
+      <CardHeader title={<Typography variant="pageHeader">Центр уведомлений</Typography>} />
       <Divider />
       <CardContent
         className={styles.content}

@@ -43,7 +43,7 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
   return (
     <Stack direction="column" flex={1} spacing={2}>
       <CustomizedCard borders boxShadows>
-        <CardHeader title={<Typography variant="h3">Остатки по расчётным счетам</Typography>} />
+        <CardHeader title={<Typography variant="pageHeader">Остатки по расчётным счетам</Typography>} />
         <Divider />
         <CardContent>
           <DesktopDatePicker

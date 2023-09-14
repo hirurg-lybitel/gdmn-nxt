@@ -263,7 +263,7 @@ export function Notification(props: NotificationProps) {
                       spacing={1}
                       alignItems="center"
                     >
-                      <Typography variant="h4">
+                      <Typography variant="subtitle1">
                         Уведомления
                       </Typography>
                     </Stack>
@@ -291,7 +291,7 @@ export function Notification(props: NotificationProps) {
                           width="150"
                           color="red"
                         />
-                        <Typography variant="h4" color={'GrayText'}>Пока нет уведомлений</Typography>
+                        <Typography variant="h6" color={'GrayText'}>Пока нет уведомлений</Typography>
                       </Stack>}
                   </Stack>
                 </CustomizedCard>

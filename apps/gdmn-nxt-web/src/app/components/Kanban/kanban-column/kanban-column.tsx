@@ -1,7 +1,7 @@
 import './kanban-column.module.less';
 import React, { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Button, CardActions, CardContent, Stack, IconButton, useTheme, Chip, TextField, Skeleton } from '@mui/material';
+import { Box, Button, CardActions, CardContent, Stack, IconButton, useTheme, Chip, TextField, Skeleton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -160,34 +160,12 @@ export function KanbanColumn(props: KanbanColumnProps) {
               direction="row"
               alignItems="center"
               spacing={1}
+              height={32}
             >
-              {isFetching ? <Skeleton variant="text" width={'80%'} /> :
-                <TextField
-                  value={item.USR$NAME}
-                  variant="standard"
-                  fullWidth
-                  sx={{
-                    '& .MuiInputBase-input': {
-                      textOverflow: 'ellipsis',
-                    }
-                  }}
-                  InputProps={{
-                    disableUnderline: true,
-                    readOnly: true,
-                    style: { ...theme.typography.h4 },
-                  }}
-
-                />
+              {isFetching
+                ? <Skeleton variant="text" width={'80%'} />
+                : <Typography variant="subtitle1">{item.USR$NAME}</Typography>
               }
-              {/* <Typography
-                variant="h4"
-                noWrap
-                // className="title"
-                // textAlign={'center'}
-                // justifyContent={'center'}
-              >
-                {`${item.USR$NAME}`}
-              </Typography> */}
               <Box flex={1} />
               {isFetching ?
                 <Skeleton

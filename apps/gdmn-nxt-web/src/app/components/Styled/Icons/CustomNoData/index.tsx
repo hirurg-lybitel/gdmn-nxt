@@ -71,7 +71,7 @@ export default function CustomNoData() {
           </g>
         </g>
       </svg>
-      <Box sx={{ mt: 1 }}><Typography variant="h4" color={'GrayText'}>Нет данных</Typography></Box>
+      <Box sx={{ mt: 1 }}><Typography variant="h6" color={'GrayText'}>Нет данных</Typography></Box>
     </Box>
   );
 };

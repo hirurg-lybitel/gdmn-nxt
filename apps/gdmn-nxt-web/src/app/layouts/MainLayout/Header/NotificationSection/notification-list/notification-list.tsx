@@ -72,7 +72,7 @@ export function NotificationList(props: NotificationListProps) {
             </ListItemIcon>
             <ListItemText>
               <Stack direction="column" spacing={1}>
-                <Typography variant="h4">{message?.title}</Typography>
+                <Typography variant="h6">{message?.title}</Typography>
                 <Typography variant="body1" component="div">
                   <ReactMarkdown className={styles['markdown']}>
                     {message?.text || ''}

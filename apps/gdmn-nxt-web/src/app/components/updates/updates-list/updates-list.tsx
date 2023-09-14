@@ -6,7 +6,6 @@ import { LoadingButton } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CustomLoadingButton from '../../helpers/custom-loading-button/custom-loading-button';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { Fragment, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import { useAddUpdateMutation, useDeleteUpdateMutation, useEditUpdateMutation, useGetAllUpdatesQuery } from '../../../features/updates';
@@ -71,7 +70,7 @@ export function UpdatesList(props: UpdatesListProps) {
       className={styles.card}
     >
       <CardHeader
-        title={<Typography variant="h3">История обновлений</Typography>}
+        title={<Typography variant="h5" fontWeight={600}>История обновлений</Typography>}
       />
       <Divider />
       <CardToolbar>
@@ -117,7 +116,7 @@ export function UpdatesList(props: UpdatesListProps) {
                     className={styles.accordionSummary}
                     expandIcon={<ExpandMoreIcon />}
                   >
-                    <Typography variant="h4">{u.VERSION}</Typography>
+                    <Typography variant="subtitle1">{u.VERSION}</Typography>
                   </AccordionSummary>
                   <AccordionDetails >
                     <Stack direction="row" justifyContent="space-between">

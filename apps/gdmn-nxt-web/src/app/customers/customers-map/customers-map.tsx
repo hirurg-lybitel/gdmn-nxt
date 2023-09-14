@@ -47,7 +47,7 @@ export function CustomersMap(props: CustomersMapProps) {
               >
                 <Popup closeButton={false}>
                   <Stack spacing={1}>
-                    <Typography variant="h4">{customer.name}</Typography>
+                    <Typography variant="subtitle1">{customer.name}</Typography>
                     <Typography variant="caption">{customer.address}</Typography>
                   </Stack>
                 </Popup>

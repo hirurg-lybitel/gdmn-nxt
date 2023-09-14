@@ -180,14 +180,14 @@ export function KanbanCard(props: KanbanCardProps) {
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
       <Stack direction="row">
-        <Typography variant="h2">
+        <Typography variant="body2" fontWeight={600}>
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
             ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short', year: '2-digit' })
             : '-/-'}
         </Typography>
         <Box flex={1} />
-        <Typography variant="h2" style={{ color: dayColor(deadline) }}>
+        <Typography variant="body2" fontWeight={600} style={{ color: dayColor(deadline) }}>
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
       </Stack>
@@ -264,7 +264,7 @@ export function KanbanCard(props: KanbanCardProps) {
             direction="row"
             style={{ position: 'relative' }}
           >
-            <Typography variant="h4" flex={1}>{card.DEAL?.USR$NAME}</Typography>
+            <Typography variant="subtitle1" flex={1}>{card.DEAL?.USR$NAME}</Typography>
             <Typography
               className="number"
               variant="caption"
@@ -298,7 +298,7 @@ export function KanbanCard(props: KanbanCardProps) {
                 <Icon
                   fontSize="small"
                   color={'success'}
-                  style={{ marginTop: '-4px' }}
+                  style={{ marginTop: '-4px', height: '22px' }}
                 >
                   <PaidOutlinedIcon fontSize="small" />
                 </Icon>
@@ -306,9 +306,9 @@ export function KanbanCard(props: KanbanCardProps) {
             }
           </Stack>
           <Stack direction="row">
-            <Typography variant="h2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+            <Typography variant="body2" fontWeight={600}>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
             <Box flex={1} />
-            <Typography variant="h2">
+            <Typography variant="body2" fontWeight={600}>
               {card.DEAL?.CREATIONDATE
                 ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
                 : '-/-'}

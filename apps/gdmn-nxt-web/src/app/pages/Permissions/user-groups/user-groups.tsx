@@ -112,7 +112,7 @@ export function UserGroups(props: UserGroupsProps) {
         flexDirection: 'column',
       }}
     >
-      <CardHeader title={<Typography variant="h3">Группы пользователей</Typography>} />
+      <CardHeader title={<Typography variant="pageHeader">Группы пользователей</Typography>} />
       <Divider />
       <CardContent
         style={{
