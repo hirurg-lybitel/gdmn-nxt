@@ -428,7 +428,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     alignItems={'center'}
                     justifyContent={'center'}
                     spacing={2}
-                  >
+                    >
                     <IconButton
                       color="primary"
                       onClick={handleStepBack}
@@ -458,7 +458,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
                     alternativeLabel
                     nonLinear
-                  >
+                    >
                     {stages.map((stage, idx) =>
                       <Step
                         key={stage.ID}
@@ -496,6 +496,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         flex={1}
                         spacing={3}
                         paddingTop={1}
+                        style={{ paddingRight: '20px' }}
                       >
                         <TextField
                           label="Наименование"
