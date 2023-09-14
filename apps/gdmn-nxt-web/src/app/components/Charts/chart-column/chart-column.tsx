@@ -333,7 +333,7 @@ export function ChartColumn(props: ChartColumnProps) {
                   filterOptions={filterOptions(50, 'NAME')}
                   loading={departmentsIsFetching}
                   options={departments || []}
-                  onChange={(e, value) => changeChartFilter('departments', value)}
+                  onChange={(e, value) => changeChartFilter('departments', [...value])}
                   value={chartFilter.departments || []}
                   getOptionLabel={option => option.NAME}
                   renderOption={(props, option, { selected }) => (
@@ -360,7 +360,7 @@ export function ChartColumn(props: ChartColumnProps) {
                   filterOptions={filterOptions(50, 'USR$NUMBER')}
                   loading={customerContractsIsFetching}
                   options={customerContracts || []}
-                  onChange={(e, value) => changeChartFilter('contracts', value)}
+                  onChange={(e, value) => changeChartFilter('contracts', [...value])}
                   value={chartFilter.contracts || []}
                   getOptionLabel={option => option.USR$NUMBER}
                   renderOption={(props, option, { selected }) => (
@@ -388,7 +388,7 @@ export function ChartColumn(props: ChartColumnProps) {
                   filterOptions={filterOptions(50, 'USR$NAME')}
                   loading={workTypesIsFetching}
                   options={workTypes || []}
-                  onChange={(e, value) => changeChartFilter('workTypes', value)}
+                  onChange={(e, value) => changeChartFilter('workTypes', [...value])}
                   value={chartFilter.workTypes || []}
                   getOptionLabel={option => option.USR$NAME || ''}
                   renderOption={(props, option, { selected }) => (
@@ -428,8 +428,9 @@ export function ChartColumn(props: ChartColumnProps) {
               disableCloseOnSelect
               options={[...years].sort((a, b) => b - a) || []}
               onChange={(e, value) => {
-                value.sort();
-                setActiveYears(value);
+                const val = [...value];
+                val.sort();
+                setActiveYears(val);
               }}
               value={activeYears}
               getOptionLabel={option => option.toString()}
