@@ -26,9 +26,7 @@ export function ToggleTheme(props: ToggleThemeProps) {
       userId,
       body: {
         ...profileSettings,
-        AVATAR: profileSettings?.AVATAR || '',
         COLORMODE: typeTheme,
-        LASTVERSION: profileSettings?.LASTVERSION || ''
       }
     });
   };
