@@ -3,7 +3,7 @@ import NoPhoto from './img/NoPhoto.png';
 import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Divider, Fab, FormControlLabel, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -24,7 +24,7 @@ export function Profile(props: ProfileProps) {
   const [setSettings, { isLoading: updateIsLoading }] = useSetProfileSettingsMutation();
 
   const [image, setImage] = useState<string>(NoPhoto);
-
+  const updateFileRef = useRef<HTMLFormElement | null>(null);
   const handleUploadClick = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0] || undefined;
@@ -57,6 +57,7 @@ export function Profile(props: ProfileProps) {
         AVATAR: null,
       }
     });
+    if (updateFileRef.current !== null) updateFileRef.current.reset();
   };
 
   const handleDeleteClick = () => {
@@ -98,6 +99,7 @@ export function Profile(props: ProfileProps) {
       setSettings({
         userId: userProfile?.id ?? -1,
         body: {
+          ...settings,
           ...value
         }
       });
@@ -164,15 +166,17 @@ export function Profile(props: ProfileProps) {
                   </Fab>
                 </label>
               </Box>
+              <form ref={updateFileRef}>
+                <input
+                  disabled={isLoading || updateIsLoading}
+                  className={styles['input-hide']}
+                  accept="image/*"
+                  id="contained-button-file"
+                  type="file"
+                  onChange={handleUploadClick}
+                />
+              </form>
 
-              <input
-                disabled={isLoading || updateIsLoading}
-                className={styles['input-hide']}
-                accept="image/*"
-                id="contained-button-file"
-                type="file"
-                onChange={handleUploadClick}
-              />
             </Box>
             <Divider orientation="vertical" flexItem />
             <Box display="flex" flex={1}>
