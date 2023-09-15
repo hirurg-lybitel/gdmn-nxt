@@ -14,6 +14,7 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { BelgissLogo } from '@gdmn-nxt/ui-assets';
+import { setCheckingAFKTimer } from '../../../../../apps/gdmn-nxt-web/src/main';
 
 const useStyles = makeStyles((theme: Theme) => ({
   input: {
@@ -114,13 +115,14 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
   };
 
   const doSignIn = () => {
+    setCheckingAFKTimer(false);
     setLaunching(true);
     checkCredentials(userName, password).then(r => {
       dispatch({ type: 'SET_AUTHRESULT', authResult: r });
       if (r.result === 'SUCCESS') {
         onSignIn();
         // location.reload();
-      }else{
+      } else {
         setLaunching(false);
       }
     });
@@ -291,7 +293,11 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           {
             newPassword
           &&
-          <Button variant="outlined" disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}>
+          <Button
+            variant="outlined"
+            disabled={waiting}
+            onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}
+          >
             Забыли пароль?
           </Button>
           }

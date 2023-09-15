@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useRef } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
-import { RootState, store } from './app/store';
+import { AppDispatch, RootState, store } from './app/store';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { BrowserRouter, HashRouter, json, Navigate, Route, Routes } from 'react-router-dom';
 
@@ -57,10 +57,48 @@ import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-r
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { Tasks } from './app/pages/Managment/tasks/tasks';
 import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types';
+import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 
 registerMUI();
 
+// Время между проверками на бездействие
+const checkAFKInterval = 1000;
+
+// Максимальное время бездействия
+const maxAFKInterval = 10 * 24 * 1000;
+
+let AFK = false;
+let checkingAFKTimer = true;
+
+export const setCheckingAFKTimer = (arg: boolean) => {
+  checkingAFKTimer = arg;
+};
+
+let checkAFKTimer: NodeJS.Timeout | undefined;
+
 const Main = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const checkAFK = () => {
+    AFK = false;
+    document.removeEventListener('mousemove', checkAFK);
+    if (checkAFKTimer) clearTimeout(checkAFKTimer);
+    checkAFKTimer = undefined;
+    setTimeout(checkingAFK, checkAFKInterval);
+  };
+  const checkingAFK = () => {
+    AFK = true;
+    document.addEventListener('mousemove', checkAFK);
+    checkAFKTimer = setTimeout(() => {
+      document.removeEventListener('mousemove', checkAFK);
+      if (AFK) dispatch(logoutUser());
+    }, maxAFKInterval);
+  };
+
+  if (!checkingAFKTimer) {
+    checkingAFKTimer = true;
+    setTimeout(checkingAFK, checkAFKInterval);
+  }
+
   const customization = useSelector(
     (state: RootState) => state.settings.customization
   );
@@ -69,16 +107,14 @@ const Main = () => {
   );
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
-
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
-
   const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
 
   return (
     <div
-      aria-label='mydivdiv'
+      aria-label="mydivdiv"
       style={{
         background: settings.customization.colorMode === ColorMode.Dark ? '#424242' : '',
         height: '100%'
