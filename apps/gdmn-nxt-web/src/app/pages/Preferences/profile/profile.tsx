@@ -24,7 +24,8 @@ export function Profile(props: ProfileProps) {
   const [setSettings, { isLoading: updateIsLoading }] = useSetProfileSettingsMutation();
 
   const [image, setImage] = useState<string>(NoPhoto);
-  const updateFileRef = useRef<HTMLFormElement | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
   const handleUploadClick = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0] || undefined;
@@ -57,7 +58,9 @@ export function Profile(props: ProfileProps) {
         AVATAR: null,
       }
     });
-    if (updateFileRef.current !== null) updateFileRef.current.reset();
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
   };
 
   const handleDeleteClick = () => {
@@ -166,17 +169,15 @@ export function Profile(props: ProfileProps) {
                   </Fab>
                 </label>
               </Box>
-              <form ref={updateFileRef}>
-                <input
-                  disabled={isLoading || updateIsLoading}
-                  className={styles['input-hide']}
-                  accept="image/*"
-                  id="contained-button-file"
-                  type="file"
-                  onChange={handleUploadClick}
-                />
-              </form>
-
+              <input
+                disabled={isLoading || updateIsLoading}
+                className={styles['input-hide']}
+                accept="image/*"
+                id="contained-button-file"
+                type="file"
+                onChange={handleUploadClick}
+                ref={inputRef}
+              />
             </Box>
             <Divider orientation="vertical" flexItem />
             <Box display="flex" flex={1}>
