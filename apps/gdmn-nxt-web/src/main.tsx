@@ -58,6 +58,7 @@ import { ColorMode } from '@gsbelarus/util-api-types';
 import { Tasks } from './app/pages/Managment/tasks/tasks';
 import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types';
 import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import { useIdleTimer } from 'react-idle-timer';
 
 registerMUI();
 
@@ -67,7 +68,7 @@ const checkAFKInterval = 1000;
 // Максимальное время бездействия
 const maxAFKInterval = 10 * 24 * 1000;
 
-let AFK = false;
+const AFK = false;
 let checkingAFKTimer = true;
 
 export const setCheckingAFKTimer = (arg: boolean) => {
@@ -78,26 +79,17 @@ let checkAFKTimer: NodeJS.Timeout | undefined;
 
 const Main = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const checkAFK = () => {
-    AFK = false;
-    document.removeEventListener('mousemove', checkAFK);
-    if (checkAFKTimer) clearTimeout(checkAFKTimer);
-    checkAFKTimer = undefined;
-    setTimeout(checkingAFK, checkAFKInterval);
+  const onIdleHandler = () => {
+    dispatch(logoutUser());
   };
-  const checkingAFK = () => {
-    AFK = true;
-    document.addEventListener('mousemove', checkAFK);
-    checkAFKTimer = setTimeout(() => {
-      document.removeEventListener('mousemove', checkAFK);
-      if (AFK) dispatch(logoutUser());
-    }, maxAFKInterval);
-  };
-
-  if (!checkingAFKTimer) {
-    checkingAFKTimer = true;
-    setTimeout(checkingAFK, checkAFKInterval);
-  }
+  const {} = useIdleTimer({
+    onIdle: onIdleHandler,
+    timeout: 1000 * 60 * 10,
+    promptBeforeIdle: 0,
+    events: [
+      'mousemove'
+    ],
+  });
 
   const customization = useSelector(
     (state: RootState) => state.settings.customization
