@@ -1285,7 +1285,7 @@
 			"name": "Права доступа",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "Группы пользователей",
 					"id": "f1adf5fa-53fb-4b59-aaae-813318f3f326",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1331,13 +1331,13 @@
 	],
 	"variable": [
 		{
-			"id": "f00f7036-6215-4122-b6d8-c88f36c02a38",
+			"id": "8b435d41-448d-47aa-a4a7-7055d999fc35",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "975ff43b-7d24-4e7d-b5fb-8f18d0f1b0fb",
+			"id": "713b6bc0-4f49-4d1b-bdf3-4556c7c5e130",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
