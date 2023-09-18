@@ -1295,6 +1295,18 @@
 						"header": []
 					},
 					"response": []
+				},
+				{
+					"name": "Пользователи группы",
+					"id": "eec3ba74-0451-4fb9-9649-621021cf151e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "a0a5aa4b-983f-4c0e-b7dc-123d9c86d408"
@@ -1331,13 +1343,13 @@
 	],
 	"variable": [
 		{
-			"id": "8b435d41-448d-47aa-a4a7-7055d999fc35",
+			"id": "3163ce77-26c3-4a01-b835-ae74b4e002a7",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "713b6bc0-4f49-4d1b-bdf3-4556c7c5e130",
+			"id": "5d6f66d1-bf0e-47ca-b562-79081228d414",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
