@@ -1333,7 +1333,7 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/permissions/usergroupsline/:groupId",
@@ -1391,13 +1391,13 @@
 	],
 	"variable": [
 		{
-			"id": "4389bb4d-a131-4440-a492-257eaaef5d33",
+			"id": "0da7d51b-124c-48a9-8a1e-c2c3294f1a32",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "6edb69a1-c5ba-4c15-92e6-3fb93dd9647f",
+			"id": "1759a67d-da78-4b86-87a2-f598aa20c8a7",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
