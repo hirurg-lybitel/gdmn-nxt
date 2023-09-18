@@ -1282,7 +1282,7 @@
 			"id": "e105c407-5dcd-4ee5-a72e-92a242c0e3bf"
 		},
 		{
-			"name": "New Folder",
+			"name": "Права доступа",
 			"item": [],
 			"id": "a0a5aa4b-983f-4c0e-b7dc-123d9c86d408"
 		}
@@ -1318,13 +1318,13 @@
 	],
 	"variable": [
 		{
-			"id": "65854674-e5e1-4fa8-b733-193c188937ff",
+			"id": "50bc4d0d-db6d-4477-8eeb-93604cd064fb",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "27f13bfa-18e7-4f7f-bb63-5b345f1cb295",
+			"id": "81c5f429-9154-46dd-b17b-5c00ce63acbf",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
