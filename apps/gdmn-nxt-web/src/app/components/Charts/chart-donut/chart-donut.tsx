@@ -64,7 +64,6 @@ export function ChartDonut({ period }: ChartDonutProps) {
         const oneValue = opts.w.globals.series.filter((item: number) => item > 0);
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
         const percentValue = (seriesValue / seriesSum) * 100;
-        console.log(oneValue);
         const percentString = (() => {
           if (oneValue.length === 1) {
             if (seriesValue === 0) return '    (0.0%)';
