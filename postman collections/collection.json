@@ -1365,6 +1365,15 @@
 					"request": {
 						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"USERGROUP\": {\r\n        \"ID\": 358082668,\r\n        \"NAME\": \"\"\r\n    },\r\n    \"USER\": {\r\n        \"ID\": 149233281,\r\n        \"NAME\": \"Director\",\r\n        \"FULLNAME\": null,\r\n        \"DISABLED\": 0,\r\n        \"CONTACT\": {\r\n            \"ID\": 161548773,\r\n            \"NAME\": \"Скуратов Александр Геннадьевич\"\r\n        }\r\n    },\r\n    \"REQUIRED_2FA\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/permissions/usergroupsline/:Id",
 							"host": [
@@ -1378,7 +1387,7 @@
 							"variable": [
 								{
 									"key": "Id",
-									"value": ""
+									"value": "363284752"
 								}
 							]
 						}
@@ -1420,13 +1429,13 @@
 	],
 	"variable": [
 		{
-			"id": "5785600a-c508-44a1-90c0-343bdec1df38",
+			"id": "dc2f264a-ea0c-42f1-9382-c15b06431289",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "382de494-ddda-4cf7-a2be-393ddede7120",
+			"id": "cb9bef8f-9e0c-4759-9a64-99dd5a69abe0",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
