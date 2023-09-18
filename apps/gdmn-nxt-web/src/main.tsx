@@ -87,7 +87,10 @@ const Main = () => {
     timeout: 1000 * 60 * 10,
     promptBeforeIdle: 0,
     events: [
-      'mousemove'
+      'mousemove',
+      'keydown',
+      'touchstart',
+      'touchmove',
     ],
   });
 
