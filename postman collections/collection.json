@@ -1304,7 +1304,24 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/permissions/usergroupsline/:groupId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions",
+								"usergroupsline",
+								":groupId"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "358082668"
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -1343,13 +1360,13 @@
 	],
 	"variable": [
 		{
-			"id": "3163ce77-26c3-4a01-b835-ae74b4e002a7",
+			"id": "8aafaa50-8f63-4659-aca7-b7350cb4a45d",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "5d6f66d1-bf0e-47ca-b562-79081228d414",
+			"id": "d9cbda70-9c83-44e5-825c-a5e728f47f53",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
