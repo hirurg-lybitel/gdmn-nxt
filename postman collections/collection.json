@@ -1292,7 +1292,8 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": "{{baseUrl}}/permissions/usergroups"
 					},
 					"response": []
 				},
@@ -1360,13 +1361,13 @@
 	],
 	"variable": [
 		{
-			"id": "8aafaa50-8f63-4659-aca7-b7350cb4a45d",
+			"id": "7e12610c-6c4e-472f-9d1c-b06234b32768",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "d9cbda70-9c83-44e5-825c-a5e728f47f53",
+			"id": "aff60bf4-bd4c-4f11-ab14-b16f952a5cb8",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
