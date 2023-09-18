@@ -1291,6 +1291,35 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/permissions/usergroups/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions",
+								"usergroups",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "147006945"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Группы пользователей Copy",
+					"id": "80c6643d-98fa-43af-9356-8f9a335f2554",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
 						"method": "GET",
 						"header": [],
 						"url": "{{baseUrl}}/permissions/usergroups"
@@ -1429,13 +1458,13 @@
 	],
 	"variable": [
 		{
-			"id": "dc2f264a-ea0c-42f1-9382-c15b06431289",
+			"id": "af382fb4-1445-4a03-b5d4-a02b51f2965f",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "cb9bef8f-9e0c-4759-9a64-99dd5a69abe0",
+			"id": "5f533f94-c761-4975-bb13-502b198f4e68",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
