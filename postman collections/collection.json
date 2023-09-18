@@ -1325,6 +1325,36 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Пользователи группы",
+					"id": "8ea78902-2703-4880-93de-10f330f9addf",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/permissions/usergroupsline/:groupId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"permissions",
+								"usergroupsline",
+								":groupId"
+							],
+							"variable": [
+								{
+									"id": "1b893dd2-6851-4f1d-8334-cc6a1a80c98b",
+									"key": "groupId",
+									"value": "358082668"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "a0a5aa4b-983f-4c0e-b7dc-123d9c86d408"
@@ -1361,13 +1391,13 @@
 	],
 	"variable": [
 		{
-			"id": "7e12610c-6c4e-472f-9d1c-b06234b32768",
+			"id": "4389bb4d-a131-4440-a492-257eaaef5d33",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "aff60bf4-bd4c-4f11-ab14-b16f952a5cb8",
+			"id": "6edb69a1-c5ba-4c15-92e6-3fb93dd9647f",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
