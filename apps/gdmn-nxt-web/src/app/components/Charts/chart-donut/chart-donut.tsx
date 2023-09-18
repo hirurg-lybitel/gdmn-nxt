@@ -2,34 +2,20 @@ import style from './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Stack, Typography, useMediaQuery, useTheme, Theme } from '@mui/material';
+import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import ChartSkeleton from './chart-skeleton';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { DateRange } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from 'dayjs';
-import { useRef } from 'react';
-import { makeStyles } from '@mui/styles';
 
 export interface ChartDonutProps {
   period: DateRange<Dayjs>
-}
-
-const useStyles = makeStyles((theme: Theme) => ({
-  chart: {
-    '& .apexcharts-legend': {
-      maxWidth: '40%',
-      minWidth: '260px'
-    }
-  }
-}));
+};
 
 export function ChartDonut({ period }: ChartDonutProps) {
   const theme = useTheme();
   const matchUpLg = useMediaQuery(theme.breakpoints.up('lg'));
-  const matchDownUW = useMediaQuery(theme.breakpoints.down('ultraWide'));
-
-  const classes = useStyles();
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({
     userId: -1,
@@ -148,7 +134,6 @@ export function ChartDonut({ period }: ChartDonutProps) {
 
   return (
     <CustomizedCard
-      className={classes.chart}
       borders
       boxShadows={theme.palette.mode === ColorMode.Light}
       sx={(theme: any) => ({
@@ -157,10 +142,10 @@ export function ChartDonut({ period }: ChartDonutProps) {
         [theme.breakpoints.down('lg')]: {
           minHeight: 'calc(100vh - 130px)',
         },
-        // [theme.breakpoints.up('xl')]: {
-        //   minHeight: 'calc(100vh - 300px)',
-        // },
-        // maxHeight: 'calc(100vh - 130px)'
+        '& .apexcharts-legend': {
+          maxWidth: '40%',
+          minWidth: '260px',
+        }
       })}
     >
       <Stack
