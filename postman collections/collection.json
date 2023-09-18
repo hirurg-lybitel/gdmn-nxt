@@ -1363,23 +1363,22 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/permissions/usergroupsline/:groupId",
+							"raw": "{{baseUrl}}/permissions/usergroupsline/:Id",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"permissions",
 								"usergroupsline",
-								":groupId"
+								":Id"
 							],
 							"variable": [
 								{
-									"id": "1b893dd2-6851-4f1d-8334-cc6a1a80c98b",
-									"key": "groupId",
-									"value": "358082668"
+									"key": "Id",
+									"value": ""
 								}
 							]
 						}
@@ -1421,13 +1420,13 @@
 	],
 	"variable": [
 		{
-			"id": "fbe8b6a0-9ab5-4a8c-a7c6-06420cd70f0d",
+			"id": "5785600a-c508-44a1-90c0-343bdec1df38",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "e2f7afc9-30c9-49f5-b098-73621612537e",
+			"id": "382de494-ddda-4cf7-a2be-393ddede7120",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
