@@ -1103,7 +1103,7 @@
 							"variable": [
 								{
 									"key": "userId",
-									"value": "150001"
+									"value": "148469626"
 								}
 							]
 						}
@@ -1450,13 +1450,13 @@
 	],
 	"variable": [
 		{
-			"id": "f1c74859-976d-4301-acce-0ca5e8ec0f7d",
+			"id": "8e91ceb2-8ed6-4701-b087-02b64e6f2c59",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "d0f5918a-c91a-4b26-bdd2-583f87ab7456",
+			"id": "e9aeffa6-db3e-4734-9c44-98f125c20549",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
