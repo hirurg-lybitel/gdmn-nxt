@@ -1293,6 +1293,15 @@
 					"request": {
 						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"NAME\": \"Ненадёжные\",\r\n    \"DESCRIPTION\": \"Группа для тестирования 2FA\",\r\n    \"REQUIRED_2FA\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/permissions/usergroups/:id",
 							"host": [
@@ -1450,13 +1459,13 @@
 	],
 	"variable": [
 		{
-			"id": "8e91ceb2-8ed6-4701-b087-02b64e6f2c59",
+			"id": "06500128-3dd9-4a53-aa4e-947aba1b5954",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "e9aeffa6-db3e-4734-9c44-98f125c20549",
+			"id": "a562e7b4-459f-4079-a785-773106c68d0f",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
