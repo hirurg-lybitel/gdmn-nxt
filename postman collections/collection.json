@@ -1437,8 +1437,18 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userName\": \"Administrator\",\r\n  \"password\": \"1502\",\r\n  \"employeeMode\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/user/signin"
 					},
 					"response": []
 				}
@@ -1477,13 +1487,13 @@
 	],
 	"variable": [
 		{
-			"id": "e6a69465-d6e7-47bf-a91f-d22f71bf338c",
+			"id": "abe4dc11-81b5-43a5-bbdf-b36bcdc01e98",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "2f4fce63-17c3-4d91-9d8c-7e07a453476c",
+			"id": "a7cbd433-25c7-4033-b57b-a69324d0e46a",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
