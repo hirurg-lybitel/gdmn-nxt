@@ -1429,7 +1429,20 @@
 		},
 		{
 			"name": "Аутентификация",
-			"item": [],
+			"item": [
+				{
+					"name": "New Request",
+					"id": "953f3c3f-da61-42a0-ba49-832e080b73f1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
 			"id": "e006d411-a9d9-4ceb-82e4-94dab88a7f0b"
 		}
 	],
@@ -1464,13 +1477,13 @@
 	],
 	"variable": [
 		{
-			"id": "d2fb8142-6ad3-436d-9976-9dacdf0701b3",
+			"id": "c31afcdd-3dc8-4dcf-88a8-9e04c94719cc",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "88e3bc7f-31ba-40a9-82c7-8522e99dcce7",
+			"id": "05eba7b9-3232-42be-850c-f751375d0fe6",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
