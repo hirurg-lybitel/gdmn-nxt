@@ -1323,7 +1323,7 @@
 					"response": []
 				},
 				{
-					"name": "Группы пользователей Copy",
+					"name": "Группы пользователей",
 					"id": "80c6643d-98fa-43af-9356-8f9a335f2554",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1477,13 +1477,13 @@
 	],
 	"variable": [
 		{
-			"id": "c31afcdd-3dc8-4dcf-88a8-9e04c94719cc",
+			"id": "3cd2333c-712a-4408-8276-406d20e0dcab",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "05eba7b9-3232-42be-850c-f751375d0fe6",
+			"id": "12f63db2-1c06-4de0-96c2-6e1feb27c6fb",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
