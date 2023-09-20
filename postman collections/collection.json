@@ -1431,7 +1431,7 @@
 			"name": "Аутентификация",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "SignIn",
 					"id": "953f3c3f-da61-42a0-ba49-832e080b73f1",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1477,13 +1477,13 @@
 	],
 	"variable": [
 		{
-			"id": "3cd2333c-712a-4408-8276-406d20e0dcab",
+			"id": "e6a69465-d6e7-47bf-a91f-d22f71bf338c",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "12f63db2-1c06-4de0-96c2-6e1feb27c6fb",
+			"id": "2f4fce63-17c3-4d91-9d8c-7e07a453476c",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
