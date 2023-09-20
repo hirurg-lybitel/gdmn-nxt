@@ -1324,6 +1324,18 @@
 				},
 				{
 					"name": "Группы пользователей",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a66f6145-cc71-4c34-931b-4d7050080558",
+								"exec": [
+									"pm.environment.set('DISABLE_JWT_CHECK', 'true');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"id": "80c6643d-98fa-43af-9356-8f9a335f2554",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1487,13 +1499,13 @@
 	],
 	"variable": [
 		{
-			"id": "abe4dc11-81b5-43a5-bbdf-b36bcdc01e98",
+			"id": "d4afcd42-90ff-4ef6-b332-3887ee86457d",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "a7cbd433-25c7-4033-b57b-a69324d0e46a",
+			"id": "09ab5539-47c7-4670-a830-1d4ea0505b59",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
