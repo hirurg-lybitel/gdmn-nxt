@@ -62,21 +62,6 @@ import { useIdleTimer } from 'react-idle-timer';
 
 registerMUI();
 
-// Время между проверками на бездействие
-const checkAFKInterval = 1000;
-
-// Максимальное время бездействия
-const maxAFKInterval = 10 * 24 * 1000;
-
-const AFK = false;
-let checkingAFKTimer = true;
-
-export const setCheckingAFKTimer = (arg: boolean) => {
-  checkingAFKTimer = arg;
-};
-
-let checkAFKTimer: NodeJS.Timeout | undefined;
-
 const Main = () => {
   const dispatch = useDispatch<AppDispatch>();
   const onIdleHandler = () => {
