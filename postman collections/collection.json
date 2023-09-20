@@ -1428,7 +1428,7 @@
 			"id": "a0a5aa4b-983f-4c0e-b7dc-123d9c86d408"
 		},
 		{
-			"name": "New Folder",
+			"name": "Аутентификация",
 			"item": [],
 			"id": "e006d411-a9d9-4ceb-82e4-94dab88a7f0b"
 		}
@@ -1464,13 +1464,13 @@
 	],
 	"variable": [
 		{
-			"id": "debdb8d8-3190-4a9c-ad8c-b10733429e15",
+			"id": "d2fb8142-6ad3-436d-9976-9dacdf0701b3",
 			"key": "baseUrl",
 			"value": "http://localhost:3333/api/v1",
 			"type": "string"
 		},
 		{
-			"id": "b3abe479-d631-424e-9cb9-37769c5c1d2e",
+			"id": "88e3bc7f-31ba-40a9-82c7-8522e99dcce7",
 			"key": "apiKey",
 			"value": "123",
 			"type": "string"
