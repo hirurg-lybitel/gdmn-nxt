@@ -13,9 +13,13 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   const codeRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async () => {
     if (!codeRef.current) return;
+    setLoading(true);
     const response = await onSubmit(codeRef.current.value);
+    setLoading(false);
 
     if (response.result === 'ERROR') {
       setError(response.message ?? '');
@@ -31,7 +35,7 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   return (
     <Stack spacing={3} textAlign="center">
       <Box textAlign="center">
-        <Typography variant="pageHeader">Двухфакторная аутентификация (2FA)</Typography>
+        <Typography variant="h6" fontSize="1.5rem">Двухфакторная аутентификация (2FA)</Typography>
       </Box>
       <Typography variant="body1">Откройте приложение двухфакторной проверки на своём мобильном устройстве, чтобы получить код подтверждения.</Typography>
       <TextField
@@ -46,8 +50,16 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
           ),
         }}
       />
-      <Button variant="contained" onClick={handleSubmit}>Продолжить</Button>
-      <Button onClick={onCancel}>Отмена</Button>
+      <Stack spacing={1}>
+        <Button
+          variant="contained"
+          disabled={loading}
+          onClick={handleSubmit}
+        >
+          {loading ? 'Проверяем...' : 'Продолжить'}
+        </Button>
+        <Button variant="outlined" onClick={onCancel}>Отмена</Button>
+      </Stack>
       <Dialog
         open={!!error}
         onClose={() => setError('')}

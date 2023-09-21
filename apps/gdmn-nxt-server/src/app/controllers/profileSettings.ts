@@ -137,12 +137,12 @@ const set: RequestHandler = async (req, res) => {
 
 
 const upsertSecretKey = async (req: Request, body: { userId: number, secretKey?: string, email?: string, enabled2fa?: boolean }) => {
-  const { executeQuery, releaseTransaction } = await startTransaction(req.sessionID);
+  const { releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
 
   try {
     const { secretKey, userId, email, enabled2fa } = body;
 
-    await executeQuery(`
+    await executeSingletonAsObject(`
       UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY
         ${typeof secretKey !== 'undefined' ? ', USR$SECRETKEY' : ''}
         ${typeof enabled2fa === 'boolean' ? ', USR$2FA_ENABLED' : ''})
@@ -152,7 +152,7 @@ const upsertSecretKey = async (req: Request, body: { userId: number, secretKey?:
       MATCHING(USR$USERKEY)`,
     { userId, secretKey, enabled2fa });
 
-    (typeof email !== 'undefined') && await executeQuery(`
+    (typeof email !== 'undefined') && await executeSingletonAsObject(`
       UPDATE GD_CONTACT C
       SET EMAIL = :email
       WHERE EXISTS(SELECT u.ID FROM GD_USER u WHERE u.CONTACTKEY = c.ID AND u.ID = :userId )`,
@@ -160,6 +160,7 @@ const upsertSecretKey = async (req: Request, body: { userId: number, secretKey?:
 
     return true;
   } catch (error) {
+    console.error('upsertSecretKey', error);
     return false;
   } finally {
     releaseTransaction();

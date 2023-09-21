@@ -33,5 +33,6 @@ export const authApi = createApi({
 
 export const {
   useGenerateOtpQRMutation,
-  useVerifyOtpMutation
+  useVerifyOtpMutation,
+  useDisableOtpMutation
 } = authApi;

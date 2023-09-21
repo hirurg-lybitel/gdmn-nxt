@@ -17,7 +17,7 @@ import actCompletionRouter from './app/routes/actCompletionRouter';
 import chartsRouter from './app/routes/chartsDataRouter';
 import contactsRouter from './app/routes/contactsRouter';
 import systemRouter from './app/routes/systemRouter';
-import { disposeConnection } from './app/utils/db-connection';
+import { disposeConnection } from '@gdmn-nxt/db-connection';
 import { importedModels } from './app/utils/models';
 import contractsListRouter from './app/routes/contractsListRouter';
 import reportsRouter from './app/routes/reportsRouter';

@@ -17,8 +17,7 @@ import * as yup from 'yup';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
-import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import { useGenerateOtpQRMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
+import { useDisableOtpMutation, useGenerateOtpQRMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -30,6 +29,7 @@ export function Profile(props: ProfileProps) {
 
   const [generateOtp] = useGenerateOtpQRMutation();
   const [verifyOtp] = useVerifyOtpMutation();
+  const [disableOtp] = useDisableOtpMutation();
 
   const [tabIndex, setTabIndex] = useState('1');
   const [image, setImage] = useState<string>(NoPhoto);
@@ -163,6 +163,7 @@ export function Profile(props: ProfileProps) {
 
     if (response.data.result === 'SUCCESS') {
       formik.setFieldValue('ENABLED_2FA', true);
+      formik.handleSubmit();
       setTwoFAOpen({ create: false });
     }
 
@@ -170,12 +171,13 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleCheckOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await verifyOtp({ userId: userProfile?.id ?? -1, code });
+    const response = await disableOtp({ userId: userProfile?.id ?? -1, code });
 
     if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
 
     if (response.data.result === 'SUCCESS') {
       formik.setFieldValue('ENABLED_2FA', false);
+      formik.handleSubmit();
       setTwoFAOpen({ check: false });
     }
 
@@ -207,13 +209,7 @@ export function Profile(props: ProfileProps) {
     </Dialog>, [twoFAOpen.check]);
 
   const memoCreateCode = useMemo(() =>
-    <Dialog open={twoFAOpen.create ?? false} style={{ padding: 2 }} PaperProps={{
-      style: {
-        // height: '100vh', width: '488px'
-        // maxHeight: '100vh'
-      }
-    }}>
-      {/* <CustomizedScrollBox aria-label='MyCustomizedScrollBox'> */}
+    <Dialog open={twoFAOpen.create ?? false} style={{ padding: 2 }}>
       <Stack
         direction="column"
         justifyContent="center"
@@ -226,7 +222,6 @@ export function Profile(props: ProfileProps) {
           onSubmit={handleCreateOnSubmit}
         />
       </Stack>
-      {/* </CustomizedScrollBox> */}
     </Dialog>, [twoFAOpen.create]);
 
   return (
@@ -301,8 +296,16 @@ export function Profile(props: ProfileProps) {
                   <TabContext value={tabIndex}>
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Общее" value="1" />
-                      <Tab label="Безопасность" value="2" />
-                      <Tab label="Уведомления" value="3" />
+                      <Tab
+                        label="Безопасность"
+                        value="2"
+                        disabled={isLoading}
+                      />
+                      <Tab
+                        label="Уведомления"
+                        value="3"
+                        disabled={isLoading}
+                      />
                     </TabList>
                     <Divider style={{ margin: 0 }} />
                     <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
@@ -334,19 +337,26 @@ export function Profile(props: ProfileProps) {
                           <Typography variant="caption">Дополнительная защита аккаунта с паролем</Typography>
                         </Stack>
                         <Box flex={1} />
-                        <FormControlLabel
-                          style={{
-                            width: '155px'
-                          }}
-                          label={<Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
-                          disabled={formik.values.REQUIRED_2FA}
-                          control={
-                            <Switch
-                              name="ENABLED_2FA"
-                              checked={formik.values.ENABLED_2FA}
-                              onChange={onEnable2FAChange}
-                            />}
-                        />
+                        {/* .. Для вашего пользователя установлена обязательная двухфакторная аутентификация */}
+                        <Tooltip
+                          style={{ cursor: 'help' }}
+                          arrow
+                          title={formik.values.REQUIRED_2FA ? 'Для вашего пользователя установлена обязательная двухфакторная аутентификация' : ''}
+                        >
+                          <FormControlLabel
+                            style={{
+                              width: '155px'
+                            }}
+                            label={<Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
+                            disabled={formik.values.REQUIRED_2FA}
+                            control={
+                              <Switch
+                                name="ENABLED_2FA"
+                                checked={formik.values.ENABLED_2FA}
+                                onChange={onEnable2FAChange}
+                              />}
+                          />
+                        </Tooltip>
                       </Stack>
                     </TabPanel>
                     <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>

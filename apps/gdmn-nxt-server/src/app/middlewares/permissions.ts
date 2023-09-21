@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { acquireReadTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { nodeCache } from '../utils/cache';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { ActionName, Permissions } from '@gsbelarus/util-api-types';

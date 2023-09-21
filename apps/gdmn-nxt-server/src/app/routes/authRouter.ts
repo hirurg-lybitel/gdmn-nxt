@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '@gdmn-nxt/config';
 import { resultError } from '../responseMessages';
 import { jwtMiddleware } from '../middlewares/jwt';
+import { ERROR_MESSAGES } from '../constants/messages';
 
 /** In zeit/ms format */
 const jwtExpirationTime = '6h';
@@ -43,27 +44,27 @@ router.post('/user/signin', async function(req, res, next) {
       /** If the user have to enable 2FA */
       if (REQUIRED_2FA) {
         /** Если в базе нет email, и нам прислали новый, на который надо зарегистрировать */
-        if (!EMAIL && email) {
-          const { qr, base32Secret } = await generateSecret(email);
+        if (EMAIL || email) {
+          const { qr, base32Secret } = await generateSecret(email || EMAIL);
 
-          await profileSettingsController.upsertSecretKey(req, { secretKey: base32Secret, email: email, userId: user.id });
+          await profileSettingsController.upsertSecretKey(req, { secretKey: base32Secret, email: email || EMAIL, userId: user.id });
 
           req.session.base32Secret = base32Secret;
           req.session.userId = user.id;
-          req.session.email = email;
+          req.session.email = email || EMAIL;
           req.session.userName = user.userName;
 
 
           return res.json(authResult(
             'REQUIRED_2FA',
-            'Требуется активировать 2FA.',
-            { userName, email: email, ...(email && { qr, base32Secret }) }
+            ERROR_MESSAGES.AUTH_FAILED_TFA_REQUIRED,
+            { userName, email: email || EMAIL, ...((email || EMAIL) && { qr, base32Secret }) }
           ));
         }
 
         return res.json(authResult(
           'REQUIRED_2FA',
-          'Требуется активировать 2FA.',
+          ERROR_MESSAGES.AUTH_FAILED_TFA_REQUIRED,
           { userName, email: EMAIL }
         ));
       }
@@ -133,7 +134,7 @@ router.post('/user/signin-2fa', async function(req, res, next) {
     }
     res.json(authResult(
       'ERROR',
-      'Неверный код 2FA'
+      ERROR_MESSAGES.TFA_CODE_INVALID
     ));
   })(req, res, next);
 });
@@ -209,7 +210,7 @@ router.post('/user/otp/verify', jwtMiddleware, async function(req, res, next) {
     }
     return res.json(authResult(
       'ERROR',
-      'Неверный код 2FA'
+      ERROR_MESSAGES.TFA_CODE_INVALID
     ));
   } catch (error) {
     res.status(500).json(authResult(
@@ -238,7 +239,7 @@ router.post('/user/otp/disable', jwtMiddleware, async function(req, res, next) {
     }
     return res.json(authResult(
       'ERROR',
-      'Неверный код 2FA'
+      ERROR_MESSAGES.TFA_CODE_INVALID
     ));
   } catch (error) {
     res.status(500).json(authResult(
