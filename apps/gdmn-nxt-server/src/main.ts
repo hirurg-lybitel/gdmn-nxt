@@ -218,7 +218,7 @@ const appMiddlewares = [
   passport.initialize(),
   passport.session(),
   flash(),
-  csrf()
+  // csrf()
 ];
 
 const routerMiddlewares = [
