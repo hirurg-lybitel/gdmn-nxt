@@ -32,7 +32,7 @@ const appPort =
     : Number(process.env.NX_APP_PORT) ?? 80;
 
 const apiAccessToken = process.env.ACCESS_API_TOKEN || '';
-const jwtSecret = process.env.JWT_SECRET || 'NoKey';
+const jwtSecret = process.env.JWT_SECRET || '';
 
 export const config: IConfig = {
   host,
