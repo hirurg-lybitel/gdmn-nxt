@@ -4332,6 +4332,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lusca@npm:^1.7.2":
+  version: 1.7.2
+  resolution: "@types/lusca@npm:1.7.2"
+  dependencies:
+    "@types/express": "*"
+  checksum: 00579ff2b3034d9f68fd04e7229e7e3a16f7a545a0c185b557240d81149a41e734ad8fb2581955617540c9e5df8bd84d73bc9faa84bd6ffa4c4b5da4598ce481
+  languageName: node
+  linkType: hard
+
 "@types/luxon@npm:*":
   version: 3.3.1
   resolution: "@types/luxon@npm:3.3.1"
@@ -9377,6 +9386,7 @@ __metadata:
     "@types/express-session": ^1.17.7
     "@types/jest": 28.1.8
     "@types/jsonwebtoken": ^9.0.3
+    "@types/lusca": ^1.7.2
     "@types/marked": ^5.0.1
     "@types/node": 18.11.9
     "@types/nodemailer": ^6.4.4
@@ -9428,6 +9438,7 @@ __metadata:
     jsonwebtoken: ^9.0.2
     leaflet: ^1.8.0
     leaflet.markercluster: ^1.5.3
+    lusca: ^1.7.0
     marked: ^5.1.1
     memorystore: ^1.6.6
     nested-sets-tree: ^2.0.0
@@ -12207,6 +12218,15 @@ __metadata:
   version: 10.0.0
   resolution: "lru-cache@npm:10.0.0"
   checksum: 18f101675fe283bc09cda0ef1e3cc83781aeb8373b439f086f758d1d91b28730950db785999cd060d3c825a8571c03073e8c14512b6655af2188d623031baf50
+  languageName: node
+  linkType: hard
+
+"lusca@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "lusca@npm:1.7.0"
+  dependencies:
+    tsscmp: ^1.0.5
+  checksum: 5f108d7306bf8fca9cbba352c4ff3756bf90c51831deef502f30ce9ac92d34db7f8e25e3187eafdd6ff8cdfbbd7b752c740b1302d4cf1de9a6676a1706c58a8a
   languageName: node
   linkType: hard
 
@@ -17208,6 +17228,13 @@ __metadata:
   version: 2.6.1
   resolution: "tslib@npm:2.6.1"
   checksum: b0d176d176487905b66ae4d5856647df50e37beea7571c53b8d10ba9222c074b81f1410fb91da13debaf2cbc970663609068bdebafa844ea9d69b146527c38fe
+  languageName: node
+  linkType: hard
+
+"tsscmp@npm:^1.0.5":
+  version: 1.0.6
+  resolution: "tsscmp@npm:1.0.6"
+  checksum: 1512384def36bccc9125cabbd4c3b0e68608d7ee08127ceaa0b84a71797263f1a01c7f82fa69be8a3bd3c1396e2965d2f7b52d581d3a5eeaf3967fbc52e3b3bf
   languageName: node
   linkType: hard
 

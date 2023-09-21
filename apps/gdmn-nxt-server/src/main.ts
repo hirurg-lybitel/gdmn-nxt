@@ -38,9 +38,9 @@ import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
 import path from 'path';
 import flash from 'connect-flash';
-import { expressjwt } from 'express-jwt';
 import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
+import { csrf } from 'lusca';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -218,6 +218,7 @@ const appMiddlewares = [
   passport.initialize(),
   passport.session(),
   flash(),
+  csrf()
 ];
 
 const routerMiddlewares = [
