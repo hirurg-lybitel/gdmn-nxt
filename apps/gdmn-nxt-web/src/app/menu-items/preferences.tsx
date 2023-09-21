@@ -13,7 +13,7 @@ const preferences: IMenuItem = {
   children: [
     {
       id: 'account',
-      title: 'Аккаунт',
+      title: 'Профиль',
       type: 'item',
       url: 'preferences/account',
       icon: <AccountCircleIcon color="secondary" />

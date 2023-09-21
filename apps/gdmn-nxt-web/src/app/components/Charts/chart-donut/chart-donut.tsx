@@ -2,7 +2,7 @@ import style from './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Stack, Typography, useMediaQuery, useTheme, Theme } from '@mui/material';
+import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import ChartSkeleton from './chart-skeleton';
 import { ColorMode } from '@gsbelarus/util-api-types';
@@ -11,12 +11,11 @@ import dayjs, { Dayjs } from 'dayjs';
 
 export interface ChartDonutProps {
   period: DateRange<Dayjs>
-}
+};
 
 export function ChartDonut({ period }: ChartDonutProps) {
   const theme = useTheme();
   const matchUpLg = useMediaQuery(theme.breakpoints.up('lg'));
-  const matchDownUW = useMediaQuery(theme.breakpoints.down('ultraWide'));
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({
     userId: -1,
@@ -58,27 +57,27 @@ export function ChartDonut({ period }: ChartDonutProps) {
       offsetY: 0,
       fontFamily: theme.fontFamily,
       fontSize: '18',
-      width: 260,
       fontWeight: 400,
       position: 'left',
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
+        const oneValue = opts.w.globals.series.filter((item: number) => item > 0);
         const seriesValue = opts.w.globals.series[opts.seriesIndex];
         const percentValue = (seriesValue / seriesSum) * 100;
         const percentString = (() => {
-          if (seriesSum === 1) {
-            if (seriesValue === 0) return '(0.0%)    ';
+          if (oneValue.length === 1) {
+            if (seriesValue === 0) return '    (0.0%)';
             return '(100.0%)';
           }
           if (percentValue < 9) {
-            return `(${percentValue.toFixed(1)}%)  `;
+            return `  (${percentValue.toFixed(1)}%)`;
           }
-          return '(' + percentValue.toFixed(1) + '%)';
+          return `(${percentValue.toFixed(1)}%)`;
         })();
         return (
-          `<div style=" position:relavite;display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
+          `<div style="position:relavite; display: inline-grid; grid-template-columns: auto auto; width: calc(100% - 15px); align-items: center">
             <div>${legendName}</div>
-            <div ${seriesSum > 0 ? '' : 'hidden'} style="white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${percentString}</span></div>
+            <div style=" ${seriesSum > 0 ? '' : 'visibility: hidden;}'} padding-left:10px; display: flex; justify-content: end; white-space: pre;text-align: right; font-size: 15px"><span>${seriesValue} ${percentString}</span></div>
           </div>`);
       },
       // itemMargin: {
@@ -142,10 +141,10 @@ export function ChartDonut({ period }: ChartDonutProps) {
         [theme.breakpoints.down('lg')]: {
           minHeight: 'calc(100vh - 130px)',
         },
-        // [theme.breakpoints.up('xl')]: {
-        //   minHeight: 'calc(100vh - 300px)',
-        // },
-        // maxHeight: 'calc(100vh - 130px)'
+        '& .apexcharts-legend': {
+          maxWidth: '40%',
+          minWidth: '260px',
+        }
       })}
     >
       <Stack
@@ -160,7 +159,10 @@ export function ChartDonut({ period }: ChartDonutProps) {
           ? <ChartSkeleton />
           : <>
             <Typography variant="h6" style={{ paddingLeft: '15px' }}>Статус сделок</Typography>
-            <Box flex={1} style={{ color: 'black', paddingLeft: '1px', paddingRight: '5px', marginTop: 0 }} >
+            <Box
+              flex={1}
+              style={{ color: 'black', paddingLeft: '1px', paddingRight: '5px', marginTop: 0 }}
+            >
               <Chart
                 type="donut"
                 height="100%"
