@@ -28,6 +28,7 @@ import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
 import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
 import { config } from '@gdmn-nxt/config';
+import addNotification from 'react-push-notification';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -110,6 +111,18 @@ export function Notification(props: NotificationProps) {
 
 
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
+
+  useEffect(() => {
+    messages.map(item => {
+      console.log('asd');
+      addNotification({
+        title: item.title,
+        message: item.text,
+        native: true,
+        duration: 1000 * 60
+      });
+    });
+  }, [messages]);
 
   useEffect(() => {
     if (userId <= 0) return;
