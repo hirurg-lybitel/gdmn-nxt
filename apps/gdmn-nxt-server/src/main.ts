@@ -1,8 +1,7 @@
 /* eslint-disable indent */
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
-import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
 import { Permissions } from '@gsbelarus/util-api-types';
@@ -41,6 +40,7 @@ import flash from 'connect-flash';
 import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
+import { bodySize } from './app/constants/params';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -54,7 +54,6 @@ declare module 'express-session' {
     userName: string;
   }
 }
-
 
 interface IBaseUser {
   userName: string;
@@ -77,7 +76,6 @@ type IUser = IGedeminUser | ICustomerUser;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
 
-// dotenv.config({ path: '../..' });
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cors = require('cors');
@@ -91,7 +89,7 @@ app.use(cors({
 if (config.serverStaticMode) {
   app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
 }
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: bodySize }));
 app.use(express.urlencoded({ extended: true }));
 const apiRoot = {
   v1: '/api/v1',
@@ -218,6 +216,7 @@ const appMiddlewares = [
   passport.initialize(),
   passport.session(),
   flash(),
+  errorMiddleware
   // csrf()
 ];
 
