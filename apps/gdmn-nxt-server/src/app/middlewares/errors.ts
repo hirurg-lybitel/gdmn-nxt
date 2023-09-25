@@ -7,5 +7,8 @@ export const errorMiddleware = (err: any, req: Request, res: Response, next: Nex
   if (err.name === 'UnauthorizedError') {
     return res.status(401).json(resultError(ERROR_MESSAGES.AUTH_FAILED));
   }
+  if (err.status === 413 && err.name === 'PayloadTooLargeError') {
+    return res.status(413).json(resultError(ERROR_MESSAGES.REQUEST_TOO_LARGE));
+  }
   next(err);
 };
