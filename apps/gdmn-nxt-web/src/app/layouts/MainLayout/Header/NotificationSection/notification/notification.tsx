@@ -129,7 +129,7 @@ export function Notification(props: NotificationProps) {
       });
     } else {
       sendPushNotification(
-        'Не просмотренные уведомления',
+        'Непросмотренные уведомления',
         `У вас ${messages.length} непросмотренных уведомлений`
       );
     }
@@ -309,7 +309,7 @@ export function Notification(props: NotificationProps) {
                         alignItems="center"
                         justifyContent="center"
                         spacing={1}
-                      >
+                        >
                         <img
                           src={logo}
                           alt=""
