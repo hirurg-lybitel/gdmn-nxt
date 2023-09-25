@@ -6,11 +6,11 @@ import { acquireReadTransaction, getReadTransaction, startTransaction, releaseRe
 import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
 
 const getSettings = async (userId: number, req: Request) => {
-  const { releaseReadTransaction, fetchAsObject, executeSingletonAsObject } = await acquireReadTransaction(req.sessionID);
+  const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(req.sessionID);
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   try {
-    const check2FA = await executeSingletonAsObject(`
+    const check2FA = await fetchAsSingletonObject(`
       SELECT ug.USR$REQUIRED_2FA GROUP_2FA, ug.USR$REQUIRED_2FA USER_2FA
       FROM USR$CRM_PERMISSIONS_USERGROUPS ug
       JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
@@ -62,6 +62,7 @@ const getSettings = async (userId: number, req: Request) => {
       }
     };
   } catch (error) {
+    console.error(error);
     return {
       OK: false,
       error
