@@ -112,16 +112,27 @@ export function Notification(props: NotificationProps) {
 
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
-  useEffect(() => {
-    messages.map(item => {
-      console.log('asd');
-      addNotification({
-        title: item.title,
-        message: item.text,
-        native: true,
-        duration: 1000 * 60
-      });
+  const sendPushNotification = (title: string, text: string) => {
+    addNotification({
+      title: title,
+      message: text,
+      native: true,
+      duration: 1000 * 60
     });
+  };
+
+  useEffect(() => {
+    if (messages.length < 1) return;
+    if (messages.length < 2) {
+      messages.forEach(item => {
+        sendPushNotification(item.title, item.text);
+      });
+    } else {
+      sendPushNotification(
+        'Не просмотренные уведомления',
+        `У вас ${messages.length} непросмотренных уведомлений`
+      );
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -131,8 +142,10 @@ export function Notification(props: NotificationProps) {
       url: `http://${config.host}:${config.notificationPort}`,
       userId
     });
-
+    let oldMessages: IMessage[] = [];
     socket?.on?.('messages', (data: IMessage[]) => {
+      if (data.toString() === oldMessages.toString()) return;
+      oldMessages = data;
       setMessages(data);
     });
 
