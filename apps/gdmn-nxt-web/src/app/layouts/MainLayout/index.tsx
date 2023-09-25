@@ -79,7 +79,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   };
   const {} = useIdleTimer({
     onIdle: onIdleHandler,
-    timeout: 1000 * 2,
+    timeout: 1000 * 60 * 20,
     promptBeforeIdle: 0,
     events: [
       'mousemove',
