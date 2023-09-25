@@ -9,6 +9,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
 import UpdatesInfo from '../../components/updates/updates-info/updates-info';
+import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import { useIdleTimer } from 'react-idle-timer';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -70,7 +72,22 @@ interface MainLayoutProps{
 
 export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
+
   const dispatch = useDispatch<AppDispatch>();
+  const onIdleHandler = () => {
+    dispatch(logoutUser());
+  };
+  const {} = useIdleTimer({
+    onIdle: onIdleHandler,
+    timeout: 1000 * 2,
+    promptBeforeIdle: 0,
+    events: [
+      'mousemove',
+      'keydown',
+      'touchstart',
+      'touchmove',
+    ],
+  });
 
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const { errorMessage } = useSelector((state: RootState) => state.error);

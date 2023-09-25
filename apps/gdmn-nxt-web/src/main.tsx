@@ -57,28 +57,10 @@ import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-r
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { Tasks } from './app/pages/Managment/tasks/tasks';
 import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types';
-import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
-import { useIdleTimer } from 'react-idle-timer';
 
 registerMUI();
 
 const Main = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const onIdleHandler = () => {
-    dispatch(logoutUser());
-  };
-  const {} = useIdleTimer({
-    onIdle: onIdleHandler,
-    timeout: 1000 * 60 * 10,
-    promptBeforeIdle: 0,
-    events: [
-      'mousemove',
-      'keydown',
-      'touchstart',
-      'touchmove',
-    ],
-  });
-
   const customization = useSelector(
     (state: RootState) => state.settings.customization
   );
