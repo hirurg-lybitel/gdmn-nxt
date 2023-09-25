@@ -2,7 +2,7 @@ import styles from './customized-scroll-box.module.less';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import PerfectScrollbar, { ScrollBarProps } from 'react-perfect-scrollbar';
-import { useTheme } from '@mui/material';
+import { CSSProperties } from '@mui/styles';
 
 interface IScrollBlurs {
   top: boolean;
@@ -12,12 +12,21 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
   children: ReactNode;
   withBlur?: boolean;
   backgroundColor?: string;
+  container?: {
+    style?: CSSProperties;
+    className?: string;
+  }
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
-  const { children, withBlur = false, backgroundColor = 'rgba(0, 0, 0, 0)', ...style } = props;
+  const {
+    children,
+    withBlur = false,
+    backgroundColor = 'rgba(0, 0, 0, 0)',
+    container,
+    ...style
+  } = props;
 
-  const theme = useTheme();
   const containerRef = useRef<HTMLElement | null>(null);
   const [showScrollBlurs, setShowScrollBlurs] = useState<IScrollBlurs>({ top: false, bottom: false });
 
@@ -40,7 +49,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
   return (
     <div
       aria-label="CustomizedScrollBox"
-      className={styles.container}
+      className={`${styles.container} ${container?.className}`}
     >
       <div
         aria-label="scroller-top"
