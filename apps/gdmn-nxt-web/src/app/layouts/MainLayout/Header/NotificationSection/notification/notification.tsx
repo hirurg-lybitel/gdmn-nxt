@@ -108,7 +108,16 @@ export function Notification(props: NotificationProps) {
   const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
   const [socketClient, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
   const [messages, setMessages] = useState<IMessage[]>([]);
-
+  const [showedMessages, setShowedMessages] = useState<number[]>([]);
+  const [isActivePage, setIsActivePage] = useState<boolean>(true);
+  function onBlur() {
+    setIsActivePage(false);
+  }
+  function onFocus() {
+    setIsActivePage(true);
+  }
+  window.onfocus = onFocus;
+  window.onblur = onBlur;
 
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
@@ -122,10 +131,13 @@ export function Notification(props: NotificationProps) {
   };
 
   useEffect(() => {
-    if (messages.length < 1) return;
-    if (messages.length < 2) {
-      messages.forEach(item => {
-        sendPushNotification(item.title, item.text);
+    const unshowedMessages = messages.filter(item => !showedMessages.some(showed => showed === item.id));
+    setShowedMessages(messages.map(item => item.id));
+    if (isActivePage) return;
+    if (unshowedMessages.length < 1) return;
+    if (unshowedMessages.length < 2) {
+      unshowedMessages.forEach(item => {
+        sendPushNotification(item.title, item.text.replaceAll(/\**\#*=*\-*_*~*>*\+*/g, ''));
       });
     } else {
       sendPushNotification(
@@ -309,7 +321,7 @@ export function Notification(props: NotificationProps) {
                         alignItems="center"
                         justifyContent="center"
                         spacing={1}
-                        >
+                      >
                         <img
                           src={logo}
                           alt=""
