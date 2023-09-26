@@ -95,11 +95,9 @@ export function AccountSettings(props: AccountSettingsProps) {
     <CustomizedCard className={style.card} borders>
       <CardHeader
         title={
-          <div className={style.title}>
-            <Typography variant="pageHeader">
-                Настройки
-            </Typography>
-          </div>
+          <Typography variant="pageHeader">
+              Настройки
+          </Typography>
         }
       />
       <Divider/>

@@ -87,6 +87,7 @@ export function Tasks(props: TasksProps) {
       <>
         <CustomizedCard
           borders
+          direction="row"
           className={styles.headerCard}
         >
           <ToggleButtonGroup

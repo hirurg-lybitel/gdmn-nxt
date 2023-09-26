@@ -54,7 +54,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
             }
           }}
           data={funnelData}
-          margin={{ top: 30, right: 20, bottom: 20, left: 20 }}
+          margin={{ top: 0, right: 20, bottom: 40, left: 20 }}
           // valueFormat=">-.4s"
           colors={colors}
           // colors={{ scheme: 'set2' }}
@@ -68,7 +68,6 @@ export function SalesFunnel(props: SalesFunnelProps) {
               ]
             ],
           }}
-
           beforeSeparatorLength={100}
           beforeSeparatorOffset={20}
           afterSeparatorLength={100}
