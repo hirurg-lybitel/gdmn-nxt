@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useRef } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
-import { RootState, store } from './app/store';
+import { AppDispatch, RootState, store } from './app/store';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { BrowserRouter, HashRouter, json, Navigate, Route, Routes } from 'react-router-dom';
 
@@ -69,15 +69,14 @@ const Main = () => {
   );
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
-
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
-
   const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
 
   return (
     <div
+      aria-label="mydivdiv"
       style={{
         background: settings.customization.colorMode === ColorMode.Dark ? '#424242' : '',
         height: '100%'
