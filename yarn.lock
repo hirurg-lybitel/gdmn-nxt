@@ -9460,6 +9460,7 @@ __metadata:
     react-dnd-html5-backend: ^15.1.2
     react-dom: 18.2.0
     react-hook-form: ^7.41.0
+    react-idle-timer: ^5.7.2
     react-input-mask: 3.0.0-alpha.2
     react-is: 18.2.0
     react-leaflet: ^4.0.0
@@ -14906,6 +14907,16 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18
   checksum: 023ca091f2bb1f3117d8a694871874c4a344f02c795c6a08b8f78b09b78444451375fbe921d7db4ba7cd78909b1fa5e92d19efd2bfedc43124fdc44540ac036c
+  languageName: node
+  linkType: hard
+
+"react-idle-timer@npm:^5.7.2":
+  version: 5.7.2
+  resolution: "react-idle-timer@npm:5.7.2"
+  peerDependencies:
+    react: ">=16"
+    react-dom: ">=16"
+  checksum: 6faf3cfa87c9d65ae7a87078a2d82db5b821936a45565a98d69e7341e4b4acd5610b1f26cf1a6809b5551e4c30357f2ab5ce729c4c33751f66cb9ce6072dfb02
   languageName: node
   linkType: hard
 
