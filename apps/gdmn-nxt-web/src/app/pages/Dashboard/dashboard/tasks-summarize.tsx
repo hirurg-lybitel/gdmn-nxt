@@ -18,7 +18,7 @@ interface TaskCardProps {
 
 const TaskCard = ({ title, quantity = 0, color, loading = true }: TaskCardProps) => {
   const theme = useTheme();
-  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
   return (
     <CustomizedCard boxShadows={theme.palette.mode === ColorMode.Light} style={{ minHeight: '180px', padding: '5px 0' }}>
       <CardHeader
@@ -28,7 +28,7 @@ const TaskCard = ({ title, quantity = 0, color, loading = true }: TaskCardProps)
           }
         }}
         title={<Typography
-          variant={matchDownLg ? 'subtitle1' : 'h6'}
+          variant={matchDownXl ? 'subtitle1' : 'h6'}
           noWrap
           overflow="hidden"
           textOverflow="ellipsis"

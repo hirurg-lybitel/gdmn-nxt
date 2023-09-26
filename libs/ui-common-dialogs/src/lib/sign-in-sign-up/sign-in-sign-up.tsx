@@ -298,7 +298,11 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           {
             newPassword
           &&
-          <Button variant="outlined" disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}>
+          <Button
+            variant="outlined"
+            disabled={waiting}
+            onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}
+          >
             Забыли пароль?
           </Button>
           }

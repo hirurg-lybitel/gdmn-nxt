@@ -230,7 +230,7 @@ export function Profile(props: ProfileProps) {
       {memoCreateCode}
       {memoConfirmDialog}
       <CustomizedCard className={styles.mainCard} borders>
-        <CardHeader title={<Typography variant="pageHeader">Аккаунт</Typography>} />
+        <CardHeader title={<Typography variant="pageHeader">Профиль</Typography>} />
         <Divider />
         <CardContent className={styles['card-content']}>
           <Stack
@@ -244,7 +244,7 @@ export function Profile(props: ProfileProps) {
                   variant="circular"
                   height={300}
                   width={300}
-                />
+                  />
                 :
                 <Avatar
                   className={styles.image}
@@ -311,6 +311,11 @@ export function Profile(props: ProfileProps) {
                     <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
                       <Stack spacing={2}>
                         <TextField
+                          label="Имя"
+                          value={userProfile?.userName || ''}
+                          disabled
+                        />
+                        <TextField
                           label="Должность"
                           value={settings?.RANK || ''}
                           disabled
@@ -368,7 +373,7 @@ export function Profile(props: ProfileProps) {
                             name="SEND_EMAIL_NOTIFICATIONS"
                             checked={formik.values.SEND_EMAIL_NOTIFICATIONS}
                             onChange={formik.handleChange}
-                          />}
+                                   />}
                           style={{
                             minWidth: '190px',
                           }}

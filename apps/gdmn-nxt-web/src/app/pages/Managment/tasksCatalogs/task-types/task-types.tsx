@@ -6,7 +6,7 @@ import { GridActionsCellItem, GridCellParams, GridColumns, GridPreProcessEditCel
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ChangeEvent, KeyboardEvent, useCallback, useMemo, useState, MouseEvent, SyntheticEvent } from 'react';
 import { useAddTaskTypeMutation, useDeleteTaskTypeMutation, useGetTaskTypesQuery, useUpdateTaskTypeMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { ITaskType } from '@gsbelarus/util-api-types';
@@ -189,7 +189,7 @@ export function TaskTypes(props: TaskTypesProps) {
           color="primary"
         />
         <GridActionsCellItem
-          icon={<DeleteIcon />}
+          icon={<DeleteForeverIcon />}
           label="Delete"
           onClick={handleConfirmDelete}
           color="primary"
@@ -307,7 +307,7 @@ export function TaskTypes(props: TaskTypesProps) {
             rows={taskTypes}
             columns={columns}
             loading={isLoading}
-            rowHeight={80}
+            rowHeight={60}
             apiRef={apiRef}
             onRowEditStart={handleRowEditStart}
             onRowEditStop={handleRowEditStop}

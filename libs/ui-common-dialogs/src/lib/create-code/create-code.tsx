@@ -188,7 +188,7 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
           variant="filled"
           style={{ alignItems: 'center' }}
         >
-          <Typography variant="subtitle1">{error}</Typography>
+          <Typography variant="subtitle1" color="white">{error}</Typography>
         </Alert>
       </Dialog>
     </Stack>
