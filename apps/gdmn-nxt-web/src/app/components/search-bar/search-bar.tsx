@@ -161,6 +161,7 @@ export function SearchBar(props: SearchBarProps) {
   return (
     <CustomizedCard
       borders
+      direction="row"
       className={`
         ${classes.root}
         ${className}

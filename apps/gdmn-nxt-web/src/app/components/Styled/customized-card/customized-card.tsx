@@ -6,13 +6,16 @@ interface ICustomizedCardProps {
   theme?: Theme
   borders?: boolean;
   boxShadows?: boolean;
+  direction?: 'row' | 'column';
 };
 
 const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
-})<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false }) => ({
+})<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false, direction = 'column' }) => ({
   ...(borders ? { border: `1px solid ${theme.mainContent.borderColor }` } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : { boxShadow: 'none' }),
+  display: 'flex',
+  flexDirection: direction,
   '.MuiCardHeader-root': {
     paddingTop: '10px',
     paddingBottom: '10px'

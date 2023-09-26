@@ -10,6 +10,7 @@ import {
   Popper,
   Stack,
   Theme,
+  Tooltip,
   Typography
 } from '@mui/material';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
@@ -217,21 +218,23 @@ export function Notification(props: NotificationProps) {
         mx: 2
       }}
     >
-      <IconButton
-        size="large"
-        onClick={(event: any) => handleToogle(event.currentTarget)}
-      >
-        <Badge
-          // classes={{
-          //   dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut }),
-          // }}
-          color="error"
-          variant="standard"
-          badgeContent={messages.length}
+      <Tooltip title={messages.length > 0 ? 'У вас есть непрочитанные уведомления' : 'У вас нет непрочитанных уведомлений'} arrow>
+        <IconButton
+          size="large"
+          onClick={(event: any) => handleToogle(event.currentTarget)}
         >
-          <NotificationsOutlinedIcon color="secondary" />
-        </Badge>
-      </IconButton>
+          <Badge
+            // classes={{
+            //   dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut }),
+            // }}
+            color="error"
+            variant="standard"
+            badgeContent={messages.length}
+          >
+            <NotificationsOutlinedIcon color="secondary" />
+          </Badge>
+        </IconButton>
+      </Tooltip>
       <Popper
         className={classes.popper}
         open={open}

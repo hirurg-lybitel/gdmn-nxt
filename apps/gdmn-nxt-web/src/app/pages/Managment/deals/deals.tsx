@@ -122,6 +122,7 @@ export function Deals(props: DealsProps) {
       <>
         <CustomizedCard
           borders
+          direction="row"
           className={styles.headerCard}
         >
           <ToggleButtonGroup

@@ -1,9 +1,9 @@
-import { ILabel, IPermissionByUser, Permissions } from '@gsbelarus/util-api-types';
-import { Box, Divider, Grid, IconButton } from '@mui/material';
+import { ILabel, Permissions } from '@gsbelarus/util-api-types';
+import { Box, Grid, IconButton } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import styles from './label-list-item.module.less';
-import { CSSProperties, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
@@ -20,22 +20,6 @@ export interface LabelListItemProps {
   onEdit?: (label: ILabel) => void;
   onDelete?: (id: number) => void;
 }
-
-const labelStyle: CSSProperties = {
-  display: 'inline-block',
-  fontSize: '0.625rem',
-  fontWeight: 'bold',
-  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-  textTransform: 'uppercase',
-  borderRadius: '2em',
-  padding: '2.5px 9px',
-  margin: '0px 5px',
-  width: 'fit-content',
-  height: 'fit-content',
-  border: '1px solid hsl(201.71, 100%, 60%)',
-  backgroundColor: 'hsla(201.71, 100%, 72%, 0.2)',
-  color: 'hsl(201.71, 100%, 60%)',
-};
 
 
 const useStyles = makeStyles(() => ({
@@ -164,7 +148,7 @@ export function LabelListItem(props: LabelListItemProps) {
 
 
   return (
-    <Box style={{ padding: '20px 0px' }}>
+    <Box style={{ padding: '12px 0px' }}>
       <Grid container alignItems="center">
         <Grid item xs={4} paddingLeft={2} paddingRight={2}>
           <LabelMarker label={data} />
@@ -189,7 +173,7 @@ export function LabelListItem(props: LabelListItemProps) {
                 color="primary"
                 onClick={handleDeleteClick}
               >
-                <DeleteIcon fontSize="small"  />
+                <DeleteForeverIcon fontSize="small" />
               </IconButton>
             </PermissionsGate>
           </Box>

@@ -1,4 +1,4 @@
-import { IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import styles from './toggle-theme.module.less';
 import NightsStayIcon from '@mui/icons-material/NightsStay';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -44,15 +44,17 @@ export function ToggleTheme(props: ToggleThemeProps) {
     }
   };
   return (
-    <IconButton
-      onClick={handleChange}
-      size="large"
-      disabled={isLoading}
-    >
-      {settings.customization.colorMode === ColorMode.Light
-        ? <NightsStayIcon color="secondary" />
-        : <LightModeIcon />}
-    </IconButton>
+    <Tooltip title="Переключение цветовой темы" arrow>
+      <IconButton
+        onClick={handleChange}
+        size="large"
+        disabled={isLoading}
+      >
+        {settings.customization.colorMode === ColorMode.Light
+          ? <NightsStayIcon color="secondary" />
+          : <LightModeIcon />}
+      </IconButton>
+    </Tooltip>
   );
 }
 
