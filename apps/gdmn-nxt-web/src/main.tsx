@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useRef } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
-import { RootState, store } from './app/store';
+import { AppDispatch, RootState, store } from './app/store';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { BrowserRouter, HashRouter, json, Navigate, Route, Routes } from 'react-router-dom';
 
@@ -24,7 +24,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, GlobalStyles } from '@mui/material';
 import StandardOrder from './app/standard-order/standard-order';
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
 import Deals from './app/pages/Managment/deals/deals';
@@ -69,15 +69,14 @@ const Main = () => {
   );
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
-
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
-
   const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
 
   return (
     <div
+      aria-label="mydivdiv"
       style={{
         background: settings.customization.colorMode === ColorMode.Dark ? '#424242' : '',
         height: '100%'
@@ -88,6 +87,7 @@ const Main = () => {
         <StrictMode>
           <CssBaseline>
             <ThemeProvider theme={savedTheme}>
+              <GlobalStyles styles={{ body: { fontFamily: savedTheme.fontFamily } }} />
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 localeText={{ start: 'Начало периода', end: 'Конец периода' }}

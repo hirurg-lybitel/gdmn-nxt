@@ -1,11 +1,12 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, IconButton, Stack, Typography, useTheme, Theme } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Theme, Tooltip, Icon } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -179,14 +180,14 @@ export function KanbanCard(props: KanbanCardProps) {
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
       <Stack direction="row">
-        <Typography variant="h2">
+        <Typography variant="body2" fontWeight={600}>
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
             ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short', year: '2-digit' })
             : '-/-'}
         </Typography>
         <Box flex={1} />
-        <Typography variant="h2" style={{ color: dayColor(deadline) }}>
+        <Typography variant="body2" fontWeight={600} style={{ color: dayColor(deadline) }}>
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
       </Stack>
@@ -263,7 +264,7 @@ export function KanbanCard(props: KanbanCardProps) {
             direction="row"
             style={{ position: 'relative' }}
           >
-            <Typography variant="h4" flex={1}>{card.DEAL?.USR$NAME}</Typography>
+            <Typography variant="subtitle1" flex={1}>{card.DEAL?.USR$NAME}</Typography>
             <Typography
               className="number"
               variant="caption"
@@ -288,11 +289,26 @@ export function KanbanCard(props: KanbanCardProps) {
               : null
             }
           </Stack>
-          <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
-          <Stack direction="row">
-            <Typography variant="h2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+          <Stack direction="row" spacing={1}>
+            <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
             <Box flex={1} />
-            <Typography variant="h2">
+            {
+              card.DEAL?.PREPAID &&
+              <Tooltip title={'Предоплачено'} arrow>
+                <Icon
+                  fontSize="small"
+                  color={'success'}
+                  style={{ marginTop: '-4px', height: '22px' }}
+                >
+                  <PaidOutlinedIcon fontSize="small" />
+                </Icon>
+              </Tooltip>
+            }
+          </Stack>
+          <Stack direction="row">
+            <Typography variant="body2" fontWeight={600}>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+            <Box flex={1} />
+            <Typography variant="body2" fontWeight={600}>
               {card.DEAL?.CREATIONDATE
                 ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
                 : '-/-'}
@@ -303,7 +319,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging, addIsFetching]);
+  }, [card, snapshot.isDragging, addIsFetching, theme]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import styles from './kanban-tasks-card.module.less';
 import { ColorMode, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
@@ -7,9 +7,7 @@ import { RootState } from '../../../store';
 import { Box, Icon, Stack, Typography } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import { useAddHistoryMutation, useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import { IChanges } from '../../../pages/Managment/deals/deals';
-import { UserState } from '../../../features/user/userSlice';
+import { useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import useTruncate from '../../helpers/hooks/useTruncate';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
@@ -85,6 +83,8 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
     />,
   [openEditForm]);
 
+  const getDayFrom = (msec: Date): number => Math.ceil((msec.getTime() / (1000 * 60 * 60 * 24)));
+
   return (
     <>
       <CustomizedCard
@@ -112,7 +112,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             direction="row"
             style={{ justifyContent: 'space-between' }}
           >
-            <Typography variant="h4">{truncate(card.TASK?.USR$NAME || '', 60)}</Typography>
+            <Typography variant="subtitle1"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 39)}</Typography>
             <Typography
               className="number"
               variant="caption"
@@ -122,10 +122,11 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             </Typography>
           </Stack>
 
-          <Box>
+          <Box style={{ margin: 0 }}>
             <Typography
               display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
-              variant="h2"
+              variant="body2"
+              fontWeight={600}
               component="span"
             >
               {`${card.DEAL?.CONTACT_NAME}, `}
@@ -139,13 +140,23 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               {truncate(card.DEAL?.CONTACT?.NAME || '', 50)}
             </Typography>
           </Box>
-          <Typography variant="caption" color={colorModeIsLight ? 'GrayText' : 'lightgray'}>
+          <Typography
+            variant="caption"
+            color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
+              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', fontWeight: '600', margin: 0 }
+              : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
+                ? { color: 'orange', fontWeight: '600', margin: 0 }
+                : { margin: 0 })}
+          >
             {card.TASK?.USR$DEADLINE
               ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
                 {
                   day: '2-digit',
                   month: 'short',
-                  year: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
                   ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
               : '-/-'}
           </Typography>
@@ -156,9 +167,10 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             alignItems="center"
             spacing={0.5}
             ml={-0.2}
+            style={{ marginTop: 4 }}
           >
             <AccountCircleIcon color="primary" fontSize="small" />
-            <Typography variant="h2">
+            <Typography variant="body2" fontWeight={600}>
               {
                 card.TASK?.CREATOR?.NAME
                   .split(' ')
@@ -168,7 +180,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               }
             </Typography>
             <ForwardIcon fontSize="small"/>
-            <Typography variant="h2">
+            <Typography variant="body2" fontWeight={600}>
               {
                 card.TASK?.PERFORMER?.NAME
                   .split(' ')
@@ -179,7 +191,13 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               }
             </Typography>
           </Stack>}
-          <Typography variant="body1">{card.DEAL?.USR$NAME}</Typography>
+          <Typography
+            style={{ marginTop: 4 }}
+            variant="body2"
+            fontWeight={600}
+          >
+            {card.DEAL?.USR$NAME}
+          </Typography>
         </Stack>
       </CustomizedCard>
       <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>

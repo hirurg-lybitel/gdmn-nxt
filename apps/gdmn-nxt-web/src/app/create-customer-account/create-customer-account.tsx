@@ -114,7 +114,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
       {
         step === 'ENTER_TAXID' || step === 'CHECKING_TAXID' ?
           <>
-          <CardHeader title={<Typography variant="h1" align="center" noWrap>Введите УНП предприятия:</Typography>} />
+          <CardHeader title={<Typography variant="h6" align="center" noWrap>Введите УНП предприятия:</Typography>} />
           <CardContent>
             <Grid
                 container
@@ -151,7 +151,7 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
           </>
         : step === 'INVALID_TAXID' ?
           <>
-            <CardHeader title={<Typography variant="h1" align="center" >{`Предприятие с УНП ${taxId} не найдено в базе данных!`}</Typography>} />
+            <CardHeader title={<Typography variant="h6" align="center" >{`Предприятие с УНП ${taxId} не найдено в базе данных!`}</Typography>} />
             <CardContent>
               <Grid
                   container
@@ -176,12 +176,12 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
           </>
         : step === 'INVALID_DB' ?
           <>
-            <CardHeader title={<Typography variant="h1" align="center" > {`В базе данных найдено несколько предприятий с УНП ${taxId}! Обратитесь к системному администратору.`}</Typography>} />
+            <CardHeader title={<Typography variant="h6" align="center" > {`В базе данных найдено несколько предприятий с УНП ${taxId}! Обратитесь к системному администратору.`}</Typography>} />
             <CancelButton />
           </>
         : step === 'PROFILE_CREATED' ?
           <>
-            <CardHeader title={<Typography variant="h1" align="center" >
+            <CardHeader title={<Typography variant="h6" align="center" >
               Учетная запись успешно создана.
               После прохождения проверки, вы получите на электронную почту
               письмо с логином и паролем для входа в систему.
@@ -190,12 +190,12 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
           </>
         : step === 'PROFILE_ERROR' ?
           <>
-            <CardHeader title={<Typography variant="h1" align="center" >Произошла ошибка при создании учетной записи!</Typography>} />
+            <CardHeader title={<Typography variant="h6" align="center" >Произошла ошибка при создании учетной записи!</Typography>} />
             <CancelButton />
           </>
         :
           <>
-            <CardHeader title={<Typography variant="h1" align="center" >{`Предприятие ${contactData?.queries.contacts[0].NAME}`}</Typography>} />
+            <CardHeader title={<Typography variant="h6" align="center" >{`Предприятие ${contactData?.queries.contacts[0].NAME}`}</Typography>} />
             <CardContent>
               <Grid
                     container

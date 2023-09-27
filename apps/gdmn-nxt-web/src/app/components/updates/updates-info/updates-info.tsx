@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
-import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import styles from './updates-info.module.less';
 import { useGetAllUpdatesQuery } from '../../../features/updates';
 import { useSelector } from 'react-redux';
@@ -50,13 +49,12 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       open={open}
       PaperProps={{
         sx: {
-          height: '80%',
+          maxHeight: '80%',
           width: '50%',
-          // maxWidth: '100%'
         }
       }}
     >
-      <DialogTitle variant="h3">
+      <DialogTitle>
         <span>Gedemin CRM обновилась до версии {lastUpdate?.VERSION}</span>
         <IconButton
           style={{ position: 'absolute', top: 3, right: 5 }}
@@ -66,13 +64,23 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <CustomizedScrollBox>
+      <DialogContent className={styles.content}>
+        <div style={{ visibility: 'hidden' }}>
           <ReactMarkdown>
             {lastUpdate?.CHANGES || ''}
           </ReactMarkdown>
-        </CustomizedScrollBox>
+        </div>
+        <div className={styles.scrollContainer}>
+          <CustomizedScrollBox>
+            <ReactMarkdown>
+              {lastUpdate?.CHANGES || ''}
+            </ReactMarkdown>
+          </CustomizedScrollBox>
+        </div>
       </DialogContent>
+      <DialogActions className={styles.action}>
+        <Button variant="contained" onClick={onClose}>Понятно</Button>
+      </DialogActions>
 
     </Dialog>
   );

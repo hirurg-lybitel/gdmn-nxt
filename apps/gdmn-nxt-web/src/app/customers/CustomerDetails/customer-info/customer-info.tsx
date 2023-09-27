@@ -142,7 +142,7 @@ export function CustomerInfo(props: CustomerInfoProps) {
                     <ListItem key={idx} divider sx={{ py: 2 }}>
                       <Grid container>
                         <Grid item minWidth={200}>
-                          <Typography variant="h4">{col.title}</Typography>
+                          <Typography variant="subtitle1">{col.title}</Typography>
                         </Grid>
                         <Grid item flex={1}>
                           <Typography

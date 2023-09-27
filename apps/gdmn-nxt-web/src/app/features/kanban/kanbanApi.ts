@@ -5,6 +5,7 @@ import { createEntityAdapter } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { io } from 'socket.io-client';
 import { baseUrlApi } from '../../const';
+import { getTaskStage } from '@gsbelarus/util-useful';
 
 interface IKanban{
   columns: IKanbanColumn[];
@@ -28,6 +29,10 @@ interface IFilteringData {
 export interface IDealsQueryOptions {
   userId?: number;
   filter?: IFilteringData;
+};
+
+export interface ITasksQueryOptions extends IFilteringData {
+  userId?: number;
 };
 
 const socketClient = setSocketClient('streamingUpdate', {
@@ -204,7 +209,7 @@ export const kanbanApi = createApi({
           };
           socketClient.on(KanbanEvent.AddTask, addTaskListener);
 
-          updateTaskListener = (cardId: number, task: Partial<IKanbanTask>) => {
+          updateTaskListener = (cardId: number, task: IKanbanTask) => {
             updateCachedData((draft) => {
               draft.forEach(column => {
                 const findCardIndex = column.CARDS.findIndex(c => c.ID === Number(cardId));
@@ -419,18 +424,19 @@ export const kanbanApi = createApi({
             : [{ type: 'Column', id: 'LIST' }];
       }
     }),
-    deleteCard: builder.mutation<{ID: number, USR$MASTERKEY: number}, number>({
-      query(id) {
+    deleteCard: builder.mutation<{ID: number, USR$MASTERKEY: number}, Partial<IKanbanCard>>({
+      query({ ID }) {
         return {
-          url: `kanban/cards/${id}`,
+          url: `kanban/cards/${ID}`,
           method: 'DELETE'
         };
       },
-      invalidatesTags: (result, error) => {
+      invalidatesTags: (result, error, body) => {
         const USR$MASTERKEY = result?.USR$MASTERKEY;
 
         if (result?.ID) {
           socketClient.emit(KanbanEvent.DeleteCard, result.USR$MASTERKEY, result?.ID);
+          body.TASKS?.forEach(task => socketClient.emit(KanbanEvent.DeleteTaskCard, task.ID));
         }
 
         return result
@@ -454,21 +460,21 @@ export const kanbanApi = createApi({
       transformResponse: (response: IKanbanRequestResult) => {
         const result = response.queries?.cards || [];
 
-        if (result.length) {
-          socketClient.emit(KanbanEvent.ReorderCards, result[0].USR$MASTERKEY, result);
-        }
+        // if (result.length) {
+        //   socketClient.emit(KanbanEvent.ReorderCards, result[0].USR$MASTERKEY, arg);
+        // }
         return result;
       },
-      invalidatesTags: (result, error) => {
-        return result
-          ? [
-            ...result.map(({ USR$MASTERKEY }) => ({ type: 'Column' as const, USR$MASTERKEY })),
-            { type: 'Column', id: 'LIST' }
-          ]
-          : error
-            ? [{ type: 'Column', id: 'LIST' }]
-            : [{ type: 'Column', id: 'ERROR' }];
-      },
+      // invalidatesTags: (result, error) => {
+      //   return result
+      //     ? [
+      //       ...result.map(({ USR$MASTERKEY }) => ({ type: 'Column' as const, USR$MASTERKEY })),
+      //       { type: 'Column', id: 'LIST' }
+      //     ]
+      //     : error
+      //       ? [{ type: 'Column', id: 'LIST' }]
+      //       : [{ type: 'Column', id: 'ERROR' }];
+      // },
     }),
     getHistory: builder.query<IKanbanHistory[], number>({
       query: (cardId) => `kanban/history/${cardId}`,
@@ -477,16 +483,6 @@ export const kanbanApi = createApi({
       },
       transformResponse: (response: IKanbanHistoryRequestResult) => {
         return response.queries?.history.map(his => ({ ...his, USR$DATE: new Date(his.USR$DATE || 0) })) || [];
-      },
-    }),
-    addHistory: builder.mutation<IKanbanHistory[], IKanbanHistory>({
-      query: (body) => ({
-        url: 'kanban/history',
-        method: 'POST',
-        body
-      }),
-      onQueryStarted(cardId) {
-        console.info('⏩ request', 'POST', `${baseUrlApi}kanban/history`);
       },
     }),
     getTasks: builder.query<IKanbanTask[], number>({
@@ -513,6 +509,9 @@ export const kanbanApi = createApi({
 
         if (result) {
           socketClient.emit(KanbanEvent.AddTask, result.USR$CARDKEY, { ...body, ...result });
+
+          const taskColumnIndex = getTaskStage(body);
+          socketClient.emit(KanbanEvent.AddTaskCard, taskColumnIndex, { ...body, ...result });
         }
 
         return result;
@@ -521,7 +520,7 @@ export const kanbanApi = createApi({
         return [{ type: 'Task', id: 'LIST' }];
       }
     }),
-    updateTask: builder.mutation<IKanbanTask, Partial<IKanbanTask>>({
+    updateTask: builder.mutation<IKanbanTask, IKanbanTask>({
       query (body) {
         const { ID: id } = body;
         return {
@@ -535,6 +534,9 @@ export const kanbanApi = createApi({
 
         if (result) {
           socketClient.emit(KanbanEvent.UpdateTask, body.USR$CARDKEY ?? -1, body);
+
+          const taskColumnIndex = getTaskStage(body);
+          socketClient.emit(KanbanEvent.UpdateTaskCard, taskColumnIndex, body);
         }
 
         return result;
@@ -562,6 +564,7 @@ export const kanbanApi = createApi({
 
         if (id) {
           socketClient.emit(KanbanEvent.DeleteTask, id);
+          socketClient.emit(KanbanEvent.DeleteTaskCard, id);
         }
 
         return result
@@ -575,7 +578,7 @@ export const kanbanApi = createApi({
       }
 
     }),
-    getKanbanTasks: builder.query<IKanbanColumn[], IDealsQueryOptions | void>({
+    getKanbanTasks: builder.query<IKanbanColumn[], ITasksQueryOptions | void>({
       query(options) {
         const params: string[] = [];
 
@@ -608,34 +611,69 @@ export const kanbanApi = createApi({
       },
       async onCacheEntryAdded(
         arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, requestId, getCacheEntry, getState }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, requestId, getCacheEntry, getState, extra, dispatch }
       ) {
-        let addTaskListener;
-        let updateTaskListener;
-        let deleteTaskListener;
-        let deleteCardListener;
+        let addTaskCardListener;
+        let updateTaskCardListener;
+        let deleteTaskCardListener;
 
         try {
           await cacheDataLoaded;
 
-          // deleteCardListener = (columnId: number, cardId: number) => {
-          //   updateCachedData((draft) => {
-          //     draft.forEach(column => {
-          //       if (column.ID !== Number(columnId)) return;
-          //       column.CARDS?.splice(0, column.CARDS?.length, ...column.CARDS?.filter(card => card.ID !== Number(cardId)));
-          //     });
-          //   });
-          // };
-          // socketClient.on(KanbanEvent.DeleteCard, deleteCardListener);
+          addTaskCardListener = (columnIndex: number, task: IKanbanTask) => {
+            dispatch(kanbanApi.util.invalidateTags([{ type: 'Task', id: 'LIST' }]));
+            // updateCachedData((draft) => {
+            //   draft[columnIndex].CARDS.unshift({
+            //     ID: -1,
+            //     USR$MASTERKEY: draft[columnIndex].ID,
+            //     USR$INDEX: 0,
+            //     TASK: { ...task },
+            //     STATUS: { isRead: false },
+            //   });
+            // });
+          };
+          socketClient.on(KanbanEvent.AddTaskCard, addTaskCardListener);
+
+          updateTaskCardListener = (columnIndex: number, newTask: IKanbanTask) => {
+            dispatch(kanbanApi.util.invalidateTags([{ type: 'Task', id: newTask.ID }]));
+            // updateCachedData((draft) => {
+            //   draft?.every(column => {
+            //     const findTaskCardIndex = column.CARDS.findIndex(({ TASK }) => TASK?.ID === newTask.ID);
+            //     if (findTaskCardIndex < 0) return true;
+
+            //     const deletedCard = column.CARDS.splice(findTaskCardIndex, 1)[0];
+            //     draft[columnIndex].CARDS.unshift({
+            //       ...deletedCard,
+            //       STATUS: { ...deletedCard.STATUS, isRead: false },
+            //       TASK: { ...deletedCard.TASK, ...newTask }
+            //     });
+
+            //     return false;
+            //   });
+            // });
+          };
+          socketClient.on(KanbanEvent.UpdateTaskCard, updateTaskCardListener);
+
+          deleteTaskCardListener = (taskId: number) => {
+            updateCachedData((draft) => {
+              draft?.every(column => {
+                const findTaskCardIndex = column.CARDS.findIndex(({ TASK }) => TASK?.ID === taskId);
+                if (findTaskCardIndex < 0) return true;
+
+                column.CARDS.splice(findTaskCardIndex, 1);
+                return false;
+              });
+            });
+          };
+          socketClient.on(KanbanEvent.DeleteTaskCard, deleteTaskCardListener);
         } catch (error) {
           console.error(error);
         }
         await cacheEntryRemoved;
 
-        // socketClient.off(KanbanEvent.AddTask, addTaskListener);
-        // socketClient.off(KanbanEvent.UpdateTask, updateTaskListener);
-        // socketClient.off(KanbanEvent.DeleteTask, deleteTaskListener);
-        // socketClient.off(KanbanEvent.DeleteCard, deleteCardListener);
+        socketClient.off(KanbanEvent.AddTaskCard, addTaskCardListener);
+        socketClient.off(KanbanEvent.UpdateTaskCard, updateTaskCardListener);
+        socketClient.off(KanbanEvent.DeleteTaskCard, deleteTaskCardListener);
       },
       transformResponse: async (response: IKanbanRequestResult) => response.queries?.columns || [],
       providesTags: (result, error) =>
@@ -672,7 +710,6 @@ export const {
   useDeleteCardMutation,
   useReorderCardsMutation,
   useGetHistoryQuery,
-  useAddHistoryMutation,
   useGetTasksQuery,
   useAddTaskMutation,
   useUpdateTaskMutation,

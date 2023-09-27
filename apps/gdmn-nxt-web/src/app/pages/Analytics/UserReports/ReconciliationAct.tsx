@@ -16,7 +16,7 @@ const filterOptions = createFilterOptions({
 });
 
 
-interface ReconciliationAct {
+interface IReconciliationAct {
   customerId?: number;
 }
 
@@ -35,7 +35,7 @@ const initState: IInitState = {
   dates: [new Date((new Date).getFullYear(), (new Date).getMonth(), 1), new Date()]
 };
 
-export const ReconciliationAct = (props: ReconciliationAct) => {
+export const ReconciliationAct = (props: IReconciliationAct) => {
   const { customerId: id } = useParams();
 
   const inCustomerId = Number(id);
@@ -70,7 +70,7 @@ export const ReconciliationAct = (props: ReconciliationAct) => {
     <Box flex="1">
       <Stack direction="column" spacing={2}>
         <CustomizedCard borders boxShadows>
-          <CardHeader title={<Typography variant="h3">Акт сверки</Typography>} />
+          <CardHeader title={<Typography variant="pageHeader">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
             <Grid container spacing={3} direction={'column'}>

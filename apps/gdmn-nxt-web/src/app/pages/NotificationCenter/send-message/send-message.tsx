@@ -33,9 +33,9 @@ export function SendMessage(props: SendMessageProps) {
     setTabIndex(newindex);
   }, []);
 
-  const handleUsersChange = useCallback((e: ChangeEvent<HTMLSelectElement | any>, value: IUser[]) => {
+  const handleUsersChange = useCallback((e: ChangeEvent<HTMLSelectElement | any>, value: readonly IUser[]) => {
     e.target.classList.remove('Mui-focused');
-    setSelectedUsers(value);
+    setSelectedUsers([...value]);
   }, []);
 
   const handleTextOnChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {

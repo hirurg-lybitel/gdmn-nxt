@@ -31,7 +31,7 @@ import Logout from '@mui/icons-material/Logout';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   popper: {
     zIndex: 2000,
     minWidth: 250,
@@ -136,7 +136,7 @@ export function Profile(props: ProfileProps) {
   return (
     <>
       <IconButton
-        size="large"
+        // size="small"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
         <Avatar src={settings?.AVATAR || undefined} />
@@ -150,9 +150,9 @@ export function Profile(props: ProfileProps) {
         popperOptions={{
           modifiers: [
             // {
-            //   name:'offset',
+            //   name: 'offset',
             //   options: {
-            //       offset: [0, 10]
+            //     offset: [100, 0]
             //   }
             // },
             {
@@ -167,15 +167,15 @@ export function Profile(props: ProfileProps) {
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
-            <Paper style={{ marginRight: 20 }}>
+            <Paper style={{ marginRight: 16, marginLeft: 16 }} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
-                <CustomizedCard borders elevation={15}>
+                <CustomizedCard borders>
                   <span className={classes.arrow} ref={setArrowRef} />
-                  <List>
+                  <List disablePadding>
                     <ListItem>
                       <Stack direction="column">
                         <Stack direction="row" spacing={0.5}>
-                          <Typography variant="h4">{welcomeText()}</Typography>
+                          <Typography variant="subtitle1">{welcomeText()}</Typography>
                           <Typography variant="body1">
                             {user.userProfile?.userName ?? 'Неизвестный пользователь'}
                           </Typography>

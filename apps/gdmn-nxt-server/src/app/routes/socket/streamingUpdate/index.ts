@@ -74,5 +74,15 @@ export function StreamingUpdate() {
     socket.on(KanbanEvent.DeleteTask, (taskId) => {
       socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.DeleteTask, taskId);
     });
+
+    socket.on(KanbanEvent.AddTaskCard, (columnIndex, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.AddTaskCard, columnIndex, task);
+    });
+    socket.on(KanbanEvent.UpdateTaskCard, (columnIndex, task) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.UpdateTaskCard, columnIndex, task);
+    });
+    socket.on(KanbanEvent.DeleteTaskCard, (taskId) => {
+      socketIO.to(SocketRoom.KanbanBoard).emit(KanbanEvent.DeleteTaskCard, taskId);
+    });
   });
 };

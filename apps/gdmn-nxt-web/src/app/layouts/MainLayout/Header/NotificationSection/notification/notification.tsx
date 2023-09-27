@@ -10,6 +10,7 @@ import {
   Popper,
   Stack,
   Theme,
+  Tooltip,
   Typography
 } from '@mui/material';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
@@ -61,14 +62,15 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
   },
   mainPaper: {
-    marginRight: 20,
+    marginLeft: 16,
+    marginRight: 16,
     width: '20vw',
     minWidth: '400px',
     minHeight: '300px',
     display: 'flex'
   },
   header: {
-    padding: '16px 24px'
+    padding: '8px 16px'
   },
   badgeFadeIn: {
     animationName: '$fadeIn',
@@ -216,21 +218,23 @@ export function Notification(props: NotificationProps) {
         mx: 2
       }}
     >
-      <IconButton
-        size="large"
-        onClick={(event: any) => handleToogle(event.currentTarget)}
-      >
-        <Badge
-          // classes={{
-          //   dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut }),
-          // }}
-          color="error"
-          variant="standard"
-          badgeContent={messages.length}
+      <Tooltip title={messages.length > 0 ? 'У вас есть непрочитанные уведомления' : 'У вас нет непрочитанных уведомлений'} arrow>
+        <IconButton
+          size="large"
+          onClick={(event: any) => handleToogle(event.currentTarget)}
         >
-          <NotificationsOutlinedIcon color="secondary" />
-        </Badge>
-      </IconButton>
+          <Badge
+            // classes={{
+            //   dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut }),
+            // }}
+            color="error"
+            variant="standard"
+            badgeContent={messages.length}
+          >
+            <NotificationsOutlinedIcon color="secondary" />
+          </Badge>
+        </IconButton>
+      </Tooltip>
       <Popper
         className={classes.popper}
         open={open}
@@ -262,7 +266,7 @@ export function Notification(props: NotificationProps) {
                       spacing={1}
                       alignItems="center"
                     >
-                      <Typography variant="h3">
+                      <Typography variant="subtitle1">
                         Уведомления
                       </Typography>
                     </Stack>
@@ -290,7 +294,7 @@ export function Notification(props: NotificationProps) {
                           width="150"
                           color="red"
                         />
-                        <Typography variant="h4" color={'GrayText'}>Пока нет уведомлений</Typography>
+                        <Typography variant="h6" color={'GrayText'}>Пока нет уведомлений</Typography>
                       </Stack>}
                   </Stack>
                 </CustomizedCard>

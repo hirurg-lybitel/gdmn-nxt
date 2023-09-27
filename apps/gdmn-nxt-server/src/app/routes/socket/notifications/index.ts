@@ -184,7 +184,7 @@ export function Notifications({ router }: NotificationsProps) {
   const job = new cron.CronJob('0 9-17 * * 1-5', sendEmailNotifications);
   job.start();
 
-  setInterval(sendMessages, 15000);
+  setInterval(sendMessages, 30000);
 
   router.get('/notifications/user/:userId', getMessagesByUser);
 }

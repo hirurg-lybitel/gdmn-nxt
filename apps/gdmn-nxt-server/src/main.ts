@@ -2,7 +2,6 @@
 import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
-import * as dotenv from 'dotenv';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
 import { Permissions } from '@gsbelarus/util-api-types';
@@ -17,7 +16,7 @@ import actCompletionRouter from './app/routes/actCompletionRouter';
 import chartsRouter from './app/routes/chartsDataRouter';
 import contactsRouter from './app/routes/contactsRouter';
 import systemRouter from './app/routes/systemRouter';
-import { disposeConnection } from './app/utils/db-connection';
+import { disposeConnection } from '@gdmn-nxt/db-connection';
 import { importedModels } from './app/utils/models';
 import contractsListRouter from './app/routes/contractsListRouter';
 import reportsRouter from './app/routes/reportsRouter';
@@ -37,7 +36,11 @@ import { checkPermissions, setPermissonsCache } from './app/middlewares/permissi
 import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
 import path from 'path';
-import { sendEmail } from './app/utils/mail';
+import flash from 'connect-flash';
+import { errorMiddleware } from './app/middlewares/errors';
+import { jwtMiddleware } from './app/middlewares/jwt';
+import { csrf } from 'lusca';
+import { bodySize } from './app/constants/params';
 import fs from 'fs';
 import https from 'https';
 import http from 'http';
@@ -47,38 +50,13 @@ declare module 'express-session' {
   interface SessionData {
     userId: number;
     permissions: Permissions;
+    qr: string;
+    base32Secret: string;
+    token: string;
+    email: string;
+    userName: string;
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const MemoryStore = require('memorystore')(session);
-
-// dotenv.config({ path: '../..' });
-const app = express();
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const cors = require('cors');
-
-app.use(cors({
-  credentials: true,
-  // secure: 'httpOnly',
-  origin: `https://${config.host}:${config.appPort}`
-}));
-
-if (config.serverStaticMode) {
-  app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
-}
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true }));
-const apiRoot = {
-  v1: '/api/v1',
-  v2: '/api/v2'
-};
-
-const limiter = RateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 100
-});
-app.use(limiter);
 
 interface IBaseUser {
   userName: string;
@@ -95,7 +73,38 @@ interface ICustomerUser extends IBaseUser {
   expireOn?: number;
 };
 
+
 type IUser = IGedeminUser | ICustomerUser;
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const MemoryStore = require('memorystore')(session);
+
+const app = express();
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const cors = require('cors');
+
+app.use(cors({
+  credentials: true,
+  // secure: 'httpOnly',
+  origin: `https://${config.host}:${config.appPort}`
+}));
+
+if (config.serverStaticMode) {
+  app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
+}
+app.use(express.json({ limit: bodySize }));
+app.use(express.urlencoded({ extended: true }));
+const apiRoot = {
+  v1: '/api/v1',
+  v2: '/api/v2'
+};
+
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 100
+});
+app.use(limiter);
+
 
 function isIGedeminUser(u: IUser): u is IGedeminUser {
   // eslint-disable-next-line dot-notation
@@ -116,10 +125,9 @@ passport.use(new Strategy({
         // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
         const res = await checkGedeminUser(userName, password);
 
-        // console.log('passport_strategy', req.sessionID);
-
         if (res.result === 'UNKNOWN_USER') {
-          return done(null, false);
+          console.log('Unknown gedemin user', { userName, password });
+          return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
         }
 
         if (res.result === 'SUCCESS') {
@@ -134,6 +142,7 @@ passport.use(new Strategy({
             permissions: userPermissions
           });
         } else {
+          console.log('Invalid gedemin user', { userName, password });
           return done(null, false);
         }
       } else {
@@ -147,17 +156,19 @@ passport.use(new Strategy({
           console.log('valid user');
           return done(null, { userName });
         } else {
+          console.log('Invalid user', { userName, password });
           return done(null, false);
         }
       }
     } catch (err) {
+      console.error('Passport error:', err);
       done(err);
     }
   }
 ));
 
 passport.serializeUser((user: IUser, done) => {
-  // console.log('passport serialize', user);
+  // console.log('passport serialize');
   const newUser = { ...user, userName: `${isIGedeminUser(user) ? 'G' : 'U'}${userName2Key(user.userName)}` };
   done(null, newUser);
 });
@@ -191,10 +202,10 @@ passport.deserializeUser(async (user: IUser, done) => {
 
 const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
 
-const middlewares = [
+const appMiddlewares = [
   session({
     name: 'Sid',
-    secret: 'kjdsfgfghfghfghfghfghfghhf',
+    secret: config.jwtSecret,
     resave: false,
     saveUninitialized: true,
     store: sessionStore,
@@ -207,6 +218,15 @@ const middlewares = [
   cookieParser(),
   passport.initialize(),
   passport.session(),
+  flash(),
+  errorMiddleware
+  // csrf()
+];
+
+const routerMiddlewares = [
+  jwtMiddleware,
+  checkPermissions,
+  errorMiddleware
 ];
 
 const router = express.Router();
@@ -214,20 +234,11 @@ const router = express.Router();
 export const apiVersion = apiRoot.v1;
 
 router.use(authRouter);
-/** Подключаем мидлвар после роутов, на котоыре он не должен распространятсься */
-router.use(checkPermissions);
+/** Подключаем мидлвар после роутов, на которые он не должен распространятсься */
+router.use(routerMiddlewares);
 
-app.use(middlewares);
+app.use(appMiddlewares);
 app.use(apiVersion, router);
-
-// router.use(
-//   (req, res, next) => {
-//     if (!req.isAuthenticated()) {
-//       return res.send('Not authenticated!');
-//     }
-//     next();
-//   }
-// );
 
 /** Write permissions to cache when server is starting */
 setPermissonsCache();

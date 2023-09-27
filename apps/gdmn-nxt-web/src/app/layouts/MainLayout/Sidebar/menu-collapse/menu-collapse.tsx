@@ -58,8 +58,8 @@ export function MenuCollapse(props: MenuCollapseProps) {
         return (
           <Typography
             key={item.id}
-            variant="h4"
-            color="error"
+            // variant="h6"
+            // color="error"
             align="center"
           >
             Ошибка отображения
@@ -105,7 +105,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
         <ListItemText
           primary={
             <Typography
-              variant="h4"
+              variant="subtitle1"
               color="inherit"
               sx={{ my: 'auto' }}
             >

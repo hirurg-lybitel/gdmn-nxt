@@ -73,9 +73,8 @@ export function AccountSettings(props: AccountSettingsProps) {
     setSettings({
       userId,
       body: {
-        AVATAR: settings?.AVATAR || '',
+        ...settings,
         COLORMODE: typeTheme,
-        LASTVERSION: settings?.LASTVERSION || ''
       }
     });
   };
@@ -96,11 +95,9 @@ export function AccountSettings(props: AccountSettingsProps) {
     <CustomizedCard className={style.card} borders>
       <CardHeader
         title={
-          <div className={style.title}>
-            <Typography variant="h3">
-                Настройки
-            </Typography>
-          </div>
+          <Typography variant="pageHeader">
+              Настройки
+          </Typography>
         }
       />
       <Divider/>

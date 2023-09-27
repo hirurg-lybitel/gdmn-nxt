@@ -86,6 +86,7 @@ export interface IDeal extends IWithID {
   CREATIONDATE?: Date;
   DESCRIPTION?: string;
   USR$NUMBER?: number;
+  PREPAID?: boolean;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -127,6 +128,7 @@ export interface IKanbanTask extends IWithID {
   TASKTYPE?: ITaskType;
   USR$NUMBER?: number;
   USR$INPROGRESS?: boolean;
+  DESCRIPTION?: string;
 };
 
 export interface IKanbanTaskInfo extends IKanbanTask {
@@ -212,6 +214,7 @@ export interface IPermissionsAction extends IWithID {
 export interface IUserGroup extends IWithID {
   NAME: string;
   DESCRIPTION?: string;
+  REQUIRED_2FA?: boolean;
 };
 
 export interface IUser extends IWithID {
@@ -230,6 +233,7 @@ export interface IPermissionsView extends IWithID {
 export interface IUserGroupLine extends IWithID {
   USERGROUP: IUserGroup;
   USER?: IUser;
+  REQUIRED_2FA?: boolean;
 };
 
 export interface IPermissionByUser {
@@ -274,6 +278,7 @@ export type ActionName =
   'tasks' |
   'customers' |
   'updates' |
+  'stages' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -297,4 +302,17 @@ export interface IKanbanCardStatus {
 
 export interface IDealDocument extends IWithID {
   DESCRIPTION: string;
+}
+
+export interface IClientHistoryType extends IWithID {
+  NAME: string;
+  ICON?: number;
+}
+
+export interface IClientHistory extends IWithID {
+  CREATIONDATE?: Date;
+  CONTENT: string;
+  CREATOR: IContactWithID;
+  CARDKEY: number,
+  historyType: IClientHistoryType;
 }

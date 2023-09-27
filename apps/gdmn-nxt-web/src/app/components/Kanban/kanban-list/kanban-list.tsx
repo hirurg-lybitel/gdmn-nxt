@@ -6,7 +6,7 @@ import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-gr
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import styles from './kanban-list.module.less';
 import EditIcon from '@mui/icons-material/Edit';
-import { useAddCardMutation, useAddHistoryMutation, useDeleteCardMutation, useUpdateCardMutation } from '../../../features/kanban/kanbanApi';
+import { useAddCardMutation, useDeleteCardMutation, useUpdateCardMutation } from '../../../features/kanban/kanbanApi';
 import { IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
@@ -79,7 +79,6 @@ export function KanbanList(props: KanbanListProps) {
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
-  const [addHistory] = useAddHistoryMutation();
   const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
   const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -116,7 +115,7 @@ export function KanbanList(props: KanbanListProps) {
   };
 
   const onDelete = async (deletingCard: IKanbanCard) => {
-    deleteCard(deletingCard.ID);
+    deleteCard(deletingCard);
     setDeletingCardIDs(prev => prev.concat(deletingCard.ID));
   };
 

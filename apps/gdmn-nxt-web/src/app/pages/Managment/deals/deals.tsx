@@ -8,7 +8,7 @@ import { CircularIndeterminate } from '../../../components/helpers/circular-inde
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
@@ -30,7 +30,7 @@ export interface IChanges {
 export interface DealsProps {}
 
 export function Deals(props: DealsProps) {
-  const [tabNo, setTabNo] = useState(0);
+  const [tabNo, setTabNo] = useState('0');
   const [openFilters, setOpenFilters] = useState(false);
 
   const dispatch = useDispatch();
@@ -122,11 +122,34 @@ export function Deals(props: DealsProps) {
       <>
         <CustomizedCard
           borders
+          direction="row"
           className={styles.headerCard}
         >
+          <ToggleButtonGroup
+            color="primary"
+            value={tabNo}
+            exclusive
+            size="small"
+            onChange={(e, value) => {
+              if (!value) return;
+              setTabNo(value);
+            }}
+          >
+            <ToggleButton value="0" className={styles.toggleButton}>
+              <Tooltip title="Доска" arrow>
+                <ViewWeekIcon />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="1" className={styles.toggleButton}>
+              <Tooltip title="Список" arrow>
+                <ViewStreamIcon />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
           <Autocomplete
             style={{
               width: '210px',
+              paddingLeft: '15px'
             }}
             options={cardDateFilter}
             disableClearable
@@ -169,25 +192,6 @@ export function Deals(props: DealsProps) {
             </Badge>
           </IconButton>
         </CustomizedCard>
-        <CustomizedCard
-          borders
-          className={styles.switchViewCard}
-        >
-          <BottomNavigation
-            value={tabNo}
-            className={styles.bottomNavigation}
-            onChange={(e, newValue: number) => {
-              setTabNo(newValue);
-            }}
-          >
-            <Tooltip title="Доска" arrow>
-              <BottomNavigationAction className={styles.bottomNavigationAction} icon={<ViewWeekIcon />} />
-            </Tooltip>
-            <Tooltip title="Список" arrow>
-              <BottomNavigationAction className={styles.bottomNavigationAction} icon={<ViewStreamIcon />} />
-            </Tooltip>
-          </BottomNavigation>
-        </CustomizedCard>
       </>
     );
   }
@@ -212,7 +216,7 @@ export function Deals(props: DealsProps) {
         ?
         <div>
           <Skeleton variant="rectangular" className={styles.skeletonHeader} />
-          <Skeleton variant="rectangular" className={styles.skeletonBody} />
+          {/* <Skeleton variant="rectangular" className={styles.skeletonBody} /> */}
         </div>
         : Header
       }
@@ -220,9 +224,9 @@ export function Deals(props: DealsProps) {
       <div className={styles.dataContainer}>
         {(() => {
           switch (tabNo) {
-            case 0:
+            case '0':
               return KanbanBoardMemo;
-            case 1:
+            case '1':
               return KanbanListMemo;
             default:
               return <></>;

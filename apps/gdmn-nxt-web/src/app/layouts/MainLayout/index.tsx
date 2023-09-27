@@ -1,18 +1,16 @@
-import { Alert, AppBar, Box, Divider, ListItemIcon, Menu, MenuItem, Snackbar, SvgIconTypeMap, Toolbar } from '@mui/material';
-import Logout from '@mui/icons-material/Logout';
-import Settings from '@mui/icons-material/Settings';
+import { Alert, Box, MenuItem, Snackbar, SvgIconTypeMap, useMediaQuery } from '@mui/material';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
-import { logoutUser, UserState } from '../../features/user/userSlice';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
 import { toggleMenu } from '../../store/settingsSlice';
 import { styled, useTheme } from '@mui/material/styles';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { clearError } from '../../features/error-slice/error-slice';
-import { Header } from './Header';
 import UpdatesInfo from '../../components/updates/updates-info/updates-info';
+import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import { useIdleTimer } from 'react-idle-timer';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -36,7 +34,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen
       }),
-      marginLeft: -(theme.drawerWidth - 20),
+      marginLeft: -(theme.drawerWidth - 60),
       width: `calc(100% - ${theme.drawerWidth}px)`,
       [theme.breakpoints.up('md')]: {
         marginLeft: -(theme.drawerWidth - 20),
@@ -69,70 +67,29 @@ interface IMenuDivider {
 
 export type MenuItem = IMenuItem | IMenuDivider;
 
-interface ICustomMenuProps {
-  anchorEl: Element | null;
-  handleClose: () => void;
-  items: MenuItem[];
-};
-
-const CustomMenu = ({ anchorEl, handleClose, items }: ICustomMenuProps) =>
-  <Menu
-    anchorEl={anchorEl}
-    open={Boolean(anchorEl)}
-    onClose={handleClose}
-    onClick={handleClose}
-    PaperProps={{
-      elevation: 0,
-      sx: {
-        overflow: 'visible',
-        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-        mt: 1.5,
-        '& .MuiAvatar-root': {
-          width: 32,
-          height: 32,
-          ml: -0.5,
-          mr: 1,
-        },
-        '&:before': {
-          content: '""',
-          display: 'block',
-          position: 'absolute',
-          top: 0,
-          right: 14,
-          width: 10,
-          height: 10,
-          bgcolor: 'background.paper',
-          transform: 'translateY(-50%) rotate(45deg)',
-          zIndex: 0,
-        },
-      },
-    }}
-    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-  >
-    {items.map((i, idx) =>
-      i.type === 'divider'
-        ? <Divider key={idx} />
-        : <MenuItem key={idx} onClick={i.onClick}>
-          {i.Icon &&
-            <ListItemIcon>
-              <i.Icon fontSize="small" />
-            </ListItemIcon>
-          }
-          {i.caption}
-        </MenuItem>
-    )}
-  </Menu>;
-
 interface MainLayoutProps{
 }
 
 export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
-  const dispatch = useDispatch<AppDispatch>();
-  const user = useSelector<RootState, UserState>(state => state.user);
-  const [anchorProfileEl, setAnchorProfileEl] = useState(null);
 
+  const dispatch = useDispatch<AppDispatch>();
+  const onIdleHandler = () => {
+    dispatch(logoutUser());
+  };
+  const {} = useIdleTimer({
+    onIdle: onIdleHandler,
+    timeout: 1000 * 60 * 20,
+    promptBeforeIdle: 0,
+    events: [
+      'mousemove',
+      'keydown',
+      'touchstart',
+      'touchmove',
+    ],
+  });
+
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const { errorMessage } = useSelector((state: RootState) => state.error);
   const [openSnackBar, setOpenSnackBar] = useState(false);
 
@@ -156,49 +113,15 @@ export const MainLayout = (props: MainLayoutProps) => {
     setOpenSnackBar(false);
   };
 
-  const profileMenuItems: MenuItem[] = [
-    {
-      type: 'item',
-      caption: user.userProfile?.userName ?? 'unknown user',
-      Icon: Settings,
-      onClick: () => {}
-    },
-    {
-      type: 'divider'
-    },
-    {
-      type: 'item',
-      caption: 'Logout',
-      Icon: Logout,
-      onClick: () => dispatch(logoutUser())
-    }
-  ];
-
   return (
     <>
       <UpdatesInfo />
       <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
-        <AppBar
-          position="fixed"
-          elevation={0}
-          sx={{
-            transition: menuOpened ? theme.transitions.create('width') : 'none'
-          }}
-        >
-          <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor }}>
-            <Header onDrawerToggle={handleDrawerToggle} />
-          </Toolbar>
-        </AppBar>
-        <CustomMenu
-          anchorEl={anchorProfileEl}
-          handleClose={() => setAnchorProfileEl(null)}
-          items={profileMenuItems}
-        />
         <Sidebar
           open={menuOpened}
           onToogle={handleDrawerToggle}
         />
-        <Main menuOpened={menuOpened} style={{ display: 'flex' }}>
+        <Main menuOpened={!matchDownMd} style={{ display: 'flex' }}>
           <Outlet />
         </Main>
         <Snackbar

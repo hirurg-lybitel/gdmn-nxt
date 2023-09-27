@@ -29,8 +29,12 @@ export function SalesFunnel(props: SalesFunnelProps) {
   })) ?? [];
 
   return (
-    <CustomizedCard borders boxShadows style={{ height: 'calc(100vh - 130px)', flex: 1 }}>
-      <CardHeader title={<Typography variant="h3">Воронка продаж</Typography>} />
+    <CustomizedCard
+      borders
+      boxShadows
+      style={{ height: 'calc(100vh - 50px)', flex: 1 }}
+    >
+      <CardHeader title={<Typography variant="pageHeader">Воронка продаж</Typography>} />
       {isFetching
         ? <></>
         : <ResponsiveFunnel
@@ -50,7 +54,7 @@ export function SalesFunnel(props: SalesFunnelProps) {
             }
           }}
           data={funnelData}
-          margin={{ top: 30, right: 20, bottom: 20, left: 20 }}
+          margin={{ top: 0, right: 20, bottom: 40, left: 20 }}
           // valueFormat=">-.4s"
           colors={colors}
           // colors={{ scheme: 'set2' }}
@@ -64,7 +68,6 @@ export function SalesFunnel(props: SalesFunnelProps) {
               ]
             ],
           }}
-
           beforeSeparatorLength={100}
           beforeSeparatorOffset={20}
           afterSeparatorLength={100}

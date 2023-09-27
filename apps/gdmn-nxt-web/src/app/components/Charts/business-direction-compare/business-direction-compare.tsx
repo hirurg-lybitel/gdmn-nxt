@@ -141,10 +141,10 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
 
   const chartOptionsBarDefault: ApexCharts.ApexOptions = {
   	chart: {
-  	id: 'column-bar',
-  	stacked: false,
-  	toolbar: {
-  	  show: false,
+    	id: 'column-bar',
+    	stacked: false,
+    	toolbar: {
+  	    show: false,
   	  },
   	  zoom: {
   	    enabled: false
@@ -156,70 +156,72 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
       style: {
         fontSize: '1.2em',
         fontWeight: 700,
+        fontFamily: theme.fontFamily,
         color: theme.textColor
       },
       offsetY: 20
     },
   	noData: {
-  	text: 'Нет данных',
-  	align: 'center',
-  	verticalAlign: 'middle',
-  	style: {
-  	color: theme.textColor,
-  	fontSize: '20px',
-  	}
+      text: 'Нет данных',
+      align: 'center',
+      verticalAlign: 'middle',
+      style: {
+        color: theme.textColor,
+        fontSize: '20px',
+        fontFamily: theme.fontFamily,
+  	  }
   	},
   	tooltip: {
-  	theme: theme.palette.mode,
-  	x: {
-  	formatter(value, opts) {
-  	return `
-  	<div class="${styles['bar-tooltip-label']}">
-  	<span>${value}</span>
-  	</div>`;
-  	},
-  	},
+  	  theme: theme.palette.mode,
+      x: {
+        formatter(value, opts) {
+          return `
+          <div class="${styles['bar-tooltip-label']}">
+            <span>${value}</span>
+          </div>`;
+        },
+  	  },
   	},
   	xaxis: {
-  	labels: {
-  	formatter: (value) => (
-  	isNaN(Number(value)) ? value : Number(value).toLocaleString()
-  	)
-  	}
+  	  labels: {
+  	    formatter: (value) => (
+  	      isNaN(Number(value)) ? value : Number(value).toLocaleString()
+  	    )
+  	  }
   	},
   	yaxis: {
-  	labels: {
-  	formatter: (value) => (
-  	value.toLocaleString()
-  	)
-  	}
+  	  labels: {
+  	    formatter: (value) => (
+  	      value.toLocaleString()
+  	    )
+  	  }
   	},
   	legend: {
-  	fontSize: '15px',
-  	fontFamily: '\'Roboto\', sans-serif',
-  	offsetY: 5,
-  	labels: {
-  	colors: theme.textColor,
-  	},
-  	markers: {
-  	width: 16,
-  	height: 16,
-  	radius: 5
-  	},
-  	itemMargin: {
-  	horizontal: 15,
-  	vertical: 8
-  	}
+  	  fontSize: '15px',
+  	  fontFamily: theme.fontFamily,
+  	  offsetY: 5,
+  	  labels: {
+  	    colors: theme.textColor,
+  	  },
+      markers: {
+        width: 16,
+        height: 16,
+        radius: 5
+      },
+      itemMargin: {
+        horizontal: 15,
+        vertical: 8
+  	  }
   	},
   	dataLabels: {
-  	enabled: false
+  	  enabled: false
   	},
   };
 
   const chartOptionsLeft = useMemo(() => {
     return {
       master: {
-        ... chartOptionsDefault,
+        ...chartOptionsDefault,
         ...(dataLeft.length !== 0 ? {
           labels: dataLeft.map(d => d.name),
           series: dataLeft.map(d => d.amount),
@@ -244,7 +246,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         }),
       },
       detail: {
-        ... chartOptionsDefault,
+        ...chartOptionsDefault,
         ...(dataLeft.length !== 0 && selectedLeftMasterSeriesId >= 0 ? {
           labels: dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => d.name),
           series: dataLeft[selectedLeftMasterSeriesId]?.businessProcesses?.map(d => d.amount),
@@ -259,7 +261,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
   const chartOptionsRight = useMemo(() => {
     return {
       master: {
-        ... chartOptionsDefault,
+        ...chartOptionsDefault,
         ...(dataRight.length !== 0 ? {
           labels: dataRight.map(d => d.name),
           series: dataRight.map(d => d.amount),
@@ -284,7 +286,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         }),
       },
       detail: {
-        ... chartOptionsDefault,
+        ...chartOptionsDefault,
         ...(dataRight.length !== 0 && selectedRightMasterSeriesId >= 0 ? {
           labels: dataRight[selectedRightMasterSeriesId]?.businessProcesses?.map(d => d.name),
           series: dataRight[selectedRightMasterSeriesId]?.businessProcesses?.map(d => d.amount),
@@ -335,7 +337,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     <Grid container direction="column" spacing={3}>
       <Grid item container direction={{ xs: 'column', md: 'column', lg: 'row' }} xs={6} spacing={3} >
         <Grid item container xs={6}>
-          <CustomizedCard borders style={{ flex: 1 }}>
+          <CustomizedCard borders style={{ flex: 1, display: 'block' }}>
             <Grid container direction="column">
               <Grid item p={2} xs={3} alignSelf="center">
                 <DateRangePicker
@@ -374,7 +376,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           </CustomizedCard>
         </Grid>
         <Grid item container xs={6}>
-          <CustomizedCard borders style={{ flex: 1 }}>
+          <CustomizedCard borders style={{ flex: 1, display: 'block' }}>
             <Grid container direction="column" >
               <Grid item p={2} xs={3} alignSelf="center">
                 <DateRangePicker

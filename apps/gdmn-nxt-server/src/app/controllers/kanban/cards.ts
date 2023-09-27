@@ -2,7 +2,7 @@ import { IChanges, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory,
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
-import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
+import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { genId } from '../../utils/genId';
 import { addHistory } from './history';
 
@@ -65,7 +65,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction, executeSingletonAsObject, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
+  const { releaseTransaction, executeSingletonAsObject, fetchAsObject, fetchAsSingletonObject, generateId } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -79,8 +79,8 @@ const upsert: RequestHandler = async (req, res) => {
 
     const userId = req.session.userId || -1;
 
-    const cardId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
-    const dealId = await (() => isInsertMode ? genId(attachment, transaction) : deal.ID)();
+    const cardId = await (() => isInsertMode ? generateId() : Number(id))();
+    const dealId = await (() => isInsertMode ? generateId() : deal.ID)();
 
     let paramsValues;
     let sql;
@@ -100,7 +100,7 @@ const upsert: RequestHandler = async (req, res) => {
       const checkTasks: { COUNT: number} = await executeSingletonAsObject(sql);
 
       if ((checkTasks.COUNT || 0) > 0) {
-        throw new Error('Не может быть исполнено. Есть незакрытые задачи');
+        return res.status(400).send(resultError('Не может быть исполнено. Есть незакрытые задачи'));
       }
     }
 
@@ -110,7 +110,8 @@ const upsert: RequestHandler = async (req, res) => {
         d.USR$AMOUNT, d.USR$CONTACTKEY, d.USR$NAME, d.USR$PERFORMER, d.USR$SECOND_PERFORMER,
         con.ID AS CONTACT_ID, con.NAME AS CONTACT_NAME,
         performer_1.ID AS PERMORMER_1_ID, performer_1.NAME AS PERMORMER_1_NAME,
-        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME
+        performer_2.ID AS PERMORMER_2_ID, performer_2.NAME AS PERMORMER_2_NAME,
+        d.USR$PREPAID AS PREPAID, USR$DENIED DENIED, USR$DONE, USR$READYTOWORK
       FROM USR$CRM_DEALS d
         LEFT JOIN GD_CONTACT con ON con.ID = d.USR$CONTACTKEY
         LEFT JOIN GD_CONTACT performer_1 ON performer_1.ID = d.USR$PERFORMER
@@ -128,10 +129,22 @@ const upsert: RequestHandler = async (req, res) => {
     const oldCardRecord = await fetchAsSingletonObject(sql, { cardId });
 
     sql = `
-      SELECT ID, USR$NAME
-      FROM USR$CRM_KANBAN_COLUMNS`;
+      SELECT col.ID, col.USR$NAME
+      FROM USR$CRM_KANBAN_TEMPLATE temp
+        JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
+        JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
+      WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+      ORDER BY col.USR$INDEX`;
 
     const columns = await fetchAsObject(sql);
+
+    const newStageIndex = columns.findIndex(stage => stage['ID'] === card.USR$MASTERKEY);
+    const oldStageIndex = columns.findIndex(stage => stage['ID'] === oldCardRecord?.USR$MASTERKEY);
+
+    /** Отключено на время продумывания перехода с этапа на этап */
+    // if (Math.abs(newStageIndex - oldStageIndex) > 1) {
+    //   return res.status(400).send(resultError('Сделку можно перемещать только на один этап'));
+    // }
 
     const changes: IKanbanHistory[] = [];
     if ((Number(deal.USR$AMOUNT) || 0) !== (Number(oldDealRecord?.USR$AMOUNT) || 0)) {
@@ -200,12 +213,56 @@ const upsert: RequestHandler = async (req, res) => {
         USR$USERKEY: userId
       });
     };
+    if (deal.PREPAID !== (oldDealRecord?.PREPAID === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Оплачено',
+        USR$OLD_VALUE: oldDealRecord.PREPAID === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.PREPAID ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.USR$READYTOWORK !== (oldDealRecord?.USR$READYTOWORK === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'В работе',
+        USR$OLD_VALUE: oldDealRecord.USR$READYTOWORK === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.USR$READYTOWORK ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.USR$DONE !== (oldDealRecord?.USR$DONE === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Исполнено',
+        USR$OLD_VALUE: oldDealRecord.USR$DONE === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.USR$DONE ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
+    if (deal.DENIED !== (oldDealRecord?.DENIED === 1)) {
+      changes.push({
+        ID: -1,
+        USR$TYPE: isInsertMode ? '1' : '2',
+        USR$CARDKEY: cardId,
+        USR$DESCRIPTION: 'Отказано',
+        USR$OLD_VALUE: oldDealRecord.DENIED === 1 ? 'Да' : 'Нет',
+        USR$NEW_VALUE: deal.DENIED ? 'Да' : 'Нет',
+        USR$USERKEY: userId
+      });
+    };
 
     sql = `
       UPDATE OR INSERT INTO USR$CRM_DEALS(ID, USR$NAME, USR$DISABLED, USR$AMOUNT, USR$CONTACTKEY, USR$CREATORKEY,
         USR$PERFORMER, USR$SECOND_PERFORMER, USR$DEADLINE, USR$SOURCEKEY, USR$READYTOWORK, USR$DONE, USR$DEPOTKEY, USR$COMMENT, USR$DENIED, USR$DENYREASONKEY,
-        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        USR$REQUESTNUMBER, USR$PRODUCTNAME, USR$CONTACT_NAME, USR$CONTACT_EMAIL, USR$CONTACT_PHONE, USR$CREATIONDATE, USR$DESCRIPTION, USR$PREPAID)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       MATCHING (ID)
       RETURNING ID`;
 
@@ -232,10 +289,11 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CONTACT_EMAIL,
       deal.CONTACT_PHONE,
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
-      deal.DESCRIPTION || ''
+      deal.DESCRIPTION || '',
+      deal.PREPAID ?? false
     ];
 
-    const dealRecord: IDeal = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
     sql = `
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
@@ -249,7 +307,7 @@ const upsert: RequestHandler = async (req, res) => {
       deal.CREATIONDATE ? new Date(deal.CREATIONDATE) : null,
     ];
 
-    await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
+    await executeSingletonAsObject(sql, paramsValues);
 
     const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY', 'USR$DEALKEY'];
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
@@ -287,8 +345,7 @@ const upsert: RequestHandler = async (req, res) => {
       MATCHING (ID)
       RETURNING ${returnFieldsNames}`;
 
-    const cardRecord: IKanbanCard = await attachment.executeSingletonAsObject(transaction, sql, paramsValues);
-
+    const cardRecord: IKanbanCard = await fetchAsSingletonObject(sql, paramsValues);
 
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
@@ -318,7 +375,7 @@ const upsert: RequestHandler = async (req, res) => {
           MATCHING(USR$CARDKEY, USR$USERKEY);
       END`;
 
-    await attachment.executeQuery(transaction, sql, [cardRecord.ID, userId]);
+    await executeSingletonAsObject(sql, [cardRecord.ID, userId]);
 
     const result: IRequestResult<{ cards: IKanbanCard[] }> = {
       queries: {

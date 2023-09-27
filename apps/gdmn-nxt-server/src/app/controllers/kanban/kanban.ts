@@ -2,7 +2,7 @@ import { IDataSchema, IEntities, IKanbanCard, IKanbanColumn, IRequestResult } fr
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
-import { acquireReadTransaction, commitTransaction, releaseTransaction, startTransaction } from '../../utils/db-connection';
+import { acquireReadTransaction, commitTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { getDayDiff } from '@gsbelarus/util-helpers';
 
 interface IMapOfArrays {
@@ -14,7 +14,7 @@ interface IMapOfObjects {
 };
 
 const get: RequestHandler = async (req, res) => {
-  const { attachment, transaction, fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
+  const { fetchAsObject, releaseTransaction } = await startTransaction(req.sessionID);
 
   try {
     const _schema: IDataSchema = {
@@ -39,8 +39,6 @@ const get: RequestHandler = async (req, res) => {
 
 
     const execQuery = async ({ name, query }) => {
-      // const rs = await attachment.executeQuery(transaction, query);
-
       try {
         const data = await fetchAsObject(query);
         const sch = _schema[name];
@@ -65,7 +63,9 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber, dealNumber, performers } = req.query;
+    const { departments, customers, requestNumber, dealNumber, performers, period } = req.query;
+
+    const periods = period ? (period as string)?.split(',') : [];
 
     const checkFullView = `
       EXISTS(
@@ -160,7 +160,8 @@ const get: RequestHandler = async (req, res) => {
         ${customers ? `AND con.ID IN (${customers})` : ''}
         ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
         ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
-        ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}`;
+        ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}
+        ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
     const queries = [
       {
@@ -170,7 +171,7 @@ const get: RequestHandler = async (req, res) => {
           FROM USR$CRM_KANBAN_TEMPLATE temp
             JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
             JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
-          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 370480752 AND DBID = 1811180906 ROWS 1)
+          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
           ORDER BY col.USR$INDEX`
       },
       {
@@ -197,6 +198,7 @@ const get: RequestHandler = async (req, res) => {
             deny.ID DENY_ID,
             deny.USR$NAME AS DENY_NAME,
             deal.USR$DENIED DENIED,
+            deal.USR$PREPAID PREPAID,
             deal.USR$COMMENT COMMENT,
             deal.USR$DESCRIPTION DESCRIPTION,
             deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
@@ -375,6 +377,7 @@ const get: RequestHandler = async (req, res) => {
           CONTACT_PHONE: el['CONTACT_PHONE'],
           CREATIONDATE: el['CREATIONDATE'],
           DESCRIPTION: el['DESCRIPTION'],
+          PREPAID: el['PREPAID'] === 1,
         },
         TASKS: tasks[el['ID']],
         STATUS: status[el['ID']]
@@ -475,11 +478,16 @@ const reorderCards: RequestHandler = async (req, res) => {
     const cards: IKanbanCard[] = req.body;
 
     if (!cards.length) {
-      // return res.status(422).send(resultError('Нет данных'));
-      return res.status(204).send([]);
+      const result: IRequestResult = {
+        queries: {
+          cards: []
+        },
+        _schema: undefined
+      };
+      return res.status(200).json(result);
     };
 
-    const allFields = ['ID', 'USR$INDEX'];
+    const allFields = ['ID', 'USR$INDEX', 'USR$MASTERKEY'];
     const actualFields = allFields.filter(field => typeof cards[0][field] !== 'undefined');
     const actualFieldsNames = actualFields.join(',');
     const paramsString = actualFields.map(_ => '?').join(',');
@@ -557,10 +565,14 @@ const getTasks: RequestHandler = async (req, res) => {
     };
 
     const userId = parseInt(req.query.userId as string);
-    const { taskNumber, performers } = req.query;
+    const { taskNumber, performers, period } = req.query;
+
+    const periods = period ? (period as string)?.split(',') : [];
+
     const filter = `
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
-      ${performers ? ` AND performer.ID IN (${performers}) ` : ''}`;
+      ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
+      ${periods.length === 2 ? ` AND CAST(task.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
 
     const checkFullView = `
@@ -575,14 +587,22 @@ const getTasks: RequestHandler = async (req, res) => {
           AND cr.USR$MODE = 1
           AND ul.USR$USERKEY = ${userId})`;
 
-
     const checkCardsVisibility = `
       AND 1 = IIF(NOT ${checkFullView},
         IIF(EXISTS(
-          SELECT u.ID
+          SELECT DISTINCT
+            con.NAME,
+            ud.USR$DEPOTKEY
           FROM GD_USER u
-          JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
-          WHERE con.ID IN (performer.ID, creator.ID) AND u.ID = ${userId}), 1, 0), 1)`;
+            JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+            LEFT JOIN USR$CRM_USERSDEPOT ud ON ud.USR$USERKEY = u.ID
+            JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$USERKEY = u.ID
+            LEFT JOIN GD_P_GETRUID(ul.USR$GROUPKEY) r ON 1 = 1
+          WHERE
+            u.ID = ${userId}
+            /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
+            AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
+            OR con.ID IN (performer.ID, creator.ID))), 1, 0), 1)`;
 
     const queries = [
       {
@@ -614,6 +634,7 @@ const getTasks: RequestHandler = async (req, res) => {
             task.USR$NAME as TASK_NAME,
             task.USR$CLOSED,
             task.USR$TASKTYPEKEY AS TYPE_ID,
+            task.USR$DESCRIPTION DESCRIPTION,
             tt.USR$NAME AS TYPE_NAME,
             creator.ID AS CREATOR_ID,
             creator.NAME AS CREATOR_NAME,
@@ -721,6 +742,7 @@ const getTasks: RequestHandler = async (req, res) => {
             },
           }),
           USR$CLOSED: el['USR$CLOSED'],
+          DESCRIPTION: el['DESCRIPTION']
         },
         DEAL: {
           ID: el['DEAL_ID'],

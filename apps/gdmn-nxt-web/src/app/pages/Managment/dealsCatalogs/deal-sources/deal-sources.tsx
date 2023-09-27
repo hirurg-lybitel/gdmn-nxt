@@ -85,7 +85,7 @@ export function DealSources(props: DealSourcesProps) {
       borders
       className={styles.Card}
     >
-      <CardHeader title={<Typography variant="h3">Источники заявок</Typography>} />
+      <CardHeader title={<Typography variant="pageHeader">Источники заявок</Typography>} />
       <Divider />
       <CardToolbar>
         <Stack direction="row">
@@ -106,7 +106,7 @@ export function DealSources(props: DealSourcesProps) {
           rows={data}
           columns={columns}
           loading={isLoading}
-          rowHeight={80}
+          rowHeight={60}
           hideHeaderSeparator
         />
         {memoUpsertDealSource}

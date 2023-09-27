@@ -1,10 +1,8 @@
-import { Box, Button, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import { useAddLabelMutation, useDeleteLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from 'apps/gdmn-nxt-web/src/app/features/labels';
 import LabelListItem from '../label-list-item/label-list-item';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './label-list.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
@@ -15,12 +13,28 @@ import { LoadingButton } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 const ItemSkeleton = () => {
   return (
-    <Stack direction="row" spacing={6} height={68.5} p={2} alignItems="center">
-      <Skeleton variant="rectangular" width={60} height={20} style={{ borderRadius: '12px' }} />
-      <Skeleton variant="text" height={30} width={'100%'} />
+    <Stack
+      direction="row"
+      spacing={6}
+      height={68.5}
+      p={2}
+      alignItems="center"
+    >
+      <Skeleton
+        variant="rectangular"
+        width={60}
+        height={20}
+        style={{ borderRadius: '12px' }}
+      />
+      <Skeleton
+        variant="text"
+        height={30}
+        width={'100%'}
+      />
     </Stack>
   );
 };
@@ -83,7 +97,7 @@ export function LabelList(props: LabelListProps) {
         style={{ height: '100%' }}
       >
         <CardHeader
-          title={<Typography variant="h3">Метки</Typography>}
+          title={<Typography variant="pageHeader">Метки</Typography>}
         />
         <Divider />
         <CardToolbar>
@@ -102,8 +116,8 @@ export function LabelList(props: LabelListProps) {
             </PermissionsGate>
           </div>
         </CardToolbar>
-        <CardContent className={classes.scrollBarContainer}>
-          <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }}>
+        <CardContent>
+          <CustomizedScrollBox>
             {componentIsFetching
               ? [...Array(10)].map((el, idx) =>
                 <div key={idx}>
@@ -122,7 +136,7 @@ export function LabelList(props: LabelListProps) {
                 </div>) || <></>
 
             }
-          </PerfectScrollbar>
+          </CustomizedScrollBox>
           <LabelListItemEdit
             open={openEditForm}
             onSubmit={handleOnSubmit}

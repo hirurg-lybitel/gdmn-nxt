@@ -1,6 +1,6 @@
 import { IBusinessProcess, IContactPerson, ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '../utils/db-connection';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { resultError } from '../responseMessages';
 import { genId } from '../utils/genId';
 
@@ -49,12 +49,14 @@ export const getContacts: RequestHandler = async (req, res) => {
     };
 
     const execQuery = async ({ name, query }) => {
-      const startTime = new Date().getTime();
+      // const startTime = new Date().getTime();
+      console.time(`${name} fetch time`);
       // const rs = await attachment.executeQuery(transaction, query, []);
       const data = await fetchAsObject(query);
       // const data = await rs.fetchAsObject();
-      const endTime = new Date().getTime();
-      console.log(`${name} fetch time ms`, endTime - startTime);
+      // const endTime = new Date().getTime();
+      // console.log(`${name} fetch time ms`, endTime - startTime);
+      console.timeEnd(`${name} fetch time`);
       // await rs.close();
 
       return data as any;
@@ -85,11 +87,11 @@ export const getContacts: RequestHandler = async (req, res) => {
             ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
             ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
             ${DEPARTMENTS || CONTRACTS || WORKTYPES
-              ? `JOIN USR$CRM_CUSTOMER cust ON cust.USR$CUSTOMERKEY = c.ID
+    ? `JOIN USR$CRM_CUSTOMER cust ON cust.USR$CUSTOMERKEY = c.ID
                 ${CONTRACTS ? `AND cust.USR$JOBKEY IN (${CONTRACTS})` : ''}
                 ${DEPARTMENTS ? `AND cust.USR$DEPOTKEY IN (${DEPARTMENTS})` : ''}
                 ${WORKTYPES ? `AND cust.USR$JOBWORKKEY IN (${WORKTYPES})` : ''}`
-              : ''}
+    : ''}
             ${LABELS ? `JOIN USR$CRM_CONTACT_LABELS lab ON lab.USR$CONTACTKEY = c.ID AND lab.USR$LABELKEY IN (${LABELS})` : ''}
             ${BUSINESSPROCESSES ? `JOIN USR$CROSS1242_1980093301 bpcross ON bpcross.USR$GD_CONTACTKEY = c.ID AND bpcross.USR$BG_BISNESS_PROCKEY IN (${BUSINESSPROCESSES})` : ''}
           WHERE
@@ -130,12 +132,12 @@ export const getContacts: RequestHandler = async (req, res) => {
           ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
           ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
           ${DEPARTMENTS || CONTRACTS || WORKTYPES
-            ? `JOIN USR$CRM_CUSTOMER cust ON cust.USR$CUSTOMERKEY = c.ID
+    ? `JOIN USR$CRM_CUSTOMER cust ON cust.USR$CUSTOMERKEY = c.ID
               ${CONTRACTS ? `AND cust.USR$JOBKEY IN (${CONTRACTS})` : ''}
               ${DEPARTMENTS ? `AND cust.USR$DEPOTKEY IN (${DEPARTMENTS})` : ''}
               ${WORKTYPES ? `AND cust.USR$JOBWORKKEY IN (${WORKTYPES})` : ''}`
-            : ''
-          }
+    : ''
+}
           ${LABELS ? `JOIN USR$CRM_CONTACT_LABELS lab ON lab.USR$CONTACTKEY = c.ID AND lab.USR$LABELKEY IN (${LABELS})` : ''}
           ${BUSINESSPROCESSES ? `JOIN USR$CROSS1242_1980093301 bpcross ON bpcross.USR$GD_CONTACTKEY = c.ID AND bpcross.USR$BG_BISNESS_PROCKEY IN (${BUSINESSPROCESSES})` : ''}
         WHERE
@@ -167,12 +169,12 @@ export const getContacts: RequestHandler = async (req, res) => {
       // }
     ];
 
-    let startTime = new Date().getTime();
+    console.time('Promise time');
     const [rawFolders, rawContacts, rawLabels, rawBusinessProcesses, rowCount] = await Promise.all(queries.map(execQuery));
 
-    let endTime = new Date().getTime();
+    // let endTime = new Date().getTime();
 
-    console.log('Promise time ms', endTime - startTime);
+    console.timeEnd('Promise time');
 
     // const [rawContacts] = await Promise.all(queries.map(execQuery));
     // const rawContacts = await Promise.resolve(execQuery(q[2]));
@@ -206,16 +208,14 @@ export const getContacts: RequestHandler = async (req, res) => {
       };
     });
 
-    interface IFolders {
-      [id: string]: string;
-    };
+    // interface IFolders {
+    //   [id: string]: string;
+    // };
 
-    const folders: IFolders = rawFolders.reduce((p, f) => {
-      p[f.ID] = f.NAME;
-      return p;
-    }, {});
-
-    const tCon = new Date().getTime();
+    // const folders: IFolders = rawFolders.reduce((p, f) => {
+    //   p[f.ID] = f.NAME;
+    //   return p;
+    // }, {});
 
     const contacts: ICustomer[] = rawContacts.map(c => {
       const LABELS = labels[c.ID] ?? null;
@@ -239,7 +239,6 @@ export const getContacts: RequestHandler = async (req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    const a = 'a';
     await releaseReadTransaction();
     // await releaseReadTransaction(req.sessionID);
   }
@@ -406,7 +405,7 @@ export const deleteContact: RequestHandler = async (req, res) => {
   }
 };
 
-export const getContactHierarchy : RequestHandler = async (req, res) => {
+export const getContactHierarchy: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
   try {
     const _schema = { };
@@ -461,8 +460,7 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
         DELETE FROM USR$CRM_CONTACT_LABELS
         WHERE USR$CONTACTKEY = ?` ;
 
-      await attachment.execute(transaction, sql, [contactId])
-
+      await attachment.execute(transaction, sql, [contactId]);
     } catch (error) {
       console.error('upsertLabels', error);
     }
@@ -692,8 +690,7 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
         DELETE FROM USR$CROSS1242_1980093301
         WHERE USR$GD_CONTACTKEY = ?` ;
 
-      await attachment.execute(transaction, sql, [contactId])
-
+      await attachment.execute(transaction, sql, [contactId]);
     } catch (error) {
       console.error('upsertBusinessProcesses', error);
     }
