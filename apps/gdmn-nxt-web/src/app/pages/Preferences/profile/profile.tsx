@@ -1,6 +1,6 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, List, ListItem, ListItemIcon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -190,7 +190,7 @@ export function Profile(props: ProfileProps) {
   };
 
   const checkPushNotifications = () => {
-    const { message, OK} = (() => {
+    const { message, OK } = (() => {
       if (Notification.permission === 'granted') {
         return {
           message: 'Уведомления разрешены в вашем браузере',
@@ -448,14 +448,24 @@ export function Profile(props: ProfileProps) {
                             checked={formik.values.PUSH_NOTIFICATIONS_ENABLED}
                             onChange={formik.handleChange}
                           />}
-                          // style={{
-                          //   minWidth: '190px',
-                          // }}
                         />
                         <Tooltip
                           style={{ cursor: 'help' }}
                           arrow
-                          title="Убедитесь, что на вашем компьютере включены уведомления от текущего браузера"
+                          title={<List disablePadding dense>
+                            <ListItem disableGutters alignItems="flex-start">
+                              <ListItemIcon style={{ minWidth: 15, marginTop: 0 }}>
+                                1.
+                              </ListItemIcon >
+                              Убедитесь, что на вашем компьютере включены уведомления от текущего браузера
+                            </ListItem>
+                            <ListItem disableGutters alignItems="flex-start">
+                              <ListItemIcon style={{ minWidth: 15, marginTop: 0 }}>
+                                2.
+                              </ListItemIcon >
+                              Проверьте, что в вашем браузере включены уведомления, нажав кнопку Проверить
+                            </ListItem>
+                          </List>}
                         >
                           <InfoIcon color="action" />
                         </Tooltip>
