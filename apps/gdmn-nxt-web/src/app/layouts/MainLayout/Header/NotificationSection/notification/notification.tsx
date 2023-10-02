@@ -30,6 +30,8 @@ import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
 import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
 import { config } from '@gdmn-nxt/config';
 import addNotification from 'react-push-notification';
+import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
+import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -111,6 +113,7 @@ export function Notification(props: NotificationProps) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [showedMessages, setShowedMessages] = useState<number[]>([]);
   const [isActivePage, setIsActivePage] = useState<boolean>(true);
+
   function onBlur() {
     setIsActivePage(false);
   }
@@ -120,33 +123,35 @@ export function Notification(props: NotificationProps) {
   window.onfocus = onFocus;
   window.onblur = onBlur;
 
-  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
+  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
+  const { data: settings } = useGetProfileSettingsQuery(userId);
 
   const sendPushNotification = (title: string, text: string) => {
     addNotification({
       title: title,
-      message: text,
+      message: text.replaceAll(/\**\#*=*\-*_*~*>*\+*/g, ''),
       native: true,
-      duration: 1000 * 60
+      duration: PUSH_NOTIFICATIONS_DURATION
     });
   };
 
   useEffect(() => {
+    if (!(settings && ('PUSH_NOTIFICATIONS_ENABLED' in settings))) return;
+    if (!settings?.PUSH_NOTIFICATIONS_ENABLED) return;
+    if (isActivePage) return;
+
     const unshowedMessages = messages.filter(item => !showedMessages.some(showed => showed === item.id));
     setShowedMessages(messages.map(item => item.id));
-    if (isActivePage) return;
-    if (unshowedMessages.length < 1) return;
+
+    if (unshowedMessages.length === 0) return;
     if (unshowedMessages.length < 2) {
-      unshowedMessages.forEach(item => {
-        sendPushNotification(item.title, item.text.replaceAll(/\**\#*=*\-*_*~*>*\+*/g, ''));
-      });
-    } else {
-      sendPushNotification(
-        'Непросмотренные уведомления',
-        `У вас ${messages.length} непросмотренных уведомлений`
-      );
+      return unshowedMessages.forEach(({ title, text }) => sendPushNotification(title, text));
     }
-  }, [messages]);
+    sendPushNotification(
+      'Непросмотренные уведомления',
+      `У вас ${messages.length} непросмотренных уведомлений`
+    );
+  }, [messages, settings]);
 
   useEffect(() => {
     if (userId <= 0) return;
