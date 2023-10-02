@@ -22,7 +22,8 @@ const getSettings = async (userId: number, req: Request) => {
       SELECT
         p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION,
         ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL,
-        ps.USR$2FA_ENABLED AS ENABLED_2FA, ps.USR$SECRETKEY AS SECRETKEY
+        ps.USR$2FA_ENABLED AS ENABLED_2FA, ps.USR$SECRETKEY AS SECRETKEY,
+        ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       JOIN GD_CONTACT c ON c.ID = u.CONTACTKEY
@@ -47,6 +48,7 @@ const getSettings = async (userId: number, req: Request) => {
         r['AVATAR'] = bin2String(blob2String.split(','));
       };
       r['SEND_EMAIL_NOTIFICATIONS'] = (r['SEND_EMAIL_NOTIFICATIONS'] ?? 0) === 1;
+      r['PUSH_NOTIFICATIONS_ENABLED'] = (r['PUSH_NOTIFICATIONS_ENABLED'] ?? 0) === 1;
       r['ENABLED_2FA'] = r['ENABLED_2FA'] === 1;
       r['REQUIRED_2FA'] = required2fa;
 
@@ -99,6 +101,7 @@ const set: RequestHandler = async (req, res) => {
     COLORMODE: colorMode,
     LASTVERSION: lastVersion,
     SEND_EMAIL_NOTIFICATIONS,
+    PUSH_NOTIFICATIONS_ENABLED,
     EMAIL
   } = req.body;
 
@@ -117,11 +120,18 @@ const set: RequestHandler = async (req, res) => {
     { userId, EMAIL });
 
     const sqlResult = await fetchAsSingletonObject(`
-      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS)
-      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS)
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
-    { userId, avatar: blob, colorMode, lastVersion, SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS) });
+    {
+      userId,
+      avatar: blob,
+      colorMode,
+      lastVersion,
+      SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
+      PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED)
+    });
 
     const result: IRequestResult = {
       queries: { settings: sqlResult },
