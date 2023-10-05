@@ -17,8 +17,6 @@ export function MenuGroup(props: MenuGroupProps) {
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
-
-
   const items = item.children?.map((menu: IMenuItem) => {
     switch (menu.type) {
       case 'collapse':
