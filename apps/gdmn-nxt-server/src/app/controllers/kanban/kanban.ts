@@ -63,9 +63,22 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber, dealNumber, performers, period } = req.query;
+    const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
+    const { departments, customers, requestNumber, dealNumber, performers, period, isPerformer, isCreator } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
+
+    const performerOrCreator = (() => {
+      let res = '';
+      if (Number(isCreator) === 1) {
+        res = ` AND creator.ID = ${contactKey} `;
+      };
+      if (Number(isPerformer) === 1) {
+        res = res ? ' OR ' : ' AND ';
+        res = res + ` (performer.ID IN (${contactKey}) OR secondPerformer.ID IN (${contactKey})) `;
+      }
+      return res;
+    })();
 
     const checkFullView = `
       EXISTS(
@@ -78,7 +91,6 @@ const get: RequestHandler = async (req, res) => {
           r.XID = 370486335 AND r.DBID = 1811180906
           AND cr.USR$MODE = 1
           AND ul.USR$USERKEY = ${userId})`;
-
 
     const checkCardsVisibility = `
       AND 1 = IIF(NOT ${checkFullView},
@@ -161,6 +173,7 @@ const get: RequestHandler = async (req, res) => {
         ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
         ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
         ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}
+        ${performerOrCreator}
         ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
     const queries = [
@@ -565,13 +578,27 @@ const getTasks: RequestHandler = async (req, res) => {
     };
 
     const userId = parseInt(req.query.userId as string);
-    const { taskNumber, performers, period } = req.query;
+    const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
+    const { taskNumber, performers, period, isPerformer, isCreator } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
+
+    const performerOrCreator = (() => {
+      let res = '';
+      if (Number(isCreator) === 1) {
+        res = ` AND creator.ID = ${contactKey} `;
+      };
+      if (Number(isPerformer) === 1) {
+        res = res ? ' OR ' : ' AND ';
+        res = res + ` performer.ID = (${contactKey}) `;
+      }
+      return res;
+    })();
 
     const filter = `
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
+      ${performerOrCreator}
       ${periods.length === 2 ? ` AND CAST(task.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
 
