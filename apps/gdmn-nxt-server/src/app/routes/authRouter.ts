@@ -11,7 +11,7 @@ import { jwtMiddleware } from '../middlewares/jwt';
 import { ERROR_MESSAGES } from '../constants/messages';
 
 /** In zeit/ms(https://github.com/vercel/ms) format */
-const jwtExpirationTime = '30s';
+const jwtExpirationTime = '6h';
 
 export const router = express.Router();
 
