@@ -74,6 +74,11 @@ interface MainLayoutProps{
 export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
 
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const { errorMessage, errorStatus } = useSelector((state: RootState) => state.error);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+  const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
+
   const dispatch = useDispatch<AppDispatch>();
   const onIdleHandler = () => {
     dispatch(logoutUser());
@@ -91,17 +96,11 @@ export const MainLayout = (props: MainLayoutProps) => {
     ],
   });
 
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-  const { errorMessage } = useSelector((state: RootState) => state.error);
-  const [openSnackBar, setOpenSnackBar] = useState(false);
-
-  const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
-
   useEffect(() => {
     if (errorMessage) {
       setOpenSnackBar(true);
-    }
-  }, [errorMessage]);
+    };
+  }, [errorMessage, errorStatus]);
 
   const handleDrawerToggle = () => {
     dispatch(toggleMenu(!menuOpened));
@@ -113,6 +112,10 @@ export const MainLayout = (props: MainLayoutProps) => {
     };
     dispatch(clearError());
     setOpenSnackBar(false);
+
+    if (errorStatus === 401) {
+      dispatch(logoutUser());
+    };
   };
 
   return (

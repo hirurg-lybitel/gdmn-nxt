@@ -9467,6 +9467,7 @@ __metadata:
     react-leaflet-markercluster: ^3.0.0-rc1
     react-markdown: ^8.0.3
     react-perfect-scrollbar: ^1.5.8
+    react-push-notification: ^1.5.3
     react-redux: ^8.0.5
     react-refresh: ^0.10.0
     react-router-dom: 6.4.3
@@ -15040,6 +15041,15 @@ __metadata:
     react: ">=16.3.3"
     react-dom: ">=16.3.3"
   checksum: d0bb4713ccab648d25ea13b4ee9fb19b2b075c03bd11e81a6bb02e1da9b4920e3124d87142a7a2a3201c8b7fa5cb6183069acff01f19a0cb5b536331ae7182f4
+  languageName: node
+  linkType: hard
+
+"react-push-notification@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "react-push-notification@npm:1.5.3"
+  peerDependencies:
+    react: ^16.8.0
+  checksum: 5ffcb1f422c2bde7abdc91550bbd99f3f7ae1a35b2c20e4a1556a46aa7037f518b28d6c2b6c86f5f4553ce512728f5a50a67577eb1598062f475333c3da11ef2
   languageName: node
   linkType: hard
 
