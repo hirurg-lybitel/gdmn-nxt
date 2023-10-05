@@ -1,4 +1,4 @@
-import { Autocomplete, Button, CardActions, CardContent, Checkbox, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField } from '@mui/material';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './tasks-filter.module.less';
@@ -38,7 +38,7 @@ export function TasksFilter(props: TasksFilterProps) {
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
     delete newObject[entity];
-    onFilteringDataChange({ ...newObject, ...(value?.length > 0 ? { [entity]: value } : {}) });
+    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 ? { [entity]: value } : {}) });
   };
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function TasksFilter(props: TasksFilterProps) {
         }}
       >
         <CardContent style={{ flex: 1 }}>
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <TextField
               label="Номер задачи"
               value={taskNumber || ''}
@@ -109,6 +109,24 @@ export function TasksFilter(props: TasksFilterProps) {
               )}
               loading={employeesIsFetching}
               loadingText="Загрузка данных..."
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filteringData?.isCreator ?? false}
+                  onChange={(e) => handleOnChange('isCreator', e.target.checked)}
+                />
+              }
+              label="Я постановщик"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filteringData?.isPerformer ?? false}
+                  onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
+                />
+              }
+              label="Я исполнитель"
             />
           </Stack>
         </CardContent>
