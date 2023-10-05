@@ -768,6 +768,18 @@
 										{
 											"key": "period",
 											"value": "1670965200000,1671051600000"
+										},
+										{
+											"key": "isCreator",
+											"value": "1",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "isPerformer",
+											"value": "1",
+											"type": "text",
+											"disabled": true
 										}
 									]
 								}
