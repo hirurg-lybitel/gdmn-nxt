@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import { makeStyles } from '@mui/styles';
@@ -165,7 +165,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loadingText="Загрузка данных..."
               />
               <Stack direction="row" alignItems="center" paddingLeft={2}>
-                <Typography variant="caption">И</Typography>
+                <Tooltip arrow title="Содержит все выбранные">
+                  <Typography variant="caption">И</Typography>
+                </Tooltip>
                 <Switch
                   className={classes.switchButton}
                   color="default"
@@ -173,7 +175,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
                   onChange={handleMethodOnChange}
                   checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false}
                 />
-                <Typography variant="caption">Или</Typography>
+                <Tooltip arrow title="Содержит один из выбранных">
+                  <Typography variant="caption">Или</Typography>
+                </Tooltip>
               </Stack>
             </Box>
             <Box>
@@ -209,7 +213,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loadingText="Загрузка данных..."
               />
               <Stack direction="row" alignItems="center" paddingLeft={2}>
-                <Typography variant="caption">И</Typography>
+                <Tooltip arrow title="Содержит все выбранные">
+                  <Typography variant="caption">И</Typography>
+                </Tooltip>
                 <Switch
                   className={classes.switchButton}
                   color="default"
@@ -217,7 +223,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
                   onChange={handleMethodOnChange}
                   checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false}
                 />
-                <Typography variant="caption">Или</Typography>
+                <Tooltip arrow title="Содержит один из выбранных">
+                  <Typography variant="caption">Или</Typography>
+                </Tooltip>
               </Stack>
             </Box>
             <Box>
@@ -254,7 +262,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loadingText="Загрузка данных..."
               />
               <Stack direction="row" alignItems="center" paddingLeft={2}>
-                <Typography variant="caption">И</Typography>
+                <Tooltip arrow title="Содержит все выбранные">
+                  <Typography variant="caption">И</Typography>
+                </Tooltip>
                 <Switch
                   className={classes.switchButton}
                   color="default"
@@ -262,7 +272,9 @@ export function CustomersFilter(props: CustomersFilterProps) {
                   onChange={handleMethodOnChange}
                   checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false}
                 />
-                <Typography variant="caption">Или</Typography>
+                <Tooltip arrow title="Содержит один из выбранных">
+                  <Typography variant="caption">Или</Typography>
+                </Tooltip>
               </Stack>
             </Box>
             <Autocomplete
