@@ -35,6 +35,7 @@ import StyledGrid from '../components/Styled/styled-grid/styled-grid';
 import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -286,15 +287,16 @@ export function Customers(props: CustomersProps) {
         return (
           <Box>
             <IconButton {...detailsComponent} disabled={customerFetching}>
-              <VisibilityIcon fontSize="small" color="primary" />
+              <Tooltip arrow title="Детализация">
+                <VisibilityIcon fontSize="small" color="primary" />
+              </Tooltip>
             </IconButton>
             <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
-              <IconButton
+              <ItemButtonEdit
                 onClick={handleCustomerEdit(customerId)}
+                color="primary"
                 disabled={customerFetching}
-              >
-                <EditOutlinedIcon fontSize="small" color="primary" />
-              </IconButton>
+              />
             </PermissionsGate>
           </Box>
         );

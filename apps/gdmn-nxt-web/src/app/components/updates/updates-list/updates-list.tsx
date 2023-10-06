@@ -14,6 +14,7 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
 import UpdatesEdit from '../updates-edit/updates-edit';
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 /* eslint-disable-next-line */
 export interface UpdatesListProps {}
@@ -122,14 +123,11 @@ export function UpdatesList(props: UpdatesListProps) {
                     <Stack direction="row" justifyContent="space-between">
                       <Typography variant="body2">{new Date(u.ONDATE).toLocaleDateString()}</Typography>
                       <PermissionsGate actionAllowed={userPermissions?.updates.PUT}>
-                        <IconButton
+                        <ItemButtonEdit
                           color="primary"
                           size="small"
                           onClick={handleEditSource(u)}
-                          // disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
+                        />
                       </PermissionsGate>
                     </Stack>
                     <Typography variant="body1" component="div">

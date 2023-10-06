@@ -22,11 +22,14 @@
       "@gdmn-nxt/socket": ["libs/socket/src/index.ts"],
       "@gdmn-nxt/ui-assets": ["libs/ui-assets/src/index.ts"],
       "@gdmn/2FA": ["libs/2-fa/src/index.ts"],
+      "@gdmn/constants": [
+        "apps/gdmn-nxt-web/src/app/constants",
+        "apps/gdmn-nxt-server/src/app/constants"
+      ],
       "@gsbelarus/ui-common-dialogs": ["libs/ui-common-dialogs/src/index.ts"],
       "@gsbelarus/util-api-types": ["libs/util-api-types/src/index.ts"],
       "@gsbelarus/util-helpers": ["libs/util-helpers/src/index.ts"],
-      "@gsbelarus/util-useful": ["libs/util-useful/src/index.ts"],
-      "@gdmn/constants": ["apps/gdmn-nxt-web/src/app/constants", "apps/gdmn-nxt-server/src/app/constants"]
+      "@gsbelarus/util-useful": ["libs/util-useful/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

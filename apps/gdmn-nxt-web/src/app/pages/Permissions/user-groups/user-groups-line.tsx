@@ -1,10 +1,10 @@
-import { Box, IconButton, Switch, Typography } from '@mui/material';
+import { Box, Switch, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation } from '../../../features/permissions';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ChangeEvent, useMemo } from 'react';
 import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 interface IUsersProps{
   group?: IUserGroup;
@@ -61,15 +61,7 @@ export function Users(props: IUsersProps) {
       resizable: false,
       width: 100,
       align: 'center',
-      renderCell: ({ id }) => {
-        return (
-          <Box>
-            <IconButton onClick={onDelete(Number(id))}>
-              <DeleteForeverIcon fontSize="small" color="primary" />
-            </IconButton>
-          </Box>
-        );
-      }
+      renderCell: ({ id }) => <ItemButtonDelete onClick={onDelete(Number(id))} color="primary" />
     }
   ];
 
