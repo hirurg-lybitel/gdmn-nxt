@@ -696,10 +696,10 @@ export function Customers(props: CustomersProps) {
                   const labels: ILabel[] | undefined = customer.LABELS;
 
                   if (labels?.length && labels.length > 4) {
-                    return 40 * Math.ceil(labels.length / 2);
+                    return 30 * Math.ceil(labels.length / 2);
                   }
 
-                  return 80;
+                  return 60;
                 }}
               />
             </Box>
