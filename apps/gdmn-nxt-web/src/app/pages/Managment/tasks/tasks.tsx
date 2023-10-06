@@ -126,18 +126,26 @@ export function Tasks(props: TasksProps) {
             onClick={filterClick}
             disabled={columnsIsFetching}
           >
-            <Badge
-              color="error"
-              variant={Object.keys(filterData || {}).length > 0 ? 'dot' : 'standard'}
+            <Tooltip
+              title={Object.keys(filterData || {}).length > 0
+                ? 'У вас есть активные фильтры'
+                : 'Выбрать фильтры'
+              }
+              arrow
             >
-              <FilterListIcon color={columnsIsFetching ? 'disabled' : 'primary'} />
-            </Badge>
+              <Badge
+                color="error"
+                variant={Object.keys(filterData || {}).length > 0 ? 'dot' : 'standard'}
+              >
+                <FilterListIcon color={columnsIsFetching ? 'disabled' : 'primary'} />
+              </Badge>
+            </Tooltip>
           </IconButton>
         </CustomizedCard>
       </>
     );
   }
-  , [tabNo, columnsIsFetching]);
+  , [tabNo, columnsIsFetching, filterData]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanTasksBoard columns={columns} isLoading={isLoading} />, [columns, isLoading]);
 

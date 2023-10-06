@@ -184,12 +184,20 @@ export function Deals(props: DealsProps) {
             onClick={filterHandlers.filterClick}
             disabled={columnsIsFetching}
           >
-            <Badge
-              color="error"
-              variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline').length > 0 ? 'dot' : 'standard'}
+            <Tooltip
+              title={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline').length > 0
+                ? 'У вас есть активные фильтры'
+                : 'Выбрать фильтры'
+              }
+              arrow
             >
-              <FilterListIcon color="primary" />
-            </Badge>
+              <Badge
+                color="error"
+                variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline').length > 0 ? 'dot' : 'standard'}
+              >
+                <FilterListIcon color="primary" />
+              </Badge>
+            </Tooltip>
           </IconButton>
         </CustomizedCard>
       </>

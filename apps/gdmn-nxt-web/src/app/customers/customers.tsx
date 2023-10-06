@@ -2,7 +2,7 @@ import { GridColDef, GridFilterModel, GridSortModel, GridEventListener } from '@
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
+import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -237,7 +237,7 @@ export function Customers(props: CustomersProps) {
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
-                >
+              >
                 {labels.map((label) => (
                   <ListItemButton
                     key={label.ID}
@@ -571,18 +571,26 @@ export function Customers(props: CustomersProps) {
               onClick={filterHandlers.handleFilter}
               disabled={customerFetching}
             >
-              <Badge
-                color="error"
-                variant={
-                  Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                    ? 'dot'
-                    : 'standard'
+              <Tooltip
+                title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                  ? 'У вас есть активные фильтры'
+                  : 'Выбрать фильтры'
                 }
+                arrow
               >
-                <FilterListIcon
-                  color={customerFetching ? 'disabled' : 'primary'}
-                />
-              </Badge>
+                <Badge
+                  color="error"
+                  variant={
+                    Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                      ? 'dot'
+                      : 'standard'
+                  }
+                >
+                  <FilterListIcon
+                    color={customerFetching ? 'disabled' : 'primary'}
+                  />
+                </Badge>
+              </Tooltip>
             </IconButton>
           </Box>
         </Stack>
