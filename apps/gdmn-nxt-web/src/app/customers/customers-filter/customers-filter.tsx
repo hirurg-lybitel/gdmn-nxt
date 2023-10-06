@@ -165,7 +165,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loadingText="Загрузка данных..."
               />
               <Stack direction="row" alignItems="center" paddingLeft={2}>
-                <Tooltip arrow title="Содержит все выбранные">
+                <Tooltip arrow title="Содержит все выбранные отделы">
                   <Typography variant="caption">И</Typography>
                 </Tooltip>
                 <Switch
@@ -175,7 +175,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
                   onChange={handleMethodOnChange}
                   checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false}
                 />
-                <Tooltip arrow title="Содержит один из выбранных">
+                <Tooltip arrow title="Содержит один из выбранных отделов">
                   <Typography variant="caption">Или</Typography>
                 </Tooltip>
               </Stack>
@@ -213,7 +213,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loadingText="Загрузка данных..."
               />
               <Stack direction="row" alignItems="center" paddingLeft={2}>
-                <Tooltip arrow title="Содержит все выбранные">
+                <Tooltip arrow title="Содержит все выбранные заказы">
                   <Typography variant="caption">И</Typography>
                 </Tooltip>
                 <Switch
@@ -223,7 +223,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
                   onChange={handleMethodOnChange}
                   checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false}
                 />
-                <Tooltip arrow title="Содержит один из выбранных">
+                <Tooltip arrow title="Содержит один из выбранных заказов">
                   <Typography variant="caption">Или</Typography>
                 </Tooltip>
               </Stack>
@@ -262,7 +262,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loadingText="Загрузка данных..."
               />
               <Stack direction="row" alignItems="center" paddingLeft={2}>
-                <Tooltip arrow title="Содержит все выбранные">
+                <Tooltip arrow title="Содержит все выбранные виды работ">
                   <Typography variant="caption">И</Typography>
                 </Tooltip>
                 <Switch
@@ -272,7 +272,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
                   onChange={handleMethodOnChange}
                   checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false}
                 />
-                <Tooltip arrow title="Содержит один из выбранных">
+                <Tooltip arrow title="Содержит один из выбранных видов работ">
                   <Typography variant="caption">Или</Typography>
                 </Tooltip>
               </Stack>
