@@ -15,11 +15,11 @@ export const getContacts: RequestHandler = async (req, res) => {
   let toRecord: number;
 
   if (pageNo && pageSize) {
-    fromRecord = Number(pageNo) * Number(pageSize);
-    toRecord = fromRecord + Number(pageSize);
-
-    if (fromRecord === 0) fromRecord = 1;
+    fromRecord = Number(pageNo) * Number(pageSize) + 1;
+    toRecord = fromRecord + Number(pageSize) - 1;
   };
+
+  console.log('page', fromRecord, toRecord);
 
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
@@ -98,7 +98,7 @@ export const getContacts: RequestHandler = async (req, res) => {
             c.contacttype IN (3,5) /*and c.id = 147960147*/
             ${customerId > 0 ? `AND c.ID = ${customerId}` : ''}
             ${NAME ? `AND (UPPER(c.NAME) LIKE UPPER('%${NAME}%') OR UPPER(comp.TAXID) LIKE UPPER('%${NAME}%'))` : ''}
-          ORDER BY c.${sortField ? sortField : 'ID'} ${sortMode ? sortMode : 'DESC'}
+          ORDER BY c.${sortField ? sortField : 'NAME'} ${sortMode ? sortMode : 'ASC'}
           ${fromRecord > 0 ? `ROWS ${fromRecord} TO ${toRecord}` : ''}`
       },
       {
