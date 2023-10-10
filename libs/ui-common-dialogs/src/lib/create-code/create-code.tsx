@@ -1,9 +1,10 @@
-import { Alert, Box, Button, Dialog, Divider, InputAdornment, List, ListItem, ListItemIcon, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Dialog, Divider, IconButton, InputAdornment, List, ListItem, ListItemIcon, Stack, TextField, Typography } from '@mui/material';
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import styles from './create-code.module.less';
 import { useRef, useState } from 'react';
 import { IAuthResult, IUserProfile } from '@gsbelarus/util-api-types';
 import axios from 'axios';
+import CloseIcon from '@mui/icons-material/Close';
 
 export interface CreateCodeProps {
   user?: IUserProfile;
@@ -73,6 +74,16 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
     }
   };
 
+  const [QRIsopen, setQRIsOpen] = useState(false);
+
+  const handleOpenQR = () => {
+    setQRIsOpen(true);
+  };
+
+  const handleCloseQR = () => {
+    setQRIsOpen(false);
+  };
+
   const content =
     email.userEmail && !email.isError
       ? <>
@@ -93,19 +104,32 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
               </ListItem>)}
           </List>
         </Box>
-        <Box>
-          <Typography variant="subtitle1" textAlign="left">Просканируйте QR-код</Typography>
-          <Divider style={{ margin: 0 }} />
-          <div className={styles.qrContainer}>
-            <img src={user?.qr} alt="Ошибка отображения QR кода" />
-          </div>
-        </Box>
+
         <Box textAlign="left">
-          <Typography variant="subtitle1">Или введите код в своё приложение</Typography>
+          <Typography variant="subtitle1">Просканируйте QR-код или введите код в своё приложение</Typography>
           <Divider style={{ margin: 0 }} />
           <div className={styles.secretContainer}>
             <Typography variant="body1">{user?.base32Secret ?? 'Ошибка отображения кода'}</Typography>
           </div>
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <Button style={{ marginTop: '10px' }} onClick={handleOpenQR}>Показать QR-код</Button>
+          </div>
+          <Dialog
+            onClose={handleCloseQR}
+            open={QRIsopen}
+            PaperProps={{
+              style: {
+                backgroundColor: 'transparent',
+              }
+            }}
+          >
+            <div style={{ padding: '40px', position: 'relative' }}>
+              <IconButton onClick={handleCloseQR} style={{ position: 'absolute', top: '5px', right: '5px' }}>
+                <CloseIcon />
+              </IconButton>
+              <img src={user?.qr} alt="Ошибка отображения QR кода" />
+            </div>
+          </Dialog>
         </Box>
         <Box textAlign="left">
           <Typography variant="subtitle1">Проверьте код</Typography>
@@ -171,7 +195,7 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
     <Stack spacing={2} textAlign="center">
       <Box textAlign="center">
         <Typography variant="h6" fontSize="1.5rem">Двухфакторная аутентификация (2FA)</Typography>
-      </Box>
+      </Box>asd
       <Typography variant="body1" hidden={!!user?.permissions}>{subTitle}</Typography>
       {content}
       <Dialog
