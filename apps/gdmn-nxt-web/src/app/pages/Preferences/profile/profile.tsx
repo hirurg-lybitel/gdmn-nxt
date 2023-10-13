@@ -1,9 +1,9 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, List, ListItem, ListItemIcon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, List, ListItem, ListItemIcon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -261,16 +261,9 @@ export function Profile(props: ProfileProps) {
       </Stack>
     </Dialog>, [twoFAOpen.check]);
 
-  const maxHeight = useMediaQuery('(min-height:800px)');
-
-
   const memoCreateCode = useMemo(() =>
-    <Dialog
-      open={twoFAOpen.create ?? false}
-      style={{ padding: 2 }}
-    >
+    <Dialog open={twoFAOpen.create ?? false} style={{ padding: 2 }}>
       <Stack
-        style={maxHeight ? { height: '90vh' } : {}}
         direction="column"
         justifyContent="center"
         alignContent="center"
@@ -282,7 +275,7 @@ export function Profile(props: ProfileProps) {
           onSubmit={handleCreateOnSubmit}
         />
       </Stack>
-    </Dialog>, [twoFAOpen.create, maxHeight]);
+    </Dialog>, [twoFAOpen.create]);
 
   return (
     <>
@@ -304,7 +297,7 @@ export function Profile(props: ProfileProps) {
                   variant="circular"
                   height={300}
                   width={300}
-                  />
+                />
                 :
                 <Avatar
                   className={styles.image}
@@ -433,7 +426,7 @@ export function Profile(props: ProfileProps) {
                             name="SEND_EMAIL_NOTIFICATIONS"
                             checked={formik.values.SEND_EMAIL_NOTIFICATIONS}
                             onChange={formik.handleChange}
-                                   />}
+                          />}
                           style={{
                             minWidth: '190px',
                           }}
@@ -454,7 +447,7 @@ export function Profile(props: ProfileProps) {
                             name="PUSH_NOTIFICATIONS_ENABLED"
                             checked={formik.values.PUSH_NOTIFICATIONS_ENABLED}
                             onChange={formik.handleChange}
-                                   />}
+                          />}
                         />
                         <Tooltip
                           style={{ cursor: 'help' }}
