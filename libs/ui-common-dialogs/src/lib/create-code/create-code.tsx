@@ -89,16 +89,12 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
     open={QRIsOpen}
   >
     <Stack
-      padding="8px 16px 16px 16px"
+      className={styles.qrPopupContent}
       spacing={1}
     >
       <Stack
         direction="row"
-        style={{
-          width: '100%',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
+        className={styles.qrPopupTitle}
       >
         <Typography variant="subtitle1">QR код</Typography>
         <IconButton
