@@ -24,7 +24,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { CssBaseline, GlobalStyles } from '@mui/material';
+import { CssBaseline, GlobalStyles, useMediaQuery } from '@mui/material';
 import StandardOrder from './app/standard-order/standard-order';
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
 import Deals from './app/pages/Managment/deals/deals';
