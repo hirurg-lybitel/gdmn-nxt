@@ -1,9 +1,9 @@
-import { Alert, Box, Button, Dialog, Divider, InputAdornment, List, ListItem, ListItemIcon, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Dialog, Divider, IconButton, InputAdornment, List, ListItem, ListItemIcon, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import styles from './create-code.module.less';
 import { useRef, useState } from 'react';
 import { IAuthResult, IUserProfile } from '@gsbelarus/util-api-types';
-import axios from 'axios';
+import CloseIcon from '@mui/icons-material/Close';
 
 export interface CreateCodeProps {
   user?: IUserProfile;
@@ -25,6 +25,9 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
   const codeRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [QRIsOpen, setQRIsOpen] = useState(false);
+
+  const matchUpHeight = useMediaQuery('(min-height:890px)'); // max window height in fact
 
   const [email, setEmail] = useState<{
     userEmail?: string,
@@ -73,6 +76,43 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
     }
   };
 
+  const showQR = () => {
+    setQRIsOpen(true);
+  };
+
+  const closeQR = () => {
+    setQRIsOpen(false);
+  };
+
+  const qrPopup = <Dialog
+    onClose={closeQR}
+    open={QRIsOpen}
+  >
+    <Stack
+      padding="8px 16px 16px 16px"
+      spacing={1}
+    >
+      <Stack
+        direction="row"
+        style={{
+          width: '100%',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <Typography variant="subtitle1">QR код</Typography>
+        <IconButton
+          onClick={closeQR}
+          size="small"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Stack>
+
+      <img src={user?.qr} alt="Ошибка отображения QR кода" />
+    </Stack>
+  </Dialog>;
+
   const content =
     email.userEmail && !email.isError
       ? <>
@@ -97,8 +137,13 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
           <Typography variant="subtitle1" textAlign="left">Просканируйте QR-код</Typography>
           <Divider style={{ margin: 0 }} />
           <div className={styles.qrContainer}>
-            <img src={user?.qr} alt="Ошибка отображения QR кода" />
+            {!matchUpHeight
+              ? <Button variant="outlined" onClick={showQR}>
+                Показать QR-код
+              </Button>
+              : <img src={user?.qr} alt="Ошибка отображения QR кода" />}
           </div>
+          {qrPopup}
         </Box>
         <Box textAlign="left">
           <Typography variant="subtitle1">Или введите код в своё приложение</Typography>
@@ -115,14 +160,6 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
         <TextField
           inputRef={codeRef}
           label="Код аутентификации"
-          // sx={{ input: { color: 'black' } }}
-          // value={userName}
-          // error={authResult?.result === 'UNKNOWN_USER'}
-          // helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-          // disabled={waiting}
-          // onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
-          // onKeyDown={keyPress}
-          // inputProps={{ className: classes.input }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -145,8 +182,6 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
       </>
       : <>
         <Box textAlign="left">
-          {/* <Typography variant="subtitle1">Укажите свой email</Typography>
-          <Divider /> */}
           <Typography variant="subtitle1">Для активации 2FA укажите свой email</Typography>
           <Divider />
         </Box>
