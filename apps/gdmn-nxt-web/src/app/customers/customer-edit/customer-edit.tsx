@@ -3,7 +3,6 @@ import {
   Autocomplete,
   Button,
   Checkbox,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -12,7 +11,6 @@ import {
   Stack,
   TextField,
   Box,
-  Slide,
   Typography,
   Tab
 } from '@mui/material';
@@ -21,7 +19,6 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
-import SaveIcon from '@mui/icons-material/Save';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -38,7 +35,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 import ContactPersonList from '../contact-person-list/contact-person-list';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
-import TextFieldMasked from '../../components/textField-masked/textField-masked';
+import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -91,7 +88,7 @@ export function CustomerEdit(props: CustomerEditProps) {
   const [deleting, setDeleting] = useState(false);
   const [tabIndex, setTabIndex] = useState('1');
 
-  const { data: groups, isFetching: groupFetching } = useGetGroupsQuery();
+  // const { data: groups, isFetching: groupFetching } = useGetGroupsQuery();
   const { data: labels, isFetching: labelsFetching } = useGetLabelsQuery();
   const { data: businessProcesses = [], isFetching: businessProcessesFetching } = useGetBusinessProcessesQuery();
 
@@ -127,8 +124,11 @@ export function CustomerEdit(props: CustomerEditProps) {
             return 'Некорректный адрес';
           })
         .max(40, 'Слишком длинный email'),
-      'PHONE': yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
-        .max(40, 'Слишком длинный номер')
+      PHONE: yup
+        .string()
+        .test('',
+          ({ value }) => validatePhoneNumber(value) ?? '',
+          (value = '') => !validatePhoneNumber(value))
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -152,11 +152,11 @@ export function CustomerEdit(props: CustomerEditProps) {
     setConfirmOpen(true);
   };
 
-  const handleCancelClick = () => {
+  const handleCancelClick = useCallback(() => {
     setDeleting(false);
     formik.resetForm();
     onCancelClick();
-  };
+  }, [formik, onCancelClick]);
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -174,6 +174,10 @@ export function CustomerEdit(props: CustomerEditProps) {
   const handleClose = useCallback(() => {
     handleCancelClick();
   }, [handleCancelClick]);
+
+  const onPhoneChange = (value: string) => {
+    formik.setFieldValue('PHONE', value);
+  };
 
   const memoContactlist = useMemo(() =>
     <ContactPersonList customerId={customer?.ID || -1} />,
@@ -194,7 +198,6 @@ export function CustomerEdit(props: CustomerEditProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
-      // width={'30vw'}
     >
       <DialogTitle>
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
@@ -255,15 +258,16 @@ export function CustomerEdit(props: CustomerEditProps) {
                           error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
                           fullWidth
                         />
-                        <TextFieldMasked
-                          mask={'+375 (99) 999-99-99'}
-                          fullWidth
+                        <TelephoneInput
                           name="PHONE"
                           label="Телефон"
-                          onChange={formik.handleChange}
-                          value={formik.values.PHONE}
-                          error={formik.touched.PHONE && Boolean(formik.errors.PHONE)}
-                          helperText={formik.touched.PHONE && formik.errors.PHONE}
+                          value={formik.values.PHONE ?? ''}
+                          onChange={onPhoneChange}
+                          fullWidth
+                          fixedCode
+                          strictMode
+                          helperText={getIn(formik.touched, 'PHONE') && getIn(formik.errors, 'PHONE')}
+                          error={getIn(formik.touched, 'PHONE') && Boolean(getIn(formik.errors, 'PHONE'))}
                         />
                       </Stack>
                       <TextField
@@ -403,15 +407,6 @@ export function CustomerEdit(props: CustomerEditProps) {
             <DeleteIcon />
           </IconButton>
         }
-        {/* <Button
-          className={classes.button}
-          variant="text"
-          color="error"
-          onClick={handleDeleteClick}
-          startIcon={<DeleteIcon fontSize="medium"  />}
-        >
-          Удалить
-        </Button> */}
         <Box flex={1}/>
         <Button
           className={classes.button}
