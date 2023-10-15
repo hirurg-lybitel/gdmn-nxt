@@ -3,10 +3,11 @@ import examples from 'libphonenumber-js/mobile/examples';
 import { AsYouType, getExampleNumber } from 'libphonenumber-js';
 import { COUNTRIES, DEFAULT_ISO_CODE, TelInputCountry } from '../constants/countries';
 import { getPhoneCodeOfCountry } from '../helpers/countries';
+import { TelInputInfo, TelInputReason } from '../types';
 
 type UseDigitsParams = {
   value: string;
-  onChange?: (value: string) => void;
+  onChange?: (value: string, info: TelInputInfo) => void;
   defaultCountry?: TelInputCountry;
   disableFormatting: boolean;
   onlyCountries?: TelInputCountry[];
@@ -99,6 +100,15 @@ export default function UseDigits(params: UseDigitsParams) {
 
   const [previousValue, setPreviousValue] = useState(value);
 
+  const getPhoneInfo = (reason: TelInputReason): TelInputInfo => ({
+    countryPhoneCode: asYouTypeRef.current.getCallingCode() || null,
+    countryCode: asYouTypeRef.current.getCountry() || null,
+    nationalNumber: asYouTypeRef.current.getNationalNumber(),
+    numberType: asYouTypeRef.current.getNumber()?.getType() ?? null,
+    numberValue: asYouTypeRef.current.getNumberValue() || null,
+    reason
+  });
+
   const checkIsoCodeValid = (isoCode: TelInputCountry | null) => {
     return (
       isoCode &&
@@ -112,13 +122,13 @@ export default function UseDigits(params: UseDigitsParams) {
     return asYouTypeRef.current.input(inputValue);
   };
 
-  const makeSureStartWithPlusOrEmpty = (inputValue: string): string => {
+  const checkStartWithPlusOrEmpty = (inputValue: string): string => {
     return inputValue.startsWith('+') || inputValue === ''
       ? inputValue
       : `+${inputValue}`;
   };
 
-  const makeSureStartWithPlusIsoCode = (
+  const checkStartWithPlusIsoCode = (
     inputValue: string,
     country: TelInputCountry
   ): string => {
@@ -127,11 +137,11 @@ export default function UseDigits(params: UseDigitsParams) {
 
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const inputValue = fixedCode
-      ? makeSureStartWithPlusIsoCode(
+      ? checkStartWithPlusIsoCode(
         event.target.value,
           state.isoCode as TelInputCountry
       )
-      : makeSureStartWithPlusOrEmpty(event.target.value);
+      : checkStartWithPlusOrEmpty(event.target.value);
 
     const formattedValue = typeNewValue(inputValue);
     const newCountryCode = asYouTypeRef.current.getCountry();
@@ -152,20 +162,29 @@ export default function UseDigits(params: UseDigitsParams) {
 
     previousCountryRef.current = country;
 
+    const phoneInfo = getPhoneInfo('input');
+
     if (numberValue && (!country || !checkIsoCodeValid(country))) {
-      onChange?.(numberValue);
-      setPreviousValue(numberValue);
+      const validNumberValue = phoneInfo.nationalNumber ? numberValue : '';
+      onChange?.(validNumberValue, {
+        ...getPhoneInfo('input'),
+        countryCode: null,
+        countryPhoneCode: null,
+        nationalNumber: null
+      });
+      setPreviousValue(validNumberValue);
       setState({
         isoCode: null,
-        inputValue: numberValue
+        inputValue: validNumberValue
       });
     } else {
       const valueToSet = disableFormatting ? numberValue : formattedValue;
-      onChange?.(valueToSet);
-      setPreviousValue(valueToSet);
+      const validValue = phoneInfo.nationalNumber ? valueToSet : '';
+      onChange?.(validValue, getPhoneInfo('input'));
+      setPreviousValue(validValue);
       setState({
         isoCode: country,
-        inputValue: valueToSet
+        inputValue: validValue
       });
     }
   };
@@ -176,6 +195,7 @@ export default function UseDigits(params: UseDigitsParams) {
       const newState = getInitialState({
         initialValue: value,
         defaultCountry,
+        // defaultCountry: previousCountryRef.current ?? defaultCountry,
         disableFormatting,
         fixedCode
       });
@@ -203,7 +223,7 @@ export default function UseDigits(params: UseDigitsParams) {
       setPreviousValue(inputValue);
       asYouTypeRef.current.input(inputValue);
       previousCountryRef.current = asYouTypeRef.current.getCountry() ?? null;
-      onChange?.(inputValue);
+      onChange?.(inputValue, getPhoneInfo('country'));
       setState({
         inputValue,
         isoCode
@@ -234,7 +254,10 @@ export default function UseDigits(params: UseDigitsParams) {
       newValue = typeNewValue(newValue);
     }
 
-    onChange?.(newValue);
+    onChange?.(newValue, {
+      ...getPhoneInfo('country'),
+      countryCode: newCountry
+    });
     previousCountryRef.current = newCountry;
     setPreviousValue(newValue);
     setState({

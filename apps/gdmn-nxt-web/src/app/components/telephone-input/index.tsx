@@ -3,9 +3,17 @@ import { DEFAULT_ISO_CODE, TelInputCountry } from './constants/countries';
 import UseDigits from './hooks/useDigits';
 import React, { FocusEvent, useRef, useState } from 'react';
 import FlagButton from './components/flag-button/flag-button';
-import { FlagSize } from './types';
+import { FlagSize, TelInputInfo } from './types';
 import FlagMenu from './components/flag-menu/flag-menu';
 import { getPhoneCodeOfCountry } from './helpers/countries';
+import {
+  isValidPhoneNumber,
+  validatePhoneNumberLength,
+  ValidatePhoneNumberLengthResult,
+} from 'libphonenumber-js';
+
+export * from './types';
+
 
 type BaseTextFieldProps = Omit<
   TextFieldProps,
@@ -13,7 +21,7 @@ type BaseTextFieldProps = Omit<
 >;
 
 export interface TelephoneInputProps extends BaseTextFieldProps {
-  onChange?: (value: string) => void;
+  onChange?: (value: string, info: TelInputInfo) => void;
   value?: string;
   defaultCountry?: TelInputCountry;
   onlyCountries?: TelInputCountry[];
@@ -157,6 +165,25 @@ export function TelephoneInput(props: TelephoneInputProps) {
       ) : null}
     </>
   );
+}
+
+export function validatePhoneNumber(phone: string) {
+  if (!phone || phone.length === 0) return;
+
+  const resultsMap: {[key in ValidatePhoneNumberLengthResult]: string} = {
+    INVALID_COUNTRY: 'Некорректная страна',
+    INVALID_LENGTH: 'Некорректная длина',
+    NOT_A_NUMBER: 'Допустимы только цифры',
+    TOO_LONG: 'Слишком длинный',
+    TOO_SHORT: 'Слишком короткий',
+  };
+
+  if (!isValidPhoneNumber(phone)) {
+    const result = validatePhoneNumberLength(phone);
+    return (result && resultsMap[result]) ?? 'Некорректный номер';
+  }
+
+  return;
 }
 
 export default TelephoneInput;
