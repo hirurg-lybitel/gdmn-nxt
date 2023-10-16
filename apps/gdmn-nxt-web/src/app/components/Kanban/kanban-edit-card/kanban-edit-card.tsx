@@ -16,7 +16,6 @@ import {
   FormControlLabel,
   Stepper,
   Step,
-  StepLabel,
   Tab,
   useMediaQuery,
   useTheme,
@@ -53,12 +52,11 @@ import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
-import TextFieldMasked from '../../textField-masked/textField-masked';
 import { DealDocuments } from './components/deal-documents';
 import { ClientHistory } from './components/client-history';
 import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
-
+import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -227,10 +225,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 return 'Некорректный адрес';
               })
             .max(40, 'Слишком длинный email'),
-          CONTACT_PHONE: yup.string()
-            .nullable()
-            .matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
-            .max(40, 'Слишком длинный номер'),
+          CONTACT_PHONE: yup
+            .string()
+            .test('',
+              ({ value }) => validatePhoneNumber(value) ?? '',
+              (value = '') => !validatePhoneNumber(value)),
           REQUESTNUMBER: yup.string().nullable()
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
@@ -290,6 +289,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
     if (currentIndex >= stages.length - 1) return;
     formik.setFieldValue('USR$MASTERKEY', stages[currentIndex + 1].ID);
+  };
+
+  const onPhoneChange = (value: string) => {
+    formik.setFieldValue('DEAL.CONTACT_PHONE', value);
   };
 
   const checkDoneAndTasks = useMemo(() =>
@@ -370,14 +373,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}
           />
-          <TextFieldMasked
-            mask={'+375 (99) 999-99-99'}
-            label="Телефон"
-            type="text"
-            fullWidth
+          <TelephoneInput
             name="DEAL.CONTACT_PHONE"
-            onChange={formik.handleChange}
-            value={formik.values.DEAL?.CONTACT_PHONE || ''}
+            label="Телефон"
+            value={formik.values.DEAL?.CONTACT_PHONE ?? ''}
+            onChange={onPhoneChange}
+            fullWidth
+            fixedCode
+            strictMode
             error={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && getIn(formik.errors, 'DEAL.CONTACT_PHONE')}
           />

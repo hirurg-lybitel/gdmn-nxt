@@ -9437,6 +9437,7 @@ __metadata:
     jsonwebtoken: ^9.0.2
     leaflet: ^1.8.0
     leaflet.markercluster: ^1.5.3
+    libphonenumber-js: ^1.10.47
     lusca: ^1.7.0
     marked: ^5.1.1
     memorystore: ^1.6.6
@@ -11877,6 +11878,13 @@ __metadata:
     prelude-ls: ^1.2.1
     type-check: ~0.4.0
   checksum: 12c5021c859bd0f5248561bf139121f0358285ec545ebf48bb3d346820d5c61a4309535c7f387ed7d84361cf821e124ce346c6b7cef8ee09a67c1473b46d0fc4
+  languageName: node
+  linkType: hard
+
+"libphonenumber-js@npm:^1.10.47":
+  version: 1.10.47
+  resolution: "libphonenumber-js@npm:1.10.47"
+  checksum: 04fd0a4e57fdcb5c3a566fb26ded46c36e17953559c4a34d2f2b42299228e424109a56aa9588f4d7020bf3dd500cf5010e622734eeeda45e478e5d36d31b113d
   languageName: node
   linkType: hard
 
