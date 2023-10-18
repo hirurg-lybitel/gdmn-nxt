@@ -3,8 +3,7 @@ import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { genId } from '../utils/genId';
+import { acquireReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_CRM_UPDATES';
 

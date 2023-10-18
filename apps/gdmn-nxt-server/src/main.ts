@@ -33,7 +33,6 @@ import { Notifications } from './app/routes/socket/notifications';
 import { StreamingUpdate } from './app/routes/socket/streamingUpdate';
 import { config } from '@gdmn-nxt/config';
 import { checkPermissions, setPermissonsCache } from './app/middlewares/permissions';
-import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
 import path from 'path';
 import flash from 'connect-flash';
@@ -41,6 +40,8 @@ import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
 import { bodySize } from './app/constants/params';
+import { cacheManager } from '@gdmn-nxt/cache-manager';
+import { cachedRequets } from './app/utils/cached requests';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -70,8 +71,13 @@ interface ICustomerUser extends IBaseUser {
   expireOn?: number;
 };
 
-
 type IUser = IGedeminUser | ICustomerUser;
+
+/** Local cache initialization */
+cacheManager.init({ useClones: false });
+
+/** Cache all necessary data */
+cachedRequets.init(cacheManager);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -130,7 +136,7 @@ passport.use(new Strategy({
         if (res.result === 'SUCCESS') {
           console.log('valid gedemin user');
 
-          const userPermissions: Permissions = nodeCache.get('permissions')?.[res.userProfile.id];
+          const userPermissions: Permissions = cacheManager.getKey('permissions')?.[res.userProfile.id];
 
           return done(null, {
             userName,
