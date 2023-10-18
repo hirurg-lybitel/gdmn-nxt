@@ -33,7 +33,7 @@ async function init(cacheManager: CacheManager) {
 
     const queriesResults = await Promise.all(queries.map(execQuery));
 
-    console.timeLog(timeLabel, 'Fetch ended');
+    console.timeLog(timeLabel, 'fetch ended');
 
     queriesResults.forEach(({ name, data }) => usingCacheManager.setKey(name, data));
   } catch (error) {

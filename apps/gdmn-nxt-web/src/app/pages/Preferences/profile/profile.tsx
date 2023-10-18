@@ -454,13 +454,13 @@ export function Profile(props: ProfileProps) {
                           arrow
                           title={<List disablePadding dense>
                             <ListItem disableGutters alignItems="flex-start">
-                              <ListItemIcon style={{ minWidth: 15, marginTop: 0 }}>
+                              <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
                                 1.
                               </ListItemIcon >
                               Убедитесь, что на вашем компьютере включены уведомления от текущего браузера
                             </ListItem>
                             <ListItem disableGutters alignItems="flex-start">
-                              <ListItemIcon style={{ minWidth: 15, marginTop: 0 }}>
+                              <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
                                 2.
                               </ListItemIcon >
                               Проверьте, что в вашем браузере включены уведомления, нажав кнопку Проверить
