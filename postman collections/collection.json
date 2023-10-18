@@ -52,7 +52,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/contacts?pageNo=4&pageSize=10",
+							"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -62,7 +62,7 @@
 							"query": [
 								{
 									"key": "pageNo",
-									"value": "4"
+									"value": "0"
 								},
 								{
 									"key": "pageSize",
@@ -71,7 +71,7 @@
 								{
 									"key": "NAME",
 									"value": "%D0%9E%D0%90%D0%9E%20%22558%20%D0%90%D0%A0%D0%97%22",
-									"description": "Наименование",
+									"description": "Наименование или УНП",
 									"type": "text",
 									"disabled": true
 								},
@@ -104,13 +104,6 @@
 									"key": "BUSINESSPROCESSES",
 									"value": "324532615,335465231",
 									"description": "Бизнес-процессы",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "customerId",
-									"value": "363263889",
-									"description": "Id клиента в системе",
 									"type": "text",
 									"disabled": true
 								},
