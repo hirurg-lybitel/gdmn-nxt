@@ -52,7 +52,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=100",
+							"raw": "{{baseUrl}}/contacts?pageNo=4&pageSize=10",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -62,15 +62,70 @@
 							"query": [
 								{
 									"key": "pageNo",
-									"value": "0"
+									"value": "4"
 								},
 								{
 									"key": "pageSize",
-									"value": "100"
+									"value": "10"
+								},
+								{
+									"key": "NAME",
+									"value": "%D0%9E%D0%90%D0%9E%20%22558%20%D0%90%D0%A0%D0%97%22",
+									"description": "Наименование",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "CONTRACTS",
+									"value": "151483365",
+									"description": "Заказы",
+									"disabled": true
+								},
+								{
+									"key": "WORKTYPES",
+									"value": "349661631",
+									"description": "Виды работ",
+									"disabled": true
+								},
+								{
+									"key": "DEPARTMENTS",
+									"value": "147016918",
+									"description": "Отделы",
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "LABELS",
-									"value": "358013505,358013506,358013507",
+									"value": "358013505,358013507",
+									"description": "Метки",
+									"disabled": true
+								},
+								{
+									"key": "BUSINESSPROCESSES",
+									"value": "324532615,335465231",
+									"description": "Бизнес-процессы",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "customerId",
+									"value": "363263889",
+									"description": "Id клиента в системе",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "field",
+									"value": "NAME",
+									"description": "Поле для сортировки",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "DESC",
+									"description": "Метод сортировки asc | desc",
+									"type": "text",
 									"disabled": true
 								}
 							]
