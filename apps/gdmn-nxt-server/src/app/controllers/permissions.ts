@@ -2,8 +2,7 @@ import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
 import { Request, RequestHandler } from 'express';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { genId } from '../utils/genId';
+import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';

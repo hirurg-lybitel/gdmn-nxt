@@ -1,11 +1,11 @@
 import { RequestHandler } from 'express';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { nodeCache } from '../utils/cache';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { ActionName, Permissions } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
 import { config } from '@gdmn-nxt/config';
 import { ERROR_MESSAGES } from '../constants/messages';
+import { cacheManager } from '@gdmn-nxt/cache-manager';
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
   const apiAccessKey = req.headers['x-api-key'] as string;
@@ -104,7 +104,7 @@ export const setPermissonsCache = async () => {
       };
     });
 
-    nodeCache.set('permissions', permissionsMap);
+    cacheManager.setKey('permissions', permissionsMap);
     return true;
   } catch (err) {
     console.error('setPermissonsCache', err.message);

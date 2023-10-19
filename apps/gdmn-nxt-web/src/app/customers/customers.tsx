@@ -141,7 +141,7 @@ export function Customers(props: CustomersProps) {
     [customersResponse?.data]
   );
   const customersCount: number | undefined = useMemo(
-    () => customersResponse?.count || 0,
+    () => customersResponse?.count ?? 0,
     [customersResponse?.count]
   );
   // const { data: customersData } = customersResponse;
@@ -663,6 +663,12 @@ export function Customers(props: CustomersProps) {
           >
             <Box flex={1}>
               <StyledGrid
+                sx={{
+                  '& .MuiDataGrid-row, .MuiDataGrid-cell': {
+                    minHeight: '60px !important',
+                    maxHeight: 'fit-content !important'
+                  }
+                }}
                 onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}
@@ -701,16 +707,6 @@ export function Customers(props: CustomersProps) {
                 onSelectionModelChange={(ids) =>
                   setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
                 }
-                getRowHeight={(params) => {
-                  const customer: ICustomer = params.model as ICustomer;
-                  const labels: ILabel[] | undefined = customer.LABELS;
-
-                  if (labels?.length && labels.length > 4) {
-                    return 30 * Math.ceil(labels.length / 2);
-                  }
-
-                  return 60;
-                }}
               />
             </Box>
             <Box>{memoFilter}</Box>

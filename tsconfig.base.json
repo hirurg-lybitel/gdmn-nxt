@@ -16,6 +16,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@gdmn-nxt/assets": ["apps/gdmn-nxt-server/src/assets/*"],
+      "@gdmn-nxt/cache-manager": ["libs/cache-manager/src/index.ts"],
       "@gdmn-nxt/components/*": ["apps/gdmn-nxt-web/src/app/components/*"],
       "@gdmn-nxt/config": ["libs/config/src/index.ts"],
       "@gdmn-nxt/db-connection": ["libs/db-connection/src/index.ts"],

@@ -23,10 +23,11 @@ export function InitData() {
   const { } = useGetDepartmentsQuery(undefined, { skip });
   const { } = useGetCustomerContractsQuery(undefined, { skip });
   const { } = useGetBusinessProcessesQuery(undefined, { skip });
-  const { } = useGetCustomersQuery({
-    pagination: {
-      pageNo: 0,
-      pageSize: 10
-    }
-  }, { skip });
+  const { } = useGetCustomersQuery(undefined, { skip });
+  // const { } = useGetCustomersQuery({
+  //   pagination: {
+  //     pageNo: 0,
+  //     pageSize: 10
+  //   }
+  // }, { skip });
 };

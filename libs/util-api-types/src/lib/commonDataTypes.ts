@@ -23,7 +23,7 @@ export interface IDataRecord {
 };
 
 export interface IResults {
-  [queryName: string]: IDataRecord[];
+  [queryName: string]: IDataRecord[] | number | string;
 };
 
 export interface IRequestResult<R = IResults> {

@@ -2,9 +2,9 @@ import { IPhone, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
-import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { genId } from '../utils/genId';
+import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { sqlQuery } from '../utils/sqlQuery';
+import { cachedRequets } from '../utils/cached requests';
 
 const getByCutomerId: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
@@ -159,6 +159,8 @@ const upsert: RequestHandler = async (req, res) => {
 
   if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
+  const phones: IPhone[] = req.body['PHONES'];
+
   try {
     const isInsertMode = id ? false : true;
 
@@ -296,8 +298,6 @@ const upsert: RequestHandler = async (req, res) => {
 
 
     /**  Upsert phones */
-    const phones: IPhone[] = req.body['PHONES'];
-
     if (phones) {
       sql.clear();
       sql.SQLtext = `
@@ -341,6 +341,11 @@ const upsert: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
+
+    if (res.statusCode === 200) {
+      if (phones) cachedRequets.cacheRequest('phones');
+      cachedRequets.cacheRequest('customerPersons');
+    }
   };
 };
 
@@ -377,6 +382,9 @@ const remove: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction();
+    if (res.statusCode === 200) {
+      cachedRequets.cacheRequest('customerPersons');
+    }
   };
 };
 
