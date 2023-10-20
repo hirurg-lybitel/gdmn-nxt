@@ -127,7 +127,6 @@ passport.use(new Strategy({
     const { employeeMode } = req.body;
     try {
       if (employeeMode) {
-        // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
         const res = await checkGedeminUser(userName, password);
 
         if (res.result === 'UNKNOWN_USER') {
@@ -138,7 +137,8 @@ passport.use(new Strategy({
         if (res.result === 'SUCCESS') {
           console.log('valid gedemin user');
 
-          const userPermissions: Permissions = cacheManager.getKey('permissions')?.[res.userProfile.id];
+          const permissions = await cacheManager.getKey('permissions') ?? {};
+          const userPermissions: Permissions = permissions?.[res.userProfile.id];
 
           return done(null, {
             userName,
