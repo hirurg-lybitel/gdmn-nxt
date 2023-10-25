@@ -148,7 +148,7 @@ passport.use(new Strategy({
           });
         } else {
           console.log('Invalid gedemin user', { userName, password });
-          return done(null, false);
+          return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
         }
       } else {
         const account = await getAccount(req.sessionID, userName);
