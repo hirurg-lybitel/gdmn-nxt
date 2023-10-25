@@ -346,9 +346,6 @@ const upsert: RequestHandler = async (req, res) => {
 
     const cardRecord: IKanbanCard = await fetchAsSingletonObject(sql, paramsValues);
 
-    /** Сохранение истории изменений */
-    changes.forEach(c => addHistory(req.sessionID, c));
-
     sql = `
       EXECUTE BLOCK(
         cardId INTEGER = ?,
@@ -383,12 +380,16 @@ const upsert: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
+    await releaseTransaction();
+
+    /** Сохранение истории изменений */
+    changes.forEach(c => addHistory(req.sessionID, c));
+
     return res.status(200).json(result);
   } catch (error) {
+    await releaseTransaction(false);
     return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseTransaction();
-  };
+  } finally {};
 };
 
 const remove: RequestHandler = async(req, res) => {
