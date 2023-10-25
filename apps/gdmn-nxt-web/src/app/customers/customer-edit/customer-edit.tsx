@@ -289,7 +289,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                         limitTags={2}
                         options={businessProcesses}
                         loading={businessProcessesFetching}
-                        getOptionLabel={option => option.NAME}
+                        getOptionLabel={option => option.NAME ?? ''}
                         value={
                           businessProcesses?.filter(bp => formik.values.BUSINESSPROCESSES?.find(el => el.ID === bp.ID))
                         }

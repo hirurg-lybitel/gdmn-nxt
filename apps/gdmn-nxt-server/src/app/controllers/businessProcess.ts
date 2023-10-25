@@ -8,7 +8,7 @@ const get: RequestHandler = async (req, res) => {
 
   try {
     const sqlResult = await fetchAsObject(`
-      SELECT ID, USR$NAME AS NAME
+      SELECT ID, COALESCE(USR$NAME, '') AS NAME
       FROM USR$BG_BISNESS_PROC`);
 
     const result: IRequestResult = {
