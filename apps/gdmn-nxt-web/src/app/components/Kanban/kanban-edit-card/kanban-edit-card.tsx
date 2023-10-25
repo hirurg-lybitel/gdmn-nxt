@@ -227,9 +227,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(40, 'Слишком длинный email'),
           CONTACT_PHONE: yup
             .string()
+            .nullable()
             .test('',
               ({ value }) => validatePhoneNumber(value) ?? '',
-              (value = '') => !validatePhoneNumber(value)),
+              (value = '') => !validatePhoneNumber(value ?? '')),
           REQUESTNUMBER: yup.string().nullable()
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
