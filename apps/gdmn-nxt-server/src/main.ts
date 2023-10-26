@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
@@ -123,53 +122,53 @@ passport.use(new Strategy({
   passwordField: 'password',
   passReqToCallback: true
 },
-  async (req: Request, userName: string, password: string, done) => {
-    const { employeeMode } = req.body;
-    try {
-      if (employeeMode) {
-        const res = await checkGedeminUser(userName, password);
+async (req: Request, userName: string, password: string, done) => {
+  const { employeeMode } = req.body;
+  try {
+    if (employeeMode) {
+      const res = await checkGedeminUser(userName, password);
 
-        if (res.result === 'UNKNOWN_USER') {
-          console.log('Unknown gedemin user', { userName, password });
-          return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
-        }
-
-        if (res.result === 'SUCCESS') {
-          console.log('valid gedemin user');
-
-          const permissions = await cacheManager.getKey('permissions') ?? {};
-          const userPermissions: Permissions = permissions?.[res.userProfile.id];
-
-          return done(null, {
-            userName,
-            gedeminUser: true,
-            id: res.userProfile.id,
-            permissions: userPermissions
-          });
-        } else {
-          console.log('Invalid gedemin user', { userName, password });
-          return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
-        }
-      } else {
-        const account = await getAccount(req.sessionID, userName);
-
-        if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
-          return done(null, false);
-        }
-
-        if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
-          console.log('valid user');
-          return done(null, { userName });
-        } else {
-          console.log('Invalid user', { userName, password });
-          return done(null, false);
-        }
+      if (res.result === 'UNKNOWN_USER') {
+        console.log('Unknown gedemin user', { userName, password });
+        return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
       }
-    } catch (err) {
-      console.error('Passport error:', err);
-      done(err);
+
+      if (res.result === 'SUCCESS') {
+        console.log('valid gedemin user');
+
+        const permissions = await cacheManager.getKey('permissions') ?? {};
+        const userPermissions: Permissions = permissions?.[res.userProfile.id];
+
+        return done(null, {
+          userName,
+          gedeminUser: true,
+          id: res.userProfile.id,
+          permissions: userPermissions
+        });
+      } else {
+        console.log('Invalid gedemin user', { userName, password });
+        return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
+      }
+    } else {
+      const account = await getAccount(req.sessionID, userName);
+
+      if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
+        return done(null, false);
+      }
+
+      if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
+        console.log('valid user');
+        return done(null, { userName });
+      } else {
+        console.log('Invalid user', { userName, password });
+        return done(null, false);
+      }
     }
+  } catch (err) {
+    console.error('Passport error:', err);
+    done(err);
   }
+}
 ));
 
 passport.serializeUser((user: IUser, done) => {
