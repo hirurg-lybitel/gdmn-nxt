@@ -36,6 +36,7 @@ import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import EmojiPicker from 'emoji-picker-react';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -84,7 +85,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
-  padding: '2.5px 0px'
+  padding: '2.5px 0px',
 };
 
 /* eslint-disable-next-line */
@@ -92,7 +93,6 @@ export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
-
   const userPermissions = usePermissions();
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
@@ -225,6 +225,7 @@ export function Customers(props: CustomersProps) {
       minWidth: 200,
       renderCell: ({ value, row }) => {
         const labels = (row as ICustomer)?.LABELS;
+
         return (
           <Stack spacing={1}>
             <div>{value}</div>
@@ -235,24 +236,38 @@ export function Customers(props: CustomersProps) {
                   padding: '0px',
                   width: 'fit-content',
                   display: 'flex',
+
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
               >
-                {labels.map((label) => (
-                  <ListItemButton
-                    key={label.ID}
-                    onClick={handleLabelClick(label)}
-                    style={labelStyle}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  >
-                    <LabelMarker label={label} />
-                  </ListItemButton>
-                ))}
+                {labels.map((label) => {
+                  return (
+                    <div>
+                      <Tooltip
+                        placement='top'
+                        title={label.USR$NAME}
+                      >
+                        <ListItemButton
+                          key={label.ID}
+                          onClick={handleLabelClick(label)}
+                          style={labelStyle}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'transparent'
+                            }
+                          }}
+                        >
+                          <LabelMarker label={label?.USR$NAME.length > 10
+                          ? {...label, USR$NAME: label.USR$NAME.slice(0,10) + '...'}
+                          : label} />
+                        </ListItemButton>
+                      </Tooltip>
+                    </div>
+
+                  )
+                }
+                )}
               </List>
               : <></>}
 
@@ -521,7 +536,7 @@ export function Customers(props: CustomersProps) {
             })}`
           })
       }}
-    >
+    ><EmojiPicker />
       <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>
