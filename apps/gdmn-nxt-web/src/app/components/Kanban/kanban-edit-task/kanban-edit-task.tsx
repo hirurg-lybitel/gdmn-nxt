@@ -47,6 +47,14 @@ const useStyles = makeStyles((theme) => ({
   button: {
     width: '120px',
   },
+  field: {
+    '& .MuiInputBase-input':{
+      padding:'8.5px'
+    },
+    '& .MuiFormLabel-root':{
+      top:'-8.5px'
+    },
+  }
 }));
 
 // const filterOptions = createFilterOptions({
@@ -290,6 +298,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     renderInput={(params) => (
                       <TextField
                         {...params}
+                        size='small'
                         label="Тип задачи"
                         placeholder="Выберите тип задачи"
                       />
@@ -298,6 +307,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     loadingText="Загрузка данных..."
                   />
                   <TextField
+                    size='small'
+                    style={{marginTop:'15px'}}
                     label="Описание"
                     type="text"
                     name="USR$NAME"
@@ -311,7 +322,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                   />
                   <Autocomplete
                     options={employees || []}
-
+                    style={{marginTop:'15px'}}
                     readOnly
                     value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
                     onChange={(e, value) => {
@@ -329,6 +340,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     renderInput={(params) => (
                       <TextField
                         {...params}
+                        size='small'
                         label="Постановщик"
                         placeholder="Выберите постановщика"
                         required
@@ -339,6 +351,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                   />
                   <Autocomplete
                     options={employees || []}
+                    style={{marginTop:'15px'}}
                     filterOptions={filterOptions(50, 'NAME')}
                     value={employees?.find(el => el.ID === formik.values.PERFORMER?.ID) || null}
                     onChange={(e, value) => {
@@ -356,6 +369,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     renderInput={(params) => (
                       <TextField
                         {...params}
+                        size='small'
                         label="Исполнитель"
                         placeholder="Выберите исполнителя"
                       />
@@ -363,7 +377,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     loading={employeesIsFetching}
                     loadingText="Загрузка данных..."
                   />
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction="row" spacing={1} style={{marginTop:'15px'}}>
                     <Autocomplete
                       options={cards}
                       fullWidth
@@ -384,6 +398,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       renderInput={(params) => (
                         <TextField
                           {...params}
+                          size='small'
                           label="Сделка"
                           placeholder="Выберите сделку"
                           // required
@@ -398,9 +413,10 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       </IconButton>
                     }
                   </Stack>
-                  <Divider textAlign="left">Срок выполнения</Divider>
-                  <Stack direction="row" spacing={3}>
+                  <Divider textAlign="left" style={{marginTop:'5px'}}>Срок выполнения</Divider>
+                  <Stack direction="row" spacing={3} style={{marginTop:'15px'}}>
                     <DesktopDatePicker
+                      className={classes.field}
                       label="Дата"
                       value={formik.values.USR$DEADLINE || null}
                       mask="__.__.____"
@@ -411,6 +427,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       renderInput={(params) => <TextField {...params} />}
                     />
                     <TimePicker
+                      className={classes.field}
                       label="Время"
                       ampm={false}
                       value={formik.values.USR$DEADLINE || null}
@@ -424,9 +441,10 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       renderInput={(params) => <TextField {...params} />}
                     />
                   </Stack>
-                  <Divider textAlign="left">Дата выполнения</Divider>
-                  <Stack direction="row" spacing={3}>
+                  {/* <Divider textAlign="left" style={{marginTop:'5px'}}>Дата выполнения</Divider>
+                  <Stack direction="row" spacing={3} style={{marginTop:'5px'}}>
                     <DesktopDatePicker
+                      className={classes.field}
                       label="Дата"
                       readOnly
                       value={formik.values.USR$DATECLOSE || null}
@@ -441,18 +459,20 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       renderInput={(params) => <TextField {...params} />}
                     />
                     <TimePicker
+                      className={classes.field}
                       label="Время"
                       readOnly
                       value={formik.values.USR$DATECLOSE || null}
                       onChange={formik.handleChange}
                       renderInput={(params) => <TextField {...params} />}
                     />
-                  </Stack>
-                  <Divider />
-                  <Stack direction="row" spacing={3}>
+                  </Stack> */}
+                  <Divider style={{marginTop:'15px'}} />
+                  <Stack direction="row" spacing={3} style={{marginTop:'5px'}}>
                     <FormControlLabel
                       control={
                         <Checkbox
+
                           name="USR$INPROGRESS"
                           checked={!!formik.values.USR$INPROGRESS}
                           onChange={formik.handleChange}
