@@ -8,7 +8,7 @@ import { CircularIndeterminate } from '../../../components/helpers/circular-inde
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton, Checkbox, FormControlLabel } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
@@ -117,6 +117,12 @@ export function Deals(props: DealsProps) {
 
   const componentIsFetching = isLoading || Object.keys(filtersStorage.filterData.deals || {}).length === 0;
 
+  const [archive, setArchive] = useState<boolean>(false);
+
+  const handleChangeArchive = (e:React.ChangeEvent<HTMLInputElement>) => {
+    setArchive(e.target.checked);
+  }
+
   const Header = useMemo(() => {
     return (
       <>
@@ -170,6 +176,16 @@ export function Deals(props: DealsProps) {
               />
             )}
           />
+          <FormControlLabel
+          style={{paddingLeft: '15px'}}
+            control={
+              <Checkbox
+                checked={archive}
+                onChange={handleChangeArchive}
+              />
+            }
+            label="Архив"
+          />
           <Box flex={1} />
           <IconButton
             onClick={refreshBoard}
@@ -203,15 +219,15 @@ export function Deals(props: DealsProps) {
       </>
     );
   }
-  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching]);
+  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching, archive]);
 
-  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
+  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} archive={archive} />, [columns, componentIsFetching, archive]);
 
   const KanbanListMemo = useMemo(() =>
     <Box className={styles.kanbanListContainer}>
-      <KanbanList columns={columns} />
+      <KanbanList columns={columns} archive={archive} />
     </Box>
-  , [columns]);
+  , [columns,archive]);
 
   return (
     <Stack

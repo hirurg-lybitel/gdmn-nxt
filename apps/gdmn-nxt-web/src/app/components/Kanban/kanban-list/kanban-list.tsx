@@ -13,15 +13,19 @@ import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
+import { getArchive } from '../../../pages/Managment/getArchive';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
   gridColumns?: GridColumns;
   disableAddCard?: boolean;
+  archive?:boolean;
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], gridColumns, disableAddCard = false } = props;
+  const { columns:sourceColumns = [], gridColumns, disableAddCard = false, archive } = props;
+
+  const columns = archive ? getArchive(sourceColumns) : sourceColumns
 
   const defaultGridColumns: GridColumns = [
     {

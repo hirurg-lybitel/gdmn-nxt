@@ -28,20 +28,26 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { IChanges } from '../../../pages/Managment/deals/deals';
 import { useMemo } from 'react';
+import { getArchive } from '../../../pages/Managment/getArchive';
 
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
   isLoading: boolean,
+  archive?:boolean
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {
-  const { columns: sourceColumns = [], isLoading } = props;
+  const { columns: sourceColumns = [], isLoading, archive } = props;
 
   const [columns, setColumns] = useState(sourceColumns);
 
   useLayoutEffect(() => {
+    if(archive) {
+      setColumns(getArchive(sourceColumns))
+      return
+    }
     setColumns(sourceColumns);
-  }, [sourceColumns]);
+  }, [sourceColumns,archive]);
 
   const [updateColumn] = useUpdateColumnMutation();
   const [addColumn] = useAddColumnMutation();
@@ -139,7 +145,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
     // console.log('add_new_tasks_2', cachedCard?.TASKS?.length, addingCard.current?.TASKS?.length);
 
     addingCard.current?.TASKS?.forEach(task => cardHandlers.handleAddTask({ ...task, USR$CARDKEY: cardId }));
-  }, [addCardSuccess, addedCard]);
+  }, [addCardSuccess, addedCard,columns]);
 
   useEffect(() => {
     if (updateCardIsError || reorderCardIsError) {
