@@ -42,7 +42,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const [upsertCardStatus] = useSetCardStatusMutation();
 
   const cardHandlers = {
-    handleSubmit: (newCard: IKanbanCard, deleting: boolean) => {
+    handleSubmit: (newCard: IKanbanCard, deleting: boolean, notClose:boolean) => {
       if (deleting) {
         onDelete(newCard);
         setEditCard(false);
@@ -52,7 +52,7 @@ export function KanbanCard(props: KanbanCardProps) {
       if (newCard.ID && !deleting) {
         onEdit(newCard);
         copyCard && setCopyCard(false);
-        setEditCard(false);
+        !notClose && setEditCard(false);
         clearLastCard && clearLastCard();
 
         const deletedTasks = card.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
