@@ -36,7 +36,6 @@ import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
-import EmojiPicker from 'emoji-picker-react';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -536,7 +535,7 @@ export function Customers(props: CustomersProps) {
             })}`
           })
       }}
-    ><EmojiPicker />
+    >
       <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>

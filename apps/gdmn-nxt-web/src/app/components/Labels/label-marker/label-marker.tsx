@@ -1,9 +1,11 @@
 import { ILabel } from '@gsbelarus/util-api-types';
 import styles from './label-marker.module.less';
+import { IconByName } from '@gsbelarus/ui-common-dialogs';
 
 /* eslint-disable-next-line */
 export interface LabelMarkerProps {
   label: ILabel;
+  icon?:string
 }
 
 function hexToRGB(h: any) {
@@ -57,8 +59,8 @@ function RGBToHSL(r: number, g: number, b: number) {
 }
 
 export function LabelMarker(props: LabelMarkerProps) {
-  const { USR$COLOR: color, USR$NAME: name } = props.label;
-
+  const { USR$COLOR: color, USR$NAME: name, USR$ICON } = props.label;
+  const { icon } = props
   const rgb = hexToRGB(color);
   const hsl = RGBToHSL(rgb.r, rgb.g, rgb.b);
   const labelH = hsl.h;
@@ -75,11 +77,21 @@ export function LabelMarker(props: LabelMarkerProps) {
       style={{
         color: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`,
         backgroundColor: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${backgroundAlpha})`,
-        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word'
+        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word',
+        display:'flex',
+        alignItems:'center',
+        padding: '2.5px 5px'
         // width: 'min-content'
       }}
     >
-      {name || 'Пример'}
+      {(icon || USR$ICON) &&
+        <div style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
+          <IconByName name={icon || USR$ICON}/>
+        </div>
+      }
+      <span style={{margin:'0 5px 0 5px'}}>
+        {name || 'Пример'}
+      </span>
     </div>
   );
 }

@@ -77,7 +77,8 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     ID: label?.ID || 0,
     USR$NAME: label?.USR$NAME || '',
     USR$DESCRIPTION: label?.USR$DESCRIPTION || '',
-    USR$COLOR: label?.USR$COLOR || ''
+    USR$COLOR: label?.USR$COLOR || '',
+    USR$ICON:label?.USR$ICON || ''
   };
 
   const formik = useFormik<ILabel>({
@@ -126,6 +127,10 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const [ref] = useOutsideClick(selectColor, () => setSelectColor(false));
 
+  const changeIcon = (iconName:string) => {
+    formik.setFieldValue('USR$ICON',iconName)
+  }
+
   return (
     <>
       <CustomizedDialog
@@ -139,10 +144,10 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
               <Stack direction="column" spacing={3}>
-                <LabelMarker label={formik.values} />
+                <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
                 <div style={{width:'100%',display:'flex', alignItems:'center'}}>
                   <div style={{marginRight:'10px'}}>
-                    <IconSelect />
+                    <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
                   </div>
                   <TextField
                     style={{width:'100%'}}

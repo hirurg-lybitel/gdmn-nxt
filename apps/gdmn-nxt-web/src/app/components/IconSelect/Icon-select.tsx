@@ -136,12 +136,14 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export interface IconSelectProps {
+  icon:string,
+  setIcon:(arg1:string) => void
 }
 
 export function IconSelect(props: IconSelectProps) {
   const classes = useStyles();
 
-  const [icon,setIcon] = useState<string>('')
+  const {icon,setIcon} = props
 
   const [openDialog,setOpenDialog] = useState<boolean>(false)
 
