@@ -27,7 +27,7 @@ import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { useAddLabelMutation, useGetLabelsQuery } from '../../features/labels';
+import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -39,6 +39,8 @@ import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/teleph
 import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import LabelListItemEdit from '@gdmn-nxt/components/Labels/label-list-item-edit/label-list-item-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import { IconByName } from '@gsbelarus/ui-common-dialogs';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -92,7 +94,7 @@ export function CustomerEdit(props: CustomerEditProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   // const { data: groups, isFetching: groupFetching } = useGetGroupsQuery();
-  const { data: labels, isFetching: labelsFetching } = useGetLabelsQuery();
+  const { data: labels, isFetching: labelsFetching, isLoading: labelsLoading } = useGetLabelsQuery();
   const { data: businessProcesses = [], isFetching: businessProcessesFetching } = useGetBusinessProcessesQuery();
 
   const classes = useStyles();
@@ -197,34 +199,38 @@ export function CustomerEdit(props: CustomerEditProps) {
     />
   , [confirmOpen, deleting]);
 
-  const fakeLabel:ILabel = {
-    ID:-1,
-    USR$COLOR:'',
-    USR$NAME:'',
-    USR$DESCRIPTION:'',
-    USR$ICON:''
-  }
-
   const [labelEdit,setLabelEdit] =useState<boolean>(false)
 
-  const handleOpenLabelEdit = () => {
+  const [addLabel, { isLoading: addIsLoading, data:newLabel }] = useAddLabelMutation();
+  const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
+
+  const isFetching = editIsLoading || addIsLoading || labelsFetching || labelsLoading;
+
+  const [labelValue,setLabelValue] = useState<ILabel | undefined>(undefined)
+
+  const handleOpenLabelAdd = () => {
+    setLabelValue(undefined)
     setLabelEdit(true)
   }
 
-  const handleCloseLabelEdit = () => {
+  const handleOpenLabelEdit = (label:ILabel) => () => {
+    setLabelValue(label)
+    setLabelEdit(true)
+  }
+
+  const handleCloseLabel = () => {
     setLabelEdit(false)
   }
 
   const memoPaperFooter = useMemo(() =>
     <div>
       <Button
+        disabled={isFetching}
         startIcon={<AddCircleRoundedIcon />}
-        onClick={handleOpenLabelEdit}
+        onClick={handleOpenLabelAdd}
       >Создать метку</Button>
     </div>,
   []);
-
-  const [addLabel, { isLoading: addIsLoading, data:newLabel }] = useAddLabelMutation();
 
   useEffect(()=>{
     if(!newLabel) return
@@ -235,16 +241,21 @@ export function CustomerEdit(props: CustomerEditProps) {
   },[newLabel])
 
   const handleOnSubmit = (label: ILabel) => {
-    handleCloseLabelEdit()
-
+    if(label.ID !== 0){
+      handleCloseLabel()
+      updateLabel(label)
+      return
+    }
+    handleCloseLabel()
     addLabel(label);
   };
 
   const labelEditComponent = useMemo(() =>
   <LabelListItemEdit
     open={labelEdit}
+    label={labelValue}
     onSubmit={handleOnSubmit}
-    onCancelClick={handleCloseLabelEdit}
+    onCancelClick={handleCloseLabel}
   />
   ,[labelEdit])
 
@@ -392,15 +403,29 @@ export function CustomerEdit(props: CustomerEditProps) {
                         getOptionLabel={opt => opt.USR$NAME}
                         renderOption={(props, option, { selected }) => (
                           <li {...props} key={option.ID}>
-                            <Checkbox
-                              icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                              checkedIcon={<CheckBoxIcon fontSize="small" />}
-                              style={{ marginRight: 8 }}
-                              checked={selected}
-                            />
-                            <Stack direction="column">
-                              <Stack direction="row">
-                                <Box
+                            <div style={{width:'100%', display:'flex',alignItems:'center'}}>
+                              <Checkbox
+                                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                                checkedIcon={<CheckBoxIcon fontSize="small" />}
+                                style={{ marginRight: 8 }}
+                                checked={selected}
+                              />
+                              <Stack direction="column">
+                              <Stack style={{display:'flex',alignItems:'center'}} direction="row">
+                                <div style={{
+                                    backgroundColor: option.USR$COLOR,
+                                    borderRadius:'100%',
+                                    height:'30px',
+                                    width:'30px',
+                                    minWidth:'30px',
+                                    display:'flex',
+                                    justifyContent:'center',
+                                    alignItems:'center',
+                                    marginRight:'5px'
+                                  }}>
+                                  <IconByName fontSize='small' name={option.USR$ICON}/>
+                                </div>
+                                {/* <Box
                                   component="span"
                                   sx={{
                                     width: 14,
@@ -411,13 +436,19 @@ export function CustomerEdit(props: CustomerEditProps) {
                                     alignSelf: 'center',
                                   }}
                                   style={{ backgroundColor: option.USR$COLOR }}
-                                />
+                                /> */}
                                 <Box>
                                   {option.USR$NAME}
                                 </Box>
                               </Stack>
                               <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
-                            </Stack>
+                              </Stack>
+                            </div>
+                            <ItemButtonEdit
+                             disabled={isFetching}
+                              color="primary"
+                              onClick={handleOpenLabelEdit(option)}
+                            />
                           </li>
                         )}
                         renderInput={(params) => (
