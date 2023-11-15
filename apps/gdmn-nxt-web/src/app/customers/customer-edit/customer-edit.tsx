@@ -27,7 +27,7 @@ import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { useGetLabelsQuery } from '../../features/labels';
+import { useAddLabelMutation, useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -36,6 +36,9 @@ import { useGetBusinessProcessesQuery } from '../../features/business-processes'
 import ContactPersonList from '../contact-person-list/contact-person-list';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
+import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import LabelListItemEdit from '@gdmn-nxt/components/Labels/label-list-item-edit/label-list-item-edit';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -194,11 +197,63 @@ export function CustomerEdit(props: CustomerEditProps) {
     />
   , [confirmOpen, deleting]);
 
+  const fakeLabel:ILabel = {
+    ID:-1,
+    USR$COLOR:'',
+    USR$NAME:'',
+    USR$DESCRIPTION:'',
+    USR$ICON:''
+  }
+
+  const [labelEdit,setLabelEdit] =useState<boolean>(false)
+
+  const handleOpenLabelEdit = () => {
+    setLabelEdit(true)
+  }
+
+  const handleCloseLabelEdit = () => {
+    setLabelEdit(false)
+  }
+
+  const memoPaperFooter = useMemo(() =>
+    <div>
+      <Button
+        startIcon={<AddCircleRoundedIcon />}
+        onClick={handleOpenLabelEdit}
+      >Создать метку</Button>
+    </div>,
+  []);
+
+  const [addLabel, { isLoading: addIsLoading, data:newLabel }] = useAddLabelMutation();
+
+  useEffect(()=>{
+    if(!newLabel) return
+    formik.setFieldValue(
+      'LABELS',
+      (formik.values.LABELS || []).concat([newLabel]) || initValue.LABELS
+    );
+  },[newLabel])
+
+  const handleOnSubmit = (label: ILabel) => {
+    handleCloseLabelEdit()
+
+    addLabel(label);
+  };
+
+  const labelEditComponent = useMemo(() =>
+  <LabelListItemEdit
+    open={labelEdit}
+    onSubmit={handleOnSubmit}
+    onCancelClick={handleCloseLabelEdit}
+  />
+  ,[labelEdit])
+
   return (
     <CustomizedDialog
       open={open}
       onClose={handleClose}
     >
+      {labelEditComponent}
       <DialogTitle>
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
       </DialogTitle>
@@ -321,6 +376,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                         multiple
                         limitTags={2}
                         disableCloseOnSelect
+                        PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
                         onChange={(e, value) => {
                           formik.setFieldValue(
                             'LABELS',
