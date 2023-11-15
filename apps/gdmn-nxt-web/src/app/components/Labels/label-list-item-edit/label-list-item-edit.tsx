@@ -12,6 +12,7 @@ import LabelMarker from '../label-marker/label-marker';
 import { useTheme } from '@mui/material/styles';
 import { useOutsideClick } from '../../../features/common/useOutsideClick';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
+import IconSelect from '@gdmn-nxt/components/IconSelect/Icon-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -135,23 +136,29 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
         </DialogTitle>
         <DialogContent dividers>
-
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
               <Stack direction="column" spacing={3}>
                 <LabelMarker label={formik.values} />
-                <TextField
-                  label="Наименование"
-                  type="text"
-                  required
-                  autoFocus
-                  name="USR$NAME"
-                  // onBlur={formik.handleBlur}
-                  onChange={formik.handleChange}
-                  value={formik.values.USR$NAME}
-                  error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
-                  helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
-                />
+                <div style={{width:'100%',display:'flex', alignItems:'center'}}>
+                  <div style={{marginRight:'10px'}}>
+                    <IconSelect />
+                  </div>
+                  <TextField
+                    style={{width:'100%'}}
+                    label="Наименование"
+                    type="text"
+                    required
+                    autoFocus
+                    name="USR$NAME"
+                    // onBlur={formik.handleBlur}
+                    onChange={formik.handleChange}
+                    value={formik.values.USR$NAME}
+                    error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                    helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
+                  />
+                </div>
+
                 <Stack ref={ref} spacing={0.5}>
                   <TextField
                     label="Цвет"
