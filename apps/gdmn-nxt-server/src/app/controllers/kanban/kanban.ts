@@ -403,10 +403,18 @@ const get: RequestHandler = async (req, res) => {
       };
     });
 
+    const currentUserId = Number(req.cookies.userId)
+
+    const userKey = (await fetchAsObject(`SELECT CONTACTKEY FROM GD_USER WHERE ID = ${req.cookies.userId}`))?.[0]?.['CONTACTKEY']
+
     const columns = rawColumns.map(el => {
       return {
         ...el,
-        CARDS: cards[el.ID] ?? []
+        CARDS: (cards[el.ID] || []).filter(card => {
+          return card?.DEAL?.CREATOR.ID === userKey
+            || (card?.DEAL?.PERFORMERS?.findIndex(performer => performer.ID === userKey) || -1) >= 0
+            || card?.TASKS?.findIndex(task => task?.PERFORMER?.ID === userKey || task?.CREATOR?.ID === userKey) >= 0
+        })
       };
     });
 
