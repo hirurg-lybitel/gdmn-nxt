@@ -104,6 +104,18 @@ export function CustomerSelect(props: CustomerSelectProps) {
     // },
   });
 
+  const [valueFocus, setValueFocus] = useState<boolean>(false);
+
+  const changeFocus = (value:boolean) => () => {
+    setValueFocus(value)
+  }
+
+  const [valueEnter, setValueEnter] = useState<boolean>(false);
+
+  const changeEnter = (value:boolean) => () => {
+    setValueEnter(value)
+  }
+
   return (
     <>
       <Autocomplete
@@ -126,6 +138,10 @@ export function CustomerSelect(props: CustomerSelectProps) {
         onChange={(event, value) => {
           formik.setFieldValue('DEAL.CONTACT', value);
         }}
+        onFocus={changeFocus(true)}
+        onBlur={changeFocus(false)}
+        onMouseEnter={changeEnter(true)}
+        onMouseLeave={changeEnter(false)}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer) => {
           return (
             <li
@@ -158,8 +174,17 @@ export function CustomerSelect(props: CustomerSelectProps) {
             name="DEAL.CONTACT"
             error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+              <>
+              {((valueFocus || valueEnter) && formik.values.DEAL?.CONTACT)
+              && <IconButton title='Изменить' size='small' onClick={handleEditCustomer(formik.values.DEAL?.CONTACT)}><EditIcon/></IconButton>}
+              {params.InputProps.endAdornment}
+              </>)
+            }}
           />
-        ), [])}
+        ), [valueFocus,valueEnter,formik.values.DEAL?.CONTACT])}
       />
       {memoCustomerUpsert}
     </>
