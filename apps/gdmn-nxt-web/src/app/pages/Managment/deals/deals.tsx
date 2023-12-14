@@ -1,20 +1,17 @@
 import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
-import React, { ChangeEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { toggleMenu } from '../../../store/settingsSlice';
+import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { CircularIndeterminate } from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { RootState } from '../../../store';
-import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton, Checkbox, FormControlLabel } from '@mui/material';
+import { Autocomplete, Badge, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { IKanbanCard, IKanbanColumn, IKanbanFilterDeadline, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { IKanbanFilterDeadline } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery, usePostLastUsedFilterDeadlineMutation } from '../../../features/kanban/kanbanFiltersApi';
@@ -117,12 +114,6 @@ export function Deals(props: DealsProps) {
 
   const componentIsFetching = isLoading || Object.keys(filtersStorage.filterData.deals || {}).length === 0;
 
-  const [archive, setArchive] = useState<boolean>(false);
-
-  const handleChangeArchive = (e:React.ChangeEvent<HTMLInputElement>) => {
-    setArchive(e.target.checked);
-  }
-
   const Header = useMemo(() => {
     return (
       <>
@@ -176,16 +167,6 @@ export function Deals(props: DealsProps) {
               />
             )}
           />
-          <FormControlLabel
-          style={{paddingLeft: '15px'}}
-            control={
-              <Checkbox
-                checked={archive}
-                onChange={handleChangeArchive}
-              />
-            }
-            label="Архив"
-          />
           <Box flex={1} />
           <IconButton
             onClick={refreshBoard}
@@ -219,15 +200,15 @@ export function Deals(props: DealsProps) {
       </>
     );
   }
-  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching, archive]);
+  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching]);
 
-  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} archive={archive} />, [columns, componentIsFetching, archive]);
+  const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
   const KanbanListMemo = useMemo(() =>
     <Box className={styles.kanbanListContainer}>
-      <KanbanList columns={columns} archive={archive} />
+      <KanbanList columns={columns} />
     </Box>
-  , [columns,archive]);
+  , [columns]);
 
   return (
     <Stack

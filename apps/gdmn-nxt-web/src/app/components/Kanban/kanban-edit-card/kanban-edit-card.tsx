@@ -820,7 +820,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                       // })();
                                       // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
                                       if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
-                                      if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
+                                      if (checked) {
+                                        formik.setFieldValue('DEAL.USR$DONE', false);
+                                        formik.setFieldValue('USR$MASTERKEY', stages[9].ID);
+                                      }
                                     }}
                                   />
                                 }
