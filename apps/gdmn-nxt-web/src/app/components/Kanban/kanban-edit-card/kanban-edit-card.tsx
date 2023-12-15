@@ -88,7 +88,7 @@ export interface KanbanEditCardProps {
   card?: IKanbanCard;
   stages: IKanbanColumn[];
   deleteable?: boolean;
-  onSubmit: (arg1: IKanbanCard, arg2: boolean, arg3:boolean) => void;
+  onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
   onCancelClick: (isFetching?: boolean) => void;
 }
 
@@ -250,12 +250,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   });
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onSubmit(formik.values, deleting, false);
+    onSubmit(formik.values, deleting);
   }, [formik.values, deleting]);
-
-  const taskSubmit = (values:IKanbanCard) => {
-    onSubmit(values, false, true);
-  }
 
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
@@ -864,7 +860,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                   </CustomizedScrollBox>
                 </TabPanel>
                 <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''}>
-                  <KanbanTasks card={formik.values} formik={formik} initial={initValue} submit={taskSubmit} />
+                  <KanbanTasks card={formik.values} formik={formik} />
                 </TabPanel>
                 <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''}>
                   <DealDocuments dealId={card?.DEAL?.ID ?? -1}/>

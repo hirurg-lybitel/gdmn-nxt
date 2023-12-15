@@ -47,12 +47,10 @@ const useStyles = makeStyles(() => ({
 export interface KanbanTasksProps {
   card?: IKanbanCard;
   formik: FormikProps<IKanbanCard>;
-  submit: (arg1: IKanbanCard) => void;
-  initial: IKanbanCard
 }
 
 export function KanbanTasks(props: KanbanTasksProps) {
-  const { card, formik, initial, submit } = props;
+  const { card, formik } = props;
 
   const classes = useStyles();
 
@@ -60,12 +58,8 @@ export function KanbanTasks(props: KanbanTasksProps) {
   const tasks = useMemo(() => card?.TASKS ?? [], [card?.TASKS]);
 
   const addTask = (newTask: IKanbanTask) => {
-
     const sortedTasks = [...tasks];
     const lastId = sortedTasks.sort((a, b) => a.ID - b.ID).pop()?.ID ?? 0;
-    if(initial.ID > 0){
-      submit({...initial,TASKS: [...tasks].concat({ ...newTask, ID: lastId + 1 })})
-    }
     formik.setFieldValue('TASKS', [...tasks].concat({ ...newTask, ID: lastId + 1 }));
   };
 

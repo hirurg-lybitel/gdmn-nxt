@@ -44,14 +44,14 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const cardHandlers = {
-    handleSubmit: async (newCard: IKanbanCard, deleting: boolean, notClose:boolean) => {
+    handleSubmit: async (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
         onDeleteCard && onDeleteCard(newCard);
         setUpsertCard(false);
       };
       if (newCard.ID && !deleting) {
         onEditCard && onEditCard(newCard);
-        !notClose && setUpsertCard(false);
+        setUpsertCard(false);
       } else {
         onAddCard && onAddCard(newCard);
         setUpsertCard(false);
