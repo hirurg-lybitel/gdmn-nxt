@@ -228,7 +228,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         });
       }
     },
-    onCancel: async (isFetching?: boolean) => {
+    onCancel: async (newCard: IKanbanCard) => {
       setEditDeal(false);
     },
   };

@@ -89,7 +89,7 @@ export interface KanbanEditCardProps {
   stages: IKanbanColumn[];
   deleteable?: boolean;
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
-  onCancelClick: (isFetching?: boolean) => void;
+  onCancelClick: (newCard: IKanbanCard) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
@@ -102,7 +102,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const [isFetchingCard, setIsFetchingCard] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [deleting, setDeleting] = useState(false);
-  const [expanded, setExpanded] = useState('');
   const [tabIndex, setTabIndex] = useState('1');
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -143,15 +142,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     setTabIndex('1');
     setDeleting(true);
     setConfirmOpen(true);
-  };
-
-  const handleCancelClick = () => {
-    setDeleting(false);
-    setTabIndex('1');
-    onCancelClick(isFetchingCard);
-    if (isFetchingCard) {
-      setIsFetchingCard(false);
-    }
   };
 
   const handleOnClose = () => {
@@ -248,6 +238,16 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       setConfirmOpen(false);
     },
   });
+
+  const handleCancelClick = () => {
+    setDeleting(false);
+    setTabIndex('1');
+    onCancelClick(formik.values);
+    if (isFetchingCard) {
+      setIsFetchingCard(false);
+    }
+  };
+
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
     onSubmit(formik.values, deleting);
