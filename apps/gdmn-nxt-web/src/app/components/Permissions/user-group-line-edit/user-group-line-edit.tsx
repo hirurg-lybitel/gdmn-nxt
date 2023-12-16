@@ -98,7 +98,7 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
       <DialogContent dividers>
         <FormikProvider value={formik}>
           <Form id="mainForm" onSubmit={formik.handleSubmit}>
-            <Stack direction="column" spacing={3}>
+            <Stack direction="column" spacing={2}>
               <Autocomplete
                 options={users?.filter(user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0) ?? []}
                 getOptionLabel={option => option.NAME}

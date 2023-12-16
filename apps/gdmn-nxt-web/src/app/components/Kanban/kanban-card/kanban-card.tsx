@@ -21,8 +21,6 @@ export interface KanbanCardProps {
   onEdit: (card: IKanbanCard) => void;
   onDelete: (card: IKanbanCard) => void;
   addIsFetching?: boolean;
-  lastCard?: IKanbanCard
-  clearLastCard?: (isAdd?: boolean) => void,
   onAddTask: (task: IKanbanTask) => void;
   onEditTask: (task: IKanbanTask) => void;
   onDeleteTask: (task: IKanbanTask) => void;
@@ -30,8 +28,8 @@ export interface KanbanCardProps {
 
 export function KanbanCard(props: KanbanCardProps) {
   const { snapshot } = props;
-  const { card, columns, lastCard, addIsFetching } = props;
-  const { onAdd, onEdit, onDelete, clearLastCard, onAddTask, onEditTask, onDeleteTask } = props;
+  const { card, columns, addIsFetching } = props;
+  const { onAdd, onEdit, onDelete, onAddTask, onEditTask, onDeleteTask } = props;
   const theme = useTheme();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
@@ -40,6 +38,25 @@ export function KanbanCard(props: KanbanCardProps) {
   const [copyCard, setCopyCard] = useState(false);
 
   const [upsertCardStatus] = useSetCardStatusMutation();
+
+  const deleteTasks = (newCard: IKanbanCard) => {
+    const deletedTasks = card.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
+    deletedTasks.forEach(task => onDeleteTask(task));
+  };
+
+  const upsertTasks = (newCard: IKanbanCard) => {
+    newCard.TASKS?.forEach(task => {
+      const oldTask = card.TASKS?.find(({ ID }) => ID === task.ID);
+      if (!oldTask) {
+        onAddTask({ ...task, ID: -1 });
+        return;
+      };
+
+      if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
+        onEditTask(task);
+      };
+    });
+  };
 
   const cardHandlers = {
     handleSubmit: (newCard: IKanbanCard, deleting: boolean) => {
@@ -53,39 +70,28 @@ export function KanbanCard(props: KanbanCardProps) {
         onEdit(newCard);
         copyCard && setCopyCard(false);
         setEditCard(false);
-        clearLastCard && clearLastCard();
 
-        const deletedTasks = card.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
-        deletedTasks.forEach(task => onDeleteTask(task));
-
-        newCard.TASKS?.forEach(task => {
-          const oldTask = card.TASKS?.find(({ ID }) => ID === task.ID);
-          if (!oldTask) {
-            onAddTask({ ...task, ID: -1 });
-            return;
-          };
-
-          if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
-            onEditTask(task);
-          };
-        });
+        deleteTasks(newCard);
+        upsertTasks(newCard);
       } else {
         onAdd(newCard);
         copyCard && setCopyCard(false);
       }
     },
-    handleCancel: async (isFetching?: boolean) => {
+    handleCancel: async (newCard: IKanbanCard) => {
       editCard && setEditCard(false);
       copyCard && setCopyCard(false);
-    },
-    handleClose: async (e: any, reason: string) => {
-      if (reason === 'backdropClick') setEditCard(false);
+      if (newCard.ID > 0) {
+        deleteTasks(newCard);
+        upsertTasks(newCard);
+      }
     },
   };
 
   const handleCopyCard = useCallback(() => setCopyCard(true), []);
 
   const memoEditCard = useMemo(() => {
+    if (!editCard) return <></>;
     return (
       <KanbanEditCard
         open={editCard}
@@ -127,7 +133,7 @@ export function KanbanCard(props: KanbanCardProps) {
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [copyCard, lastCard]);
+  }, [copyCard]);
 
   const getDayDiff = useCallback((startDate: Date, endDate: Date) => {
     const msInDay = 24 * 60 * 60 * 1000;
@@ -187,7 +193,11 @@ export function KanbanCard(props: KanbanCardProps) {
             : '-/-'}
         </Typography>
         <Box flex={1} />
-        <Typography variant="body2" fontWeight={600} style={{ color: dayColor(deadline) }}>
+        <Typography
+          variant="body2"
+          fontWeight={600}
+          style={{ color: dayColor(deadline) }}
+        >
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
       </Stack>
