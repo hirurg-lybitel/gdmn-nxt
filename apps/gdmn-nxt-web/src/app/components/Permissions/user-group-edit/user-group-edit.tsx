@@ -121,7 +121,7 @@ export function UserGroupEdit(props: UserGroupEditProps) {
             id="mainForm"
             onSubmit={formik.handleSubmit}
           >
-            <Stack direction="column" spacing={3}>
+            <Stack direction="column" spacing={2}>
               <TextField
                 label="Наименование"
                 type="text"
