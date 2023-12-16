@@ -305,7 +305,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     return (
       <Stack
         flex={1}
-        spacing={3}
+        spacing={2}
         paddingTop={1}
       >
         <TextField
@@ -317,7 +317,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           error={getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))}
           helperText={getIn(formik.touched, 'DEAL.PRODUCTNAME') && getIn(formik.errors, 'DEAL.PRODUCTNAME')}
         />
-        <Stack direction={'row'} spacing={3}>
+        <Stack direction={'row'} spacing={2}>
           <Stack direction={'column'} flex={1}>
             <TextField
               label="Номер заявки"
@@ -331,7 +331,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           </Stack>
           <Stack
             direction="column"
-            spacing={3}
+            spacing={2}
             width={150}
           >
             <DesktopDatePicker
@@ -361,7 +361,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         />
         <Stack
           flex={1}
-          spacing={3}
+          spacing={2}
           direction={{ sm: 'column', md: 'row', lg: 'row' }}
         >
           <TextField
@@ -421,7 +421,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             onSubmit={formik.handleSubmit}
             style={{ flex: 1, display: 'flex' }}
           >
-            <Stack spacing={3} flex={1}>
+            <Stack spacing={2} flex={1}>
               {matchDownLg
                 ? <Stack
                   direction="row"
@@ -494,7 +494,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                   <CustomizedScrollBox container={{ className: classes.scrollContainer }} className={classes.scrollBox}>
                     <Stack
                       flex={1}
-                      spacing={3}
+                      spacing={2}
                       paddingTop={1}
                     >
                       <TextField
@@ -517,17 +517,17 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         error={getIn(formik.touched, 'DEAL.USR$NAME') && Boolean(getIn(formik.errors, 'DEAL.USR$NAME'))}
                         helperText={getIn(formik.touched, 'DEAL.USR$NAME') && getIn(formik.errors, 'DEAL.USR$NAME')}
                       />
-                      <Stack direction={matchDownLg ? 'column' : 'row'} spacing={3}>
+                      <Stack direction={matchDownLg ? 'column' : 'row'} spacing={2}>
                         <Stack
                           direction="column"
-                          spacing={3}
+                          spacing={2}
                           flex={1}
                         >
                           <CustomerSelect formik={formik} />
                           <DealSourcesSelect formik={formik} />
                         </Stack>
                         <Stack
-                          spacing={3}
+                          spacing={2}
                           {...(matchDownLg
                             ? {
                               direction: 'row',
@@ -574,7 +574,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         </Stack>
                       </Stack>
                       <Divider variant="middle" />
-                      <Stack direction={'column'} spacing={3}>
+                      <Stack direction={'column'} spacing={2}>
                         <Autocomplete
                           fullWidth
                           options={employees || []}
@@ -733,12 +733,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       </Stack>
                       <Stack
                         direction="row"
-                        spacing={3}
+                        spacing={2}
                         alignItems="center"
                       >
                         <Stack flex={1}>
-                          <Stack direction="column" spacing={2}>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                          <Stack direction="column" spacing={1}>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }}>
                               <FormControlLabel
                                 control={
                                   <Checkbox
@@ -827,7 +827,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 label="Отказ"
                               />
                               {formik.values.DEAL?.DENIED &&
-                                  <Stack flex={1} spacing={3}>
+                                  <Stack flex={1} spacing={2}>
                                     <DenyReasonsSelect formik={formik} />
                                   </Stack>}
                             </Stack>
