@@ -107,7 +107,9 @@ const get: RequestHandler = async (req, res) => {
             u.ID = ${userId}
             /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
             AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
-            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID))), 1, 0), 1)`;
+            /* Свои сделки - сделки, где пользователь постановщик/исполнитель или в задачах которых он постановщик/исполнитель */
+            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID)
+            OR EXISTS(SELECT * FROM USR$CRM_KANBAN_CARD_TASKS tasks WHERE tasks.USR$CARDKEY = card.ID AND con.ID IN (tasks.USR$PERFORMER, tasks.USR$CREATORKEY)))), 1, 0), 1)`;
 
     const filter = `
       /** Фильтрация */
@@ -416,18 +418,10 @@ const get: RequestHandler = async (req, res) => {
       };
     });
 
-    const currentUserId = Number(req.cookies.userId)
-
-    const userKey = (await fetchAsObject(`SELECT CONTACTKEY FROM GD_USER WHERE ID = ${req.cookies.userId}`))?.[0]?.['CONTACTKEY']
-
     const columns = rawColumns.map(el => {
       return {
         ...el,
-        CARDS: (cards[el.ID] || []).filter(card => {
-          return card?.DEAL?.CREATOR.ID === userKey
-            || (card?.DEAL?.PERFORMERS?.findIndex(performer => performer.ID === userKey) || -1) >= 0
-            || card?.TASKS?.findIndex(task => task?.PERFORMER?.ID === userKey || task?.CREATOR?.ID === userKey) >= 0
-        })
+        CARDS: cards[el.ID] ?? []
       };
     });
 
