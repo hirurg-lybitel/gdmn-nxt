@@ -4,7 +4,7 @@ import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useRef,
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IEmployee, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
+import { IEmployee, IKanbanCard, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -224,10 +224,14 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     },
   };
 
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+
   const canOpenDeal = useMemo(() =>
     formik.values.ID > 0 &&
     (dealCard?.DEAL?.CREATOR?.ID === contactId ||
-    dealCard?.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId))
+    dealCard?.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId) ||
+    dealCard?.TASKS?.some(task => task.PERFORMER?.ID === contactId) ||
+    userPermissions?.deals.ALL)
   , [dealCard]);
 
   const memoEditCard = useMemo(() => {
