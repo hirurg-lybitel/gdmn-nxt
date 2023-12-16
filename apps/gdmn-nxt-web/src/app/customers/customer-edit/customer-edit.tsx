@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     paddingLeft: 0,
     paddingRight: 0,
+    paddingTop: 0,
   }
 }));
 
@@ -203,10 +204,10 @@ export function CustomerEdit(props: CustomerEditProps) {
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
-        <PerfectScrollbar style={{ padding: '16px 24px' }}>
+        <PerfectScrollbar style={{ padding: '0 24px' }}>
           <Stack
             direction="column"
-            spacing={3}
+            spacing={2}
             style={{ flex: 1, display: 'flex' }}
           >
             <FormikProvider value={formik}>
@@ -222,9 +223,10 @@ export function CustomerEdit(props: CustomerEditProps) {
                   <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
                     <Stack
                       direction="column"
-                      spacing={3}
+                      spacing={2}
                       flex={1}
                       width="100%"
+                      paddingTop={2}
                     >
                       <TextField
                         label="Наименование"

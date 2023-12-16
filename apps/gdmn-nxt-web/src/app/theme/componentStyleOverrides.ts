@@ -21,6 +21,9 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
     },
     MuiAutocomplete: {
       ...locales.ruRU.components?.MuiAutocomplete,
+      defaultProps: {
+        size: 'small'
+      },
       styleOverrides: {
         paper: {
           borderTopLeftRadius: 0,
@@ -83,5 +86,15 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
         }
       }
     },
+    MuiTextField: {
+      defaultProps: {
+        size: 'small'
+      }
+    },
+    MuiCheckbox: {
+      defaultProps: {
+        size: 'small'
+      }
+    }
   };
 }
