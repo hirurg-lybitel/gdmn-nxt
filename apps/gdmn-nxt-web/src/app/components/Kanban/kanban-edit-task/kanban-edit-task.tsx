@@ -119,16 +119,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     },
     validationSchema: yup.object().shape({
       USR$NAME: yup.string()
-        .required('')
         .max(80, 'Слишком длинное описание'),
-      // USR$CARDKEY: yup.number()
-      //   .required()
-      //   .moreThan(-1),
-      // TASKTYPE: yup.object().shape({
-      //   ID: yup.number()
-      //     .required()
-      //     .moreThan(-1),
-      // })
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
