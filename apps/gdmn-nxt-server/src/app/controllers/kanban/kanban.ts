@@ -761,7 +761,7 @@ const getTasks: RequestHandler = async (req, res) => {
           USR$NUMBER: el['USR$NUMBER'],
           USR$INPROGRESS: el['USR$INPROGRESS'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$DATECLOSE: el['USR$DATECLOSE'],
+          USR$DATECLOSE: el['USR$CLOSED'] ? new Date() : null,
           USR$CARDKEY: el['CARD_ID'],
           ...(el['CREATOR_ID'] && {
             CREATOR: {
