@@ -1,13 +1,25 @@
 import { ICustomer, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, FilterOptionsState, IconButton, TextField, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, Box, Button, IconButton, TextField, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { FormikProps, getIn } from 'formik';
 import { HTMLAttributes, useCallback, useEffect, useMemo, useState } from 'react';
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
-import filterOptions from '../../../helpers/filter-options';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles(() => ({
+  root: {
+    '& .editIcon': {
+      visibility: 'hidden',
+      padding: '4px'
+    },
+    '&:hover .editIcon, &:focus-within .editIcon': {
+      visibility: 'visible',
+    }
+  },
+}));
 
 interface CustomerSelectProps {
   formik: FormikProps<IKanbanCard>;
@@ -15,6 +27,8 @@ interface CustomerSelectProps {
 
 export function CustomerSelect(props: CustomerSelectProps) {
   const { formik } = props;
+
+  const classes = useStyles();
 
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery();
   const customers: ICustomer[] = useMemo(
@@ -70,55 +84,17 @@ export function CustomerSelect(props: CustomerSelectProps) {
       onSubmit={handleSubmitCustomer}
     />, [addCustomer, editingCustomer]);
 
-  // const filterOptions = (options, { inputValue }) => {
-  //   return options.filter((option) => {
-  //     const fullName = ${option.firstName} ${option.lastName}.toLowerCase();
-  //     const searchValue = inputValue.toLowerCase();
-
-  //     // Фильтрация по фамилии или имени
-  //     return fullName.includes(searchValue);
-  //   });
-  // };
-
-  // (option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase())
-
-  // const filterOptions = (options: ICustomer[], { inputValue }: FilterOptionsState<ICustomer>) => {
-  //   const search = inputValue.toLowerCase() ?? '';
-  //   console.log('filterOptions', inputValue, search, search === '');
-  //   if (search === '') {
-  //     return options;
-  //   };
-  //   const filteredOptions = options.filter(customer => customer.NAME.toLowerCase().includes(search) || customer.TAXID?.toLowerCase().includes(search)) ?? [];
-  //   return filteredOptions;
-  // };
-
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
     limit: 50,
     ignoreCase: true,
     stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
-    // stringify: (option: ICustomer) => {
-    //   console.log('filterOptions', option['NAME'], option);
-    //   return [option['NAME'], option['TAXID']];
-    //   // return option['NAME'] ? option['NAME'] : ''
-    // },
   });
-
-  const [valueFocus, setValueFocus] = useState<boolean>(false);
-
-  const changeFocus = (value:boolean) => () => {
-    setValueFocus(value)
-  }
-
-  const [valueEnter, setValueEnter] = useState<boolean>(false);
-
-  const changeEnter = (value:boolean) => () => {
-    setValueEnter(value)
-  }
 
   return (
     <>
       <Autocomplete
+        className={classes.root}
         fullWidth
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
@@ -138,10 +114,6 @@ export function CustomerSelect(props: CustomerSelectProps) {
         onChange={(event, value) => {
           formik.setFieldValue('DEAL.CONTACT', value);
         }}
-        onFocus={changeFocus(true)}
-        onBlur={changeFocus(false)}
-        onMouseEnter={changeEnter(true)}
-        onMouseLeave={changeEnter(false)}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer) => {
           return (
             <li
@@ -177,14 +149,21 @@ export function CustomerSelect(props: CustomerSelectProps) {
             InputProps={{
               ...params.InputProps,
               endAdornment: (
-              <>
-              {((valueFocus || valueEnter) && formik.values.DEAL?.CONTACT)
-              && <IconButton title='Изменить' size='small' onClick={handleEditCustomer(formik.values.DEAL?.CONTACT)}><EditIcon/></IconButton>}
-              {params.InputProps.endAdornment}
-              </>)
+                <>
+                  {(formik.values.DEAL?.CONTACT) &&
+                    <IconButton
+                      className="editIcon"
+                      title="Изменить"
+                      size="small"
+                      onClick={handleEditCustomer(formik.values.DEAL?.CONTACT)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>}
+                  {params.InputProps.endAdornment}
+                </>)
             }}
           />
-        ), [valueFocus,valueEnter,formik.values.DEAL?.CONTACT])}
+        ), [formik.values.DEAL?.CONTACT])}
       />
       {memoCustomerUpsert}
     </>
