@@ -107,7 +107,9 @@ const get: RequestHandler = async (req, res) => {
             u.ID = ${userId}
             /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
             AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
-            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID))), 1, 0), 1)`;
+            /* Свои сделки - сделки, где пользователь постановщик/исполнитель или в задачах которых он постановщик/исполнитель */
+            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID)
+            OR EXISTS(SELECT * FROM USR$CRM_KANBAN_CARD_TASKS tasks WHERE tasks.USR$CARDKEY = card.ID AND con.ID IN (tasks.USR$PERFORMER, tasks.USR$CREATORKEY)))), 1, 0), 1)`;
 
     const filter = `
       /** Фильтрация */
@@ -176,6 +178,17 @@ const get: RequestHandler = async (req, res) => {
         ${performerOrCreator}
         ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
+    const archivedDeals = `
+      /** Фильтрация */
+      /** Только этапы Исполнено и Отказ */
+      AND (1 = IIF(${deadline || -1} = (SELECT ID FROM GD_RUID WHERE XID = 147007128 AND DBID = 5014473 ROWS 1),
+        IIF(col.ID IN(
+          (SELECT ID FROM GD_RUID WHERE XID = 370480879 AND DBID = 1811180906 ROWS 1),
+          (SELECT ID FROM GD_RUID WHERE XID = 147007134 AND DBID = 5014473 ROWS 1)
+        ), 1, 0),
+        1))
+    `;
+
     const queries = [
       {
         name: 'columns',
@@ -184,7 +197,9 @@ const get: RequestHandler = async (req, res) => {
           FROM USR$CRM_KANBAN_TEMPLATE temp
             JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
             JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
-          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+          WHERE
+            temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+            ${archivedDeals}
           ORDER BY col.USR$INDEX`
       },
       {
@@ -748,7 +763,7 @@ const getTasks: RequestHandler = async (req, res) => {
           USR$NUMBER: el['USR$NUMBER'],
           USR$INPROGRESS: el['USR$INPROGRESS'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$DATECLOSE: el['USR$DATECLOSE'],
+          USR$DATECLOSE: el['USR$CLOSED'] ? new Date() : null,
           USR$CARDKEY: el['CARD_ID'],
           ...(el['CREATOR_ID'] && {
             CREATOR: {

@@ -138,7 +138,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
-              <Stack direction="column" spacing={3}>
+              <Stack direction="column" spacing={2}>
                 <LabelMarker label={formik.values} />
                 <TextField
                   label="Наименование"
@@ -200,7 +200,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <Button
             className={classes.button}
             onClick={onCancel}
-            variant="text"
+            variant="outlined"
             color="primary"
           >
             Отменить
