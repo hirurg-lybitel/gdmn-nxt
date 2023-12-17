@@ -910,6 +910,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
+          variant="outlined"
         >Отменить</Button>
         <PermissionsGate show={true} actionAllowed={formik.values.ID > 0 ? userPermissions?.deals.PUT : userPermissions?.deals.POST}>
           <Button

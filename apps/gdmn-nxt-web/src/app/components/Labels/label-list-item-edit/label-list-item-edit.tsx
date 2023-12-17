@@ -200,7 +200,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <Button
             className={classes.button}
             onClick={onCancel}
-            variant="text"
+            variant="outlined"
             color="primary"
           >
             Отменить

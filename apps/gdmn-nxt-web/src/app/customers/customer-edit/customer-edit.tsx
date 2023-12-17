@@ -201,7 +201,7 @@ export function CustomerEdit(props: CustomerEditProps) {
       onClose={handleClose}
     >
       <DialogTitle>
-        {customer ? `Редактирование: ${customer.NAME}` : 'Добавление'}
+        {customer ? `Редактирование: ${customer.NAME}` : 'Добавление клиента'}
       </DialogTitle>
       <DialogContent dividers style={{ padding: 0 }}>
         <PerfectScrollbar style={{ padding: '0 24px' }}>
@@ -413,7 +413,7 @@ export function CustomerEdit(props: CustomerEditProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
             Отменить
