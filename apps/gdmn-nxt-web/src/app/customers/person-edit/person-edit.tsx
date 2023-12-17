@@ -217,7 +217,7 @@ export function PersonEdit(props: PersonEditProps) {
       hideBackdrop
     >
       <DialogTitle>
-        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление контакта'}
+        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление сотрудника'}
       </DialogTitle>
       <DialogContent
         dividers
@@ -399,7 +399,7 @@ export function PersonEdit(props: PersonEditProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
             Отменить

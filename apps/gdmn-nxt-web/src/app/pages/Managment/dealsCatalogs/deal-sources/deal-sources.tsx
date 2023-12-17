@@ -9,6 +9,7 @@ import DealSourceUpsert from 'apps/gdmn-nxt-web/src/app/components/Kanban/deal-s
 import { useCallback, useMemo, useState } from 'react';
 import { IDealSource } from '@gsbelarus/util-api-types';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
+import AddIcon from '@mui/icons-material/Add';
 
 
 /* eslint-disable-next-line */
@@ -92,6 +93,7 @@ export function DealSources(props: DealSourcesProps) {
           <Box flex={1} />
           <Button
             variant="contained"
+            startIcon={<AddIcon />}
             disabled={isLoading}
             onClick={handleAddSource}
           >

@@ -140,7 +140,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
                 </Button>
               </Grid>
               <Grid item>
-                <Button onClick={handelClear}>
+                <Button onClick={handelClear} variant="outlined">
                   Очистить
                 </Button>
               </Grid>

@@ -527,7 +527,7 @@ export function Customers(props: CustomersProps) {
       <CardToolbar>
         <Stack direction="row" spacing={2}>
           <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
-            <Box display="flex" justifyContent="center" >
+            <Box display="inline-flex" alignSelf="center" >
               <Button
                 variant="contained"
                 onClick={handleAddOrganization}

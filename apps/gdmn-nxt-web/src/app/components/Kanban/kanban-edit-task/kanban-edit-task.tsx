@@ -496,7 +496,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
             Отменить
@@ -511,7 +511,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
           }}
           variant="contained"
         >
-            OK
+            Сохранить
         </Button>
       </DialogActions>
       {memoConfirmDialog}

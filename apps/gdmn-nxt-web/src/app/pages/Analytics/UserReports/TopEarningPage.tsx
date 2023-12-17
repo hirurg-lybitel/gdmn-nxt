@@ -148,10 +148,11 @@ export default function TopEarningPage() {
           </CardContent>
           <Divider />
           <CardActions style={{ padding: '16px' }}>
-            <Stack direction="row" spacing={3} flex={1}>
+            <Stack direction="row" spacing={2} flex={1}>
               <Box flex={1} />
               <Button
                 onClick={handelClear}
+                variant="outlined"
               >
                   Очистить
               </Button>

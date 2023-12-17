@@ -12,6 +12,7 @@ import { useAddTaskTypeMutation, useDeleteTaskTypeMutation, useGetTaskTypesQuery
 import { ITaskType } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
+import AddIcon from '@mui/icons-material/Add';
 
 /* eslint-disable-next-line */
 export interface TaskTypesProps {}
@@ -293,6 +294,7 @@ export function TaskTypes(props: TaskTypesProps) {
           <Button
             className={styles.addButton}
             variant="contained"
+            startIcon={<AddIcon />}
             disabled={isFetching}
             onClick={handleAddSource}
           >
