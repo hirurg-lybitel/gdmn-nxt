@@ -799,7 +799,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/kanban/data/deals?userId=150001&period=1670965200000,1671051600000",
+									"raw": "{{baseUrl}}/kanban/data/deals?userId=150001&deadline=147007128",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -815,7 +815,8 @@
 										},
 										{
 											"key": "period",
-											"value": "1670965200000,1671051600000"
+											"value": "1670965200000,1671051600000",
+											"disabled": true
 										},
 										{
 											"key": "isCreator",
@@ -828,6 +829,10 @@
 											"value": "1",
 											"type": "text",
 											"disabled": true
+										},
+										{
+											"key": "deadline",
+											"value": "147007128"
 										}
 									]
 								}
