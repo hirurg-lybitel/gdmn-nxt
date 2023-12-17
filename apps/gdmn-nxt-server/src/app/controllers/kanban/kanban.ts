@@ -107,7 +107,9 @@ const get: RequestHandler = async (req, res) => {
             u.ID = ${userId}
             /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
             AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
-            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID))), 1, 0), 1)`;
+            /* Свои сделки - сделки, где пользователь постановщик/исполнитель или в задачах которых он постановщик/исполнитель */
+            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID)
+            OR EXISTS(SELECT * FROM USR$CRM_KANBAN_CARD_TASKS tasks WHERE tasks.USR$CARDKEY = card.ID AND con.ID IN (tasks.USR$PERFORMER, tasks.USR$CREATORKEY)))), 1, 0), 1)`;
 
     const filter = `
       /** Фильтрация */
