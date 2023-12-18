@@ -102,7 +102,7 @@ export function IconSelect(props: IconSelectProps) {
 
   const theme = useTheme();
 
-  const [ref, secondRef] = useOutsideClick(openDialog, () => {
+  const [ref, ref2] = useOutsideClick(openDialog, () => {
     console.log('asd')
     setOpenDialog(false)
   });
@@ -132,7 +132,7 @@ export function IconSelect(props: IconSelectProps) {
           disableListWrap
           clearOnBlur={false}
           PopperComponent={StyledPopper}
-          ListboxComponent={ListboxComponent(secondRef)}
+          ListboxComponent={ListboxComponent(ref2)}
           options={[''].concat(Object.keys(icons).filter(item => !item.includes('Outlined') && !item.includes('Rounded') && !item.includes('TwoTone') && !item.includes('Sharp')))}
           renderInput={(params) => <TextField {...params} label="Поиск" />}
           renderOption={(props, option, state) =>
