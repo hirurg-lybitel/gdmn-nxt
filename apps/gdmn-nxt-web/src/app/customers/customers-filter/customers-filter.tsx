@@ -131,7 +131,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
         }}
       >
         <CardContent style={{ flex: 1 }}>
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Box>
               <Autocomplete
                 multiple

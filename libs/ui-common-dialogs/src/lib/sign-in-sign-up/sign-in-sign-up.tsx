@@ -231,7 +231,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
             <BelgissLogo color="#64b5f6" scale={1.5}/>
           </Box>
           <Box textAlign={'center'}>
-            <Typography variant="h4">
+            <Typography variant="h4" fontWeight={600}>
               Вход в систему
             </Typography>
           </Box>
@@ -242,6 +242,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           </Box> */}
           <TextField
             label="Пользователь"
+            size="medium"
             sx={{ input: { color: 'black' } }}
             value={userName}
             error={authResult?.result === 'UNKNOWN_USER'}
@@ -261,6 +262,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           />
           <TextField
             label="Пароль"
+            size="medium"
             sx={{ input: { color: 'black' } }}
             type={passwordVisible ? 'text' : 'password'}
             value={password}
@@ -290,6 +292,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           />
           <Button
             variant="contained"
+            size="medium"
             disabled={waiting || !userName || !password || !!authResult || launching}
             onClick={doSignIn}
           >

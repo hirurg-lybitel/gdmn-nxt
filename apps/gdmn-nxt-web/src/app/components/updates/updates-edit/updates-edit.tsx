@@ -216,7 +216,7 @@ export function UpdatesEdit(props: UpdatesEditProps) {
         <Box flex={1}/>
         <Button
           onClick={handleCancel}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
           Отменить

@@ -9,6 +9,7 @@ import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customiz
 import { Box, Button, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
+import AddIcon from '@mui/icons-material/Add';
 
 
 /* eslint-disable-next-line */
@@ -92,6 +93,7 @@ export function DenyReasons(props: DenyReasonsProps) {
           <Box flex={1} />
           <Button
             variant="contained"
+            startIcon={<AddIcon />}
             disabled={isLoading}
             onClick={handleAddSource}
           >

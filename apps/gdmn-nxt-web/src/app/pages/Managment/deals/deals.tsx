@@ -1,23 +1,22 @@
 import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
-import React, { ChangeEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { toggleMenu } from '../../../store/settingsSlice';
+import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { CircularIndeterminate } from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { RootState } from '../../../store';
-import { UserState } from '../../../features/user/userSlice';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Button, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Autocomplete, Badge, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { IKanbanCard, IKanbanColumn, IKanbanFilterDeadline, IPermissionByUser } from '@gsbelarus/util-api-types';
+import { IKanbanFilterDeadline } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery, usePostLastUsedFilterDeadlineMutation } from '../../../features/kanban/kanbanFiltersApi';
+import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 
 export interface IChanges {
   id: number;
@@ -102,6 +101,19 @@ export function Deals(props: DealsProps) {
         filter: value,
         userId
       });
+    },
+    requestSearch: async (value: string) => {
+      const newObject = { ...filtersStorage.filterData.deals };
+      delete newObject.name;
+      saveFilters({
+        ...newObject,
+        ...(value !== '' ? { name: [value] } : {})
+      });
+    },
+    cancelSearch: async () => {
+      const newObject = { ...filtersStorage.filterData.deals };
+      delete newObject.name;
+      saveFilters(newObject);
     }
   };
 
@@ -125,80 +137,91 @@ export function Deals(props: DealsProps) {
           direction="row"
           className={styles.headerCard}
         >
-          <ToggleButtonGroup
-            color="primary"
-            value={tabNo}
-            exclusive
-            size="small"
-            onChange={(e, value) => {
-              if (!value) return;
-              setTabNo(value);
-            }}
-          >
-            <ToggleButton value="0" className={styles.toggleButton}>
-              <Tooltip title="Доска" arrow>
-                <ViewWeekIcon />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton value="1" className={styles.toggleButton}>
-              <Tooltip title="Список" arrow>
-                <ViewStreamIcon />
-              </Tooltip>
-            </ToggleButton>
-          </ToggleButtonGroup>
-          <Autocomplete
-            style={{
-              width: '210px',
-              paddingLeft: '15px'
-            }}
-            options={cardDateFilter}
-            disableClearable
-            getOptionLabel={option => option.NAME}
-            isOptionEqualToValue={(option, value) => option.ID === value.ID}
-            value={filtersStorage.filterData.deals?.deadline?.length > 0 ? filtersStorage.filterData.deals.deadline[0] : null}
-            onChange={filterHandlers.filterDeadlineChange}
-            renderOption={(props, option, { selected }) => (
-              <li {...props} key={option.ID}>
-                {option.NAME}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                size="small"
-                placeholder="Фильтр по сроку"
-              />
-            )}
-          />
-          <Box flex={1} />
-          <IconButton
-            onClick={refreshBoard}
-            disabled={columnsIsFetching}
-          >
-            {columnsIsFetching
-              ? <CircularProgress size={17}/>
-              : <RefreshIcon color="primary" />
-            }
-          </IconButton>
-          <IconButton
-            onClick={filterHandlers.filterClick}
-            disabled={columnsIsFetching}
-          >
-            <Tooltip
-              title={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline').length > 0
-                ? 'У вас есть активные фильтры'
-                : 'Выбрать фильтры'
-              }
-              arrow
+          <Stack direction="row" spacing={2} flex={1}>
+            <ToggleButtonGroup
+              color="primary"
+              value={tabNo}
+              exclusive
+              size="small"
+              onChange={(e, value) => {
+                if (!value) return;
+                setTabNo(value);
+              }}
             >
-              <Badge
-                color="error"
-                variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline').length > 0 ? 'dot' : 'standard'}
+              <ToggleButton value="0" className={styles.toggleButton}>
+                <Tooltip title="Доска" arrow>
+                  <ViewWeekIcon />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton value="1" className={styles.toggleButton}>
+                <Tooltip title="Список" arrow>
+                  <ViewStreamIcon />
+                </Tooltip>
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <Autocomplete
+              style={{
+                width: '210px',
+                minWidth: '210px',
+              }}
+              options={cardDateFilter}
+              disableClearable
+              getOptionLabel={option => option.NAME}
+              isOptionEqualToValue={(option, value) => option.ID === value.ID}
+              value={filtersStorage.filterData.deals?.deadline?.length > 0 ? filtersStorage.filterData.deals.deadline[0] : null}
+              onChange={filterHandlers.filterDeadlineChange}
+              renderOption={(props, option, { selected }) => (
+                <li {...props} key={option.ID}>
+                  {option.NAME}
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  placeholder="Фильтр по сроку"
+                />
+              )}
+            />
+            <SearchBar
+              disabled={columnsIsFetching}
+              onCancelSearch={filterHandlers.cancelSearch}
+              onRequestSearch={filterHandlers.requestSearch}
+              cancelOnEscape
+              fullWidth
+              placeholder="Поиск сделки по описанию"
+              iconPosition="start"
+              value={
+                filtersStorage.filterData.deals && filtersStorage.filterData.deals.name
+                  ? filtersStorage.filterData.deals.name[0]
+                  : undefined
+              }
+            />
+            <Stack direction="row" alignItems="center">
+              <CustomLoadingButton loading={columnsIsFetching} onClick={refreshBoard} />
+              <IconButton
+                onClick={filterHandlers.filterClick}
+                disabled={columnsIsFetching}
               >
-                <FilterListIcon color="primary" />
-              </Badge>
-            </Tooltip>
-          </IconButton>
+                <Tooltip
+                  title={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
+                    ? 'У вас есть активные фильтры'
+                    : 'Выбрать фильтры'
+                  }
+                  arrow
+                >
+                  <Badge
+                    color="error"
+                    variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
+                      ? 'dot'
+                      : 'standard'}
+                  >
+                    <FilterListIcon color="primary" />
+                  </Badge>
+                </Tooltip>
+              </IconButton>
+            </Stack>
+          </Stack>
         </CustomizedCard>
       </>
     );

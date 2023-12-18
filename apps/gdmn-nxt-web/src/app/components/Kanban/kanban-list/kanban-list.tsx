@@ -6,7 +6,7 @@ import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-gr
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import styles from './kanban-list.module.less';
 import EditIcon from '@mui/icons-material/Edit';
-import { useAddCardMutation, useDeleteCardMutation, useUpdateCardMutation } from '../../../features/kanban/kanbanApi';
+import { useAddCardMutation, useAddTaskMutation, useDeleteCardMutation, useDeleteTaskMutation, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import { IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
@@ -70,7 +70,6 @@ export function KanbanList(props: KanbanListProps) {
     }
   ];
 
-  const changes = useRef<IChanges[]>([]);
   const [addCard, setAddCard] = useState(false);
   const [editCard, setEditCard] = useState(false);
   const [card, setCard] = useState<IKanbanCard>();
@@ -79,23 +78,48 @@ export function KanbanList(props: KanbanListProps) {
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
-  const [lastAddedCard, setLastAddedCard] = useState<undefined | IKanbanCard>(undefined);
-  const [lastCardShouldClear, setLastCardShouldClear] = useState<boolean>(false);
-  const user = useSelector<RootState, UserState>(state => state.user);
   const [deletingCardIDs, setDeletingCardIDs] = useState<number[]>([]);
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
+  const [updateTask] = useUpdateTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
 
-  const lastCard = useMemo(() => {
-    if (!lastAddedCard) return undefined;
-    const cards = (columns.flatMap(cards => (cards.CARDS.map(card => card)))).find(card => card.ID === lastAddedCard?.ID);
-    return cards;
-  }, [columns, lastAddedCard]);
+  const rows: IKanbanCard[] = useMemo(() => {
+    const newRows: any[] = [];
+    columns?.forEach(col => col.CARDS.forEach(card => {
+      if (!deletingCardIDs.includes(card.ID)) {
+        newRows.push({ ...card, ...card.DEAL, ID: card.ID, hierarchy: [col.ID, card.ID] });
+      }
+    }));
+    return newRows;
+  }, [columns, deletingCardIDs]);
 
-  const clearLastCard = (isAdd?: boolean) => {
-    if (isAdd) {
-      setLastCardShouldClear(true);
-    }
-    setLastAddedCard(undefined);
+  const deleteTasks = (newCard: IKanbanCard) => {
+    const findIndex = rows.findIndex(r => r.ID === newCard.ID);
+    if (findIndex < 0) return;
+
+    const oldCard: IKanbanCard = rows[findIndex];
+    const deletedTasks = oldCard.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
+    deletedTasks.forEach(task => deleteTask(task.ID));
+  };
+
+  const upsertTasks = (newCard: IKanbanCard) => {
+    const findIndex = rows.findIndex(r => r.ID === newCard.ID);
+    if (findIndex < 0) return;
+
+    const oldCard: IKanbanCard = rows[findIndex];
+
+    newCard.TASKS?.forEach(task => {
+      const oldTask = oldCard.TASKS?.find(({ ID }) => ID === task.ID);
+      if (!oldTask) {
+        addTask({ ...task, ID: -1 });
+        return;
+      };
+
+      if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
+        updateTask(task);
+      };
+    });
   };
 
   const onEditCard = async (newCard: IKanbanCard) => {
@@ -124,46 +148,34 @@ export function KanbanList(props: KanbanListProps) {
   };
 
   const cardHandlers = {
-    handleSubmit: async (card: IKanbanCard, deleting: boolean) => {
+    handleSubmit: async (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
-        onDelete(card);
+        onDelete(newCard);
       } else {
-        if (card.ID) {
-          onEditCard(card);
+        if (newCard.ID) {
+          onEditCard(newCard);
         };
-        if (!card.ID) {
+        if (!newCard.ID) {
           editCard && setEditCard(false);
           addCard && setAddCard(false);
-          clearLastCard(true);
-          onAddCard(card);
+          onAddCard(newCard);
         }
+        deleteTasks(newCard);
+        upsertTasks(newCard);
       };
-      clearLastCard();
       editCard && setEditCard(false);
       addCard && setAddCard(false);
     },
-    handleCancel: async (isFetching?: boolean) => {
-      clearLastCard(!!isFetching);
+    handleCancel: async (newCard: IKanbanCard) => {
       editCard && setEditCard(false);
       addCard && setAddCard(false);
-    },
-    handleClose: async (e: any, reason: string) => {
-      if (reason === 'backdropClick') {
-        editCard && setEditCard(false);
-        addCard && setAddCard(false);
+
+      if (newCard.ID > 0) {
+        deleteTasks(newCard);
+        upsertTasks(newCard);
       }
     },
   };
-
-  const rows = useMemo(() => {
-    const newRows: any[] = [];
-    columns?.forEach(col => col.CARDS.forEach(card => {
-      if (!deletingCardIDs.includes(card.ID)) {
-        newRows.push({ ...card, ...card.DEAL, ID: card.ID, hierarchy: [col.ID, card.ID] });
-      }
-    }));
-    return newRows;
-  }, [columns, deletingCardIDs]);
 
   const handleCardEdit = (id: any): any => () => {
     setCard(id);
@@ -192,14 +204,13 @@ export function KanbanList(props: KanbanListProps) {
     return (
       <KanbanEditCard
         open={addCard}
-        card={lastCard}
         currentStage={column}
         stages={columns}
         onSubmit={cardHandlers.handleSubmit}
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [addCard, lastCard]);
+  }, [addCard]);
 
 
   const groupingColDef: DataGridProProps['groupingColDef'] = {

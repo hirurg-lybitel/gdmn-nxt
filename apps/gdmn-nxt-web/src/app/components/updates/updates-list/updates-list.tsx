@@ -71,7 +71,7 @@ export function UpdatesList(props: UpdatesListProps) {
       className={styles.card}
     >
       <CardHeader
-        title={<Typography variant="h5" fontWeight={600}>История обновлений</Typography>}
+        title={<Typography variant="pageHeader">История обновлений</Typography>}
       />
       <Divider />
       <CardToolbar>

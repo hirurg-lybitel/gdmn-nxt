@@ -73,7 +73,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
           <CardHeader title={<Typography variant="pageHeader">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
-            <Grid container spacing={3} direction={'column'}>
+            <Grid container spacing={2} direction={'column'}>
               <Grid item md={6} sx={{ width: '50%' }}>
                 <Autocomplete
                   options={customers || []}
@@ -128,7 +128,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
             <Grid
               container
               direction={'row-reverse'}
-              spacing={3}
+              spacing={2}
             >
               <Grid item>
                 <Button
@@ -140,7 +140,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
                 </Button>
               </Grid>
               <Grid item>
-                <Button onClick={handelClear}>
+                <Button onClick={handelClear} variant="outlined">
                   Очистить
                 </Button>
               </Grid>

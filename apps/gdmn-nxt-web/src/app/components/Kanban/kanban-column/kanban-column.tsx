@@ -57,13 +57,8 @@ export function KanbanColumn(props: KanbanColumnProps) {
         setUpsertCard(false);
       }
     },
-    handleCancel: async (isFetching?: boolean) => {
+    handleCancel: async (newCard: IKanbanCard) => {
       setUpsertCard(false);
-    },
-    handleClose: async (e: any, reason: string) => {
-      if (reason === 'backdropClick') {
-        setUpsertCard(false);
-      }
     },
   };
 
@@ -198,6 +193,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
     );
   };
   const memoAddCard = useMemo(() => {
+    if (!upsertCard) return <></>;
     return (
       <KanbanEditCard
         open={upsertCard}

@@ -143,7 +143,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
         <DialogContent dividers>
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
-              <Stack direction="column" spacing={3}>
+              <Stack direction="column" spacing={2}>
                 <div style={{height:'40px', display:'flex',alignItems:'center'}}>
                   <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
                 </div>
@@ -215,7 +215,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <Button
             className={classes.button}
             onClick={onCancel}
-            variant="text"
+            variant="outlined"
             color="primary"
           >
             Отменить

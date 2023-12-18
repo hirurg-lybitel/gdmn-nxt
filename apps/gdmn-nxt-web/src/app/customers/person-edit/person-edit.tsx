@@ -217,7 +217,7 @@ export function PersonEdit(props: PersonEditProps) {
       hideBackdrop
     >
       <DialogTitle>
-        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление контакта'}
+        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление сотрудника'}
       </DialogTitle>
       <DialogContent
         dividers
@@ -226,12 +226,12 @@ export function PersonEdit(props: PersonEditProps) {
         <PerfectScrollbar>
           <Stack
             direction="column"
-            spacing={3}
+            spacing={2}
             p="16px 24px"
           >
             <FormikProvider value={formik}>
               <Form id="personForm" onSubmit={formik.handleSubmit}>
-                <Stack direction="column" spacing={3}>
+                <Stack direction="column" spacing={2}>
                   <TextField
                     label="Имя"
                     type="text"
@@ -399,7 +399,7 @@ export function PersonEdit(props: PersonEditProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
             Отменить
