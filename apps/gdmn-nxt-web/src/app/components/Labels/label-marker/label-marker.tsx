@@ -75,6 +75,8 @@ export function LabelMarker(props: LabelMarkerProps) {
     <div
       className={styles.label}
       style={{
+        width:'100px',
+        overflow:'hidden',
         color: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`,
         backgroundColor: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${backgroundAlpha})`,
         borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word',
@@ -84,14 +86,17 @@ export function LabelMarker(props: LabelMarkerProps) {
         // width: 'min-content'
       }}
     >
-      {(icon || USR$ICON) &&
+      <div style={{display:'flex',alignItems:'center', width:'calc(100%-5px)', overflow:'hidden'}}>
+        {(icon || USR$ICON) &&
         <div style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
           <IconByName name={icon || USR$ICON}/>
         </div>
-      }
-      <span style={{margin:'0 5px 0 5px'}}>
-        {name || 'Пример'}
-      </span>
+        }
+        <span style={{margin:'0 5px 0 5px', paddingRight:'5px', width:'100%'}}>
+          {name || 'Пример'}
+        </span>
+      </div>
+
     </div>
   );
 }
