@@ -16,6 +16,7 @@ import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-fi
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery, usePostLastUsedFilterDeadlineMutation } from '../../../features/kanban/kanbanFiltersApi';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 
 export interface IChanges {
   id: number;
@@ -196,16 +197,8 @@ export function Deals(props: DealsProps) {
                   : undefined
               }
             />
-            <Stack direction="row">
-              <IconButton
-                onClick={refreshBoard}
-                disabled={columnsIsFetching}
-              >
-                {columnsIsFetching
-                  ? <CircularProgress size={17}/>
-                  : <RefreshIcon color="primary" />
-                }
-              </IconButton>
+            <Stack direction="row" alignItems="center">
+              <CustomLoadingButton loading={columnsIsFetching} onClick={refreshBoard} />
               <IconButton
                 onClick={filterHandlers.filterClick}
                 disabled={columnsIsFetching}
