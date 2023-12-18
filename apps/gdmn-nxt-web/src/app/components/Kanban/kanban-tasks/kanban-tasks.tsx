@@ -188,9 +188,6 @@ export function KanbanTasks(props: KanbanTasksProps) {
         <IconButton color="primary" onClick={handleTaskAdd}>
           <AddCircleRoundedIcon />
         </IconButton>
-        {/* <IconButton color="primary" onClick={refetch} >
-          <RefreshIcon />
-        </IconButton> */}
       </Stack>
       <CustomizedCard
         borders

@@ -19,12 +19,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import TasksFilter, { IFilteringData } from '../../../components/Kanban/tasks-filter/tasks-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 
 export interface TasksProps {}
 
 export function Tasks(props: TasksProps) {
   const [tabNo, setTabNo] = useState('0');
-  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
+  const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.tasks);
   const { data: columns = [], isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanTasksQuery({
     userId, ...filterData
@@ -56,6 +57,21 @@ export function Tasks(props: TasksProps) {
 
   const filterClick = useCallback(() => {
     setOpenFilters(true);
+  }, []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+  }, []);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
   }, []);
 
 
@@ -111,7 +127,23 @@ export function Tasks(props: TasksProps) {
               </Tooltip>
             </ToggleButton>
           </ToggleButtonGroup>
-          <Box flex={1} />
+          <SearchBar
+            disabled={columnsIsFetching}
+            onCancelSearch={cancelSearch}
+            onRequestSearch={requestSearch}
+            cancelOnEscape
+            fullWidth
+            placeholder="Поиск задачи по описанию"
+            iconPosition="start"
+            style={{
+              margin: '0 8px'
+            }}
+            value={
+              filterData && filterData.name
+                ? filterData.name[0]
+                : undefined
+            }
+          />
           <PermissionsGate actionAllowed={userPermissions?.tasks?.POST}>
             <IconButton
               disabled={columnsIsFetching}
@@ -127,7 +159,7 @@ export function Tasks(props: TasksProps) {
             disabled={columnsIsFetching}
           >
             <Tooltip
-              title={Object.keys(filterData || {}).length > 0
+              title={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
                 ? 'У вас есть активные фильтры'
                 : 'Выбрать фильтры'
               }
@@ -135,7 +167,9 @@ export function Tasks(props: TasksProps) {
             >
               <Badge
                 color="error"
-                variant={Object.keys(filterData || {}).length > 0 ? 'dot' : 'standard'}
+                variant={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
+                  ? 'dot'
+                  : 'standard'}
               >
                 <FilterListIcon color={columnsIsFetching ? 'disabled' : 'primary'} />
               </Badge>

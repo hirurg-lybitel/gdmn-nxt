@@ -64,7 +64,7 @@ const get: RequestHandler = async (req, res) => {
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
     const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
-    const { departments, customers, requestNumber, dealNumber, performers, period, isPerformer, isCreator } = req.query;
+    const { departments, customers, requestNumber, dealNumber, performers, period, isPerformer, isCreator, name } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
@@ -170,6 +170,7 @@ const get: RequestHandler = async (req, res) => {
               1, 0)
           ELSE 1
         END)
+        ${name ? ` AND LOWER(deal.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' ` : ''}
         ${departments ? `AND dep.ID IN (${departments})` : ''}
         ${customers ? `AND con.ID IN (${customers})` : ''}
         ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
@@ -594,7 +595,7 @@ const getTasks: RequestHandler = async (req, res) => {
 
     const userId = parseInt(req.query.userId as string);
     const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
-    const { taskNumber, performers, period, isPerformer, isCreator } = req.query;
+    const { taskNumber, performers, period, isPerformer, isCreator, name } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
@@ -611,11 +612,11 @@ const getTasks: RequestHandler = async (req, res) => {
     })();
 
     const filter = `
+      ${name ? ` AND LOWER(task.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' ` : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
       ${performerOrCreator}
       ${periods.length === 2 ? ` AND CAST(task.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
-
 
     const checkFullView = `
       EXISTS(
