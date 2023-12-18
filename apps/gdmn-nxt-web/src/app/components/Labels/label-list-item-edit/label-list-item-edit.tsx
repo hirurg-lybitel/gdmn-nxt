@@ -144,7 +144,10 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
               <Stack direction="column" spacing={3}>
-                <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
+                <div style={{height:'40px', display:'flex',alignItems:'center'}}>
+                  <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
+                </div>
+
                 <div style={{width:'100%',display:'flex', alignItems:'center'}}>
                   <div style={{marginRight:'10px'}}>
                     <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
