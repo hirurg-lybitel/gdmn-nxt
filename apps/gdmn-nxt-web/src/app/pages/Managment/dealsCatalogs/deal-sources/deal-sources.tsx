@@ -1,5 +1,5 @@
 import styles from './deal-sources.module.less';
-import { Box, Button, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
@@ -58,14 +58,16 @@ export function DealSources(props: DealSourcesProps) {
       resizable: false,
       getActions: (params: GridRowParams) => [
         Object.keys(params.row).length > 0
-          ? <GridActionsCellItem
+          ?
+          <IconButton
             key={1}
-            icon={<EditIcon />}
-            onClick={handleEditSource(params.row)}
-            label="Edit"
             color="primary"
+            size="small"
+            onClick={handleEditSource(params.row)}
             disabled={isFetching || deleteDealSourceIsLoading || updateDealSourceIsLoading}
-          />
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
           : <></>
       ]
     }

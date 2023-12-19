@@ -1,18 +1,16 @@
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { DataGridProProps, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
+import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
-import styles from './kanban-list.module.less';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAddCardMutation, useAddTaskMutation, useDeleteCardMutation, useDeleteTaskMutation, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import { IChanges } from '../../../pages/Managment/deals/deals';
 import { RootState } from '../../../store';
-import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
+import { IconButton } from '@mui/material';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
@@ -56,13 +54,14 @@ export function KanbanList(props: KanbanListProps) {
         Object.keys(params.row).length > 0
           ? <>
             <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
-              <GridActionsCellItem
+              <IconButton
                 key={1}
-                icon={<EditIcon />}
-                onClick={handleCardEdit(params.row)}
-                label="Edit"
                 color="primary"
-              />
+                size="small"
+                onClick={handleCardEdit(params.row)}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
             </PermissionsGate>
           </>
           : <></>
