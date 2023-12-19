@@ -241,11 +241,12 @@ export function Customers(props: CustomersProps) {
                 }}
               >
                 {labels.map((label) => {
+                  console.log(label)
                   return (
                     <div>
                       <Tooltip
                         placement='top'
-                        title={label.USR$NAME}
+                        title={label.USR$DESCRIPTION}
                       >
                         <ListItemButton
                           key={label.ID}
@@ -257,9 +258,7 @@ export function Customers(props: CustomersProps) {
                             }
                           }}
                         >
-                          <LabelMarker label={label?.USR$NAME.length > 10
-                          ? {...label, USR$NAME: label.USR$NAME.slice(0,10) + '...'}
-                          : label} />
+                          <LabelMarker label={label} />
                         </ListItemButton>
                       </Tooltip>
                     </div>

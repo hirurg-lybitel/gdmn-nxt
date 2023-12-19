@@ -90,7 +90,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     },
     validationSchema: yup.object().shape({
       USR$NAME: yup.string().required('')
-        .max(60, 'Слишком длинное наименование'),
+        .max(30, 'Слишком длинное наименование'),
       USR$DESCRIPTION: yup.string().max(40, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
