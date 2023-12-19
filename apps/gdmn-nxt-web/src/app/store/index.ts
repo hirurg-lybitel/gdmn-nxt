@@ -61,7 +61,6 @@ const reducers = combineReducers({
   [contractsListApi.reducerPath]: contractsListApi.reducer,
   [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
   [workTypesApi.reducerPath]: workTypesApi.reducer,
-  [labelsApi.reducerPath]: labelsApi.reducer,
   [permissionsApi.reducerPath]: permissionsApi.reducer,
   [systemUsers.reducerPath]: systemUsers.reducer,
   [topEarningApi.reducerPath]: topEarningApi.reducer,

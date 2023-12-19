@@ -1,16 +1,15 @@
 import styles from './deny-reasons.module.less';
 import { IDenyReason } from '@gsbelarus/util-api-types';
-import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
+import { GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
 import { useAddDenyReasonMutation, useDeleteDenyReasonMutation, useGetDenyReasonsQuery, useUpdateDenyReasonMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { useCallback, useMemo, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DenyReasonsUpsert from 'apps/gdmn-nxt-web/src/app/components/Kanban/deny-reasons-upsert/deny-reasons-upsert';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
-import { Box, Button, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
 import AddIcon from '@mui/icons-material/Add';
-
 
 /* eslint-disable-next-line */
 export interface DenyReasonsProps {}
@@ -21,7 +20,7 @@ export function DenyReasons(props: DenyReasonsProps) {
   const [updateDenyReason, { isLoading: updateDenyReasonIsLoading }] = useUpdateDenyReasonMutation();
   const [deleteDenyReason, { isLoading: deleteDenyReasonIsLoading }] = useDeleteDenyReasonMutation();
 
-  const [upsertSource, setUpsertDenyReason] = useState(false);
+  const [upsertDenyReason, setUpsertDenyReason] = useState(false);
   const [denyReason, setDenyReason] = useState<IDenyReason>();
 
   const handleCancel = useCallback(() => setUpsertDenyReason(false), []);
@@ -58,14 +57,16 @@ export function DenyReasons(props: DenyReasonsProps) {
       resizable: false,
       getActions: (params: GridRowParams) => [
         Object.keys(params.row).length > 0
-          ? <GridActionsCellItem
+          ?
+          <IconButton
             key={1}
-            icon={<EditIcon />}
-            onClick={handleEditSource(params.row)}
-            label="Edit"
             color="primary"
+            size="small"
             disabled={isFetching || deleteDenyReasonIsLoading || updateDenyReasonIsLoading}
-          />
+            onClick={handleEditSource(params.row)}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
           : <></>
       ]
     }
@@ -73,12 +74,12 @@ export function DenyReasons(props: DenyReasonsProps) {
 
   const memoUpsertDenyReason = useMemo(() =>
     <DenyReasonsUpsert
-      open={upsertSource}
+      open={upsertDenyReason}
       denyReason={denyReason}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       onDelete={handleDelete}
-    />, [upsertSource, denyReason]);
+    />, [upsertDenyReason, denyReason]);
 
 
   return (
