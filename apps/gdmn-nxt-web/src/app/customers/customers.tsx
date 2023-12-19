@@ -257,7 +257,9 @@ export function Customers(props: CustomersProps) {
                             }
                           }}
                         >
-                          <LabelMarker label={label} maxLetter={10} />
+                          <LabelMarker label={label?.USR$NAME.length > 10
+                          ? {...label, USR$NAME: label.USR$NAME.slice(0,10) + '...'}
+                          : label} />
                         </ListItemButton>
                       </Tooltip>
                     </div>

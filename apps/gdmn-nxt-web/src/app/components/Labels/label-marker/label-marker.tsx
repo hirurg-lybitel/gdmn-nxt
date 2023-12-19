@@ -5,8 +5,7 @@ import { IconByName } from '@gsbelarus/ui-common-dialogs';
 /* eslint-disable-next-line */
 export interface LabelMarkerProps {
   label: ILabel;
-  icon?:string,
-  maxLetter?:number
+  icon?:string
 }
 
 function hexToRGB(h: any) {
@@ -91,12 +90,7 @@ export function LabelMarker(props: LabelMarkerProps) {
         </div>
       }
       <span style={{margin:'0 5px 0 5px'}}>
-        {props.maxLetter ?
-          name?.length > props.maxLetter
-            ? name?.slice(0,props.maxLetter) + '...'
-            : name
-          : name
-        }
+        {name || 'Пример'}
       </span>
     </div>
   );
