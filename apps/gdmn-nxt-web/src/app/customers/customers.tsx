@@ -239,9 +239,8 @@ export function Customers(props: CustomersProps) {
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
-              >
+              > 
                 {labels.map((label) => {
-                  console.log(label)
                   return (
                     <div>
                       <Tooltip
