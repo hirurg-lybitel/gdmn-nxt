@@ -57,7 +57,11 @@ const Transition = forwardRef(function Transition(
   },
   ref: Ref<unknown>,
 ) {
-  return <Slide direction="left" ref={ref} {...props} />;
+  return <Slide
+    direction="left"
+    ref={ref}
+    {...props}
+  />;
 });
 
 export interface LabelListItemEditProps {
@@ -78,7 +82,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     USR$NAME: label?.USR$NAME || '',
     USR$DESCRIPTION: label?.USR$DESCRIPTION || '',
     USR$COLOR: label?.USR$COLOR || '',
-    USR$ICON:label?.USR$ICON || ''
+    USR$ICON: label?.USR$ICON || ''
   };
 
   const formik = useFormik<ILabel>({
@@ -127,9 +131,9 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const [ref] = useOutsideClick(selectColor, () => setSelectColor(false));
 
-  const changeIcon = (iconName:string) => {
-    formik.setFieldValue('USR$ICON',iconName)
-  }
+  const changeIcon = (iconName: string) => {
+    formik.setFieldValue('USR$ICON', iconName);
+  };
 
   return (
     <>
@@ -144,16 +148,16 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
               <Stack direction="column" spacing={2}>
-                <div style={{height:'40px', display:'flex',alignItems:'center'}}>
+                <div style={{ height: '40px', display: 'flex', alignItems: 'center' }}>
                   <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
                 </div>
 
-                <div style={{width:'100%',display:'flex', alignItems:'center'}}>
-                  <div style={{marginRight:'10px'}}>
+                <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                  <div style={{ marginRight: '10px' }}>
                     <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
                   </div>
                   <TextField
-                    style={{width:'100%'}}
+                    style={{ width: '100%' }}
                     label="Наименование"
                     type="text"
                     required

@@ -2,31 +2,36 @@ import React, { useState } from 'react';
 import { IconButton, useMediaQuery, Theme, Autocomplete, TextField, autocompleteClasses } from '@mui/material';
 import { useTheme, styled } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import * as icons from '@mui/icons-material'
+import * as icons from '@mui/icons-material';
 import { FixedSizeGrid, VariableSizeList, GridChildComponentProps } from 'react-window';
-import Popper from '@mui/material/Popper'
+import Popper from '@mui/material/Popper';
 import { IconByName } from '@gsbelarus/ui-common-dialogs';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { useOutsideClick } from '../../features/common/useOutsideClick';
 
-const columnCount = 7
+const columnCount = 7;
 function renderRow(props: GridChildComponentProps) {
-const { data, rowIndex, style, columnIndex } = props;
+  const { data, rowIndex, style, columnIndex } = props;
   const dataSet = data[columnIndex + (rowIndex * columnCount) ];
-  if(!dataSet) return <></>
+  if (!dataSet) return <></>;
   return (
-    <div style={{...style, width:'40px'}}>
-      <IconButton onClick={()=>{dataSet[3](dataSet[1])}} style={{height:'40px',width:'40px',borderRadius:0}}>
+    <div style={{ ...style, width: '40px' }}>
+      <IconButton
+        onClick={() => {
+          dataSet[3](dataSet[1]);
+        }}
+        style={{ height: '40px', width: '40px', borderRadius: 0 }}
+      >
         <IconByName name={dataSet?.[1]}/>
       </IconButton>
     </div>
-  )
+  );
 }
 
 const OuterElementContext = React.createContext({});
 
 // Adapter for react-window
-const ListboxComponent = (outRef:React.MutableRefObject<any>) => React.forwardRef<
+const ListboxComponent = (outRef: React.MutableRefObject<any>) => React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLElement>
 >(function ListboxComponent(props, ref) {
@@ -54,7 +59,7 @@ const ListboxComponent = (outRef:React.MutableRefObject<any>) => React.forwardRe
           columnCount={columnCount}
           columnWidth={40}
           height={150}
-          rowCount={itemCount/columnCount}
+          rowCount={itemCount / columnCount}
           rowHeight={35}
           width={300}
         >
@@ -76,40 +81,40 @@ const StyledPopper = styled(Popper)({
 });
 
 const useStyles = makeStyles((theme: Theme) => ({
-  picker:{
+  picker: {
     '& .MuiInputBase-root': {
-      borderRadius:0,
-      borderBottomLeftRadius:0
+      borderRadius: 0,
+      borderBottomLeftRadius: 0
     }
   }
 }));
 
 export interface IconSelectProps {
-  icon:string,
-  setIcon:(arg1:string) => void
+  icon: string,
+  setIcon: (arg1: string) => void
 }
 
 export function IconSelect(props: IconSelectProps) {
   const classes = useStyles();
 
-  const {icon,setIcon} = props
+  const { icon, setIcon } = props;
 
-  const [openDialog,setOpenDialog] = useState<boolean>(false)
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   const changeDialog = () => {
-    setOpenDialog(!openDialog)
-  }
+    setOpenDialog(!openDialog);
+  };
 
   const theme = useTheme();
 
   const [ref, secondRef] = useOutsideClick(openDialog, () => {
-    console.log('asd')
-    setOpenDialog(false)
+    console.log('asd');
+    setOpenDialog(false);
   });
 
   return (
-    <div ref={ref} style={{position:'relative'}}>
-      <IconButton  onClick={changeDialog}>
+    <div ref={ref} style={{ position: 'relative' }}>
+      <IconButton onClick={changeDialog}>
         {icon === ''
           ? <RadioButtonUncheckedIcon/>
           : <IconByName name={icon}/>
@@ -117,17 +122,18 @@ export function IconSelect(props: IconSelectProps) {
       </IconButton>
       <div
         style={{
-          position:'absolute',
-          padding:'10px',
-          zIndex:'1400',
-          left:'30px',
-          top:'30px',
+          position: 'absolute',
+          padding: '10px',
+          zIndex: '1400',
+          left: '30px',
+          top: '30px',
           visibility: openDialog ? 'visible' : 'hidden',
           opacity: openDialog ? 1 : 0
-        }}>
+        }}
+      >
         <Autocomplete
           id="virtualize-demo"
-          sx={{ width: 300,boxShadow: 4, background:theme.palette.background.paper, borderRadius:'12px 12px 0 0' }}
+          sx={{ width: 300, boxShadow: 4, background: theme.palette.background.paper, borderRadius: '12px 12px 0 0' }}
           className={classes.picker}
           disableListWrap
           clearOnBlur={false}
