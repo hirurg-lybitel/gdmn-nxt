@@ -24,20 +24,20 @@ export const StyledTreeView = styled(TreeView)(({ theme }) => ({
 }));
 
 export const StyledTreeItem = styled(TreeItem)(() => ({
-  [`& .Mui-selected`]: {
+  '& .Mui-selected': {
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     backgroundColor: gdmnTheme.palette.primary.main
   },
-  [`& .MuiTreeItem-content`]: {
+  '& .MuiTreeItem-content': {
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit',
     whiteSpace: 'nowrap'
   },
-  [`& .MuiTreeItem-label`]: {
+  '& .MuiTreeItem-label': {
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit',
   },
-  [`& .MuiTreeItem-iconContainer`]: {
+  '& .MuiTreeItem-iconContainer': {
     '& .close': {
       opacity: 0.3,
     },
@@ -46,7 +46,7 @@ export const StyledTreeItem = styled(TreeItem)(() => ({
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit'
   },
-  [`& .MuiTreeItem-group`]: {
+  '& .MuiTreeItem-group': {
     marginLeft: 13,
     paddingLeft: 4,
     borderLeft: `1px dotted ${alpha(gdmnTheme.palette.text.primary, 0.4)}`,

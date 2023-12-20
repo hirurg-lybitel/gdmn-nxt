@@ -229,7 +229,8 @@ export function Customers(props: CustomersProps) {
           <Stack spacing={1}>
             <div>{value}</div>
             {labels?.length
-              ? <List
+              ?
+              <List
                 style={{
                   flexDirection: 'row',
                   padding: '0px',
@@ -239,12 +240,12 @@ export function Customers(props: CustomersProps) {
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
-              > 
+              >
                 {labels.map((label) => {
                   return (
-                    <div>
+                    <div key={label.ID}>
                       <Tooltip
-                        placement='top'
+                        placement="top"
                         title={label.USR$DESCRIPTION}
                       >
                         <ListItemButton
@@ -262,7 +263,7 @@ export function Customers(props: CustomersProps) {
                       </Tooltip>
                     </div>
 
-                  )
+                  );
                 }
                 )}
               </List>

@@ -116,9 +116,9 @@ export function LabelList(props: LabelListProps) {
             </PermissionsGate>
           </div>
         </CardToolbar>
-        <CardContent style={{paddingRight:'5px'}}>
+        <CardContent style={{ paddingRight: '5px' }}>
           <CustomizedScrollBox>
-            <div style={{paddingRight:'10px'}}>
+            <div style={{ paddingRight: '10px' }}>
               {componentIsFetching
                 ? [...Array(10)].map((el, idx) =>
                   <div key={idx}>
