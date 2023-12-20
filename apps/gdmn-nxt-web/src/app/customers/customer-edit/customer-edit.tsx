@@ -40,7 +40,7 @@ import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-comp
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import LabelListItemEdit from '@gdmn-nxt/components/Labels/label-list-item-edit/label-list-item-edit';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
-import { IconByName } from '@gsbelarus/ui-common-dialogs';
+import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -200,28 +200,28 @@ export function CustomerEdit(props: CustomerEditProps) {
     />
   , [confirmOpen, deleting]);
 
-  const [labelEdit,setLabelEdit] =useState<boolean>(false)
+  const [labelEdit, setLabelEdit] = useState<boolean>(false);
 
-  const [addLabel, { isLoading: addIsLoading, data:newLabel }] = useAddLabelMutation();
+  const [addLabel, { isLoading: addIsLoading, data: newLabel }] = useAddLabelMutation();
   const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
 
   const isFetching = editIsLoading || addIsLoading || labelsFetching || labelsLoading;
 
-  const [labelValue,setLabelValue] = useState<ILabel | undefined>(undefined)
+  const [labelValue, setLabelValue] = useState<ILabel | undefined>(undefined);
 
   const handleOpenLabelAdd = () => {
-    setLabelValue(undefined)
-    setLabelEdit(true)
-  }
+    setLabelValue(undefined);
+    setLabelEdit(true);
+  };
 
-  const handleOpenLabelEdit = (label:ILabel) => () => {
-    setLabelValue(label)
-    setLabelEdit(true)
-  }
+  const handleOpenLabelEdit = (label: ILabel) => () => {
+    setLabelValue(label);
+    setLabelEdit(true);
+  };
 
   const handleCloseLabel = () => {
-    setLabelEdit(false)
-  }
+    setLabelEdit(false);
+  };
 
   const memoPaperFooter = useMemo(() =>
     <div>
@@ -233,32 +233,32 @@ export function CustomerEdit(props: CustomerEditProps) {
     </div>,
   []);
 
-  useEffect(()=>{
-    if(!newLabel) return
+  useEffect(() => {
+    if (!newLabel) return;
     formik.setFieldValue(
       'LABELS',
       (formik.values.LABELS || []).concat([newLabel]) || initValue.LABELS
     );
-  },[newLabel])
+  }, [newLabel]);
 
   const handleOnSubmit = (label: ILabel) => {
-    if(label.ID !== 0){
-      handleCloseLabel()
-      updateLabel(label)
-      return
+    if (label.ID !== 0) {
+      handleCloseLabel();
+      updateLabel(label);
+      return;
     }
-    handleCloseLabel()
+    handleCloseLabel();
     addLabel(label);
   };
 
   const labelEditComponent = useMemo(() =>
-  <LabelListItemEdit
-    open={labelEdit}
-    label={labelValue}
-    onSubmit={handleOnSubmit}
-    onCancelClick={handleCloseLabel}
-  />
-  ,[labelEdit])
+    <LabelListItemEdit
+      open={labelEdit}
+      label={labelValue}
+      onSubmit={handleOnSubmit}
+      onCancelClick={handleCloseLabel}
+    />
+  , [labelEdit]);
 
   return (
     <CustomizedDialog
@@ -405,7 +405,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                         getOptionLabel={opt => opt.USR$NAME}
                         renderOption={(props, option, { selected }) => (
                           <li {...props} key={option.ID}>
-                            <div style={{width:'100%', display:'flex',alignItems:'center'}}>
+                            <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
                               <Checkbox
                                 icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                                 checkedIcon={<CheckBoxIcon fontSize="small" />}
@@ -413,41 +413,30 @@ export function CustomerEdit(props: CustomerEditProps) {
                                 checked={selected}
                               />
                               <Stack direction="column">
-                              <Stack style={{display:'flex',alignItems:'center'}} direction="row">
-                                <div style={{
-                                    backgroundColor: option.USR$COLOR,
-                                    borderRadius:'100%',
-                                    height:'30px',
-                                    width:'30px',
-                                    minWidth:'30px',
-                                    display:'flex',
-                                    justifyContent:'center',
-                                    alignItems:'center',
-                                    marginRight:'5px'
-                                  }}>
-                                  <IconByName fontSize='small' name={option.USR$ICON}/>
-                                </div>
-                                {/* <Box
-                                  component="span"
-                                  sx={{
-                                    width: 14,
-                                    height: 14,
-                                    // flexShrink: 0,
-                                    borderRadius: '12px',
-                                    mr: 1,
-                                    alignSelf: 'center',
-                                  }}
-                                  style={{ backgroundColor: option.USR$COLOR }}
-                                /> */}
-                                <Box>
-                                  {option.USR$NAME}
-                                </Box>
-                              </Stack>
-                              <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
+                                <Stack direction="row" spacing={1}>
+                                  <Box style={{ display: 'flex', width: '30px', alignItems: 'center', justifyContent: 'center' }}>
+                                    {option.USR$ICON
+                                      ? <IconByName name={option.USR$ICON} style={{ color: option.USR$COLOR }} />
+                                      : <Box
+                                        component="span"
+                                        style={{
+                                          backgroundColor: option.USR$COLOR,
+                                          width: 14,
+                                          height: 14,
+                                          borderRadius: '12px',
+                                        }}
+                                      />
+                                    }
+                                  </Box>
+                                  <Box>
+                                    {option.USR$NAME}
+                                  </Box>
+                                </Stack>
+                                <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
                               </Stack>
                             </div>
                             <ItemButtonEdit
-                             disabled={isFetching}
+                              disabled={isFetching}
                               color="primary"
                               onClick={handleOpenLabelEdit(option)}
                             />

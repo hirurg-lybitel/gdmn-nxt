@@ -1,6 +1,5 @@
-import { Box, Button, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField, Theme } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Stack, TextField, Theme } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './label-list-item-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ILabel } from '@gsbelarus/util-api-types';
@@ -9,10 +8,9 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { SketchPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
-import { useTheme } from '@mui/material/styles';
 import { useOutsideClick } from '../../../features/common/useOutsideClick';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import IconSelect from '@gdmn-nxt/components/IconSelect/Icon-select';
+import IconSelect from '@gdmn-nxt/components/icon-select/icon-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -51,19 +49,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>,
-) {
-  return <Slide
-    direction="left"
-    ref={ref}
-    {...props}
-  />;
-});
-
 export interface LabelListItemEditProps {
   open: boolean;
   label?: ILabel;
@@ -95,7 +80,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     validationSchema: yup.object().shape({
       USR$NAME: yup.string().required('')
         .max(30, 'Слишком длинное наименование'),
-      USR$DESCRIPTION: yup.string().max(40, 'Слишком длинное описание'),
+      USR$DESCRIPTION: yup.string().max(120, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
       if (!confirmOpen) {
@@ -148,14 +133,15 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
               <Stack direction="column" spacing={2}>
-                <div style={{ height: '40px', display: 'flex', alignItems: 'center' }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                >
+                  <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
                   <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
-                </div>
-
+                </Stack>
                 <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-                  <div style={{ marginRight: '10px' }}>
-                    <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
-                  </div>
                   <TextField
                     style={{ width: '100%' }}
                     label="Наименование"
@@ -163,7 +149,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                     required
                     autoFocus
                     name="USR$NAME"
-                    // onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.USR$NAME}
                     error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
@@ -204,7 +189,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                   name="USR$DESCRIPTION"
                   multiline
                   minRows={4}
-                  // onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                   value={formik.values.USR$DESCRIPTION}
                   error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}

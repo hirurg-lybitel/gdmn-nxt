@@ -23,7 +23,8 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
     MuiAutocomplete: {
       ...locales.ruRU.components?.MuiAutocomplete,
       defaultProps: {
-        size: 'small'
+        size: 'small',
+        noOptionsText: 'Нет данных'
       },
       styleOverrides: {
         paper: {
@@ -135,6 +136,11 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
           }
         }
       }
-    }
+    },
+    MuiSvgIcon: {
+      defaultProps: {
+        fontSize: 'small'
+      }
+    },
   };
 }

@@ -1,6 +1,6 @@
 import { ILabel } from '@gsbelarus/util-api-types';
 import styles from './label-marker.module.less';
-import { IconByName } from '@gsbelarus/ui-common-dialogs';
+import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 
 /* eslint-disable-next-line */
 export interface LabelMarkerProps {

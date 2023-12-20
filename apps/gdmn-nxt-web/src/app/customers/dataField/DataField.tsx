@@ -1,9 +1,9 @@
-import { Chip, Box, Stack, Tooltip } from '@mui/material';
+import { Chip, Tooltip } from '@mui/material';
 import style from './datafield.module.less';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { IconByName } from '@gsbelarus/ui-common-dialogs';
+import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 
 interface DataFieldProps {
     name: string;
@@ -60,20 +60,20 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
       display: 'flex',
       padding: '10px',
-      paddingBottom:0,
+      paddingBottom: 0,
       paddingTop: 0,
       columnGap: '5px',
-      flexWrap:'wrap'
+      flexWrap: 'wrap'
     },
     childrenItem: {
-      marginBottom:'10px'
+      marginBottom: '10px'
       // marginRight: '5px',
     }
   };
 });
 
 const DataField = ({ name, data, masName, deleteField }: DataFieldProps) => {
-  const onHandleDelete = (item:string) => () => {
+  const onHandleDelete = (item: string) => () => {
     deleteField(masName, item);
   };
 
@@ -91,9 +91,12 @@ const DataField = ({ name, data, masName, deleteField }: DataFieldProps) => {
       <div className={classes.childrenContainer}>
         {data.map((item: any) => (
           <div className={classes.childrenItem} key={item.ID}>
-            <Tooltip placement='top' title={item.USR$NAME}>
+            <Tooltip placement="top" title={item.USR$NAME}>
               <Chip
-                icon={<div style={{marginLeft:'5px', display:'flex',justifyContent:'center',alignItems:'center'}}><IconByName name={item.USR$ICON}/></div>}
+                icon={
+                  <div style={{ marginLeft: '5px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <IconByName name={item.USR$ICON}/>
+                  </div>}
                 style={{ maxWidth: '140px', margin: '0', display: 'flex' }}
                 label={item.NAME || item.USR$NUMBER || item.USR$NAME}
                 variant="outlined"

@@ -245,7 +245,8 @@ export function Customers(props: CustomersProps) {
                   return (
                     <div key={label.ID}>
                       <Tooltip
-                        placement="top"
+                        arrow
+                        placement="bottom-start"
                         title={label.USR$DESCRIPTION}
                       >
                         <ListItemButton

@@ -74,7 +74,7 @@ export function Profile(props: ProfileProps) {
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
   const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -91,12 +91,12 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleAccountClick = () => {
-    navigate('preferences/account')
+    navigate('preferences/account');
     handleClose();
   };
 
   const handleSettingsClick = () => {
-    navigate('preferences/settings')
+    navigate('preferences/settings');
     handleClose();
   };
 
