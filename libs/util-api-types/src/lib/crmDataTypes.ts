@@ -203,6 +203,7 @@ export interface ILabel extends IWithID {
   USR$NAME: string;
   USR$COLOR?: string;
   USR$DESCRIPTION?: string;
+  USR$ICON:string
 };
 
 export interface IPermissionsAction extends IWithID {

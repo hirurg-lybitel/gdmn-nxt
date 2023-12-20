@@ -27,7 +27,7 @@ import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { useGetLabelsQuery } from '../../features/labels';
+import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -36,6 +36,11 @@ import { useGetBusinessProcessesQuery } from '../../features/business-processes'
 import ContactPersonList from '../contact-person-list/contact-person-list';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
+import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import LabelListItemEdit from '@gdmn-nxt/components/Labels/label-list-item-edit/label-list-item-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -90,7 +95,7 @@ export function CustomerEdit(props: CustomerEditProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   // const { data: groups, isFetching: groupFetching } = useGetGroupsQuery();
-  const { data: labels, isFetching: labelsFetching } = useGetLabelsQuery();
+  const { data: labels, isFetching: labelsFetching, isLoading: labelsLoading } = useGetLabelsQuery();
   const { data: businessProcesses = [], isFetching: businessProcessesFetching } = useGetBusinessProcessesQuery();
 
   const classes = useStyles();
@@ -195,11 +200,72 @@ export function CustomerEdit(props: CustomerEditProps) {
     />
   , [confirmOpen, deleting]);
 
+  const [labelEdit, setLabelEdit] = useState<boolean>(false);
+
+  const [addLabel, { isLoading: addIsLoading, data: newLabel }] = useAddLabelMutation();
+  const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
+
+  const isFetching = editIsLoading || addIsLoading || labelsFetching || labelsLoading;
+
+  const [labelValue, setLabelValue] = useState<ILabel | undefined>(undefined);
+
+  const handleOpenLabelAdd = () => {
+    setLabelValue(undefined);
+    setLabelEdit(true);
+  };
+
+  const handleOpenLabelEdit = (label: ILabel) => () => {
+    setLabelValue(label);
+    setLabelEdit(true);
+  };
+
+  const handleCloseLabel = () => {
+    setLabelEdit(false);
+  };
+
+  const memoPaperFooter = useMemo(() =>
+    <div>
+      <Button
+        disabled={isFetching}
+        startIcon={<AddCircleRoundedIcon />}
+        onClick={handleOpenLabelAdd}
+      >Создать метку</Button>
+    </div>,
+  []);
+
+  useEffect(() => {
+    if (!newLabel) return;
+    formik.setFieldValue(
+      'LABELS',
+      (formik.values.LABELS || []).concat([newLabel]) || initValue.LABELS
+    );
+  }, [newLabel]);
+
+  const handleOnSubmit = (label: ILabel) => {
+    if (label.ID !== 0) {
+      handleCloseLabel();
+      updateLabel(label);
+      return;
+    }
+    handleCloseLabel();
+    addLabel(label);
+  };
+
+  const labelEditComponent = useMemo(() =>
+    <LabelListItemEdit
+      open={labelEdit}
+      label={labelValue}
+      onSubmit={handleOnSubmit}
+      onCancelClick={handleCloseLabel}
+    />
+  , [labelEdit]);
+
   return (
     <CustomizedDialog
       open={open}
       onClose={handleClose}
     >
+      {labelEditComponent}
       <DialogTitle>
         {customer ? `Редактирование: ${customer.NAME}` : 'Добавление клиента'}
       </DialogTitle>
@@ -323,6 +389,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                         multiple
                         limitTags={2}
                         disableCloseOnSelect
+                        PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
                         onChange={(e, value) => {
                           formik.setFieldValue(
                             'LABELS',
@@ -338,32 +405,41 @@ export function CustomerEdit(props: CustomerEditProps) {
                         getOptionLabel={opt => opt.USR$NAME}
                         renderOption={(props, option, { selected }) => (
                           <li {...props} key={option.ID}>
-                            <Checkbox
-                              icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                              checkedIcon={<CheckBoxIcon fontSize="small" />}
-                              style={{ marginRight: 8 }}
-                              checked={selected}
-                            />
-                            <Stack direction="column">
-                              <Stack direction="row">
-                                <Box
-                                  component="span"
-                                  sx={{
-                                    width: 14,
-                                    height: 14,
-                                    // flexShrink: 0,
-                                    borderRadius: '12px',
-                                    mr: 1,
-                                    alignSelf: 'center',
-                                  }}
-                                  style={{ backgroundColor: option.USR$COLOR }}
-                                />
-                                <Box>
-                                  {option.USR$NAME}
-                                </Box>
+                            <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                              <Checkbox
+                                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                                checkedIcon={<CheckBoxIcon fontSize="small" />}
+                                style={{ marginRight: 8 }}
+                                checked={selected}
+                              />
+                              <Stack direction="column">
+                                <Stack direction="row" spacing={1}>
+                                  <Box style={{ display: 'flex', width: '30px', alignItems: 'center', justifyContent: 'center' }}>
+                                    {option.USR$ICON
+                                      ? <IconByName name={option.USR$ICON} style={{ color: option.USR$COLOR }} />
+                                      : <Box
+                                        component="span"
+                                        style={{
+                                          backgroundColor: option.USR$COLOR,
+                                          width: 14,
+                                          height: 14,
+                                          borderRadius: '12px',
+                                        }}
+                                      />
+                                    }
+                                  </Box>
+                                  <Box>
+                                    {option.USR$NAME}
+                                  </Box>
+                                </Stack>
+                                <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
                               </Stack>
-                              <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
-                            </Stack>
+                            </div>
+                            <ItemButtonEdit
+                              disabled={isFetching}
+                              color="primary"
+                              onClick={handleOpenLabelEdit(option)}
+                            />
                           </li>
                         )}
                         renderInput={(params) => (

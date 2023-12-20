@@ -31,7 +31,7 @@ export const get: RequestHandler = async(req, res) => {
       {
         name: id ? 'label' : 'labels',
         query: `
-          SELECT ID, USR$NAME, USR$COLOR, USR$DESCRIPTION
+          SELECT ID, USR$NAME, USR$COLOR, USR$DESCRIPTION, USR$ICON
           FROM USR$CRM_LABELS
           ${id ? ' WHERE ID = ?' : ''}`,
         params: id ? [id] : undefined,

@@ -20,6 +20,8 @@ export const requests = {
       l.ID,
       l.USR$NAME,
       l.USR$COLOR,
+      l.USR$ICON,
+      l.USR$DESCRIPTION,
       cl.USR$CONTACTKEY
     FROM USR$CRM_CONTACT_LABELS cl
     JOIN GD_CONTACT con ON con.ID = cl.USR$CONTACTKEY

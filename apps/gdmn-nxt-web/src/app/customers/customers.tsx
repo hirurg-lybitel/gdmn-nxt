@@ -84,7 +84,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
-  padding: '2.5px 0px'
+  padding: '2.5px 0px',
 };
 
 /* eslint-disable-next-line */
@@ -92,7 +92,6 @@ export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
-
   const userPermissions = usePermissions();
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
@@ -225,34 +224,49 @@ export function Customers(props: CustomersProps) {
       minWidth: 200,
       renderCell: ({ value, row }) => {
         const labels = (row as ICustomer)?.LABELS;
+
         return (
           <Stack spacing={1}>
             <div>{value}</div>
             {labels?.length
-              ? <List
+              ?
+              <List
                 style={{
                   flexDirection: 'row',
                   padding: '0px',
                   width: 'fit-content',
                   display: 'flex',
+
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
               >
-                {labels.map((label) => (
-                  <ListItemButton
-                    key={label.ID}
-                    onClick={handleLabelClick(label)}
-                    style={labelStyle}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  >
-                    <LabelMarker label={label} />
-                  </ListItemButton>
-                ))}
+                {labels.map((label) => {
+                  return (
+                    <div key={label.ID}>
+                      <Tooltip
+                        arrow
+                        placement="bottom-start"
+                        title={label.USR$DESCRIPTION}
+                      >
+                        <ListItemButton
+                          key={label.ID}
+                          onClick={handleLabelClick(label)}
+                          style={labelStyle}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'transparent'
+                            }
+                          }}
+                        >
+                          <LabelMarker label={label} />
+                        </ListItemButton>
+                      </Tooltip>
+                    </div>
+
+                  );
+                }
+                )}
               </List>
               : <></>}
 

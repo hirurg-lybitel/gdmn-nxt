@@ -1,6 +1,5 @@
-import { Box, Button, DialogActions, DialogContent, DialogTitle, Slide, Stack, TextField, Theme } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Stack, TextField, Theme } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './label-list-item-edit.module.less';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ILabel } from '@gsbelarus/util-api-types';
@@ -9,9 +8,9 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { SketchPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
-import { useTheme } from '@mui/material/styles';
 import { useOutsideClick } from '../../../features/common/useOutsideClick';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
+import IconSelect from '@gdmn-nxt/components/icon-select/icon-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -50,15 +49,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>,
-) {
-  return <Slide direction="left" ref={ref} {...props} />;
-});
-
 export interface LabelListItemEditProps {
   open: boolean;
   label?: ILabel;
@@ -76,7 +66,8 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     ID: label?.ID || 0,
     USR$NAME: label?.USR$NAME || '',
     USR$DESCRIPTION: label?.USR$DESCRIPTION || '',
-    USR$COLOR: label?.USR$COLOR || ''
+    USR$COLOR: label?.USR$COLOR || '',
+    USR$ICON: label?.USR$ICON || ''
   };
 
   const formik = useFormik<ILabel>({
@@ -88,8 +79,8 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     },
     validationSchema: yup.object().shape({
       USR$NAME: yup.string().required('')
-        .max(60, 'Слишком длинное наименование'),
-      USR$DESCRIPTION: yup.string().max(40, 'Слишком длинное описание'),
+        .max(30, 'Слишком длинное наименование'),
+      USR$DESCRIPTION: yup.string().max(120, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
       if (!confirmOpen) {
@@ -125,6 +116,10 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const [ref] = useOutsideClick(selectColor, () => setSelectColor(false));
 
+  const changeIcon = (iconName: string) => {
+    formik.setFieldValue('USR$ICON', iconName);
+  };
+
   return (
     <>
       <CustomizedDialog
@@ -135,23 +130,32 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
         </DialogTitle>
         <DialogContent dividers>
-
           <FormikProvider value={formik}>
             <Form id="mainForm" onSubmit={formik.handleSubmit}>
               <Stack direction="column" spacing={2}>
-                <LabelMarker label={formik.values} />
-                <TextField
-                  label="Наименование"
-                  type="text"
-                  required
-                  autoFocus
-                  name="USR$NAME"
-                  // onBlur={formik.handleBlur}
-                  onChange={formik.handleChange}
-                  value={formik.values.USR$NAME}
-                  error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
-                  helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
-                />
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                >
+                  <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
+                  <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
+                </Stack>
+                <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                  <TextField
+                    style={{ width: '100%' }}
+                    label="Наименование"
+                    type="text"
+                    required
+                    autoFocus
+                    name="USR$NAME"
+                    onChange={formik.handleChange}
+                    value={formik.values.USR$NAME}
+                    error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                    helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
+                  />
+                </div>
+
                 <Stack ref={ref} spacing={0.5}>
                   <TextField
                     label="Цвет"
@@ -185,7 +189,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                   name="USR$DESCRIPTION"
                   multiline
                   minRows={4}
-                  // onBlur={formik.handleBlur}
                   onChange={formik.handleChange}
                   value={formik.values.USR$DESCRIPTION}
                   error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}
