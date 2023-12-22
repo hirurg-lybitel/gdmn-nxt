@@ -133,7 +133,7 @@ export function Tasks(props: TasksProps) {
             onRequestSearch={requestSearch}
             cancelOnEscape
             fullWidth
-            placeholder="Поиск задачи по описанию"
+            placeholder="Поиск задачи"
             iconPosition="start"
             style={{
               margin: '0 8px'
