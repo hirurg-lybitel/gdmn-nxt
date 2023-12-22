@@ -170,14 +170,24 @@ const get: RequestHandler = async (req, res) => {
               1, 0)
           ELSE 1
         END)
-        ${name ? ` AND LOWER(deal.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' ` : ''}
-        ${departments ? `AND dep.ID IN (${departments})` : ''}
-        ${customers ? `AND con.ID IN (${customers})` : ''}
-        ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
-        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
+        ${name
+          ? ` AND (
+            LOWER(deal.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(deal.USR$DESCRIPTION) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(creator.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(performer.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(secondPerformer.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(source.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(CAST(deal.USR$NUMBER AS VARCHAR(10))) SIMILAR TO '%${name.toString().toLowerCase()}%'
+          ) `
+          : ''}
+        ${departments ? ` AND dep.ID IN (${departments}) ` : ''}
+        ${customers ? ` AND con.ID IN (${customers}) ` : ''}
+        ${requestNumber ? ` AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%' ` : ''}
+        ${dealNumber ? ` AND deal.USR$NUMBER = ${dealNumber} ` : ''}
         ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}
         ${performerOrCreator}
-        ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
+        ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}' ` : ''}`;
 
     const archivedDeals = `
       /** Фильтрация */
@@ -612,7 +622,17 @@ const getTasks: RequestHandler = async (req, res) => {
     })();
 
     const filter = `
-      ${name ? ` AND LOWER(task.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' ` : ''}
+      ${name
+        ? ` AND (
+          LOWER(task.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' OR
+          LOWER(task.USR$DESCRIPTION) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(CAST(task.USR$NUMBER AS VARCHAR(10))) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(creator.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(performer.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(tt.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(deal.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%'
+          ) `
+        : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
       ${performerOrCreator}

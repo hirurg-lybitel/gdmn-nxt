@@ -189,7 +189,7 @@ export function Deals(props: DealsProps) {
               onRequestSearch={filterHandlers.requestSearch}
               cancelOnEscape
               fullWidth
-              placeholder="Поиск сделки по описанию"
+              placeholder="Поиск сделки"
               iconPosition="start"
               value={
                 filtersStorage.filterData.deals && filtersStorage.filterData.deals.name
