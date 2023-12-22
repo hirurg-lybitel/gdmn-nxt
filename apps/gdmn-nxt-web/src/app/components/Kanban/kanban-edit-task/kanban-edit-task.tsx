@@ -299,7 +299,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.USR$NAME}
-                    required
                     autoFocus
                     multiline
                     minRows={1}
