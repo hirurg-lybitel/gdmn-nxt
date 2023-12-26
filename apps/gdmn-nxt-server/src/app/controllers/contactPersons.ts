@@ -278,14 +278,15 @@ const upsert: RequestHandler = async (req, res) => {
 
     sql.clear();
     sql.SQLtext = `
-      UPDATE OR INSERT INTO GD_PEOPLE(CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY)
-      VALUES(:CONTACTKEY, :POSITIONKEY, :LETTER_OF_AUTHORITY, :WCOMPANYKEY)
+      UPDATE OR INSERT INTO GD_PEOPLE(CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY, SURNAME)
+      VALUES(:CONTACTKEY, :POSITIONKEY, :LETTER_OF_AUTHORITY, :WCOMPANYKEY, :NAME)
       MATCHING(CONTACTKEY)
       RETURNING CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY`;
     sql.setParamByName('CONTACTKEY').value = sqlResultContact['ID'];
     sql.setParamByName('POSITIONKEY').value = sqlResultPosition['ID'];
     sql.setParamByName('LETTER_OF_AUTHORITY').value = req.body['USR$LETTER_OF_AUTHORITY'];
     sql.setParamByName('WCOMPANYKEY').value = req.body['WCOMPANYKEY'];
+    sql.setParamByName('NAME').value = req.body['NAME'];
     await sql.execute();
 
     sql.clear();
