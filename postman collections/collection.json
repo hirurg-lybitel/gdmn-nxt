@@ -43,6 +43,24 @@
 					"id": "a8f514a6-4d26-440f-ac50-898df31d2702"
 				},
 				{
+					"name": "Persons",
+					"item": [
+						{
+							"name": "Создать сотрудника",
+							"id": "905a0ed3-13c8-4398-8666-fb3ad6302629",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					],
+					"id": "eb1ddeea-d6e8-4197-8a02-cf9376199d04"
+				},
+				{
 					"name": "Список контактов",
 					"id": "d7354ae9-cef5-4d53-9416-c8dd2504e4c1",
 					"protocolProfileBehavior": {
