@@ -52,8 +52,18 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"ID\": -1,\r\n    \"NAME\": \"Tester\",\r\n    \"WCOMPANYKEY\": 1024197434,\r\n    \"EMAIL\": \"name..mail@gmail.com\",\r\n    \"RANK\": \"Rank1\",\r\n    \"PHONES\": [\r\n        {\r\n            \"ID\": -1,\r\n            \"USR$PHONENUMBER\": \"+375 12 345 67 89\"\r\n        }\r\n    ],\r\n    \"NOTE\": \"\",\r\n    \"USR$LETTER_OF_AUTHORITY\": \"\",\r\n    \"ADDRESS\": \"\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/contacts/persons"
 							},
 							"response": []
 						}
