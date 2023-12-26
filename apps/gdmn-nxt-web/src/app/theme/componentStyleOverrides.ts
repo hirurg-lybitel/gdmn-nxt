@@ -142,5 +142,14 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
         fontSize: 'small'
       }
     },
+    MuiSwitch: {
+      styleOverrides: {
+        root: {
+          '& .MuiSwitch-thumb': {
+            boxShadow: '0 0 10px grey'
+          }
+        }
+      }
+    }
   };
 }

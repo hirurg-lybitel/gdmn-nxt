@@ -300,7 +300,7 @@ export function KanbanCard(props: KanbanCardProps) {
             }
           </Stack>
           <Stack direction="row" spacing={1}>
-            <Typography variant="caption" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+            <Typography variant="subtitle2" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
             <Box flex={1} />
             {
               card.DEAL?.PREPAID &&

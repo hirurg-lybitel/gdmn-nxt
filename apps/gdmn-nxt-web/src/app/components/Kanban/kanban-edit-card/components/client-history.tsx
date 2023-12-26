@@ -151,7 +151,6 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                       </div>
                       <Typography
                         variant="caption"
-                        color={'GrayText'}
                         maxWidth={'300px'}
                         noWrap
                         overflow="hidden"

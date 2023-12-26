@@ -116,7 +116,6 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             <Typography
               className="number"
               variant="caption"
-              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             >
               {'#' + card.TASK?.USR$NUMBER}
             </Typography>
@@ -132,8 +131,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               {`${card.DEAL?.CONTACT_NAME}, `}
             </Typography>
             <Typography
-              variant="caption"
-              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+              variant="subtitle2"
               component="span"
               sx={{ display: 'inline' }}
             >
@@ -141,7 +139,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             </Typography>
           </Box>
           <Typography
-            variant="caption"
+            variant="subtitle2"
             color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
               ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', fontWeight: '600', margin: 0 }

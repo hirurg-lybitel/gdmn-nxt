@@ -101,7 +101,6 @@ export function NotificationList(props: NotificationListProps) {
               <div className="datetime">
                 <Typography
                   variant="caption"
-                  color={colorModeIsLight ? 'GrayText' : 'lightgray'}
                 >
                   {new Date(message?.date || 0).toLocaleString('default', {
                     month: 'short',

@@ -52,7 +52,8 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       flex: 1,
       renderCell: (params) =>
         <Typography
-          variant="caption"
+          variant="subtitle2"
+          fontWeight={400}
           whiteSpace="normal"
         >
           {params.value}
@@ -71,14 +72,14 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
             {
               !value
                 ? <Typography
-                  variant="caption"
+                  variant="subtitle2"
                   fontWeight={600}
                 >
               Без срока
                 </Typography>
                 :
                 <Typography
-                  variant="caption"
+                  variant="subtitle2"
                   fontWeight={600}
                   color={closed ? colorMode === ColorMode.Light ? 'green' : 'lightgreen' : daysColor(days)}
                 >
@@ -173,13 +174,13 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
                 }}
               />
             </Box>
-            <Typography variant="caption">
+            <Typography variant="subtitle2">
               {`${closedTasks} из ${allTasks} задач`}
             </Typography>
           </>
           : <>
             <FactCheckOutlinedIcon color="action" fontSize="small" />
-            <Typography variant="caption">
+            <Typography variant="subtitle2">
               {`${allTasks} задач`}
             </Typography>
           </>}

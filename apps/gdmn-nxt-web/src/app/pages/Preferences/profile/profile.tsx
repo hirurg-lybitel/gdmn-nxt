@@ -310,7 +310,7 @@ export function Profile(props: ProfileProps) {
                   color="error"
                   onClick={handleDeleteClick}
                 >
-                  <DeleteIcon />
+                  <DeleteIcon fontSize="medium" />
                 </Fab>
               </Box>
               <Box
@@ -324,7 +324,7 @@ export function Profile(props: ProfileProps) {
                     color="primary"
                     disabled={isLoading || updateIsLoading}
                   >
-                    <AddPhotoAlternateIcon />
+                    <AddPhotoAlternateIcon fontSize="medium" />
                   </Fab>
                 </label>
               </Box>

@@ -5,6 +5,7 @@ export interface styledTheme {
   drawerWidth: number,
   headColor?: string,
   textColor?: string,
+  captionTextColor?: string;
   fontFamily?: string;
   menu?: {
     backgroundColor?: string,

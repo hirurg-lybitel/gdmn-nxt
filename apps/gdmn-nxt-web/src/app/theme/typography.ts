@@ -23,7 +23,7 @@ export default function typography(theme: ThemeOptions): Partial<Typography> {
     caption: {
       fontSize: '0.75rem',
       fontWeight: 400,
-      color: theme.textColor,
+      color: theme.captionTextColor,
     },
     subtitle1: {
       fontSize: '1rem',
