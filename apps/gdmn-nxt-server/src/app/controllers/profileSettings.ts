@@ -11,7 +11,7 @@ const getSettings = async (userId: number, req: Request) => {
 
   try {
     const check2FA = await fetchAsSingletonObject(`
-      SELECT ug.USR$REQUIRED_2FA GROUP_2FA, ug.USR$REQUIRED_2FA USER_2FA
+      SELECT ug.USR$REQUIRED_2FA GROUP_2FA, ul.USR$REQUIRED_2FA USER_2FA
       FROM USR$CRM_PERMISSIONS_USERGROUPS ug
       JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
       WHERE ul.USR$USERKEY = :userId`, { userId });

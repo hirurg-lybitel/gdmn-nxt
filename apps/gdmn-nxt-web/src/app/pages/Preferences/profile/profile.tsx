@@ -137,10 +137,31 @@ export function Profile(props: ProfileProps) {
     }
   });
 
+  const handleEnable2FAWithNewEmail = async (email: string): Promise<IAuthResult> => {
+    const response = await generateOtp({ userId: userProfile?.id ?? -1, email });
+
+    if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
+
+    setUser({
+      ...userProfile,
+      userName: userProfile?.userName ?? '',
+      email,
+      qr: response.data.qr,
+      base32Secret: response.data.base32
+    });
+    setTwoFAOpen({ create: true });
+
+    return new Promise((resolve) => resolve({} as IAuthResult));
+  };
+
   const onEnable2FAChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
 
     if (checked) {
+      if (!formik.values.EMAIL) {
+        setTwoFAOpen({ create: true });
+        return;
+      }
       const response = await generateOtp({ userId: userProfile?.id ?? -1, email: formik.values.EMAIL ?? '' });
 
       if (!('data' in response)) return;
@@ -273,9 +294,10 @@ export function Profile(props: ProfileProps) {
           user={user}
           onCancel={() => setTwoFAOpen({ check: false })}
           onSubmit={handleCreateOnSubmit}
+          onSignIn={handleEnable2FAWithNewEmail}
         />
       </Stack>
-    </Dialog>, [twoFAOpen.create]);
+    </Dialog>, [twoFAOpen.create, user]);
 
   return (
     <>

@@ -109,7 +109,9 @@ router.post('/user/signin-2fa', async function(req, res, next) {
     const checkCode = await verifyCode(email, code, base32Secret);
     if (checkCode) {
       await profileSettingsController.upsertSecretKey(req, { userId, enabled2fa: true });
-      const userPermissions: Permissions = cacheManager.getKey('permissions')?.[userId];
+      const permissions = await cacheManager.getKey('permissions') ?? {};
+      const userPermissions: Permissions = permissions?.[userId];
+
       const newUser = {
         userName,
         gedeminUser: true,
