@@ -300,7 +300,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     onChange={formik.handleChange}
                     value={formik.values.USR$NAME}
                     autoFocus
-                    multiline
                     minRows={1}
                   />
                   <Autocomplete
