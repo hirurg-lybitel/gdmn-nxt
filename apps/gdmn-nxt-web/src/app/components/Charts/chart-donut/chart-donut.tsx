@@ -16,6 +16,7 @@ export interface ChartDonutProps {
 
 const useStyles = makeStyles((theme: Theme) => ({
   donut: {
+    height: '100%',
     '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
       background: 'grey'
     }
