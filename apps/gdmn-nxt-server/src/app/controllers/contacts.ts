@@ -130,8 +130,8 @@ export const getContacts: RequestHandler = async (req, res) => {
         return filteredArray;
       }, [])
       .sort((a, b) => {
-        const nameA = a[String(sortField).toUpperCase()].toLowerCase();
-        const nameB = b[String(sortField).toUpperCase()].toLowerCase();
+        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
 
         return String(sortMode).toUpperCase() === 'ASC'
           ? nameA.localeCompare(nameB)

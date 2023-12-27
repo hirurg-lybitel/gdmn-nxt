@@ -1,4 +1,4 @@
-import { CircularProgress, IconButton } from '@mui/material';
+import { CircularProgress, IconButton, Tooltip } from '@mui/material';
 import styles from './custom-loading-button.module.less';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useCallback } from 'react';
@@ -7,19 +7,24 @@ import { useCallback } from 'react';
 export interface CustomLoadingButtonProps {
   loading: boolean;
   onClick: () => void;
+  hint?: string;
 }
 
 export function CustomLoadingButton(props: CustomLoadingButtonProps) {
-  const { loading, onClick } = props;
+  const { loading, onClick, hint = '' } = props;
   const handleOnClick = useCallback(() => onClick(), [onClick]);
   return (
+
     <IconButton
       style={{ width: '40px', height: '40px' }}
       disabled={loading}
       onClick={handleOnClick}
     >
-      {loading ? <CircularProgress size={17} color="inherit" /> : <RefreshIcon color="primary" />}
+      <Tooltip arrow title={hint}>
+        {loading ? <CircularProgress size={17} color="inherit" /> : <RefreshIcon color="primary" />}
+      </Tooltip>
     </IconButton>
+
   );
 }
 

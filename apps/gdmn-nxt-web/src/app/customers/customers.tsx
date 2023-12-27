@@ -36,6 +36,7 @@ import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -539,7 +540,7 @@ export function Customers(props: CustomersProps) {
       <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={1}>
           <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
             <Box display="inline-flex" alignSelf="center" >
               <Button
@@ -555,60 +556,40 @@ export function Customers(props: CustomersProps) {
           </PermissionsGate>
           <Box flex={1} />
           <Box>{memoSearchBar}</Box>
-          <Box
-            display="flex"
-            justifyContent="center"
-            width={30}
+          <CustomLoadingButton
+            hint="Обновить данные"
+            loading={customerFetching}
+            onClick={() => customerRefetch()}
+          />
+          <IconButton
+            onClick={filterHandlers.handleFilter}
+            disabled={customerFetching}
+            style={{
+              width: 40
+            }}
           >
-            <LoadingButton
-              loading={customerFetching}
-              onClick={() => customerRefetch()}
-              variant="text"
-              size="medium"
-              style={{
-                minWidth: 30,
-                borderRadius: '12px'
-              }}
+            <Tooltip
+              title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                ? 'У вас есть активные фильтры'
+                : 'Выбрать фильтры'
+              }
+              arrow
             >
-              <RefreshIcon
-                style={{
-                  display: customerFetching ? 'none' : 'inline',
-                }}
-                color={'primary'}
-              />
-            </LoadingButton>
-          </Box>
-          <Box
-            display="flex"
-            justifyContent="center"
-            width={30}
-          >
-            <IconButton
-              onClick={filterHandlers.handleFilter}
-              disabled={customerFetching}
-            >
-              <Tooltip
-                title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                  ? 'У вас есть активные фильтры'
-                  : 'Выбрать фильтры'
+              <Badge
+                color="error"
+                variant={
+                  Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                    ? 'dot'
+                    : 'standard'
                 }
-                arrow
               >
-                <Badge
-                  color="error"
-                  variant={
-                    Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                      ? 'dot'
-                      : 'standard'
-                  }
-                >
-                  <FilterListIcon
-                    color={customerFetching ? 'disabled' : 'primary'}
-                  />
-                </Badge>
-              </Tooltip>
-            </IconButton>
-          </Box>
+                <FilterListIcon
+                  color={customerFetching ? 'disabled' : 'primary'}
+                />
+              </Badge>
+            </Tooltip>
+          </IconButton>
+          {/* </Box> */}
         </Stack>
       </CardToolbar>
       <CardContent

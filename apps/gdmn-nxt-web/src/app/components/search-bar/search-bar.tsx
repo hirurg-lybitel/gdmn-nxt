@@ -14,7 +14,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   root: {
     display: 'flex',
     justifyContent: 'space-between',
-    width: '200px'
+    width: '200px',
   },
   iconButton: {
     color: theme.palette.action.active,
@@ -193,7 +193,6 @@ export function SearchBar(props: SearchBarProps) {
 
   return (
     <CustomizedCard
-      aria-label='mycard'
       borders
       direction="row"
       className={`

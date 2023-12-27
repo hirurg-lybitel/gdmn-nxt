@@ -5,9 +5,8 @@ import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { RootState } from '../../../store';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { Autocomplete, Badge, CircularProgress, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Autocomplete, Badge, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
@@ -137,7 +136,11 @@ export function Deals(props: DealsProps) {
           direction="row"
           className={styles.headerCard}
         >
-          <Stack direction="row" spacing={2} flex={1}>
+          <Stack
+            direction="row"
+            spacing={2}
+            flex={1}
+          >
             <ToggleButtonGroup
               color="primary"
               value={tabNo}
@@ -198,7 +201,11 @@ export function Deals(props: DealsProps) {
               }
             />
             <Stack direction="row" alignItems="center">
-              <CustomLoadingButton loading={columnsIsFetching} onClick={refreshBoard} />
+              <CustomLoadingButton
+                hint="Обновить данные"
+                loading={columnsIsFetching}
+                onClick={refreshBoard}
+              />
               <IconButton
                 onClick={filterHandlers.filterClick}
                 disabled={columnsIsFetching}

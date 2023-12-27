@@ -150,10 +150,16 @@ export function Tasks(props: TasksProps) {
               onClick={addTaskClick}
               color="primary"
             >
-              <AddCircleIcon />
+              <Tooltip title="Добавить новую задачу" arrow>
+                <AddCircleIcon />
+              </Tooltip>
             </IconButton>
           </PermissionsGate>
-          <CustomLoadingButton loading={columnsIsFetching} onClick={refreshBoard} />
+          <CustomLoadingButton
+            hint="Обновить данные"
+            loading={columnsIsFetching}
+            onClick={refreshBoard}
+          />
           <IconButton
             onClick={filterClick}
             disabled={columnsIsFetching}
