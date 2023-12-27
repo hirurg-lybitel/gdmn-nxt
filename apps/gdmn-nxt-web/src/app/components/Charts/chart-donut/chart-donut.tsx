@@ -16,7 +16,6 @@ export interface ChartDonutProps {
 
 const useStyles = makeStyles((theme: Theme) => ({
   donut: {
-    height: '100%',
     '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
       background: 'grey'
     }
@@ -172,17 +171,18 @@ export function ChartDonut({ period }: ChartDonutProps) {
           : <>
             <Typography variant="h6" style={{ paddingLeft: '15px' }}>Статус сделок</Typography>
             <Box
+              className={classes.donut}
               flex={1}
               style={{ color: 'black', paddingLeft: '1px', paddingRight: '5px', marginTop: 0 }}
             >
-              <div className={classes.donut}>
+              {/* <div className={classes.donut}> */}
                 <Chart
                   type="donut"
                   height="100%"
                   options={chartOptions}
                   {...chartData}
                 />
-              </div>
+              {/* </div> */}
             </Box>
           </>}
       </Stack>
