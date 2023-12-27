@@ -178,14 +178,12 @@ export function ChartDonut({ period }: ChartDonutProps) {
               flex={1}
               style={{ color: 'black', paddingLeft: '1px', paddingRight: '5px', marginTop: 0 }}
             >
-              {/* <div className={classes.donut}> */}
-                <Chart
-                  type="donut"
-                  height="100%"
-                  options={chartOptions}
-                  {...chartData}
-                />
-              {/* </div> */}
+              <Chart
+                type="donut"
+                height="100%"
+                options={chartOptions}
+                {...chartData}
+              />
             </Box>
           </>}
       </Stack>
