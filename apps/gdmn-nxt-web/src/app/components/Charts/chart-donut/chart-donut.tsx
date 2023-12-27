@@ -17,7 +17,10 @@ export interface ChartDonutProps {
 const useStyles = makeStyles((theme: Theme) => ({
   donut: {
     '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
-      background: 'grey'
+      background: 'var(--color-scroll-thumb)'
+    },
+    '& .apexcharts-canvas ::-webkit-scrollbar-thumb:hover': {
+      background: 'var(--color-scroll-thumb-hover)'
     }
   }
 }));
