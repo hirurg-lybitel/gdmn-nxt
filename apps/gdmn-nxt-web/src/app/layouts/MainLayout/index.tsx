@@ -11,6 +11,7 @@ import { clearError } from '../../features/error-slice/error-slice';
 import UpdatesInfo from '../../components/updates/updates-info/updates-info';
 import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { useIdleTimer } from 'react-idle-timer';
+import { LOGOUT_TIMEOUT } from '@gdmn/constants';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -73,13 +74,19 @@ interface MainLayoutProps{
 export const MainLayout = (props: MainLayoutProps) => {
   const theme = useTheme();
 
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const { errorMessage, errorStatus } = useSelector((state: RootState) => state.error);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+  const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
+
   const dispatch = useDispatch<AppDispatch>();
   const onIdleHandler = () => {
     dispatch(logoutUser());
   };
-  const {} = useIdleTimer({
+
+  useIdleTimer({
     onIdle: onIdleHandler,
-    timeout: 1000 * 60 * 20,
+    timeout: LOGOUT_TIMEOUT,
     promptBeforeIdle: 0,
     events: [
       'mousemove',
@@ -89,17 +96,11 @@ export const MainLayout = (props: MainLayoutProps) => {
     ],
   });
 
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-  const { errorMessage } = useSelector((state: RootState) => state.error);
-  const [openSnackBar, setOpenSnackBar] = useState(false);
-
-  const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
-
   useEffect(() => {
     if (errorMessage) {
       setOpenSnackBar(true);
-    }
-  }, [errorMessage]);
+    };
+  }, [errorMessage, errorStatus]);
 
   const handleDrawerToggle = () => {
     dispatch(toggleMenu(!menuOpened));
@@ -111,6 +112,10 @@ export const MainLayout = (props: MainLayoutProps) => {
     };
     dispatch(clearError());
     setOpenSnackBar(false);
+
+    if (errorStatus === 401) {
+      dispatch(logoutUser());
+    };
   };
 
   return (

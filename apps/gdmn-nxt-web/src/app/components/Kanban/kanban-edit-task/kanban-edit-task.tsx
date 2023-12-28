@@ -4,7 +4,7 @@ import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useRef,
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IEmployee, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
+import { IEmployee, IKanbanCard, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -119,16 +119,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     },
     validationSchema: yup.object().shape({
       USR$NAME: yup.string()
-        .required('')
         .max(80, 'Слишком длинное описание'),
-      // USR$CARDKEY: yup.number()
-      //   .required()
-      //   .moreThan(-1),
-      // TASKTYPE: yup.object().shape({
-      //   ID: yup.number()
-      //     .required()
-      //     .moreThan(-1),
-      // })
     }),
     onSubmit: (values) => {
       if (!confirmOpen) {
@@ -228,15 +219,19 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         });
       }
     },
-    onCancel: async (isFetching?: boolean) => {
+    onCancel: async (newCard: IKanbanCard) => {
       setEditDeal(false);
     },
   };
 
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+
   const canOpenDeal = useMemo(() =>
     formik.values.ID > 0 &&
     (dealCard?.DEAL?.CREATOR?.ID === contactId ||
-    dealCard?.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId))
+    dealCard?.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId) ||
+    dealCard?.TASKS?.some(task => task.PERFORMER?.ID === contactId) ||
+    userPermissions?.deals.ALL)
   , [dealCard]);
 
   const memoEditCard = useMemo(() => {
@@ -271,7 +266,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
           <Stack direction="column" p="16px 24px">
             <FormikProvider value={formik}>
               <Form id="taskForm" onSubmit={formik.handleSubmit}>
-                <Stack direction="column" spacing={3}>
+                <Stack direction="column" spacing={2}>
                   <Autocomplete
                     options={taskTypes || []}
                     value={taskTypes?.find(el => el.ID === formik.values.TASKTYPE?.ID) || null}
@@ -304,7 +299,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     onBlur={formik.handleBlur}
                     onChange={formik.handleChange}
                     value={formik.values.USR$NAME}
-                    required
                     autoFocus
                     multiline
                     minRows={1}
@@ -399,7 +393,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     }
                   </Stack>
                   <Divider textAlign="left">Срок выполнения</Divider>
-                  <Stack direction="row" spacing={3}>
+                  <Stack direction="row" spacing={2}>
                     <DesktopDatePicker
                       label="Дата"
                       value={formik.values.USR$DEADLINE || null}
@@ -424,32 +418,29 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       renderInput={(params) => <TextField {...params} />}
                     />
                   </Stack>
-                  <Divider textAlign="left">Дата выполнения</Divider>
-                  <Stack direction="row" spacing={3}>
-                    <DesktopDatePicker
-                      label="Дата"
-                      readOnly
-                      value={formik.values.USR$DATECLOSE || null}
-                      mask="__.__.____"
-                      onChange={formik.handleChange}
-                      // onChange={(value) => {
-                      //   formik.setFieldValue(
-                      //     'DEAL',
-                      //     { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
-                      //   );
-                      // }}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
-                    <TimePicker
-                      label="Время"
-                      readOnly
-                      value={formik.values.USR$DATECLOSE || null}
-                      onChange={formik.handleChange}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
-                  </Stack>
+                  {!!formik.values.USR$DATECLOSE &&
+                  <>
+                    <Divider textAlign="left">Дата выполнения</Divider>
+                    <Stack direction="row" spacing={2}>
+                      <DesktopDatePicker
+                        label="Дата"
+                        readOnly
+                        value={formik.values.USR$DATECLOSE || null}
+                        mask="__.__.____"
+                        onChange={formik.handleChange}
+                        renderInput={(params) => <TextField {...params} />}
+                      />
+                      <TimePicker
+                        label="Время"
+                        readOnly
+                        value={formik.values.USR$DATECLOSE || null}
+                        onChange={formik.handleChange}
+                        renderInput={(params) => <TextField {...params} />}
+                      />
+                    </Stack>
+                  </>}
                   <Divider />
-                  <Stack direction="row" spacing={3}>
+                  <Stack direction="row" spacing={2}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -504,7 +495,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
             Отменить
@@ -519,7 +510,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
           }}
           variant="contained"
         >
-            OK
+            Сохранить
         </Button>
       </DialogActions>
       {memoConfirmDialog}

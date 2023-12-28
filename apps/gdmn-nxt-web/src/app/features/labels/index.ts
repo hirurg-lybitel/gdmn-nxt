@@ -6,7 +6,7 @@ interface ILabels{
   labels: ILabel[];
 };
 
-type LabelsResponse = ILabel[];
+export type LabelsResponse = ILabel[];
 type ILabelsRequestResult = IRequestResult<ILabels>;
 
 type ILabelRequestResult = IRequestResult<{ label: ILabel }>;
@@ -35,12 +35,13 @@ export const labelsApi = createApi({
           ? [{ type: 'Label', id: result?.ID }, { type: 'Label', id: 'LIST' }]
           : [{ type: 'Label', id: 'LIST' }],
     }),
-    addLabel: builder.mutation<ILabel, Partial<ILabel>>({
+    addLabel: builder.mutation<ILabel | undefined, Partial<ILabel>>({
       query: (body) => ({
         url: 'labels',
         method: 'POST',
         body,
       }),
+      transformResponse: (response: IRequestResult<{label:ILabel}>) => response.queries?.label,
       invalidatesTags: [{ type: 'Label', id: 'LIST' }],
     }),
     updateLabel: builder.mutation<ILabel, Partial<ILabel>>({

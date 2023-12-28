@@ -11,23 +11,28 @@ interface ISecret {
 }
 
 export async function generateSecret(email: string): Promise<ISecret> {
-  if (!email) return;
+  const defaultReturn = {
+    email: '',
+    qr: '',
+    base32Secret: '',
+    error: ''
+  };
+
+  if (!email) return defaultReturn;
 
   try {
     const secret = authenticator.generateSecret();
 
     const url = await toDataURL(authenticator.keyuri(email, issuer, secret));
     return {
+      ...defaultReturn,
       email,
       qr: url,
       base32Secret: secret,
-      error: ''
     };
   } catch (error) {
     return {
-      email: '',
-      qr: '',
-      base32Secret: '',
+      ...defaultReturn,
       error
     };
   }

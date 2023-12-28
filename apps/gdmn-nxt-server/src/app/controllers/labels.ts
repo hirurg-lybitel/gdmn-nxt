@@ -3,8 +3,8 @@ import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { genId } from '../utils/genId';
+import { getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
+import { cachedRequets } from '../utils/cached requests';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_CRM_LABELS';
 
@@ -31,7 +31,7 @@ export const get: RequestHandler = async(req, res) => {
       {
         name: id ? 'label' : 'labels',
         query: `
-          SELECT ID, USR$NAME, USR$COLOR, USR$DESCRIPTION
+          SELECT ID, USR$NAME, USR$COLOR, USR$DESCRIPTION, USR$ICON
           FROM USR$CRM_LABELS
           ${id ? ' WHERE ID = ?' : ''}`,
         params: id ? [id] : undefined,
@@ -127,6 +127,10 @@ const upsert: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
+
+    if (res.statusCode === 200) {
+      cachedRequets.cacheRequest('customerLabels');
+    }
   };
 };
 
@@ -170,7 +174,11 @@ export const remove: RequestHandler = async(req, res) => {
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {
-    await releaseTransaction();
+    await releaseTransaction(res.statusCode === 200);
+
+    if (res.statusCode === 200) {
+      cachedRequets.cacheRequest('customerLabels');
+    }
   }
 };
 

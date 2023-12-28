@@ -1,6 +1,6 @@
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './task-types.module.less';
-import { Button, CardContent, CardHeader, Divider, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
+import { Button, CardContent, CardHeader, Divider, IconButton, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
 import { GridActionsCellItem, GridCellParams, GridColumns, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
@@ -12,6 +12,7 @@ import { useAddTaskTypeMutation, useDeleteTaskTypeMutation, useGetTaskTypesQuery
 import { ITaskType } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
+import AddIcon from '@mui/icons-material/Add';
 
 /* eslint-disable-next-line */
 export interface TaskTypesProps {}
@@ -165,35 +166,44 @@ export function TaskTypes(props: TaskTypesProps) {
       const rowModel = apiRef.current.getEditRowsModel();
       return (
         <>
-          <GridActionsCellItem
-            icon={<SaveIcon />}
-            label="Save"
-            onClick={handleConfirmSave}
+          <IconButton
+            role="menuitem"
             color="primary"
+            size="small"
+            onClick={handleConfirmSave}
             disabled={!rowModel[id]['NAME']?.value || !!rowModel[id]['NAME']?.error}
-          />
-          <GridActionsCellItem
-            icon={<CancelIcon />}
-            label="Cancel"
+          >
+            <SaveIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            role="menuitem"
+            color="primary"
+            size="small"
             onClick={handleCancelClick}
-          />
+          >
+            <CancelIcon fontSize="small" />
+          </IconButton>
         </>);
     }
 
     return (
       <>
-        <GridActionsCellItem
-          icon={<EditIcon />}
-          label="Edit"
+        <IconButton
+          role="menuitem"
+          color="primary"
+          size="small"
           onClick={handleEditClick}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          role="menuitem"
           color="primary"
-        />
-        <GridActionsCellItem
-          icon={<DeleteForeverIcon />}
-          label="Delete"
+          size="small"
           onClick={handleConfirmDelete}
-          color="primary"
-        />
+        >
+          <DeleteForeverIcon fontSize="small" />
+        </IconButton>
       </>
     );
   }
@@ -293,6 +303,7 @@ export function TaskTypes(props: TaskTypesProps) {
           <Button
             className={styles.addButton}
             variant="contained"
+            startIcon={<AddIcon />}
             disabled={isFetching}
             onClick={handleAddSource}
           >

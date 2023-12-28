@@ -116,26 +116,27 @@ export function LabelList(props: LabelListProps) {
             </PermissionsGate>
           </div>
         </CardToolbar>
-        <CardContent>
+        <CardContent style={{ paddingRight: '5px' }}>
           <CustomizedScrollBox>
-            {componentIsFetching
-              ? [...Array(10)].map((el, idx) =>
-                <div key={idx}>
-                  {idx !== 0 ? <Divider /> : <></>}
-                  <ItemSkeleton />
-                </div>)
-              :
-              labels?.map((label, idx) =>
-                <div key={label.ID}>
-                  {idx !== 0 ? <Divider /> : <></>}
-                  <LabelListItem
-                    data={label}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                </div>) || <></>
-
-            }
+            <div style={{ paddingRight: '10px' }}>
+              {componentIsFetching
+                ? [...Array(10)].map((el, idx) =>
+                  <div key={idx}>
+                    {idx !== 0 ? <Divider /> : <></>}
+                    <ItemSkeleton />
+                  </div>)
+                :
+                labels?.map((label, idx) =>
+                  <div key={label.ID}>
+                    {idx !== 0 ? <Divider /> : <></>}
+                    <LabelListItem
+                      data={label}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  </div>) || <></>
+              }
+            </div>
           </CustomizedScrollBox>
           <LabelListItemEdit
             open={openEditForm}

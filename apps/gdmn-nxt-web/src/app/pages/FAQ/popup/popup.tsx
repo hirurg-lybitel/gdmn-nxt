@@ -253,7 +253,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
                 <div>
                   <Button
                     type="button"
-                    variant="text"
+                    variant="outlined"
                     onClick={clearAndClosePopup}
                     className={style.button}
                   >Отменить</Button>

@@ -137,7 +137,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
         <Button
           className={styles.Button}
           onClick={handleCancel}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
              Отменить

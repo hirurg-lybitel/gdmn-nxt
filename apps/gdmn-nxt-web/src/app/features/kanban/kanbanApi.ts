@@ -68,13 +68,14 @@ export const kanbanApi = createApi({
                       subParams.push(subKeyNested);
                     };
                   }
+                } else if (typeof subKey === 'boolean') {
+                  subParams.push(Number(subKey));
                 } else {
                   subParams.push(subKey);
                 };
                 params.push(`${subName}=${subParams}`);
               };
               break;
-
             default:
               params.push(`${name}=${value}`);
               break;
@@ -584,20 +585,23 @@ export const kanbanApi = createApi({
 
         for (const [name, value] of Object.entries(options || {})) {
           switch (true) {
-            case typeof value === 'object' && value !== null:
+            case typeof value === 'object' && value !== null: {
               const subParams = [];
               for (const [subName, subKey] of Object.entries(value)) {
                 if (typeof subKey === 'object' && subKey !== null) {
                   for (const [subNameNested, subKeyNested] of Object.entries(subKey)) {
                     if (subNameNested === 'ID') subParams.push(subKeyNested);
-                  }
+                  };
                 } else {
                   subParams.push(subKey);
                 };
               };
               params.push(`${name}=${subParams}`);
               break;
-
+            }
+            case typeof value === 'boolean':
+              params.push(`${name}=${Number(value).toString()}`);
+              break;
             default:
               params.push(`${name}=${value}`);
               break;

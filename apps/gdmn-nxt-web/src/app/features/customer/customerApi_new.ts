@@ -89,7 +89,7 @@ export const customerApi = createApi({
       onQueryStarted(options) {
         console.info('⏩ request', 'GET', `${baseUrlApi}contacts`);
       },
-      transformResponse: (response: ICustomersWithCountRequestResult) => ({ data: response.queries?.contacts || [], count: response.queries?.rowCount[0].COUNT || -1 }),
+      transformResponse: (response: ICustomersWithCountRequestResult) => ({ data: response.queries?.contacts || [], count: response.queries?.rowCount || 0 }),
       providesTags: (result, error) =>
         result?.data
           ? [

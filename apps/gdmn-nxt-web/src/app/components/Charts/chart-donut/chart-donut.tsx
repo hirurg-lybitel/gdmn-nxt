@@ -2,20 +2,34 @@ import style from './chart-donut.module.less';
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, Theme, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import ChartSkeleton from './chart-skeleton';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { DateRange } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from 'dayjs';
+import { makeStyles } from '@mui/styles';
 
 export interface ChartDonutProps {
   period: DateRange<Dayjs>
 };
 
+const useStyles = makeStyles((theme: Theme) => ({
+  donut: {
+    '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
+      background: 'var(--color-scroll-thumb)'
+    },
+    '& .apexcharts-canvas ::-webkit-scrollbar-thumb:hover': {
+      background: 'var(--color-scroll-thumb-hover)'
+    }
+  }
+}));
+
 export function ChartDonut({ period }: ChartDonutProps) {
   const theme = useTheme();
   const matchUpLg = useMediaQuery(theme.breakpoints.up('lg'));
+
+  const classes = useStyles();
 
   const { data: stages, isLoading: stagesIsLoading, refetch } = useGetKanbanDealsQuery({
     userId: -1,
@@ -160,6 +174,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
           : <>
             <Typography variant="h6" style={{ paddingLeft: '15px' }}>Статус сделок</Typography>
             <Box
+              className={classes.donut}
               flex={1}
               style={{ color: 'black', paddingLeft: '1px', paddingRight: '5px', marginTop: 0 }}
             >

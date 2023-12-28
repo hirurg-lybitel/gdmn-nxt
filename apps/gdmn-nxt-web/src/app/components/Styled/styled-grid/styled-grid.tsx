@@ -21,8 +21,7 @@ export default function StyledGrid(props: IStyledGridProps) {
     padding: '0px',
     flex: 1,
     '& .MuiDataGrid-cell': {
-      paddingLeft: '24px',
-      paddingRight: '24px',
+      padding: '12px 24px'
     },
     '& .MuiDataGrid-columnHeader:focus-within': {
       outline: 'none !important',

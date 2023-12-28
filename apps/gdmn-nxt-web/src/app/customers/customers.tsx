@@ -2,7 +2,7 @@ import { GridColDef, GridFilterModel, GridSortModel, GridEventListener } from '@
 import Stack from '@mui/material/Stack/Stack';
 import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge } from '@mui/material';
+import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -35,6 +35,8 @@ import StyledGrid from '../components/Styled/styled-grid/styled-grid';
 import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -83,7 +85,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
-  padding: '2.5px 0px'
+  padding: '2.5px 0px',
 };
 
 /* eslint-disable-next-line */
@@ -91,7 +93,6 @@ export interface CustomersProps {}
 
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
-
   const userPermissions = usePermissions();
   const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
@@ -140,7 +141,7 @@ export function Customers(props: CustomersProps) {
     [customersResponse?.data]
   );
   const customersCount: number | undefined = useMemo(
-    () => customersResponse?.count || 0,
+    () => customersResponse?.count ?? 0,
     [customersResponse?.count]
   );
   // const { data: customersData } = customersResponse;
@@ -224,34 +225,49 @@ export function Customers(props: CustomersProps) {
       minWidth: 200,
       renderCell: ({ value, row }) => {
         const labels = (row as ICustomer)?.LABELS;
+
         return (
           <Stack spacing={1}>
             <div>{value}</div>
             {labels?.length
-              ? <List
+              ?
+              <List
                 style={{
                   flexDirection: 'row',
                   padding: '0px',
                   width: 'fit-content',
                   display: 'flex',
+
                   flexWrap: 'wrap',
                   columnGap: '5px',
                 }}
-                >
-                {labels.map((label) => (
-                  <ListItemButton
-                    key={label.ID}
-                    onClick={handleLabelClick(label)}
-                    style={labelStyle}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  >
-                    <LabelMarker label={label} />
-                  </ListItemButton>
-                ))}
+              >
+                {labels.map((label) => {
+                  return (
+                    <div key={label.ID}>
+                      <Tooltip
+                        arrow
+                        placement="bottom-start"
+                        title={label.USR$DESCRIPTION}
+                      >
+                        <ListItemButton
+                          key={label.ID}
+                          onClick={handleLabelClick(label)}
+                          style={labelStyle}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'transparent'
+                            }
+                          }}
+                        >
+                          <LabelMarker label={label} />
+                        </ListItemButton>
+                      </Tooltip>
+                    </div>
+
+                  );
+                }
+                )}
               </List>
               : <></>}
 
@@ -286,15 +302,16 @@ export function Customers(props: CustomersProps) {
         return (
           <Box>
             <IconButton {...detailsComponent} disabled={customerFetching}>
-              <VisibilityIcon fontSize="small" color="primary" />
+              <Tooltip arrow title="Детализация">
+                <VisibilityIcon fontSize="small" color="primary" />
+              </Tooltip>
             </IconButton>
             <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
-              <IconButton
+              <ItemButtonEdit
                 onClick={handleCustomerEdit(customerId)}
+                color="primary"
                 disabled={customerFetching}
-              >
-                <EditOutlinedIcon fontSize="small" color="primary" />
-              </IconButton>
+              />
             </PermissionsGate>
           </Box>
         );
@@ -523,9 +540,9 @@ export function Customers(props: CustomersProps) {
       <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={1}>
           <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
-            <Box display="flex" justifyContent="center" >
+            <Box display="inline-flex" alignSelf="center" >
               <Button
                 variant="contained"
                 onClick={handleAddOrganization}
@@ -539,37 +556,24 @@ export function Customers(props: CustomersProps) {
           </PermissionsGate>
           <Box flex={1} />
           <Box>{memoSearchBar}</Box>
-          <Box
-            display="flex"
-            justifyContent="center"
-            width={30}
+          <CustomLoadingButton
+            hint="Обновить данные"
+            loading={customerFetching}
+            onClick={() => customerRefetch()}
+          />
+          <IconButton
+            onClick={filterHandlers.handleFilter}
+            disabled={customerFetching}
+            style={{
+              width: 40
+            }}
           >
-            <LoadingButton
-              loading={customerFetching}
-              onClick={() => customerRefetch()}
-              variant="text"
-              size="medium"
-              style={{
-                minWidth: 30,
-                borderRadius: '12px'
-              }}
-            >
-              <RefreshIcon
-                style={{
-                  display: customerFetching ? 'none' : 'inline',
-                }}
-                color={'primary'}
-              />
-            </LoadingButton>
-          </Box>
-          <Box
-            display="flex"
-            justifyContent="center"
-            width={30}
-          >
-            <IconButton
-              onClick={filterHandlers.handleFilter}
-              disabled={customerFetching}
+            <Tooltip
+              title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                ? 'У вас есть активные фильтры'
+                : 'Выбрать фильтры'
+              }
+              arrow
             >
               <Badge
                 color="error"
@@ -583,8 +587,9 @@ export function Customers(props: CustomersProps) {
                   color={customerFetching ? 'disabled' : 'primary'}
                 />
               </Badge>
-            </IconButton>
-          </Box>
+            </Tooltip>
+          </IconButton>
+          {/* </Box> */}
         </Stack>
       </CardToolbar>
       <CardContent
@@ -653,6 +658,12 @@ export function Customers(props: CustomersProps) {
           >
             <Box flex={1}>
               <StyledGrid
+                sx={{
+                  '& .MuiDataGrid-row, .MuiDataGrid-cell': {
+                    minHeight: '60px !important',
+                    maxHeight: 'fit-content !important'
+                  }
+                }}
                 onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}
@@ -691,16 +702,6 @@ export function Customers(props: CustomersProps) {
                 onSelectionModelChange={(ids) =>
                   setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
                 }
-                getRowHeight={(params) => {
-                  const customer: ICustomer = params.model as ICustomer;
-                  const labels: ILabel[] | undefined = customer.LABELS;
-
-                  if (labels?.length && labels.length > 4) {
-                    return 40 * Math.ceil(labels.length / 2);
-                  }
-
-                  return 80;
-                }}
               />
             </Box>
             <Box>{memoFilter}</Box>

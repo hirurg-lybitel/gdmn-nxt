@@ -1,5 +1,4 @@
 import TreeItem from '@mui/lab/TreeItem/TreeItem';
-import { treeItemClasses } from '@mui/lab';
 import TreeView from '@mui/lab/TreeView/TreeView';
 import { alpha, styled } from '@mui/material/styles';
 import { gdmnTheme } from '../../../theme/gdmn-theme';
@@ -25,20 +24,20 @@ export const StyledTreeView = styled(TreeView)(({ theme }) => ({
 }));
 
 export const StyledTreeItem = styled(TreeItem)(() => ({
-  [`& .${treeItemClasses.selected}`]: {
+  '& .Mui-selected': {
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     backgroundColor: gdmnTheme.palette.primary.main
   },
-  [`& .${treeItemClasses.content}`]: {
+  '& .MuiTreeItem-content': {
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit',
     whiteSpace: 'nowrap'
   },
-  [`& .${treeItemClasses.label}`]: {
+  '& .MuiTreeItem-label': {
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit',
   },
-  [`& .${treeItemClasses.iconContainer}`]: {
+  '& .MuiTreeItem-iconContainer': {
     '& .close': {
       opacity: 0.3,
     },
@@ -47,7 +46,7 @@ export const StyledTreeItem = styled(TreeItem)(() => ({
     fontSize: gdmnTheme.typography.mediumUI.fontSize,
     fontFamily: 'inherit'
   },
-  [`& .${treeItemClasses.group}`]: {
+  '& .MuiTreeItem-group': {
     marginLeft: 13,
     paddingLeft: 4,
     borderLeft: `1px dotted ${alpha(gdmnTheme.palette.text.primary, 0.4)}`,

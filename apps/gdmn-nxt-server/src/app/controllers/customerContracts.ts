@@ -1,9 +1,8 @@
 import { ICustomerContract, IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
-import { getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { resultError } from '../responseMessages';
-import { genId } from '../utils/genId';
 import { importedModels } from '../utils/models';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_BG_CONTRACTJOB';

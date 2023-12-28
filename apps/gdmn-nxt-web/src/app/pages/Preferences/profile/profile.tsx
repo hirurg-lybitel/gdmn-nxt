@@ -1,6 +1,6 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, List, ListItem, ListItemIcon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -18,6 +18,9 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
 import { useDisableOtpMutation, useGenerateOtpQRMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
+import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import addNotification from 'react-push-notification';
+import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -36,6 +39,7 @@ export function Profile(props: ProfileProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<IUserProfile>();
+  const { addSnackbar } = useSnackbar();
 
   const handleUploadClick = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -98,6 +102,7 @@ export function Profile(props: ProfileProps) {
 
   const initValue: Partial<IProfileSettings> = {
     SEND_EMAIL_NOTIFICATIONS: settings?.SEND_EMAIL_NOTIFICATIONS ?? false,
+    PUSH_NOTIFICATIONS_ENABLED: settings?.PUSH_NOTIFICATIONS_ENABLED ?? false,
     ENABLED_2FA: settings?.ENABLED_2FA ?? false,
     REQUIRED_2FA: settings?.REQUIRED_2FA ?? false,
   };
@@ -132,10 +137,31 @@ export function Profile(props: ProfileProps) {
     }
   });
 
+  const handleEnable2FAWithNewEmail = async (email: string): Promise<IAuthResult> => {
+    const response = await generateOtp({ userId: userProfile?.id ?? -1, email });
+
+    if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
+
+    setUser({
+      ...userProfile,
+      userName: userProfile?.userName ?? '',
+      email,
+      qr: response.data.qr,
+      base32Secret: response.data.base32
+    });
+    setTwoFAOpen({ create: true });
+
+    return new Promise((resolve) => resolve({} as IAuthResult));
+  };
+
   const onEnable2FAChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
 
     if (checked) {
+      if (!formik.values.EMAIL) {
+        setTwoFAOpen({ create: true });
+        return;
+      }
       const response = await generateOtp({ userId: userProfile?.id ?? -1, email: formik.values.EMAIL ?? '' });
 
       if (!('data' in response)) return;
@@ -184,6 +210,54 @@ export function Profile(props: ProfileProps) {
     return response.data;
   };
 
+  const checkPushNotifications = () => {
+    const { message, OK } = (() => {
+      if (Notification.permission === 'granted') {
+        return {
+          message: 'Уведомления разрешены в вашем браузере',
+          OK: true
+        };
+      } else if (Notification.permission === 'denied') {
+        return {
+          message: 'Уведомления отключены в вашем браузере',
+          OK: false
+        };
+      } else {
+        /** Запрос разрешения на уведомления */
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            return {
+              message: 'Уведомления разрешены в вашем браузере',
+              OK: true
+            };
+          } else {
+            return {
+              message: 'Уведомления отключены в вашем браузере',
+              OK: false
+            };
+          }
+        });
+      }
+      return {
+        message: 'Не удалось провести проверку',
+        OK: false
+      };
+    })();
+
+    addSnackbar(message, {
+      variant: OK ? 'success' : 'error',
+    });
+
+    if (OK) {
+      addNotification({
+        title: 'Проверка настроек crm',
+        message: 'Push-уведомления успешно подключены',
+        native: true,
+        duration: PUSH_NOTIFICATIONS_DURATION
+      });
+    }
+  };
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
@@ -220,9 +294,10 @@ export function Profile(props: ProfileProps) {
           user={user}
           onCancel={() => setTwoFAOpen({ check: false })}
           onSubmit={handleCreateOnSubmit}
+          onSignIn={handleEnable2FAWithNewEmail}
         />
       </Stack>
-    </Dialog>, [twoFAOpen.create]);
+    </Dialog>, [twoFAOpen.create, user]);
 
   return (
     <>
@@ -244,7 +319,7 @@ export function Profile(props: ProfileProps) {
                   variant="circular"
                   height={300}
                   width={300}
-                  />
+                />
                 :
                 <Avatar
                   className={styles.image}
@@ -257,7 +332,7 @@ export function Profile(props: ProfileProps) {
                   color="error"
                   onClick={handleDeleteClick}
                 >
-                  <DeleteIcon />
+                  <DeleteIcon fontSize="medium" />
                 </Fab>
               </Box>
               <Box
@@ -271,7 +346,7 @@ export function Profile(props: ProfileProps) {
                     color="primary"
                     disabled={isLoading || updateIsLoading}
                   >
-                    <AddPhotoAlternateIcon />
+                    <AddPhotoAlternateIcon fontSize="medium" />
                   </Fab>
                 </label>
               </Box>
@@ -373,7 +448,7 @@ export function Profile(props: ProfileProps) {
                             name="SEND_EMAIL_NOTIFICATIONS"
                             checked={formik.values.SEND_EMAIL_NOTIFICATIONS}
                             onChange={formik.handleChange}
-                                   />}
+                          />}
                           style={{
                             minWidth: '190px',
                           }}
@@ -385,6 +460,39 @@ export function Profile(props: ProfileProps) {
                         >
                           <InfoIcon color="action" />
                         </Tooltip>
+                      </Stack>
+                      <Stack direction="row" alignItems="center">
+                        <FormControlLabel
+                          disabled={isLoading}
+                          label="Push-уведомления"
+                          control={<Checkbox
+                            name="PUSH_NOTIFICATIONS_ENABLED"
+                            checked={formik.values.PUSH_NOTIFICATIONS_ENABLED}
+                            onChange={formik.handleChange}
+                          />}
+                        />
+                        <Tooltip
+                          style={{ cursor: 'help' }}
+                          arrow
+                          title={<List disablePadding dense>
+                            <ListItem disableGutters alignItems="flex-start">
+                              <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
+                                1.
+                              </ListItemIcon >
+                              Убедитесь, что на вашем компьютере включены уведомления от текущего браузера
+                            </ListItem>
+                            <ListItem disableGutters alignItems="flex-start">
+                              <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
+                                2.
+                              </ListItemIcon >
+                              Проверьте, что в вашем браузере включены уведомления, нажав кнопку Проверить
+                            </ListItem>
+                          </List>}
+                        >
+                          <InfoIcon color="action" />
+                        </Tooltip>
+                        <Box flex={1} />
+                        <Button variant="contained" onClick={checkPushNotifications}>Проверить</Button>
                       </Stack>
                     </TabPanel>
 

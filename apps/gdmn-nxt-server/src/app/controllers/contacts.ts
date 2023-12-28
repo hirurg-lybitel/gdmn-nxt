@@ -1,15 +1,16 @@
-import { IBusinessProcess, IContactPerson, ICustomer, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactPerson, IDataSchema, ILabel, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { genId, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { resultError } from '../responseMessages';
-import { genId } from '../utils/genId';
+import { cacheManager } from '@gdmn-nxt/cache-manager';
+import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../utils/cached requests';
 
 export const getContacts: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
 
   const { pageSize, pageNo } = req.query;
   const { DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME } = req.query;
-  const { field: sortField, sort: sortMode } = req.query;
+  const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
 
   let fromRecord = 0;
   let toRecord: number;
@@ -17,278 +18,140 @@ export const getContacts: RequestHandler = async (req, res) => {
   if (pageNo && pageSize) {
     fromRecord = Number(pageNo) * Number(pageSize);
     toRecord = fromRecord + Number(pageSize);
-
-    if (fromRecord === 0) fromRecord = 1;
   };
 
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+  const _schema: IDataSchema = {
+    contacts: {
+      CONTRACTS: {
+        type: 'array'
+      },
+      DEPARTMENTS: {
+        type: 'array'
+      }
+    }
+  };
 
 
   try {
-    const _schema: IDataSchema = {
-      contacts: {
-        CONTRACTS: {
-          type: 'array'
-        },
-        DEPARTMENTS: {
-          type: 'array'
+    const labels = new Map();
+    const businessProcesses = new Map();
+    const customerInfo = new Map();
+
+    (await cacheManager.getKey<ContactLabel[]>('customerLabels'))
+      ?.forEach(l => {
+        if (labels[l.USR$CONTACTKEY]) {
+          if (!labels[l.USR$CONTACTKEY].includes(l.ID)) {
+            labels[l.USR$CONTACTKEY].push({ ...l });
+          }
+        } else {
+          labels[l.USR$CONTACTKEY] = [{ ...l }];
+        };
+      });
+
+
+    (await cacheManager.getKey<ContactBusiness[]>('businessProcesses'))
+      ?.forEach(bp => {
+        const { CONTACTKEY, ...restBusinessProc } = bp;
+        if (businessProcesses[CONTACTKEY]) {
+          if (!businessProcesses[CONTACTKEY].includes(restBusinessProc.ID)) {
+            businessProcesses[CONTACTKEY].push({ ...restBusinessProc });
+          }
+        } else {
+          businessProcesses[CONTACTKEY] = [{ ...restBusinessProc }];
+        };
+      });
+
+    (await cacheManager.getKey<CustomerInfo[]>('customerInfo'))
+      ?.forEach(ci => {
+        if (customerInfo[ci.USR$CUSTOMERKEY]) {
+          if (!customerInfo[ci.USR$CUSTOMERKEY].JOBS.includes(ci.USR$JOBKEY)) {
+            customerInfo[ci.USR$CUSTOMERKEY].JOBS.push(ci.USR$JOBKEY);
+          }
+          if (!customerInfo[ci.USR$CUSTOMERKEY].DEPOTS.includes(ci.USR$DEPOTKEY)) {
+            customerInfo[ci.USR$CUSTOMERKEY].DEPOTS.push(ci.USR$DEPOTKEY);
+          }
+          if (!customerInfo[ci.USR$CUSTOMERKEY].JOBWORKS.includes(ci.USR$JOBWORKKEY)) {
+            customerInfo[ci.USR$CUSTOMERKEY].JOBWORKS.push(ci.USR$JOBWORKKEY);
+          }
+        } else {
+          customerInfo[ci.USR$CUSTOMERKEY] = {
+            JOBS: [ci.USR$JOBKEY],
+            DEPOTS: [ci.USR$DEPOTKEY],
+            JOBWORKS: [ci.USR$JOBWORKKEY]
+          };
+        };
+      });
+
+    const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
+    const depotIds = DEPARTMENTS ? (DEPARTMENTS as string).split(',').map(Number) ?? [] : [];
+    const contractIds = CONTRACTS ? (CONTRACTS as string).split(',').map(Number) ?? [] : [];
+    const worktypeIds = WORKTYPES ? (WORKTYPES as string).split(',').map(Number) ?? [] : [];
+    const buisnessProcessIds = BUSINESSPROCESSES ? (BUSINESSPROCESSES as string).split(',').map(Number) ?? [] : [];
+
+    const cachedContacts = (await cacheManager.getKey<Customer[]>('customers')) ?? [];
+    const contacts = cachedContacts
+      .reduce((filteredArray, c) => {
+        let checkConditions = true;
+
+        if (LABELS) {
+          checkConditions = checkConditions && !!labels[c.ID]?.some(l => labelIds.includes(l.ID));
         }
-      }
-    };
-
-    const getParams: any = (withKeys = false) => {
-      const arr: Array<string | { [key: string]: string}> = [];
-      req.params.taxId
-        ? withKeys ? arr.push({ taxId: req.params.taxId }) : arr.push(req.params.taxId)
-        : null;
-      req.params.rootId
-        ? withKeys ? arr.push({ rootId: req.params.rootId }) : arr.push(req.params.rootId)
-        : null;
-
-      return (arr?.length > 0 ? arr : undefined);
-    };
-
-    const execQuery = async ({ name, query }) => {
-      // const startTime = new Date().getTime();
-      console.time(`${name} fetch time`);
-      // const rs = await attachment.executeQuery(transaction, query, []);
-      const data = await fetchAsObject(query);
-      // const data = await rs.fetchAsObject();
-      // const endTime = new Date().getTime();
-      // console.log(`${name} fetch time ms`, endTime - startTime);
-      console.timeEnd(`${name} fetch time`);
-      // await rs.close();
-
-      return data as any;
-    };
-
-    const queries = [
-      {
-        name: 'folders',
-        query: 'SELECT ID, NAME FROM GD_CONTACT WHERE CONTACTTYPE=0',
-      },
-      {
-        name: 'contacts',
-        query: `
-          SELECT DISTINCT
-            c.id,
-            c.name,
-            c.phone,
-            c.email,
-            comp.taxid,
-            c.address,
-            com.FULLNAME,
-            c.FAX,
-            c.USR$CRM_POSTADDRESS AS POSTADDRESS
-          FROM
-            gd_contact c
-            join gd_companycode comp on comp.COMPANYKEY = c.id
-            JOIN GD_COMPANY com ON com.CONTACTKEY = c.ID
-            ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
-            ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
-            ${DEPARTMENTS || CONTRACTS || WORKTYPES
-    ? `JOIN USR$CRM_CUSTOMER cust ON cust.USR$CUSTOMERKEY = c.ID
-                ${CONTRACTS ? `AND cust.USR$JOBKEY IN (${CONTRACTS})` : ''}
-                ${DEPARTMENTS ? `AND cust.USR$DEPOTKEY IN (${DEPARTMENTS})` : ''}
-                ${WORKTYPES ? `AND cust.USR$JOBWORKKEY IN (${WORKTYPES})` : ''}`
-    : ''}
-            ${LABELS ? `JOIN USR$CRM_CONTACT_LABELS lab ON lab.USR$CONTACTKEY = c.ID AND lab.USR$LABELKEY IN (${LABELS})` : ''}
-            ${BUSINESSPROCESSES ? `JOIN USR$CROSS1242_1980093301 bpcross ON bpcross.USR$GD_CONTACTKEY = c.ID AND bpcross.USR$BG_BISNESS_PROCKEY IN (${BUSINESSPROCESSES})` : ''}
-          WHERE
-            c.contacttype IN (3,5) /*and c.id = 147960147*/
-            ${customerId > 0 ? `AND c.ID = ${customerId}` : ''}
-            ${NAME ? `AND (UPPER(c.NAME) LIKE UPPER('%${NAME}%') OR UPPER(comp.TAXID) LIKE UPPER('%${NAME}%'))` : ''}
-          ORDER BY c.${sortField ? sortField : 'ID'} ${sortMode ? sortMode : 'DESC'}
-          ${fromRecord > 0 ? `ROWS ${fromRecord} TO ${toRecord}` : ''}`
-      },
-      {
-        name: 'labels',
-        query: `
-          SELECT
-            l.ID,
-            l.USR$NAME,
-            l.USR$COLOR,
-            cl.USR$CONTACTKEY
-          FROM USR$CRM_CONTACT_LABELS cl
-          JOIN GD_CONTACT con ON con.ID = cl.USR$CONTACTKEY
-          JOIN USR$CRM_LABELS l ON l.ID = cl.USR$LABELKEY
-          ${customerId > 0 ? `WHERE cl.USR$CONTACTKEY = ${customerId}` : ''}
-          ORDER BY cl.USR$CONTACTKEY`
-      },
-      {
-        name: 'businessProcesses',
-        query: `
-          SELECT c.USR$GD_CONTACTKEY AS CONTACTKEY, b.ID, b.USR$NAME AS NAME
-          FROM USR$CROSS1242_1980093301 c
-          JOIN USR$BG_BISNESS_PROC b ON b.ID = c.USR$BG_BISNESS_PROCKEY`
-      },
-      {
-        name: 'rowCount',
-        query: `
-          SELECT COUNT(DISTINCT c.ID)
-          FROM
-          gd_contact c
-          join gd_companycode comp on comp.COMPANYKEY = c.id
-          ${req.params.taxId ? `JOIN gd_companycode cc ON cc.companykey = c.id AND cc.taxid = '${req.params.taxId}'` : ''}
-          ${req.params.rootId ? `JOIN GD_CONTACT rootItem ON c.LB > rootItem.LB AND c.RB <= rootItem.RB AND rootItem.ID = ${req.params.rootId}` : ''}
-          ${DEPARTMENTS || CONTRACTS || WORKTYPES
-    ? `JOIN USR$CRM_CUSTOMER cust ON cust.USR$CUSTOMERKEY = c.ID
-              ${CONTRACTS ? `AND cust.USR$JOBKEY IN (${CONTRACTS})` : ''}
-              ${DEPARTMENTS ? `AND cust.USR$DEPOTKEY IN (${DEPARTMENTS})` : ''}
-              ${WORKTYPES ? `AND cust.USR$JOBWORKKEY IN (${WORKTYPES})` : ''}`
-    : ''
-}
-          ${LABELS ? `JOIN USR$CRM_CONTACT_LABELS lab ON lab.USR$CONTACTKEY = c.ID AND lab.USR$LABELKEY IN (${LABELS})` : ''}
-          ${BUSINESSPROCESSES ? `JOIN USR$CROSS1242_1980093301 bpcross ON bpcross.USR$GD_CONTACTKEY = c.ID AND bpcross.USR$BG_BISNESS_PROCKEY IN (${BUSINESSPROCESSES})` : ''}
-        WHERE
-          c.contacttype IN (3,5) /*and c.id = 147960147*/
-          ${customerId > 0 ? `AND c.ID = ${customerId}` : ''}
-          ${NAME ? `AND (UPPER(c.NAME) LIKE UPPER('%${NAME}%') OR UPPER(comp.TAXID) LIKE UPPER('%${NAME}%'))` : ''}`
-      },
-      // {
-      //   name: 'employees',
-      //   query: `
-      //     SELECT
-      //       c.ID, c.NAME, c.EMAIL, p.RANK, CAST(c.NOTE AS VARCHAR(1024)) AS NOTE,
-      //       c.ADDRESS,
-      //       dep.ID DEP_ID, dep.NAME DEP_NAME
-      //     FROM GD_CONTACT c
-      //     JOIN GD_PEOPLE p ON p.CONTACTKEY = c.ID
-      //     LEFT JOIN GD_CONTACT dep ON dep.ID = c.USR$BG_OTDEL
-      //     WHERE c.PARENT = ${customerId}`
-      // },
-      // {
-      //   name: 'phones',
-      //   query: `
-      //     SELECT
-      //       p.ID,
-      //       p.USR$PHONENUMBER
-      //     FROM USR$CRM_PHONES p
-      //     JOIN GD_CONTACT con ON con.ID = p.USR$CONTACTKEY
-      //     WHERE con.PARENT = ${customerId}`
-      // }
-    ];
-
-    console.time('Promise time');
-    const [rawFolders, rawContacts, rawLabels, rawBusinessProcesses, rowCount] = await Promise.all(queries.map(execQuery));
-
-    // let endTime = new Date().getTime();
-
-    console.timeEnd('Promise time');
-
-    // const [rawContacts] = await Promise.all(queries.map(execQuery));
-    // const rawContacts = await Promise.resolve(execQuery(q[2]));
-    // const rawFolders = await Promise.resolve(execQuery(queries[2]));
-    // const rawContracts = await Promise.resolve(execQuery(q[0]));
-
-    interface IMapOfArrays {
-      [customerId: string]: any[];
-    };
-    const labels: IMapOfArrays = {};
-    const businessProcesses: IMapOfArrays = {};
-
-
-    rawLabels.map(l => {
-      if (labels[l.USR$CONTACTKEY]) {
-        if (!labels[l.USR$CONTACTKEY].includes(l.ID)) {
-          labels[l.USR$CONTACTKEY].push({ ...l });
+        if (DEPARTMENTS) {
+          checkConditions = checkConditions && !!customerInfo[c.ID]?.DEPOTS.some(d => depotIds.includes(d));
         }
-      } else {
-        labels[l.USR$CONTACTKEY] = [{ ...l }];
-      };
-    });
-
-    rawBusinessProcesses.map(bp => {
-      if (businessProcesses[bp.CONTACTKEY]) {
-        if (!businessProcesses[bp.CONTACTKEY].includes(bp.ID)) {
-          businessProcesses[bp.CONTACTKEY].push({ ...bp });
+        if (CONTRACTS) {
+          checkConditions = checkConditions && !!customerInfo[c.ID]?.JOBS.some(j => contractIds.includes(j));
         }
-      } else {
-        businessProcesses[bp.CONTACTKEY] = [{ ...bp }];
-      };
-    });
+        if (WORKTYPES) {
+          checkConditions = checkConditions && !!customerInfo[c.ID]?.JOBWORKS.some(jw => worktypeIds.includes(jw));
+        }
+        if (BUSINESSPROCESSES) {
+          checkConditions = checkConditions && !!businessProcesses[c.ID]?.some(bp => buisnessProcessIds.includes(bp.PROCKEY));
+        }
+        if (NAME) {
+          checkConditions = checkConditions && (
+            c.NAME?.toLowerCase().includes(String(NAME).toLowerCase()) ||
+              c.TAXID?.toLowerCase().includes(String(NAME).toLowerCase())
+          );
+        }
+        if (customerId > 0) {
+          checkConditions = checkConditions && c.ID === customerId;
+        }
+        if (checkConditions) {
+          const customerLabels = labels[c.ID] ?? null;
+          const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
+          filteredArray.push({
+            ...c,
+            NAME: c.NAME || '<не указано>',
+            LABELS: customerLabels,
+            BUSINESSPROCESSES,
+          });
+        }
+        return filteredArray;
+      }, [])
+      .sort((a, b) => {
+        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
 
-    // interface IFolders {
-    //   [id: string]: string;
-    // };
+        return String(sortMode).toUpperCase() === 'ASC'
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
+      });
 
-    // const folders: IFolders = rawFolders.reduce((p, f) => {
-    //   p[f.ID] = f.NAME;
-    //   return p;
-    // }, {});
-
-    const contacts: ICustomer[] = rawContacts.map(c => {
-      const LABELS = labels[c.ID] ?? null;
-      const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
-
-      return {
-        ...c,
-        NAME: c.NAME || '<не указано>',
-        LABELS,
-        BUSINESSPROCESSES,
-      };
-    });
+    const rowCount = contacts.length;
+    const contactsWitPagination = contacts.slice(fromRecord, toRecord);
 
     const result: IRequestResult = {
-      queries: { contacts, rowCount },
-      _params: getParams(true),
+      queries: {
+        contacts: contactsWitPagination,
+        rowCount
+      },
       _schema
     };
 
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseReadTransaction();
-    // await releaseReadTransaction(req.sessionID);
-  }
-};
-
-export const updateContact: RequestHandler = async (req, res) => {
-  const { id: ID } = req.params;
-  const { NAME, PHONE, EMAIL, ADDRESS } = req.body;
-  const { attachment, transaction, releaseTransaction, executeQuery, fetchAsObject } = await startTransaction(req.sessionID);
-
-  try {
-    try {
-      await executeQuery(`
-        UPDATE GD_CONTACT
-        SET
-          NAME = ?,
-          PHONE = ?,
-          EMAIL = ?,
-          ADDRESS = ?
-        WHERE ID = ?`,
-      [NAME, PHONE, EMAIL, ADDRESS, ID]);
-    } catch (error) {
-      return res.status(500).send({ 'errorMessage': error.message });
-    }
-
-    const row = await fetchAsObject(`
-      SELECT
-        con.ID,
-        con.NAME,
-        con.EMAIL,
-        con.PHONE,
-        con.ADDRESS
-      FROM GD_CONTACT con
-      WHERE con.ID = :ID`,
-    { ID });
-
-    const _schema = { };
-
-    const result: IRequestResult = {
-      queries: {
-        contacts: [row]
-      },
-      _schema
-    };
-
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).send(resultError(error.errorMessage));
-  } finally {
-    await releaseTransaction();
   }
 };
 
@@ -361,7 +224,8 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
 
     const row = await Promise.resolve(execQuery(query));
-    // row['LABELS'] = await upsertLabels({ attachment, transaction }, row['ID'], LABELS);
+
+    cachedRequets.cacheRequest('customers');
 
     const result: IRequestResult = {
       queries: {
@@ -396,6 +260,8 @@ export const deleteContact: RequestHandler = async (req, res) => {
       END`,
       [id]
     );
+
+    cachedRequets.cacheRequest('customers');
 
     return res.status(200).send(id);
   } catch (error) {
@@ -461,6 +327,7 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
         WHERE USR$CONTACTKEY = ?` ;
 
       await attachment.execute(transaction, sql, [contactId]);
+      cachedRequets.cacheRequest('customerLabels');
     } catch (error) {
       console.error('upsertLabels', error);
     }
@@ -471,18 +338,6 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
-
-    // const queries = [
-    //   {
-    //     query: 'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?',
-    //     params: [contactId]
-    //   },
-    //   {
-    //     query: 'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?',
-    //     params: [contactId]
-    //   }
-
-    // ]
     const deleteSQL = 'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?';
 
     await Promise.all(
@@ -518,88 +373,29 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
     const records = await Promise.all(contactLabels.map(async label => {
       return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
     }));
+    cachedRequets.cacheRequest('customerLabels');
 
     return records as ILabelsContact[];
   } catch (error) {
-    console.log('upsertLabels', error);
+    console.error('upsertLabels', error);
 
     return;
-  } finally {
-    // await closeConnection(client, attachment, transaction);
   };
 };
 
 export const getCustomersCross: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
-
-  const { id } = req.params;
-
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const rs = await attachment.executeQuery(transaction, query, params);
-      try {
-        const data = await rs.fetchAsObject();
+    const jobWorks = new Map();
+    const contracts = new Map();
+    const departments = new Map();
+    const persons = new Map();
+    const phones = new Map();
 
-        return data as any;
-      } finally {
-        await rs.close();
-      }
-    };
-
-    const queries = [
-      {
-        name: 'customers',
-        query: `
-          SELECT DISTINCT
-            USR$JOBKEY,
-            USR$JOBWORKKEY,
-            USR$DEPOTKEY,
-            USR$CUSTOMERKEY
-          FROM USR$CRM_CUSTOMER
-          ORDER BY USR$CUSTOMERKEY`,
-      },
-      {
-        name: 'persons',
-        query: `
-          SELECT
-            con.PARENT, empl.ID, empl.NAME, empl.EMAIL, p.RANK
-          FROM GD_CONTACT con
-          JOIN GD_CONTACT empl ON empl.PARENT = con.ID
-          JOIN GD_PEOPLE p  ON p.CONTACTKEY = empl.ID
-          WHERE
-            UPPER(con.NAME) = 'КОНТАКТЫ'
-          ORDER BY con.PARENT`
-      },
-      {
-        name: 'phones',
-        query: `
-          SELECT
-            p.ID, p.USR$CONTACTKEY, p.USR$PHONENUMBER
-          FROM USR$CRM_PHONES p
-          ORDER BY p.USR$CONTACTKEY`
-      },
-      // {
-      //   name: 'businessProcesses',
-      //   query: `
-      //     SELECT c.USR$GD_CONTACTKEY AS CONTACTKEY, b.ID
-      //     FROM USR$CROSS1242_1980093301 c
-      //     JOIN USR$BG_BISNESS_PROC b ON b.ID = c.USR$BG_BISNESS_PROCKEY`
-      // }
-    ];
-
-    const [rawCustomers, rawPersons, rawPhones] = await Promise.all(queries.map(execQuery));
-
-    interface IMapOfArrays {
-      [key: string]: any[];
-    };
-
-    const jobWorks: IMapOfArrays = {};
-    const contracts: IMapOfArrays = {};
-    const departments: IMapOfArrays = {};
-    const persons: IMapOfArrays = {};
-    const phones: IMapOfArrays = {};
+    const rawCustomers = (await cacheManager.getKey<CustomerInfo[]>('customerInfo')) ?? [];
+    const rawPhones = (await cacheManager.getKey<Phone[]>('phones')) ?? [];
+    const rawPersons = (await cacheManager.getKey<CustomerPerson[]>('customerPersons')) ?? [];
 
     rawCustomers.forEach(c => {
       if (c.USR$JOBKEY) {
@@ -676,8 +472,6 @@ export const getCustomersCross: RequestHandler = async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseReadTransaction(req.sessionID);
   }
 };
 
@@ -691,6 +485,7 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
         WHERE USR$GD_CONTACTKEY = ?` ;
 
       await attachment.execute(transaction, sql, [contactId]);
+      cachedRequets.cacheRequest('businessProcesses');
     } catch (error) {
       console.error('upsertBusinessProcesses', error);
     }
@@ -724,6 +519,7 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
     const records: IBusinessProcess[] = await Promise.all(params.map(async bp => {
       return (await attachment.executeReturningAsObject(transaction, sql, Object.values(bp)));
     }));
+    cachedRequets.cacheRequest('businessProcesses');
 
     return records;
   } catch (error) {

@@ -16,7 +16,6 @@ import {
   FormControlLabel,
   Stepper,
   Step,
-  StepLabel,
   Tab,
   useMediaQuery,
   useTheme,
@@ -53,12 +52,11 @@ import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
-import TextFieldMasked from '../../textField-masked/textField-masked';
 import { DealDocuments } from './components/deal-documents';
 import { ClientHistory } from './components/client-history';
 import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
-
+import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -91,7 +89,7 @@ export interface KanbanEditCardProps {
   stages: IKanbanColumn[];
   deleteable?: boolean;
   onSubmit: (arg1: IKanbanCard, arg2: boolean) => void;
-  onCancelClick: (isFetching?: boolean) => void;
+  onCancelClick: (newCard: IKanbanCard) => void;
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
@@ -104,7 +102,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const [isFetchingCard, setIsFetchingCard] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [deleting, setDeleting] = useState(false);
-  const [expanded, setExpanded] = useState('');
   const [tabIndex, setTabIndex] = useState('1');
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -145,15 +142,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     setTabIndex('1');
     setDeleting(true);
     setConfirmOpen(true);
-  };
-
-  const handleCancelClick = () => {
-    setDeleting(false);
-    setTabIndex('1');
-    onCancelClick(isFetchingCard);
-    if (isFetchingCard) {
-      setIsFetchingCard(false);
-    }
   };
 
   const handleOnClose = () => {
@@ -227,10 +215,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 return 'Некорректный адрес';
               })
             .max(40, 'Слишком длинный email'),
-          CONTACT_PHONE: yup.string()
+          CONTACT_PHONE: yup
+            .string()
             .nullable()
-            .matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
-            .max(40, 'Слишком длинный номер'),
+            .test('',
+              ({ value }) => validatePhoneNumber(value) ?? '',
+              (value = '') => !validatePhoneNumber(value ?? '')),
           REQUESTNUMBER: yup.string().nullable()
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
@@ -248,6 +238,16 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       setConfirmOpen(false);
     },
   });
+
+  const handleCancelClick = () => {
+    setDeleting(false);
+    setTabIndex('1');
+    onCancelClick(formik.values);
+    if (isFetchingCard) {
+      setIsFetchingCard(false);
+    }
+  };
+
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
     onSubmit(formik.values, deleting);
@@ -292,6 +292,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     formik.setFieldValue('USR$MASTERKEY', stages[currentIndex + 1].ID);
   };
 
+  const onPhoneChange = (value: string) => {
+    formik.setFieldValue('DEAL.CONTACT_PHONE', value);
+  };
+
   const checkDoneAndTasks = useMemo(() =>
     !(formik.values.DEAL?.USR$DONE) &&
     (formik.values.TASKS?.reduce((acc, task) => acc + Number(!task.USR$CLOSED), 0) || 0) > 0
@@ -301,7 +305,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     return (
       <Stack
         flex={1}
-        spacing={3}
+        spacing={2}
         paddingTop={1}
       >
         <TextField
@@ -313,7 +317,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           error={getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))}
           helperText={getIn(formik.touched, 'DEAL.PRODUCTNAME') && getIn(formik.errors, 'DEAL.PRODUCTNAME')}
         />
-        <Stack direction={'row'} spacing={3}>
+        <Stack direction={'row'} spacing={2}>
           <Stack direction={'column'} flex={1}>
             <TextField
               label="Номер заявки"
@@ -327,7 +331,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           </Stack>
           <Stack
             direction="column"
-            spacing={3}
+            spacing={2}
             width={150}
           >
             <DesktopDatePicker
@@ -357,7 +361,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         />
         <Stack
           flex={1}
-          spacing={3}
+          spacing={2}
           direction={{ sm: 'column', md: 'row', lg: 'row' }}
         >
           <TextField
@@ -370,14 +374,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}
           />
-          <TextFieldMasked
-            mask={'+375 (99) 999-99-99'}
-            label="Телефон"
-            type="text"
-            fullWidth
+          <TelephoneInput
             name="DEAL.CONTACT_PHONE"
-            onChange={formik.handleChange}
-            value={formik.values.DEAL?.CONTACT_PHONE || ''}
+            label="Телефон"
+            value={formik.values.DEAL?.CONTACT_PHONE ?? ''}
+            onChange={onPhoneChange}
+            fullWidth
+            fixedCode
+            strictMode
             error={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_PHONE') && getIn(formik.errors, 'DEAL.CONTACT_PHONE')}
           />
@@ -417,7 +421,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             onSubmit={formik.handleSubmit}
             style={{ flex: 1, display: 'flex' }}
           >
-            <Stack spacing={3} flex={1}>
+            <Stack spacing={2} flex={1}>
               {matchDownLg
                 ? <Stack
                   direction="row"
@@ -490,7 +494,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                   <CustomizedScrollBox container={{ className: classes.scrollContainer }} className={classes.scrollBox}>
                     <Stack
                       flex={1}
-                      spacing={3}
+                      spacing={2}
                       paddingTop={1}
                     >
                       <TextField
@@ -513,17 +517,17 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         error={getIn(formik.touched, 'DEAL.USR$NAME') && Boolean(getIn(formik.errors, 'DEAL.USR$NAME'))}
                         helperText={getIn(formik.touched, 'DEAL.USR$NAME') && getIn(formik.errors, 'DEAL.USR$NAME')}
                       />
-                      <Stack direction={matchDownLg ? 'column' : 'row'} spacing={3}>
+                      <Stack direction={matchDownLg ? 'column' : 'row'} spacing={2}>
                         <Stack
                           direction="column"
-                          spacing={3}
+                          spacing={2}
                           flex={1}
                         >
                           <CustomerSelect formik={formik} />
                           <DealSourcesSelect formik={formik} />
                         </Stack>
                         <Stack
-                          spacing={3}
+                          spacing={2}
                           {...(matchDownLg
                             ? {
                               direction: 'row',
@@ -570,7 +574,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         </Stack>
                       </Stack>
                       <Divider variant="middle" />
-                      <Stack direction={'column'} spacing={3}>
+                      <Stack direction={'column'} spacing={2}>
                         <Autocomplete
                           fullWidth
                           options={employees || []}
@@ -729,12 +733,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       </Stack>
                       <Stack
                         direction="row"
-                        spacing={3}
+                        spacing={2}
                         alignItems="center"
                       >
                         <Stack flex={1}>
-                          <Stack direction="column" spacing={2}>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                          <Stack direction="column" spacing={1}>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }}>
                               <FormControlLabel
                                 control={
                                   <Checkbox
@@ -816,14 +820,17 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                       // })();
                                       // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
                                       if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
-                                      if (checked) formik.setFieldValue('DEAL.USR$DONE', false);
+                                      if (checked) {
+                                        formik.setFieldValue('DEAL.USR$DONE', false);
+                                        formik.setFieldValue('USR$MASTERKEY', stages[9].ID);
+                                      }
                                     }}
                                   />
                                 }
                                 label="Отказ"
                               />
                               {formik.values.DEAL?.DENIED &&
-                                  <Stack flex={1} spacing={3}>
+                                  <Stack flex={1} spacing={2}>
                                     <DenyReasonsSelect formik={formik} />
                                   </Stack>}
                             </Stack>
@@ -903,6 +910,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
+          variant="outlined"
         >Отменить</Button>
         <PermissionsGate show={true} actionAllowed={formik.values.ID > 0 ? userPermissions?.deals.PUT : userPermissions?.deals.POST}>
           <Button

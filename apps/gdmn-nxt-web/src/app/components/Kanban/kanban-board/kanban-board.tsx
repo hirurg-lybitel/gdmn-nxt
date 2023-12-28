@@ -31,7 +31,7 @@ import { useMemo } from 'react';
 
 export interface KanbanBoardProps {
   columns?: IKanbanColumn[];
-  isLoading: boolean,
+  isLoading: boolean;
 };
 
 export function KanbanBoard(props: KanbanBoardProps) {

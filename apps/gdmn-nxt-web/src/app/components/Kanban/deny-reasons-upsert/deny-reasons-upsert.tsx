@@ -137,7 +137,7 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
         <Button
           className={styles.Button}
           onClick={handleCancel}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
              Отменить

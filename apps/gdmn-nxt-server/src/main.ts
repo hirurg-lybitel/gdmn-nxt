@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
@@ -33,7 +32,6 @@ import { Notifications } from './app/routes/socket/notifications';
 import { StreamingUpdate } from './app/routes/socket/streamingUpdate';
 import { config } from '@gdmn-nxt/config';
 import { checkPermissions, setPermissonsCache } from './app/middlewares/permissions';
-import { nodeCache } from './app/utils/cache';
 import { authRouter } from './app/routes/authRouter';
 import path from 'path';
 import flash from 'connect-flash';
@@ -41,6 +39,8 @@ import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
 import { bodySize } from './app/constants/params';
+import { cacheManager } from '@gdmn-nxt/cache-manager';
+import { cachedRequets } from './app/utils/cached requests';
 import fs from 'fs';
 import https from 'https';
 import http from 'http';
@@ -73,8 +73,15 @@ interface ICustomerUser extends IBaseUser {
   expireOn?: number;
 };
 
-
 type IUser = IGedeminUser | ICustomerUser;
+
+/** Local cache initialization */
+cacheManager.init({ useClones: false });
+
+/** Cache all necessary data */
+cachedRequets.init(cacheManager);
+/** Refresh cache every 20 minutes */
+setInterval(() => cachedRequets.init(cacheManager), 20 * 60 * 1000);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
@@ -118,53 +125,53 @@ passport.use(new Strategy({
   passwordField: 'password',
   passReqToCallback: true
 },
-  async (req: Request, userName: string, password: string, done) => {
-    const { employeeMode } = req.body;
-    try {
-      if (employeeMode) {
-        // TODO: надо возвращать запись пользователя и все остальные проверки делать тут
-        const res = await checkGedeminUser(userName, password);
+async (req: Request, userName: string, password: string, done) => {
+  const { employeeMode } = req.body;
+  try {
+    if (employeeMode) {
+      const res = await checkGedeminUser(userName, password);
 
-        if (res.result === 'UNKNOWN_USER') {
-          console.log('Unknown gedemin user', { userName, password });
-          return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
-        }
-
-        if (res.result === 'SUCCESS') {
-          console.log('valid gedemin user');
-
-          const userPermissions: Permissions = nodeCache.get('permissions')?.[res.userProfile.id];
-
-          return done(null, {
-            userName,
-            gedeminUser: true,
-            id: res.userProfile.id,
-            permissions: userPermissions
-          });
-        } else {
-          console.log('Invalid gedemin user', { userName, password });
-          return done(null, false);
-        }
-      } else {
-        const account = await getAccount(req.sessionID, userName);
-
-        if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
-          return done(null, false);
-        }
-
-        if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
-          console.log('valid user');
-          return done(null, { userName });
-        } else {
-          console.log('Invalid user', { userName, password });
-          return done(null, false);
-        }
+      if (res.result === 'UNKNOWN_USER') {
+        console.log('Unknown gedemin user', { userName, password });
+        return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
       }
-    } catch (err) {
-      console.error('Passport error:', err);
-      done(err);
+
+      if (res.result === 'SUCCESS') {
+        console.log('valid gedemin user');
+
+        const permissions = await cacheManager.getKey('permissions') ?? {};
+        const userPermissions: Permissions = permissions?.[res.userProfile.id];
+
+        return done(null, {
+          userName,
+          gedeminUser: true,
+          id: res.userProfile.id,
+          permissions: userPermissions
+        });
+      } else {
+        console.log('Invalid gedemin user', { userName, password });
+        return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
+      }
+    } else {
+      const account = await getAccount(req.sessionID, userName);
+
+      if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
+        return done(null, false);
+      }
+
+      if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
+        console.log('valid user');
+        return done(null, { userName });
+      } else {
+        console.log('Invalid user', { userName, password });
+        return done(null, false);
+      }
     }
+  } catch (err) {
+    console.error('Passport error:', err);
+    done(err);
   }
+}
 ));
 
 passport.serializeUser((user: IUser, done) => {

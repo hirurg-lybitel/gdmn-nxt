@@ -23,7 +23,7 @@ export interface IDataRecord {
 };
 
 export interface IResults {
-  [queryName: string]: IDataRecord[];
+  [queryName: string]: IDataRecord[] | number | string;
 };
 
 export interface IRequestResult<R = IResults> {
@@ -96,6 +96,7 @@ export interface IProfileSettings {
   LASTVERSION?: string;
   EMAIL?: string;
   SEND_EMAIL_NOTIFICATIONS?: boolean;
+  PUSH_NOTIFICATIONS_ENABLED?: boolean;
   ENABLED_2FA?: boolean;
   REQUIRED_2FA?: boolean;
   SECRETKEY?: string;

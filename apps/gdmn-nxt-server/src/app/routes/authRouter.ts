@@ -3,14 +3,14 @@ import express from 'express';
 import passport from 'passport';
 import { profileSettingsController } from '../controllers/profileSettings';
 import { generateSecret, verifyCode } from '@gdmn/2FA';
-import { nodeCache } from '../utils/cache';
 import jwt from 'jsonwebtoken';
 import { config } from '@gdmn-nxt/config';
 import { resultError } from '../responseMessages';
 import { jwtMiddleware } from '../middlewares/jwt';
 import { ERROR_MESSAGES } from '../constants/messages';
+import { cacheManager } from '@gdmn-nxt/cache-manager';
 
-/** In zeit/ms format */
+/** In zeit/ms(https://github.com/vercel/ms) format */
 const jwtExpirationTime = '6h';
 
 export const router = express.Router();
@@ -78,6 +78,7 @@ router.post('/user/signin', async function(req, res, next) {
         const prevSession = req.session;
         req.session.regenerate((err) => {
           Object.assign(req.session, prevSession);
+          req.session.userId = user.id;
           req.session.base32Secret = '';
           req.session.token = jwt.sign({ EMAIL }, config.jwtSecret, { expiresIn: jwtExpirationTime });
 
@@ -108,7 +109,9 @@ router.post('/user/signin-2fa', async function(req, res, next) {
     const checkCode = await verifyCode(email, code, base32Secret);
     if (checkCode) {
       await profileSettingsController.upsertSecretKey(req, { userId, enabled2fa: true });
-      const userPermissions: Permissions = nodeCache.get('permissions')?.[userId];
+      const permissions = await cacheManager.getKey('permissions') ?? {};
+      const userPermissions: Permissions = permissions?.[userId];
+
       const newUser = {
         userName,
         gedeminUser: true,

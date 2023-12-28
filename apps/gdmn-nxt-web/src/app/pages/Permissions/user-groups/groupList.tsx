@@ -57,7 +57,7 @@ export const GroupList = (props: IGroupList) => {
       >
         <ListItemText>
           <Typography variant="body1">{group.NAME}</Typography>
-          <Typography variant="caption" style={{ color: 'inherit' }}>{group.DESCRIPTION}</Typography>
+          <Typography variant="caption">{group.DESCRIPTION}</Typography>
           <div
             className="actions"
             hidden

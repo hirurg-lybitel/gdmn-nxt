@@ -14,7 +14,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   root: {
     display: 'flex',
     justifyContent: 'space-between',
-    width: '200px'
+    width: '200px',
   },
   iconButton: {
     color: theme.palette.action.active,
@@ -52,6 +52,8 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   onFocus: {
     border: `1px solid ${theme.palette.primary.main}`,
     width: '100%',
+  },
+  widthTransition: {
     marginRight: '100px',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -68,6 +70,7 @@ export interface SearchBarProps {
   className?: string,
   closeIcon?: ReactElement,
   searchIcon?: ReactElement,
+  iconPosition?: 'start' | 'end',
   disabled?: boolean,
   onCancelSearch?: () => void,
   onChange?: (value: string) => void,
@@ -92,6 +95,7 @@ export function SearchBar(props: SearchBarProps) {
     style,
     value = '',
     fullWidth = false,
+    iconPosition = 'end',
     ...inputProps
   } = props;
 
@@ -158,37 +162,8 @@ export function SearchBar(props: SearchBarProps) {
     }
   };
 
-  return (
-    <CustomizedCard
-      borders
-      direction="row"
-      className={`
-        ${classes.root}
-        ${className}
-        ${mouseOnFocus ? classes.mouseOnFocus : ''}
-        ${onFocus ? classes.onFocus : ''}
-        ${fullWidth ? classes.fullWidth : ''}
-      `}
-      style={style}
-    >
-      <div className={classes.searchContainer}>
-        <Input
-          {...inputProps}
-          inputRef={inputRef}
-          onBlur={handleBlur}
-          value={searchValue}
-          onChange={handleInput}
-          onKeyUp={handleKeyUp}
-          onFocus={handleFocus}
-          onMouseEnter={handleOnMouseEnter}
-          onMouseLeave={handleOnMouseLeave}
-          fullWidth
-          className={classes.input}
-          disableUnderline
-          disabled={disabled}
-          placeholder={placeholder}
-        />
-      </div>
+  const icons =
+    <>
       <IconButton
         onClick={handleRequestSearch}
         className={`
@@ -214,7 +189,42 @@ export function SearchBar(props: SearchBarProps) {
           classes: { root: classes.icon },
         })}
       </IconButton>
+    </>;
 
+  return (
+    <CustomizedCard
+      borders
+      direction="row"
+      className={`
+        ${classes.root}
+        ${className}
+        ${mouseOnFocus ? classes.mouseOnFocus : ''}
+        ${onFocus ? classes.onFocus : ''}
+        ${fullWidth ? classes.fullWidth : ''}
+        ${onFocus && !fullWidth ? classes.widthTransition : ''}
+      `}
+      style={style}
+    >
+      {iconPosition === 'start' && icons}
+      <div className={classes.searchContainer}>
+        <Input
+          {...inputProps}
+          inputRef={inputRef}
+          onBlur={handleBlur}
+          value={searchValue}
+          onChange={handleInput}
+          onKeyUp={handleKeyUp}
+          onFocus={handleFocus}
+          onMouseEnter={handleOnMouseEnter}
+          onMouseLeave={handleOnMouseLeave}
+          fullWidth
+          className={classes.input}
+          disableUnderline
+          disabled={disabled}
+          placeholder={placeholder}
+        />
+      </div>
+      {iconPosition === 'end' && icons}
     </CustomizedCard>
   );
 }

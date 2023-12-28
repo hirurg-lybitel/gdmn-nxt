@@ -2,23 +2,18 @@ import { IContactPerson, IPhone } from '@gsbelarus/util-api-types';
 import {
   Autocomplete,
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  Slide,
   Stack,
   TextField,
   Box
 } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useCallback, useEffect, useState } from 'react';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { RootState } from '../../store';
 import * as yup from 'yup';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
@@ -26,8 +21,7 @@ import { useGetDepartmentsQuery } from '../../features/departments/departmentsAp
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
-import { AnyObject } from 'yup/lib/types';
-import TextFieldMasked from '../../components/textField-masked/textField-masked';
+import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -57,19 +51,6 @@ const useStyles = makeStyles((theme) => ({
     width: '120px',
   },
 }));
-
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>,
-) {
-  return <Slide
-    direction="left"
-    ref={ref}
-    {...props}
-         />;
-});
 
 
 export interface PersonEditProps {
@@ -106,9 +87,15 @@ export function PersonEdit(props: PersonEditProps) {
 
   const [phoneCount, setPhoneCount] = useState(1);
 
-  const phonesValidation = yup.object().shape({
-    USR$PHONENUMBER: yup.string().matches(/^(\+ ?)?([1-9]\d{0,2}[-\ ]?)?(\(?[1-9]\d{0,2}\)?)?[-\ ]?\d{3,3}[-\ ]?\d{2,2}[-\ ]?\d{2,2}$/, 'Некорректный номер')
-  });
+  const phonesValidation = yup
+    .object()
+    .shape({
+      USR$PHONENUMBER: yup
+        .string()
+        .test('',
+          ({ value }) => validatePhoneNumber(value) ?? '',
+          (value = '') => !validatePhoneNumber(value))
+    });
 
   const formik = useFormik<IContactPerson>({
     enableReinitialize: true,
@@ -200,13 +187,16 @@ export function PersonEdit(props: PersonEditProps) {
     setConfirmOpen(false);
   }, []);
 
+  const onClose = useCallback(() => onCancelClick(), [onCancelClick]);
+
   return (
     <CustomizedDialog
       open={open}
       hideBackdrop
+      onClose={onClose}
     >
       <DialogTitle>
-        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление контакта'}
+        {(person && person.ID > 0) ? `Редактирование: ${person.NAME}` : 'Добавление сотрудника'}
       </DialogTitle>
       <DialogContent
         dividers
@@ -215,12 +205,12 @@ export function PersonEdit(props: PersonEditProps) {
         <PerfectScrollbar>
           <Stack
             direction="column"
-            spacing={3}
+            spacing={2}
             p="16px 24px"
           >
             <FormikProvider value={formik}>
               <Form id="personForm" onSubmit={formik.handleSubmit}>
-                <Stack direction="column" spacing={3}>
+                <Stack direction="column" spacing={2}>
                   <TextField
                     label="Имя"
                     type="text"
@@ -238,14 +228,14 @@ export function PersonEdit(props: PersonEditProps) {
                     onChange={formik.handleChange}
                     value={formik.values.EMAIL}
                   />
-                  <TextFieldMasked
-                    mask={'+375 (99) 999-99-99'}
-                    label="Телефон 1"
+                  <TelephoneInput
                     name="PHONES[0]"
+                    label="Телефон 1"
                     value={formik.values.PHONES?.length ? formik.values.PHONES[0].USR$PHONENUMBER : ''}
-                    onChange={(e) => {
-                      handlePhoneChange(0, e.target.value);
-                    }}
+                    onChange={(value) => handlePhoneChange(0, value)}
+                    // fullWidth
+                    fixedCode
+                    strictMode
                     helperText={(() => {
                       const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[0]?.USR$PHONENUMBER);
                       const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[0] as unknown as IPhone)?.USR$PHONENUMBER;
@@ -263,19 +253,18 @@ export function PersonEdit(props: PersonEditProps) {
                       const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[index + 1] as unknown as IPhone)?.USR$PHONENUMBER;
 
                       return (
-                        <TextFieldMasked
-                          mask={'+375 (99) 999-99-99'}
-                          key={index}
-                          label={`Телефон ${index + 2}`}
-                          type="tel"
+                        <TelephoneInput
+                          key={index.toString()}
                           name={`PHONE${index + 2}`}
-                          value={phone.USR$PHONENUMBER}
-                          onChange={(e) => {
-                            handlePhoneChange(index + 1, e.target.value);
-                          }}
+                          label={`Телефон ${index + 2}`}
+                          value={phone.USR$PHONENUMBER ?? ''}
+                          onChange={(value) => handlePhoneChange(index + 1, value)}
+                          fixedCode
+                          strictMode
                           error={isTouched && Boolean(error)}
                           helperText={isTouched && error}
-                        />);
+                        />
+                      );
                     })}
                   <div>
                     <Button
@@ -357,7 +346,7 @@ export function PersonEdit(props: PersonEditProps) {
         <Button
           className={classes.button}
           onClick={handleCancelClick}
-          variant="text"
+          variant="outlined"
           color="primary"
         >
             Отменить

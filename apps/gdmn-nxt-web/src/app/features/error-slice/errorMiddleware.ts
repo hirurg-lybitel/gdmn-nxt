@@ -5,7 +5,8 @@ export const errorMiddleware: Middleware = ({ dispatch }) => (next) => (action) 
   if (action && 'error' in action) {
     const errorData = action.payload?.data;
     if (typeof errorData === 'object' && errorData?.errorMessage) {
-      dispatch(setError(errorData));
+      const errorStatus = action.payload?.status ?? 0;
+      dispatch(setError({ ...errorData, errorStatus }));
     }
   }
 

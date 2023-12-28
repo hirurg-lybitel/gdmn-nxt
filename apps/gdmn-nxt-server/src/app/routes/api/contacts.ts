@@ -1,5 +1,5 @@
 import express from 'express';
-import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, updateContact, upsertContact } from '../../controllers/contacts';
+import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, upsertContact } from '../../controllers/contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../controllers/labelsContact';
 import contactPersons from '../../controllers/contactPersons';
 import contactEmployees from '../../controllers/contactEmployees';

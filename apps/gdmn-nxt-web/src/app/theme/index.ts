@@ -35,6 +35,7 @@ export const theme = (customization: ICustomization) => {
         backgroundDefault: colors.blue[300],
         backgroundSecond: colors.blue[300],
         textColor: colors.grey[800],
+        captionTextColor: colors.grey[600],
         secondaryColor: colors.common.white,
         headColor: colors.common.white,
         paper: colors.common.white,
@@ -45,8 +46,9 @@ export const theme = (customization: ICustomization) => {
       : {
         backgroundColor: colors.grey[900],
         backgroundDefault: colors.blueGrey[900],
-        backgroundSecond: colors.blue[300],
+        backgroundSecond: colors.blue[400],
         textColor: colors.common.white,
+        captionTextColor: colors.grey[500],
         secondaryColor: colors.grey[300],
         headColor: colors.grey[300],
         paper: colors.grey[800],
@@ -62,6 +64,7 @@ export const theme = (customization: ICustomization) => {
     drawerWidth: 260,
     headColor: themeOption.headColor,
     textColor: themeOption.textColor,
+    captionTextColor: themeOption.captionTextColor,
     fontFamily: themeOption.fontFamily,
     palette: {
       mode: themeOption.customization.colorMode,

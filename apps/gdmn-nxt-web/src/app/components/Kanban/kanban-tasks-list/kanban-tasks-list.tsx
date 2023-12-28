@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
-import styles from './kanban-tasks-list.module.less';
-import { IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
+import { IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
+import { DataGridProProps, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, ButtonProps, Chip, IconButton, Stack } from '@mui/material';
+import { IconButton } from '@mui/material';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
@@ -115,13 +114,14 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
         Object.keys(params.row).length > 0
           ? <>
             <PermissionsGate actionAllowed={userPermissions?.tasks?.PUT}>
-              <GridActionsCellItem
+              <IconButton
                 key={1}
-                icon={<EditIcon />}
-                onClick={handleTaskEdit(params.row)}
-                label="Edit"
                 color="primary"
-              />
+                size="small"
+                onClick={handleTaskEdit(params.row)}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
             </PermissionsGate>
           </>
           : <></>

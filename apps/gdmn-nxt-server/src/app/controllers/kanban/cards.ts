@@ -2,8 +2,7 @@ import { IChanges, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory,
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
-import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { genId } from '../../utils/genId';
+import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { addHistory } from './history';
 
 const get: RequestHandler = async (req, res) => {
@@ -347,9 +346,6 @@ const upsert: RequestHandler = async (req, res) => {
 
     const cardRecord: IKanbanCard = await fetchAsSingletonObject(sql, paramsValues);
 
-    /** Сохранение истории изменений */
-    changes.forEach(c => addHistory(req.sessionID, c));
-
     sql = `
       EXECUTE BLOCK(
         cardId INTEGER = ?,
@@ -384,12 +380,16 @@ const upsert: RequestHandler = async (req, res) => {
       _schema: undefined
     };
 
+    await releaseTransaction();
+
+    /** Сохранение истории изменений */
+    changes.forEach(c => addHistory(req.sessionID, c));
+
     return res.status(200).json(result);
   } catch (error) {
+    await releaseTransaction(false);
     return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseTransaction();
-  };
+  } finally {};
 };
 
 const remove: RequestHandler = async(req, res) => {

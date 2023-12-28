@@ -14,6 +14,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 export interface LabelListItemProps {
   data: ILabel;
@@ -159,22 +161,25 @@ export function LabelListItem(props: LabelListItemProps) {
         <Grid item xs={2} md={1}>
           <Box display={'inline-flex'} width="100%" justifyContent={'center'} style={{ marginRight: 0 }}>
             <PermissionsGate actionAllowed={userPermissions?.labels.PUT}>
-              <IconButton
+              <ItemButtonEdit
+                disabled={editIsLoading || deleteIsLoading}
+                color="primary"
+                onClick={handleEditClick}
+              />
+              {/* <IconButton
                 disabled={editIsLoading || deleteIsLoading}
                 color="primary"
                 onClick={handleEditClick}
               >
                 <EditIcon fontSize="small" />
-              </IconButton>
+              </IconButton> */}
             </PermissionsGate>
             <PermissionsGate actionAllowed={userPermissions?.labels.DELETE}>
-              <IconButton
+              <ItemButtonDelete
                 disabled={editIsLoading || deleteIsLoading}
                 color="primary"
                 onClick={handleDeleteClick}
-              >
-                <DeleteForeverIcon fontSize="small" />
-              </IconButton>
+              />
             </PermissionsGate>
           </Box>
         </Grid>

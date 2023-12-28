@@ -63,9 +63,22 @@ const get: RequestHandler = async (req, res) => {
 
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
-    const { departments, customers, requestNumber, dealNumber, performers, period } = req.query;
+    const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
+    const { departments, customers, requestNumber, dealNumber, performers, period, isPerformer, isCreator, name } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
+
+    const performerOrCreator = (() => {
+      let res = '';
+      if (Number(isCreator) === 1) {
+        res = ` AND creator.ID = ${contactKey} `;
+      };
+      if (Number(isPerformer) === 1) {
+        res = res ? ' OR ' : ' AND ';
+        res = res + ` (performer.ID IN (${contactKey}) OR secondPerformer.ID IN (${contactKey})) `;
+      }
+      return res;
+    })();
 
     const checkFullView = `
       EXISTS(
@@ -78,7 +91,6 @@ const get: RequestHandler = async (req, res) => {
           r.XID = 370486335 AND r.DBID = 1811180906
           AND cr.USR$MODE = 1
           AND ul.USR$USERKEY = ${userId})`;
-
 
     const checkCardsVisibility = `
       AND 1 = IIF(NOT ${checkFullView},
@@ -95,7 +107,9 @@ const get: RequestHandler = async (req, res) => {
             u.ID = ${userId}
             /* Если начальник отдела, то видит все сделки по своим подразделениям, иначе только свои */
             AND (deal.USR$DEPOTKEY = IIF(r.XID = 370486080 AND r.DBID = 1811180906, ud.USR$DEPOTKEY, NULL)
-            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID))), 1, 0), 1)`;
+            /* Свои сделки - сделки, где пользователь постановщик/исполнитель или в задачах которых он постановщик/исполнитель */
+            OR con.ID IN (performer.ID, secondPerformer.ID, creator.ID)
+            OR EXISTS(SELECT * FROM USR$CRM_KANBAN_CARD_TASKS tasks WHERE tasks.USR$CARDKEY = card.ID AND con.ID IN (tasks.USR$PERFORMER, tasks.USR$CREATORKEY)))), 1, 0), 1)`;
 
     const filter = `
       /** Фильтрация */
@@ -156,12 +170,35 @@ const get: RequestHandler = async (req, res) => {
               1, 0)
           ELSE 1
         END)
-        ${departments ? `AND dep.ID IN (${departments})` : ''}
-        ${customers ? `AND con.ID IN (${customers})` : ''}
-        ${requestNumber ? `AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%'` : ''}
-        ${dealNumber ? `AND deal.USR$NUMBER = ${dealNumber}` : ''}
+        ${name
+          ? ` AND (
+            LOWER(deal.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(deal.USR$DESCRIPTION) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(creator.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(performer.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(secondPerformer.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(source.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+            LOWER(CAST(deal.USR$NUMBER AS VARCHAR(10))) SIMILAR TO '%${name.toString().toLowerCase()}%'
+          ) `
+          : ''}
+        ${departments ? ` AND dep.ID IN (${departments}) ` : ''}
+        ${customers ? ` AND con.ID IN (${customers}) ` : ''}
+        ${requestNumber ? ` AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%' ` : ''}
+        ${dealNumber ? ` AND deal.USR$NUMBER = ${dealNumber} ` : ''}
         ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}
-        ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
+        ${performerOrCreator}
+        ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}' ` : ''}`;
+
+    const archivedDeals = `
+      /** Фильтрация */
+      /** Только этапы Исполнено и Отказ */
+      AND (1 = IIF(${deadline || -1} = (SELECT ID FROM GD_RUID WHERE XID = 147007128 AND DBID = 5014473 ROWS 1),
+        IIF(col.ID IN(
+          (SELECT ID FROM GD_RUID WHERE XID = 370480879 AND DBID = 1811180906 ROWS 1),
+          (SELECT ID FROM GD_RUID WHERE XID = 147007134 AND DBID = 5014473 ROWS 1)
+        ), 1, 0),
+        1))
+    `;
 
     const queries = [
       {
@@ -171,7 +208,9 @@ const get: RequestHandler = async (req, res) => {
           FROM USR$CRM_KANBAN_TEMPLATE temp
             JOIN USR$CRM_KANBAN_TEMPLATE_LINE templine ON templine.USR$MASTERKEY = temp.ID
             JOIN USR$CRM_KANBAN_COLUMNS col ON col.ID = templine.USR$COLUMNKEY
-          WHERE temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+          WHERE
+            temp.ID = (SELECT ID FROM GD_RUID WHERE XID = 147006332 AND DBID = 2110918267 ROWS 1)
+            ${archivedDeals}
           ORDER BY col.USR$INDEX`
       },
       {
@@ -565,15 +604,39 @@ const getTasks: RequestHandler = async (req, res) => {
     };
 
     const userId = parseInt(req.query.userId as string);
-    const { taskNumber, performers, period } = req.query;
+    const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
+    const { taskNumber, performers, period, isPerformer, isCreator, name } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
+    const performerOrCreator = (() => {
+      let res = '';
+      if (Number(isCreator) === 1) {
+        res = ` AND creator.ID = ${contactKey} `;
+      };
+      if (Number(isPerformer) === 1) {
+        res = res ? ' OR ' : ' AND ';
+        res = res + ` performer.ID = (${contactKey}) `;
+      }
+      return res;
+    })();
+
     const filter = `
+      ${name
+        ? ` AND (
+          LOWER(task.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' OR
+          LOWER(task.USR$DESCRIPTION) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(CAST(task.USR$NUMBER AS VARCHAR(10))) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(creator.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(performer.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(tt.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
+          LOWER(deal.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%'
+          ) `
+        : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
+      ${performerOrCreator}
       ${periods.length === 2 ? ` AND CAST(task.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
-
 
     const checkFullView = `
       EXISTS(
@@ -721,7 +784,7 @@ const getTasks: RequestHandler = async (req, res) => {
           USR$NUMBER: el['USR$NUMBER'],
           USR$INPROGRESS: el['USR$INPROGRESS'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$DATECLOSE: el['USR$DATECLOSE'],
+          USR$DATECLOSE: el['USR$CLOSED'] ? new Date() : null,
           USR$CARDKEY: el['CARD_ID'],
           ...(el['CREATOR_ID'] && {
             CREATOR: {
