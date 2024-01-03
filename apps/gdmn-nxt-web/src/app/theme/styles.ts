@@ -1,6 +1,6 @@
-import { colors } from '@mui/material';
+import { PaletteOptions, colors } from '@mui/material';
 
-export interface styledTheme {
+export interface StyledTheme {
   color: typeof colors,
   drawerWidth: number,
   headColor?: string,

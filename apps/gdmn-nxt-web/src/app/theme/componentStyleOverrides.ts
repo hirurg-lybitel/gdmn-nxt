@@ -1,14 +1,17 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { Components, ThemeOptions, Paper, colors } from '@mui/material';
+import { Components, ThemeOptions, Theme, Paper, colors } from '@mui/material';
 import * as locales from '@mui/material/locale';
 
-export default function componentStyleOverrides(theme: ThemeOptions): Components {
+export default function componentStyleOverrides(theme: Theme): Components {
   return {
     MuiCssBaseline: {
       styleOverrides: {
         ':root': {
           '--color-scroll-thumb': theme.palette?.mode === ColorMode.Dark ? '#93999c' : '#d1dbe3',
           '--color-scroll-thumb-hover': theme.palette?.mode === ColorMode.Dark ? '#717171' : '#959595',
+          '--color-input-text': theme.textColor,
+          '--color-btn-primary-bg': theme.palette.primary.main,
+          '--border-radius': theme.mainContent.borderRadius,
         },
         body: {
           fontFamily: theme.fontFamily,

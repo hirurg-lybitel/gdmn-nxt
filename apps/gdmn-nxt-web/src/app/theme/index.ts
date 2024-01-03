@@ -1,17 +1,17 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { colors } from '@mui/material';
+import { colors, ThemeOptions } from '@mui/material';
 import * as locales from '@mui/material/locale';
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 import { ICustomization } from '../store/settingsSlice';
 import componentStyleOverrides from './componentStyleOverrides';
-import { styledTheme } from './styles';
+import { StyledTheme } from './styles';
 import themeTypography from './typography';
 
 declare module '@mui/material/styles' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface Theme extends styledTheme {}
+  interface Theme extends StyledTheme {}
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  export interface ThemeOptions extends styledTheme {}
+  export interface ThemeOptions extends StyledTheme {}
   interface BreakpointOverrides {
     xs: true;
     sm: true;
@@ -24,7 +24,7 @@ declare module '@mui/material/styles' {
 };
 
 export const theme = (customization: ICustomization) => {
-  const themeOption = {
+  const themeOptionDefault = {
     // fontFamily: '"Roboto Condensed", sans-serif',
     // fontFamily: '"Lato", sans-serif',
     // fontFamily: '"PT Sans", sans-serif',
@@ -62,33 +62,33 @@ export const theme = (customization: ICustomization) => {
   const themeOptions: ThemeOptions = {
     color: colors,
     drawerWidth: 260,
-    headColor: themeOption.headColor,
-    textColor: themeOption.textColor,
-    captionTextColor: themeOption.captionTextColor,
-    fontFamily: themeOption.fontFamily,
+    headColor: themeOptionDefault.headColor,
+    textColor: themeOptionDefault.textColor,
+    captionTextColor: themeOptionDefault.captionTextColor,
+    fontFamily: themeOptionDefault.fontFamily,
     palette: {
-      mode: themeOption.customization.colorMode,
+      mode: themeOptionDefault.customization.colorMode,
       background: {
-        paper: themeOption.paper,
+        paper: themeOptionDefault.paper,
         default: colors.common.white,
       },
       primary: {
-        main: themeOption.backgroundSecond,
-        contrastText: themeOption.headColor,
+        main: themeOptionDefault.backgroundSecond,
+        contrastText: themeOptionDefault.headColor,
       },
       secondary: {
-        main: themeOption.secondaryColor
+        main: themeOptionDefault.secondaryColor
       },
       text: {
-        primary: themeOption.textColor
+        primary: themeOptionDefault.textColor
       },
     },
     menu: {
-      backgroundColor: themeOption.backgroundDefault,
-      color: themeOption.headColor
+      backgroundColor: themeOptionDefault.backgroundDefault,
+      color: themeOptionDefault.headColor
     },
     mainContent: {
-      backgroundColor: themeOption.backgroundColor,
+      backgroundColor: themeOptionDefault.backgroundColor,
       width: '100%',
       minHeight: 'calc(100vh - 10px)',
       flexGrow: 1,
@@ -96,8 +96,8 @@ export const theme = (customization: ICustomization) => {
       marginTop: '10px',
       marginRight: '20px',
       borderRadius: '12px',
-      borderColor: themeOption.borderColor,
-      buttonTextColor: themeOption.buttonTextColor
+      borderColor: themeOptionDefault.borderColor,
+      buttonTextColor: themeOptionDefault.buttonTextColor
     },
     breakpoints: {
       /** breakpoints берём немного с меньше, чем разрешение экрана*/
@@ -113,15 +113,11 @@ export const theme = (customization: ICustomization) => {
     }
   };
 
-  // const themes = createTheme({...themeOptions, typography: { fontFamily: 'fantasy' }}, locales.ruRU);
-  // console.log('themeTypography(themeOptions)', themeTypography(themeOptions));
-  const themes = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
-  // themes.typography = { ...themeTypography(themeOptions), fontFamily: 'fantasy', fontSize: 30 };
-  // themes.typography = { ...themes.typography, fontFamily: 'fantasy' };
-  themes.components = { ...locales.ruRU.components, ...componentStyleOverrides(themeOptions) };
-  themes.shadows[1] = themeOption.customization.colorMode === ColorMode.Dark
+  const theme = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
+  theme.components = { ...locales.ruRU.components, ...componentStyleOverrides(theme) };
+  theme.shadows[1] = themeOptionDefault.customization.colorMode === ColorMode.Dark
     ? '0px 4px 20px rgba(100, 110, 120, 0.3)'
     : '0px 4px 20px rgba(170, 180, 190, 0.3)';
 
-  return themes;
+  return theme;
 };
