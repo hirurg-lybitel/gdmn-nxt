@@ -144,12 +144,14 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
   const handleTaskEditCancelClick = useCallback(() => setEditTaskForm(false), []);
 
   const memoKanbanEditTask = useMemo(() =>
-    <KanbanEditTask
-      open={editTaskForm}
-      task={currentTask.current}
-      onSubmit={handleTaskEditSubmit}
-      onCancelClick={handleTaskEditCancelClick}
-    />,
+    currentTask.current
+      ? <KanbanEditTask
+        open={editTaskForm}
+        task={currentTask.current}
+        onSubmit={handleTaskEditSubmit}
+        onCancelClick={handleTaskEditCancelClick}
+      />
+      : <></>,
   [editTaskForm]);
 
   return (

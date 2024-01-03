@@ -1,8 +1,8 @@
 import styles from './check-code.module.less';
-import { Alert, Box, Button, Dialog, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
+import { Alert, Box, Button, Dialog, Stack, Typography } from '@mui/material';
 import { IAuthResult } from '@gsbelarus/util-api-types';
 import { useRef, useState } from 'react';
+import VerifyCode, { VerifyCodeRef } from '../verify-code/verify-code';
 
 export interface CheckCodeProps {
   onSubmit: (code: string) => Promise<IAuthResult>;
@@ -10,7 +10,7 @@ export interface CheckCodeProps {
 }
 
 export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
-  const codeRef = useRef<HTMLInputElement>(null);
+  const codeRef = useRef<VerifyCodeRef>(null);
   const [error, setError] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   const handleSubmit = async () => {
     if (!codeRef.current) return;
     setLoading(true);
-    const response = await onSubmit(codeRef.current.value);
+    const response = await onSubmit(codeRef.current.getValue());
     setLoading(false);
 
     if (response.result === 'ERROR') {
@@ -26,30 +26,17 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
     }
   };
 
-  const keyPress = (e: any) => {
-    if (e.keyCode === 13) {
-      handleSubmit();
-    }
+  const handleCodeInputSubmit = (res: string) => {
+    handleSubmit();
   };
 
   return (
-    <Stack spacing={3} textAlign="center">
+    <Stack spacing={2} textAlign="center">
       <Box textAlign="center">
         <Typography variant="h6" fontSize="1.5rem">Двухфакторная аутентификация (2FA)</Typography>
       </Box>
       <Typography variant="body1">Откройте приложение двухфакторной проверки на своём мобильном устройстве, чтобы получить код подтверждения.</Typography>
-      <TextField
-        inputRef={codeRef}
-        label="Код аутентификации"
-        onKeyDown={keyPress}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SystemSecurityUpdateGoodIcon />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <VerifyCode ref={codeRef} onSubmit={handleCodeInputSubmit}/>
       <Stack spacing={1}>
         <Button
           variant="contained"

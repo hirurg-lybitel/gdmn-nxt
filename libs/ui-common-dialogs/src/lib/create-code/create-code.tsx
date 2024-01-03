@@ -1,10 +1,9 @@
-import { Alert, Box, Button, Dialog, Divider, IconButton, InputAdornment, List, ListItem, ListItemIcon, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
-import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
+import { Alert, Box, Button, Dialog, Divider, IconButton, List, ListItem, ListItemIcon, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
 import styles from './create-code.module.less';
 import { useRef, useState } from 'react';
 import { IAuthResult, IUserProfile } from '@gsbelarus/util-api-types';
 import CloseIcon from '@mui/icons-material/Close';
-
+import VerifyCode, { VerifyCodeRef } from '../verify-code/verify-code';
 export interface CreateCodeProps {
   user?: IUserProfile;
   onSubmit: (code: string) => Promise<IAuthResult>;
@@ -22,7 +21,7 @@ const subTitle = 'Для вашего пользователя установл�
 
 export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodeProps) {
   const emailRef = useRef<HTMLInputElement>(null);
-  const codeRef = useRef<HTMLInputElement>(null);
+  const codeRef = useRef<VerifyCodeRef>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [QRIsOpen, setQRIsOpen] = useState(false);
@@ -68,7 +67,7 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
   const handleSubmit = async () => {
     if (!codeRef.current) return;
     setLoading(true);
-    const response = await onSubmit(codeRef.current.value);
+    const response = await onSubmit(codeRef.current.getValue());
     setLoading(false);
 
     if (response.result === 'ERROR') {
@@ -153,17 +152,7 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
           <Divider style={{ margin: 0 }} />
           <Typography variant="body1">Для применения настройки введите код аутентификации:</Typography>
         </Box>
-        <TextField
-          inputRef={codeRef}
-          label="Код аутентификации"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SystemSecurityUpdateGoodIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
+        <VerifyCode ref={codeRef} containerClassName={styles.codeInputContainer} />
         <Divider />
         <Stack spacing={1}>
           <Button
