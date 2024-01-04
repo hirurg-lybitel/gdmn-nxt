@@ -1,13 +1,5 @@
 import { io, Socket } from 'socket.io-client';
 import { ClientToServerEvents, ServerToClientEvents } from './socketTypes';
-// import { readFileSync } from 'fs';
-
-// import path from 'path';
-// import fs from 'fs';
-// const certificate = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem'));
-
-// const certificate = readFileSync('../../../sslcert/cert.pem');
-// console.log('setSocketClient', fs.readFileSync('../../../sslcert/cert.pem'));
 
 export let socketClient: Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -32,7 +24,6 @@ export function setSocketClient(name: string, options: SocketOptions) {
         },
         secure: true,
         rejectUnauthorized: false,
-        // ca: certificate.toString()
       });
 
     socketClients[name].on('disconnect', reason => {

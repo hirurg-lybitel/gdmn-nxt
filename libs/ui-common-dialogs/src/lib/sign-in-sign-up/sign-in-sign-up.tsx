@@ -227,9 +227,9 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         :
         <Stack direction="column" spacing={3}>
           {topDecorator?.(stage)}
-          <Box textAlign={'center'}>
+          {/* <Box textAlign={'center'}>
             <BelgissLogo color="#64b5f6" scale={1.5}/>
-          </Box>
+          </Box> */}
           <Box textAlign={'center'}>
             <Typography variant="h4" fontWeight={600}>
               Вход в систему

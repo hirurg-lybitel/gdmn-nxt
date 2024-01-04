@@ -8,6 +8,7 @@ interface IConfig {
   apiAccessToken: string;
   jwtSecret: string;
   serverStaticMode: boolean;
+  origin: string;
 }
 
 
@@ -34,6 +35,9 @@ const appPort =
 const apiAccessToken = process.env.ACCESS_API_TOKEN || '';
 const jwtSecret = process.env.JWT_SECRET || '';
 
+// const origin = `https://${host}:${appPort}`;
+const origin = `https://${host}`;
+
 export const config: IConfig = {
   host,
   appPort,
@@ -43,5 +47,6 @@ export const config: IConfig = {
   streamingUpdatePort,
   apiAccessToken,
   jwtSecret,
-  serverStaticMode
+  serverStaticMode,
+  origin
 };

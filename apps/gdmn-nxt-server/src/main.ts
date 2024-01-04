@@ -42,7 +42,7 @@ import { bodySize } from './app/constants/params';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cached requests';
 import fs from 'fs';
-import https from 'https';
+import https, { ServerOptions } from 'https';
 import http from 'http';
 
 /** Расширенный интерфейс для сессии */
@@ -92,8 +92,8 @@ const cors = require('cors');
 
 app.use(cors({
   credentials: true,
-  // secure: 'httpOnly',
-  origin: `https://${config.host}:${config.appPort}`
+  secure: 'httpOnly',
+  origin: config.origin
 }));
 
 if (config.serverStaticMode) {
@@ -218,8 +218,8 @@ const appMiddlewares = [
     store: sessionStore,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
-      /** TODO: включить при переходе на https */
-      // secure: process.env.NODE_ENV === 'production'
+      secure: true
+      // process.env.NODE_ENV === 'production'
     },
   }),
   cookieParser(),
@@ -346,32 +346,21 @@ if (config.serverStaticMode) {
   });
 }
 
-app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
+app.get('*', (req) => console.log(`Unknown request: ${req.url}`));
 
-// const certPath = path.join(__dirname, '../../../sslcert', 'cert.pem');
-// console.log('certPath', __dirname, certPath);
-const privateKey = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem'));
-const certificate = fs.readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem'));
+const privateKey = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key'));
+const bundle = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.ca-bundle'));
+const certificate = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt'));
 
-const options = {
+const options: ServerOptions = {
   key: privateKey,
-  cert: certificate
+  cert: certificate,
+  ca: bundle,
 };
 
-// const server = https.createServer(options, app);
-// server.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at https://${config.host}:${config.serverPort}`));
-
-const httpServer = http.createServer(app);
 const httpsServer = https.createServer(options, app);
-
-// httpServer.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
-httpsServer.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at https://${config.host}:${config.serverPort}`));
-
-// httpServer.on('[ error ]', console.error);
+httpsServer.listen(config.serverPort, () => console.log(`👀 Server is listening on port [ ${config.serverPort} ]`));
 httpsServer.on('[ error ]', console.error);
-// const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
-
-// server.on('[ error ]', console.error);
 
 process
   .on('exit', code => {

@@ -1,4 +1,4 @@
-import { ColorMode, Permissions, authResult } from '@gsbelarus/util-api-types';
+import { Permissions, authResult } from '@gsbelarus/util-api-types';
 import express from 'express';
 import passport from 'passport';
 import { profileSettingsController } from '../controllers/profileSettings';
@@ -153,19 +153,15 @@ router.get('/logout', (req, res) => {
 
 router.get('/user', (req, res) => {
   if (req.isAuthenticated()) {
-    res.cookie('userId', req.user?.['id']);
-    res.cookie('color-mode', req.user?.['colorMode'] || ColorMode.Light);
     return res.json({
       result: true,
       user: req.user,
-    }
-    );
-  } else {
-    return res.json({
-      result: false,
-      user: null,
     });
   }
+  return res.json({
+    result: false,
+    user: null,
+  });
 });
 
 router.post('/user/forgot-password', async (req, res) => {

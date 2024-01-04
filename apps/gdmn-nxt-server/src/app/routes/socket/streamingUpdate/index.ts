@@ -8,8 +8,8 @@ import { createServer } from 'https';
 
 export function StreamingUpdate() {
   const httpsServer = createServer({
-    key: readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem')),
-    cert: readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem')),
+    key: readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key')),
+    cert: readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt')),
   });
 
   const socketIO = new Server<
@@ -18,7 +18,7 @@ export function StreamingUpdate() {
     >(httpsServer, {
       cors: {
         credentials: true,
-        origin: `https://${config.host}:${config.appPort}`
+        origin: config.origin
       }
     });
 

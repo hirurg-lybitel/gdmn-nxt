@@ -27,8 +27,8 @@ interface NotificationsProps {
 
 export function Notifications({ router }: NotificationsProps) {
   const httpsServer = createServer({
-    key: readFileSync(path.join(__dirname, '../../../sslcert', 'key.pem')),
-    cert: readFileSync(path.join(__dirname, '../../../sslcert', 'cert.pem')),
+    key: readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key')),
+    cert: readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt')),
   });
 
   const socketIO = new Server<
@@ -37,7 +37,7 @@ export function Notifications({ router }: NotificationsProps) {
   >(httpsServer, {
     cors: {
       credentials: true,
-      origin: `https://${config.host}:${config.appPort}`
+      origin: config.origin
     }
   });
 
@@ -164,7 +164,7 @@ export function Notifications({ router }: NotificationsProps) {
             <ol>
               ${htmlText}
             </ol>
-            <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="http://localhost:4201/">CRM системе</a>.</p>
+            <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="https://${config.host}/">CRM системе</a>.</p>
           </div>`;
 
         const from = `CRM система БелГИСС <${process.env.SMTP_USER}>`;

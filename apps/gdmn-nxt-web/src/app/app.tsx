@@ -13,7 +13,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
-import { getCookie } from './features/common/getCookie';
 
 const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
   try {
@@ -80,7 +79,7 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
-          const colorMode = getCookie('color-mode');
+          const colorMode = data.user.colorMode ?? ColorMode.Light;
           switch (colorMode) {
             case ColorMode.Dark:
               dispatch(setColorMode(ColorMode.Dark));
@@ -106,7 +105,7 @@ export default function App(props: AppProps) {
   const theme = useTheme();
   useEffect(() => {
     if (loginStage === 'QUERY_LOGIN' &&
-        theme.palette.mode === getCookie('color-mode') &&
+        theme.palette.mode === user?.colorMode &&
         !!user) {
       if (user.gedeminUser) {
         dispatch(signedInEmployee({ ...user }));

@@ -4,6 +4,9 @@ services:
     container_name: crm_client
     ports:
       - ${NX_APP_PORT}:80
+    networks:
+      - proxy_network
+
   server:
     image: hirurglybitel/gdmn-server:latest
     container_name: crm_server
@@ -14,3 +17,9 @@ services:
     env_file:
       - ./.env
       - ./.env.prod
+    networks:
+      - proxy_network
+
+networks:
+  proxy_network:
+    external: true
