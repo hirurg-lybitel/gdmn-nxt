@@ -33,25 +33,25 @@ export default function StyledGrid(props: IStyledGridProps) {
       paddingLeft: '24px',
       paddingRight: '24px',
     },
-    '& ::-webkit-scrollbar': {
-      width: '6px',
-      height: '6px',
-      backgroundColor: 'transparent',
-      borderRadius: '6px',
-      // transition: 'background-color 5s linear, width 5s ease-in-out',
-    },
-    '& ::-webkit-scrollbar:hover': {
-      backgroundColor: '#f0f0f0',
-    },
-    '& ::-webkit-scrollbar-thumb': {
-      position: 'absolute',
-      right: 10,
-      borderRadius: '6px',
-      backgroundColor: 'rgba(170, 170, 170, 0.5)',
-    },
-    '& ::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: '#999',
-    },
+    // '& ::-webkit-scrollbar': {
+    //   width: '6px',
+    //   height: '6px',
+    //   backgroundColor: 'transparent',
+    //   borderRadius: '6px',
+    //   // transition: 'background-color 5s linear, width 5s ease-in-out',
+    // },
+    // '& ::-webkit-scrollbar:hover': {
+    //   backgroundColor: '#f0f0f0',
+    // },
+    // '& ::-webkit-scrollbar-thumb': {
+    //   position: 'absolute',
+    //   right: 10,
+    //   borderRadius: '6px',
+    //   backgroundColor: 'rgba(170, 170, 170, 0.5)',
+    // },
+    // '& ::-webkit-scrollbar-thumb:hover': {
+    //   backgroundColor: '#999',
+    // },
     '& > .MuiDataGrid-columnSeparator': {
       visibility: 'hidden',
     },

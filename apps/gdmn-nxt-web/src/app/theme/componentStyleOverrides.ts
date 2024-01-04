@@ -17,7 +17,8 @@ export default function componentStyleOverrides(theme: Theme): Components {
           fontFamily: theme.fontFamily,
           backgroundColor: theme.menu?.backgroundColor,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            width: 14,
+            width: 10,
+            height: 10,
             borderRadius: theme.mainContent.borderRadius,
             backgroundColor: 'inherit',
           },
@@ -32,7 +33,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: theme.mainContent.borderRadius,
             backgroundColor: 'var(--color-scroll-thumb)',
-            border: '4px solid transparent',
+            border: '2px solid transparent',
             backgroundClip: 'padding-box',
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {

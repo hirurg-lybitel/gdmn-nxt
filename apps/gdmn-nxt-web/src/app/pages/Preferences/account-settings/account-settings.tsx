@@ -16,6 +16,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
   height: 34,
   padding: 7,
+  margin: 8,
   '& .MuiSwitch-switchBase': {
     margin: 1,
     padding: 0,
@@ -38,6 +39,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     backgroundColor: theme.palette.mode === ColorMode.Dark ? '#003892' : '#001e3c',
     width: 32,
     height: 32,
+    boxShadow: 'none',
     '&:before': {
       content: '\'\'',
       position: 'absolute',
@@ -109,7 +111,6 @@ export function AccountSettings(props: AccountSettingsProps) {
                 disabled={editOrAddIsLoading}
                 checked={theme === ColorMode.Dark}
                 onChange={handleChange}
-                sx={{ m: 1 }}
               />}
             label={theme === ColorMode.Dark ? 'Темная тема' : 'Светлая тема'}
           />
