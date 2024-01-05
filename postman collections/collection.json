@@ -1556,6 +1556,28 @@
 						"url": "{{baseUrl}}/user/signin"
 					},
 					"response": []
+				},
+				{
+					"name": "Check 2fa",
+					"id": "f7078364-e353-42f9-9419-b7e0308764d8",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userName\": \"Administrator\",\r\n  \"password\": \"1502\",\r\n  \"employeeMode\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/user/signin"
+					},
+					"response": []
 				}
 			],
 			"id": "e006d411-a9d9-4ceb-82e4-94dab88a7f0b"
