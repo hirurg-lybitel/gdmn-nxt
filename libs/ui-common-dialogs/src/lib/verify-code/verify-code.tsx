@@ -59,7 +59,7 @@ const VerifyCode = forwardRef<VerifyCodeRef, VerifyCodeProps>((props, ref) => {
   const {
     allowedCharacters = 'numeric',
     isPassword = false,
-    autoFocus = true,
+    autoFocus = false,
     length = 6,
     disabled,
     containerClassName = styles.container,

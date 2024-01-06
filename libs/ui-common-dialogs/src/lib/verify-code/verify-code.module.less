@@ -1,14 +1,13 @@
 .container {
-  padding: 16px;
+  padding: 0px;
 }
 
 .input {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   padding: 0;
   font-size: 24px;
   text-align: center;
-  margin-right: 12px;
   text-transform: uppercase;
   font-family: SF Pro Text, SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif;
   border: 1px solid #d6d6d6;
@@ -28,4 +27,12 @@
 
 .input:hover {
   cursor: pointer;
+}
+
+input + input {
+  background-color: red;
+}
+
+.input + .input {
+  margin-left: 12px;
 }

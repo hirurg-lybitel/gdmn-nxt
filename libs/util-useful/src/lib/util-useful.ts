@@ -10,10 +10,11 @@ const validPasswordChars = 'abcdefghijklmnopqrstuvwxyz0123456789'; // 'abcdefghi
 
 export const genRandomPassword = (len = 10, pc = validPasswordChars) => Array(len)
   .fill(undefined)
-  .map( _ => pc.charAt(Math.floor(Math.random() * pc.length)) )
-  .map( c => Math.random() > 0.5 ? c.toUpperCase() : c )
+  .map(_ => pc.charAt(Math.floor(Math.random() * pc.length)))
+  .map(c => Math.random() > 0.5 ? c.toUpperCase() : c)
   .join('');
 
+export const randomFixedNumber = (lenght: number) => genRandomPassword(lenght, '0123456789');
 
 export const parseIntDef = (v: string, def = 0) => {
   const parsed = parseInt(v);
@@ -21,7 +22,6 @@ export const parseIntDef = (v: string, def = 0) => {
 };
 
 export const detectLanguage = (s: string): Language => {
-
   interface I {
     letters: string;
     language: Language;
@@ -55,5 +55,5 @@ export const detectLanguage = (s: string): Language => {
     }
   }
 
-  return alphabets.sort( (a, b) => b.score - a.score )[0].language;
+  return alphabets.sort((a, b) => b.score - a.score)[0].language;
 };

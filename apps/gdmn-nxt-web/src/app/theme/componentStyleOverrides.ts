@@ -158,6 +158,11 @@ export default function componentStyleOverrides(theme: Theme): Components {
           }
         }
       }
+    },
+    MuiAlert: {
+      defaultProps: {
+        variant: theme.palette?.mode === ColorMode.Dark ? 'filled' : 'standard'
+      }
     }
   };
 }

@@ -116,20 +116,8 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
 
   const doSignIn = async () => {
     setLaunching(true);
-    // checkCredentials(userName, password).then(r => {
-    //   dispatch({ type: 'SET_AUTHRESULT', authResult: r });
-    //   if (r.result === 'SUCCESS') {
-    //     onSignIn();
-    //   } else {
-    //     setLaunching(false);
-    //   }
-    // });
     const res = await onSignIn(userName, password);
     dispatch({ type: 'SET_AUTHRESULT', authResult: res });
-    if (res) {
-      // onSignIn();
-      // return;
-    }
     setLaunching(false);
   };
 

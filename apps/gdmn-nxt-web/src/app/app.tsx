@@ -7,7 +7,7 @@ import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, setEmail } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
-import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
+import { Button, Divider, Typography, Stack, useTheme, Box } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
@@ -31,6 +31,7 @@ const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
 };
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
+const get = (url: string) => query({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });
 
 export interface AppProps {}
 
@@ -130,15 +131,16 @@ export default function App(props: AppProps) {
     };
 
     if (response.result === 'REQUIRED_2FA') {
-      if (!response.userProfile?.email) {
-        dispatch(setEmail({ ...response.userProfile, userName, password }));
+      const dataCreate2fa = await get('user/create-2fa');
+      if (!dataCreate2fa.userProfile?.email) {
+        dispatch(selectMode());
       } else {
-        dispatch(create2fa({ ...response.userProfile, userName, password }));
+        dispatch(create2fa({ ...dataCreate2fa.userProfile, userName, password }));
       }
     };
 
     if (response.result === 'ENABLED_2FA') {
-      dispatch(signIn2fa());
+      dispatch(signIn2fa({ ...userProfile, userName, password }));
     };
 
     return response;
@@ -148,18 +150,25 @@ export default function App(props: AppProps) {
     dispatch(selectMode());
   };
 
-  const create2FAOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await post('user/signin-2fa', { code });
+  const create2FAOnSubmit = async (authCode: string, emailCode: string): Promise<IAuthResult> => {
+    const response = await post('user/create-2fa', { authCode, emailCode });
 
     if (response.result === 'SUCCESS') {
-      dispatch(queryLogin());
+      handleSignIn(
+        userProfile?.userName ?? '',
+        userProfile?.password ?? ''
+      );
     };
 
     return response;
   };
 
-  const check2FAOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await post('user/signin-2fa', { code });
+  const check2FAOnSubmit = async (authCode: string): Promise<IAuthResult> => {
+    const response = await post('user/signin-2fa', {
+      authCode,
+      userName: userProfile?.userName ?? '',
+      password: userProfile?.password ?? '',
+      employeeMode: true });
 
     if (response.result === 'SUCCESS') {
       dispatch(queryLogin());
@@ -248,14 +257,19 @@ export default function App(props: AppProps) {
   }, [loginStage]);
 
   const result =
-    <Stack
-      direction="column"
-      justifyContent="center"
-      alignContent="center"
-      sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}
+    <div
+      style={{
+        display: 'grid',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'auto',
+        padding: '12px 0'
+      }}
     >
-      {renderLoginStage}
-    </Stack>;
-
+      <div style={{ width: 360 }}>
+        {renderLoginStage}
+      </div>
+    </div>;
   return result;
 };

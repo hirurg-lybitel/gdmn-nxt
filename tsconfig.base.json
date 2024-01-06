@@ -16,11 +16,15 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@gdmn-nxt/assets": ["apps/gdmn-nxt-server/src/assets/*"],
+      "@gdmn-nxt/assets/*": ["apps/gdmn-nxt-server/src/assets/*"],
       "@gdmn-nxt/cache-manager": ["libs/cache-manager/src/index.ts"],
       "@gdmn-nxt/components/*": ["apps/gdmn-nxt-web/src/app/components/*"],
       "@gdmn-nxt/config": ["libs/config/src/index.ts"],
+      "@gdmn-nxt/controllers/*": ["apps/gdmn-nxt-server/src/app/controllers/*"],
       "@gdmn-nxt/db-connection": ["libs/db-connection/src/index.ts"],
+      "@gdmn-nxt/repositories/*": [
+        "apps/gdmn-nxt-server/src/app/repositories/*"
+      ],
       "@gdmn-nxt/socket": ["libs/socket/src/index.ts"],
       "@gdmn-nxt/ui-assets": ["libs/ui-assets/src/index.ts"],
       "@gdmn/2FA": ["libs/2-fa/src/index.ts"],
@@ -28,6 +32,7 @@
         "apps/gdmn-nxt-web/src/app/constants",
         "apps/gdmn-nxt-server/src/app/constants"
       ],
+      "@gdmn/mailer": ["libs/mailer/src/index.ts"],
       "@gsbelarus/ui-common-dialogs": ["libs/ui-common-dialogs/src/index.ts"],
       "@gsbelarus/util-api-types": ["libs/util-api-types/src/index.ts"],
       "@gsbelarus/util-helpers": ["libs/util-helpers/src/index.ts"],

@@ -7,23 +7,19 @@ export const authApi = createApi({
   reducerPath: 'auth',
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    generateOtpQR: builder.mutation<{ qr: string; base32: string }, { userId: number, email: string }>({
+    disableOtp: builder.mutation<IAuthResult, { code: string }>({
       query: (body) => ({
-        url: 'user/otp/generate',
+        url: 'user/disable-2fa',
         method: 'POST',
         body
       }),
     }),
-    verifyOtp: builder.mutation<IAuthResult, { userId: number, code: string }>({
-      query: (body) => ({
-        url: 'user/otp/verify',
-        method: 'POST',
-        body
-      }),
+    getCreate2fa: builder.query<IAuthResult, void>({
+      query: () => 'user/create-2fa'
     }),
-    disableOtp: builder.mutation<IAuthResult, { userId: number, code: string }>({
+    create2fa: builder.mutation<IAuthResult, { authCode: string, emailCode: string }>({
       query: (body) => ({
-        url: 'user/otp/disable',
+        url: 'user/create-2fa',
         method: 'POST',
         body
       }),
@@ -32,7 +28,7 @@ export const authApi = createApi({
 });
 
 export const {
-  useGenerateOtpQRMutation,
-  useVerifyOtpMutation,
-  useDisableOtpMutation
+  useDisableOtpMutation,
+  useCreate2faMutation,
+  useGetCreate2faQuery
 } = authApi;

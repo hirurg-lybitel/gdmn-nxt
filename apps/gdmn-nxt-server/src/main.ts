@@ -146,6 +146,7 @@ async (req: Request, userName: string, password: string, done) => {
           userName,
           gedeminUser: true,
           id: res.userProfile.id,
+          email: res.userProfile.email,
           permissions: userPermissions
         });
       } else {
@@ -181,7 +182,7 @@ passport.serializeUser((user: IUser, done) => {
 });
 
 passport.deserializeUser(async (user: IUser, done) => {
-  // console.log('passport deserialize', user);
+  // console.log('passport deserialize');
 
   const { userName: name } = user;
 

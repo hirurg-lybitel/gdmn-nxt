@@ -15,7 +15,8 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
   if (!req.isAuthenticated()) {
     return res.status(401).send(resultError(ERROR_MESSAGES.AUTH_FAILED));
   };
-  const { userId, permissions } = req.session;
+  const userId = req.user['id'];
+  const permissions = req.user['permissions'];
   const { url, method } = req;
 
   for (const name in permissions) {
