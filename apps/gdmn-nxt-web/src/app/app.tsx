@@ -4,10 +4,10 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, setEmail, checkCaptcha } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
-import { Button, Divider, Typography, Stack, useTheme, Box, Dialog } from '@mui/material';
+import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
@@ -242,7 +242,11 @@ export default function App(props: AppProps) {
               // checkCredentials={handleCheckCredentials}
               onSignIn={handleSignIn}
             />
-            <Captcha image={captchaImage} onSubmit={captchaSubmit} onCancel={captchaCancel} />
+            <Captcha
+              image={captchaImage}
+              onSubmit={captchaSubmit}
+              onCancel={captchaCancel}
+            />
           </>
         );
       case 'SIGN_IN_CUSTOMER':
