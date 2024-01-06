@@ -1568,14 +1568,26 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"Administrator\",\r\n  \"password\": \"1502\",\r\n  \"employeeMode\": true\r\n}",
+							"raw": "{\r\n  \"authCode\": \"11111\",\r\n  \"userName\": \"Director\",\r\n  \"employeeMode\": true,\r\n  \"password\": \"dir\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{baseUrl}}/user/signin"
+						"url": "{{baseUrl}}/user/check-2fa"
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "cd95b0c2-244e-48a8-9aa6-b5f379782d4e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
 					},
 					"response": []
 				}
