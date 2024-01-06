@@ -20,7 +20,8 @@ export type LoginStage =
   | 'CREATE_CUSTOMER_ACCOUNT'
   | 'CREATE_2FA'
   | 'SET_EMAIL'
-  | 'SIGN_IN_2FA';
+  | 'SIGN_IN_2FA'
+  | 'CAPTCHA';
 
 export interface UserState {
   loginStage: LoginStage;
@@ -47,8 +48,9 @@ export const userSlice = createSlice({
     signIn2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SIGN_IN_2FA', userProfile: { ...action.payload } } as UserState),
     create2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CREATE_2FA', userProfile: { ...action.payload } } as UserState),
     setEmail: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SET_EMAIL', userProfile: { ...action.payload } } as UserState),
+    checkCaptcha: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CAPTCHA', userProfile: { ...action.payload } } as UserState),
     renderApp: (state) => {
-      state.loginStage = state.userType || 'CUSTOMER'
+      state.loginStage = state.userType || 'CUSTOMER';
     }
   },
   extraReducers: (builder) => {
@@ -68,7 +70,8 @@ export const {
   renderApp,
   create2fa,
   setEmail,
-  signIn2fa
+  signIn2fa,
+  checkCaptcha
 } = userSlice.actions;
 
 export default userSlice.reducer;

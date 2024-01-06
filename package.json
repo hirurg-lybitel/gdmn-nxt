@@ -87,6 +87,7 @@
     "regenerator-runtime": "0.13.7",
     "socket.io": "^4.5.3",
     "socket.io-client": "^4.5.3",
+    "svg-captcha": "^1.4.0",
     "temp-fs": "^0.9.9",
     "tslib": "^2.3.0",
     "yup": "^0.32.11"

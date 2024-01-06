@@ -101,7 +101,14 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator, onSignIn }: SignInSignUpProps) {
+export function SignInSignUp({
+  checkCredentials,
+  createUser,
+  newPassword,
+  topDecorator,
+  bottomDecorator,
+  onSignIn
+}: SignInSignUpProps) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
   const classes = useStyles();
@@ -281,7 +288,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           <Button
             variant="contained"
             size="medium"
-            disabled={waiting || !userName || !password || !!authResult || launching}
+            disabled={waiting || !userName || !password || launching}
             onClick={doSignIn}
           >
             {launching ? 'Входим...' : 'Войти'}

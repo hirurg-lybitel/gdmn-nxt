@@ -9555,6 +9555,7 @@ __metadata:
     style-loader: ^3.3.0
     stylus: ^0.55.0
     stylus-loader: ^7.1.0
+    svg-captcha: ^1.4.0
     temp-fs: ^0.9.9
     ts-jest: 28.0.8
     ts-node: 10.9.1
@@ -13669,6 +13670,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"opentype.js@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "opentype.js@npm:0.7.3"
+  dependencies:
+    tiny-inflate: ^1.0.2
+  bin:
+    ot: ./bin/ot
+  checksum: 3c5c03cdfd096a67bcc1782e3463bea33577500f77c54a7374ff181f384612e59b4d2ae0c5dc612e12ac97dd093bb1aeb680d2a51369faeca8eb36d45562f341
+  languageName: node
+  linkType: hard
+
 "optionator@npm:^0.9.1":
   version: 0.9.3
   resolution: "optionator@npm:0.9.3"
@@ -16842,6 +16854,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"svg-captcha@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "svg-captcha@npm:1.4.0"
+  dependencies:
+    opentype.js: ^0.7.3
+  checksum: e93b21d39456b80cd61fdf745243a22d9d920a7729bebf45589e7d5361463e434d49604dda53f55f85fe43c5a8be325e64dc60565266604825b01c4dcb9708e9
+  languageName: node
+  linkType: hard
+
 "svg-parser@npm:^2.0.4":
   version: 2.0.4
   resolution: "svg-parser@npm:2.0.4"
@@ -17085,6 +17106,13 @@ __metadata:
   version: 1.1.0
   resolution: "thunky@npm:1.1.0"
   checksum: 993096c472b6b8f30e29dc777a8d17720e4cab448375041f20c0cb802a09a7fb2217f2a3e8cdc11851faa71c957e2db309357367fc9d7af3cb7a4d00f4b66034
+  languageName: node
+  linkType: hard
+
+"tiny-inflate@npm:^1.0.2":
+  version: 1.0.3
+  resolution: "tiny-inflate@npm:1.0.3"
+  checksum: 4086a1f8938dafa4a20c63b099aeb47bf8fef5aca991bf4ea4b35dd2684fa52363b2c19b3e76660311e7613cb7c4f063bc48751b9bdf9555e498d997c30bc2d6
   languageName: node
   linkType: hard
 

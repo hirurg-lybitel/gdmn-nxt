@@ -1,37 +1,37 @@
-import { CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
+import { Captcha, CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, setEmail } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, setEmail, checkCaptcha } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
-import { Button, Divider, Typography, Stack, useTheme, Box } from '@mui/material';
+import { Button, Divider, Typography, Stack, useTheme, Box, Dialog } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
 
-const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
+const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
     return (await axios(config)).data;
   } catch (error: any) {
     const { response, request, message } = error as AxiosError;
 
     if (response) {
-      return { result: 'ERROR', message: error.message };
+      return { result: 'ERROR', message: error.message } as T;
     } else if (request) {
-      return { result: 'ERROR', message: `Can't reach server ${baseUrlApi}: ${message}` };
+      return { result: 'ERROR', message: `Can't reach server ${baseUrlApi}: ${message}` } as T;
     } else {
-      return { result: 'ERROR', message: error.message };
+      return { result: 'ERROR', message: error.message } as T;
     }
   }
 };
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
-const get = (url: string) => query({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });
+const get = <T = IAuthResult>(url: string) => query<T>({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });
 
 export interface AppProps {}
 
@@ -41,6 +41,8 @@ export default function App(props: AppProps) {
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
+
+  const [captchaImage, setCaptchaImage] = useState('');
 
   const navigate = useNavigate();
 
@@ -139,6 +141,12 @@ export default function App(props: AppProps) {
       }
     };
 
+    if (response.result === 'REQUIRED_CAPTCHA') {
+      const dataCaptcha = await get<string>('captcha');
+      dispatch(checkCaptcha({ ...userProfile, userName, password }));
+      setCaptchaImage(dataCaptcha);
+    }
+
     if (response.result === 'ENABLED_2FA') {
       dispatch(signIn2fa({ ...userProfile, userName, password }));
     };
@@ -177,6 +185,26 @@ export default function App(props: AppProps) {
     return response;
   };
 
+  const captchaSubmit = async (value: string): Promise<boolean> => {
+    const response = await post('captcha/verify', { value });
+
+    if (response.result === 'SUCCESS') {
+      setCaptchaImage('');
+      handleSignIn(
+        userProfile?.userName ?? '',
+        userProfile?.password ?? ''
+      );
+      return true;
+    };
+    return false;
+  };
+
+  const captchaCancel = () => {
+    setCaptchaImage('');
+
+    dispatch(signInEmployee());
+  };
+
   const loadingPage = useMemo(() => {
     return (
       <Stack spacing={2}>
@@ -207,13 +235,18 @@ export default function App(props: AppProps) {
       case 'CREATE_CUSTOMER_ACCOUNT':
         return <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />;
       case 'SIGN_IN_EMPLOYEE':
+      case 'CAPTCHA':
         return (
-          <SignInSignUp
-            // checkCredentials={handleCheckCredentials}
-            onSignIn={handleSignIn}
-          />
+          <>
+            <SignInSignUp
+              // checkCredentials={handleCheckCredentials}
+              onSignIn={handleSignIn}
+            />
+            <Captcha image={captchaImage} onSubmit={captchaSubmit} onCancel={captchaCancel} />
+          </>
         );
       case 'SIGN_IN_CUSTOMER':
+      case 'CAPTCHA':
         return (
           <SignInSignUp
             onSignIn={(userName, password) => post('user/signin', { userName, password })}
@@ -254,7 +287,7 @@ export default function App(props: AppProps) {
       default:
         return loadingPage;
     }
-  }, [loginStage]);
+  }, [loginStage, captchaImage]);
 
   const result =
     <div

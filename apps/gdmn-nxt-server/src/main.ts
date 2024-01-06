@@ -43,7 +43,6 @@ import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cached requests';
 import fs from 'fs';
 import https, { ServerOptions } from 'https';
-import http from 'http';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -55,6 +54,7 @@ declare module 'express-session' {
     token: string;
     email: string;
     userName: string;
+    captcha: string;
   }
 }
 
@@ -141,6 +141,10 @@ async (req: Request, userName: string, password: string, done) => {
 
         const permissions = await cacheManager.getKey('permissions') ?? {};
         const userPermissions: Permissions = permissions?.[res.userProfile.id];
+
+        if (!userPermissions) {
+          return done(null, false, { message: 'Пользователю ограничен доступ к приложению.' });
+        }
 
         return done(null, {
           userName,

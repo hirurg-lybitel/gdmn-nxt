@@ -13,6 +13,7 @@ import { randomFixedNumber } from '@gsbelarus/util-useful';
 import fs from 'fs';
 import path from 'path';
 import Mustache from 'mustache';
+import svgCaptcha from 'svg-captcha';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -70,12 +71,18 @@ const signIn: RequestHandler = async (req, res, next) => {
 
     if (user) {
       const result = await profileSettingsController.getSettings(user.id, req);
-      const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY } = result.settings;
+      const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
 
 
-      /** Check origin and show captcha */
-      // console.log(req.headers.origin);
-
+      /** Require captcha for new address only */
+      const IP = req.socket.remoteAddress;
+      if (IP !== LAST_IP) {
+        req.session.userId = user.id;
+        return res.json(authResult(
+          'REQUIRED_CAPTCHA',
+          'Требуется пройти дополнительную проверку.'
+        ));
+      }
 
       /** If the user have to enter a 2FA code */
       if (ENABLED_2FA) {
@@ -300,7 +307,7 @@ const endCreate2fa: RequestHandler = async (req, res) => {
       SUCCESS_MESSAGES.TFA_ACTIVATED
     ));
   } catch ({ message }) {
-    console.log('[ create 2fa error ]', message);
+    console.error('[ create 2fa error ]', message);
     return res.json(authResult(
       'ERROR',
       message
@@ -371,6 +378,45 @@ const disable2fa: RequestHandler = async (req, res) => {
   }
 };
 
+const generateCaptcha: RequestHandler = async (req, res) => {
+  const captcha = svgCaptcha.create({
+    ignoreChars: 'iLl10I',
+  });
+
+  req.session.captcha = captcha.text;
+
+  res.type('svg');
+  res.status(200).send(captcha.data);
+};
+
+const verifyCaptcha: RequestHandler = async (req, res) => {
+  const { value } = req.body;
+  const { captcha, userId } = req.session;
+
+  const checkCaptcha = captcha === value;
+  if (!checkCaptcha) {
+    return res.json(authResult(
+      'ERROR',
+      ERROR_MESSAGES.CAPTCHA_INVALID
+    ));
+  }
+
+  const ip = req.socket.remoteAddress;
+  const updateIP = await profileSettingsController.upsertLastIP(req, { userId, ip });
+
+  if (!updateIP) {
+    return res.json(authResult(
+      'ERROR',
+      ERROR_MESSAGES.ITERNAL_ERROR
+    ));
+  }
+
+  res.json(authResult(
+    'SUCCESS',
+    SUCCESS_MESSAGES.CAPTCHA_VALID
+  ));
+};
+
 export const authenticationController = {
   signIn,
   signIn2fa,
@@ -379,5 +425,7 @@ export const authenticationController = {
   logout,
   userInfo,
   forgotPassword,
-  disable2fa
+  disable2fa,
+  generateCaptcha,
+  verifyCaptcha
 };

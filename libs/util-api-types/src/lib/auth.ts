@@ -1,4 +1,4 @@
-import { IUserProfile } from "..";
+import { IUserProfile } from '..';
 
 export type AuthResult =
   'SUCCESS'
@@ -12,7 +12,6 @@ export type AuthResult =
 
   | 'SUCCESS_PASSWORD_CHANGED'
   | 'SUCCESS_USER_CREATED'
-  | 'SUCCESS_PASSWORD_CHANGED'
 
   /** Authenticate user */
 
@@ -24,6 +23,7 @@ export type AuthResult =
   | 'INVALID_EMAIL'
   | 'ACCESS_DENIED'
   | 'SERVER_UNAVAILABLE'
+  | 'REQUIRED_CAPTCHA'
 
   /** any other error */
   | 'ERROR';
