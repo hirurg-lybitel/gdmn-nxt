@@ -1,4 +1,4 @@
-import { ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
+import { Icon, ListItemButton, ListItemIcon, ListItemText, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { forwardRef, useMemo } from 'react';
@@ -41,13 +41,15 @@ export function MenuItem(props: MenuItemProps) {
 
   const itemIcon = item?.icon ||
     (level > 1
-      ? <FiberManualRecordIcon
-        sx={{
-          width: 6,
-          height: 6
-        }}
-        color="secondary"
-      />
+      ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }}>
+        <FiberManualRecordIcon
+          sx={{
+            width: 6,
+            height: 6
+          }}
+          color="secondary"
+        />
+      </div>
       : <></>);
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
@@ -84,7 +86,7 @@ export function MenuItem(props: MenuItemProps) {
       component={MyNavLink}
       className={classes.menuItem}
       sx={{
-        pl: `${level * 24}px`
+        pl: `${level * 12 - level > 0 ? 12 : 0}px`
       }}
     >
       <ListItemIcon sx={{ minWidth: !item?.icon && level > 1 ? 18 : 36 }}>{itemIcon}</ListItemIcon>

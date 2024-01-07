@@ -54,7 +54,11 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
             key={option}
             className={styles.listBoxItem}
           >
-            <IconByName name={option} fontSize="medium" />
+            <IconByName
+              name={option}
+              fontSize="medium"
+              color="action"
+            />
           </li>
         )}
       />
@@ -93,7 +97,7 @@ export function IconSelect(props: Readonly<IconSelectProps>) {
         color="inherit"
         onClick={handlecloseToggleSelect}
       >
-        {icon ? <IconByName name={icon}/> : <RadioButtonUncheckedIcon />}
+        {icon ? <IconByName name={icon} color="primary" /> : <RadioButtonUncheckedIcon color="primary" />}
         <ArrowDropDownIcon />
       </Button>
       <ListboxComponent

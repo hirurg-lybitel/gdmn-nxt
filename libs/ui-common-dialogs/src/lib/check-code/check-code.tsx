@@ -35,7 +35,7 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   return (
     <Stack spacing={2} textAlign="center">
       <Box textAlign="center">
-        <Typography variant="h6">Двухфакторная аутентификация (2FA)</Typography>
+        <Typography variant="h6">Двухфакторная аутентификация</Typography>
       </Box>
       <Typography variant="body1">Откройте приложение двухфакторной проверки на своём мобильном устройстве, чтобы получить код подтверждения.</Typography>
       <VerifyCode

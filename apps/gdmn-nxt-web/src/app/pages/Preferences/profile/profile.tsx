@@ -437,7 +437,6 @@ export function Profile(props: ProfileProps) {
                           <Typography variant="caption">Дополнительная защита аккаунта с паролем</Typography>
                         </Stack>
                         <Box flex={1} />
-                        {/* .. Для вашего пользователя установлена обязательная двухфакторная аутентификация */}
                         <Tooltip
                           style={{ cursor: 'help' }}
                           arrow

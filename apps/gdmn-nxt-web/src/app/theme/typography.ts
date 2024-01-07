@@ -37,8 +37,13 @@ export default function typography(theme: ThemeOptions): Partial<Typography> {
       color: theme.textColor,
     },
     pageHeader: {
-      fontSize: '1.5rem',
+      fontSize: '1.3rem',
       fontWeight: 600,
+      color: theme.textColor,
+      letterSpacing: '1.5px',
     },
+    h6: {
+      letterSpacing: '1px'
+    }
   };
 };

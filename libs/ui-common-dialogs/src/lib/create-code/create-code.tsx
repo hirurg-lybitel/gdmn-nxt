@@ -18,7 +18,7 @@ const instruction = [
   'Выберите «Сканировать QR-код» и используйте камеру телефона,  чтобы отсканировать этот код.'
 ];
 
-const title = 'Двухфакторная аутентификация (2FA)';
+const title = 'Двухфакторная аутентификация';
 const subTitle = 'Для вашего пользователя установлена обязательная двухфакторная аутентификация';
 
 export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodeProps) {

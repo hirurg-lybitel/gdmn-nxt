@@ -21,6 +21,7 @@ export interface StyledTheme {
     marginRight?: string,
     borderRadius?: string,
     borderColor?: string,
-    buttonTextColor?: string
+    buttonTextColor?: string,
+    buttonPrimaryColor?: string
   };
 }
