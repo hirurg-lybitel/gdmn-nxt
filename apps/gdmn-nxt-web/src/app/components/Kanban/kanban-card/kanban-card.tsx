@@ -186,7 +186,7 @@ export function KanbanCard(props: KanbanCardProps) {
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
       <Stack direction="row">
-        <Typography variant="body2" fontWeight={600}>
+        <Typography variant="body2">
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
             ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short', year: '2-digit' })
@@ -195,7 +195,6 @@ export function KanbanCard(props: KanbanCardProps) {
         <Box flex={1} />
         <Typography
           variant="body2"
-          fontWeight={600}
           style={{ color: dayColor(deadline) }}
         >
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
@@ -300,7 +299,7 @@ export function KanbanCard(props: KanbanCardProps) {
             }
           </Stack>
           <Stack direction="row" spacing={1}>
-            <Typography variant="subtitle2" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
+            <Typography variant="body2" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
             <Box flex={1} />
             {
               card.DEAL?.PREPAID &&
@@ -316,9 +315,9 @@ export function KanbanCard(props: KanbanCardProps) {
             }
           </Stack>
           <Stack direction="row">
-            <Typography variant="body2" fontWeight={600}>{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
+            <Typography variant="body2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
             <Box flex={1} />
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2">
               {card.DEAL?.CREATIONDATE
                 ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
                 : '-/-'}

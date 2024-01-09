@@ -36,7 +36,7 @@ export interface ITasksQueryOptions extends IFilteringData {
 };
 
 const socketClient = setSocketClient('streamingUpdate', {
-  url: `http://${config.host}:${config.streamingUpdatePort}`,
+  url: `https://${config.serverHost}:${config.streamingUpdatePort}`,
   userId: -1
 });
 
@@ -111,7 +111,7 @@ export const kanbanApi = createApi({
 
           addColumnListener = (column: IKanbanColumn) => {
             updateCachedData((draft) => {
-              draft.push(column);
+              draft.push(column);;;
             });
           };
           socketClient.on(KanbanEvent.AddColumn, addColumnListener);

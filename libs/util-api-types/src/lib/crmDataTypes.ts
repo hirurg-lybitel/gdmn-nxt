@@ -203,7 +203,7 @@ export interface ILabel extends IWithID {
   USR$NAME: string;
   USR$COLOR?: string;
   USR$DESCRIPTION?: string;
-  USR$ICON:string
+  USR$ICON: string;
 };
 
 export interface IPermissionsAction extends IWithID {
@@ -316,4 +316,12 @@ export interface IClientHistory extends IWithID {
   CREATOR: IContactWithID;
   CARDKEY: number,
   historyType: IClientHistoryType;
+}
+
+export interface IConfirmation extends IWithID {
+  USER: number;
+  EMAIL: string;
+  CODE: string;
+  ATTEMPTS?: number;
+  CREATIONDATE?: Date;
 }

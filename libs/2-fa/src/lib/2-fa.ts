@@ -23,7 +23,7 @@ export async function generateSecret(email: string): Promise<ISecret> {
   try {
     const secret = authenticator.generateSecret();
 
-    const url = await toDataURL(authenticator.keyuri(email, issuer, secret));
+    const url = await toDataURL(authenticator.keyuri(email, issuer, secret), { width: 150 });
     return {
       ...defaultReturn,
       email,

@@ -10,6 +10,7 @@ import MenuItem from '../menu-item/menu-item';
 import { useSelector } from 'react-redux';
 import { Permissions } from '@gsbelarus/util-api-types';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
+import MenuCollapse from '../menu-collapse/menu-collapse';
 
 const useStyles = makeStyles(() => ({
   scroll: {
@@ -43,7 +44,7 @@ export function MenuList(props: MenuListProps) {
       return menu;
     }
     return menu.reduce((filteredItems, menuItem) => {
-      if (menuItem.type === 'item' && menuItem.title?.toUpperCase().includes(searchText.toUpperCase())) {
+      if (['item', 'collapse'].includes(menuItem.type) && menuItem.title?.toUpperCase().includes(searchText.toUpperCase())) {
         filteredItems.push(menuItem);
       }
       if (menuItem.children && menuItem.children.length > 0) {
@@ -57,6 +58,8 @@ export function MenuList(props: MenuListProps) {
   const navItems = useMemo(() => filterMenuItems(menuItems.items, searchText)
     .map((item) => {
       switch (item.type) {
+        case 'collapse':
+          return <MenuCollapse key={item.id} menu={item} level={1} />;
         case 'group':
           return <MenuGroup key={item.id} item={item} />;
         case 'item':

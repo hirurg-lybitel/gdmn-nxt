@@ -21,7 +21,9 @@ export function setSocketClient(name: string, options: SocketOptions) {
       {
         auth: {
           userId
-        }
+        },
+        secure: true,
+        rejectUnauthorized: false,
       });
 
     socketClients[name].on('disconnect', reason => {

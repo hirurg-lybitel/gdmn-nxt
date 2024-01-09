@@ -6,6 +6,7 @@ import { ICustomization } from '../store/settingsSlice';
 import componentStyleOverrides from './componentStyleOverrides';
 import { StyledTheme } from './styles';
 import themeTypography from './typography';
+import { themes } from './presets';
 
 declare module '@mui/material/styles' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -24,68 +25,43 @@ declare module '@mui/material/styles' {
 };
 
 export const theme = (customization: ICustomization) => {
-  const themeOptionDefault = {
-    // fontFamily: '"Roboto Condensed", sans-serif',
-    // fontFamily: '"Lato", sans-serif',
-    // fontFamily: '"PT Sans", sans-serif',
-    fontFamily: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"'].join(','),
-    ...(customization.colorMode === ColorMode.Light
-      ? {
-        backgroundColor: colors.grey[100],
-        backgroundDefault: colors.blue[300],
-        backgroundSecond: colors.blue[300],
-        textColor: colors.grey[800],
-        captionTextColor: colors.grey[600],
-        secondaryColor: colors.common.white,
-        headColor: colors.common.white,
-        paper: colors.common.white,
-        customization,
-        borderColor: '#f0f0f0',
-        buttonTextColor: 'white'
-      }
-      : {
-        backgroundColor: colors.grey[900],
-        backgroundDefault: colors.blueGrey[900],
-        backgroundSecond: colors.blue[400],
-        textColor: colors.common.white,
-        captionTextColor: colors.grey[500],
-        secondaryColor: colors.grey[300],
-        headColor: colors.grey[300],
-        paper: colors.grey[800],
-        customization,
-        borderColor: '#303030',
-        buttonTextColor: 'white'
-      }
-    )
-  };
+  const themeOptionDefault = (() => {
+    switch (customization.colorMode) {
+      case ColorMode.Light:
+        return themes.light.grey;
+      case ColorMode.Dark:
+        return themes.dark.black;
+      default:
+        return themes.light.grey;
+    }
+  })();
 
   const themeOptions: ThemeOptions = {
     color: colors,
     drawerWidth: 260,
-    headColor: themeOptionDefault.headColor,
     textColor: themeOptionDefault.textColor,
     captionTextColor: themeOptionDefault.captionTextColor,
     fontFamily: themeOptionDefault.fontFamily,
     palette: {
-      mode: themeOptionDefault.customization.colorMode,
-      background: {
-        paper: themeOptionDefault.paper,
-        default: colors.common.white,
-      },
+      mode: customization.colorMode,
       primary: {
-        main: themeOptionDefault.backgroundSecond,
-        contrastText: themeOptionDefault.headColor,
+        main: themeOptionDefault.primaryColor,
+        contrastText: 'white'
       },
       secondary: {
         main: themeOptionDefault.secondaryColor
+      },
+      background: {
+        default: themeOptionDefault.backgroundColor,
+        paper: themeOptionDefault.paperColor,
       },
       text: {
         primary: themeOptionDefault.textColor
       },
     },
     menu: {
-      backgroundColor: themeOptionDefault.backgroundDefault,
-      color: themeOptionDefault.headColor
+      backgroundColor: themeOptionDefault.menuBackgroundColor,
+      color: themeOptionDefault.menuTextColor
     },
     mainContent: {
       backgroundColor: themeOptionDefault.backgroundColor,
@@ -97,7 +73,8 @@ export const theme = (customization: ICustomization) => {
       marginRight: '20px',
       borderRadius: '12px',
       borderColor: themeOptionDefault.borderColor,
-      buttonTextColor: themeOptionDefault.buttonTextColor
+      buttonTextColor: themeOptionDefault.buttonTextColor,
+      buttonPrimaryColor: themeOptionDefault.buttonPrimaryColor,
     },
     breakpoints: {
       /** breakpoints берём немного с меньше, чем разрешение экрана*/
@@ -115,7 +92,7 @@ export const theme = (customization: ICustomization) => {
 
   const theme = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
   theme.components = { ...locales.ruRU.components, ...componentStyleOverrides(theme) };
-  theme.shadows[1] = themeOptionDefault.customization.colorMode === ColorMode.Dark
+  theme.shadows[1] = customization.colorMode === ColorMode.Dark
     ? '0px 4px 20px rgba(100, 110, 120, 0.3)'
     : '0px 4px 20px rgba(170, 180, 190, 0.3)';
 

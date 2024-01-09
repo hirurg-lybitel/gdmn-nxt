@@ -5,7 +5,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -17,10 +17,11 @@ import * as yup from 'yup';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
-import { useDisableOtpMutation, useGenerateOtpQRMutation, useVerifyOtpMutation } from '../../../features/auth/authApi';
+import { useGetCreate2faQuery, useDisableOtpMutation, useCreate2faMutation } from '../../../features/auth/authApi';
 import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
+import { setError } from '../../../features/error-slice/error-slice';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -30,9 +31,15 @@ export function Profile(props: ProfileProps) {
   const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id || -1);
   const [setSettings, { isLoading: updateIsLoading }] = useSetProfileSettingsMutation();
 
-  const [generateOtp] = useGenerateOtpQRMutation();
-  const [verifyOtp] = useVerifyOtpMutation();
   const [disableOtp] = useDisableOtpMutation();
+
+  const [fetchDataCreate2fa, setFetchDataCreate2fa] = useState(false);
+  const { data: dataCreate2fa } = useGetCreate2faQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    skip: !fetchDataCreate2fa
+  });
+
+  const [activate2fa] = useCreate2faMutation();
 
   const [tabIndex, setTabIndex] = useState('1');
   const [image, setImage] = useState<string>(NoPhoto);
@@ -138,20 +145,22 @@ export function Profile(props: ProfileProps) {
   });
 
   const handleEnable2FAWithNewEmail = async (email: string): Promise<IAuthResult> => {
-    const response = await generateOtp({ userId: userProfile?.id ?? -1, email });
-
-    if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
-
-    setUser({
-      ...userProfile,
-      userName: userProfile?.userName ?? '',
-      email,
-      qr: response.data.qr,
-      base32Secret: response.data.base32
-    });
-    setTwoFAOpen({ create: true });
-
+    setFetchDataCreate2fa(true);
     return new Promise((resolve) => resolve({} as IAuthResult));
+    // const response = await generateOtp({ userId: userProfile?.id ?? -1, email });
+
+    // if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
+
+    // setUser({
+    //   ...userProfile,
+    //   userName: userProfile?.userName ?? '',
+    //   email,
+    //   qr: response.data.qr,
+    //   base32Secret: response.data.base32
+    // });
+    // setTwoFAOpen({ create: true });
+
+    // return new Promise((resolve) => resolve({} as IAuthResult));
   };
 
   const onEnable2FAChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -162,19 +171,7 @@ export function Profile(props: ProfileProps) {
         setTwoFAOpen({ create: true });
         return;
       }
-      const response = await generateOtp({ userId: userProfile?.id ?? -1, email: formik.values.EMAIL ?? '' });
-
-      if (!('data' in response)) return;
-
-      setUser({
-        ...userProfile,
-        userName: userProfile?.userName ?? '',
-        email: formik.values.EMAIL ?? '',
-        qr: response.data.qr,
-        base32Secret: response.data.base32
-      });
-
-      setTwoFAOpen({ create: true });
+      setFetchDataCreate2fa(true);
     }
     /** Если хотим отключить, то надо ввести текущий код */
     if (!checked) {
@@ -182,8 +179,31 @@ export function Profile(props: ProfileProps) {
     }
   };
 
-  const handleCreateOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await verifyOtp({ userId: userProfile?.id ?? -1, code });
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (dataCreate2fa?.result === 'SUCCESS') {
+      setUser({
+        ...userProfile,
+        userName: userProfile?.userName ?? '',
+        email: formik.values.EMAIL ?? '',
+        qr: dataCreate2fa.userProfile?.qr,
+        base32Secret: dataCreate2fa.userProfile?.base32Secret
+      });
+      setTwoFAOpen({ create: true });
+      setFetchDataCreate2fa(false);
+    }
+    if (dataCreate2fa?.result === 'ERROR') {
+      dispatch(setError({
+        errorMessage: dataCreate2fa.message ?? '',
+        errorStatus: 500
+      }));
+      setFetchDataCreate2fa(false);
+    }
+  }, [dataCreate2fa]);
+
+  const handleCreateOnSubmit = async (authCode: string, emailCode: string): Promise<IAuthResult> => {
+    const response = await activate2fa({ authCode, emailCode });
 
     if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
 
@@ -197,7 +217,7 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleCheckOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await disableOtp({ userId: userProfile?.id ?? -1, code });
+    const response = await disableOtp({ code });
 
     if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
 
@@ -276,7 +296,7 @@ export function Profile(props: ProfileProps) {
         direction="column"
         justifyContent="center"
         alignContent="center"
-        sx={{ maxWidth: '440px', margin: 3 }}
+        sx={{ maxWidth: '360px', margin: 3 }}
       >
         <CheckCode onCancel={() => setTwoFAOpen({ check: false })} onSubmit={handleCheckOnSubmit} />
       </Stack>
@@ -417,7 +437,6 @@ export function Profile(props: ProfileProps) {
                           <Typography variant="caption">Дополнительная защита аккаунта с паролем</Typography>
                         </Stack>
                         <Box flex={1} />
-                        {/* .. Для вашего пользователя установлена обязательная двухфакторная аутентификация */}
                         <Tooltip
                           style={{ cursor: 'help' }}
                           arrow

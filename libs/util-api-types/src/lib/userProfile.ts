@@ -12,4 +12,5 @@ export interface IUserProfile {
   password?: string;
   qr?: string;
   base32Secret?: string;
+  colorMode?: string;
 };

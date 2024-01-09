@@ -76,7 +76,7 @@ const upsert: RequestHandler = async (req, res) => {
     const deal: IDeal = req.body['DEAL'];
     const card: IKanbanCard = { ...req.body };
 
-    const userId = req.session.userId || -1;
+    const userId = req.user['id'] || -1;
 
     const cardId = await (() => isInsertMode ? generateId() : Number(id))();
     const dealId = await (() => isInsertMode ? generateId() : deal.ID)();

@@ -1,27 +1,30 @@
-import { Alert, Box, Button, Dialog, Divider, IconButton, List, ListItem, ListItemIcon, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
+import { Alert, Box, Button, Dialog, Divider, FormHelperText, IconButton, List, ListItem, ListItemIcon, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
 import styles from './create-code.module.less';
 import { useRef, useState } from 'react';
 import { IAuthResult, IUserProfile } from '@gsbelarus/util-api-types';
 import CloseIcon from '@mui/icons-material/Close';
 import VerifyCode, { VerifyCodeRef } from '../verify-code/verify-code';
+
 export interface CreateCodeProps {
   user?: IUserProfile;
-  onSubmit: (code: string) => Promise<IAuthResult>;
+  onSubmit: (authCode: string, emailCode: string) => Promise<IAuthResult>;
   onCancel: () => void;
   onSignIn?: (email: string) => Promise<IAuthResult>;
 };
 
 const instruction = [
   'Установите Google Authenticator или Authy.',
-  'В приложении аутентификации выберите значок «+».',
+  'В приложении аутентификации нажмите «+».',
   'Выберите «Сканировать QR-код» и используйте камеру телефона,  чтобы отсканировать этот код.'
 ];
 
+const title = 'Двухфакторная аутентификация';
 const subTitle = 'Для вашего пользователя установлена обязательная двухфакторная аутентификация';
 
 export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodeProps) {
   const emailRef = useRef<HTMLInputElement>(null);
-  const codeRef = useRef<VerifyCodeRef>(null);
+  const authCodeRef = useRef<VerifyCodeRef>(null);
+  const emailCodeRef = useRef<VerifyCodeRef>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [QRIsOpen, setQRIsOpen] = useState(false);
@@ -65,14 +68,26 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
   };
 
   const handleSubmit = async () => {
-    if (!codeRef.current) return;
+    if (!authCodeRef.current) return;
+    if (!emailCodeRef.current) return;
+
     setLoading(true);
-    const response = await onSubmit(codeRef.current.getValue());
+    const response = await onSubmit(
+      authCodeRef.current.getValue(),
+      emailCodeRef.current.getValue()
+    );
     setLoading(false);
 
     if (response.result === 'ERROR') {
       setError(response.message ?? '');
     }
+  };
+
+  const decodeEmail = (email: string): string => {
+    if (!email) return '';
+
+    const e = email.split('@');
+    return `${e[0]?.slice(0, 3)}***@${e[1]}`;
   };
 
   const showQR = () => {
@@ -148,11 +163,17 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
           </div>
         </Box>
         <Box textAlign="left">
-          <Typography variant="subtitle1">Проверьте код</Typography>
+          <Typography variant="subtitle1">Введите код подтверждения</Typography>
           <Divider style={{ margin: 0 }} />
-          <Typography variant="body1">Для применения настройки введите код аутентификации:</Typography>
         </Box>
-        <VerifyCode ref={codeRef} containerClassName={styles.codeInputContainer} />
+        <Box>
+          <Typography variant="body2" textAlign={'left'}>Адреса электронной почты ({decodeEmail(user?.email || '')}):</Typography>
+          <VerifyCode ref={emailCodeRef} containerClassName={styles.codeInputContainer} />
+        </Box>
+        <Box>
+          <Typography variant="body2" textAlign={'left'}>Google Аутентификатора:</Typography>
+          <VerifyCode ref={authCodeRef} containerClassName={styles.codeInputContainer} />
+        </Box>
         <Divider />
         <Stack spacing={1}>
           <Button
@@ -188,9 +209,13 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
 
 
   return (
-    <Stack spacing={2} textAlign="center">
+    <Stack
+      spacing={2}
+      textAlign="center"
+      width={360}
+    >
       <Box textAlign="center">
-        <Typography variant="h6" fontSize="1.5rem">Двухфакторная аутентификация (2FA)</Typography>
+        <Typography variant="h6">{title}</Typography>
       </Box>
       <Typography variant="body1" hidden={!!user?.permissions}>{subTitle}</Typography>
       {content}
@@ -205,10 +230,9 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
       >
         <Alert
           severity="error"
-          variant="filled"
-          style={{ alignItems: 'center' }}
+          style={{ alignItems: 'center', maxWidth: 400 }}
         >
-          <Typography variant="subtitle1" color="white">{error}</Typography>
+          <Typography variant="subtitle1">{error}</Typography>
         </Alert>
       </Dialog>
     </Stack>

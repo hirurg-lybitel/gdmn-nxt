@@ -1,10 +1,10 @@
-import { CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
+import { Captcha, CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, setEmail } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { baseUrlApi } from './const';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
@@ -13,25 +13,25 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
-import { getCookie } from './features/common/getCookie';
 
-const query = async (config: AxiosRequestConfig<any>): Promise<IAuthResult> => {
+const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
     return (await axios(config)).data;
   } catch (error: any) {
     const { response, request, message } = error as AxiosError;
 
     if (response) {
-      return { result: 'ERROR', message: error.message };
+      return { result: 'ERROR', message: error.message } as T;
     } else if (request) {
-      return { result: 'ERROR', message: `Can't reach server ${baseUrlApi}: ${message}` };
+      return { result: 'ERROR', message: `Can't reach server ${baseUrlApi}: ${message}` } as T;
     } else {
-      return { result: 'ERROR', message: error.message };
+      return { result: 'ERROR', message: error.message } as T;
     }
   }
 };
 
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
+const get = <T = IAuthResult>(url: string) => query<T>({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });
 
 export interface AppProps {}
 
@@ -41,6 +41,8 @@ export default function App(props: AppProps) {
 
   /** Загрузка данных на фоне во время авторизации  */
   InitData();
+
+  const [captchaImage, setCaptchaImage] = useState('');
 
   const navigate = useNavigate();
 
@@ -80,7 +82,7 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
-          const colorMode = getCookie('color-mode');
+          const colorMode = data.user.colorMode ?? ColorMode.Light;
           switch (colorMode) {
             case ColorMode.Dark:
               dispatch(setColorMode(ColorMode.Dark));
@@ -106,7 +108,7 @@ export default function App(props: AppProps) {
   const theme = useTheme();
   useEffect(() => {
     if (loginStage === 'QUERY_LOGIN' &&
-        theme.palette.mode === getCookie('color-mode') &&
+        theme.palette.mode === user?.colorMode &&
         !!user) {
       if (user.gedeminUser) {
         dispatch(signedInEmployee({ ...user }));
@@ -131,15 +133,22 @@ export default function App(props: AppProps) {
     };
 
     if (response.result === 'REQUIRED_2FA') {
-      if (!response.userProfile?.email) {
-        dispatch(setEmail({ ...response.userProfile, userName, password }));
+      const dataCreate2fa = await get('user/create-2fa');
+      if (!dataCreate2fa.userProfile?.email) {
+        dispatch(selectMode());
       } else {
-        dispatch(create2fa({ ...response.userProfile, userName, password }));
+        dispatch(create2fa({ ...dataCreate2fa.userProfile, userName, password }));
       }
     };
 
+    if (response.result === 'REQUIRED_CAPTCHA') {
+      const dataCaptcha = await get<string>('captcha');
+      dispatch(checkCaptcha({ ...userProfile, userName, password }));
+      setCaptchaImage(dataCaptcha);
+    }
+
     if (response.result === 'ENABLED_2FA') {
-      dispatch(signIn2fa());
+      dispatch(signIn2fa({ ...userProfile, userName, password }));
     };
 
     return response;
@@ -149,8 +158,25 @@ export default function App(props: AppProps) {
     dispatch(selectMode());
   };
 
-  const create2FAOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await post('user/signin-2fa', { code });
+  const create2FAOnSubmit = async (authCode: string, emailCode: string): Promise<IAuthResult> => {
+    const response = await post('user/create-2fa', { authCode, emailCode });
+
+    if (response.result === 'SUCCESS') {
+      handleSignIn(
+        userProfile?.userName ?? '',
+        userProfile?.password ?? ''
+      );
+    };
+
+    return response;
+  };
+
+  const check2FAOnSubmit = async (authCode: string): Promise<IAuthResult> => {
+    const response = await post('user/signin-2fa', {
+      authCode,
+      userName: userProfile?.userName ?? '',
+      password: userProfile?.password ?? '',
+      employeeMode: true });
 
     if (response.result === 'SUCCESS') {
       dispatch(queryLogin());
@@ -159,14 +185,24 @@ export default function App(props: AppProps) {
     return response;
   };
 
-  const check2FAOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await post('user/signin-2fa', { code });
+  const captchaSubmit = async (value: string): Promise<boolean> => {
+    const response = await post('captcha/verify', { value });
 
     if (response.result === 'SUCCESS') {
-      dispatch(queryLogin());
+      setCaptchaImage('');
+      handleSignIn(
+        userProfile?.userName ?? '',
+        userProfile?.password ?? ''
+      );
+      return true;
     };
+    return false;
+  };
 
-    return response;
+  const captchaCancel = () => {
+    setCaptchaImage('');
+
+    dispatch(signInEmployee());
   };
 
   const loadingPage = useMemo(() => {
@@ -199,13 +235,22 @@ export default function App(props: AppProps) {
       case 'CREATE_CUSTOMER_ACCOUNT':
         return <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />;
       case 'SIGN_IN_EMPLOYEE':
+      case 'CAPTCHA':
         return (
-          <SignInSignUp
-            // checkCredentials={handleCheckCredentials}
-            onSignIn={handleSignIn}
-          />
+          <>
+            <SignInSignUp
+              // checkCredentials={handleCheckCredentials}
+              onSignIn={handleSignIn}
+            />
+            <Captcha
+              image={captchaImage}
+              onSubmit={captchaSubmit}
+              onCancel={captchaCancel}
+            />
+          </>
         );
       case 'SIGN_IN_CUSTOMER':
+      case 'CAPTCHA':
         return (
           <SignInSignUp
             onSignIn={(userName, password) => post('user/signin', { userName, password })}
@@ -246,17 +291,22 @@ export default function App(props: AppProps) {
       default:
         return loadingPage;
     }
-  }, [loginStage]);
+  }, [loginStage, captchaImage]);
 
   const result =
-    <Stack
-      direction="column"
-      justifyContent="center"
-      alignContent="center"
-      sx={{ margin: '0 auto', height: '100vh', maxWidth: '440px' }}
+    <div
+      style={{
+        display: 'grid',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'auto',
+        padding: '12px 0'
+      }}
     >
-      {renderLoginStage}
-    </Stack>;
-
+      <div style={{ width: 360 }}>
+        {renderLoginStage}
+      </div>
+    </div>;
   return result;
 };

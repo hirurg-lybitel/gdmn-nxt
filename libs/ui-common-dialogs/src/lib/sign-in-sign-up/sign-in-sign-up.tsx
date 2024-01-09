@@ -101,7 +101,14 @@ function reducer(state: State, action: Action): State {
   }
 };
 
-export function SignInSignUp({ checkCredentials, createUser, newPassword, topDecorator, bottomDecorator, onSignIn }: SignInSignUpProps) {
+export function SignInSignUp({
+  checkCredentials,
+  createUser,
+  newPassword,
+  topDecorator,
+  bottomDecorator,
+  onSignIn
+}: SignInSignUpProps) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
   const classes = useStyles();
@@ -116,20 +123,8 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
 
   const doSignIn = async () => {
     setLaunching(true);
-    // checkCredentials(userName, password).then(r => {
-    //   dispatch({ type: 'SET_AUTHRESULT', authResult: r });
-    //   if (r.result === 'SUCCESS') {
-    //     onSignIn();
-    //   } else {
-    //     setLaunching(false);
-    //   }
-    // });
     const res = await onSignIn(userName, password);
     dispatch({ type: 'SET_AUTHRESULT', authResult: res });
-    if (res) {
-      // onSignIn();
-      // return;
-    }
     setLaunching(false);
   };
 
@@ -227,9 +222,9 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
         :
         <Stack direction="column" spacing={3}>
           {topDecorator?.(stage)}
-          <Box textAlign={'center'}>
+          {/* <Box textAlign={'center'}>
             <BelgissLogo color="#64b5f6" scale={1.5}/>
-          </Box>
+          </Box> */}
           <Box textAlign={'center'}>
             <Typography variant="h4" fontWeight={600}>
               Вход в систему
@@ -293,7 +288,7 @@ export function SignInSignUp({ checkCredentials, createUser, newPassword, topDec
           <Button
             variant="contained"
             size="medium"
-            disabled={waiting || !userName || !password || !!authResult || launching}
+            disabled={waiting || !userName || !password || launching}
             onClick={doSignIn}
           >
             {launching ? 'Входим...' : 'Войти'}

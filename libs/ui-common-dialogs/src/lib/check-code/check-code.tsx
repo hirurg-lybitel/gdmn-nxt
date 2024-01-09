@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import VerifyCode, { VerifyCodeRef } from '../verify-code/verify-code';
 
 export interface CheckCodeProps {
-  onSubmit: (code: string) => Promise<IAuthResult>;
+  onSubmit: (authCode: string) => Promise<IAuthResult>;
   onCancel: () => void;
 }
 
@@ -18,7 +18,9 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   const handleSubmit = async () => {
     if (!codeRef.current) return;
     setLoading(true);
-    const response = await onSubmit(codeRef.current.getValue());
+    const response = await onSubmit(
+      codeRef.current.getValue()
+    );
     setLoading(false);
 
     if (response.result === 'ERROR') {
@@ -33,10 +35,14 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   return (
     <Stack spacing={2} textAlign="center">
       <Box textAlign="center">
-        <Typography variant="h6" fontSize="1.5rem">Двухфакторная аутентификация (2FA)</Typography>
+        <Typography variant="h6">Двухфакторная аутентификация</Typography>
       </Box>
       <Typography variant="body1">Откройте приложение двухфакторной проверки на своём мобильном устройстве, чтобы получить код подтверждения.</Typography>
-      <VerifyCode ref={codeRef} onSubmit={handleCodeInputSubmit}/>
+      <VerifyCode
+        ref={codeRef}
+        onSubmit={handleCodeInputSubmit}
+        autoFocus
+      />
       <Stack spacing={1}>
         <Button
           variant="contained"
@@ -58,10 +64,9 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
       >
         <Alert
           severity="error"
-          variant="filled"
           sx={{ alignItems: 'center' }}
         >
-          <Typography variant="subtitle1" color="white">{error}</Typography>
+          <Typography variant="subtitle1">{error}</Typography>
         </Alert>
       </Dialog>
     </Stack>

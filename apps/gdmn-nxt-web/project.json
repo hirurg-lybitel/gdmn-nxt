@@ -58,9 +58,10 @@
       "executor": "@nrwl/webpack:dev-server",
       "options": {
         "buildTarget": "gdmn-nxt-web:build",
-        "hmr": true,
-        "proxyConfig": "apps/gdmn-nxt-web/proxy.conf.json",
-        "port": 4201
+        "port": 4201,
+        "ssl": true,
+        "sslKey": "./ssl/gdmn.app.key",
+        "sslCert": "./ssl/gdmn.app.crt"
       },
       "configurations": {
         "production": {

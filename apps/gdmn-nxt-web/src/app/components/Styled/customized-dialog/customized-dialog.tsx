@@ -78,6 +78,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   return (
     <Dialog
       open={open}
+      disableRestoreFocus
       TransitionComponent={Transition}
       TransitionProps={{
         onExited: () => clearAfterExit()

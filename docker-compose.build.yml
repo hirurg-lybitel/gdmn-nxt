@@ -16,10 +16,12 @@ services:
         - NX_BRANCH=dockering
     ports:
       - ${NX_APP_PORT}:80
-    # multiple env_file не работает согласно https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file
     env_file:
       - ./.env
       - ./.env.prod
+    networks:
+      - proxy_network
+
   server:
     image: hirurglybitel/gdmn-server:latest
     hostname: gdmn.crm
@@ -37,3 +39,9 @@ services:
     env_file:
       - ./.env
       - ./.env.prod
+    networks:
+      - proxy_network
+
+networks:
+  proxy_network:
+    external: true
