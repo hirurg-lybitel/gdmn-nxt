@@ -216,7 +216,7 @@ const startCreate2fa: RequestHandler = async (req, res) => {
   req.session.base32Secret = base32Secret;
 
   const info: Info = {
-    origin: req.headers.origin,
+    origin: req.socket.remoteAddress,
     userAgent: req.headers['user-agent'],
     userName
   };
