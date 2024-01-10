@@ -68,14 +68,44 @@
 							"response": []
 						},
 						{
-							"name": "New Request",
+							"name": "Информация по контакту",
 							"id": "94b46778-60fe-4ed2-8b9c-bbd1c21ee7df",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contacts/persons/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"persons",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "147007208"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Информация по контактам",
+							"id": "9e541c98-fabc-4978-9c02-af17e80c0974",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/contacts/persons/"
 							},
 							"response": []
 						}
