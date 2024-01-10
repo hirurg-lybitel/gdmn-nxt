@@ -66,6 +66,18 @@
 								"url": "{{baseUrl}}/contacts/persons"
 							},
 							"response": []
+						},
+						{
+							"name": "New Request",
+							"id": "94b46778-60fe-4ed2-8b9c-bbd1c21ee7df",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
 						}
 					],
 					"id": "eb1ddeea-d6e8-4197-8a02-cf9376199d04"
