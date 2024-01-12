@@ -79,7 +79,7 @@ export function Users(props: IUsersProps) {
           }
         }}
         getRowClassName={({ row }) => `row-theme-disabled--${row.DISABLED}`}
-        disableSelectionOnClick
+        disableRowSelectionOnClick
       />
     </Box>,
   [users, usersLoading, group]);

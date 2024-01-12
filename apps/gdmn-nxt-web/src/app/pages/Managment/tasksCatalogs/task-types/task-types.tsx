@@ -2,7 +2,7 @@ import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customiz
 import styles from './task-types.module.less';
 import { Button, CardContent, CardHeader, Divider, IconButton, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import { GridActionsCellItem, GridCellParams, GridColumns, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridActionsCellItem, GridCellParams, GridColDef, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -222,7 +222,7 @@ export function TaskTypes(props: TaskTypesProps) {
 
   const renderEditCell = (params: GridRenderEditCellParams) => <CustomCellEditForm {...params} />;
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     {
       field: 'NAME',
       headerName: 'Наименование',

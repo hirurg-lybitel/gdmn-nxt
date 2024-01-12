@@ -1,4 +1,4 @@
-import { DateRangePicker, DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRangePicker, DateRangePickerProps } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { Autocomplete, Box, Button, CardActions, CardContent, CardHeader, createFilterOptions, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { IContactWithLabels, ICustomer } from '@gsbelarus/util-api-types';
@@ -28,11 +28,11 @@ interface IInputParams {
 
 interface IInitState {
   cutomerId: number | null;
-  dates: DateRange<Date>;
+  dates: DateRangePickerProps<Date>;
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date).getFullYear(), (new Date).getMonth(), 1), new Date()]
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()]
 };
 
 export const ReconciliationAct = (props: IReconciliationAct) => {
@@ -41,13 +41,13 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
   const inCustomerId = Number(id);
 
   const [customerId, setCustomerId] = useState(inCustomerId ? inCustomerId : initState.cutomerId);
-  const [dates, setDates] = useState<DateRange<Date>>(initState.dates);
+  const [dates, setDates] = useState<DateRangePickerProps<Date>>(initState.dates);
 
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<IInputParams>();
 
   const { data, isFetching: customerFetching } = useGetCustomersQuery();
-  const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
+  const customers: ICustomer[] = useMemo(() => [...(data?.data || [])], [data?.data]);
 
   const handleGenerate = () => {
     setInputParams((prevState) => ({
@@ -73,8 +73,16 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
           <CardHeader title={<Typography variant="pageHeader">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
-            <Grid container spacing={2} direction={'column'}>
-              <Grid item md={6} sx={{ width: '50%' }}>
+            <Grid
+              container
+              spacing={2}
+              direction={'column'}
+            >
+              <Grid
+                item
+                md={6}
+                sx={{ width: '50%' }}
+              >
                 <Autocomplete
                   options={customers || []}
                   filterOptions={filterOptions}
@@ -111,14 +119,8 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
                   // startText="Начало периода"
                   // endText="Конец периода"
                   value={dates}
-                  onChange={setDates}
-                  renderInput={(startProps: any, endProps: any) => (
-                    <Fragment>
-                      <TextField {...startProps} />
-                      <Box sx={{ mx: 2 }}/>
-                      <TextField {...endProps} />
-                    </Fragment>
-                  )}
+                  onViewChange={setDates}
+                  slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>
             </Grid>

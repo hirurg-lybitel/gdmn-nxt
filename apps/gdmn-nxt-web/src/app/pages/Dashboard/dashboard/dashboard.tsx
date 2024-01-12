@@ -111,7 +111,9 @@ export function Dashboard(props: DashboardProps) {
                   <TextField
                     variant="standard"
                     style={{ height: '26px', width: '180px' }}
-                    value={`${dayjs(period[0], dateFormat)?.toDate().toLocaleDateString()} - ${dayjs(period[1], dateFormat)?.toDate().toLocaleDateString()}`}
+                    value={`${dayjs(period[0], dateFormat)?.toDate()
+                      .toLocaleDateString()} - ${dayjs(period[1], dateFormat)?.toDate()
+                      .toLocaleDateString()}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setOpenDateRange(true);
@@ -136,13 +138,7 @@ export function Dashboard(props: DashboardProps) {
                           displayStaticWrapperAs="desktop"
                           value={period}
                           onChange={dateRangePickerChange}
-                          renderInput={(startProps, endProps) => (
-                            <Fragment>
-                              <TextField {...startProps} />
-                              <Box sx={{ mx: 2 }}> to </Box>
-                              <TextField {...endProps} />
-                            </Fragment>
-                          )}
+                          slotProps={{ textField: { variant: 'outlined' } }}
                         />
                       </CustomizedCard>
                     </Popper>

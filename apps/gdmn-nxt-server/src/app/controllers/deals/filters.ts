@@ -19,7 +19,7 @@ const getFilters: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        filters: [... await fetchAsObject(query)]
+        filters: [... (await fetchAsObject(query))]
       },
       _schema
     };

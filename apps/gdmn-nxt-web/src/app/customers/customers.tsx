@@ -207,7 +207,7 @@ export function Customers(props: CustomersProps) {
   const handleLabelClick = useCallback(
     (label: ILabel) => () => {
       if (filteringData?.['LABELS']?.findIndex((l: ILabel) => l.ID === label.ID) >= 0) return;
-      filterHandlers.handleFilteringData({ ...filteringData, 'LABELS': [...filteringData?.['LABELS'] || [], label] });
+      filterHandlers.handleFilteringData({ ...filteringData, 'LABELS': [...(filteringData?.['LABELS'] || []), label] });
     },
     [filteringData]
   );
@@ -670,24 +670,18 @@ export function Customers(props: CustomersProps) {
                 loading={customerFetching}
                 pagination
                 paginationMode="server"
-                pageSize={paginationData.pageSize}
+                paginationModel={{ page: 0, pageSize: paginationData.pageSize }}
                 rowCount={customersCount}
-                rowsPerPageOptions={[10, 20, 50]}
-                onPageChange={(data) => {
+                pageSizeOptions={[10, 20, 50]}
+                onPaginationModelChange={(data: any) => {
                   setPaginationData((prevState) => ({
                     ...prevState,
                     pageNo: data
                   }));
                 }}
-                onPageSizeChange={(data) => {
-                  setPaginationData((prevState) => ({
-                    ...prevState,
-                    pageSize: data
-                  }));
-                }}
                 sortingMode="server"
                 onSortModelChange={handleSortModelChange}
-                disableMultipleSelection
+                disableMultipleRowSelection
                 hideFooterSelectedRowCount
                 hideHeaderSeparator
                 disableColumnResize
@@ -699,7 +693,7 @@ export function Customers(props: CustomersProps) {
                   DEPARTMENTS: false,
                   WORKTYPES: false
                 }}
-                onSelectionModelChange={(ids) =>
+                onRowSelectionModelChange={(ids: any) =>
                   setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
                 }
               />

@@ -1,7 +1,7 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { GridColumns} from '@mui/x-data-grid-pro';
+import { GridColDef} from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './kanban-tasks.module.less';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
@@ -131,7 +131,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
     USR$CLOSED: false
   }), [formik.values.TASKS?.length]);
 
-  const columns: GridColumns = useMemo(() => [
+  const columns: GridColDef[] = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
       renderCell: ({ value, row }) => <Checkbox checked={value} onChange={handleClosedChange(row)}/> },
     { field: 'USR$NAME', headerName: 'Описание', flex: 1, minWidth: 100,

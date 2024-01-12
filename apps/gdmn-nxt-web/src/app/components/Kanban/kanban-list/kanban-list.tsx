@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
@@ -14,14 +14,14 @@ import { IconButton } from '@mui/material';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
-  gridColumns?: GridColumns;
+  gridColumns?: GridColDef[];
   disableAddCard?: boolean;
 }
 
 export function KanbanList(props: KanbanListProps) {
   const { columns = [], gridColumns, disableAddCard = false } = props;
 
-  const defaultGridColumns: GridColumns = [
+  const defaultGridColumns: GridColDef[] = [
     {
       field: 'CONTACT',
       headerName: 'Клиент',
@@ -73,7 +73,7 @@ export function KanbanList(props: KanbanListProps) {
   const [editCard, setEditCard] = useState(false);
   const [card, setCard] = useState<IKanbanCard>();
   const [column, setColumn] = useState<IKanbanColumn>();
-  const [cols, setCols] = useState<GridColumns>(gridColumns || defaultGridColumns);
+  const [cols, setCols] = useState<GridColDef[]>(gridColumns || defaultGridColumns);
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
@@ -221,7 +221,7 @@ export function KanbanList(props: KanbanListProps) {
       columns={columns}
       onCardAddClick={handleCardAdd}
       disableAddCard={disableAddCard}
-    />,
+                            />,
   };
 
   const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {

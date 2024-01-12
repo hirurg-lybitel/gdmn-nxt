@@ -75,8 +75,8 @@ export function ContractsList(props: ContractsListProps) {
           loading={contractsIsFetching}
           loadingMode="circular"
           pagination
-          rowsPerPageOptions={[20]}
-          pageSize={20}
+          pageSizeOptions={[20]}
+          paginationModel={{ page: 0, pageSize: 20 }}
         />
       </CustomizedCard>
     </Stack>

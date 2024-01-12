@@ -404,7 +404,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       onChange={(value) => {
                         formik.setFieldValue('USR$DEADLINE', value);
                       }}
-                      renderInput={(params) => <TextField {...params} />}
+                      renderInput={(params: any) => <TextField {...params} />}
                     />
                     <TimePicker
                       label="Время"
@@ -417,7 +417,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                           combineDateAndTime(formik.values.USR$DEADLINE ? new Date(formik.values.USR$DEADLINE) : new Date(), value || undefined)
                         );
                       }}
-                      renderInput={(params) => <TextField {...params} />}
+                      slotProps={{ textField: { variant: 'outlined' } }}
                     />
                   </Stack>
                   {!!formik.values.USR$DATECLOSE &&
@@ -430,14 +430,14 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         value={formik.values.USR$DATECLOSE || null}
                         mask="__.__.____"
                         onChange={formik.handleChange}
-                        renderInput={(params) => <TextField {...params} />}
+                        renderInput={(params: any) => <TextField {...params} />}
                       />
                       <TimePicker
                         label="Время"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
                         onChange={formik.handleChange}
-                        renderInput={(params) => <TextField {...params} />}
+                        slotProps={{ textField: { variant: 'outlined' } }}
                       />
                     </Stack>
                   </>}

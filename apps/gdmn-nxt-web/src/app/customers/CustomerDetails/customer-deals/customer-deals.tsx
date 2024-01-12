@@ -2,7 +2,7 @@ import { Box, Chip } from '@mui/material';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import styles from './customer-deals.module.less';
-import { GridColumns } from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import { renderCellExpand } from '../../../components/Styled/styled-grid/styled-grid';
 import WarningIcon from '@mui/icons-material/Warning';
 import CheckIcon from '@mui/icons-material/Check';
@@ -32,7 +32,7 @@ export function CustomerDeals(props: CustomerDealsProps) {
   });
 
 
-  const newGridColumns: GridColumns = [
+  const newGridColumns: GridColDef[] = [
     {
       field: 'CREATIONDATE',
       headerName: 'Дата создания',

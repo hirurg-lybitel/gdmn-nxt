@@ -63,7 +63,7 @@ export class sqlQuery {
 
 
     charArray.forEach((char, index) => {
-      if ((/[\t\r\n]/).test(char)) {
+      if ((((((((((((((((((((((((((((((((((((/[\t\r\n]/))))))))))))))))))))))))))))))))))).test(char)) {
         processedSQL.push(char);
         return;
       };
@@ -82,14 +82,14 @@ export class sqlQuery {
           processedSQL.push(char);
           break;
         case states.param:
-          if ((/[A-Za-z0-9_$]/).test(char)) {
+          if ((((((((((((((((((((((((((((((((((((/[A-Za-z0-9_$]/))))))))))))))))))))))))))))))))))).test(char)) {
             paramName += char;
 
             if (index === len) {
               paramNames.push(paramName);
             };
           } else {
-            if ((/[\s,\\)]/).test(char)) {
+            if ((((((((((((((((((((((((((((((((((((/[\s,\\)]/))))))))))))))))))))))))))))))))))).test(char)) {
               paramNames.push(paramName);
               paramName = '';
               curState = states.default;

@@ -3,7 +3,7 @@ import { Box, Checkbox, CircularProgress, IconButton, Stack, Tooltip, Typography
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { ChangeEvent, WheelEvent, useCallback, useState } from 'react';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
-import { GridColumns } from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import useDateComparator from '../../helpers/hooks/useDateComparator';
@@ -31,7 +31,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   if (!open) return <></>;
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     {
       field: 'USR$CLOSED',
       headerName: '',
@@ -124,7 +124,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
         rowHeight={rowHeight}
         hideColumnHeaders
         hideFooter
-        disableSelectionOnClick
+        disableRowSelectionOnClick
       />
     </div>
   );

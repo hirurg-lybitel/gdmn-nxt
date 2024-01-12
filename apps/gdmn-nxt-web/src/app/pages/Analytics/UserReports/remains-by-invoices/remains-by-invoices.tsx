@@ -50,7 +50,7 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
             label="На дату"
             value={onDate}
             onChange={handleChange}
-            renderInput={(params) => <TextField {...params} />}
+            slotProps={{ textField: { variant: 'outlined' } }}
           />
         </CardContent>
         <Divider />

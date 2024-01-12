@@ -8,7 +8,7 @@ import { renderCellExpand } from '../../../components/Styled/styled-grid/styled-
 
 interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams {};
 
-export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGroupingCellProps) => {
+export const CustomGridTreeDataGroupingCell = (props: GridRenderCellParams<any, any>) => {
   const { id, field, rowNode, value, row } = props;
 
 

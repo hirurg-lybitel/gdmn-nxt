@@ -1,5 +1,5 @@
 import './custom-tree-view.module.less';
-import TreeView from '@mui/lab/TreeView';
+import { TreeView } from '@mui/x-tree-view/TreeView';
 import FolderIcon from '@mui/icons-material/Folder';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -7,7 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NestedSets, { CollectionEl } from 'nested-sets-tree';
 import { Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
-import TreeItem from '@mui/lab/TreeItem';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { useCallback, useState } from 'react';
 import CustomizedCard from '../components/Styled/customized-card/customized-card';
 

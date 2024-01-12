@@ -164,11 +164,11 @@ const upsertSecretKey = async (req: Request, body: { userId: number, secretKey?:
       MATCHING(USR$USERKEY)`,
     { userId, secretKey, enabled2fa });
 
-    (typeof email !== 'undefined') && await executeSingletonAsObject(`
+    (typeof email !== 'undefined') && (await executeSingletonAsObject(`
       UPDATE GD_CONTACT C
       SET EMAIL = :email
       WHERE EXISTS(SELECT u.ID FROM GD_USER u WHERE u.CONTACTKEY = c.ID AND u.ID = :userId )`,
-    { userId, email });
+    { userId, email }));
 
     return true;
   } catch (error) {

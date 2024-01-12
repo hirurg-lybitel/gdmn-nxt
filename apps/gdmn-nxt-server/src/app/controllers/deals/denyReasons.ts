@@ -15,7 +15,7 @@ const get: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        denyReasons: [...await fetchAsObject(sql)]
+        denyReasons: [...(await fetchAsObject(sql))]
       },
       _schema
     };
@@ -58,7 +58,7 @@ const upsert: RequestHandler = async(req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        denyReasons: [...await fetchAsObject(sql, { ID, NAME })]
+        denyReasons: [...(await fetchAsObject(sql, { ID, NAME }))]
       },
       _schema
     };
