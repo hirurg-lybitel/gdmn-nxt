@@ -1,13 +1,14 @@
-import { IUserGroupLine } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, createFilterOptions, DialogActions, DialogContent, DialogTitle, FormControlLabel, Stack, TextField } from '@mui/material';
+import { IUser, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
+import { Autocomplete, Box, Button, Checkbox, createFilterOptions, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Stack, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useGetUserGroupLineQuery } from '../../../features/permissions';
+import CloseIcon from '@mui/icons-material/Close';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -29,7 +30,7 @@ const useStyles = makeStyles(() => ({
 export interface UserGroupLineEditProps {
   open: boolean;
   userGroupLine: IUserGroupLine;
-  onSubmit: (user: IUserGroupLine) => void;
+  onSubmit: (users: IUserGroupLine[]) => void;
   onCancel: () => void;
 }
 
@@ -40,25 +41,40 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
   const { data: users, isFetching: usersIsFetching } = useGetUsersQuery();
   const { data: existsUsers = [] } = useGetUserGroupLineQuery(userGroupLine.USERGROUP.ID);
 
+  const [forms, setForms] = useState<number[]>([1]);
+
+  const addForm = () => {
+    const newForms = [...forms];
+    newForms.push(forms[forms.length - 1] + 1);
+    setForms(newForms);
+  };
+
+  const deleteForm = (id: number) => () => {
+    if (forms.length === 1) return;
+    const newForms = [...forms].filter((value) => value !== id);
+    setForms(newForms);
+  };
+
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const classes = useStyles();
 
-  const initValue: IUserGroupLine = {
-    ID: userGroupLine?.ID || -1,
-    USER: userGroupLine?.USER,
-    USERGROUP: userGroupLine?.USERGROUP,
-    REQUIRED_2FA: userGroupLine?.REQUIRED_2FA ?? false
+  interface IUsersGroupLineForm {
+    [name: string]: IUser | boolean | undefined
+  }
+
+  const initValue: IUsersGroupLineForm = {
+    USER1: userGroupLine?.USER,
+    REQUIRED_2FA1: userGroupLine?.REQUIRED_2FA ?? false
   };
 
-  const formik = useFormik<IUserGroupLine>({
+  const formik = useFormik<IUsersGroupLineForm>({
     enableReinitialize: true,
     initialValues: {
-      ...userGroupLine,
       ...initValue
     },
     validationSchema: yup.object().shape({
-      USER: yup.object().required('Не выбран пользователь'),
+      USER1: yup.object().required('Не выбран пользователь'),
     }),
     onSubmit: (value) => {
       setConfirmOpen(true);
@@ -71,8 +87,17 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onSubmit(formik.values);
-  }, [formik.values]);
+    const users: IUserGroupLine[] = [];
+    for (let i = 0;i < forms.length;i++) {
+      users.push({
+        ID: userGroupLine.ID,
+        USER: formik.values[`USER${forms[i]}`] as IUser,
+        REQUIRED_2FA: !!formik.values[`REQUIRED_2FA${forms[i]}`],
+        USERGROUP: userGroupLine.USERGROUP
+      });
+    }
+    onSubmit(users);
+  }, [formik.values, userGroupLine]);
 
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
@@ -99,52 +124,78 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
         <FormikProvider value={formik}>
           <Form id="mainForm" onSubmit={formik.handleSubmit}>
             <Stack direction="column" spacing={2}>
-              <Autocomplete
-                options={users?.filter(user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0) ?? []}
-                getOptionLabel={option => option.NAME}
-                filterOptions={filterOptions}
-                value={users?.find(el => el.ID === formik.values.USER?.ID) || null}
-                loading={usersIsFetching}
-                loadingText="Загрузка данных..."
-                onBlur={formik.handleBlur}
-                onChange={(event, value) => {
-                  formik.setFieldValue(
-                    'USER', value ? value : undefined
-                  );
-                }}
-                renderOption={(props, option) => (
-                  <li {...props} key={option.ID}>
+              {forms.map((fieldId) => <>
+                <div key={fieldId} style={{ display: 'flex' }}>
+                  <div style={{ width: '100%' }}>
+                    <Autocomplete
+                      options={users?.filter(user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0) ?? []}
+                      getOptionLabel={option => option.NAME}
+                      filterOptions={filterOptions}
+                      value={users?.find(el => el.ID === (formik.values[`USER${fieldId}`] as IUser)?.ID) || null}
+                      loading={usersIsFetching}
+                      loadingText="Загрузка данных..."
+                      onBlur={formik.handleBlur}
+                      onChange={(event, value) => {
+                        formik.setFieldValue(
+                          `USER${fieldId}`, value ? value : undefined
+                        );
+                      }}
+                      renderOption={(props, option) => (
+                        <li {...props} key={option.ID}>
+                          <div>
+                            {option.NAME}
+                            <div>
+                              {option.CONTACT.NAME}
+                            </div>
+                          </div>
+                        </li>
+                      )}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Пользователь"
+                          name={`USER${fieldId}`}
+                          required
+                          focused
+                          placeholder="Выберите пользователя"
+                          error={Boolean(formik.errors[`USER${fieldId}`])}
+                          helperText={formik.errors[`USER${fieldId}`] as ReactNode}
+                        />
+                      )}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={!!formik.values[`REQUIRED_2FA${fieldId}`]}
+                          name={`REQUIRED_2FA${fieldId}`}
+                        />
+                      }
+                      onChange={(event, value) => {
+                        formik.setFieldValue(
+                          `REQUIRED_2FA${fieldId}`, value
+                        );
+                      }}
+                      label="Обязательная двухфакторная аутентификация"
+                    />
+                  </div>
+                  {fieldId !== 1 && <div style={{ display: 'flex', justifyContent: 'center', paddingLeft: '10px', paddingTop: '5px' }}>
                     <div>
-                      {option.NAME}
-                      <div>
-                        {option.CONTACT.NAME}
-                      </div>
+                      <IconButton
+                        size="small"
+                        color="inherit"
+                        onClick={deleteForm(fieldId)}
+                      >
+                        <CloseIcon fontSize="medium" />
+                      </IconButton>
                     </div>
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Пользователь"
-                    name="USER"
-                    required
-                    focused
-                    placeholder="Выберите пользователя"
-                    error={Boolean(formik.errors.USER)}
-                    helperText={formik.errors.USER}
-                  />
-                )}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formik.values.REQUIRED_2FA}
-                    name="REQUIRED_2FA"
-                  />
-                }
-                onChange={formik.handleChange}
-                label="Обязательная двухфакторная аутентификация"
-              />
+                  </div>
+                  }
+                </div>
+              </>)}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button onClick={addForm} variant="contained">Добавить</Button>
+              </div>
+
             </Stack>
           </Form>
         </FormikProvider>

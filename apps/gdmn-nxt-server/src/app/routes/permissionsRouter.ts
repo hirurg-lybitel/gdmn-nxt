@@ -8,6 +8,7 @@ router.post('/userGroups', PermissionsController.upsertGroup);
 router.put('/userGroups/:id', PermissionsController.upsertGroup);
 router.delete('/userGroups/:id', PermissionsController.removeGroup);
 router.post('/usergroupsline', PermissionsController.upsertUserGroupLine);
+router.post('/usersgroupsline', PermissionsController.upsertUsersGroupLine);
 router.put('/usergroupsline/:id', PermissionsController.upsertUserGroupLine);
 router.delete('/usergroupsline/:id', PermissionsController.removeUserGroupLine);
 router.get('/actions', PermissionsController.getActions);
