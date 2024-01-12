@@ -113,7 +113,7 @@
 					"id": "eb1ddeea-d6e8-4197-8a02-cf9376199d04"
 				},
 				{
-					"name": "Список контактов",
+					"name": "Список клиентов",
 					"id": "d7354ae9-cef5-4d53-9416-c8dd2504e4c1",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
