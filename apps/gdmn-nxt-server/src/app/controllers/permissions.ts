@@ -657,17 +657,15 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
       };
     };
 
-    const querys = [];
+    const querys = req.body.map((value, index) => {
+      const user = req.body[index];
 
-    for (let i = 0;i < req.body.length;i++) {
-      const user = req.body[i];
-
-      querys.push(createQuery(
+      return createQuery(
         user.REQUIRED_2FA,
         user.USER,
         user.USERGROUP
-      ));
-    }
+      );
+    });
 
     const result: IRequestResult = {
       queries: {
@@ -676,10 +674,12 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
       _schema
     };
 
-    for (let i = 0;i < req.body.length;i++) {
+    let i = typeof req.body !== 'string' ? req.body.length : 0;
+    while (i--) {
       const user = req.body[i];
       closeUserSession(req, user.ID);
     }
+
 
     return res.status(200).json(result);
   } catch (error) {
