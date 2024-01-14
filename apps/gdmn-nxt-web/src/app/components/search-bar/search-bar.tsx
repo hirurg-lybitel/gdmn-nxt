@@ -11,7 +11,11 @@ export interface StyleProps {
 }
 
 const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
-  root: { transition: '0.5s',
+  root: {
+    transition: theme.transitions.create('all', {
+      duration: theme.transitions.duration.shorter,
+      easing: theme.transitions.easing.easeInOut,
+    }),
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
