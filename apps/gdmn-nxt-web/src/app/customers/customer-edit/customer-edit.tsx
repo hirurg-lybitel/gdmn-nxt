@@ -41,6 +41,7 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import LabelListItemEdit from '@gdmn-nxt/components/Labels/label-list-item-edit/label-list-item-edit';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
+import { SocialMediaInput } from '@gdmn-nxt/components/social-media-input';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -425,7 +426,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                                           height: 14,
                                           borderRadius: '12px',
                                         }}
-                                      />
+                                        />
                                     }
                                   </Box>
                                   <Box>
