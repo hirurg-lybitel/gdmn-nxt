@@ -46,28 +46,6 @@
 					"name": "Persons",
 					"item": [
 						{
-							"name": "Создать сотрудника",
-							"id": "905a0ed3-13c8-4398-8666-fb3ad6302629",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"ID\": -1,\r\n    \"NAME\": \"Tester\",\r\n    \"WCOMPANYKEY\": 1024197434,\r\n    \"EMAIL\": \"name..mail@gmail.com\",\r\n    \"RANK\": \"Rank1\",\r\n    \"PHONES\": [\r\n        {\r\n            \"ID\": -1,\r\n            \"USR$PHONENUMBER\": \"+375 12 345 67 89\"\r\n        }\r\n    ],\r\n    \"NOTE\": \"\",\r\n    \"USR$LETTER_OF_AUTHORITY\": \"\",\r\n    \"ADDRESS\": \"\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/contacts/persons"
-							},
-							"response": []
-						},
-						{
 							"name": "Создать контакт",
 							"id": "07a233c4-e20f-4b05-87a1-decd2cde17cb",
 							"protocolProfileBehavior": {
@@ -110,6 +88,36 @@
 									],
 									"variable": [
 										{
+											"key": "id",
+											"value": "147007208"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удалить контакт",
+							"id": "9f95a9ec-d736-4e89-9b08-613d3e4a2e3f",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contacts/persons/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"persons",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "ad72f000-fcc0-4688-b424-41ecf207d5f9",
 											"key": "id",
 											"value": "147007208"
 										}
