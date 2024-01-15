@@ -91,7 +91,6 @@ export function KanbanCard(props: KanbanCardProps) {
   const handleCopyCard = useCallback(() => setCopyCard(true), []);
 
   const memoEditCard = useMemo(() => {
-    if (!editCard) return <></>;
     return (
       <KanbanEditCard
         open={editCard}
