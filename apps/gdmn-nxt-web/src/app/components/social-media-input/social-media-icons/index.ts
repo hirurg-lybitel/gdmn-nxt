@@ -11,11 +11,13 @@ import viber from './viber.png';
 
 interface ISocialMediaIcons {
   [value: string]: {
-    name: string,
+    name: IIconsNames,
     icon: string,
     mask?: string
   }
 }
+
+export type IIconsNames = 'facebook' | 'instagram' | 'telegram' | 'viber' | 'linkedin' | 'skype' | 'ok' | 'whatsup' | 'github' | 'vk'
 
 export const socialMediaIcons: ISocialMediaIcons = {
   facebook: {

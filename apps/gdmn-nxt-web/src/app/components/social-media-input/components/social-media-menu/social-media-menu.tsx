@@ -3,10 +3,10 @@ import { useMemo } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import styles from './social-media-menu.module.less';
 import SocialMediaMenuItem from '../social-media-item/social-media-menu-item';
-import { socialMediaIcons } from '../../social-media-icons';
+import { IIconsNames, socialMediaIcons } from '../../social-media-icons';
 
 export interface SocialMediaMenuProps extends Partial<MenuProps> {
-  socialName: string | null;
+  socialName: IIconsNames | undefined;
   onChangeSocial: (value: string) => void;
 }
 
@@ -38,7 +38,7 @@ export function SocialMediaMenu(props: SocialMediaMenuProps) {
             <SocialMediaMenuItem
               onSelectSocial={onChangeSocial}
               key={index}
-              socialName={socialNameItem}
+              socialName={socialMediaIcons[socialNameItem].name}
               selected={socialMediaIcons[socialNameItem].name === socialName}
               id={`country-${socialNameItem}`}
             />
