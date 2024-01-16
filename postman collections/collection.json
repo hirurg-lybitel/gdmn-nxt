@@ -68,6 +68,44 @@
 							"response": []
 						},
 						{
+							"name": "Обновить контакт",
+							"id": "9f2e861d-0fb1-4376-80dc-ee619ed64a17",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"ID\": -1,\r\n    \"NAME\": \"test\",\r\n    \"PHONES\": [\r\n        {\r\n            \"ID\": -1,\r\n            \"USR$PHONENUMBER\": \"+375 11 111 11 11\"\r\n        },\r\n        {\r\n            \"ID\": -1,\r\n            \"USR$PHONENUMBER\": \"+375 222 22 22 22\"\r\n        }\r\n    ],\r\n    \"EMAILS\": [\r\n        {\r\n            \"ID\": -1,\r\n            \"EMAIL\": \"y1@gmail.com\"\r\n        },\r\n        {\r\n            \"ID\": -1,\r\n            \"EMAIL\": \"y2@gmail.com\"\r\n        }\r\n    ],\r\n    \"MESSENGERS\": [],\r\n    \"LABELS\": [\r\n        {\r\n            \"ID\": 147007706,\r\n            \"USR$NAME\": \"Офисные\",\r\n            \"USR$COLOR\": \"#a81a1a\",\r\n            \"USR$DESCRIPTION\": \"Свои сотрудники\",\r\n            \"USR$ICON\": \"House\"\r\n        }\r\n    ],\r\n    \"RESPONDENT\": {\r\n        \"ID\": 359641353,\r\n        \"NAME\": \"Тюфтин Даниил Игоревич\"\r\n    },\r\n    \"WCOMPANYKEY\": 148312613,\r\n    \"RANK\": \"Rank1\",\r\n    \"ADDRESS\": \"klfjdfl d d,;jdfdio4idiu dkfjdof okdjhfl  dlfhl hdjkhdjkf jdfhdjkfgk kdfghk fghughdjghf djf fjkgh \",\r\n    \"USR$BG_OTDEL\": {\r\n        \"ID\": 342542495,\r\n        \"NAME\": \"БТП-27\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/contacts/persons/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"persons",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Информация по контакту",
 							"id": "94b46778-60fe-4ed2-8b9c-bbd1c21ee7df",
 							"protocolProfileBehavior": {
