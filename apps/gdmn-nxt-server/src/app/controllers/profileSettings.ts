@@ -135,7 +135,7 @@ const set: RequestHandler = async (req, res) => {
     });
 
     const result: IRequestResult = {
-      queries: { settings: sqlResult },
+      queries: { settings: [sqlResult] },
       _schema: {}
     };
 

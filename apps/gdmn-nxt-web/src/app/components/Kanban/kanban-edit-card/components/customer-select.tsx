@@ -1,5 +1,5 @@
-import { ICustomer, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, IconButton, TextField, Typography, createFilterOptions } from '@mui/material';
+import { IContactWithID, ICustomer, IKanbanCard } from '@gsbelarus/util-api-types';
+import { Autocomplete, AutocompleteProps, Box, Button, IconButton, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { FormikProps, getIn } from 'formik';
@@ -21,12 +21,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface CustomerSelectProps {
-  formik: FormikProps<IKanbanCard>;
+
+type BaseTextFieldProps = Omit<
+  TextFieldProps,
+  'onChange'
+>;
+
+interface CustomerSelectProps extends BaseTextFieldProps {
+  customer?: ICustomer;
+  onChange?: (customer: ICustomer | undefined | null) => void;
 };
 
 export function CustomerSelect(props: CustomerSelectProps) {
-  const { formik } = props;
+  const { customer, onChange, ...rest } = props;
 
   const classes = useStyles();
 
@@ -43,14 +50,18 @@ export function CustomerSelect(props: CustomerSelectProps) {
   const [editingCustomer, setEditingCustomer] = useState<ICustomer | null>(null);
 
   useEffect(() => {
-    insertCustomerIsSuccess && (formik.values.DEAL?.CONTACT?.ID !== newCustomer?.ID) && formik.setFieldValue('DEAL.CONTACT', newCustomer);
-  }, [insertCustomerIsSuccess, newCustomer]);
+    if (insertCustomerIsSuccess && (customer?.ID !== newCustomer?.ID)) {
+      onChange && onChange(newCustomer);
+    }
+  }, [customer?.ID, insertCustomerIsSuccess, newCustomer, onChange]);
 
   const handleAddCustomer = useCallback(() => {
     setEditingCustomer(null);
     setAddCustomer(true);
   }, []);
-  const handleEditCustomer = useCallback((customer: ICustomer) => () => {
+
+  const handleEditCustomer = useCallback((customer: ICustomer | undefined) => () => {
+    if (!customer) return;
     setEditingCustomer(customer);
     setAddCustomer(true);
   }, []);
@@ -65,6 +76,8 @@ export function CustomerSelect(props: CustomerSelectProps) {
   }, [editingCustomer]);
 
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
+
+  const handleChange = (e: any, value: ICustomer | null) => onChange && onChange(value);
 
   const memoPaperFooter = useMemo(() =>
     <div>
@@ -107,13 +120,11 @@ export function CustomerSelect(props: CustomerSelectProps) {
           }
           : {
             options: customers,
-            value: customers?.find(el => el.ID === formik.values.DEAL?.CONTACT?.ID) || null
+            value: customers?.find(el => el.ID === customer?.ID) ?? null
           })
         }
         loadingText="Загрузка данных..."
-        onChange={(event, value) => {
-          formik.setFieldValue('DEAL.CONTACT', value);
-        }}
+        onChange={handleChange}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer) => {
           return (
             <li
@@ -140,22 +151,20 @@ export function CustomerSelect(props: CustomerSelectProps) {
         renderInput={useCallback((params) => (
           <TextField
             {...params}
+            {...rest}
             label="Клиент"
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
-            required
-            name="DEAL.CONTACT"
-            error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
-            helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
             InputProps={{
               ...params.InputProps,
+              ...rest.InputProps,
               endAdornment: (
                 <>
-                  {(formik.values.DEAL?.CONTACT) &&
+                  {(customer) &&
                     <IconButton
                       className="editIcon"
                       title="Изменить"
                       size="small"
-                      onClick={handleEditCustomer(formik.values.DEAL?.CONTACT)}
+                      onClick={handleEditCustomer(customers?.find(el => el.ID === customer?.ID))}
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>}
@@ -163,7 +172,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
                 </>)
             }}
           />
-        ), [formik.values.DEAL?.CONTACT])}
+        ), [customer])}
       />
       {memoCustomerUpsert}
     </>

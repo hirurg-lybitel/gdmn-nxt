@@ -13,6 +13,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
           '--border-radius': theme.mainContent.borderRadius,
+          '--menu-width': `${theme.drawerWidth}px`,
         },
         body: {
           fontFamily: theme.fontFamily,
@@ -93,21 +94,21 @@ export default function componentStyleOverrides(theme: Theme): Components {
       defaultProps: {
         size: 'small',
         style: {
-          textTransform: 'none'
+          textTransform: 'none',
         }
       },
       styleOverrides: {
         text: {
           letterSpacing: '1px'
         },
-        contained: {
-          letterSpacing: '1px',
-          backgroundColor: 'var(--color-btn-primary-bg)',
-          ':hover': {
+        contained: ({ ownerState: { color } }) => (
+          color === 'primary' && {
             backgroundColor: 'var(--color-btn-primary-bg)',
-            opacity: 0.9
-          }
-        },
+            ':hover': {
+              backgroundColor: 'var(--color-btn-primary-bg)',
+              opacity: 0.9
+            }
+          }),
         outlined: {
           letterSpacing: '1px'
         },

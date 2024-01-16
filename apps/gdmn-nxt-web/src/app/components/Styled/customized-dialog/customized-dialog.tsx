@@ -4,11 +4,6 @@ import './customized-dialog.module.less';
 import { forwardRef, ReactElement, ReactNode, Ref, useEffect, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 
-interface StyleProps {
-  width: number | string;
-}
-
-
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
     children: ReactElement<any, any>;
@@ -32,6 +27,7 @@ export interface CustomizedDialogProps {
   width?: number | string;
   minWidth?: number | string;
   hideBackdrop?: boolean;
+  disableEscape?: boolean;
 }
 
 
@@ -40,7 +36,8 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const {
     width = 500,
     minWidth = 0,
-    hideBackdrop = false
+    hideBackdrop = false,
+    disableEscape = false
   } = props;
 
   const styles = {
@@ -59,8 +56,10 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const handleOnClose = (event: object, reason: string) => {
     switch (reason) {
       case 'backdropClick':
-      case 'escapeKeyDown':
         onClose && onClose(event, reason);
+        break;
+      case 'escapeKeyDown':
+        (!disableEscape && onClose) && onClose(event, reason);
         break;
       default:
         break;

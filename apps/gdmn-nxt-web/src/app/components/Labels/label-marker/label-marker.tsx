@@ -80,8 +80,8 @@ export function LabelMarker(props: LabelMarkerProps) {
         borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word',
         display: 'flex',
         alignItems: 'center',
-        padding: '2.5px 5px'
-        // width: 'min-content'
+        padding: '0px 5px',
+        minHeight: '22px'
       }}
     >
       {(icon || USR$ICON) &&

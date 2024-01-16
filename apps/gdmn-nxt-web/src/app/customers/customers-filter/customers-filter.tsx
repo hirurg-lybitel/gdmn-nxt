@@ -19,31 +19,6 @@ import filterOptions from '../../components/helpers/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  // dialog: {
-  //   position: 'absolute',
-  //   right: 0,
-  //   margin: 0,
-  //   height: '100%',
-  //   maxHeight: '100%',
-  //   width: 500,
-  //   borderTopRightRadius: 0,
-  //   borderBottomRightRadius: 0
-  // },
-  // label: {
-  //   display: 'inline-block',
-  //   fontSize: '0.625rem',
-  //   fontWeight: 'bold',
-  //   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-  //   textTransform: 'uppercase',
-  //   border: '1px solid hsl(198, 100%, 60%)',
-  //   borderRadius: '2em',
-  //   backgroundColor: 'hsla(198, 100%, 72%, 0.2)',
-  //   color: 'hsl(198, 100%, 60%)',
-  //   padding: '2.5px 9px',
-  //   margin: '0px 5px',
-  //   width: 'fit-content',
-  //   height: 'fit-content'
-  // },
   switchButton: {
     '& .MuiButtonBase-root': {
       color: theme.palette.primary.main
@@ -55,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export interface IFilteringData {
-  [name: string] : any;
+  [name: string]: any;
 }
 export interface CustomersFilterProps {
   open: boolean;
@@ -164,7 +139,11 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loading={departmentsIsFetching}
                 loadingText="Загрузка данных..."
               />
-              <Stack direction="row" alignItems="center" paddingLeft={2}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                paddingLeft={2}
+              >
                 <Tooltip arrow title="Содержит все выбранные отделы">
                   <Typography variant="caption">И</Typography>
                 </Tooltip>
@@ -212,7 +191,11 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loading={customerContractsIsFetching}
                 loadingText="Загрузка данных..."
               />
-              <Stack direction="row" alignItems="center" paddingLeft={2}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                paddingLeft={2}
+              >
                 <Tooltip arrow title="Содержит все выбранные заказы">
                   <Typography variant="caption">И</Typography>
                 </Tooltip>
@@ -261,7 +244,11 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 loading={workTypesIsFetching}
                 loadingText="Загрузка данных..."
               />
-              <Stack direction="row" alignItems="center" paddingLeft={2}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                paddingLeft={2}
+              >
                 <Tooltip arrow title="Содержит все выбранные виды работ">
                   <Typography variant="caption">И</Typography>
                 </Tooltip>
@@ -325,7 +312,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
               )}
               renderTags={(value: readonly ILabel[], getTagProps) =>
                 value.map((option: ILabel, index: number) =>
-                  <Box key={index} pr={0.5} pb={0.5}>
+                  <Box key={index} pr={0.5}>
                     <LabelMarker label={option} {...getTagProps({ index })}/>
                   </Box>
                 )

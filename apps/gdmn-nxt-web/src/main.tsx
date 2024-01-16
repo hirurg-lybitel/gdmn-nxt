@@ -52,6 +52,7 @@ import DenyReasons from './app/pages/Managment/dealsCatalogs/deny-reasons/deny-r
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { Tasks } from './app/pages/Managment/tasks/tasks';
 import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types';
+import Contacts from './app/pages/Managment/Contacts';
 
 registerMUI();
 
@@ -117,6 +118,7 @@ const Main = () => {
                               <Route path="list/details/:id" element={<CustomerDetails />} />
                             </Route>
                             <Route path="labels" element={<Labels />} />
+                            <Route path="contacts" element={<Contacts />} />
                           </Route>
                           <Route path="analytics">
                             <Route path="" element={<Navigate to="reports/reconciliation" />} />

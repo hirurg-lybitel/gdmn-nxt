@@ -173,12 +173,29 @@ export interface IPhone extends IWithID {
   USR$CONTACTKEY?: number;
   USR$PHONENUMBER: string;
 }
+
+export interface IEmail extends IWithID {
+  CONTACTKEY?: number;
+  EMAIL: string;
+}
+
+export interface IMessenger extends IWithID {
+  USR$CONTACTKEY?: number;
+  USR$USERNAME: string;
+  USR$CODE: 'telegram' | 'whatsapp' | 'viber' | 'instagram';
+}
+
 export interface IContactPerson extends IContactWithID {
   USR$BG_OTDEL?: IContactWithID;
-  PHONES?: IPhone[];
   RANK?: string;
   USR$LETTER_OF_AUTHORITY?: string;
   WCOMPANYKEY?: number;
+  RESPONDENT?: IContactWithID;
+  PHONES?: IPhone[];
+  EMAILS?: IEmail[];
+  MESSENGERS?: IMessenger[];
+  LABELS?: ILabel[];
+  PHOTO?: string;
 };
 
 export interface IContactsList extends IWithID {

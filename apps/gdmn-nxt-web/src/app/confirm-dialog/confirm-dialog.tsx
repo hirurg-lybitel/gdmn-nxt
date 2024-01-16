@@ -11,14 +11,16 @@ const Transition = forwardRef(function Transition(
   },
   ref: Ref<unknown>,
 ) {
-  return <Slide direction="down" ref={ref} {...props} />;
+  return <Slide
+    direction="down"
+    ref={ref}
+    {...props}
+  />;
 });
 
 
 export interface ConfirmDialogProps {
   open: boolean;
-  setOpen?: (value: boolean) => void;
-  onConfirm?: (value: any) => void;
   title?: string;
   text?: string;
   dangerous?: boolean;
