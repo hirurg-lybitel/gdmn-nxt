@@ -199,202 +199,208 @@
 					"id": "eb1ddeea-d6e8-4197-8a02-cf9376199d04"
 				},
 				{
-					"name": "Список клиентов",
-					"id": "d7354ae9-cef5-4d53-9416-c8dd2504e4c1",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"contacts"
-							],
-							"query": [
-								{
-									"key": "pageNo",
-									"value": "0"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "NAME",
-									"value": "%D0%9E%D0%90%D0%9E%20%22558%20%D0%90%D0%A0%D0%97%22",
-									"description": "Наименование или УНП",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "CONTRACTS",
-									"value": "151483365",
-									"description": "Заказы",
-									"disabled": true
-								},
-								{
-									"key": "WORKTYPES",
-									"value": "349661631",
-									"description": "Виды работ",
-									"disabled": true
-								},
-								{
-									"key": "DEPARTMENTS",
-									"value": "147016918",
-									"description": "Отделы",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "LABELS",
-									"value": "358013505,358013507",
-									"description": "Метки",
-									"disabled": true
-								},
-								{
-									"key": "BUSINESSPROCESSES",
-									"value": "324532615,335465231",
-									"description": "Бизнес-процессы",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "field",
-									"value": "NAME",
-									"description": "Поле для сортировки",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "sort",
-									"value": "DESC",
-									"description": "Метод сортировки asc | desc",
-									"type": "text",
-									"disabled": true
+					"name": "Клиенты",
+					"item": [
+						{
+							"name": "Список клиентов",
+							"id": "d7354ae9-cef5-4d53-9416-c8dd2504e4c1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts"
+									],
+									"query": [
+										{
+											"key": "pageNo",
+											"value": "0"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										},
+										{
+											"key": "NAME",
+											"value": "%D0%9E%D0%90%D0%9E%20%22558%20%D0%90%D0%A0%D0%97%22",
+											"description": "Наименование или УНП",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "CONTRACTS",
+											"value": "151483365",
+											"description": "Заказы",
+											"disabled": true
+										},
+										{
+											"key": "WORKTYPES",
+											"value": "349661631",
+											"description": "Виды работ",
+											"disabled": true
+										},
+										{
+											"key": "DEPARTMENTS",
+											"value": "147016918",
+											"description": "Отделы",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "LABELS",
+											"value": "358013505,358013507",
+											"description": "Метки",
+											"disabled": true
+										},
+										{
+											"key": "BUSINESSPROCESSES",
+											"value": "324532615,335465231",
+											"description": "Бизнес-процессы",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "field",
+											"value": "NAME",
+											"description": "Поле для сортировки",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "sort",
+											"value": "DESC",
+											"description": "Метод сортировки asc | desc",
+											"type": "text",
+											"disabled": true
+										}
+									]
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Создать клиента",
-					"id": "0eefad09-7921-4b2e-8b48-0202ad32d8d1",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"NAME\": \"new customer\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							},
+							"response": []
 						},
-						"url": "{{baseUrl}}/contacts"
-					},
-					"response": []
-				},
-				{
-					"name": "Информация по клиенту",
-					"id": "8001eb47-b750-4bc4-be51-a47c9d625126",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/contacts/customerId/:customerId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"contacts",
-								"customerId",
-								":customerId"
-							],
-							"variable": [
-								{
-									"key": "customerId",
-									"value": "328997957"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Обновить клиента",
-					"id": "96a7d94a-45df-4916-bb5d-7cb7fed14bc5",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"ID\": 363263889,\r\n    \"NAME\": \"Семчук А.Н.\",\r\n    \"PHONE\": \"\",\r\n    \"EMAIL\": \"\",\r\n    \"TAXID\": \"1234\",\r\n    \"ADDRESS\": \"\",\r\n    \"FULLNAME\": \"Семчук А.Н.\",\r\n    \"FAX\": null,\r\n    \"POSTADDRESS\": null,\r\n    \"LABELS\": [],\r\n    \"BUSINESSPROCESSES\": null\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+						{
+							"name": "Создать клиента",
+							"id": "0eefad09-7921-4b2e-8b48-0202ad32d8d1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"new customer\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/contacts"
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{baseUrl}}/contacts/:id",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"contacts",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "363263889"
+						{
+							"name": "Информация по клиенту",
+							"id": "8001eb47-b750-4bc4-be51-a47c9d625126",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contacts/customerId/:customerId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"customerId",
+										":customerId"
+									],
+									"variable": [
+										{
+											"key": "customerId",
+											"value": "328997957"
+										}
+									]
 								}
-							]
+							},
+							"response": []
+						},
+						{
+							"name": "Обновить клиента",
+							"id": "96a7d94a-45df-4916-bb5d-7cb7fed14bc5",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"ID\": 363263889,\r\n    \"NAME\": \"Семчук А.Н.\",\r\n    \"PHONE\": \"\",\r\n    \"EMAIL\": \"\",\r\n    \"TAXID\": \"1234\",\r\n    \"ADDRESS\": \"\",\r\n    \"FULLNAME\": \"Семчук А.Н.\",\r\n    \"FAX\": null,\r\n    \"POSTADDRESS\": null,\r\n    \"LABELS\": [],\r\n    \"BUSINESSPROCESSES\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/contacts/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "363263889"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Сборная информация по клиентам",
+							"id": "b347f0b6-1eb9-436a-a1c6-e922526170c4",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/contacts/customerscross"
+							},
+							"response": []
+						},
+						{
+							"name": "Контакты. Доп. информация",
+							"id": "7c5814b3-f415-42a9-bf51-bb378d5dd233",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/contacts/customerscross"
+							},
+							"response": []
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "Сборная информация по клиентам",
-					"id": "b347f0b6-1eb9-436a-a1c6-e922526170c4",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "{{baseUrl}}/contacts/customerscross"
-					},
-					"response": []
-				},
-				{
-					"name": "Контакты. Доп. информация",
-					"id": "7c5814b3-f415-42a9-bf51-bb378d5dd233",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "{{baseUrl}}/contacts/customerscross"
-					},
-					"response": []
+					],
+					"id": "b06fe47d-3236-4f75-abf8-e335df521c11"
 				}
 			],
 			"id": "cc16fdcd-a7d3-4a9f-86af-62056aa077c4"
