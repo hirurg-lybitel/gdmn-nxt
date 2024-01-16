@@ -173,7 +173,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/contacts/persons?pageNo=0&pageSize=10",
+									"raw": "{{baseUrl}}/contacts/persons?customerId=339618017",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -184,11 +184,18 @@
 									"query": [
 										{
 											"key": "pageNo",
-											"value": "0"
+											"value": "0",
+											"disabled": true
 										},
 										{
 											"key": "pageSize",
-											"value": "10"
+											"value": "10",
+											"disabled": true
+										},
+										{
+											"key": "customerId",
+											"value": "339618017",
+											"type": "text"
 										}
 									]
 								}
