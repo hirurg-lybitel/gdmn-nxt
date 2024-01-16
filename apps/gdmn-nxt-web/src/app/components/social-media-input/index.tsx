@@ -111,7 +111,6 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     <>
       <TextField
         className={classes.input}
-        type="tel"
         disabled={disabled}
         value={value.text}
         ref={textFieldRef}

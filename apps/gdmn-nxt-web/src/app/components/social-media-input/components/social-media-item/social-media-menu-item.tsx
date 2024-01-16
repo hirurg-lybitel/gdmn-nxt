@@ -25,21 +25,13 @@ export function SocialMediaMenuItem(props: SocialMediaMenuItemProps) {
       onClick={handleClick}
       role="option"
       data-testid={`option-${socialName}`}
-      className="TelInput-MenuItem"
     >
-      <Styled.ListItemIcon className="TelInput-ListItemIcon-flag">
+      <Styled.ListItemIcon>
         <img style={{ width: '30px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
       </Styled.ListItemIcon>
-      <Styled.ListItemText className="TelInput-ListItemText-country">
+      <Styled.ListItemText>
         {socialMediaIcons[`${socialName}`]?.name}
       </Styled.ListItemText>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        className="TelInput-Typography-calling-code"
-      >
-        {socialMediaIcons[`${socialName}`]?.mask}
-      </Typography>
     </MenuItem>
   );
 }

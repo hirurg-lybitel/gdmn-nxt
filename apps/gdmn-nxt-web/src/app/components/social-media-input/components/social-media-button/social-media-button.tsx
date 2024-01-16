@@ -1,48 +1,39 @@
-import { IconButton, IconButtonProps } from '@mui/material';
+import { Button, IconButton, ButtonProps } from '@mui/material';
 import { Styled } from './styles';
 import { IIconsNames, socialMediaIcons } from '../../social-media-icons';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { makeStyles } from '@mui/styles';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-export interface SocialMediaButtonProps extends IconButtonProps {
+export interface SocialMediaButtonProps extends ButtonProps {
   socialName: IIconsNames | undefined
   disableDropdown?: boolean;
   isMenuOpened: boolean;
 };
-
-const useStyles = makeStyles(() => ({
-  triangle: {
-    width: '40px',
-    position: 'relative',
-    '& .block': {
-      right: '2px',
-      top: '40%',
-      position: 'absolute',
-      display: 'inline-block',
-      border: '6px solid transparent',
-      borderTop: '10px solid rgba(0, 0, 0, 0.54)',
-    },
-    '& .MuiButtonBase-root': {
-      paddingRight: '22px',
-      height: '30px',
-      borderRadius: '30%',
-    }
-  }
-}));
 
 export function SocialMediaButton(props: SocialMediaButtonProps) {
   const {
     disableDropdown = false,
     isMenuOpened = false,
     socialName = 'viber',
-    ...iconButtonProps
+    ...buttonProps
   } = props;
-  const classes = useStyles();
+
   if (disableDropdown) {
     return (
       <>
+        <Button
+          {...buttonProps}
+          style={{ borderRadius: '12px' }}
+          color="inherit"
+          disabled
+        >
+          {socialMediaIcons[`${socialName}`]?.icon
+            ? <img style={{ width: '20px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
+            : <PanoramaFishEyeIcon/>}
+          <ArrowDropDownIcon />
+        </Button>
         <IconButton
-          className="TelInput-IconButton"
           disableRipple
           sx={{ pointerEvents: 'none', aspectRatio: '1 / 1' }}
           component="span"
@@ -57,26 +48,16 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
 
   return (
     <>
-      <div className={classes.triangle} >
-        <div className="block" />
-        <IconButton
-          {...iconButtonProps}
-          className={classes.triangle}
-          aria-haspopup="listbox"
-          sx={{ aspectRatio: '1 / 1' }}
-          aria-controls={isMenuOpened ? 'select-country' : undefined}
-          aria-expanded={isMenuOpened ? 'true' : 'false'}
-        >
-          {socialMediaIcons[`${socialName}`]?.icon
-            ? <img style={{ width: '20px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
-            : <PanoramaFishEyeIcon/>}
-        </IconButton>
-      </div>
-      {/* {fixedCode && isoCode ? (
-        <Styled.CallingCodeSplitted>
-        +{getPhoneCodeOfCountry(isoCode)}
-        </Styled.CallingCodeSplitted>
-      ) : null} */}
+      <Button
+        {...buttonProps}
+        style={{ borderRadius: '12px' }}
+        color="inherit"
+      >
+        {socialMediaIcons[`${socialName}`]?.icon
+          ? <img style={{ width: '20px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
+          : <PanoramaFishEyeIcon/>}
+        <ArrowDropDownIcon />
+      </Button>
     </>
   );
 }

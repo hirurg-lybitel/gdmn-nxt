@@ -23,13 +23,6 @@ export function SocialMediaMenu(props: SocialMediaMenuProps) {
     <Menu
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
-      id="select-country"
-      className={`TelInput-Menu ${className ?? ''}`}
-      MenuListProps={{
-        role: 'listbox',
-        'aria-activedescendant': socialName ? `country-${socialName}` : '',
-        'aria-labelledby': 'select-country'
-      }}
       {...rest}
     >
       <Box className={styles.menuContent}>
@@ -40,7 +33,6 @@ export function SocialMediaMenu(props: SocialMediaMenuProps) {
               key={index}
               socialName={socialMediaIcons[socialNameItem].name}
               selected={socialMediaIcons[socialNameItem].name === socialName}
-              id={`country-${socialNameItem}`}
             />
           )}
         </CustomizedScrollBox>
