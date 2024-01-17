@@ -1,21 +1,17 @@
 import { Button, IconButton, ButtonProps } from '@mui/material';
-import { Styled } from './styles';
 import { IIconsNames, socialMediaIcons } from '../../social-media-icons';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import { makeStyles } from '@mui/styles';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 export interface SocialMediaButtonProps extends ButtonProps {
   socialName: IIconsNames | undefined
   disableDropdown?: boolean;
-  isMenuOpened: boolean;
 };
 
 export function SocialMediaButton(props: SocialMediaButtonProps) {
   const {
     disableDropdown = false,
-    isMenuOpened = false,
-    socialName = 'viber',
+    socialName = 'telegram',
     ...buttonProps
   } = props;
 
@@ -28,8 +24,8 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
           color="inherit"
           disabled
         >
-          {socialMediaIcons[`${socialName}`]?.icon
-            ? <img style={{ width: '20px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
+          {socialMediaIcons[socialName]
+            ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName]}/>
             : <PanoramaFishEyeIcon/>}
           <ArrowDropDownIcon />
         </Button>
@@ -38,8 +34,8 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
           sx={{ pointerEvents: 'none', aspectRatio: '1 / 1' }}
           component="span"
         >
-          {socialMediaIcons[`${socialName}`]?.icon
-            ? <img style={{ width: '20px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
+          {socialMediaIcons[socialName]
+            ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName]}/>
             : <PanoramaFishEyeIcon/>}
         </IconButton>
       </>
@@ -50,11 +46,11 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
     <>
       <Button
         {...buttonProps}
-        style={{ borderRadius: '12px' }}
+        style={{ borderRadius: '12px', minWidth: 40 }}
         color="inherit"
       >
-        {socialMediaIcons[`${socialName}`]?.icon
-          ? <img style={{ width: '20px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
+        {socialMediaIcons[socialName]
+          ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName]}/>
           : <PanoramaFishEyeIcon/>}
         <ArrowDropDownIcon />
       </Button>

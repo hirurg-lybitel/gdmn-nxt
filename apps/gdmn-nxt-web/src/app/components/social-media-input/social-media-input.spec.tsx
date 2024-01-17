@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 
-import TelephoneInput from '.';
+import SocialMediaInput from '.';
 
-describe('TelephoneInput', () => {
+describe('SocialMediaInput', () => {
   it('should render successfully', () => {
-    // const { baseElement } = render(<TelephoneInput />);
+    // const { baseElement } = render(<SocialMediaInput />);
     expect(true).toBeTruthy();
   });
 });

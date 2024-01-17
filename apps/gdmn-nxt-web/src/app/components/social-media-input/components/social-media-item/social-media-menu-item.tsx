@@ -3,7 +3,7 @@ import { Styled } from './styled';
 import { IIconsNames, socialMediaIcons } from '../../social-media-icons';
 
 export interface SocialMediaMenuItemProps extends MenuItemProps {
-  socialName: IIconsNames | undefined;
+  socialName: IIconsNames;
   onSelectSocial: (isoCode: string) => void;
 }
 
@@ -27,10 +27,10 @@ export function SocialMediaMenuItem(props: SocialMediaMenuItemProps) {
       data-testid={`option-${socialName}`}
     >
       <Styled.ListItemIcon>
-        <img style={{ width: '30px' }} src={socialMediaIcons[`${socialName}`]?.icon}/>
+        <img style={{ width: '30px' }} src={socialMediaIcons[socialName]}/>
       </Styled.ListItemIcon>
       <Styled.ListItemText>
-        {socialMediaIcons[`${socialName}`]?.name}
+        {socialName}
       </Styled.ListItemText>
     </MenuItem>
   );

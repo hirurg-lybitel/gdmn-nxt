@@ -1,6 +1,4 @@
 import { Box, Menu, MenuProps } from '@mui/material';
-import { useMemo } from 'react';
-import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import styles from './social-media-menu.module.less';
 import SocialMediaMenuItem from '../social-media-item/social-media-menu-item';
 import { IIconsNames, socialMediaIcons } from '../../social-media-icons';
@@ -26,16 +24,14 @@ export function SocialMediaMenu(props: SocialMediaMenuProps) {
       {...rest}
     >
       <Box className={styles.menuContent}>
-        <CustomizedScrollBox>
-          {Object.keys(socialMediaIcons).map((socialNameItem, index) =>
-            <SocialMediaMenuItem
-              onSelectSocial={onChangeSocial}
-              key={index}
-              socialName={socialMediaIcons[socialNameItem].name}
-              selected={socialMediaIcons[socialNameItem].name === socialName}
-            />
-          )}
-        </CustomizedScrollBox>
+        {Object.keys(socialMediaIcons).map((socialNameItem, index) =>
+          <SocialMediaMenuItem
+            onSelectSocial={onChangeSocial}
+            key={index}
+            socialName={socialNameItem as IIconsNames}
+            selected={socialNameItem === socialName}
+          />
+        )}
       </Box>
     </Menu>
   );
