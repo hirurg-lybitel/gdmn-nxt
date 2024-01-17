@@ -1,3 +1,4 @@
+import SmsIcon from '@mui/icons-material/Sms';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -6,10 +7,10 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import EmailIcon from '@mui/icons-material/Email';
-import { Autocomplete, Avatar, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, Stack, Tab, TextField, Typography } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, Stack, Tab, TextField } from '@mui/material';
 import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
-import { IContactPerson, ICustomer, IEmail, IPhone } from '@gsbelarus/util-api-types';
+import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useCallback, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
@@ -22,6 +23,9 @@ import filterOptions from '../helpers/filter-options';
 import { LabelsSelect } from '../Labels/labels-select';
 import { CustomerSelect } from '../Kanban/kanban-edit-card/components/customer-select';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
+import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../social-media-input';
+import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
+import CustomNoData from '../Styled/Icons/CustomNoData';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -149,6 +153,40 @@ export function EditContact({
     formik.setFieldValue('EMAILS', newEmails);
   };
 
+  const handleAddMessenger = () => {
+    let newMessengers: IMessenger[] = [];
+    if (Array.isArray(formik.values.MESSENGERS)) {
+      newMessengers = [...formik.values.MESSENGERS];
+    };
+    newMessengers.push({ ID: -1, CODE: 'telegram', USERNAME: '' });
+
+    formik.setFieldValue('MESSENGERS', newMessengers);
+  };
+
+  const handleMessengerChange = (index: number, { name, text }: ISocialMedia) => {
+    let newMessengers: IMessenger[] = [];
+    if (Array.isArray(formik.values.MESSENGERS) && (formik.values.MESSENGERS?.length > index)) {
+      newMessengers = [...formik.values.MESSENGERS];
+      newMessengers[index] = {
+        ...newMessengers[index],
+        CODE: name,
+        USERNAME: text
+      };
+    };
+
+    formik.setFieldValue('MESSENGERS', newMessengers);
+  };
+
+  const handleDeleteMessenger = (index: number) => {
+    let newMessengers: IMessenger[] = [];
+    if (Array.isArray(formik.values.MESSENGERS)) {
+      newMessengers = [...formik.values.MESSENGERS];
+      newMessengers.splice(index, 1);
+    };
+
+    formik.setFieldValue('MESSENGERS', newMessengers);
+  };
+
   const onClose = () => {
     onCancel();
     formik.resetForm();
@@ -180,7 +218,7 @@ export function EditContact({
             key={index.toString()}
             direction="row"
             alignItems="center"
-            spacing={1}
+            spacing={2}
           >
             <PhoneAndroidIcon fontSize="small" color="primary" />
             <EditableTypography
@@ -227,7 +265,7 @@ export function EditContact({
             key={index.toString()}
             direction="row"
             alignItems="center"
-            spacing={1}
+            spacing={2}
           >
             <EmailIcon fontSize="small" color="primary" />
             <EditableTypography
@@ -262,6 +300,63 @@ export function EditContact({
       </div>
     </>, [formik.errors.EMAILS, formik.touched.EMAILS, formik.values.EMAILS]);
 
+  const messengersOptions = useMemo(() =>
+    <>
+      {formik.values.MESSENGERS?.map(({ ID, CODE, USERNAME }, index) => {
+        const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[index]?.USERNAME);
+        const error = Array.isArray(formik.errors.MESSENGERS) && (formik.errors.MESSENGERS[index] as unknown as IMessenger)?.USERNAME;
+
+        return (
+          <Stack
+            key={index}
+            direction="row"
+            alignItems="center"
+            spacing={2}
+          >
+            <SmsIcon fontSize="small" color="primary" />
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              flex={1}
+            >
+              <img src={socialMediaIcons[CODE]} width={17} />
+              <EditableTypography
+                value={USERNAME}
+                width={'100%'}
+                deleteable
+                onDelete={() => handleDeleteMessenger(index)}
+                editComponent={
+                  <SocialMediaInput
+                    value={{
+                      name: CODE,
+                      text: USERNAME
+                    }}
+                    name={`MESSANGER${index}`}
+                    label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
+                    onChange={(value) => handleMessengerChange(index, value)}
+                    placeholder="имя пользователя"
+                    error={isTouched && Boolean(error)}
+                    helperText={isTouched && error}
+                  />
+                }
+              />
+            </Stack>
+          </Stack>
+
+        );
+      })}
+      <div className={styles['addItemButtonContainer']}>
+        <Button
+          className={styles['button']}
+          onClick={handleAddMessenger}
+          startIcon={<AddCircleRoundedIcon />}
+        >
+          Добавить мессенджер
+        </Button>
+      </div>
+    </>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
@@ -283,7 +378,7 @@ export function EditContact({
       <DialogTitle>
         Редактирование контакта
       </DialogTitle>
-      <DialogContent dividers style={{ display: 'flex' }}>
+      <DialogContent dividers style={{ display: 'grid' }}>
         <FormikProvider value={formik}>
           <Form id="contactEditForm" onSubmit={formik.handleSubmit}>
             <Stack
@@ -307,7 +402,7 @@ export function EditContact({
                 </Stack>
                 {phoneOptions}
                 {emailsOptions}
-                {contact?.MESSENGERS?.map(({ ID, USR$USERNAME }, index) => <Typography key={index.toString()}>{USR$USERNAME}</Typography>)}
+                {messengersOptions}
                 <Divider flexItem />
                 <Autocomplete
                   fullWidth
@@ -407,13 +502,13 @@ export function EditContact({
                   </TabList>
                   <Divider style={{ margin: 0 }} />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
-                    <div>1</div>
+                    <CustomNoData />
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
-                    <div>2</div>
+                    <CustomNoData />
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
-                    <div>3</div>
+                    <CustomNoData />
                   </TabPanel>
                 </TabContext>
               </Stack>

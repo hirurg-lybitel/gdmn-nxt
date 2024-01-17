@@ -12,7 +12,6 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { useCallback, useMemo, useState } from 'react';
-import { useGetLabelsQuery } from '../../features/labels';
 import { LabelsSelect } from '../Labels/labels-select';
 import { CustomerSelect } from '../Kanban/kanban-edit-card/components/customer-select';
 import filterOptions from '../helpers/filter-options';
@@ -20,8 +19,8 @@ import { useGetContactPersonsQuery } from '../../features/contact/contactApi';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { useGetDepartmentsQuery } from '../../features/departments/departmentsApi';
 import { emailsValidation, phonesValidation } from '../helpers/validators';
+import SocialMediaInput, { ISocialMedia } from '../social-media-input';
 
-/* eslint-disable-next-line */
 export interface AddContactProps {
   open: boolean;
   contact?: IContactPerson;
@@ -36,7 +35,6 @@ export function AddContact({
   onCancel
 }: AddContactProps) {
   const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery(undefined, { skip: !open });
-  const { data: labels, isFetching: labelsFetching, isLoading: labelsLoading } = useGetLabelsQuery(undefined, { skip: !open });
   const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -46,7 +44,7 @@ export function AddContact({
     NAME: '',
     PHONES: [{ ID: -1, USR$PHONENUMBER: '' }],
     EMAILS: [{ ID: -1, EMAIL: '' }],
-    MESSENGERS: [{ ID: -1, USR$CODE: 'telegram', USR$USERNAME: '' }],
+    MESSENGERS: [{ ID: -1, CODE: 'telegram', USERNAME: '' }],
     LABELS: [],
     WCOMPANYKEY: contact?.WCOMPANYKEY ?? -1
   };
@@ -75,7 +73,6 @@ export function AddContact({
     onReset: (values) => {
       setPhones([]);
       setEmails([]);
-      setMessengers([]);
     }
   });
 
@@ -86,7 +83,6 @@ export function AddContact({
 
   const [phones, setPhones] = useState<IPhone[]>(formik.values.PHONES ?? []);
   const [emails, setEmails] = useState<IEmail[]>(formik.values.EMAILS ?? []);
-  const [messengers, setMessengers] = useState<IMessenger[]>(formik.values.MESSENGERS ?? []);
 
   const handleAddPhone = () => {
     let newPhones: any[] = [];
@@ -115,10 +111,9 @@ export function AddContact({
     if (formik.values.MESSENGERS?.length) {
       newMessengers = [...formik.values.MESSENGERS];
     };
-    newMessengers.push({ ID: -1, USR$CODE: 'telegram', USR$USERNAME: '' });
+    newMessengers.push({ ID: -1, CODE: 'telegram', USERNAME: '' });
 
     formik.setFieldValue('MESSENGERS', newMessengers);
-    setMessengers(newMessengers);
   };
 
   const handlePhoneChange = (index: number, value: string) => {
@@ -143,14 +138,18 @@ export function AddContact({
     setEmails(newEmails);
   };
 
-  const handleMessengerChange = (index: number, value: string) => {
+  const handleMessengerChange = (index: number, value: ISocialMedia) => {
     let newMessengers: IMessenger[] = [];
-    if (formik.values.MESSENGERS?.length && (formik.values.MESSENGERS?.length > index)) {
+    if (formik.values.MESSENGERS?.length && (formik.values.MESSENGERS?.length >= index)) {
       newMessengers = [...formik.values.MESSENGERS];
+      newMessengers[index] = {
+        ...newMessengers[index],
+        CODE: value.name,
+        USERNAME: value.text
+      };
     };
 
     formik.setFieldValue('MESSENGERS', newMessengers);
-    setMessengers(newMessengers);
   };
 
   const handleCustomerChange = (customer: ICustomer | null | undefined) => {
@@ -166,7 +165,7 @@ export function AddContact({
     const newEmails = formik.values.EMAILS?.filter(email => !!email.EMAIL);
     if (Array.isArray(newEmails)) formik.values.EMAILS = [...newEmails];
 
-    const newMessengers = formik.values.MESSENGERS?.filter(mes => !!mes.USR$USERNAME);
+    const newMessengers = formik.values.MESSENGERS?.filter(mes => !!mes.USERNAME);
     if (Array.isArray(newMessengers)) formik.values.MESSENGERS = [...newMessengers];
 
     onSubmit(formik.values);
@@ -241,6 +240,7 @@ export function AddContact({
       <TelephoneInput
         name="PHONES[0]"
         label="Телефон"
+        placeholder="введите номер"
         value={formik.values.PHONES?.length ? formik.values.PHONES[0].USR$PHONENUMBER : ''}
         onChange={(value) => handlePhoneChange(0, value)}
         fixedCode
@@ -267,6 +267,7 @@ export function AddContact({
               name={`PHONE${index + 2}`}
               label={`Телефон ${index + 2}`}
               value={phone.USR$PHONENUMBER ?? ''}
+              placeholder="введите номер"
               onChange={(value) => handlePhoneChange(index + 1, value)}
               fixedCode
               strictMode
@@ -287,28 +288,25 @@ export function AddContact({
 
   const messengerOptions = useMemo(() =>
     <>
-      <TextField
-        label="mes"
-        type="text"
-        name="MESSENGERS[0]"
-      />
-      {messengers.slice(1)
-        .map((m, index, { length }) => {
-          const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[index + 1]?.USR$USERNAME);
-          const error = Array.isArray(formik.errors.MESSENGERS) && (formik.errors.MESSENGERS[index + 1] as unknown as IMessenger)?.USR$USERNAME;
-
-          return (
-            <TextField
-              key={index.toString()}
-              name={`MESSENGERS${index + 2}`}
-              label={`Mes ${index + 2}`}
-              value={m.USR$USERNAME ?? ''}
-              onChange={(e) => handleMessengerChange(index + 1, e.target.value)}
-              error={isTouched && Boolean(error)}
-              helperText={isTouched && error}
-            />
-          );
-        })}
+      {formik.values.MESSENGERS?.map((mes, index) => {
+        const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[0]?.USERNAME);
+        const error = Array.isArray(formik.errors.MESSENGERS) && (formik.errors.MESSENGERS[0] as unknown as IMessenger)?.USERNAME;
+        return (
+          <SocialMediaInput
+            key={index}
+            value={{
+              name: mes.CODE,
+              text: mes.USERNAME
+            }}
+            name={`MESSANGER${index}`}
+            label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
+            onChange={(value) => handleMessengerChange(index, value)}
+            placeholder="имя пользователя"
+            error={isTouched && Boolean(error)}
+            helperText={isTouched && error}
+          />
+        );
+      })}
       <div style={{ marginTop: 2 }}>
         <Button
           onClick={handleAddMessenger}
@@ -317,7 +315,7 @@ export function AddContact({
           Добавить мессенджер
         </Button>
       </div>
-    </>, [messengers, formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
+    </>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
 
   return (
     <CustomizedDialog

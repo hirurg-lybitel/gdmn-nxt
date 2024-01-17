@@ -180,7 +180,7 @@ const update = async (
         CONTACTTYPE: 2,
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
-        NOTE,
+        NOTE: await string2Blob(NOTE),
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
@@ -272,7 +272,7 @@ const update = async (
     deleteMessengers.close();
 
     const messengersPromises = MESSENGERS?.map(async messenger => {
-      if (!messenger.USR$CODE || !messenger.USR$USERNAME) return;
+      if (!messenger.CODE || !messenger.USERNAME) return;
 
       return fetchAsSingletonObject(
         `INSERT INTO USR$CRM_MESSENGERS(USR$CONTACTKEY, USR$CODE, USR$USERNAME)
@@ -280,8 +280,8 @@ const update = async (
         RETURNING ID`,
         {
           CONTACTKEY: contact.ID,
-          CODE: messenger.USR$CODE,
-          USERNAME: messenger.USR$USERNAME
+          CODE: messenger.CODE,
+          USERNAME: messenger.USERNAME
         }
       );
     });
@@ -340,7 +340,21 @@ const save = async (
 ): Promise<IContactPerson> => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
   try {
-    const { NAME, WCOMPANYKEY, USR$LETTER_OF_AUTHORITY, RANK, PHONES, EMAILS, MESSENGERS, LABELS, RESPONDENT, ADDRESS, NOTE, USR$BG_OTDEL, PHOTO } = metadata;
+    const {
+      NAME,
+      WCOMPANYKEY,
+      USR$LETTER_OF_AUTHORITY,
+      RANK,
+      PHONES,
+      EMAILS,
+      MESSENGERS,
+      LABELS,
+      RESPONDENT,
+      ADDRESS,
+      NOTE,
+      USR$BG_OTDEL,
+      PHOTO
+    } = metadata;
 
     // insert gd_contact
     const contact = await fetchAsSingletonObject<IContactPerson>(
@@ -352,7 +366,8 @@ const save = async (
         PARENT: 650001,
         CONTACTTYPE: 2,
         RESPONDENT: RESPONDENT?.ID,
-        ADDRESS, NOTE,
+        ADDRESS,
+        NOTE: await string2Blob(NOTE),
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
@@ -377,7 +392,7 @@ const save = async (
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
         WCOMPANYKEY,
         NAME: NAME.slice(0, 20),
-        PHOTO: PHOTO ? await string2Blob(PHOTO) : null
+        PHOTO: await string2Blob(PHOTO)
       }
     );
 
@@ -421,7 +436,7 @@ const save = async (
 
     // insert messengers
     const messengersPromises = MESSENGERS?.map(async messenger => {
-      if (!messenger.USR$CODE || !messenger.USR$USERNAME) return;
+      if (!messenger.CODE || !messenger.USERNAME) return;
 
       return fetchAsSingletonObject(
         `INSERT INTO USR$CRM_MESSENGERS(USR$CONTACTKEY, USR$CODE, USR$USERNAME)
@@ -429,8 +444,8 @@ const save = async (
         RETURNING ID`,
         {
           CONTACTKEY: contact.ID,
-          CODE: messenger.USR$CODE,
-          USERNAME: messenger.USR$USERNAME
+          CODE: messenger.CODE,
+          USERNAME: messenger.USERNAME
         }
       );
     });

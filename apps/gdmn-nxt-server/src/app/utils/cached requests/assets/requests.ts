@@ -1,4 +1,4 @@
-import { contactPersonsRepository } from "@gdmn-nxt/repositories/contacts/contactPersons";
+import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 
 export const requests = {
   customers: `
@@ -45,16 +45,6 @@ export const requests = {
       cust.USR$JOBWORKKEY
     FROM USR$CRM_CUSTOMER cust
     ORDER BY cust.USR$CUSTOMERKEY`,
-  // customerPersons: `
-  //   SELECT
-  //     con.PARENT, empl.ID, empl.NAME, empl.EMAIL, p.RANK
-  //   FROM GD_CONTACT con
-  //   JOIN GD_CONTACT empl ON empl.PARENT = con.ID
-  //   JOIN GD_PEOPLE p ON p.CONTACTKEY = empl.ID
-  //   WHERE
-  //     /* UPPER(con.NAME) = 'КОНТАКТЫ' */
-  //     con.ID = 650001
-  //   ORDER BY con.PARENT`,
   customerPersons: contactPersonsRepository.find,
   phones: `
     SELECT
@@ -68,7 +58,7 @@ export const requests = {
     ORDER BY e.USR$CONTACTKEY`,
   messengers: `
     SELECT
-      m.ID, m.USR$CONTACTKEY, m.USR$CODE, m.USR$USERNAME
+      m.ID, m.USR$CONTACTKEY, m.USR$CODE CODE, m.USR$USERNAME USERNAME
     FROM USR$CRM_MESSENGERS m
     ORDER BY m.USR$CONTACTKEY`,
   contactLabels: `

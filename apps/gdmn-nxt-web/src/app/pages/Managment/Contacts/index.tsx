@@ -219,7 +219,8 @@ export default function Contacts() {
             // disabled={personsIsFetching}
             disabled
             style={{
-              width: 40
+              width: 40,
+              display: 'none'
             }}
           >
             <Tooltip
