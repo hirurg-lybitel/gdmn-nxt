@@ -20,7 +20,7 @@ services:
       - ./.env
       - ./.env.prod
   server:
-    image: hirurglybitel/gdmn-server:latest
+    image: ghcr.io/hirurglybitel/gdmn-server:latest
     hostname: gdmn.crm
     build:
       context: .
