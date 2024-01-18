@@ -41,7 +41,6 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            hirurglybitel/gdmn-server
             ghcr.io/hirurglybitel/gdmn-server
 
       - name: Build and push Docker image
