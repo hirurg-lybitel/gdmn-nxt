@@ -43,6 +43,7 @@ jobs:
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
+          command: docker compose -f docker-compose.build.yml up -d --build server
           push: true
           tags: |
             hirurglybitel/gdmn-server:latest
