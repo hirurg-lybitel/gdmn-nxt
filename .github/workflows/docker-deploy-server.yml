@@ -8,8 +8,6 @@ on:
     paths:
       - 'apps/gdmn-nxt-server/**'
       - 'libs/**'
-    paths-ignore:
-      - '**/**.md'
 
 env:
   REGISTRY: ghcr.io
