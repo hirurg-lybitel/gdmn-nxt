@@ -46,7 +46,7 @@ jobs:
           command: docker compose -f docker-compose.build.yml up -d --build server
           push: true
           tags: |
-            hirurglybitel/gdmn-server:latest
+            ghcr.io/hirurglybitel/gdmn-server:latest
   # deploy:
   #   needs: build
   #   name: Deploy image
