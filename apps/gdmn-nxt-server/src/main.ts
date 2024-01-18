@@ -345,7 +345,7 @@ if (config.serverStaticMode) {
 
 app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server is listening at http://${config.host}:${config.serverPort}`));
+const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server 1 is listening at http://${config.host}:${config.serverPort}`));
 
 server.on('[ error ]', console.error);
 
