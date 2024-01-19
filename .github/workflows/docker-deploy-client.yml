@@ -26,19 +26,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Use variables
-        run: |
-          echo "variable server host from shell: $ENV_SERVER_HOST"
-          echo "variable notification port from shell : $ENV_SOCKET_NOTIFICATIONS_PORT"
-          echo "variable streamin port from shell : $ENV_SOCKET_STREAMING_UPDATE_PORT"
-          echo "variable server host from env: $NX_SERVER_HOST"
-          echo "variable notification port from env : $NX_SOCKET_NOTIFICATIONS_PORT"
-          echo "variable streamin port from env : $NX_SOCKET_STREAMING_UPDATE_PORT"
-        env:
-          NX_SERVER_HOST: ${{ env.ENV_SERVER_HOST }}
-          NX_SOCKET_NOTIFICATIONS_PORT: ${{ env.ENV_SOCKET_NOTIFICATIONS_PORT }}
-          NX_SOCKET_STREAMING_UPDATE_PORT: ${{ env.ENV_SOCKET_STREAMING_UPDATE_PORT }}
-
       - name: Check out repository code
         uses: actions/checkout@v4
 
