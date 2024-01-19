@@ -225,6 +225,7 @@ export function SignInSignUp({
           {/* <Box textAlign={'center'}>
             <BelgissLogo color="#64b5f6" scale={1.5}/>
           </Box> */}
+          
           <Box textAlign={'center'}>
             <Typography variant="h4" fontWeight={600}>
               Вход в систему

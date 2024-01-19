@@ -224,7 +224,6 @@ const appMiddlewares = [
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       secure: true
-      // process.env.NODE_ENV === 'production'
     },
   }),
   cookieParser(),
