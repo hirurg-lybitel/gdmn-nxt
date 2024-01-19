@@ -20,16 +20,12 @@ jobs:
         echo "repository variable : $REPOSITORY_VAR"
         echo "repository secret by var: $CONTEXT_SECRET_VAR"
         echo "repository secret : $CONTEXT_SECRET"
+        echo "repository wrong secret : $CONTEXT_SECRET_WRONG"
         echo "overridden variable : $OVERRIDE_VAR"
         echo "variable from shell environment : $env_var"
       env:
         REPOSITORY_VAR: ${{ vars.ENV_CONTEXT_VAR }}
         CONTEXT_SECRET_VAR: ${{ vars.ENV_CONTEXT_SECRET }}
         CONTEXT_SECRET: ${{ secrets.ENV_CONTEXT_SECRET }}
+        CONTEXT_SECRET_WRONG: ${{ secrets.ENV_CONTEXT_SECRET_WRONG }}
         OVERRIDE_VAR: my override variable
-
-    - name: ${{ vars.HELLO_WORLD_STEP }}
-      if: ${{ vars.HELLO_WORLD_ENABLED == 'true' }}
-      uses: actions/hello-world-javascript-action@main
-      with:
-        who-to-greet: ${{ vars.GREET_NAME }}
