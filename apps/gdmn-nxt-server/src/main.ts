@@ -364,7 +364,7 @@ const options: ServerOptions = {
 };
 
 const httpsServer = https.createServer(options, app);
-httpsServer.listen(config.serverPort, () => console.log(`👀 Server 2 is listening on port [ ${config.serverPort} ]`));
+httpsServer.listen(config.serverPort, () => console.log(`👀 Server 3 is listening on port [ ${config.serverPort} ]`));
 httpsServer.on('[ error ]', console.error);
 
 process
