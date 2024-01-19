@@ -1,5 +1,5 @@
 name: Build and Deploy Client Image
-run-name: ${{ github.actor }} triggered Docker client deploying 🐳
+run-name: ${{ github.actor }} triggered Docker client 🖥️ deploying 🐳
 
 on:
   push:
