@@ -74,5 +74,5 @@ jobs:
             script: |
               cd workspace/Yuri/crm
               docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-              sh run_container.sh
+              sh run_server_container.sh
               exit
