@@ -26,6 +26,19 @@ jobs:
       packages: write
 
     steps:
+      - name: Use variables
+        run: |
+          echo "variable server host from shell: $ENV_SERVER_HOST"
+          echo "variable notification port from shell : $ENV_SOCKET_NOTIFICATIONS_PORT"
+          echo "variable streamin port from shell : $ENV_SOCKET_STREAMING_UPDATE_PORT"
+          echo "variable server host from env: $NX_SERVER_HOST"
+          echo "variable notification port from env : $NX_SOCKET_NOTIFICATIONS_PORT"
+          echo "variable streamin port from env : $NX_SOCKET_STREAMING_UPDATE_PORT"
+        env:
+          NX_SERVER_HOST: ${{ env.ENV_SERVER_HOST }}
+          NX_SOCKET_NOTIFICATIONS_PORT: ${{ env.ENV_SOCKET_NOTIFICATIONS_PORT }}
+          NX_SOCKET_STREAMING_UPDATE_PORT: ${{ env.ENV_SOCKET_STREAMING_UPDATE_PORT }}
+
       - name: Check out repository code
         uses: actions/checkout@v4
 
@@ -57,29 +70,29 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-  # deploy:
-  #   needs: build
-  #   name: Deploy image
-  #   runs-on: ubuntu-latest
+  deploy:
+    needs: build
+    name: Deploy image
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Install SSH client
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -y openssh-client
+      - name: Install SSH client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client
 
-  #     - name: SSH to Remote Server and Execute Command
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #           host: ${{ secrets.DEPLOY_HOST }}
-  #           username: ${{ secrets.DEPLOY_USERNAME }}
-  #           password: ${{ secrets.DEPLOY_PASSWORD }}
-  #           port: ${{ secrets.DEPLOY_PORT }}
-  #           script: |
-  #             cd workspace/Yuri/crm
-  #             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-  #             sh run_container.sh
-  #             exit
+      - name: SSH to Remote Server and Execute Command
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.DEPLOY_HOST }}
+            username: ${{ secrets.DEPLOY_USERNAME }}
+            password: ${{ secrets.DEPLOY_PASSWORD }}
+            port: ${{ secrets.DEPLOY_PORT }}
+            script: |
+              cd workspace/Yuri/crm
+              docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+              sh run_client_container.sh
+              exit
