@@ -17,7 +17,7 @@ jobs:
   build:
     name: Build and publish image
     runs-on: ubuntu-latest
-
+    environment: Production
     permissions:
       contents: read
       packages: write
