@@ -13,7 +13,7 @@ jobs:
   display-variables:
     name: Test variables
     runs-on: ubuntu-latest
-    environment: ${{ vars.ENVIRONMENT_STAGE }}
+    environment: test
     steps:
     - name: Use variables
       run: |
