@@ -18,12 +18,14 @@ jobs:
     - name: Use variables
       run: |
         echo "repository variable : $REPOSITORY_VAR"
+        echo "repository secret by var: $CONTEXT_SECRET_VAR"
         echo "repository secret : $CONTEXT_SECRET"
         echo "overridden variable : $OVERRIDE_VAR"
         echo "variable from shell environment : $env_var"
       env:
         REPOSITORY_VAR: ${{ vars.ENV_CONTEXT_VAR }}
-        CONTEXT_SECRET: ${{ vars.ENV_CONTEXT_SECRET }}
+        CONTEXT_SECRET_VAR: ${{ vars.ENV_CONTEXT_SECRET }}
+        CONTEXT_SECRET: ${{ secrets.ENV_CONTEXT_SECRET }}
         OVERRIDE_VAR: my override variable
 
     - name: ${{ vars.HELLO_WORLD_STEP }}
