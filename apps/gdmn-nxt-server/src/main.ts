@@ -41,8 +41,6 @@ import { csrf } from 'lusca';
 import { bodySize } from './app/constants/params';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cached requests';
-import fs from 'fs';
-import https, { ServerOptions } from 'https';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -54,7 +52,6 @@ declare module 'express-session' {
     token: string;
     email: string;
     userName: string;
-    captcha: string;
   }
 }
 
@@ -93,7 +90,7 @@ const cors = require('cors');
 app.use(cors({
   credentials: true,
   secure: 'httpOnly',
-  origin: config.origin
+  origin: `http://${config.host}:${config.appPort}`
 }));
 
 if (config.serverStaticMode) {
@@ -142,15 +139,10 @@ async (req: Request, userName: string, password: string, done) => {
         const permissions = await cacheManager.getKey('permissions') ?? {};
         const userPermissions: Permissions = permissions?.[res.userProfile.id];
 
-        if (!userPermissions) {
-          return done(null, false, { message: 'Пользователю ограничен доступ к приложению.' });
-        }
-
         return done(null, {
           userName,
           gedeminUser: true,
           id: res.userProfile.id,
-          email: res.userProfile.email,
           permissions: userPermissions
         });
       } else {
@@ -186,7 +178,7 @@ passport.serializeUser((user: IUser, done) => {
 });
 
 passport.deserializeUser(async (user: IUser, done) => {
-  // console.log('passport deserialize');
+  // console.log('passport deserialize', user);
 
   const { userName: name } = user;
 
@@ -223,8 +215,8 @@ const appMiddlewares = [
     store: sessionStore,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
-      secure: true
-      // process.env.NODE_ENV === 'production'
+      /** TODO: включить при переходе на https */
+      // secure: process.env.NODE_ENV === 'production'
     },
   }),
   cookieParser(),
@@ -351,21 +343,11 @@ if (config.serverStaticMode) {
   });
 }
 
-app.get('*', (req) => console.log(`Unknown request: ${req.url}`));
+app.get('*', (req) => console.log(`Unknown request. ${req.url}`));
 
-const privateKey = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key'));
-const bundle = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.ca-bundle'));
-const certificate = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt'));
+const server = app.listen(config.serverPort, config.serverHost, () => console.log(`👀 Server 3 is listening at http://${config.host}:${config.serverPort}`));
 
-const options: ServerOptions = {
-  key: privateKey,
-  cert: certificate,
-  ca: bundle,
-};
-
-const httpsServer = https.createServer(options, app);
-httpsServer.listen(config.serverPort, () => console.log(`👀 Server is listening on port [ ${config.serverPort} ]`));
-httpsServer.on('[ error ]', console.error);
+server.on('[ error ]', console.error);
 
 process
   .on('exit', code => {
