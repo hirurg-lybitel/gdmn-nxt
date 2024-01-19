@@ -10,6 +10,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
       u.disabled as userDisabled,
       c.name as contactName,
       c.disabled as contactDisabled,
+      c.email,
       p.firstname,
       p.surname
     FROM
@@ -43,6 +44,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
           userProfile: {
             id: data[0]['ID'],
             userName,
+            email: data[0]['EMAIL'],
             firstname: data[0]['FIRSTNAME'],
             surname: data[0]['SURNAME']
           }
@@ -90,7 +92,7 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
           userName,
           contactkey: data[0]['CONTACTKEY'],
           rank: data[0]['RANK'],
-          colorMode: data[0]['COLORMODE'],
+          colorMode: data[0]['COLORMODE'] ?? ColorMode.Light,
         };
       } else if (!data.length) {
         return undefined;

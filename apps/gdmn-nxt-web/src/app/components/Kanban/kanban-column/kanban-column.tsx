@@ -109,8 +109,11 @@ export function KanbanColumn(props: KanbanColumnProps) {
         onKeyDown={handleTitleKeyPress}
         // maxWidth="200px"
         sx={{
+          '& .title': {
+            letterSpacing: '0.5px'
+          },
           '&:hover .title': {
-            opacity: 0.3
+            opacity: 0.3,
           },
           '&:hover .actions': {
             display: 'inline',

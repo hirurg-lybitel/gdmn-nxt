@@ -100,6 +100,7 @@ export interface IProfileSettings {
   ENABLED_2FA?: boolean;
   REQUIRED_2FA?: boolean;
   SECRETKEY?: string;
+  LAST_IP?: string;
 }
 
 export enum ColorMode {

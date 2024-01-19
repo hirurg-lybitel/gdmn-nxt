@@ -12,9 +12,16 @@ export interface StyleProps {
 
 const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   root: {
+    transition: theme.transitions.create('all', {
+      duration: theme.transitions.duration.shorter,
+      easing: theme.transitions.easing.easeInOut,
+    }),
     display: 'flex',
     justifyContent: 'space-between',
-    width: '200px',
+    width: '100%',
+    '& .MuiInputBase-input': {
+      width: '150px !important'
+    }
   },
   iconButton: {
     color: theme.palette.action.active,
@@ -51,10 +58,10 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   },
   onFocus: {
     border: `1px solid ${theme.palette.primary.main}`,
-    width: '100%',
+    marginLeft: 0
   },
   widthTransition: {
-    marginRight: '100px',
+    marginRight: '150px',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen
@@ -62,7 +69,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   },
   fullWidth: {
     width: '100%',
-  }
+  },
 }));
 
 export interface SearchBarProps {

@@ -174,7 +174,7 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
                 }}
               />
             </Box>
-            <Typography variant="subtitle2">
+            <Typography variant="body2">
               {`${closedTasks} из ${allTasks} задач`}
             </Typography>
           </>

@@ -125,7 +125,6 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             <Typography
               display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
               variant="body2"
-              fontWeight={600}
               component="span"
             >
               {`${card.DEAL?.CONTACT_NAME}, `}
@@ -142,9 +141,9 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             variant="subtitle2"
             color={colorModeIsLight ? 'GrayText' : 'lightgray'}
             style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
-              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', fontWeight: '600', margin: 0 }
+              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', margin: 0 }
               : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
-                ? { color: 'orange', fontWeight: '600', margin: 0 }
+                ? { color: 'orange', margin: 0 }
                 : { margin: 0 })}
           >
             {card.TASK?.USR$DEADLINE
@@ -168,7 +167,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             style={{ marginTop: 4 }}
           >
             <AccountCircleIcon color="primary" fontSize="small" />
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2">
               {
                 card.TASK?.CREATOR?.NAME
                   .split(' ')
@@ -177,8 +176,8 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
                   ?.join(' ')
               }
             </Typography>
-            <ForwardIcon fontSize="small"/>
-            <Typography variant="body2" fontWeight={600}>
+            <ForwardIcon color="primary" fontSize="small"/>
+            <Typography variant="body2">
               {
                 card.TASK?.PERFORMER?.NAME
                   .split(' ')
@@ -192,7 +191,6 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           <Typography
             style={{ marginTop: 4 }}
             variant="body2"
-            fontWeight={600}
           >
             {card.DEAL?.USR$NAME}
           </Typography>

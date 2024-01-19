@@ -137,7 +137,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     const task: IKanbanTask = req.body as IKanbanTask;
 
-    const userId = req.session.userId || -1;
+    const userId = req.user['id'] || -1;
     const taskId = await (() => isInsertMode ? genId(attachment, transaction) : Number(id))();
 
     let sql;
@@ -318,10 +318,8 @@ const remove: RequestHandler = async(req, res) => {
 
   if (!id) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
 
-
-  // let result: ResultSet;
   try {
-    const userId = req.session.userId || -1;
+    const userId = req.user['id'] || -1;
 
     /** Формирование истории изменений */
     const sql = `

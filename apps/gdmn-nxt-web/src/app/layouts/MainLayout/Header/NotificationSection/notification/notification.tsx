@@ -157,7 +157,7 @@ export function Notification(props: NotificationProps) {
     if (userId <= 0) return;
 
     const socket = setSocketClient('notifications', {
-      url: `http://${config.host}:${config.notificationPort}`,
+      url: `https://${config.serverHost}:${config.notificationPort}`,
       userId
     });
     let oldMessages: IMessage[] = [];

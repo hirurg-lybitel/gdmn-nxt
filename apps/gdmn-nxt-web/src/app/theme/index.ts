@@ -1,17 +1,18 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { colors } from '@mui/material';
+import { colors, ThemeOptions } from '@mui/material';
 import * as locales from '@mui/material/locale';
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 import { ICustomization } from '../store/settingsSlice';
 import componentStyleOverrides from './componentStyleOverrides';
-import { styledTheme } from './styles';
+import { StyledTheme } from './styles';
 import themeTypography from './typography';
+import { themes } from './presets';
 
 declare module '@mui/material/styles' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface Theme extends styledTheme {}
+  interface Theme extends StyledTheme {}
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  export interface ThemeOptions extends styledTheme {}
+  export interface ThemeOptions extends StyledTheme {}
   interface BreakpointOverrides {
     xs: true;
     sm: true;
@@ -24,71 +25,46 @@ declare module '@mui/material/styles' {
 };
 
 export const theme = (customization: ICustomization) => {
-  const themeOption = {
-    // fontFamily: '"Roboto Condensed", sans-serif',
-    // fontFamily: '"Lato", sans-serif',
-    // fontFamily: '"PT Sans", sans-serif',
-    fontFamily: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"'].join(','),
-    ...(customization.colorMode === ColorMode.Light
-      ? {
-        backgroundColor: colors.grey[100],
-        backgroundDefault: colors.blue[300],
-        backgroundSecond: colors.blue[300],
-        textColor: colors.grey[800],
-        captionTextColor: colors.grey[600],
-        secondaryColor: colors.common.white,
-        headColor: colors.common.white,
-        paper: colors.common.white,
-        customization,
-        borderColor: '#f0f0f0',
-        buttonTextColor: 'white'
-      }
-      : {
-        backgroundColor: colors.grey[900],
-        backgroundDefault: colors.blueGrey[900],
-        backgroundSecond: colors.blue[400],
-        textColor: colors.common.white,
-        captionTextColor: colors.grey[500],
-        secondaryColor: colors.grey[300],
-        headColor: colors.grey[300],
-        paper: colors.grey[800],
-        customization,
-        borderColor: '#303030',
-        buttonTextColor: 'white'
-      }
-    )
-  };
+  const themeOptionDefault = (() => {
+    switch (customization.colorMode) {
+      case ColorMode.Light:
+        return themes.light.grey;
+      case ColorMode.Dark:
+        return themes.dark.black;
+      default:
+        return themes.light.grey;
+    }
+  })();
 
   const themeOptions: ThemeOptions = {
     color: colors,
     drawerWidth: 260,
-    headColor: themeOption.headColor,
-    textColor: themeOption.textColor,
-    captionTextColor: themeOption.captionTextColor,
-    fontFamily: themeOption.fontFamily,
+    textColor: themeOptionDefault.textColor,
+    captionTextColor: themeOptionDefault.captionTextColor,
+    fontFamily: themeOptionDefault.fontFamily,
     palette: {
-      mode: themeOption.customization.colorMode,
-      background: {
-        paper: themeOption.paper,
-        default: colors.common.white,
-      },
+      mode: customization.colorMode,
       primary: {
-        main: themeOption.backgroundSecond,
-        contrastText: themeOption.headColor,
+        main: themeOptionDefault.primaryColor,
+        contrastText: 'white'
       },
       secondary: {
-        main: themeOption.secondaryColor
+        main: themeOptionDefault.secondaryColor
+      },
+      background: {
+        default: themeOptionDefault.backgroundColor,
+        paper: themeOptionDefault.paperColor,
       },
       text: {
-        primary: themeOption.textColor
+        primary: themeOptionDefault.textColor
       },
     },
     menu: {
-      backgroundColor: themeOption.backgroundDefault,
-      color: themeOption.headColor
+      backgroundColor: themeOptionDefault.menuBackgroundColor,
+      color: themeOptionDefault.menuTextColor
     },
     mainContent: {
-      backgroundColor: themeOption.backgroundColor,
+      backgroundColor: themeOptionDefault.backgroundColor,
       width: '100%',
       minHeight: 'calc(100vh - 10px)',
       flexGrow: 1,
@@ -96,8 +72,9 @@ export const theme = (customization: ICustomization) => {
       marginTop: '10px',
       marginRight: '20px',
       borderRadius: '12px',
-      borderColor: themeOption.borderColor,
-      buttonTextColor: themeOption.buttonTextColor
+      borderColor: themeOptionDefault.borderColor,
+      buttonTextColor: themeOptionDefault.buttonTextColor,
+      buttonPrimaryColor: themeOptionDefault.buttonPrimaryColor,
     },
     breakpoints: {
       /** breakpoints берём немного с меньше, чем разрешение экрана*/
@@ -113,15 +90,11 @@ export const theme = (customization: ICustomization) => {
     }
   };
 
-  // const themes = createTheme({...themeOptions, typography: { fontFamily: 'fantasy' }}, locales.ruRU);
-  // console.log('themeTypography(themeOptions)', themeTypography(themeOptions));
-  const themes = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
-  // themes.typography = { ...themeTypography(themeOptions), fontFamily: 'fantasy', fontSize: 30 };
-  // themes.typography = { ...themes.typography, fontFamily: 'fantasy' };
-  themes.components = { ...locales.ruRU.components, ...componentStyleOverrides(themeOptions) };
-  themes.shadows[1] = themeOption.customization.colorMode === ColorMode.Dark
+  const theme = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
+  theme.components = { ...locales.ruRU.components, ...componentStyleOverrides(theme) };
+  theme.shadows[1] = customization.colorMode === ColorMode.Dark
     ? '0px 4px 20px rgba(100, 110, 120, 0.3)'
     : '0px 4px 20px rgba(170, 180, 190, 0.3)';
 
-  return themes;
+  return theme;
 };

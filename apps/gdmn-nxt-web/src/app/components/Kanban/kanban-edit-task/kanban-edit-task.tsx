@@ -5,7 +5,7 @@ import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { IEmployee, IKanbanCard, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -113,6 +113,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
 
   const formik = useFormik<IKanbanTask>({
     enableReinitialize: true,
+    validateOnBlur: false,
     initialValues: {
       ...task,
       ...initValue,
@@ -300,8 +301,9 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     onChange={formik.handleChange}
                     value={formik.values.USR$NAME}
                     autoFocus
-                    multiline
                     minRows={1}
+                    error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                    helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
                   />
                   <Autocomplete
                     options={employees || []}

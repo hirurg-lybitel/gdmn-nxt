@@ -21,6 +21,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItemSelected: {
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.secondary.main,
+    '& .caption': {
+      color: theme.palette.secondary.main,
+    },
+    '&:hover  .caption': {
+      color: 'initial',
+    }
   }
 }));
 
@@ -57,7 +63,7 @@ export const GroupList = (props: IGroupList) => {
       >
         <ListItemText>
           <Typography variant="body1">{group.NAME}</Typography>
-          <Typography variant="caption">{group.DESCRIPTION}</Typography>
+          <Typography variant="caption" className="caption">{group.DESCRIPTION}</Typography>
           <div
             className="actions"
             hidden

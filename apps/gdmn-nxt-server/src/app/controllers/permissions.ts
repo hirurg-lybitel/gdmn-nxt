@@ -16,7 +16,7 @@ function getSessionIdByUserId(userId: number, sessions) {
 }
 
 const closeUserSession = async (req: Request, userIdToClose: number) => {
-  const { userId } = req.session;
+  const userId = req.user['id'];
   if (userId === userIdToClose) return;
 
   req.sessionStore.all((err, sessions) => {
@@ -26,7 +26,7 @@ const closeUserSession = async (req: Request, userIdToClose: number) => {
 };
 
 const closeUsersSessions = async (req: Request, groupId: number) => {
-  const { userId: currentUserId } = req.session;
+  const currentUserId = req.user['id'];
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
   try {

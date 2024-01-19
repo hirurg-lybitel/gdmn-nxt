@@ -32,8 +32,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center'
   },
   title: {
-    height: '68px',
-    padding: '18px'
+    padding: '10px 24px'
   }
 }));
 
@@ -75,14 +74,14 @@ export function CustomerDetails(props: CustomerDetailsProps) {
               underline="none"
               key="2"
               onClick={() => navigate(-1)}
-              variant="h6"
+              variant="pageHeader"
             >
             Клиенты
             </Link>
             <Typography
               key="3"
-              color="text.primary"
-              variant="h6"
+              variant="pageHeader"
+              fontWeight={600}
             >
               {customer?.NAME || '<Наименование>'}
             </Typography>

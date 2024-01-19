@@ -94,7 +94,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
       <ListItemButton
         className={classes.menuCollapse}
         sx={{
-          pl: `${level * 24}px`
+          pl: `${level * 12}px`
         }}
         selected={open}
         onClick={handleClick}

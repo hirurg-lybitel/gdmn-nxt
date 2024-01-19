@@ -1,20 +1,25 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { Components, ThemeOptions, Paper, colors } from '@mui/material';
+import { Components, Theme } from '@mui/material';
 import * as locales from '@mui/material/locale';
 
-export default function componentStyleOverrides(theme: ThemeOptions): Components {
+export default function componentStyleOverrides(theme: Theme): Components {
   return {
     MuiCssBaseline: {
       styleOverrides: {
         ':root': {
           '--color-scroll-thumb': theme.palette?.mode === ColorMode.Dark ? '#93999c' : '#d1dbe3',
           '--color-scroll-thumb-hover': theme.palette?.mode === ColorMode.Dark ? '#717171' : '#959595',
+          '--color-input-text': theme.textColor,
+          '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
+          '--color-primary-bg': theme.palette.primary.main,
+          '--border-radius': theme.mainContent.borderRadius,
         },
         body: {
           fontFamily: theme.fontFamily,
           backgroundColor: theme.menu?.backgroundColor,
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            width: 14,
+            width: 10,
+            height: 10,
             borderRadius: theme.mainContent.borderRadius,
             backgroundColor: 'inherit',
           },
@@ -29,7 +34,7 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: theme.mainContent.borderRadius,
             backgroundColor: 'var(--color-scroll-thumb)',
-            border: '4px solid transparent',
+            border: '2px solid transparent',
             backgroundClip: 'padding-box',
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
@@ -96,12 +101,16 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
           letterSpacing: '1px'
         },
         contained: {
-          color: theme.mainContent.buttonTextColor,
-          letterSpacing: '1px'
+          letterSpacing: '1px',
+          backgroundColor: 'var(--color-btn-primary-bg)',
+          ':hover': {
+            backgroundColor: 'var(--color-btn-primary-bg)',
+            opacity: 0.9
+          }
         },
         outlined: {
           letterSpacing: '1px'
-        }
+        },
       }
     },
     MuiCardHeader: {
@@ -153,6 +162,11 @@ export default function componentStyleOverrides(theme: ThemeOptions): Components
             boxShadow: '0 0 10px grey'
           }
         }
+      }
+    },
+    MuiAlert: {
+      defaultProps: {
+        variant: theme.palette?.mode === ColorMode.Dark ? 'filled' : 'standard'
       }
     }
   };

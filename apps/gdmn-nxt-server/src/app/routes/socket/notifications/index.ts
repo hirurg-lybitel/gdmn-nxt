@@ -11,6 +11,9 @@ import { getEmailUsers } from '../../../controllers/socket/notifications/getEmai
 import { sendEmail } from '../../../utils/mail';
 import { marked } from 'marked';
 import cron from 'cron';
+import { readFileSync } from 'fs';
+import { createServer } from 'https';
+import path from 'path';
 
 marked.use({
   mangle: false,
@@ -21,23 +24,29 @@ interface NotificationsProps {
   router: Router;
 }
 
+
 export function Notifications({ router }: NotificationsProps) {
+  const httpsServer = createServer({
+    key: readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key')),
+    cert: readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt')),
+  });
+
   const socketIO = new Server<
     ClientToServerEvents,
     ServerToClientEvents
-  >({
+  >(httpsServer, {
     cors: {
       credentials: true,
-      origin: `http://${config.host}:${config.appPort}`
+      origin: config.origin
     }
   });
 
   const sessionId = 'notification';
   const users: IUser[] = [];
 
-  console.log(`[ notifications ] socket running at http://localhost:${config.notificationPort}`);
+  console.log(`[ notifications ] socket running at https://localhost:${config.notificationPort}`);
 
-  socketIO.listen(config.notificationPort);
+  httpsServer.listen(config.notificationPort);
 
   socketIO.on('connection', (socket) => {
     console.log(`⚡ Notifications: ${socket.id} user just connected!`);
@@ -155,7 +164,7 @@ export function Notifications({ router }: NotificationsProps) {
             <ol>
               ${htmlText}
             </ol>
-            <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="http://localhost:4201/">CRM системе</a>.</p>
+            <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="https://${config.host}/">CRM системе</a>.</p>
           </div>`;
 
         const from = `CRM система БелГИСС <${process.env.SMTP_USER}>`;

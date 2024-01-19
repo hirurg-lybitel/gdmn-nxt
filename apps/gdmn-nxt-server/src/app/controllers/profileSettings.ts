@@ -23,7 +23,8 @@ const getSettings = async (userId: number, req: Request) => {
         p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION,
         ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL,
         ps.USR$2FA_ENABLED AS ENABLED_2FA, ps.USR$SECRETKEY AS SECRETKEY,
-        ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED
+        ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
+        ps.USR$LAST_IP as LAST_IP
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       JOIN GD_CONTACT c ON c.ID = u.CONTACTKEY
@@ -178,4 +179,25 @@ const upsertSecretKey = async (req: Request, body: { userId: number, secretKey?:
   }
 };
 
-export const profileSettingsController = { get, set, getSettings, upsertSecretKey };
+const upsertLastIP = async (req: Request, body: { userId: number, ip: string }) => {
+  const { releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
+
+  const { userId, ip } = body;
+
+  try {
+    await executeSingletonAsObject(
+      `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$LAST_IP)
+      VALUES(:userId, :ip)
+      MATCHING(USR$USERKEY)`,
+      { userId, ip }
+    );
+    return true;
+  } catch (error) {
+    console.error('[ update IP ]', error);
+    return false;
+  } finally {
+    releaseTransaction();
+  }
+};
+
+export const profileSettingsController = { get, set, getSettings, upsertSecretKey, upsertLastIP };

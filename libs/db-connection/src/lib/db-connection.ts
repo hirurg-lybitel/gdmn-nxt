@@ -62,7 +62,7 @@ const cleanupInterval = setInterval(
 
       for (const sessionId of Object.keys(sessions)) {
         if (!sessions[sessionId].attachment.isValid) {
-          console.log(new Date().toLocaleTimeString(), `DB Session ${sessionId} has been deleted due to inactivity...`);
+          // console.log(new Date().toLocaleTimeString(), `DB Session ${sessionId} has been deleted due to inactivity...`);
           delete sessions[sessionId];
         }
       }
