@@ -227,7 +227,7 @@ export function SignInSignUp({
           </Box> */}
           <Box textAlign={'center'}>
             <Typography variant="h4" fontWeight={600}>
-              Вход в систему 4
+              Вход в систему
             </Typography>
           </Box>
           {/* <Box textAlign={"center"}>

@@ -35,8 +35,6 @@ export interface ITasksQueryOptions extends IFilteringData {
   userId?: number;
 };
 
-console.log('socketClient', config.serverHost, config.streamingUpdatePort);
-
 const socketClient = setSocketClient('streamingUpdate', {
   url: `https://${config.serverHost}:${config.streamingUpdatePort}`,
   userId: -1
