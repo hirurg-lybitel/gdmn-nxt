@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   client:
-    image: ghcr.io/hirurg-lybitel/gdmn-client:latest
+    image: ghcr.io/hirurg-lybitel/gdmn-crm-client:latest
     container_name: crm_client
     build:
       context: .
@@ -23,7 +23,7 @@ services:
       - proxy_network
 
   server:
-    image: ghcr.io/hirurg-lybitel/gdmn-server:latest
+    image: ghcr.io/hirurg-lybitel/gdmn-crm-server:latest
     hostname: gdmn.crm
     build:
       context: .
