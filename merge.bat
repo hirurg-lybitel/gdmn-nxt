@@ -10,7 +10,7 @@ git fetch upstream
 git checkout main
 
 :: Шаг 4: Выполнить слияние изменений из ветки main исходного репозитория в вашу ветку main
-git merge upstream/main
+git reset --hard upstream/main
 
 :: Шаг 5: Отправить изменения в ваш удаленный репозиторий
 git push origin main
