@@ -2,6 +2,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 import { IMenuItem } from '.';
 
 
@@ -10,6 +11,13 @@ const managment: IMenuItem = {
   title: 'Управление',
   type: 'group',
   children: [
+    {
+      id: 'contacts',
+      title: 'Контакты',
+      type: 'item',
+      url: 'managment/contacts',
+      icon: <ContactPhoneIcon color="secondary" />,
+    },
     {
       id: 'dealsGroup',
       title: 'Сделки',

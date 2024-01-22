@@ -139,7 +139,7 @@ export function CustomerInfo(props: CustomerInfoProps) {
               columns.forEach((col, idx) => {
                 if (col.field === key) {
                   row.push(
-                    <ListItem key={idx} divider sx={{ py: 2 }}>
+                    <ListItem key={idx} divider>
                       <Grid container>
                         <Grid item minWidth={200}>
                           <Typography variant="subtitle1">{col.title}</Typography>

@@ -104,7 +104,7 @@ export function Customers(props: CustomersProps) {
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 10
+    pageSize: 20
   });
   const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
@@ -227,7 +227,7 @@ export function Customers(props: CustomersProps) {
         const labels = (row as ICustomer)?.LABELS;
 
         return (
-          <Stack spacing={1}>
+          <Stack spacing={1} direction="row">
             <div>{value}</div>
             {labels?.length
               ?
@@ -658,12 +658,13 @@ export function Customers(props: CustomersProps) {
           >
             <Box flex={1}>
               <StyledGrid
-                sx={{
-                  '& .MuiDataGrid-row, .MuiDataGrid-cell': {
-                    minHeight: '60px !important',
-                    maxHeight: 'fit-content !important'
-                  }
-                }}
+                // sx={{
+                //   '& .MuiDataGrid-row, .MuiDataGrid-cell': {
+                //     minHeight: '40px !important',
+                //     maxHeight: 'fit-content !important'
+                //   }
+                // }}
+                rowHeight={40}
                 onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}

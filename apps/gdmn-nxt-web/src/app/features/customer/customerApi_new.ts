@@ -44,15 +44,11 @@ export const customerApi = createApi({
           method: 'GET'
         };
       },
-      onQueryStarted({ customerId }) {
-        console.info('⏩ request', 'GET', `contacts/customerId/${customerId}`);
-      },
       transformResponse: (response: ICustomersRequestResult) => response.queries.contacts[0]
     }),
     getCustomers: builder.query<{data: ICustomer[], count?: number}, Partial<IQueryOptions> | void>({
       query(options) {
         const params: string[] = [];
-        // if (options) {
         lastOptions = { ...options };
 
         for (const [name, value] of Object.entries(options || {})) {
@@ -85,9 +81,6 @@ export const customerApi = createApi({
           url: `contacts?${params.join('&')}`,
           method: 'GET',
         };
-      },
-      onQueryStarted(options) {
-        console.info('⏩ request', 'GET', `${baseUrlApi}contacts`);
       },
       transformResponse: (response: ICustomersWithCountRequestResult) => ({ data: response.queries?.contacts || [], count: response.queries?.rowCount || 0 }),
       providesTags: (result, error) =>

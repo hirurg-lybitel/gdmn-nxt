@@ -3,15 +3,21 @@ import React, { FocusEvent, useRef, useState } from 'react';
 import SocialMediaButton from './components/social-media-button/social-media-button';
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
 import { IIconsNames } from './social-media-icons';
+export * from './social-media-icons';
 
 type BaseTextFieldProps = Omit<
   TextFieldProps,
   'onChange' | 'select' | 'type' | 'multiline' | 'defaultValue'
 >;
 
+export interface ISocialMedia {
+    text: string;
+    name: IIconsNames
+}
+
 export interface socialMediaInputProps extends BaseTextFieldProps {
-  onChange: (value: {text: string, name: IIconsNames | undefined}) => void;
-  value: {text: string, name: IIconsNames | undefined};
+  onChange: (value: ISocialMedia) => void;
+  value: ISocialMedia;
   disableDropdown?: boolean;
 }
 
@@ -63,7 +69,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
 
   const handleSocialChange = (socialValue: string) => {
     handleClose();
-    onChange({ text: '', name: socialValue as IIconsNames });
+    onChange({ ...value, name: socialValue as IIconsNames });
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

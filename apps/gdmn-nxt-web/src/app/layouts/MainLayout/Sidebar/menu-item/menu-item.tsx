@@ -11,7 +11,9 @@ import { ActionMethod, ActionName, Permissions } from '@gsbelarus/util-api-types
 const useStyles = makeStyles((theme: Theme) => ({
   menuItem: {
     marginBottom: 3,
-    borderRadius: theme.mainContent.borderRadius,
+    paddingBottom: 0,
+    paddingTop: 0,
+    borderRadius: '8px',
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, .3)',
     },

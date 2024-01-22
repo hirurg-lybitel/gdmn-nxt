@@ -8,6 +8,8 @@ import PersonEdit from '../person-edit/person-edit';
 import { useMemo, useState } from 'react';
 import StyledGrid from '../../components/Styled/styled-grid/styled-grid';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import EditContact from '@gdmn-nxt/components/edit-contact/edit-contact';
+import AddContact from '@gdmn-nxt/components/add-contact/add-contact';
 
 export interface ContactPersonListProps {
   customerId: number;
@@ -16,38 +18,37 @@ export interface ContactPersonListProps {
 export function ContactPersonList(props: ContactPersonListProps) {
   const { customerId } = props;
 
-  const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery({ customerId });
+  const {
+    data: persons,
+    isFetching: personsIsFetching,
+    isLoading,
+    refetch
+  } = useGetContactPersonsQuery({
+    filter: { customerId }
+  }, {
+    refetchOnMountOrArgChange: true
+  });
 
   const [deletePerson] = useDeleteContactPersonMutation();
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
 
-  const [personEdit, setPersonEdit] = useState(false);
-  const [currentPerson, setCurrentPerson] = useState<IContactPerson>();
 
-  const handlePersonEditSubmit = async (values: IContactPerson, deleting: boolean) => {
-    setPersonEdit(false);
+  const [upsertContact, setUpsertContact] = useState<{
+    addContact?: boolean;
+    editContact?: boolean;
+    contact?: IContactPerson
+  }>({
+    addContact: false,
+    editContact: false
+  });
 
-    if (deleting) {
-      deletePerson(values.ID);
-      return;
-    };
-
-    if (values.ID <= 0) {
-      addPerson(values);
-      return;
-    };
-
-    updatePerson(values);
-  };
-
-  const handlePersonEditCancelClick = async () => {
-    setPersonEdit(false);
+  const handleCancel = async () => {
+    setUpsertContact({ editContact: false, addContact: false });
   };
 
   const handleAddPerson = () => {
-    setCurrentPerson({ ID: -1, NAME: '', WCOMPANYKEY: customerId });
-    setPersonEdit(true);
+    setUpsertContact({ addContact: true, contact: { ID: -1, NAME: '', WCOMPANYKEY: customerId } });
   };
 
   const columns: GridColDef[] = [
@@ -57,7 +58,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
           <Stack>
             <Typography>{params.row.NAME}</Typography>
             <Typography variant="caption">{params.row.RANK}</Typography>
-            <Typography variant="caption">{params.row.EMAIL}</Typography>
+            <Typography variant="caption">{params.row.EMAILS ? params.row.EMAILS[0]?.EMAIL : ''}</Typography>
           </Stack>
         );
       }
@@ -80,9 +81,9 @@ export function ContactPersonList(props: ContactPersonListProps) {
         );
       }
     },
-    { field: 'USR$BG_OTDEL', headerName: 'Отдел', width: 100,
-      valueGetter: ({ value }) => value?.NAME
-    },
+    // { field: 'USR$BG_OTDEL', headerName: 'Отдел', width: 100,
+    //   valueGetter: ({ value }) => value?.NAME
+    // },
     {
       field: 'ACTIONS',
       headerName: '',
@@ -93,8 +94,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
         const personId = Number(params.id);
 
         const handlePersonEdit = () => {
-          setCurrentPerson(params.row);
-          setPersonEdit(true);
+          setUpsertContact({ editContact: true, contact: params.row });
         };
 
         return (
@@ -108,14 +108,34 @@ export function ContactPersonList(props: ContactPersonListProps) {
     }
   ];
 
-  const memUpsertPerson = useMemo(() =>
-    <PersonEdit
-      open={personEdit}
-      person={currentPerson}
+  const handlePersonAddSubmit = async (person: IContactPerson) => {
+    handleCancel();
+
+    addPerson(person);
+  };
+
+  const handlePersonEditSubmit = async (person: IContactPerson, deleting?: boolean) => {
+    deleting ? deletePerson(person.ID) : updatePerson(person);
+    handleCancel();
+  };
+
+  const memoEditContact = useMemo(() =>
+    <EditContact
+      open={!!upsertContact.editContact}
+      contact={upsertContact.contact!}
       onSubmit={handlePersonEditSubmit}
-      onCancelClick={handlePersonEditCancelClick}
+      onCancel={handleCancel}
     />,
-  [personEdit]);
+  [upsertContact.contact, upsertContact.editContact]);
+
+  const memoAddContact = useMemo(() =>
+    <AddContact
+      open={!!upsertContact.addContact}
+      contact={upsertContact.contact}
+      onSubmit={handlePersonAddSubmit}
+      onCancel={handleCancel}
+    />,
+  [upsertContact.addContact, upsertContact.contact]);
 
   return (
     <Stack direction="column" flex={1}>
@@ -135,7 +155,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
         </IconButton>
       </Stack>
       <StyledGrid
-        rows={persons || []}
+        rows={persons?.records || []}
         columns={columns}
         loading={personsIsFetching}
         getRowHeight={(params) => {
@@ -153,29 +173,9 @@ export function ContactPersonList(props: ContactPersonListProps) {
         hideFooter
         disableColumnResize
       />
-      {/* <DataGridPro
-        className={classes.DataGrid}
-        localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-        rows={persons || []}
-        columns={columns}
-        getRowId={row => row.ID}
-        loading={personsIsFetching}
-        hideFooter
-        disableColumnResize
-        getRowHeight={(params) => {
-          const person: IContactPerson = params.model as IContactPerson;
-          const phones = person.PHONES;
-
-          const rowHeight = 70;
-          if (phones?.length) {
-            const newRowHeight = 30 * phones?.length;
-            return newRowHeight > rowHeight ? newRowHeight : rowHeight;
-          };
-
-          return rowHeight;
-        }}
-      /> */}
-      {memUpsertPerson}
+      {/* {memUpsertPerson} */}
+      {memoEditContact}
+      {memoAddContact}
     </Stack>
   );
 }

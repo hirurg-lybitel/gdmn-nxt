@@ -408,8 +408,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     <CustomizedDialog
       open={open}
       onClose={handleOnClose}
-      width={windowWidth}
       minWidth={400}
+      width="calc(100% - var(--menu-width))"
     >
       <DialogTitle>
         {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
@@ -523,7 +523,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           spacing={2}
                           flex={1}
                         >
-                          <CustomerSelect formik={formik} />
+                          <CustomerSelect
+                            customer={formik.values.DEAL?.CONTACT}
+                            onChange={(value) => formik.setFieldValue('DEAL.CONTACT', value)}
+                            required
+                            name="DEAL.CONTACT"
+                            error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
+                            helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
+                          />
                           <DealSourcesSelect formik={formik} />
                         </Stack>
                         <Stack

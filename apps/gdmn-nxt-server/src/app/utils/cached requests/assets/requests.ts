@@ -1,3 +1,5 @@
+import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
+
 export const requests = {
   customers: `
     SELECT DISTINCT
@@ -23,7 +25,7 @@ export const requests = {
       l.USR$ICON,
       l.USR$DESCRIPTION,
       cl.USR$CONTACTKEY
-    FROM USR$CRM_CONTACT_LABELS cl
+    FROM USR$CRM_CUSTOMER_LABELS cl
     JOIN GD_CONTACT con ON con.ID = cl.USR$CONTACTKEY
     JOIN USR$CRM_LABELS l ON l.ID = cl.USR$LABELKEY
     ORDER BY cl.USR$CONTACTKEY`,
@@ -43,18 +45,32 @@ export const requests = {
       cust.USR$JOBWORKKEY
     FROM USR$CRM_CUSTOMER cust
     ORDER BY cust.USR$CUSTOMERKEY`,
-  customerPersons: `
-    SELECT
-      con.PARENT, empl.ID, empl.NAME, empl.EMAIL, p.RANK
-    FROM GD_CONTACT con
-    JOIN GD_CONTACT empl ON empl.PARENT = con.ID
-    JOIN GD_PEOPLE p  ON p.CONTACTKEY = empl.ID
-    WHERE
-      UPPER(con.NAME) = 'КОНТАКТЫ'
-    ORDER BY con.PARENT`,
+  customerPersons: contactPersonsRepository.find,
   phones: `
     SELECT
       p.ID, p.USR$CONTACTKEY, p.USR$PHONENUMBER
     FROM USR$CRM_PHONES p
-    ORDER BY p.USR$CONTACTKEY`
+    ORDER BY p.USR$CONTACTKEY`,
+  emails: `
+    SELECT
+      e.ID, e.USR$CONTACTKEY, e.USR$EMAIL
+    FROM USR$CRM_EMAILS e
+    ORDER BY e.USR$CONTACTKEY`,
+  messengers: `
+    SELECT
+      m.ID, m.USR$CONTACTKEY, m.USR$CODE CODE, m.USR$USERNAME USERNAME
+    FROM USR$CRM_MESSENGERS m
+    ORDER BY m.USR$CONTACTKEY`,
+  contactLabels: `
+    SELECT
+      l.ID,
+      l.USR$NAME,
+      l.USR$COLOR,
+      l.USR$ICON,
+      l.USR$DESCRIPTION,
+      cl.USR$CONTACTKEY
+    FROM USR$CRM_CONTACT_LABELS cl
+    JOIN GD_CONTACT con ON con.ID = cl.USR$CONTACTKEY
+    JOIN USR$CRM_LABELS l ON l.ID = cl.USR$LABELKEY
+    ORDER BY cl.USR$CONTACTKEY`,
 };
