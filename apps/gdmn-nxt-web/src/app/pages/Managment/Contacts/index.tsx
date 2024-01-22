@@ -7,19 +7,26 @@ import { Badge, Box, CardContent, CardHeader, Divider, IconButton, List, ListIte
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import EditIcon from '@mui/icons-material/Edit';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback, useState } from 'react';
 import AddContact from '@gdmn-nxt/components/add-contact/add-contact';
 import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateContactPersonMutation } from '../../../features/contact/contactApi';
 import { useFormik } from 'formik';
-import { IContactPerson, ILabel } from '@gsbelarus/util-api-types';
+import { IContactPerson, IEmail, IFilteringData, ILabel, IPhone } from '@gsbelarus/util-api-types';
 import { GridColDef, GridColumns } from '@mui/x-data-grid-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { IPaginationData } from '../../../features/customer/customerApi_new';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import EditContact from '@gdmn-nxt/components/edit-contact/edit-contact';
 import { useMemo } from 'react';
+import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { saveFilterData } from '../../../store/filtersSlice';
 
 export default function Contacts() {
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
+  const dispatch = useDispatch();
+
   const [upsertContact, setUpsertContact] = useState<{
     addContact?: boolean;
     editContact?: boolean;
@@ -31,7 +38,7 @@ export default function Contacts() {
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 10
+    pageSize: 20
   });
 
   const {
@@ -41,6 +48,7 @@ export default function Contacts() {
     refetch: personsRefetch
   } = useGetContactPersonsQuery({
     pagination: paginationData,
+    filter: filterData
   });
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
@@ -65,35 +73,37 @@ export default function Contacts() {
     setUpsertContact({ editContact: true, contact });
   };
 
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ 'contacts': filteringData }));
+  }, []);
+
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+  }, []);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
+  }, []);
+
   const columns: GridColumns<IContactPerson> = [
     {
-      field: 'NAME', headerName: 'Имя', flex: 0.5, minWidth: 200,
+      field: 'NAME', headerName: 'Имя', flex: 1, minWidth: 200,
       renderCell: ({ value, row }) => {
-        const labels = row.LABELS ?? [];
-        const emails = row.EMAILS ?? [];
-        const phones = row.PHONES ?? [];
-
+        const labels: ILabel[] = row.LABELS ?? [];
         return (
-          <Stack>
+          <Stack spacing={1} direction="row">
             <Typography>{value}</Typography>
-            {emails?.length > 0
-              ? <Typography variant="caption">{emails[0].EMAIL}</Typography>
-              : <></>}
-            {phones?.length > 0
-              ? <Typography variant="caption">{phones[0].USR$PHONENUMBER}</Typography>
-              : <></>}
-          </Stack>
-        );
-      }
-    },
-    {
-      field: 'LABELS', headerName: 'Метки', flex: 1,
-      renderCell: ({ value }) => {
-        const labels: ILabel[] = value ?? [];
-
-        return (
-          <Stack spacing={1}>
-            {labels?.length
+            {Array.isArray(labels)
               ?
               <List
                 style={{
@@ -139,6 +149,41 @@ export default function Contacts() {
 
           </Stack>
         );
+      }
+      // renderCell: ({ value, row }) => {
+      //   const labels = row.LABELS ?? [];
+      //   const emails = row.EMAILS ?? [];
+      //   const phones = row.PHONES ?? [];
+
+      //   return (
+      //     <Stack>
+      //       <Typography>{value}</Typography>
+      //       {emails?.length > 0
+      //         ? <Typography variant="caption">{emails[0].EMAIL}</Typography>
+      //         : <></>}
+      //       {phones?.length > 0
+      //         ? <Typography variant="caption">{phones[0].USR$PHONENUMBER}</Typography>
+      //         : <></>}
+      //     </Stack>
+      //   );
+      // }
+    },
+    {
+      field: 'PHONES', headerName: 'Телефон', width: 150,
+      renderCell: ({ value: phones }) => {
+        return (
+          <Stack>
+            {phones?.slice(0, 2)?.map((phone: IPhone) => <Typography key={phone.ID} variant="caption">{phone.USR$PHONENUMBER}</Typography>)}
+          </Stack>);
+      }
+    },
+    {
+      field: 'EMAILS', headerName: 'Email', width: 200,
+      renderCell: ({ value: emails }) => {
+        return (
+          <Stack>
+            {emails?.slice(0, 2)?.map((email: IEmail) => <Typography key={email.ID} variant="caption">{email.EMAIL}</Typography>)}
+          </Stack>);
       }
     },
     {
@@ -192,11 +237,11 @@ export default function Contacts() {
   [upsertContact.addContact]);
 
   return (
-    <CustomizedCard style={{ flex: 1 }}>
+    <CustomizedCard borders style={{ flex: 1 }}>
       <CardHeader title={<Typography variant="pageHeader">Контакты</Typography>} />
       <Divider />
       <CardToolbar>
-        <Stack direction="row">
+        <Stack direction="row" spacing={2}>
           <Box display="inline-flex" alignSelf="center">
             <LoadingButton
               loading={personsIsFetching}
@@ -208,7 +253,17 @@ export default function Contacts() {
                 Добавить
             </LoadingButton>
           </Box>
-          <Box flex={1} />
+          <SearchBar
+            disabled={personsIsFetching}
+            onCancelSearch={cancelSearch}
+            onRequestSearch={requestSearch}
+            cancelOnEscape
+            value={
+              filterData?.name
+                ? filterData.name[0]
+                : undefined
+            }
+          />
           <CustomLoadingButton
             hint="Обновить данные"
             loading={personsIsFetching}
@@ -248,13 +303,13 @@ export default function Contacts() {
           </IconButton>
         </Stack>
       </CardToolbar>
-      <CardContent>
+      <CardContent style={{ padding: 0 }}>
         <StyledGrid
           rows={persons?.records ?? []}
           columns={columns}
           onRowDoubleClick={({ row }) => handleContactEdit(row)()}
           loading={isLoading}
-          rowHeight={65}
+          rowHeight={40}
           rowCount={persons?.count ?? 0}
           hideHeaderSeparator
           disableMultipleSelection
@@ -265,6 +320,18 @@ export default function Contacts() {
           disableColumnMenu
           pagination
           paginationMode="server"
+          onPageChange={(data) => {
+            setPaginationData((prevState) => ({
+              ...prevState,
+              pageNo: data
+            }));
+          }}
+          onPageSizeChange={(data) => {
+            setPaginationData((prevState) => ({
+              ...prevState,
+              pageSize: data
+            }));
+          }}
           pageSize={paginationData.pageSize}
           rowsPerPageOptions={[10, 20, 50]}
           sortingMode="server"

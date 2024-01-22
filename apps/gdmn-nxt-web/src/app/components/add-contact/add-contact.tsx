@@ -399,7 +399,7 @@ export function AddContact({
               <CustomerSelect
                 customer={formik.values.WCOMPANYKEY ? { ID: formik.values.WCOMPANYKEY, NAME: '' } as ICustomer : undefined}
                 onChange={handleCustomerChange}
-                required
+                // required
                 error={getIn(formik.touched, 'WCOMPANYKEY') && Boolean(getIn(formik.errors, 'WCOMPANYKEY'))}
                 helperText={getIn(formik.touched, 'WCOMPANYKEY') && getIn(formik.errors, 'WCOMPANYKEY')}
                 InputProps={{

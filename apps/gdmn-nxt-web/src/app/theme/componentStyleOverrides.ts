@@ -160,7 +160,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
       styleOverrides: {
         root: {
           '& .MuiSwitch-thumb': {
-            boxShadow: '0 0 10px grey'
+            boxShadow: '0 0 5px grey'
           }
         }
       }

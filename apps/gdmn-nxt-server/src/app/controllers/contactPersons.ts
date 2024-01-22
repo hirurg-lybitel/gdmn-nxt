@@ -34,6 +34,7 @@ const getAll: RequestHandler = async (req, res) => {
   const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
+  const { name } = req.query;
 
   let fromRecord = 0;
   let toRecord: number;
@@ -55,13 +56,30 @@ const getAll: RequestHandler = async (req, res) => {
           person.WCOMPANYKEY === customerId;
         }
 
+        if (name) {
+          const lowerName = String(name).toLowerCase();
+          checkConditions = checkConditions && (
+            person.NAME?.toLowerCase().includes(lowerName) ||
+            person.EMAILS?.some(({ EMAIL }) => EMAIL.toLowerCase().includes(lowerName)) ||
+            person.PHONES?.some(({ USR$PHONENUMBER }) => USR$PHONENUMBER.includes(lowerName))
+          );
+        }
+
         if (checkConditions) {
           filteredArray.push({
             ...person,
           });
         }
         return filteredArray;
-      }, []);
+      }, [])
+      .sort((a, b) => {
+        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
+
+        return String(sortMode).toUpperCase() === 'ASC'
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
+      });
 
     const rowCount = persons.length;
     const personsWitPagination = persons.slice(fromRecord, toRecord);

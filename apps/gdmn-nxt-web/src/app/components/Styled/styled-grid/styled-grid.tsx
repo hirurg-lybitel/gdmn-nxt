@@ -90,6 +90,7 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
       headerHeight={hideColumnHeaders ? 0 : 50}
+      rowHeight={40}
       {...props}
       sx={{
         ...defaultTheme(props),

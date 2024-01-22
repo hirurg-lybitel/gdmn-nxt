@@ -444,7 +444,7 @@ export function EditContact({
                 <CustomerSelect
                   customer={formik.values.WCOMPANYKEY ? { ID: formik.values.WCOMPANYKEY, NAME: '' } as ICustomer : undefined}
                   onChange={handleCustomerChange}
-                  required
+                  // required
                   error={formik.touched.WCOMPANYKEY && Boolean(formik.errors.WCOMPANYKEY)}
                   helperText={formik.touched.WCOMPANYKEY && formik.errors.WCOMPANYKEY}
                   InputProps={{

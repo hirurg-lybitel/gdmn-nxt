@@ -1,4 +1,4 @@
-import { Box, Switch, Typography } from '@mui/material';
+import { Box, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation } from '../../../features/permissions';
@@ -13,7 +13,7 @@ interface IUsersProps{
 export function Users(props: IUsersProps) {
   const { group } = props;
 
-  const { data: users, isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID });
+  const { data: users = [], isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID });
   const [updateUser] = useUpdateUserGroupLineMutation();
   const [deleteUserGroupLine] = useDeleteUserGroupLineMutation();
 
@@ -41,7 +41,7 @@ export function Users(props: IUsersProps) {
         const value = row.USER.CONTACT;
         return (
           <Box>
-            <Typography>{value.NAME}</Typography>
+            <Typography variant="body2">{value.NAME}</Typography>
             <Typography variant="caption">{value.PHONE && `Тел. ${value.PHONE}`}</Typography>
           </Box>
         );
@@ -49,11 +49,17 @@ export function Users(props: IUsersProps) {
     },
     { field: 'REQUIRED_2FA', headerName: '2FA', width: 100, resizable: false,
       renderCell: ({ value = false, row }) =>
-        <Switch
-          checked={value}
-          onChange={onUserChange(row)}
-          disabled={group?.REQUIRED_2FA ?? false}
-        />
+        <Tooltip
+          arrow
+          title={value ? 'Двухфакторная аутентификация подключена' : 'Двухфакторная аутентификация не требуется'}
+        >
+          <Switch
+            checked={value}
+            size="small"
+            onChange={onUserChange(row)}
+            disabled={group?.REQUIRED_2FA ?? false}
+          />
+        </Tooltip>
     },
     {
       field: 'ACTIONS',
@@ -69,9 +75,8 @@ export function Users(props: IUsersProps) {
     <Box flex={1}>
       <StyledGrid
         columns={columns}
-        rows={users || []}
+        rows={users}
         loading={usersLoading}
-        getRowHeight={() => 70}
         sx={{
           '& .row-theme-disabled--1': {
             textDecoration: 'line-through',
