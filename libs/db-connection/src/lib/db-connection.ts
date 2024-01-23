@@ -1,9 +1,9 @@
 import { wrapForNamedParams } from '@gsbelarus/util-helpers';
 import { Semaphore } from '@gsbelarus/util-useful';
-import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation } from 'node-firebird-driver-native';
+import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation, Blob } from 'node-firebird-driver-native';
 import { config } from './db-config';
 import { genId } from './genId';
-import { getBlob } from './getBlob';
+import { getBlob, getStringFromBlob } from './convertors';
 
 const { host, port, db, username, password } = config;
 
@@ -225,10 +225,14 @@ export const acquireReadTransaction = async (sessionId: string) => {
     }
   };
 
+
+  const blob2String = (value: Blob) => getStringFromBlob(attachment, transaction, value);
+
   return {
     attachment,
     transaction,
     releaseReadTransaction,
+    blob2String,
     ...wrapForNamedParams(attachment, transaction)
   };
 };

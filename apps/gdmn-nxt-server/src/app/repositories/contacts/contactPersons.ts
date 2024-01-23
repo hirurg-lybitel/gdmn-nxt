@@ -2,12 +2,13 @@ import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connectio
 import { IContactPerson, ILabel } from '@gsbelarus/util-api-types';
 import { ContactLabel } from '../../utils/cached requests';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
+import { Blob } from 'node-firebird-driver-native';
 
 const find = async (
   sessionID: string,
   clause = {}
 ): Promise<IContactPerson[]> => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
+  const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   const defaultClause = {
     contacttype: 2,
@@ -108,7 +109,8 @@ const find = async (
         con.USR$BG_OTDEL AS BG_OTDEL,
         respondent.ID as RESP_ID,
         respondent.NAME as RESP_NAME,
-        p.WCOMPANYKEY
+        p.WCOMPANYKEY,
+        p.PHOTO AS PHOTO_BLOB
       FROM GD_CONTACT con
       JOIN GD_PEOPLE p ON p.CONTACTKEY = con.ID
       LEFT JOIN GD_CONTACT respondent ON respondent.ID = con.USR$CRM_RESPONDENT
@@ -116,13 +118,17 @@ const find = async (
 
     const persons = await fetchAsObject<Omit<IContactPerson, 'PHONES' | 'USR$BG_OTDEL'>>(sql, { ...defaultClause, ...clause });
 
-    persons.forEach(p => {
+    persons.forEach(async p => {
       if (p['RESP_ID']) {
         p.RESPONDENT = {
           ID: p['RESP_ID'],
           NAME: p['RESP_NAME'],
         };
       }
+      if (p['PHOTO_BLOB'] !== null && typeof p['PHOTO_BLOB'] === 'object') {
+        p.PHOTO = await blob2String(p['PHOTO_BLOB']);
+      }
+      delete p['PHOTO_BLOB'];
       delete p['RESP_ID'];
       delete p['RESP_NAME'];
       p['USR$BG_OTDEL'] = departments[p['USR$BG_OTDEL']];
