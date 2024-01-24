@@ -413,7 +413,7 @@
 					"name": "Избранные",
 					"item": [
 						{
-							"name": "New Request",
+							"name": "Добавить в избранные",
 							"id": "e295aa52-7ba2-48e1-b2d7-fbbcf0fbb45b",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
