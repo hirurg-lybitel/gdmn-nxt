@@ -408,6 +408,24 @@
 						}
 					],
 					"id": "b06fe47d-3236-4f75-abf8-e335df521c11"
+				},
+				{
+					"name": "Избранные",
+					"item": [
+						{
+							"name": "New Request",
+							"id": "e295aa52-7ba2-48e1-b2d7-fbbcf0fbb45b",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					],
+					"id": "bb927746-60e9-4d4b-9746-b99d0a0409e4"
 				}
 			],
 			"id": "cc16fdcd-a7d3-4a9f-86af-62056aa077c4"
