@@ -1,7 +1,7 @@
-import { IContactPerson, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactPerson, IFavoriteContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
-import { cachedRequets } from '../utils/cached requests';
+import { resultError } from '../../responseMessages';
+import { cachedRequets } from '../../utils/cached requests';
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 
@@ -12,6 +12,7 @@ const getById: RequestHandler = async (req, res) => {
       .status(422)
       .send(resultError('Field ID is not defined or is not numeric'));
   }
+
   try {
     const persons = await contactPersonsRepository.find(req.sessionID, { id });
     res
@@ -35,6 +36,8 @@ const getAll: RequestHandler = async (req, res) => {
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
   const { name } = req.query;
+  /** Session data */
+  const { userId } = req.session;
 
   let fromRecord = 0;
   let toRecord: number;
@@ -47,19 +50,30 @@ const getAll: RequestHandler = async (req, res) => {
   try {
     const cachedPersons = await cacheManager.getKey<IContactPerson[]>('customerPersons') ?? [];
 
+    const favoritesMap: Record<string, number[]> = {};
+    const favorites = await cacheManager.getKey<IFavoriteContact[]>('favoriteContacts') ?? [];
+    favorites.forEach(f => {
+      if (favoritesMap[f.USER]) {
+        favoritesMap[f.USER].push(f.CONTACT.ID);
+      } else {
+        favoritesMap[f.USER] = [f.CONTACT.ID];
+      }
+    });
+
     const persons = cachedPersons
-      .reduce((filteredArray, person) => {
+      .reduce<IContactPerson[]>((filteredArray, person) => {
         let checkConditions = true;
 
         if (customerId) {
           checkConditions = checkConditions &&
-          person.WCOMPANYKEY === customerId;
+          person.COMPANY?.ID === customerId;
         }
 
         if (name) {
           const lowerName = String(name).toLowerCase();
           checkConditions = checkConditions && (
             person.NAME?.toLowerCase().includes(lowerName) ||
+            person.COMPANY?.NAME?.toLowerCase().includes(lowerName) ||
             person.EMAILS?.some(({ EMAIL }) => EMAIL.toLowerCase().includes(lowerName)) ||
             person.PHONES?.some(({ USR$PHONENUMBER }) => USR$PHONENUMBER.includes(lowerName))
           );
@@ -68,6 +82,7 @@ const getAll: RequestHandler = async (req, res) => {
         if (checkConditions) {
           filteredArray.push({
             ...person,
+            isFavorite: !!favoritesMap[userId]?.some(f => f === person.ID)
           });
         }
         return filteredArray;
@@ -75,10 +90,12 @@ const getAll: RequestHandler = async (req, res) => {
       .sort((a, b) => {
         const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
         const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
-
-        return String(sortMode).toUpperCase() === 'ASC'
-          ? nameA.localeCompare(nameB)
-          : nameB.localeCompare(nameA);
+        if (a.isFavorite === b.isFavorite) {
+          return String(sortMode).toUpperCase() === 'ASC'
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        }
+        return a.isFavorite ? -1 : 1;
       });
 
     const rowCount = persons.length;
@@ -99,8 +116,11 @@ const getAll: RequestHandler = async (req, res) => {
 
 const createContact: RequestHandler = async (req, res) => {
   try {
+    // console.log('createContact');
     const newPerson = await contactPersonsRepository.save(req.sessionID, req.body);
+    // console.log('newPerson', newPerson);
     const persons = await contactPersonsRepository.find(req.sessionID, { id: newPerson.ID });
+    console.log('persons', persons);
 
     cachedRequets.cacheRequest('customerPersons');
 

@@ -61,7 +61,8 @@ export const themes: {[key in ColorMode]: { [key: string]: Style}} = {
       secondaryColor: colors.grey[300],
       menuTextColor: colors.grey[300],
       paperColor: colors.grey[800],
-      borderColor: '#303030',
+      // borderColor: '#303030',
+      borderColor: 'rgb(118, 118, 118)',
       buttonPrimaryColor: colors.blue[500],
 
     },

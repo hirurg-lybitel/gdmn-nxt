@@ -408,6 +408,70 @@
 						}
 					],
 					"id": "b06fe47d-3236-4f75-abf8-e335df521c11"
+				},
+				{
+					"name": "Избранные",
+					"item": [
+						{
+							"name": "Добавить в избранные",
+							"id": "e295aa52-7ba2-48e1-b2d7-fbbcf0fbb45b",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contacts/favorites/:contactId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"favorites",
+										":contactId"
+									],
+									"variable": [
+										{
+											"key": "contactId",
+											"value": "154584380"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удалить из избранных",
+							"id": "76013d7b-b90f-4af9-8733-1a3f2d50b4e0",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contacts/favorites/:contactId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"favorites",
+										":contactId"
+									],
+									"variable": [
+										{
+											"key": "contactId",
+											"value": "154584380"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "bb927746-60e9-4d4b-9746-b99d0a0409e4"
 				}
 			],
 			"id": "cc16fdcd-a7d3-4a9f-86af-62056aa077c4"

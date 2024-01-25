@@ -29,8 +29,6 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
-  if (!open) return <></>;
-
   const columns: GridColumns = [
     {
       field: 'USR$CLOSED',
@@ -105,10 +103,10 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   return (
     <div
-      hidden={!open}
       style={{
-        height: tasks.length * rowHeight,
-        maxHeight: maxLines * rowHeight
+        height: open ? tasks.length * rowHeight : '0px',
+        maxHeight: maxLines * rowHeight,
+        transition: '0.5s'
       }}
       onWheelCapture={handleScroll}
     >

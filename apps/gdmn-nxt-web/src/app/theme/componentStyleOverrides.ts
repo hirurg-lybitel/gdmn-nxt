@@ -12,6 +12,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-input-text': theme.textColor,
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
+          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#696969' : '#f5f5f5',
           '--border-radius': theme.mainContent.borderRadius,
           '--menu-width': `${theme.drawerWidth}px`,
         },

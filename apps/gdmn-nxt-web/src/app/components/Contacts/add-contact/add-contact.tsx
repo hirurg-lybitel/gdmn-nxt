@@ -5,21 +5,21 @@ import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { Autocomplete, Box, Button, DialogActions, DialogContent, DialogTitle, InputAdornment, Stack, TextField } from '@mui/material';
-import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './add-contact.module.less';
-import TelephoneInput from '../telephone-input';
+import TelephoneInput from '../../telephone-input';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { useCallback, useMemo, useState } from 'react';
-import { LabelsSelect } from '../Labels/labels-select';
-import { CustomerSelect } from '../Kanban/kanban-edit-card/components/customer-select';
-import filterOptions from '../helpers/filter-options';
-import { useGetContactPersonsQuery } from '../../features/contact/contactApi';
-import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { useGetDepartmentsQuery } from '../../features/departments/departmentsApi';
-import { emailsValidation, phonesValidation } from '../helpers/validators';
-import SocialMediaInput, { ISocialMedia } from '../social-media-input';
+import { LabelsSelect } from '../../Labels/labels-select';
+import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
+import filterOptions from '../../helpers/filter-options';
+import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
+import { emailsValidation, phonesValidation } from '../../helpers/validators';
+import SocialMediaInput, { ISocialMedia } from '../../social-media-input';
 
 export interface AddContactProps {
   open: boolean;
@@ -46,7 +46,7 @@ export function AddContact({
     EMAILS: [{ ID: -1, EMAIL: '' }],
     MESSENGERS: [{ ID: -1, CODE: 'telegram', USERNAME: '' }],
     LABELS: [],
-    WCOMPANYKEY: contact?.WCOMPANYKEY ?? -1
+    COMPANY: contact?.COMPANY,
   };
 
   const formik = useFormik<IContactPerson>({
@@ -153,7 +153,7 @@ export function AddContact({
   };
 
   const handleCustomerChange = (customer: ICustomer | null | undefined) => {
-    formik.setFieldValue('WCOMPANYKEY', customer?.ID);
+    formik.setFieldValue('COMPANY', { ID: customer?.ID, NAME: customer?.NAME });
   };
 
   const handleConfirmOkClick = useCallback(() => {
@@ -397,11 +397,11 @@ export function AddContact({
                 }}
               />
               <CustomerSelect
-                customer={formik.values.WCOMPANYKEY ? { ID: formik.values.WCOMPANYKEY, NAME: '' } as ICustomer : undefined}
+                customer={formik.values.COMPANY}
                 onChange={handleCustomerChange}
                 // required
-                error={getIn(formik.touched, 'WCOMPANYKEY') && Boolean(getIn(formik.errors, 'WCOMPANYKEY'))}
-                helperText={getIn(formik.touched, 'WCOMPANYKEY') && getIn(formik.errors, 'WCOMPANYKEY')}
+                error={getIn(formik.touched, 'COMPANY') && Boolean(getIn(formik.errors, 'COMPANY'))}
+                helperText={getIn(formik.touched, 'COMPANY') && getIn(formik.errors, 'COMPANY')}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="end">

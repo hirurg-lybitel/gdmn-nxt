@@ -1,13 +1,11 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { IContactPerson, ILabel } from '@gsbelarus/util-api-types';
-import { ContactLabel } from '../../utils/cached requests';
-import { cacheManager } from '@gdmn-nxt/cache-manager';
+import { IContactPerson } from '@gsbelarus/util-api-types';
 
 const find = async (
   sessionID: string,
   clause = {}
 ): Promise<IContactPerson[]> => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
+  const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   const defaultClause = {
     contacttype: 2,
@@ -108,21 +106,39 @@ const find = async (
         con.USR$BG_OTDEL AS BG_OTDEL,
         respondent.ID as RESP_ID,
         respondent.NAME as RESP_NAME,
-        p.WCOMPANYKEY
+        p.PHOTO AS PHOTO_BLOB,
+        comp.ID AS COMP_ID,
+        comp.NAME AS COMP_NAME
       FROM GD_CONTACT con
       JOIN GD_PEOPLE p ON p.CONTACTKEY = con.ID
+      LEFT JOIN GD_CONTACT comp ON comp.ID = p.WCOMPANYKEY
       LEFT JOIN GD_CONTACT respondent ON respondent.ID = con.USR$CRM_RESPONDENT
     ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}`;
 
     const persons = await fetchAsObject<Omit<IContactPerson, 'PHONES' | 'USR$BG_OTDEL'>>(sql, { ...defaultClause, ...clause });
 
-    persons.forEach(p => {
+    // console.log('persons_2', persons.length, sql);
+
+    persons.forEach(async p => {
+      // console.log('persons_loop')
       if (p['RESP_ID']) {
         p.RESPONDENT = {
           ID: p['RESP_ID'],
           NAME: p['RESP_NAME'],
         };
       }
+      if (p['PHOTO_BLOB'] !== null && typeof p['PHOTO_BLOB'] === 'object') {
+        p.PHOTO = await blob2String(p['PHOTO_BLOB']);
+      }
+      if (p['COMP_ID']) {
+        p.COMPANY = {
+          ID: p['COMP_ID'],
+          NAME: p['COMP_NAME'],
+        };
+      }
+      delete p['COMP_ID'];
+      delete p['COMP_NAME'];
+      delete p['PHOTO_BLOB'];
       delete p['RESP_ID'];
       delete p['RESP_NAME'];
       p['USR$BG_OTDEL'] = departments[p['USR$BG_OTDEL']];
@@ -132,7 +148,9 @@ const find = async (
       p['LABELS'] = labels[p['ID']];
     });
 
-    return persons;
+    const result = await Promise.all(persons);
+
+    return result;
   } finally {
     releaseReadTransaction();
   }
@@ -147,7 +165,7 @@ const update = async (
   try {
     const {
       NAME,
-      WCOMPANYKEY,
+      COMPANY,
       USR$LETTER_OF_AUTHORITY,
       RANK,
       PHONES,
@@ -213,7 +231,7 @@ const update = async (
         CONTACTKEY: contact.ID,
         POSITIONKEY: position.ID,
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
-        WCOMPANYKEY,
+        WCOMPANYKEY: COMPANY?.ID,
         NAME: NAME.slice(0, 20),
         PHOTO: PHOTO ? await string2Blob(PHOTO) : null
       }
@@ -342,7 +360,7 @@ const save = async (
   try {
     const {
       NAME,
-      WCOMPANYKEY,
+      COMPANY,
       USR$LETTER_OF_AUTHORITY,
       RANK,
       PHONES,
@@ -390,7 +408,7 @@ const save = async (
         CONTACTKEY: contact.ID,
         POSITIONKEY: position.ID,
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
-        WCOMPANYKEY,
+        WCOMPANYKEY: COMPANY?.ID,
         NAME: NAME.slice(0, 20),
         PHOTO: await string2Blob(PHOTO)
       }
@@ -511,6 +529,7 @@ const remove = async (
     throw new Error(error);
   }
 };
+
 
 export const contactPersonsRepository = {
   find,
