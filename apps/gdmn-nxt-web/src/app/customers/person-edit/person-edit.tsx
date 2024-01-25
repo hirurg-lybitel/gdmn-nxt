@@ -82,7 +82,7 @@ export function PersonEdit(props: PersonEditProps) {
     NOTE: person?.NOTE || '',
     USR$LETTER_OF_AUTHORITY: person?.USR$LETTER_OF_AUTHORITY || '',
     ADDRESS: person?.ADDRESS || '',
-    WCOMPANYKEY: person?.WCOMPANYKEY || -1,
+    COMPANY: person?.COMPANY,
   };
 
   const [phoneCount, setPhoneCount] = useState(1);

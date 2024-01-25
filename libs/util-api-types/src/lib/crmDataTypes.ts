@@ -200,13 +200,14 @@ export interface IContactPerson extends IContactWithID {
   USR$BG_OTDEL?: IContactWithID;
   RANK?: string;
   USR$LETTER_OF_AUTHORITY?: string;
-  WCOMPANYKEY?: number;
   RESPONDENT?: IContactWithID;
   PHONES?: IPhone[];
   EMAILS?: IEmail[];
   MESSENGERS?: IMessenger[];
   LABELS?: ILabel[];
   PHOTO?: string;
+  COMPANY?: IContactWithID;
+  isFavorite?: boolean;
 };
 
 export interface IContactsList extends IWithID {
@@ -352,4 +353,9 @@ export interface IConfirmation extends IWithID {
   CODE: string;
   ATTEMPTS?: number;
   CREATIONDATE?: Date;
+}
+
+export interface IFavoriteContact extends IWithID {
+  USER?: number;
+  CONTACT: IContactWithID;
 }

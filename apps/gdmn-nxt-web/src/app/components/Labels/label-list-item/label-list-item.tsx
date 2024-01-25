@@ -1,5 +1,5 @@
 import { ILabel, Permissions } from '@gsbelarus/util-api-types';
-import { Box, Grid, IconButton } from '@mui/material';
+import { Box, Grid, IconButton, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import styles from './label-list-item.module.less';
@@ -150,16 +150,30 @@ export function LabelListItem(props: LabelListItemProps) {
 
 
   return (
-    <Box style={{ padding: '12px 0px' }}>
+    <Box style={{ padding: '4px 0px' }}>
       <Grid container alignItems="center">
-        <Grid item xs={4} paddingLeft={2} paddingRight={2}>
+        <Grid
+          item
+          xs={4}
+          paddingLeft={2}
+          paddingRight={2}
+        >
           <LabelMarker label={data} />
         </Grid>
         <Grid item flex={1}>
-          {data.USR$DESCRIPTION}
+          <Typography variant="body2">{data.USR$DESCRIPTION}</Typography>
         </Grid>
-        <Grid item xs={2} md={1}>
-          <Box display={'inline-flex'} width="100%" justifyContent={'center'} style={{ marginRight: 0 }}>
+        <Grid
+          item
+          xs={2}
+          md={1}
+        >
+          <Box
+            display={'inline-flex'}
+            width="100%"
+            justifyContent={'center'}
+            style={{ marginRight: 0 }}
+          >
             <PermissionsGate actionAllowed={userPermissions?.labels.PUT}>
               <ItemButtonEdit
                 disabled={editIsLoading || deleteIsLoading}

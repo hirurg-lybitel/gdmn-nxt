@@ -18,14 +18,23 @@ const CustomizedCard = styled(Card, {
   flexDirection: direction,
   '.MuiCardHeader-root': {
     paddingTop: '10px',
-    paddingBottom: '10px'
+    paddingBottom: '10px',
+    height: '50px',
+    justifyContent: 'space-between',
   },
   '.MuiCardContent-root': {
     flex: 1
   },
   '.card-toolbar': {
     padding: '12px 24px 12px 24px'
-  }
+  },
+  '.MuiCardHeader-content': {
+    flex: 0,
+    textWrap: 'nowrap',
+  },
+  '.MuiCardHeader-action': {
+    flex: 'auto',
+  },
 
 }));
 
