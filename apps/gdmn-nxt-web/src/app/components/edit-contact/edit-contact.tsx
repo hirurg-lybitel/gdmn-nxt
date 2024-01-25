@@ -12,7 +12,7 @@ import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
 import * as yup from 'yup';
 import { emailsValidation, phonesValidation } from '../helpers/validators';
@@ -26,6 +26,9 @@ import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../social-media-input';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import CustomNoData from '../Styled/Icons/CustomNoData';
+import EditIcon from '@mui/icons-material/Edit';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import CloseIcon from '@mui/icons-material/Close';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -357,6 +360,121 @@ export function EditContact({
       </div>
     </>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
 
+  const [isAvatarEdit, setIsAvatarEdit] = useState<boolean>(false);
+
+  const handleAvatarEditOpen = () => {
+    setIsAvatarEdit(true);
+  };
+
+  const handleAvatarEditClose = () => {
+    handleAvatarBlur();
+    setIsAvatarEdit(false);
+  };
+
+  const [isAvatarFocus, setisAvatarFocus] = useState<boolean>(false);
+
+  const handleAvatarFocus = () => {
+    setisAvatarFocus(true);
+  };
+
+  const handleAvatarBlur = () => {
+    setisAvatarFocus(false);
+  };
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadAvatar = (e: any) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0] || undefined;
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onloadend = (e) => {
+      formik.setFieldValue('PHOTO', reader.result?.toString());
+    };
+    handleAvatarEditClose();
+  };
+
+  const handleDeleteAvatar = () => {
+    formik.setFieldValue('PHOTO', '');
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    handleAvatarEditClose();
+  };
+
+  const editableAvatar = useMemo(() => {
+    return (
+      <div
+        style={{ display: 'flex', position: 'relative', borderRadius: '100%' }}
+        onMouseEnter={handleAvatarFocus}
+        onMouseLeave={handleAvatarBlur}
+      >
+        <div style={{ position: 'relative', borderRadius: '100%' }}>
+          {/* {(isAvatarFocus && !isAvatarEdit) &&
+            <div
+              style={{
+                background: 'black',
+                borderRadius: '100%',
+                opacity: '0.5', width: '40px', height: '40px',
+                position: 'absolute', left: '0', zIndex: 1 }}
+            />
+          } */}
+          <Avatar src={formik.values.PHOTO} />
+        </div>
+
+        {!isAvatarEdit ?
+          <div
+            style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0,
+              width: '40px', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', background: 'rgba(0,0,0,0.5)',
+              opacity: isAvatarFocus ? 1 : 0, visibility: isAvatarFocus ? 'visible' : 'hidden',
+              borderRadius: '100%'
+            }}
+          >
+            <IconButton
+              style={!isAvatarFocus ? { opacity: '0', visibility: 'hidden' } : {}}
+              onClick={handleAvatarEditOpen}
+              size="small"
+            >
+              <EditIcon fontSize="small" color="primary" />
+            </IconButton>
+          </div>
+          : <div style={{ margin: '0px 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconButton
+              onClick={handleAvatarEditClose}
+              size="small"
+            >
+              <CloseIcon fontSize="small" color="primary" />
+            </IconButton>
+            <IconButton
+              size="small"
+              component="label"
+            >
+              <input
+                disabled={isLoading}
+                hidden
+                accept="image/*"
+                multiple
+                type="file"
+                onChange={handleUploadAvatar}
+                ref={inputRef}
+              />
+              <UploadFileIcon fontSize="small" color="primary" />
+            </IconButton>
+            <IconButton
+              onClick={handleDeleteAvatar}
+              size="small"
+            >
+              <DeleteIcon fontSize="small" color="primary" />
+            </IconButton>
+          </div>
+        }
+      </div>
+    );
+  }, [formik]);
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
@@ -393,8 +511,9 @@ export function EditContact({
                   spacing={2}
                   alignItems="center"
                 >
-                  <Avatar />
+                  {editableAvatar}
                   <EditableTypography
+                    style={{ marginLeft: '0px !important' }}
                     name="NAME"
                     value={formik.values.NAME}
                     onChange={formik.handleChange}
