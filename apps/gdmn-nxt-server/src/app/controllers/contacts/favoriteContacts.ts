@@ -21,7 +21,8 @@ const createFavorite: RequestHandler = async (req, res) => {
       .send(resultError('Field contactID is not defined or is not numeric'));
   }
 
-  const { id: sessionID, userId } = req.session;
+  const { id: sessionID } = req.session;
+  const userId = req.user['id'];
 
   try {
     const newFavorite = await favoriteContactsRepository.save(
@@ -31,13 +32,13 @@ const createFavorite: RequestHandler = async (req, res) => {
     );
 
     cachedRequets.cacheRequest('favoriteContacts');
+    cachedRequets.cacheRequest('customerPersons');
 
     const persons = await favoriteContactsRepository.find(
       sessionID,
       {
         id: newFavorite.ID
       });
-
 
     const result: IRequestResult = {
       queries: { persons },
@@ -57,7 +58,8 @@ const removeByContact: RequestHandler = async (req, res) => {
       .send(resultError('Field contactID is not defined or is not numeric'));
   }
 
-  const { id: sessionID, userId } = req.session;
+  const { id: sessionID } = req.session;
+  const userId = req.user['id'];
 
   try {
     const favorite = await favoriteContactsRepository.remove(
@@ -70,6 +72,7 @@ const removeByContact: RequestHandler = async (req, res) => {
     }
 
     cachedRequets.cacheRequest('favoriteContacts');
+    cachedRequets.cacheRequest('customerPersons');
 
     const result: IRequestResult = {
       queries: { favorites: [favorite] },

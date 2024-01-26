@@ -37,7 +37,7 @@ const getAll: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.query.customerId as string);
   const { name } = req.query;
   /** Session data */
-  const { userId } = req.session;
+  const userId = req.user['id'];
 
   let fromRecord = 0;
   let toRecord: number;
@@ -116,11 +116,8 @@ const getAll: RequestHandler = async (req, res) => {
 
 const createContact: RequestHandler = async (req, res) => {
   try {
-    // console.log('createContact');
     const newPerson = await contactPersonsRepository.save(req.sessionID, req.body);
-    // console.log('newPerson', newPerson);
     const persons = await contactPersonsRepository.find(req.sessionID, { id: newPerson.ID });
-    console.log('persons', persons);
 
     cachedRequets.cacheRequest('customerPersons');
 
