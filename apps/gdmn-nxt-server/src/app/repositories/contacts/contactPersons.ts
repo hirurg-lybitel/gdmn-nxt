@@ -1,5 +1,6 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { IContactPerson } from '@gsbelarus/util-api-types';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find = async (
   sessionID: string,
@@ -117,10 +118,7 @@ const find = async (
 
     const persons = await fetchAsObject<Omit<IContactPerson, 'PHONES' | 'USR$BG_OTDEL'>>(sql, { ...defaultClause, ...clause });
 
-    // console.log('persons_2', persons.length, sql);
-
-    persons.forEach(async p => {
-      // console.log('persons_loop')
+    await forEachAsync(persons, async (p) => {
       if (p['RESP_ID']) {
         p.RESPONDENT = {
           ID: p['RESP_ID'],
@@ -148,9 +146,7 @@ const find = async (
       p['LABELS'] = labels[p['ID']];
     });
 
-    const result = await Promise.all(persons);
-
-    return result;
+    return persons;
   } finally {
     releaseReadTransaction();
   }
