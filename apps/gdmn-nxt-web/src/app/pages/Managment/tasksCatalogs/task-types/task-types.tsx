@@ -110,7 +110,7 @@ export function TaskTypes(props: TaskTypesProps) {
 
     const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      api.current.setRowMode(id, GridRowModes.Edit);
+      api.current.startRowEditMode({ id });
     };
 
     const handleConfirmSave = (event: MouseEvent<HTMLButtonElement>) => {
@@ -127,15 +127,15 @@ export function TaskTypes(props: TaskTypesProps) {
     const handleSaveClick = () => {
       setConfirmOpen(false);
 
-      const rowModel = apiRef.current.getEditRowsModel();
+      const rowModel = apiRef.current.getRowModels();
       const newRow: { [key: string]: any } = {};
-      for (const [key, { value }] of Object.entries(rowModel[id])) {
+      for (const [key, { value }] of Object.entries(rowModel?.get(id) as object)) {
         newRow[key] = value;
       }
       newRow['ID'] = id;
 
       api.current.updateRows([newRow]);
-      api.current.setRowMode(id, GridRowModes.View);
+      api.current.startRowEditMode({ id });
 
       const row = api.current.getRow(id);
       if (row!.isNew) delete row['ID'];
@@ -154,7 +154,7 @@ export function TaskTypes(props: TaskTypesProps) {
     };
 
     const handleCancelClick = () => {
-      api.current.setRowMode(id, GridRowModes.View);
+      api.current.startRowEditMode({ id });
 
       const row = api.current.getRow(id);
       if (row!.isNew) {
@@ -163,7 +163,7 @@ export function TaskTypes(props: TaskTypesProps) {
     };
 
     if (isInEditMode) {
-      const rowModel = apiRef.current.getEditRowsModel();
+      const rowModel = apiRef.current.getRowModels();
       return (
         <>
           <IconButton
@@ -171,7 +171,7 @@ export function TaskTypes(props: TaskTypesProps) {
             color="primary"
             size="small"
             onClick={handleConfirmSave}
-            disabled={!rowModel[id]['NAME']?.value || !!rowModel[id]['NAME']?.error}
+            disabled={!rowModel?.get(id)?.['NAME']?.value || !!rowModel?.get(id)?.['NAME']?.error}
           >
             <SaveIcon fontSize="small" />
           </IconButton>
@@ -273,7 +273,7 @@ export function TaskTypes(props: TaskTypesProps) {
     apiRef.current.scrollToIndexes({
       rowIndex: 0,
     });
-    apiRef.current.setRowMode(id, GridRowModes.Edit);
+    apiRef.current.startRowEditMode({ id });
   };
 
   const memoConfirmDialog = useMemo(() =>

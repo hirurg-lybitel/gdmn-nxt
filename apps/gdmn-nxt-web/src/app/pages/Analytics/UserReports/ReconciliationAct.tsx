@@ -32,7 +32,7 @@ interface IInitState {
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()]
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as Array<Date>
 };
 
 export const ReconciliationAct = (props: IReconciliationAct) => {
@@ -53,8 +53,8 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
     setInputParams((prevState) => ({
       ...prevState,
       cutomerId: customerId,
-      dateBegin: dates[0],
-      dateEnd: dates[1],
+      dateBegin: (dates as Array<Date>)[0],
+      dateEnd: (dates as Array<Date>)[1],
     }));
 
     setGenerate(true);
@@ -155,7 +155,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
             borders
             boxShadows
             sx={{ p: 2 }}
-          >
+            >
             <ReconciliationStatement
               custId={Number(inputParams?.cutomerId)}
               dateBegin={inputParams?.dateBegin}

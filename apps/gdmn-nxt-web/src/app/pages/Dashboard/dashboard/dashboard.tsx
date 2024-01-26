@@ -135,6 +135,7 @@ export function Dashboard(props: DashboardProps) {
                     >
                       <CustomizedCard borders>
                         <StaticDateRangePicker
+
                           displayStaticWrapperAs="desktop"
                           value={period}
                           onChange={dateRangePickerChange}

@@ -6,6 +6,7 @@ import Chart from 'react-apexcharts';
 import { Box, Grid, Stack, TextField, useTheme } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRange } from '@mui/x-date-pickers-pro';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
 
 const colorsMaster = ['#4ECDC4',	'#C7F464',	'#81D4FA',	'#546E7A',	'#FD6A6A', '#33B2DF',	'#03A9F4',	'#D4526E',	'#13D8AA',	'#A5978B'];

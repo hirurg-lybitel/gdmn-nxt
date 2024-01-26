@@ -11,7 +11,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers-pro';
+import { DateTimePicker, TimePicker } from '@mui/x-date-pickers-pro';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useAddTaskMutation, useDeleteCardMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
@@ -432,7 +433,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         onChange={formik.handleChange}
                         renderInput={(params: any) => <TextField {...params} />}
                       />
-                      <TimePicker
+                      <DateTimePicker
                         label="Время"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
