@@ -8,8 +8,8 @@ import PersonEdit from '../person-edit/person-edit';
 import { useMemo, useState } from 'react';
 import StyledGrid from '../../components/Styled/styled-grid/styled-grid';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
-import EditContact from '@gdmn-nxt/components/edit-contact/edit-contact';
-import AddContact from '@gdmn-nxt/components/add-contact/add-contact';
+import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact';
+import AddContact from '@gdmn-nxt/components/Contacts/add-contact/add-contact';
 
 export interface ContactPersonListProps {
   customerId: number;
@@ -48,7 +48,7 @@ export function ContactPersonList(props: ContactPersonListProps) {
   };
 
   const handleAddPerson = () => {
-    setUpsertContact({ addContact: true, contact: { ID: -1, NAME: '', WCOMPANYKEY: customerId } });
+    setUpsertContact({ addContact: true, contact: { ID: -1, NAME: '', COMPANY: { ID: customerId, NAME: '' } } });
   };
 
   const columns: GridColDef[] = [

@@ -1,7 +1,7 @@
-import { IContactPerson, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactPerson, IFavoriteContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
-import { cachedRequets } from '../utils/cached requests';
+import { resultError } from '../../responseMessages';
+import { cachedRequets } from '../../utils/cached requests';
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 
@@ -12,6 +12,7 @@ const getById: RequestHandler = async (req, res) => {
       .status(422)
       .send(resultError('Field ID is not defined or is not numeric'));
   }
+
   try {
     const persons = await contactPersonsRepository.find(req.sessionID, { id });
     res
@@ -34,7 +35,12 @@ const getAll: RequestHandler = async (req, res) => {
   const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
-  const { name } = req.query;
+  const { name, LABELS, COMPANY, RESPONDENTS } = req.query;
+  const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
+  const companyIds = COMPANY ? (COMPANY as string).split(',').map(Number) ?? [] : [];
+  const respondentIds = RESPONDENTS ? (RESPONDENTS as string).split(',').map(Number) ?? [] : [];
+  /** Session data */
+  const userId = req.user['id'];
 
   let fromRecord = 0;
   let toRecord: number;
@@ -47,27 +53,57 @@ const getAll: RequestHandler = async (req, res) => {
   try {
     const cachedPersons = await cacheManager.getKey<IContactPerson[]>('customerPersons') ?? [];
 
+    const favoritesMap: Record<string, number[]> = {};
+    const favorites = await cacheManager.getKey<IFavoriteContact[]>('favoriteContacts') ?? [];
+    favorites.forEach(f => {
+      if (favoritesMap[f.USER]) {
+        favoritesMap[f.USER].push(f.CONTACT.ID);
+      } else {
+        favoritesMap[f.USER] = [f.CONTACT.ID];
+      }
+    });
+
     const persons = cachedPersons
-      .reduce((filteredArray, person) => {
+      .reduce<IContactPerson[]>((filteredArray, person) => {
         let checkConditions = true;
 
         if (customerId) {
           checkConditions = checkConditions &&
-          person.WCOMPANYKEY === customerId;
+            person.COMPANY?.ID === customerId;
+        }
+
+        if (LABELS) {
+          checkConditions = checkConditions &&
+            person.LABELS?.some(l => labelIds.includes(l.ID));
+        }
+
+        if (COMPANY) {
+          checkConditions = checkConditions &&
+            companyIds?.includes(person.COMPANY?.ID);
+        }
+
+        if (RESPONDENTS) {
+          checkConditions = checkConditions &&
+          respondentIds?.includes(person.RESPONDENT?.ID);
         }
 
         if (name) {
           const lowerName = String(name).toLowerCase();
           checkConditions = checkConditions && (
             person.NAME?.toLowerCase().includes(lowerName) ||
+            person.RANK?.toLowerCase().includes(lowerName) ||
+            person.COMPANY?.NAME?.toLowerCase().includes(lowerName) ||
             person.EMAILS?.some(({ EMAIL }) => EMAIL.toLowerCase().includes(lowerName)) ||
-            person.PHONES?.some(({ USR$PHONENUMBER }) => USR$PHONENUMBER.includes(lowerName))
+            person.PHONES?.some(({ USR$PHONENUMBER }) => USR$PHONENUMBER.includes(lowerName)) ||
+            person.MESSENGERS?.some(({ USERNAME }) => USERNAME.includes(lowerName)) ||
+            person.LABELS?.some(({ USR$NAME }) => USR$NAME.includes(lowerName))
           );
         }
 
         if (checkConditions) {
           filteredArray.push({
             ...person,
+            isFavorite: !!favoritesMap[userId]?.some(f => f === person.ID)
           });
         }
         return filteredArray;
@@ -75,10 +111,12 @@ const getAll: RequestHandler = async (req, res) => {
       .sort((a, b) => {
         const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
         const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
-
-        return String(sortMode).toUpperCase() === 'ASC'
-          ? nameA.localeCompare(nameB)
-          : nameB.localeCompare(nameA);
+        if (a.isFavorite === b.isFavorite) {
+          return String(sortMode).toUpperCase() === 'ASC'
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        }
+        return a.isFavorite ? -1 : 1;
       });
 
     const rowCount = persons.length;

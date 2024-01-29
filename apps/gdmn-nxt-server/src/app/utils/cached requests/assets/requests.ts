@@ -1,4 +1,5 @@
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
+import { favoriteContactsRepository } from '@gdmn-nxt/repositories/contacts/favoriteContacts';
 
 export const requests = {
   customers: `
@@ -73,4 +74,5 @@ export const requests = {
     JOIN GD_CONTACT con ON con.ID = cl.USR$CONTACTKEY
     JOIN USR$CRM_LABELS l ON l.ID = cl.USR$LABELKEY
     ORDER BY cl.USR$CONTACTKEY`,
+  favoriteContacts: favoriteContactsRepository.find
 };

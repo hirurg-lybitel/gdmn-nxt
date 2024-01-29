@@ -1,4 +1,4 @@
-import { IBaseContact, IRequestResult, IWithID, IContactWithID, IContactPerson, IEmployee, IQueryOptions } from '@gsbelarus/util-api-types';
+import { IBaseContact, IRequestResult, IWithID, IContactWithID, IContactPerson, IEmployee, IQueryOptions, IFavoriteContact } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '../../const';
 
@@ -105,7 +105,10 @@ export const contactApi = createApi({
             const options = Object.keys(opt).length > 0 ? opt : undefined;
             dispatch(
               contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
-                draft.records.unshift(addedContact);
+                const findIndex = draft?.records.findIndex(({ ID }) => ID === addedContact.ID);
+                if (findIndex > 0) return;
+
+                draft?.records.unshift(addedContact);
                 if (draft.count) draft.count += 1;
               })
             );
@@ -132,7 +135,7 @@ export const contactApi = createApi({
           const options = Object.keys(opt).length > 0 ? opt : undefined;
           const patchResult = dispatch(
             contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
-              if (Array.isArray(draft.records)) {
+              if (Array.isArray(draft?.records)) {
                 const findIndex = draft.records?.findIndex(c => c.ID === newContact.ID);
                 if (findIndex >= 0) {
                   draft.records[findIndex] = { ...draft.records[findIndex], ...newContact };
@@ -165,11 +168,11 @@ export const contactApi = createApi({
           const options = Object.keys(opt).length > 0 ? opt : undefined;
           const deleteResult = dispatch(
             contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
-              if (Array.isArray(draft.records)) {
-                const findIndex = draft.records.findIndex(d => d.ID === id);
+              if (Array.isArray(draft?.records)) {
+                const findIndex = draft?.records.findIndex(d => d.ID === id);
 
                 if (findIndex >= 0) {
-                  draft.records.splice(findIndex, 1);
+                  draft?.records.splice(findIndex, 1);
                   if (draft.count) draft.count -= 1;
                 }
               }
@@ -192,6 +195,58 @@ export const contactApi = createApi({
       onQueryStarted(id) {
         console.info('⏩ request', 'GET', `${baseUrlApi}contacts/employees${id ? `/${id}` : ''}`);
       },
+    }),
+    addFavorite: builder.mutation<IFavoriteContact, number>({
+      query: (contactID) => ({
+        url: `contacts/favorites/${contactID}`,
+        method: 'POST'
+      }),
+      async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
+              if (Array.isArray(draft?.records)) {
+                const findIndex = draft?.records?.findIndex(c => c.ID === contactID);
+                if (findIndex >= 0) {
+                  draft.records[findIndex] = { ...draft.records[findIndex], isFavorite: true };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
+    }),
+    deleteFavorite: builder.mutation<IFavoriteContact, number>({
+      query: (contactID) => ({
+        url: `contacts/favorites/${contactID}`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
+              if (Array.isArray(draft?.records)) {
+                const findIndex = draft?.records?.findIndex(c => c.ID === contactID);
+                if (findIndex >= 0) {
+                  draft.records[findIndex] = { ...draft.records[findIndex], isFavorite: false };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     })
   }),
 });
@@ -203,5 +258,7 @@ export const {
   useAddContactPersonMutation,
   useUpdateContactPersonMutation,
   useDeleteContactPersonMutation,
-  useGetEmployeesQuery
+  useGetEmployeesQuery,
+  useAddFavoriteMutation,
+  useDeleteFavoriteMutation
 } = contactApi;

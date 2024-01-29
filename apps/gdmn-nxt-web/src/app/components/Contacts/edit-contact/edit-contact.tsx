@@ -8,27 +8,24 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import EmailIcon from '@mui/icons-material/Email';
 import { Autocomplete, Avatar, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, Stack, Tab, TextField } from '@mui/material';
-import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
 import * as yup from 'yup';
-import { emailsValidation, phonesValidation } from '../helpers/validators';
-import EditableTypography from '../editable-typography/editable-typography';
-import TelephoneInput from '../telephone-input';
-import { useGetContactPersonsQuery } from '../../features/contact/contactApi';
-import filterOptions from '../helpers/filter-options';
-import { LabelsSelect } from '../Labels/labels-select';
-import { CustomerSelect } from '../Kanban/kanban-edit-card/components/customer-select';
-import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../social-media-input';
-import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
-import CustomNoData from '../Styled/Icons/CustomNoData';
-import EditIcon from '@mui/icons-material/Edit';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import CloseIcon from '@mui/icons-material/Close';
+import { emailsValidation, phonesValidation } from '../../helpers/validators';
+import EditableTypography from '../../editable-typography/editable-typography';
+import TelephoneInput from '../../telephone-input';
+import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
+import filterOptions from '../../helpers/filter-options';
+import { LabelsSelect } from '../../Labels/labels-select';
+import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../../social-media-input';
+import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
+import CustomNoData from '../../Styled/Icons/CustomNoData';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -92,7 +89,7 @@ export function EditContact({
   };
 
   const handleCustomerChange = (customer: ICustomer | null | undefined) => {
-    formik.setFieldValue('WCOMPANYKEY', customer?.ID);
+    formik.setFieldValue('COMPANY', { ID: customer?.ID, NAME: customer?.NAME });
   };
 
   const handlePhoneChange = (index: number, value: string) => {
@@ -195,6 +192,10 @@ export function EditContact({
     formik.resetForm();
   } ;
 
+  useEffect(() => {
+    if (!open) formik.resetForm();
+  }, [open]);
+
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
 
@@ -211,7 +212,7 @@ export function EditContact({
   };
 
   const phoneOptions = useMemo(() =>
-    <>
+    <div>
       {formik.values.PHONES?.map(({ ID, USR$PHONENUMBER }, index) => {
         const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[index]?.USR$PHONENUMBER);
         const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[index] as unknown as IPhone)?.USR$PHONENUMBER;
@@ -243,7 +244,6 @@ export function EditContact({
               }
             />
           </Stack>
-
         );
       })}
       <div className={styles['addItemButtonContainer']}>
@@ -255,10 +255,10 @@ export function EditContact({
           Добавить телефон
         </Button>
       </div>
-    </>, [formik.errors.PHONES, formik.touched.PHONES, formik.values.PHONES]);
+    </div>, [formik.errors.PHONES, formik.touched.PHONES, formik.values.PHONES]);
 
   const emailsOptions = useMemo(() =>
-    <>
+    <div>
       {formik.values.EMAILS?.map(({ ID, EMAIL }, index) => {
         const isTouched = Array.isArray(formik.errors.EMAILS) && Boolean((formik.touched.EMAILS as unknown as IEmail[])?.[index]?.EMAIL);
         const error = Array.isArray(formik.errors.EMAILS) && (formik.errors.EMAILS[index] as unknown as IEmail)?.EMAIL;
@@ -301,10 +301,10 @@ export function EditContact({
           Добавить e-mail
         </Button>
       </div>
-    </>, [formik.errors.EMAILS, formik.touched.EMAILS, formik.values.EMAILS]);
+    </div>, [formik.errors.EMAILS, formik.touched.EMAILS, formik.values.EMAILS]);
 
   const messengersOptions = useMemo(() =>
-    <>
+    <div>
       {formik.values.MESSENGERS?.map(({ ID, CODE, USERNAME }, index) => {
         const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[index]?.USERNAME);
         const error = Array.isArray(formik.errors.MESSENGERS) && (formik.errors.MESSENGERS[index] as unknown as IMessenger)?.USERNAME;
@@ -358,122 +358,7 @@ export function EditContact({
           Добавить мессенджер
         </Button>
       </div>
-    </>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
-
-  const [isAvatarEdit, setIsAvatarEdit] = useState<boolean>(false);
-
-  const handleAvatarEditOpen = () => {
-    setIsAvatarEdit(true);
-  };
-
-  const handleAvatarEditClose = () => {
-    handleAvatarBlur();
-    setIsAvatarEdit(false);
-  };
-
-  const [isAvatarFocus, setisAvatarFocus] = useState<boolean>(false);
-
-  const handleAvatarFocus = () => {
-    setisAvatarFocus(true);
-  };
-
-  const handleAvatarBlur = () => {
-    setisAvatarFocus(false);
-  };
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleUploadAvatar = (e: any) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0] || undefined;
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onloadend = (e) => {
-      formik.setFieldValue('PHOTO', reader.result?.toString());
-    };
-    handleAvatarEditClose();
-  };
-
-  const handleDeleteAvatar = () => {
-    formik.setFieldValue('PHOTO', '');
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
-    handleAvatarEditClose();
-  };
-
-  const editableAvatar = useMemo(() => {
-    return (
-      <div
-        style={{ display: 'flex', position: 'relative', borderRadius: '100%' }}
-        onMouseEnter={handleAvatarFocus}
-        onMouseLeave={handleAvatarBlur}
-      >
-        <div style={{ position: 'relative', borderRadius: '100%' }}>
-          {/* {(isAvatarFocus && !isAvatarEdit) &&
-            <div
-              style={{
-                background: 'black',
-                borderRadius: '100%',
-                opacity: '0.5', width: '40px', height: '40px',
-                position: 'absolute', left: '0', zIndex: 1 }}
-            />
-          } */}
-          <Avatar src={formik.values.PHOTO} />
-        </div>
-
-        {!isAvatarEdit ?
-          <div
-            style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0,
-              width: '40px', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', background: 'rgba(0,0,0,0.5)',
-              opacity: isAvatarFocus ? 1 : 0, visibility: isAvatarFocus ? 'visible' : 'hidden',
-              borderRadius: '100%'
-            }}
-          >
-            <IconButton
-              style={!isAvatarFocus ? { opacity: '0', visibility: 'hidden' } : {}}
-              onClick={handleAvatarEditOpen}
-              size="small"
-            >
-              <EditIcon fontSize="small" color="primary" />
-            </IconButton>
-          </div>
-          : <div style={{ margin: '0px 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconButton
-              onClick={handleAvatarEditClose}
-              size="small"
-            >
-              <CloseIcon fontSize="small" color="primary" />
-            </IconButton>
-            <IconButton
-              size="small"
-              component="label"
-            >
-              <input
-                disabled={isLoading}
-                hidden
-                accept="image/*"
-                multiple
-                type="file"
-                onChange={handleUploadAvatar}
-                ref={inputRef}
-              />
-              <UploadFileIcon fontSize="small" color="primary" />
-            </IconButton>
-            <IconButton
-              onClick={handleDeleteAvatar}
-              size="small"
-            >
-              <DeleteIcon fontSize="small" color="primary" />
-            </IconButton>
-          </div>
-        }
-      </div>
-    );
-  }, [formik]);
+    </div>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
 
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
@@ -511,9 +396,8 @@ export function EditContact({
                   spacing={2}
                   alignItems="center"
                 >
-                  {editableAvatar}
+                  <Avatar />
                   <EditableTypography
-                    style={{ marginLeft: '0px !important' }}
                     name="NAME"
                     value={formik.values.NAME}
                     onChange={formik.handleChange}
@@ -561,11 +445,11 @@ export function EditContact({
                 />
                 <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                 <CustomerSelect
-                  customer={formik.values.WCOMPANYKEY ? { ID: formik.values.WCOMPANYKEY, NAME: '' } as ICustomer : undefined}
+                  value={formik.values.COMPANY}
                   onChange={handleCustomerChange}
                   // required
-                  error={formik.touched.WCOMPANYKEY && Boolean(formik.errors.WCOMPANYKEY)}
-                  helperText={formik.touched.WCOMPANYKEY && formik.errors.WCOMPANYKEY}
+                  error={formik.touched.COMPANY && Boolean(formik.errors.COMPANY)}
+                  helperText={formik.touched.COMPANY && formik.errors.COMPANY}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="end">

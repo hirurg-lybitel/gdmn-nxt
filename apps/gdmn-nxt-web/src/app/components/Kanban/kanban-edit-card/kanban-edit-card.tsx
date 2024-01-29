@@ -524,7 +524,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           flex={1}
                         >
                           <CustomerSelect
-                            customer={formik.values.DEAL?.CONTACT}
+                            value={formik.values.DEAL?.CONTACT}
                             onChange={(value) => formik.setFieldValue('DEAL.CONTACT', value)}
                             required
                             name="DEAL.CONTACT"
