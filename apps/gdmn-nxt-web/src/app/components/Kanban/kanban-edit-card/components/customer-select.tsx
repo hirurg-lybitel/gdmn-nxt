@@ -1,5 +1,5 @@
 import { IContactWithID, ICustomer, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteProps, Box, Button, IconButton, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteProps, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { FormikProps, getIn } from 'formik';
@@ -7,6 +7,8 @@ import { HTMLAttributes, useCallback, useEffect, useMemo, useState } from 'react
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(() => ({
@@ -27,19 +29,27 @@ type BaseTextFieldProps = Omit<
   'onChange'
 >;
 
-interface CustomerSelectProps extends BaseTextFieldProps {
-  customer?: ICustomer;
-  onChange?: (customer: ICustomer | undefined | null) => void;
+type Value<Multiple> = Multiple extends true ? Array<ICustomer> : ICustomer;
+
+interface CustomerSelectProps<Multiple extends boolean | undefined> extends BaseTextFieldProps {
+  value?: Value<Multiple>;
+  onChange?: (value: Value<Multiple> | undefined | null) => void;
+  multiple?: Multiple;
 };
 
-export function CustomerSelect(props: CustomerSelectProps) {
-  const { customer, onChange, ...rest } = props;
+export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
+  const {
+    value,
+    onChange,
+    multiple = false,
+    ...rest
+  } = props;
 
   const classes = useStyles();
 
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery();
   const customers: ICustomer[] = useMemo(
-    () => [...(customersResponse?.data || [])],
+    () => [...(customersResponse?.data ?? [])],
     [customersResponse?.data]
   );
 
@@ -50,10 +60,10 @@ export function CustomerSelect(props: CustomerSelectProps) {
   const [editingCustomer, setEditingCustomer] = useState<ICustomer | null>(null);
 
   useEffect(() => {
-    if (insertCustomerIsSuccess && (customer?.ID !== newCustomer?.ID)) {
-      onChange && onChange(newCustomer);
+    if (insertCustomerIsSuccess) {
+      onChange && onChange((multiple ? [newCustomer] : newCustomer) as Value<Multiple>);
     }
-  }, [customer?.ID, insertCustomerIsSuccess, newCustomer, onChange]);
+  }, [insertCustomerIsSuccess, newCustomer, onChange]);
 
   const handleAddCustomer = useCallback(() => {
     setEditingCustomer(null);
@@ -77,7 +87,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
 
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
-  const handleChange = (e: any, value: ICustomer | null) => onChange && onChange(value);
+  const handleChange = (e: any, value: ICustomer | ICustomer[] | null) => onChange && onChange(value as Value<Multiple>);
 
   const memoPaperFooter = useMemo(() =>
     <div>
@@ -109,6 +119,8 @@ export function CustomerSelect(props: CustomerSelectProps) {
       <Autocomplete
         className={classes.root}
         fullWidth
+        multiple={multiple}
+        limitTags={2}
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
@@ -120,18 +132,27 @@ export function CustomerSelect(props: CustomerSelectProps) {
           }
           : {
             options: customers,
-            value: customers?.find(el => el.ID === customer?.ID) ?? null
+            value: multiple && Array.isArray(value)
+              ? customers.filter(customer => value?.find(el => el.ID === customer.ID)) ?? []
+              : customers?.find(el => el.ID === (value as ICustomer)?.ID) ?? null
           })
         }
         loadingText="Загрузка данных..."
         onChange={handleChange}
-        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer) => {
+        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected }: AutocompleteRenderOptionState) => {
           return (
             <li
               {...props}
               key={option.ID}
               style={{ display: 'flex' }}
             >
+              {multiple &&
+                <Checkbox
+                  icon={<CheckBoxOutlineBlankIcon />}
+                  checkedIcon={<CheckBoxIcon />}
+                  style={{ marginRight: 8 }}
+                  checked={selected}
+                />}
               <Box flex={1}>
                 <div style={{ flex: 1, display: 'flex' }}>
                   <div style={{ flex: 1 }}>
@@ -150,21 +171,21 @@ export function CustomerSelect(props: CustomerSelectProps) {
         }, [])}
         renderInput={useCallback((params) => (
           <TextField
-            {...params}
-            {...rest}
             label="Клиент"
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
+            {...params}
+            {...rest}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
               endAdornment: (
                 <>
-                  {(customer) &&
+                  {(value && (!Array.isArray(value))) &&
                     <IconButton
                       className="editIcon"
                       title="Изменить"
                       size="small"
-                      onClick={handleEditCustomer(customers?.find(el => el.ID === customer?.ID))}
+                      onClick={handleEditCustomer(customers?.find(el => el.ID === value?.ID))}
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>}
@@ -172,7 +193,7 @@ export function CustomerSelect(props: CustomerSelectProps) {
                 </>)
             }}
           />
-        ), [customer])}
+        ), [value])}
       />
       {memoCustomerUpsert}
     </>

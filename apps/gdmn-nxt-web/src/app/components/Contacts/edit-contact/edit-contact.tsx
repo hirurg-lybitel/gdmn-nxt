@@ -12,7 +12,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
 import * as yup from 'yup';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
@@ -191,6 +191,10 @@ export function EditContact({
     onCancel();
     formik.resetForm();
   } ;
+
+  useEffect(() => {
+    if (!open) formik.resetForm();
+  }, [open]);
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
@@ -441,7 +445,7 @@ export function EditContact({
                 />
                 <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                 <CustomerSelect
-                  customer={formik.values.COMPANY}
+                  value={formik.values.COMPANY}
                   onChange={handleCustomerChange}
                   // required
                   error={formik.touched.COMPANY && Boolean(formik.errors.COMPANY)}

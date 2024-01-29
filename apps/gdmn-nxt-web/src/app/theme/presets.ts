@@ -57,7 +57,7 @@ export const themes: {[key in ColorMode]: { [key: string]: Style}} = {
       menuBackgroundColor: colors.blueGrey[900],
       primaryColor: colors.blue[400],
       textColor: colors.common.white,
-      captionTextColor: colors.grey[500],
+      captionTextColor: colors.grey[400],
       secondaryColor: colors.grey[300],
       menuTextColor: colors.grey[300],
       paperColor: colors.grey[800],

@@ -91,7 +91,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
         borders={colorModeIsLight}
         onDoubleClick={doubleClick}
         style={{
-          backgroundColor: colorModeIsLight ? 'whitesmoke' : 'dimgrey',
+          backgroundColor: 'var(--color-card-bg)',
           padding: '12px',
           cursor: 'pointer',
           ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead

@@ -6,9 +6,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import { IContactPerson, IPaginationData } from '@gsbelarus/util-api-types';
 import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Avatar, Divider, IconButton, Stack, TablePagination, Tooltip, Typography } from '@mui/material';
+import { Avatar, Divider, IconButton, Stack, TablePagination, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { socialMediaIcons } from '@gdmn-nxt/components/social-media-input';
-import { ChangeEvent, useCallback, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
 
@@ -228,6 +228,20 @@ export function ContactCards({
   paginationData,
   paginationClick
 }: ContactCardsProps) {
+  const [pageOptions, setPageOptions] = useState<number[]>([]);
+  const theme = useTheme();
+  const matchUpUW = useMediaQuery(theme.breakpoints.up('ultraWide'));
+
+  useEffect(() => {
+    const rowPerPage = matchUpUW ? 25 : 12;
+    setPageOptions([
+      rowPerPage,
+      rowPerPage * 2,
+      rowPerPage * 5,
+      rowPerPage * 10
+    ]);
+  }, [paginationData, matchUpUW]);
+
   const handleClick = (contact: IContactPerson) => {
     onEditClick(contact);
   };
@@ -263,7 +277,7 @@ export function ContactCards({
           labelRowsPerPage="Карточек на странице:"
           count={contactsCount}
           page={paginationData.pageNo}
-          rowsPerPageOptions={[20, 50, 100]}
+          rowsPerPageOptions={pageOptions}
           rowsPerPage={paginationData.pageSize}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}

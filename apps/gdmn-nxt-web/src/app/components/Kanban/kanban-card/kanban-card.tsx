@@ -218,7 +218,7 @@ export function KanbanCard(props: KanbanCardProps) {
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
-          backgroundColor: colorMode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
+          backgroundColor: 'var(--color-card-bg)',
           ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
             ? {
               backgroundColor: 'rgba(193, 228, 250, 0.5)',
