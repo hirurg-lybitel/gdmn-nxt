@@ -80,8 +80,10 @@ export function LabelMarker(props: LabelMarkerProps) {
         borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word',
         display: 'flex',
         alignItems: 'center',
-        padding: '2.5px 5px'
-        // width: 'min-content'
+        padding: '0px 5px',
+        minHeight: '20px',
+        // fontSize: '12px',
+        // textTransform: 'none'
       }}
     >
       {(icon || USR$ICON) &&
@@ -89,7 +91,7 @@ export function LabelMarker(props: LabelMarkerProps) {
           <IconByName name={icon || USR$ICON}/>
         </div>
       }
-      <span style={{ margin: '0 5px 0 5px' }}>
+      <span style={{ margin: '0 5px' }}>
         {name || 'Пример'}
       </span>
     </div>

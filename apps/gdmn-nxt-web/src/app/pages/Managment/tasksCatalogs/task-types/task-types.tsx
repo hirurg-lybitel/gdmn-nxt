@@ -318,7 +318,6 @@ export function TaskTypes(props: TaskTypesProps) {
             rows={taskTypes}
             columns={columns}
             loading={isLoading}
-            rowHeight={60}
             apiRef={apiRef}
             onRowEditStart={handleRowEditStart}
             onRowEditStop={handleRowEditStop}

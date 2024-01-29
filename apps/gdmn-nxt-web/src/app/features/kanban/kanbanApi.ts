@@ -479,9 +479,6 @@ export const kanbanApi = createApi({
     }),
     getHistory: builder.query<IKanbanHistory[], number>({
       query: (cardId) => `kanban/history/${cardId}`,
-      onQueryStarted(cardId) {
-        console.info('⏩ request', 'GET', `${baseUrlApi}kanban/history/${cardId}`);
-      },
       transformResponse: (response: IKanbanHistoryRequestResult) => {
         return response.queries?.history.map(his => ({ ...his, USR$DATE: new Date(his.USR$DATE || 0) })) || [];
       },

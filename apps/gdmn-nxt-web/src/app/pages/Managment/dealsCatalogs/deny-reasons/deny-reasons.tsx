@@ -109,7 +109,6 @@ export function DenyReasons(props: DenyReasonsProps) {
           rows={data}
           columns={columns}
           loading={isLoading}
-          rowHeight={60}
           hideHeaderSeparator
         />
         {memoUpsertDenyReason}

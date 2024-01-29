@@ -323,7 +323,7 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
   if (!labels || labels?.length === 0) {
     try {
       const sql = `
-        DELETE FROM USR$CRM_CONTACT_LABELS
+        DELETE FROM USR$CRM_CUSTOMER_LABELS
         WHERE USR$CONTACTKEY = ?` ;
 
       await attachment.execute(transaction, sql, [contactId]);
@@ -338,7 +338,7 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
 
   try {
     /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
-    const deleteSQL = 'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = ?';
+    const deleteSQL = 'DELETE FROM USR$CRM_CUSTOMER_LABELS WHERE USR$CONTACTKEY = ?';
 
     await Promise.all(
       [...new Set(contactLabels.map(el => el.CONTACT))]
@@ -349,17 +349,17 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
 
     const insertSQL = `
       EXECUTE BLOCK(
-        CONTACTKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$CONTACTKEY = ?,
-        LABELKEY TYPE OF COLUMN USR$CRM_CONTACT_LABELS.USR$LABELKEY = ?
+        CONTACTKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$CONTACTKEY = ?,
+        LABELKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$LABELKEY = ?
       )
       RETURNS(
         ID TYPE OF COLUMN USR$CRM_LABELS.ID
       )
       AS
       BEGIN
-        DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = :CONTACTKEY AND USR$LABELKEY = :LABELKEY ;
+        DELETE FROM USR$CRM_CUSTOMER_LABELS WHERE USR$CONTACTKEY = :CONTACTKEY AND USR$LABELKEY = :LABELKEY ;
 
-        INSERT INTO USR$CRM_CONTACT_LABELS(USR$CONTACTKEY, USR$LABELKEY)
+        INSERT INTO USR$CRM_CUSTOMER_LABELS(USR$CONTACTKEY, USR$LABELKEY)
         VALUES(:CONTACTKEY, :LABELKEY);
 
         SELECT ID

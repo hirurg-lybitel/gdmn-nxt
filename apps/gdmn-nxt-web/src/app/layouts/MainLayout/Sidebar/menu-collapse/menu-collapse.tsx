@@ -12,7 +12,9 @@ import { useLocation } from 'react-router-dom';
 const useStyles = makeStyles((theme: Theme) => ({
   menuCollapse: {
     marginBottom: 3,
-    borderRadius: theme.mainContent.borderRadius,
+    paddingBottom: 0,
+    paddingTop: 0,
+    borderRadius: '8px',
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, .3)',
     },
@@ -94,7 +96,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
       <ListItemButton
         className={classes.menuCollapse}
         sx={{
-          pl: `${level * 12}px`
+          pl: `${level * 12}px`,
         }}
         selected={open}
         onClick={handleClick}

@@ -4,3 +4,4 @@ export * from './lib/file-db';
 export * from './lib/named-params';
 export * from './lib/sql-param-parser';
 export * from './lib/converters';
+export * from './lib/loops';

@@ -17,7 +17,7 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
     executeQuery: prepare(attachment.executeQuery),
     executeSingleton: prepare(attachment.executeSingleton),
     executeSingletonAsObject: prepare(attachment.executeSingletonAsObject),
-    fetchAsObject: async (sqlStmt: string, parameters?: Parameters) => {
+    fetchAsObject: async <T extends object>(sqlStmt: string, parameters?: Parameters): Promise<T[]> => {
       let s;
       let p;
 
@@ -34,7 +34,7 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
       try {
         const resultSet = await statement.executeQuery(transaction, p);
         try {
-          return await resultSet.fetchAsObject();
+          return await resultSet.fetchAsObject<T>();
         } finally {
           await resultSet.close();
         }
@@ -42,7 +42,7 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
         await statement.dispose();
       }
     },
-    fetchAsSingletonObject: async (sqlStmt: string, parameters?: Parameters) => {
+    fetchAsSingletonObject: async <T extends Record<string, any>>(sqlStmt: string, parameters?: Parameters): Promise<T> => {
       let s;
       let p;
 
@@ -59,7 +59,7 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
       try {
         const resultSet = await statement.executeQuery(transaction, p);
         try {
-          const result = await resultSet.fetchAsObject();
+          const result = await resultSet.fetchAsObject<T>();
           return (result.length === 0 ? {} : result[0]) as any;
         } finally {
           await resultSet.close();

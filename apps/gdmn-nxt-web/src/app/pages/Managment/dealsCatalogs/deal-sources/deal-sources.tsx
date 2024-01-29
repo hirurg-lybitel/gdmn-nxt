@@ -110,7 +110,6 @@ export function DealSources(props: DealSourcesProps) {
           rows={data}
           columns={columns}
           loading={isLoading}
-          rowHeight={60}
           hideHeaderSeparator
         />
         {memoUpsertDealSource}

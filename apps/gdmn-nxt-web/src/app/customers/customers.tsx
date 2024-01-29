@@ -104,7 +104,7 @@ export function Customers(props: CustomersProps) {
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 10
+    pageSize: 20
   });
   const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
@@ -227,7 +227,7 @@ export function Customers(props: CustomersProps) {
         const labels = (row as ICustomer)?.LABELS;
 
         return (
-          <Stack spacing={1}>
+          <Stack spacing={1} direction="row">
             <div>{value}</div>
             {labels?.length
               ?
@@ -540,7 +540,11 @@ export function Customers(props: CustomersProps) {
       <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+        >
           <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
             <Box display="inline-flex" alignSelf="center" >
               <Button
@@ -564,9 +568,7 @@ export function Customers(props: CustomersProps) {
           <IconButton
             onClick={filterHandlers.handleFilter}
             disabled={customerFetching}
-            style={{
-              width: 40
-            }}
+            size="small"
           >
             <Tooltip
               title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
@@ -658,12 +660,13 @@ export function Customers(props: CustomersProps) {
           >
             <Box flex={1}>
               <StyledGrid
-                sx={{
-                  '& .MuiDataGrid-row, .MuiDataGrid-cell': {
-                    minHeight: '60px !important',
-                    maxHeight: 'fit-content !important'
-                  }
-                }}
+                // sx={{
+                //   '& .MuiDataGrid-row, .MuiDataGrid-cell': {
+                //     minHeight: '40px !important',
+                //     maxHeight: 'fit-content !important'
+                //   }
+                // }}
+                rowHeight={40}
                 onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}

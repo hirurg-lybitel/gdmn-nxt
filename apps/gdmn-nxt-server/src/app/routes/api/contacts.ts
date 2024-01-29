@@ -1,8 +1,9 @@
 import express from 'express';
 import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, upsertContact } from '../../controllers/contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../controllers/labelsContact';
-import contactPersons from '../../controllers/contactPersons';
+import { contactPersonsController } from '../../controllers/contacts/contactPersons';
 import contactEmployees from '../../controllers/contactEmployees';
+import { favoriteContactsController } from '@gdmn-nxt/controllers/contacts/favoriteContacts';
 
 const router = express.Router();
 
@@ -20,15 +21,18 @@ router.get('/labels', getLabelsContact);
 router.post('/labels', addLabelsContact);
 router.delete('/labels/:contactId', deleteLabelsContact);
 
-router.get('/persons/customerId/:customerId', contactPersons.getByCutomerId);
-router.get('/persons/:id', contactPersons.get);
-router.post('/persons', contactPersons.upsert);
-router.put('/persons/:id', contactPersons.upsert);
-router.delete('/persons/:id', contactPersons.remove);
+router.get('/persons', contactPersonsController.getAll);
+router.get('/persons/:id', contactPersonsController.getById);
+router.post('/persons', contactPersonsController.createContact);
+router.put('/persons/:id', contactPersonsController.updateById);
+router.delete('/persons/:id', contactPersonsController.removeById);
 
 router.get('/employees/:id', contactEmployees.get);
 router.get('/employees', contactEmployees.get);
 
 router.get('/customerscross', getCustomersCross);
+
+router.post('/favorites/:contactId', favoriteContactsController.createFavorite);
+router.delete('/favorites/:contactId', favoriteContactsController.removeByContact);
 
 export default router;

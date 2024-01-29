@@ -282,7 +282,7 @@ export function CustomerEdit(props: CustomerEditProps) {
                   <Box>
                     <TabList onChange={handleTabsChange}>
                       <Tab label="Сведения" value="1" />
-                      <Tab label="Сотрудники" value="2" />
+                      <Tab label="Контакты" value="2" />
                     </TabList>
                   </Box>
                   <Divider style={{ margin: 0 }} />
@@ -454,7 +454,6 @@ export function CustomerEdit(props: CustomerEditProps) {
                             <Box
                               key={index}
                               pr={0.5}
-                              pb={0.5}
                             >
                               <LabelMarker label={option} {...getTagProps({ index })}/>
                             </Box>

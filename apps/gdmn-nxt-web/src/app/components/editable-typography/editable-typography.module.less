@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  height: 32px;
+  align-items: center;
+  width: 100%;
+}
+
+.container:hover .title {
+  opacity: 0.3;
+}
+
+.actions {
+  margin-left: 8px;
+}
+
+.visible {
+  display: inline-flex;
+}
+
+.hidden {
+  display: none;
+}
+
+.container:hover .actions {
+  display: inline-flex;
+  flex-direction: row;
+  align-self: center;
+}
