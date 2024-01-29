@@ -10,7 +10,8 @@ export interface EditableAvatarProps {
   onChange: (arg1: string | undefined) => void,
   disabled?: boolean,
   size?: number,
-  iconButtonSize?: 'inherit' | 'large' | 'medium' | 'small'
+  iconButtonSize?: 'inherit' | 'large' | 'medium' | 'small',
+  color?: 'inherit' | 'disabled' | 'action' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
 }
 
 export function EditableAvatar({
@@ -18,7 +19,8 @@ export function EditableAvatar({
   onChange,
   disabled,
   size = 40,
-  iconButtonSize
+  iconButtonSize = 'small',
+  color = 'primary'
 }: EditableAvatarProps) {
   const [isAvatarEdit, setIsAvatarEdit] = useState<boolean>(false);
 
@@ -97,7 +99,7 @@ export function EditableAvatar({
             onClick={handleAvatarEditOpen}
             size="small"
           >
-            <EditIcon fontSize={iconButtonSize || 'small'} color="primary" />
+            <EditIcon fontSize={iconButtonSize} color={color} />
           </IconButton>
         </div>
         : <div style={{ margin: '0px 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -105,7 +107,7 @@ export function EditableAvatar({
             onClick={handleAvatarEditClose}
             size="small"
           >
-            <CloseIcon fontSize={iconButtonSize || 'small'} color="primary" />
+            <CloseIcon fontSize={iconButtonSize} color={color} />
           </IconButton>
           <IconButton
             size="small"
@@ -120,12 +122,12 @@ export function EditableAvatar({
               onChange={handleUploadAvatar}
               ref={inputRef}
             />
-            <UploadFileIcon fontSize={iconButtonSize || 'small'} color="primary" />
+            <UploadFileIcon fontSize={iconButtonSize} color={color} />
           </IconButton>
           <IconButton
             onClick={handleDeleteAvatar}
           >
-            <DeleteIcon fontSize={iconButtonSize || 'small'} color="primary" />
+            <DeleteIcon fontSize={iconButtonSize} color={color} />
           </IconButton>
         </div>
       }
