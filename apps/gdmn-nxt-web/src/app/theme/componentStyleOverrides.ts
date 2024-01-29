@@ -12,7 +12,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-input-text': theme.textColor,
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
-          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#696969' : '#f5f5f5',
+          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#5a5a5a' : '#f5f5f5',
           '--border-radius': theme.mainContent.borderRadius,
           '--menu-width': `${theme.drawerWidth}px`,
         },
@@ -22,7 +22,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             width: 10,
             height: 10,
-            borderRadius: theme.mainContent.borderRadius,
+            borderRadius: 'var(--border-radius)',
             backgroundColor: 'inherit',
           },
           '&::-webkit-scrollbar:hover, & *::-webkit-scrollbar:hover': {
@@ -34,7 +34,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           //   backgroundColor: 'inherit',
           // },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: theme.mainContent.borderRadius,
+            borderRadius: 'var(--border-radius)',
             backgroundColor: 'var(--color-scroll-thumb)',
             border: '2px solid transparent',
             backgroundClip: 'padding-box',
@@ -87,7 +87,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           backgroundImage: 'none',
         },
         rounded: {
-          borderRadius: '12px',
+          borderRadius: 'var(--border-radius)',
         },
       }
     },
@@ -138,7 +138,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: '12px',
+          borderRadius: 'var(--border-radius)',
         }
       }
     },
@@ -169,6 +169,13 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiAlert: {
       defaultProps: {
         variant: theme.palette?.mode === ColorMode.Dark ? 'filled' : 'standard'
+      }
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 'var(--border-radius)',
+        }
       }
     }
   };

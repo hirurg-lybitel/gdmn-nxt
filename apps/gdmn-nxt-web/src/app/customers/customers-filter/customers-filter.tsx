@@ -17,6 +17,7 @@ import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import filterOptions from '../../components/helpers/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
+import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {

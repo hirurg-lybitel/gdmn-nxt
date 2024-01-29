@@ -28,9 +28,12 @@ import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
 import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list';
+import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
+import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 
 export default function Contacts() {
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
+  const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
 
   const [upsertContact, setUpsertContact] = useState<{
@@ -48,18 +51,22 @@ export default function Contacts() {
   const matchUpUW = useMediaQuery(theme.breakpoints.up('ultraWide'));
 
 
-  useEffect(() => {
-    if (viewMode === 2) {
+  const handleViewModeChange = (mode: number) => {
+    if (mode === 2) {
       setPaginationData(prev => ({ ...prev, pageSize: 20 }));
       return;
     }
     setPaginationData(prev => ({ ...prev, pageSize: matchUpUW ? 25 : 12 }));
+  };
+
+  useEffect(() => {
+    handleViewModeChange(viewMode);
   }, [matchUpUW]);
 
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 12,
+    pageSize: matchUpUW ? 25 : 12,
   });
 
   const {
@@ -69,7 +76,7 @@ export default function Contacts() {
     refetch: personsRefetch
   } = useGetContactPersonsQuery({
     pagination: paginationData,
-    filter: filterData
+    ...(filterData && { filter: filterData })
   });
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
@@ -115,6 +122,15 @@ export default function Contacts() {
     handleFilteringDataChange(newObject);
   }, []);
 
+  const filterHandlers = {
+    filterClick: useCallback(() => {
+      setOpenFilters(true);
+    }, []),
+    filterClose: async () => {
+      setOpenFilters(false);
+    },
+  };
+
   const memoEditContact = useMemo(() =>
     <EditContact
       open={!!upsertContact.editContact}
@@ -132,9 +148,18 @@ export default function Contacts() {
     />,
   [upsertContact.addContact]);
 
+  const memoFilter = useMemo(() =>
+    <ContactsFilter
+      open={openFilters}
+      onClose={filterHandlers.filterClose}
+      filteringData={filterData}
+      onFilteringDataChange={handleFilteringDataChange}
+    />,
+  [openFilters, filterData]);
+
 
   return (
-    <CustomizedCard borders style={{ flex: 1 }}>
+    <CustomizedCard style={{ flex: 1 }}>
       <CardHeader
         title={<Typography variant="pageHeader">Контакты</Typography>}
         action={
@@ -147,14 +172,7 @@ export default function Contacts() {
               size="small"
               onChange={(e, value) => {
                 if (!value) return;
-
-                if (value === 2) {
-                  setPaginationData(prev => ({ ...prev, pageSize: 20 }));
-                  // return;
-                } else {
-                  setPaginationData(prev => ({ ...prev, pageSize: matchUpUW ? 25 : 12 }));
-                }
-
+                handleViewModeChange(value);
                 setViewMode(value);
               }}
             >
@@ -188,7 +206,7 @@ export default function Contacts() {
                 onClick={() => setUpsertContact({ addContact: true })}
               >
                 <Tooltip arrow title="Создать контакт">
-                  <AddCircleIcon color="primary" />
+                  <AddCircleIcon color={personsIsFetching ? 'disabled' : 'primary'} />
                 </Tooltip>
               </IconButton>
             </Box>
@@ -199,114 +217,51 @@ export default function Contacts() {
                 onClick={() => personsRefetch()}
               />
             </Box>
-            <IconButton
-              // onClick={filterHandlers.handleFilter}
-              // disabled={personsIsFetching}
-              disabled
-              style={{
-                width: 40,
-                display: 'none'
-              }}
-            >
-              <Tooltip
-                title=""
-                // title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                //   ? 'У вас есть активные фильтры'
-                //   : 'Выбрать фильтры'
-                // }
-                arrow
+            <Box display="inline-flex" alignSelf="center">
+              <IconButton
+                onClick={filterHandlers.filterClick}
+                disabled={personsIsFetching}
+                size ="small"
               >
-                <Badge
-                  color="error"
-                  variant="dot"
-                  // variant={
-                  //   Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                  //     ? 'dot'
-                  //     : 'standard'
-                  // }
+                <Tooltip
+                  title={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
+                    ? 'У вас есть активные фильтры'
+                    : 'Выбрать фильтры'
+                  }
+                  arrow
                 >
-                  <FilterListIcon
-                    color={personsIsFetching ? 'disabled' : 'primary'}
-                  />
-                </Badge>
-              </Tooltip>
-            </IconButton>
+                  <Badge
+                    color="error"
+                    variant={
+                      Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
+                        ? 'dot'
+                        : 'standard'
+                    }
+                  >
+                    <FilterListIcon
+                      color={personsIsFetching ? 'disabled' : 'primary'}
+                    />
+                  </Badge>
+                </Tooltip>
+              </IconButton>
+            </Box>
           </Stack>
         }
       />
       <Divider />
-      {/* <CardToolbar>
-        <Stack direction="row" spacing={2}>
-          <Box display="inline-flex" alignSelf="center">
-            <LoadingButton
-              loading={personsIsFetching}
-              loadingPosition="start"
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={() => setUpsertContact({ addContact: true })}
-            >
-                Добавить
-            </LoadingButton>
-          </Box>
-          <SearchBar
-            disabled={personsIsFetching}
-            onCancelSearch={cancelSearch}
-            onRequestSearch={requestSearch}
-            cancelOnEscape
-            value={
-              filterData?.name
-                ? filterData.name[0]
-                : undefined
-            }
-          />
-          <CustomLoadingButton
-            hint="Обновить данные"
-            loading={personsIsFetching}
-            onClick={() => personsRefetch()}
-          />
-          <IconButton
-            // onClick={filterHandlers.handleFilter}
-            // disabled={personsIsFetching}
-            disabled
-            style={{
-              width: 40,
-              display: 'none'
-            }}
-          >
-            <Tooltip
-              title=""
-              // title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-              //   ? 'У вас есть активные фильтры'
-              //   : 'Выбрать фильтры'
-              // }
-              arrow
-            >
-              <Badge
-                color="error"
-                variant="dot"
-                // variant={
-                //   Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                //     ? 'dot'
-                //     : 'standard'
-                // }
-              >
-                <FilterListIcon
-                  color={personsIsFetching ? 'disabled' : 'primary'}
-                />
-              </Badge>
-            </Tooltip>
-          </IconButton>
-        </Stack>
-      </CardToolbar> */}
       <CardContent style={{ padding: 0 }}>
         {viewMode === 1
-          ? <ContactCards
-            contacts={persons?.records}
-            contactsCount={persons?.count ?? 0}
-            onEditClick={handleContactEdit}
-            paginationData={paginationData}
-            paginationClick={(data) => setPaginationData(data)}
-          />
+          ? isLoading
+            ? <Box height={'100%'} display="flex">
+              <CircularIndeterminate open={true} size={70} />
+            </Box>
+            : <ContactCards
+              contacts={persons?.records}
+              contactsCount={persons?.count ?? 0}
+              onEditClick={handleContactEdit}
+              paginationData={paginationData}
+              paginationClick={(data) => setPaginationData(data)}
+            />
           : <ContactList
             contacts={persons?.records ?? []}
             contactsCount={persons?.count ?? 0}
@@ -315,40 +270,9 @@ export default function Contacts() {
             paginationData={paginationData}
             paginationClick={(data) => setPaginationData(data)}
           />}
-        {/* <StyledGrid
-          rows={persons?.records ?? []}
-          columns={columns}
-          onRowDoubleClick={({ row }) => handleContactEdit(row)()}
-          loading={isLoading}
-          rowHeight={40}
-          rowCount={persons?.count ?? 0}
-          hideHeaderSeparator
-          disableMultipleSelection
-          hideFooterSelectedRowCount
-          disableColumnResize
-          disableColumnReorder
-          disableColumnFilter
-          disableColumnMenu
-          pagination
-          paginationMode="server"
-          onPageChange={(data) => {
-            setPaginationData((prevState) => ({
-              ...prevState,
-              pageNo: data
-            }));
-          }}
-          onPageSizeChange={(data) => {
-            setPaginationData((prevState) => ({
-              ...prevState,
-              pageSize: data
-            }));
-          }}
-          pageSize={paginationData.pageSize}
-          rowsPerPageOptions={[10, 20, 50]}
-          sortingMode="server"
-        /> */}
         {memoAddContact}
         {memoEditContact}
+        {memoFilter}
       </CardContent>
     </CustomizedCard>
   );

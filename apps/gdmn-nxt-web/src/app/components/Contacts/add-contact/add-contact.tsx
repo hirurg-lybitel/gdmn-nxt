@@ -11,7 +11,7 @@ import TelephoneInput from '../../telephone-input';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
 import filterOptions from '../../helpers/filter-options';
@@ -80,6 +80,10 @@ export function AddContact({
     onCancel();
     formik.resetForm();
   };
+
+  useEffect(() => {
+    if (!open) formik.resetForm();
+  }, [open]);
 
   const [phones, setPhones] = useState<IPhone[]>(formik.values.PHONES ?? []);
   const [emails, setEmails] = useState<IEmail[]>(formik.values.EMAILS ?? []);
@@ -169,6 +173,7 @@ export function AddContact({
     if (Array.isArray(newMessengers)) formik.values.MESSENGERS = [...newMessengers];
 
     onSubmit(formik.values);
+    onClose();
   }, [formik.values]);
 
   const handleConfirmCancelClick = useCallback(() => {
@@ -397,7 +402,7 @@ export function AddContact({
                 }}
               />
               <CustomerSelect
-                customer={formik.values.COMPANY}
+                value={formik.values.COMPANY}
                 onChange={handleCustomerChange}
                 // required
                 error={getIn(formik.touched, 'COMPANY') && Boolean(getIn(formik.errors, 'COMPANY'))}

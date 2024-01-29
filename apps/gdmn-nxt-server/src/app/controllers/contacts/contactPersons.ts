@@ -35,7 +35,10 @@ const getAll: RequestHandler = async (req, res) => {
   const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
-  const { name } = req.query;
+  const { name, LABELS, COMPANY, RESPONDENTS } = req.query;
+  const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
+  const companyIds = COMPANY ? (COMPANY as string).split(',').map(Number) ?? [] : [];
+  const respondentIds = RESPONDENTS ? (RESPONDENTS as string).split(',').map(Number) ?? [] : [];
   /** Session data */
   const userId = req.user['id'];
 
@@ -66,16 +69,34 @@ const getAll: RequestHandler = async (req, res) => {
 
         if (customerId) {
           checkConditions = checkConditions &&
-          person.COMPANY?.ID === customerId;
+            person.COMPANY?.ID === customerId;
+        }
+
+        if (LABELS) {
+          checkConditions = checkConditions &&
+            person.LABELS?.some(l => labelIds.includes(l.ID));
+        }
+
+        if (COMPANY) {
+          checkConditions = checkConditions &&
+            companyIds?.includes(person.COMPANY?.ID);
+        }
+
+        if (RESPONDENTS) {
+          checkConditions = checkConditions &&
+          respondentIds?.includes(person.RESPONDENT?.ID);
         }
 
         if (name) {
           const lowerName = String(name).toLowerCase();
           checkConditions = checkConditions && (
             person.NAME?.toLowerCase().includes(lowerName) ||
+            person.RANK?.toLowerCase().includes(lowerName) ||
             person.COMPANY?.NAME?.toLowerCase().includes(lowerName) ||
             person.EMAILS?.some(({ EMAIL }) => EMAIL.toLowerCase().includes(lowerName)) ||
-            person.PHONES?.some(({ USR$PHONENUMBER }) => USR$PHONENUMBER.includes(lowerName))
+            person.PHONES?.some(({ USR$PHONENUMBER }) => USR$PHONENUMBER.includes(lowerName)) ||
+            person.MESSENGERS?.some(({ USERNAME }) => USERNAME.includes(lowerName)) ||
+            person.LABELS?.some(({ USR$NAME }) => USR$NAME.includes(lowerName))
           );
         }
 

@@ -540,7 +540,11 @@ export function Customers(props: CustomersProps) {
       <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
       <Divider />
       <CardToolbar>
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+        >
           <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
             <Box display="inline-flex" alignSelf="center" >
               <Button
@@ -564,9 +568,7 @@ export function Customers(props: CustomersProps) {
           <IconButton
             onClick={filterHandlers.handleFilter}
             disabled={customerFetching}
-            style={{
-              width: 40
-            }}
+            size="small"
           >
             <Tooltip
               title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)

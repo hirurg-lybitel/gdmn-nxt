@@ -200,7 +200,7 @@ export interface IContactPerson extends IContactWithID {
   USR$BG_OTDEL?: IContactWithID;
   RANK?: string;
   USR$LETTER_OF_AUTHORITY?: string;
-  RESPONDENT?: IContactWithID;
+  RESPONDENT?: IContactPerson;
   PHONES?: IPhone[];
   EMAILS?: IEmail[];
   MESSENGERS?: IMessenger[];

@@ -5,8 +5,11 @@ import { IconButton, List, ListItemButton, Stack, Tooltip, Typography } from '@m
 import { IContactPerson, IEmail, ILabel, IPaginationData, IPhone } from '@gsbelarus/util-api-types';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import { GridColumns } from '@mui/x-data-grid-pro';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { saveFilterData } from '../../../store/filtersSlice';
 
-/* eslint-disable-next-line */
 export interface ContactListProps {
   contacts: IContactPerson[];
   contactsCount: number;
@@ -24,7 +27,29 @@ export function ContactList({
   paginationData,
   paginationClick
 }: ContactListProps) {
+  const [pageOptions, setPageOptions] = useState<number[]>([]);
+
+  useEffect(() => {
+    const rowPerPage = 20;
+    setPageOptions([
+      rowPerPage,
+      rowPerPage * 2,
+      rowPerPage * 5,
+      rowPerPage * 10
+    ]);
+  }, [paginationData]);
+
   const itemEditClick = (contact: IContactPerson) => () => onEditClick(contact);
+
+  const dispatch = useDispatch();
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
+  const handleLabelClick = useCallback(
+    (label: ILabel) => () => {
+      if (filterData?.['LABELS']?.findIndex((l: ILabel) => l.ID === label.ID) >= 0) return;
+      dispatch(saveFilterData({ 'contacts': { ...filterData, 'LABELS': [...filterData?.['LABELS'] || [], label] } }));
+    },
+    [filterData]
+  );
 
   const columns: GridColumns<IContactPerson> = [
     {
@@ -42,12 +67,12 @@ export function ContactList({
                   padding: '0px',
                   width: 'fit-content',
                   display: 'flex',
-
                   flexWrap: 'wrap',
                   columnGap: '5px',
+                  alignItems: 'center'
                 }}
               >
-                {labels.map((label) => {
+                {labels.slice(0, 1).map((label) => {
                   return (
                     <div key={label.ID}>
                       <Tooltip
@@ -57,14 +82,9 @@ export function ContactList({
                       >
                         <ListItemButton
                           key={label.ID}
-                          // onClick={handleLabelClick(label)}
-                          // style={labelStyle}
+                          onClick={handleLabelClick(label)}
                           sx={{
-                            display: 'inline-block',
                             padding: '2.5px 0px',
-                            '&:hover': {
-                              backgroundColor: 'transparent'
-                            }
                           }}
                         >
                           <LabelMarker label={label} />
@@ -75,29 +95,12 @@ export function ContactList({
                   );
                 }
                 )}
+                {labels.length > 1 && <Typography variant="caption">+{labels.length - 1}</Typography>}
               </List>
               : <></>}
-
           </Stack>
         );
       }
-      // renderCell: ({ value, row }) => {
-      //   const labels = row.LABELS ?? [];
-      //   const emails = row.EMAILS ?? [];
-      //   const phones = row.PHONES ?? [];
-
-      //   return (
-      //     <Stack>
-      //       <Typography>{value}</Typography>
-      //       {emails?.length > 0
-      //         ? <Typography variant="caption">{emails[0].EMAIL}</Typography>
-      //         : <></>}
-      //       {phones?.length > 0
-      //         ? <Typography variant="caption">{phones[0].USR$PHONENUMBER}</Typography>
-      //         : <></>}
-      //     </Stack>
-      //   );
-      // }
     },
     {
       field: 'PHONES', headerName: 'Телефон', width: 150,
@@ -121,6 +124,7 @@ export function ContactList({
       field: 'actions',
       type: 'actions',
       resizable: false,
+      // width: 50,
       getActions: ({ row }) => [
         Object.keys(row).length > 0
           ? <>
@@ -189,7 +193,7 @@ export function ContactList({
           // }));
         }}
         pageSize={paginationData.pageSize}
-        rowsPerPageOptions={[10, 20, 50]}
+        rowsPerPageOptions={pageOptions}
         sortingMode="server"
       />
     </>

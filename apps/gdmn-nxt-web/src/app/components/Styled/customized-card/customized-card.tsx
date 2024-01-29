@@ -1,6 +1,7 @@
 import { Card } from '@mui/material';
 import './customized-card.module.less';
 import { styled, Theme } from '@mui/material/styles';
+import { ColorMode } from '@gsbelarus/util-api-types';
 
 interface ICustomizedCardProps {
   theme?: Theme
@@ -11,7 +12,7 @@ interface ICustomizedCardProps {
 
 const CustomizedCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'borders' && prop !== 'boxShadows'
-})<ICustomizedCardProps>(({ theme, borders = false, boxShadows = false, direction = 'column' }) => ({
+})<ICustomizedCardProps>(({ theme, borders = theme.palette.mode === ColorMode.Light, boxShadows = false, direction = 'column' }) => ({
   ...(borders ? { border: `1px solid ${theme.mainContent.borderColor }` } : {}),
   ...(boxShadows ? { boxShadow: `${(theme.shadows as Array<any>)[1]}` } : { boxShadow: 'none' }),
   display: 'flex',

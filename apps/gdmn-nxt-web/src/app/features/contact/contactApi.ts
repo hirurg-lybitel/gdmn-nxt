@@ -105,6 +105,9 @@ export const contactApi = createApi({
             const options = Object.keys(opt).length > 0 ? opt : undefined;
             dispatch(
               contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
+                const findIndex = draft?.records.findIndex(({ ID }) => ID === addedContact.ID);
+                if (findIndex > 0) return;
+
                 draft?.records.unshift(addedContact);
                 if (draft.count) draft.count += 1;
               })

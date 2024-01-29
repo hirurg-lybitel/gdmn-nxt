@@ -12,7 +12,7 @@ export interface StyleProps {
 
 const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   root: {
-    transition: theme.transitions.create('all', {
+    transition: theme.transitions.create(['width', 'margin'], {
       duration: theme.transitions.duration.shorter,
       easing: theme.transitions.easing.easeInOut,
     }),
