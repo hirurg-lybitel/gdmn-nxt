@@ -26,6 +26,7 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../../social-media-input';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
+import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -371,6 +372,10 @@ export function EditContact({
     />,
   [confirmOpen, deleting]);
 
+  const handleAvatarChange = (newAvatar: string | undefined) => {
+    formik.setFieldValue('PHOTO', newAvatar);
+  };
+
   return (
     <CustomizedDialog
       open={open}
@@ -396,7 +401,7 @@ export function EditContact({
                   spacing={2}
                   alignItems="center"
                 >
-                  <Avatar />
+                  <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
                   <EditableTypography
                     name="NAME"
                     value={formik.values.NAME}
