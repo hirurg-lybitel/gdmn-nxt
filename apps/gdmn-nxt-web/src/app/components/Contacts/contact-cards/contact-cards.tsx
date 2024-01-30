@@ -77,7 +77,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               </IconButton>
             </div>
           </Stack>
-          <Typography variant="caption">{contact.COMPANY?.NAME ?? ''}</Typography>
+          <Typography variant="caption" my={'2px'}>{contact.COMPANY?.NAME ?? ''}</Typography>
           {
             Array.isArray(contact.PHONES) && contact.PHONES.length > 0 &&
             <Stack direction="row" spacing={1}>
