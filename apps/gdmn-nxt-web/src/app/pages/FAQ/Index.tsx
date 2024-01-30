@@ -144,7 +144,7 @@ export default function FAQ() {
         </>
       }
       <div className={style.body} >
-        <CustomizedCard className={style.card} borders>
+        <CustomizedCard className={style.card}>
           <CardHeader
             title={<Typography variant="pageHeader">База знаний</Typography>}
           />

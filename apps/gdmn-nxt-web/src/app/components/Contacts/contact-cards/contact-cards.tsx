@@ -51,7 +51,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
     >
       <div className={styles.frontside}>
         <CustomizedCard
-          borders
           className={styles.card}
         >
           <Stack direction="row" spacing={1}>
@@ -78,7 +77,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               </IconButton>
             </div>
           </Stack>
-          <Typography variant="caption">{contact.COMPANY?.NAME ?? ''}</Typography>
+          <Typography variant="caption" my={'2px'}>{contact.COMPANY?.NAME ?? ''}</Typography>
           {
             Array.isArray(contact.PHONES) && contact.PHONES.length > 0 &&
             <Stack direction="row" spacing={1}>
@@ -112,8 +111,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
           {
             Array.isArray(contact.MESSENGERS) && contact.MESSENGERS.length > 0 &&
             <Stack direction="row" spacing={1}>
-              {/* <PhoneAndroidIcon fontSize="small" color="primary" /> */}
-              {/* <EmailIcon fontSize="small" color="primary" /> */}
               <div className={styles['messenger-icon']}>
                 <img
                   src={socialMediaIcons[contact.MESSENGERS[0]?.CODE]}

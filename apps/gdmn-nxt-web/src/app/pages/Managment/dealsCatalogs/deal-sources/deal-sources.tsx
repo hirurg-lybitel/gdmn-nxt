@@ -85,7 +85,6 @@ export function DealSources(props: DealSourcesProps) {
 
   return (
     <CustomizedCard
-      borders
       className={styles.Card}
     >
       <CardHeader title={<Typography variant="pageHeader">Источники заявок</Typography>} />

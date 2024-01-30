@@ -67,7 +67,7 @@ export function Users(props: IUsersProps) {
       resizable: false,
       width: 100,
       align: 'center',
-      renderCell: ({ id }) => <ItemButtonDelete onClick={onDelete(Number(id))} color="primary" />
+      renderCell: ({ id }) => <ItemButtonDelete onClick={onDelete(Number(id))} />
     }
   ];
 

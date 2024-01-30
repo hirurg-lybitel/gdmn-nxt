@@ -1,16 +1,13 @@
 import { IUserGroup } from '@gsbelarus/util-api-types';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Slide, Stack, TextField } from '@mui/material';
-import { TransitionProps } from '@mui/material/transitions';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Stack, TextField, FormControlLabel, Checkbox } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import DeleteIcon from '@mui/icons-material/Delete';
 import styles from './user-group-edit.module.less';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import { FormControlLabel } from '@mui/material';
-import { Checkbox } from '@mui/material';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -28,15 +25,6 @@ const useStyles = makeStyles(() => ({
     width: '120px',
   },
 }));
-
-const Transition = forwardRef(function Transition(
-  props: TransitionProps & {
-    children: ReactElement<any, any>;
-  },
-  ref: Ref<unknown>,
-) {
-  return <Slide direction="left" ref={ref} {...props} />;
-});
 
 export interface UserGroupEditProps {
   open: boolean;
@@ -69,7 +57,10 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string().required('').max(40, 'Слишком длинное наименование'),
+      NAME: yup
+        .string()
+        .required('')
+        .max(40, 'Слишком длинное наименование'),
       DESCRIPTION: yup.string().max(260, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
@@ -160,9 +151,10 @@ export function UserGroupEdit(props: UserGroupEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <IconButton onClick={onDeleteClick}>
-          <DeleteIcon />
-        </IconButton >
+        {userGroup &&
+        <ItemButtonDelete
+          onClick={onDeleteClick}
+        />}
         <Box flex={1}/>
         <Button
           className={classes.button}

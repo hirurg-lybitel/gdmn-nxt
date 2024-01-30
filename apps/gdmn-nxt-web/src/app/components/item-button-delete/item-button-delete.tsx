@@ -5,7 +5,7 @@ export interface ItemButtonDeleteProps extends IconButtonProps {}
 
 export function ItemButtonDelete(props: ItemButtonDeleteProps) {
   return (
-    <IconButton {...props}>
+    <IconButton color="error" {...props}>
       <Tooltip title="Удалить" arrow>
         <DeleteForeverIcon fontSize="small" />
       </Tooltip>
