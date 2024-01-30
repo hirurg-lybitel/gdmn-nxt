@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, TextField, Tooltip, Typography, TypographyProps, styled } from '@mui/material';
 import styles from './editable-typography.module.less';
-import { KeyboardEvent, useState } from 'react';
+import { KeyboardEvent, createElement, useMemo, useState } from 'react';
 
 export interface EditableTypographyProps extends TypographyProps {
   name?: string;
@@ -24,6 +24,22 @@ export const EditableTypography = styled(({
   ...props
 }: EditableTypographyProps) => {
   const [editText, setEditText] = useState(!value);
+
+  const editElement = useMemo(() => {
+    if (typeof editComponent === 'object' && editComponent && 'props' in editComponent) {
+      return createElement('div', {
+        onClick: (e: any) => {
+          e.preventDefault();
+        },
+        style: {
+          flex: 1
+        }
+
+      },
+      editComponent);
+    }
+    return editComponent;
+  }, [editComponent]);
 
   const handleEdit = (e: any) => {
     e.preventDefault();
@@ -51,7 +67,7 @@ export const EditableTypography = styled(({
       onKeyDown={onKeyDown}
     >
       {editText
-        ? editComponent ??
+        ? editElement ??
           <TextField
             variant="standard"
             value={value}

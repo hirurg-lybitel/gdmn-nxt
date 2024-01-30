@@ -23,7 +23,7 @@ import filterOptions from '../../helpers/filter-options';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../../social-media-input';
+import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 
@@ -340,27 +340,35 @@ export function EditContact({
               flex={1}
             >
               {/* <img src={socialMediaIcons[CODE]} width={17} /> */}
-              <EditableTypography
-                value={USERNAME}
-                width={'100%'}
-                deleteable
-                onDelete={() => handleDeleteMessenger(index)}
-                editComponent={
-                  <SocialMediaInput
-                    value={{
-                      name: CODE,
-                      text: USERNAME
-                    }}
-                    name={`MESSANGER${index}`}
-                    autoFocus
-                    // label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
-                    onChange={(value) => handleMessengerChange(index, value)}
-                    placeholder="имя пользователя"
-                    error={isTouched && Boolean(error)}
-                    helperText={isTouched && error}
-                  />
-                }
-              />
+              <a
+                className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
+                onClick={handleStopPropagation}
+                href={`${socialMediaLinks[CODE]}${USERNAME}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <EditableTypography
+                  value={USERNAME}
+                  width={'100%'}
+                  deleteable
+                  onDelete={() => handleDeleteMessenger(index)}
+                  editComponent={
+                    <SocialMediaInput
+                      value={{
+                        name: CODE,
+                        text: USERNAME
+                      }}
+                      name={`MESSANGER${index}`}
+                      autoFocus
+                      // label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
+                      onChange={(value) => handleMessengerChange(index, value)}
+                      placeholder="имя пользователя"
+                      error={isTouched && Boolean(error)}
+                      helperText={isTouched && error}
+                    />
+                  }
+                />
+              </a>
             </Stack>
           </Stack>
 

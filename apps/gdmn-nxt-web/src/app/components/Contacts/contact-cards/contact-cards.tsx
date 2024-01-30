@@ -111,8 +111,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
           {
             Array.isArray(contact.MESSENGERS) && contact.MESSENGERS.length > 0 &&
             <Stack direction="row" spacing={1}>
-              {/* <PhoneAndroidIcon fontSize="small" color="primary" /> */}
-              {/* <EmailIcon fontSize="small" color="primary" /> */}
               <div className={styles['messenger-icon']}>
                 <img
                   src={socialMediaIcons[contact.MESSENGERS[0]?.CODE]}
