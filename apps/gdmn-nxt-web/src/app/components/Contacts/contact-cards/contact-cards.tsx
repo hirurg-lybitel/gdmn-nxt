@@ -7,7 +7,7 @@ import { IContactPerson, IPaginationData } from '@gsbelarus/util-api-types';
 import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { Avatar, Divider, IconButton, Stack, TablePagination, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { socialMediaIcons } from '@gdmn-nxt/components/social-media-input';
+import { socialMediaIcons, socialMediaLinks } from '@gdmn-nxt/components/social-media-input';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
@@ -86,6 +86,8 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 className={styles.link}
                 onClick={handleStopPropagation}
                 href={`tel:${contact.PHONES[0].USR$PHONENUMBER.replace(/\s+/g, '')}`}
+                rel="noreferrer"
+                target="_blank"
               >
                 <Typography variant="caption">{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
               </a>
@@ -99,6 +101,8 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 className={styles.link}
                 onClick={handleStopPropagation}
                 href={`mailto:${contact.EMAILS[0]?.EMAIL}`}
+                rel="noreferrer"
+                target="_blank"
               >
                 <Typography variant="caption">{contact.EMAILS[0]?.EMAIL}</Typography>
               </a>
@@ -116,8 +120,15 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   height={16}
                 />
               </div>
-              <Typography variant="caption">{contact.MESSENGERS[0]?.USERNAME}</Typography>
-              {/* https://t.me/gsjuniour */}
+              <a
+                className={`${styles.link} ${!socialMediaLinks[contact.MESSENGERS[0]?.CODE] ? styles.linkDisabled : ''}`}
+                onClick={handleStopPropagation}
+                href={`${socialMediaLinks[contact.MESSENGERS[0]?.CODE]}${contact.MESSENGERS[0]?.USERNAME}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <Typography variant="caption">{contact.MESSENGERS[0]?.USERNAME}</Typography>
+              </a>
             </Stack>
           }
           <Tooltip title={contact.isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}>
@@ -202,7 +213,15 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                       height={16}
                     />
                   </div>
-                  <Typography variant="caption">{mes.USERNAME}</Typography>
+                  <a
+                    className={`${styles.link} ${!socialMediaLinks[mes.CODE] ? styles.linkDisabled : ''}`}
+                    onClick={handleStopPropagation}
+                    href={`${socialMediaLinks[mes.CODE]}${mes.USERNAME}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Typography variant="caption">{mes.USERNAME}</Typography>
+                  </a>
                 </Stack>)}
             </div>
           </Stack>
