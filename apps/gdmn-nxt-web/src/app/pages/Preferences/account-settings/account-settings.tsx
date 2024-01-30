@@ -94,7 +94,7 @@ export function AccountSettings(props: AccountSettingsProps) {
   };
 
   return (
-    <CustomizedCard className={style.card} borders>
+    <CustomizedCard className={style.card}>
       <CardHeader
         title={
           <Typography variant="pageHeader">

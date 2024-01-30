@@ -51,7 +51,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
     >
       <div className={styles.frontside}>
         <CustomizedCard
-          borders
           className={styles.card}
         >
           <Stack direction="row" spacing={1}>

@@ -6,7 +6,7 @@ export interface ICustomization {
 }
 
 const initCustomization: ICustomization = {
-  colorMode: ColorMode.Light
+  colorMode: ColorMode.Dark
 };
 
 interface ISettingsState {

@@ -56,7 +56,6 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
   return (
     <CustomizedCard
       className={styles['item-card']}
-      borders
       boxShadows
 
     >

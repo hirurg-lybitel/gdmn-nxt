@@ -51,6 +51,9 @@ export const theme = (customization: ICustomization) => {
       secondary: {
         main: themeOptionDefault.secondaryColor
       },
+      error: {
+        main: themeOptionDefault.errorColor ?? ''
+      },
       background: {
         default: themeOptionDefault.backgroundColor,
         paper: themeOptionDefault.paperColor,

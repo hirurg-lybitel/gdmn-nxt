@@ -94,7 +94,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           backgroundColor: 'var(--color-card-bg)',
           padding: '12px',
           cursor: 'pointer',
-          ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
+          ...(card?.STATUS && ('isRead' in card?.STATUS) && !card?.STATUS?.isRead
             ? {
               backgroundColor: 'rgba(193, 228, 250, 0.5)',
               border: '1px solid rgb(13, 228, 250)',
@@ -110,9 +110,11 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
         <Stack spacing={1}>
           <Stack
             direction="row"
-            style={{ justifyContent: 'space-between' }}
+            style={{ justifyContent: 'space-between', lineHeight: '.4em' }}
           >
-            <Typography variant="subtitle1"> {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME || '', 39)}</Typography>
+            <Typography variant="subtitle1" lineHeight="1.2em">
+              {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME ?? '', 39)}
+            </Typography>
             <Typography
               className="number"
               variant="caption"
@@ -120,43 +122,22 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               {'#' + card.TASK?.USR$NUMBER}
             </Typography>
           </Stack>
-
-          <Box style={{ margin: 0 }}>
-            <Typography
+          <Box style={{ lineHeight: '1em' }}>
+            {/* <Typography
               display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
               variant="body2"
               component="span"
             >
               {`${card.DEAL?.CONTACT_NAME}, `}
-            </Typography>
+            </Typography> */}
             <Typography
               variant="subtitle2"
               component="span"
-              sx={{ display: 'inline' }}
+              sx={{ display: 'inline', lineHeight: 'inherit' }}
             >
-              {truncate(card.DEAL?.CONTACT?.NAME || '', 50)}
+              {truncate(card.DEAL?.CONTACT?.NAME ?? '', 50)}
             </Typography>
           </Box>
-          <Typography
-            variant="subtitle2"
-            color={colorModeIsLight ? 'GrayText' : 'lightgray'}
-            style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
-              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)', margin: 0 }
-              : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
-                ? { color: 'orange', margin: 0 }
-                : { margin: 0 })}
-          >
-            {card.TASK?.USR$DEADLINE
-              ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
-                {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
-              : '-/-'}
-          </Typography>
           {(!!card.TASK?.PERFORMER?.NAME || !!card.TASK?.CREATOR?.NAME) &&
           <Stack
             direction="row"
@@ -164,7 +145,6 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             alignItems="center"
             spacing={0.5}
             ml={-0.2}
-            style={{ marginTop: 4 }}
           >
             <AccountCircleIcon color="primary" fontSize="small" />
             <Typography variant="body2">
@@ -189,10 +169,29 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             </Typography>
           </Stack>}
           <Typography
-            style={{ marginTop: 4 }}
             variant="body2"
           >
             {card.DEAL?.USR$NAME}
+          </Typography>
+          <Typography
+            variant="subtitle2"
+            color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+            style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
+              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)'}
+              : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
+                ? { color: 'orange' }
+                : {})}
+          >
+            {card.TASK?.USR$DEADLINE
+              ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
+                {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
+              : '-/-'}
           </Typography>
         </Stack>
       </CustomizedCard>
