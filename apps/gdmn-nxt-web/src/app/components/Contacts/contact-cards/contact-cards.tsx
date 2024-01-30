@@ -144,7 +144,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
       </div>
       <div className={styles.backside}>
         <CustomizedCard
-          borders
           className={styles.card}
           style={{
             overflowY: 'auto',
