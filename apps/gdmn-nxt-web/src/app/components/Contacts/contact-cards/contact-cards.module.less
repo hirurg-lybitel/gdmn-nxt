@@ -59,7 +59,7 @@
 }
 
 .card:hover {
-  transform: scale(1.05);
+  // transform: scale(1.05);
   box-shadow: 10px 10px 15px rgba(0,0,0,0.3);
 }
 
@@ -78,7 +78,7 @@
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.5s;
-  height: 134px;
+  height: 138px;
 }
 
 
@@ -134,6 +134,11 @@
 .link {
   display: flex;
   text-decoration: none;
+}
+
+.linkDisabled {
+  pointer-events: none;
+  cursor: default;
 }
 
 .link:hover {

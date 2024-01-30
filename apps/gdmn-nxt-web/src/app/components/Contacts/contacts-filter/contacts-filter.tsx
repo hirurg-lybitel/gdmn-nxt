@@ -2,7 +2,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import styles from './contacts-filter.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Button, CardActions, CardContent, InputAdornment, Stack } from '@mui/material';
+import { Button, CardActions, CardContent, Checkbox, FormControlLabel, InputAdornment, Stack } from '@mui/material';
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import { IContactPerson, ICustomer, IFilteringData, ILabel } from '@gsbelarus/util-api-types';
 import { useDispatch } from 'react-redux';
@@ -26,10 +26,20 @@ export function ContactsFilter({
 }: ContactsFilterProps) {
   const dispatch = useDispatch();
   const handleOnChange = (entity: string, value: any) => {
-    const newObject = Object.assign({}, filteringData);
+    const newObject = { ...filteringData };
     delete newObject[entity];
 
-    onFilteringDataChange(Object.assign(newObject, value?.length > 0 ? { [entity]: value } : {}));
+    const newValue = (() => {
+      if (typeof value === 'boolean' && !value) {
+        return {};
+      }
+      if (value?.toString().length > 0) {
+        return { [entity]: value };
+      }
+      return {};
+    })();
+
+    onFilteringDataChange({ ...newObject, ...newValue });
   };
 
   const filterClear = useCallback(() => {
@@ -43,6 +53,15 @@ export function ContactsFilter({
     >
       <CardContent style={{ flex: 1 }}>
         <Stack spacing={2}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filteringData?.isFavorite ?? false}
+                onChange={(e) => handleOnChange('isFavorite', e.target.checked)}
+              />
+            }
+            label="Только избранные"
+          />
           <CustomerSelect
             label="Компании"
             placeholder="Выберите компанию"
@@ -58,7 +77,7 @@ export function ContactsFilter({
           />
           <LabelsSelect
             onChange={(value) => handleOnChange('LABELS', value)}
-            labels={filteringData?.LABELS as ILabel[]}
+            labels={filteringData?.LABELS as ILabel[] ?? []}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="end">

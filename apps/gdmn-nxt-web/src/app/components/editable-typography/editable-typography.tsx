@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, TextField, Tooltip, Typography, TypographyProps, styled } from '@mui/material';
 import styles from './editable-typography.module.less';
-import { ChangeEvent, KeyboardEvent, useState } from 'react';
+import { KeyboardEvent, createElement, useMemo, useState } from 'react';
 
 export interface EditableTypographyProps extends TypographyProps {
   name?: string;
@@ -25,20 +25,39 @@ export const EditableTypography = styled(({
 }: EditableTypographyProps) => {
   const [editText, setEditText] = useState(!value);
 
-  const handleEdit = () => {
+  const editElement = useMemo(() => {
+    if (typeof editComponent === 'object' && editComponent && 'props' in editComponent) {
+      return createElement('div', {
+        onClick: (e: any) => {
+          e.preventDefault();
+        },
+        style: {
+          flex: 1
+        }
+
+      },
+      editComponent);
+    }
+    return editComponent;
+  }, [editComponent]);
+
+  const handleEdit = (e: any) => {
+    e.preventDefault();
     setEditText(true);
   };
 
-  const onClose = () => {
+  const onClose = (e: any) => {
+    e.preventDefault();
     setEditText(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e: any) => {
+    e.preventDefault();
     onDelete && onDelete();
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    e.key === 'Escape' && onClose();
+    e.key === 'Escape' && onClose(e);
   };
 
   return (
@@ -48,7 +67,7 @@ export const EditableTypography = styled(({
       onKeyDown={onKeyDown}
     >
       {editText
-        ? editComponent ??
+        ? editElement ??
           <TextField
             variant="standard"
             value={value}

@@ -135,7 +135,7 @@ export interface IPaginationData {
 };
 
 export interface IFilteringData {
-  [name: string]: any[] | number;
+  [name: string]: any;
 }
 export interface IQueryOptions {
   pagination?: IPaginationData;

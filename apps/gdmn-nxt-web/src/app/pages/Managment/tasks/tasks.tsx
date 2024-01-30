@@ -102,7 +102,6 @@ export function Tasks(props: TasksProps) {
     return (
       <>
         <CustomizedCard
-          borders
           direction="row"
           className={styles.headerCard}
         >

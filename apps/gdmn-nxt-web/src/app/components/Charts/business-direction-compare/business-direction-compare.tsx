@@ -337,7 +337,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
     <Grid container direction="column" spacing={3}>
       <Grid item container direction={{ xs: 'column', md: 'column', lg: 'row' }} xs={6} spacing={3} >
         <Grid item container xs={6}>
-          <CustomizedCard borders style={{ flex: 1, display: 'block' }}>
+          <CustomizedCard style={{ flex: 1, display: 'block' }}>
             <Grid container direction="column">
               <Grid item p={2} xs={3} alignSelf="center">
                 <DateRangePicker
@@ -376,7 +376,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           </CustomizedCard>
         </Grid>
         <Grid item container xs={6}>
-          <CustomizedCard borders style={{ flex: 1, display: 'block' }}>
+          <CustomizedCard style={{ flex: 1, display: 'block' }}>
             <Grid container direction="column" >
               <Grid item p={2} xs={3} alignSelf="center">
                 <DateRangePicker
@@ -416,7 +416,7 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         </Grid>
       </Grid>
       <Grid item container flex={0.99} minHeight={'300px'}>
-        <CustomizedCard borders style={{ flex: 1 }}>
+        <CustomizedCard style={{ flex: 1 }}>
           <Chart
             type="bar"
             height="100%"
