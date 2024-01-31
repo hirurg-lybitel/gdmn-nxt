@@ -202,7 +202,7 @@ export default function Contacts() {
               }
             />
             <Box display="inline-flex" alignSelf="center">
-              <PermissionsGate actionAllowed={userPermissions?.contacts.POST}>
+              <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
                 <IconButton
                   size="small"
                   disabled={personsIsFetching}
