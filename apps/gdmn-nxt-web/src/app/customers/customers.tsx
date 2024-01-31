@@ -522,7 +522,6 @@ export function Customers(props: CustomersProps) {
 
   return (
     <CustomizedCard
-      borders
       style={{
         width: '100%',
         display: 'flex',

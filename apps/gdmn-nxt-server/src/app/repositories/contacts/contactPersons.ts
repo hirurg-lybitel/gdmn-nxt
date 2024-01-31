@@ -10,7 +10,7 @@ const find = async (
 
   const defaultClause = {
     contacttype: 2,
-    parent: 650001
+    // parent: 650001
   };
 
   const clauseString = Object

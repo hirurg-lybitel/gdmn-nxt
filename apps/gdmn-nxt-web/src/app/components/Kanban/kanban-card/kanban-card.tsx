@@ -267,12 +267,18 @@ export function KanbanCard(props: KanbanCardProps) {
         }}
         onDoubleClick={doubleClick}
       >
-        <Stack direction="column" spacing={0.5}>
+        <Stack direction="column" spacing={1}>
           <Stack
             direction="row"
-            style={{ position: 'relative' }}
+            style={{ position: 'relative'}}
           >
-            <Typography variant="subtitle1" flex={1}>{card.DEAL?.USR$NAME}</Typography>
+            <Typography
+              variant="subtitle1"
+              flex={1}
+              lineHeight="1.2em"
+            >
+              {card.DEAL?.USR$NAME}
+            </Typography>
             <Typography
               className="number"
               variant="caption"

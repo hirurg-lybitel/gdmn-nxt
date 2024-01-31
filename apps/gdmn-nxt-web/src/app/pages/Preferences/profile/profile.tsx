@@ -324,7 +324,7 @@ export function Profile(props: ProfileProps) {
       {memoCheckCode}
       {memoCreateCode}
       {memoConfirmDialog}
-      <CustomizedCard className={styles.mainCard} borders>
+      <CustomizedCard className={styles.mainCard}>
         <CardHeader title={<Typography variant="pageHeader">Профиль</Typography>} />
         <Divider />
         <CardContent className={styles['card-content']}>

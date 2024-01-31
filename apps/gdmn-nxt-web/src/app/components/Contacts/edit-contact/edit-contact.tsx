@@ -23,7 +23,7 @@ import filterOptions from '../../helpers/filter-options';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../../social-media-input';
+import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
@@ -212,6 +212,10 @@ export function EditContact({
     setConfirmOpen(true);
   };
 
+  const handleStopPropagation = (e: any) => {
+    e.stopPropagation();
+  };
+
   const phoneOptions = useMemo(() =>
     <div>
       {formik.values.PHONES?.map(({ ID, USR$PHONENUMBER }, index) => {
@@ -226,24 +230,29 @@ export function EditContact({
             spacing={2}
           >
             <PhoneAndroidIcon fontSize="small" color="primary" />
-            <EditableTypography
-              value={USR$PHONENUMBER}
-              width={'100%'}
-              deleteable
-              onDelete={() => handleDeletePhone(index)}
-              editComponent={
-                <TelephoneInput
-                  name={`PHONE${index}`}
-                  label={`Телефон ${index + 1}`}
-                  value={USR$PHONENUMBER ?? ''}
-                  onChange={(value) => handlePhoneChange(index, value)}
-                  fixedCode
-                  strictMode
-                  error={isTouched && Boolean(error)}
-                  helperText={isTouched && error}
-                />
-              }
-            />
+            <a
+              className={styles.link}
+              href={`tel:${USR$PHONENUMBER.replace(/\s+/g, '')}`}
+            >
+              <EditableTypography
+                value={USR$PHONENUMBER}
+                width={'100%'}
+                deleteable
+                onDelete={() => handleDeletePhone(index)}
+                editComponent={
+                  <TelephoneInput
+                    name={`PHONE${index}`}
+                    autoFocus
+                    value={USR$PHONENUMBER ?? ''}
+                    onChange={(value) => handlePhoneChange(index, value)}
+                    fixedCode
+                    strictMode
+                    error={isTouched && Boolean(error)}
+                    helperText={isTouched && error}
+                  />
+                }
+              />
+            </a>
           </Stack>
         );
       })}
@@ -272,25 +281,29 @@ export function EditContact({
             spacing={2}
           >
             <EmailIcon fontSize="small" color="primary" />
-            <EditableTypography
-              value={EMAIL}
-              width={'100%'}
-              deleteable
-              onDelete={() => handleDeleteEmail(index)}
-              editComponent={
-                <TextField
-                  fullWidth
-                  name={`EMAIL${index}`}
-                  label={`Email ${index + 1}`}
-                  value={EMAIL ?? ''}
-                  onChange={(e) => handleEmailChange(index, e.target.value)}
-                  error={isTouched && Boolean(error)}
-                  helperText={isTouched && error}
-                />
-              }
-            />
+            <a
+              className={styles.link}
+              href={`mailto:${EMAIL}`}
+            >
+              <EditableTypography
+                value={EMAIL}
+                width={'100%'}
+                deleteable
+                onDelete={() => handleDeleteEmail(index)}
+                editComponent={
+                  <TextField
+                    fullWidth
+                    autoFocus
+                    name={`EMAIL${index}`}
+                    value={EMAIL ?? ''}
+                    onChange={(e) => handleEmailChange(index, e.target.value)}
+                    error={isTouched && Boolean(error)}
+                    helperText={isTouched && error}
+                  />
+                }
+              />
+            </a>
           </Stack>
-
         );
       })}
       <div className={styles['addItemButtonContainer']}>
@@ -317,34 +330,46 @@ export function EditContact({
             alignItems="center"
             spacing={2}
           >
-            <SmsIcon fontSize="small" color="primary" />
+            {/* <SmsIcon fontSize="small" color="primary" /> */}
+            <div className={styles['messenger-icon']}>
+              <img src={socialMediaIcons[CODE]} width={17} />
+            </div>
             <Stack
               direction="row"
               alignItems="center"
               spacing={1}
               flex={1}
             >
-              <img src={socialMediaIcons[CODE]} width={17} />
-              <EditableTypography
-                value={USERNAME}
-                width={'100%'}
-                deleteable
-                onDelete={() => handleDeleteMessenger(index)}
-                editComponent={
-                  <SocialMediaInput
-                    value={{
-                      name: CODE,
-                      text: USERNAME
-                    }}
-                    name={`MESSANGER${index}`}
-                    label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
-                    onChange={(value) => handleMessengerChange(index, value)}
-                    placeholder="имя пользователя"
-                    error={isTouched && Boolean(error)}
-                    helperText={isTouched && error}
-                  />
-                }
-              />
+              {/* <img src={socialMediaIcons[CODE]} width={17} /> */}
+              <a
+                className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
+                onClick={handleStopPropagation}
+                href={`${socialMediaLinks[CODE]}${USERNAME}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <EditableTypography
+                  value={USERNAME}
+                  width={'100%'}
+                  deleteable
+                  onDelete={() => handleDeleteMessenger(index)}
+                  editComponent={
+                    <SocialMediaInput
+                      value={{
+                        name: CODE,
+                        text: USERNAME
+                      }}
+                      name={`MESSANGER${index}`}
+                      autoFocus
+                      // label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
+                      onChange={(value) => handleMessengerChange(index, value)}
+                      placeholder="имя пользователя"
+                      error={isTouched && Boolean(error)}
+                      helperText={isTouched && error}
+                    />
+                  }
+                />
+              </a>
             </Stack>
           </Stack>
 

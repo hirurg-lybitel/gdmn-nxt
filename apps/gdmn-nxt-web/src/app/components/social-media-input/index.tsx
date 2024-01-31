@@ -4,6 +4,7 @@ import SocialMediaButton from './components/social-media-button/social-media-but
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
 import { IIconsNames } from './social-media-icons';
 export * from './social-media-icons';
+export * from './social-media-links';
 
 type BaseTextFieldProps = Omit<
   TextFieldProps,

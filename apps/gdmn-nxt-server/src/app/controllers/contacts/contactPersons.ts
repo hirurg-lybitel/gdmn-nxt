@@ -35,10 +35,11 @@ const getAll: RequestHandler = async (req, res) => {
   const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
-  const { name, LABELS, COMPANY, RESPONDENTS } = req.query;
+  const { name, LABELS, COMPANY, RESPONDENTS, isFavorite } = req.query;
   const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
   const companyIds = COMPANY ? (COMPANY as string).split(',').map(Number) ?? [] : [];
   const respondentIds = RESPONDENTS ? (RESPONDENTS as string).split(',').map(Number) ?? [] : [];
+  const favoriteOnly = (isFavorite as string)?.toLowerCase() === 'true';
   /** Session data */
   const userId = req.user['id'];
 
@@ -100,10 +101,16 @@ const getAll: RequestHandler = async (req, res) => {
           );
         }
 
+        const isFavorite = !!favoritesMap[userId]?.some(f => f === person.ID);
+        if (favoriteOnly) {
+          checkConditions = checkConditions &&
+            isFavorite && favoriteOnly;
+        }
+
         if (checkConditions) {
           filteredArray.push({
             ...person,
-            isFavorite: !!favoritesMap[userId]?.some(f => f === person.ID)
+            isFavorite
           });
         }
         return filteredArray;

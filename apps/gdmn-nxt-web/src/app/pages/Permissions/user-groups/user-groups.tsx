@@ -103,7 +103,6 @@ export function UserGroups(props: UserGroupsProps) {
 
   return (
     <CustomizedCard
-      borders
       style={{
         flex: 1,
         display: 'flex',

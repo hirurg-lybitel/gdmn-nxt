@@ -128,7 +128,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         {...(insertCustomerIsLoading
           ? {
             options: [],
-            value: null
+            value: multiple ? [] : null
           }
           : {
             options: customers,

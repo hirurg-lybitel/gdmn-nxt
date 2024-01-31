@@ -132,7 +132,6 @@ export function Deals(props: DealsProps) {
     return (
       <>
         <CustomizedCard
-          borders
           direction="row"
           className={styles.headerCard}
         >
