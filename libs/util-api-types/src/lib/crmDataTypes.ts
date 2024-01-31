@@ -309,6 +309,7 @@ export type ActionName =
   'customers' |
   'updates' |
   'stages' |
+  'contacts' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 

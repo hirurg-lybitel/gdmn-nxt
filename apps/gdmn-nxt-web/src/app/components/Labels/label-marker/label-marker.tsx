@@ -81,14 +81,15 @@ export function LabelMarker(props: LabelMarkerProps) {
         display: 'flex',
         alignItems: 'center',
         padding: '0px 5px',
-        minHeight: '20px',
-        // fontSize: '12px',
-        // textTransform: 'none'
+        minHeight: '22px',
+        fontSize: '0.8125rem',
+        fontWeight: 600,
+        textTransform: 'none'
       }}
     >
       {(icon || USR$ICON) &&
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <IconByName name={icon || USR$ICON}/>
+          <IconByName name={icon ?? USR$ICON} style={{ width: 14, height: 14 }} />
         </div>
       }
       <span style={{ margin: '0 5px' }}>

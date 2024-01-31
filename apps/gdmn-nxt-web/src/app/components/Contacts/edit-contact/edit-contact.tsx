@@ -27,6 +27,9 @@ import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } fr
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -41,6 +44,7 @@ export function EditContact({
   onSubmit,
   onCancel,
 }: EditContactProps) {
+  const userPermissions = usePermissions();
   const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
   const [tabIndex, setTabIndex] = useState('1');
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -550,12 +554,9 @@ export function EditContact({
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <IconButton
-          onClick={handleDeleteClick}
-          size="small"
-        >
-          <DeleteIcon />
-        </IconButton>
+        <PermissionsGate actionAllowed={userPermissions?.contacts.DELETE}>
+          <ItemButtonDelete onClick={handleDeleteClick} />
+        </PermissionsGate>
         <Box flex={1}/>
         <Button
           className={styles.button}
@@ -565,14 +566,17 @@ export function EditContact({
         >
              Отменить
         </Button>
-        <Button
-          className={styles.button}
-          type="submit"
-          form="contactEditForm"
-          variant="contained"
-        >
+        <PermissionsGate actionAllowed={userPermissions?.contacts.PUT} show>
+          <Button
+            className={styles.button}
+            type="submit"
+            form="contactEditForm"
+            variant="contained"
+            disabled={!userPermissions?.contacts.PUT}
+          >
              Сохранить
-        </Button>
+          </Button>
+        </PermissionsGate>
       </DialogActions>
       {memoConfirmDialog}
     </CustomizedDialog>

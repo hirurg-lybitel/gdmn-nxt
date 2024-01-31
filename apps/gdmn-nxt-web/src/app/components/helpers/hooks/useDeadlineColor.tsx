@@ -5,7 +5,7 @@ import { ColorMode } from '@gsbelarus/util-api-types';
 
 const useDeadlineColor = () => {
   const daysColor = (days: number): string => {
-    if (days === 1) return 'rgb(255, 214, 0)';
+    if (days === 1) return 'darkorange';
     if (days <= 0) return 'rgb(255, 82, 82)';
     return '';
   };
