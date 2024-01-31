@@ -5,7 +5,7 @@ export interface ItemButtonEditProps extends IconButtonProps {}
 
 export function ItemButtonEdit(props: ItemButtonEditProps) {
   return (
-    <IconButton {...props}>
+    <IconButton size="small" {...props}>
       <Tooltip title="Редактировать" arrow>
         <EditIcon fontSize="small" />
       </Tooltip>

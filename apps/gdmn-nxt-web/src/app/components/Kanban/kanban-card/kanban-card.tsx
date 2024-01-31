@@ -176,7 +176,7 @@ export function KanbanCard(props: KanbanCardProps) {
     return '';
   };
   const dayColor = (days: number, baseColor?: string): string => {
-    if (days === 1) return 'rgb(255, 214, 0)';
+    if (days === 1) return 'darkorange';
     if (days <= 0) return 'rgb(255, 82, 82)';
     return baseColor ? baseColor : colorModeIsLight ? 'GrayText' : 'lightgray';
   };
