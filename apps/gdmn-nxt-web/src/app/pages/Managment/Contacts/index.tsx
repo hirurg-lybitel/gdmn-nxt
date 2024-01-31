@@ -30,8 +30,10 @@ import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-ca
 import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list';
 import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
 export default function Contacts() {
+  const userPermissions = usePermissions();
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
@@ -200,15 +202,17 @@ export default function Contacts() {
               }
             />
             <Box display="inline-flex" alignSelf="center">
-              <IconButton
-                size="small"
-                disabled={personsIsFetching}
-                onClick={() => setUpsertContact({ addContact: true })}
-              >
-                <Tooltip arrow title="Создать контакт">
-                  <AddCircleIcon color={personsIsFetching ? 'disabled' : 'primary'} />
-                </Tooltip>
-              </IconButton>
+              <PermissionsGate actionAllowed={userPermissions?.contacts.POST}>
+                <IconButton
+                  size="small"
+                  disabled={personsIsFetching}
+                  onClick={() => setUpsertContact({ addContact: true })}
+                >
+                  <Tooltip arrow title="Создать контакт">
+                    <AddCircleIcon color={personsIsFetching ? 'disabled' : 'primary'} />
+                  </Tooltip>
+                </IconButton>
+              </PermissionsGate>
             </Box>
             <Box display="inline-flex" alignSelf="center">
               <CustomLoadingButton

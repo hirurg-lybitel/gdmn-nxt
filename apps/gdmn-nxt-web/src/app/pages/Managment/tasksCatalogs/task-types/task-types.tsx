@@ -318,6 +318,7 @@ export function TaskTypes(props: TaskTypesProps) {
             columns={columns}
             loading={isLoading}
             apiRef={apiRef}
+            rowHeight={50}
             onRowEditStart={handleRowEditStart}
             onRowEditStop={handleRowEditStop}
             onCellKeyDown={handleCellKeyDown}

@@ -1,0 +1,29 @@
+.menuContainer {
+  z-index: 1300;
+  padding-top: 4px;
+  margin-top: 4px !important;
+}
+
+.avatar:hover {
+  cursor: pointer !important;
+}
+
+.menuLabel:hover {
+  cursor: pointer !important;
+}
+
+.menuContainer:before {
+  content: "";
+  margin: auto;
+  position: absolute;
+  display: block;
+  left: 12px;
+  right: 0;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  border: 1px solid;
+  border-color: var(--color-borders) transparent transparent var(--color-borders);
+  background-color: var(--color-paper-bg)
+ }

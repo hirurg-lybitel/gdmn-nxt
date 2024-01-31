@@ -95,8 +95,8 @@ export const theme = (customization: ICustomization) => {
 
   const theme = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
   theme.components = { ...locales.ruRU.components, ...componentStyleOverrides(theme) };
-  theme.shadows[1] = customization.colorMode === ColorMode.Dark
-    ? '0px 4px 20px rgba(100, 110, 120, 0.3)'
+  theme.shadows[1] = theme.shadows[1] = customization.colorMode === ColorMode.Dark
+    ? '0px 4px 20px rgba(0,0,0,0.5)'
     : '0px 4px 20px rgba(170, 180, 190, 0.3)';
 
   return theme;

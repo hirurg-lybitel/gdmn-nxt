@@ -180,13 +180,6 @@ export function LabelListItem(props: LabelListItemProps) {
                 color="primary"
                 onClick={handleEditClick}
               />
-              {/* <IconButton
-                disabled={editIsLoading || deleteIsLoading}
-                color="primary"
-                onClick={handleEditClick}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton> */}
             </PermissionsGate>
             <PermissionsGate actionAllowed={userPermissions?.labels.DELETE}>
               <ItemButtonDelete
