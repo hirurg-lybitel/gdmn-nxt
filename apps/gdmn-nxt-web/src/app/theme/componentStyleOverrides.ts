@@ -13,6 +13,9 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
           '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#5a5a5a' : '#f5f5f5',
+          '--color-main-bg': theme.palette.background.default,
+          '--color-paper-bg': theme.palette.background.paper,
+          '--color-borders': theme.mainContent.borderColor,
           '--border-radius': theme.mainContent.borderRadius,
           '--menu-width': `${theme.drawerWidth}px`,
         },
@@ -174,7 +177,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 'var(--border-radius)',
+          // borderRadius: 'var(--border-radius)',
         }
       }
     }
