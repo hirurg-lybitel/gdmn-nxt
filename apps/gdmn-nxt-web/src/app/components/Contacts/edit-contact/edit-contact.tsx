@@ -554,7 +554,7 @@ export function EditContact({
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <PermissionsGate actionAllowed={userPermissions?.contacts.DELETE}>
+        <PermissionsGate actionAllowed={userPermissions?.contacts?.DELETE}>
           <ItemButtonDelete onClick={handleDeleteClick} />
         </PermissionsGate>
         <Box flex={1}/>
@@ -566,13 +566,13 @@ export function EditContact({
         >
              Отменить
         </Button>
-        <PermissionsGate actionAllowed={userPermissions?.contacts.PUT} show>
+        <PermissionsGate actionAllowed={userPermissions?.contacts?.PUT} show>
           <Button
             className={styles.button}
             type="submit"
             form="contactEditForm"
             variant="contained"
-            disabled={!userPermissions?.contacts.PUT}
+            disabled={!userPermissions?.contacts?.PUT}
           >
              Сохранить
           </Button>
