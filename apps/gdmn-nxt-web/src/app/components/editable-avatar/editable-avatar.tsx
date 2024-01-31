@@ -74,6 +74,7 @@ export function EditableAvatar({
         anchorEl={anchorEl}
         placement="bottom-start"
         sx={{
+          paddingLeft: `${size / 2 - 20}px`,
           '::before': {
             left: `calc(-100% - -${size}px)`
           }
