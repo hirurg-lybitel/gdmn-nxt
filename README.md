@@ -3,7 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![GitHub package version](https://img.shields.io/github/package-json/v/gsbelarus/gdmn-nxt?style=flat-square)](https://github.com/gsbelarus/gdmn-nxt/)
 
-![image](https://github.com/gsbelarus/gdmn-nxt/assets/11502258/70d72adf-e02f-4ee0-b688-9de764a07fe1)
+![image](https://github.com/gsbelarus/gdmn-nxt/assets/11502258/552f3ae1-2ac2-4615-9c10-7c9766d6c58e)
+
 
 ## Установка и запуск
  - скачать и установить [nodejs](https://nodejs.org/en/download/)
