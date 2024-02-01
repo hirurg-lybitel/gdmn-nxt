@@ -1,19 +1,39 @@
-import { IconButton, IconButtonProps, Tooltip } from '@mui/material';
+import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { styled } from '@mui/material/styles';
 
-export interface ItemButtonDeleteProps extends IconButtonProps {}
+export interface ItemButtonDeleteProps extends IconButtonProps {
+  button?: boolean;
+  label?: string;
+}
 
-export function ItemButtonDelete(props: ItemButtonDeleteProps) {
+export function ItemButtonDelete({
+  button = false,
+  label = '',
+  ...rest
+}: ItemButtonDeleteProps) {
+  const Container =
+    button
+      ? styled(IconButton)(({ theme }) => ({
+        color: theme.palette.error.main,
+        ...rest,
+      }))
+      : styled('div')(({ theme }) => ({
+        color: theme.palette.error.main,
+      }));
   return (
-    <IconButton
-      color="error"
-      size="small"
-      {...props}
-    >
+    <Container size="small">
       <Tooltip title="Удалить" arrow>
-        <DeleteForeverIcon fontSize="small" />
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1}
+        >
+          <DeleteForeverIcon fontSize="small" />
+          {label && <span>{label}</span>}
+        </Stack>
       </Tooltip>
-    </IconButton>
+    </Container>
   );
 }
 

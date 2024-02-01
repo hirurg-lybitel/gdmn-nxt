@@ -183,6 +183,7 @@ export function LabelListItem(props: LabelListItemProps) {
             </PermissionsGate>
             <PermissionsGate actionAllowed={userPermissions?.labels.DELETE}>
               <ItemButtonDelete
+                button
                 disabled={editIsLoading || deleteIsLoading}
                 onClick={handleDeleteClick}
               />
