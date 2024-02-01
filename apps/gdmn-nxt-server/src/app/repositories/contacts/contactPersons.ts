@@ -253,7 +253,7 @@ const update = async (
           PHONENUMBER: phone.USR$PHONENUMBER
         }
       );
-    });
+    }) ?? [];
 
     const deleteEmails = await executeQuery(
       'DELETE FROM USR$CRM_EMAILS WHERE USR$CONTACTKEY = :CONTACTKEY',
@@ -275,7 +275,7 @@ const update = async (
           EMAIL: email.EMAIL
         }
       );
-    });
+    }) ?? [];
 
     const deleteMessengers = await executeQuery(
       'DELETE FROM USR$CRM_MESSENGERS WHERE USR$CONTACTKEY = :CONTACTKEY',
@@ -298,7 +298,7 @@ const update = async (
           USERNAME: messenger.USERNAME
         }
       );
-    });
+    }) ?? [];
 
     const deleteLabels = await executeQuery(
       'DELETE FROM USR$CRM_CONTACT_LABELS WHERE USR$CONTACTKEY = :CONTACTKEY',
@@ -320,7 +320,7 @@ const update = async (
           LABELKEY: label.ID
         }
       );
-    });
+    }) ?? [];
 
 
     const result = await Promise.allSettled([
@@ -431,7 +431,7 @@ const save = async (
           PHONENUMBER: phone.USR$PHONENUMBER
         }
       );
-    });
+    }) ?? [];
 
     // insert emails
     const emailsPromises = EMAILS?.map(async email => {
@@ -446,7 +446,7 @@ const save = async (
           EMAIL: email.EMAIL
         }
       );
-    });
+    }) ?? [];
 
     // insert messengers
     const messengersPromises = MESSENGERS?.map(async messenger => {
@@ -462,7 +462,7 @@ const save = async (
           USERNAME: messenger.USERNAME
         }
       );
-    });
+    }) ?? [];
 
     // insert lables
     const labelsPromises = LABELS?.map(async label => {
@@ -477,7 +477,7 @@ const save = async (
           LABELKEY: label.ID
         }
       );
-    });
+    }) ?? [];
 
     const result = await Promise.allSettled([
       ...phonesPromises,
