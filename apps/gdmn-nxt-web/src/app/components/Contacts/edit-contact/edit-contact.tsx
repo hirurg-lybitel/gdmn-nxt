@@ -555,7 +555,7 @@ export function EditContact({
       </DialogContent>
       <DialogActions>
         <PermissionsGate actionAllowed={userPermissions?.contacts?.DELETE}>
-          <ItemButtonDelete onClick={handleDeleteClick} />
+          <ItemButtonDelete button onClick={handleDeleteClick} />
         </PermissionsGate>
         <Box flex={1}/>
         <Button

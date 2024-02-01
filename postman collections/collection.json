@@ -1445,6 +1445,44 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Сбросить настройки",
+					"id": "8ff9c630-ad90-441d-afdd-0982e9520318",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"AVATAR\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAANpJREFUSEvtld0RgjAQhD860U60EsdK1Eq0E6UTO9FZJsecGUJiAB8YeUw2tz+5HA0Lf83C9VkXwQ64ApuJsT2BI/BQHR/RHRDJHJ9ItjHBK1QW+6nCiSmX0L62d2AEWlNMB+BcaEe4S8D6Oh8R2cYtgKVIRLqXVHQ+7xjbiR9yoHUdNKKUG69akcZuRwksmVihYpObfQCMOSwiiN34KxlS7feLCbwbxdYC1iljPfA1QWFD9bA/QTax30c057DTJO3ein/JekDq7akTNTmus6HWANb1y6xJIHvmDazmMRmQH+9hAAAAAElFTkSuQmCC\",\r\n    \"COLORMODE\": \"light\",\r\n    \"LASTVERSION\": \"0.2.9\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/profile-settings/reset/:userId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"profile-settings",
+								"reset",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "949743548"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "f825e174-a264-4511-9a7c-04a4d3ec7e15"
