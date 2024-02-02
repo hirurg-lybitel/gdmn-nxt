@@ -10,6 +10,7 @@ export interface ItemButtonDeleteProps extends IconButtonProps {
 export function ItemButtonDelete({
   button = false,
   label = '',
+  onClick = () => {},
   ...rest
 }: ItemButtonDeleteProps) {
   const Container =
@@ -21,6 +22,11 @@ export function ItemButtonDelete({
       : styled('div')(({ theme }) => ({
         color: theme.palette.error.main,
       }));
+
+  Container.defaultProps = {
+    onClick
+  };
+
   return (
     <Container size="small">
       <Tooltip title="Удалить" arrow>
