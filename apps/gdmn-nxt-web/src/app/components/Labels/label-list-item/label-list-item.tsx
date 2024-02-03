@@ -1,17 +1,12 @@
 import { ILabel, Permissions } from '@gsbelarus/util-api-types';
-import { Box, Grid, IconButton, Typography } from '@mui/material';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Box, Grid, Typography } from '@mui/material';
 import styles from './label-list-item.module.less';
 import { useCallback, useState } from 'react';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
+import { useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
-import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -24,22 +19,6 @@ export interface LabelListItemProps {
 }
 
 
-const useStyles = makeStyles(() => ({
-  label: {
-    display: 'inline-block',
-    fontSize: '0.625rem',
-    fontWeight: 'bold',
-    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-    textTransform: 'uppercase',
-    borderRadius: '2em',
-    padding: '2.5px 9px',
-    margin: '0px 5px',
-    width: 'fit-content',
-    height: 'fit-content',
-    border: '1px solid'
-  }
-}));
-
 export function LabelListItem(props: LabelListItemProps) {
   const { data, onEdit, onDelete } = props;
   const { ID } = data;
@@ -49,9 +28,6 @@ export function LabelListItem(props: LabelListItemProps) {
 
   const [deleteLabel, { isLoading: deleteIsLoading }] = useDeleteLabelMutation();
   const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
-
-  const classes = useStyles();
-
 
   const handleEditClick = useCallback(() => {
     setOpenEditForm(true);
