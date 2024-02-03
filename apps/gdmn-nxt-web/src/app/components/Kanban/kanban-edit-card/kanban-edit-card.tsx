@@ -225,7 +225,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
             .max(180, 'Слишком длинное наименование'),
-          USR$AMOUNT: yup.number()
+          USR$AMOUNT: yup.number().nullable()
             .max(1000000, 'Слишком большая сумма'),
         })
     }),
