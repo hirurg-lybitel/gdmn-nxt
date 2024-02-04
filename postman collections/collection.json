@@ -106,6 +106,45 @@
 							"response": []
 						},
 						{
+							"name": "Обновить несколько контактов",
+							"id": "cafb68e1-7486-4ce9-a0fa-bac6be67ceee",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Тестовый пользователь Михайлович\",\r\n    \"PHONES\": [\r\n        {\r\n            \"ID\": -1,\r\n            \"USR$PHONENUMBER\": \"+375 33 333 33 33\"\r\n        }\r\n    ],\r\n    \"EMAILS\": [\r\n        {\r\n            \"ID\": 147007852,\r\n            \"EMAIL\": \"y1@gmail.com\"\r\n        },\r\n        {\r\n            \"ID\": 147007853,\r\n            \"EMAIL\": \"y2@gmail.com\"\r\n        },\r\n        {\r\n            \"ID\": -1,\r\n            \"EMAIL\": \"new.y3@gmail.com\"\r\n        }\r\n    ],\r\n    \"MESSENGERS\": [],\r\n    \"LABELS\": [\r\n        {\r\n            \"ID\": 147007706,\r\n            \"USR$NAME\": \"Офисные\",\r\n            \"USR$COLOR\": \"#a81a1a\",\r\n            \"USR$DESCRIPTION\": \"Свои сотрудники\",\r\n            \"USR$ICON\": \"House\"\r\n        },\r\n        {\r\n            \"ID\": 358013507,\r\n            \"USR$NAME\": \"Испытания\",\r\n            \"USR$COLOR\": \"#ff6900\",\r\n            \"USR$DESCRIPTION\": \"\",\r\n            \"USR$ICON\": \"\"\r\n        }\r\n    ],\r\n    \"ADDRESS\": \"Беларусь, Минск 1 - 1\",\r\n    \"RANK\": \"Rank2\",\r\n    \"ID\": 363286037,\r\n    \"NOTE\": null,\r\n    \"BG_OTDEL\": null,\r\n    \"WCOMPANYKEY\": 148312613,\r\n    \"RESPONDENT\": {\r\n        \"ID\": 359641353,\r\n        \"NAME\": \"Тюфтин Даниил Игоревич\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/contacts/persons/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contacts",
+										"persons",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "a4b4d213-230a-4363-92b9-2fb2abbec1c1",
+											"key": "id",
+											"value": "363286037"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Информация по контакту",
 							"id": "94b46778-60fe-4ed2-8b9c-bbd1c21ee7df",
 							"protocolProfileBehavior": {
