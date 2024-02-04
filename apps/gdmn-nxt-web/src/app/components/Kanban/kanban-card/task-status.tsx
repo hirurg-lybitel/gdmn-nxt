@@ -104,7 +104,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
   return (
     <div
       style={{
-        height: open ? tasks.length * rowHeight : '0px',
+        height: open ? tasks.length * rowHeight : '1px',
         maxHeight: maxLines * rowHeight,
         transition: '0.5s'
       }}
