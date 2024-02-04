@@ -55,12 +55,16 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
         >
           <Stack direction="row" spacing={1}>
             <Avatar src={contact.PHOTO ?? ''} />
-            <Stack>
-              <Typography variant="body2" fontWeight={600}>
-                {contact.NAME
-                  .split(' ')
-                  .slice(0, 2)
-                  .join(' ')}
+            <Stack style={{ overflow: 'hidden', paddingRight: '24px' }}>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis' }}
+              >
+                {contact.NAME}
               </Typography>
               <Typography variant="caption">{contact.RANK}</Typography>
             </Stack>
