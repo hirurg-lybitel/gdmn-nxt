@@ -107,7 +107,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           }
         }}
       >
-        <Stack spacing={1}>
+        <Stack spacing={0.5}>
           <Stack
             direction="row"
             style={{ justifyContent: 'space-between', lineHeight: '.4em' }}

@@ -50,6 +50,7 @@ export function ContactsFilter({
     <CustomizedDialog
       open={open}
       onClose={onClose}
+      width={400}
     >
       <CardContent style={{ flex: 1 }}>
         <Stack spacing={2}>

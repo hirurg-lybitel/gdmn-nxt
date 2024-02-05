@@ -14,12 +14,13 @@ import { IconButton } from '@mui/material';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
+  loading?: boolean;
   gridColumns?: GridColumns;
   disableAddCard?: boolean;
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], gridColumns, disableAddCard = false } = props;
+  const { columns = [], gridColumns, disableAddCard = false, loading = false } = props;
 
   const defaultGridColumns: GridColumns = [
     {
@@ -239,7 +240,7 @@ export function KanbanList(props: KanbanListProps) {
         treeData
         rows={rows || []}
         columns={cols}
-        loading={cols.length === 0}
+        loading={loading}
         getTreeDataPath={getTreeDataPath}
         groupingColDef={groupingColDef}
         hideFooter

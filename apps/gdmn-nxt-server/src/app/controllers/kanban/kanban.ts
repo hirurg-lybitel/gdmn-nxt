@@ -64,7 +64,7 @@ const get: RequestHandler = async (req, res) => {
     const deadline = parseInt(req.query.deadline as string);
     const userId = parseInt(req.query.userId as string);
     const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
-    const { departments, customers, requestNumber, dealNumber, performers, period, isPerformer, isCreator, name } = req.query;
+    const { departments, customers, requestNumber, dealNumber, performers, creators, period, isPerformer, isCreator, name } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
@@ -186,6 +186,7 @@ const get: RequestHandler = async (req, res) => {
         ${requestNumber ? ` AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%' ` : ''}
         ${dealNumber ? ` AND deal.USR$NUMBER = ${dealNumber} ` : ''}
         ${performers ? ` AND (performer.ID IN (${performers}) OR secondPerformer.ID IN (${performers})) ` : ''}
+        ${creators ? ` OR creator.ID IN (${creators}) ` : ''}
         ${performerOrCreator}
         ${periods.length === 2 ? ` AND CAST(deal.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}' ` : ''}`;
 
@@ -605,7 +606,7 @@ const getTasks: RequestHandler = async (req, res) => {
 
     const userId = parseInt(req.query.userId as string);
     const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
-    const { taskNumber, performers, period, isPerformer, isCreator, name } = req.query;
+    const { taskNumber, performers, creators, period, isPerformer, isCreator, name } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
@@ -635,6 +636,7 @@ const getTasks: RequestHandler = async (req, res) => {
         : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
+      ${creators ? ` OR creator.ID IN (${creators}) ` : ''}
       ${performerOrCreator}
       ${periods.length === 2 ? ` AND CAST(task.USR$CREATIONDATE AS DATE) BETWEEN '${new Date(Number(periods[0])).toLocaleDateString()}' AND '${new Date(Number(periods[1])).toLocaleDateString()}'` : ''}`;
 
