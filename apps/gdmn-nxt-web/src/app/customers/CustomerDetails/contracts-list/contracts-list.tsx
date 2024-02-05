@@ -52,7 +52,6 @@ export function ContractsList(props: ContractsListProps) {
       flex="1"
       display="flex"
       spacing={1}
-      p={3}
     >
       {/* <Box>
         <Button

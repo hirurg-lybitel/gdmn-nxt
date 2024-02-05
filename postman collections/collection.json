@@ -106,6 +106,28 @@
 							"response": []
 						},
 						{
+							"name": "Обновить несколько контактов",
+							"id": "cafb68e1-7486-4ce9-a0fa-bac6be67ceee",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    {\r\n        \"ID\": 154102093,\r\n        \"COMPANY\": {\r\n            \"ID\": 147323396\r\n        }\r\n    },\r\n    {\r\n        \"ID\": 154858257,\r\n        \"COMPANY\": {\r\n            \"ID\": 147323396\r\n        }\r\n    }\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}//contacts/persons/many"
+							},
+							"response": []
+						},
+						{
 							"name": "Информация по контакту",
 							"id": "94b46778-60fe-4ed2-8b9c-bbd1c21ee7df",
 							"protocolProfileBehavior": {

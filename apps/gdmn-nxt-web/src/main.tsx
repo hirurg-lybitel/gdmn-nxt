@@ -115,7 +115,7 @@ const Main = () => {
                               <Route path="" element={<Navigate to="list" />} />
                               <Route path="orders/list" element={<OrderList />} />
                               <Route path="list" element={<CustomersList />} />
-                              <Route path="list/details/:id" element={<CustomerDetails />} />
+                              {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
                             </Route>
                             <Route path="labels" element={<Labels />} />
                             <Route path="contacts" element={<Contacts />} />
