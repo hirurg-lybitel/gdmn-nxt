@@ -12,6 +12,8 @@ import { RootState } from '../../../store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
 import { TaskStatus } from './task-status';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import TodayIcon from '@mui/icons-material/Today';
 
 export interface KanbanCardProps {
   snapshot: DraggableStateSnapshot;
@@ -178,13 +180,14 @@ export function KanbanCard(props: KanbanCardProps) {
   const dayColor = (days: number, baseColor?: string): string => {
     if (days === 1) return 'darkorange';
     if (days <= 0) return 'rgb(255, 82, 82)';
-    return baseColor ? baseColor : colorModeIsLight ? 'GrayText' : 'lightgray';
+    return 'unset';
   };
+
   const deadLine = useMemo(() => {
     if (!card.DEAL?.USR$DEADLINE) return null;
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
     return (
-      <Stack direction="row">
+      <Stack direction="row" spacing={0.5}>
         <Typography variant="body2">
           {'Срок: '}
           {card.DEAL?.USR$DEADLINE
@@ -198,9 +201,13 @@ export function KanbanCard(props: KanbanCardProps) {
         >
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
+        <Tooltip title={'Дней осталось'} arrow>
+          <AccessTimeIcon />
+        </Tooltip>
       </Stack>
     );
   }, [card, colorModeIsLight]);
+
   const memoCard = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -259,7 +266,7 @@ export function KanbanCard(props: KanbanCardProps) {
             right: 0,
           },
           '&:hover .number': {
-            display: isFirstColumn ? 'none' : 'inline',
+            opacity: 0, visibility: 'hidden'
           },
           '&:hover': {
             boxShadow: '0 4px 18px rgba(0,0,0,.3)'
@@ -267,15 +274,17 @@ export function KanbanCard(props: KanbanCardProps) {
         }}
         onDoubleClick={doubleClick}
       >
-        <Stack direction="column" spacing={1}>
+        <Stack direction="column" spacing={0.5}>
           <Stack
             direction="row"
-            style={{ position: 'relative'}}
+            style={{ position: 'relative' }}
+            spacing={1}
           >
             <Typography
               variant="subtitle1"
               flex={1}
               lineHeight="1.2em"
+              maxWidth={280}
             >
               {card.DEAL?.USR$NAME}
             </Typography>
@@ -296,7 +305,7 @@ export function KanbanCard(props: KanbanCardProps) {
                     disabled={addIsFetching}
                     onClick={handleCopyCard}
                   >
-                    <ContentCopyIcon fontSize="small" />
+                    <ContentCopyIcon />
                   </IconButton>
                 </div>
               </PermissionsGate>
@@ -319,17 +328,38 @@ export function KanbanCard(props: KanbanCardProps) {
               </Tooltip>
             }
           </Stack>
-          <Stack direction="row">
-            <Typography variant="body2">{(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br</Typography>
-            <Box flex={1} />
-            <Typography variant="body2">
-              {card.DEAL?.CREATIONDATE
-                ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
-                : '-/-'}
-            </Typography>
-          </Stack>
           {deadLine}
-          <TaskStatus tasks={card.TASKS ?? []} />
+          <Stack direction="row" spacing={0.5}>
+            {(card.DEAL?.USR$AMOUNT || 0) > 0 &&
+              <Typography variant="body2">
+                {(Math.round((card.DEAL?.USR$AMOUNT || 0) * 100) / 100).toFixed(2)} Br
+              </Typography>
+            }
+          </Stack>
+          <Stack
+            direction="row"
+            spacing={0.5}
+            position="relative"
+            minHeight={20}
+          >
+            <TaskStatus tasks={card.TASKS ?? []} />
+
+            <Stack
+              direction={'row'}
+              spacing={0.5}
+              position="absolute"
+              right={0}
+            >
+              <Typography variant="body2">
+                {card.DEAL?.CREATIONDATE
+                  ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+                  : '-/-'}
+              </Typography>
+              <Tooltip title={'Дата создания'} arrow>
+                <TodayIcon />
+              </Tooltip>
+            </Stack>
+          </Stack>
         </Stack>
       </CustomizedCard>
     );

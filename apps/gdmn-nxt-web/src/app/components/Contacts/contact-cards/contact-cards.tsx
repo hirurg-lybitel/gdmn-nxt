@@ -8,9 +8,10 @@ import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { Avatar, Divider, IconButton, Stack, TablePagination, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { socialMediaIcons, socialMediaLinks } from '@gdmn-nxt/components/social-media-input';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
+import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 
 interface CardItemProps {
   contact: IContactPerson;
@@ -33,7 +34,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
 
   const handleFavoriteClick = useCallback((e: any) => {
     e.stopPropagation();
-    console.log('handleFavoriteClick', e, contact.isFavorite);
     contact.isFavorite
       ? deleteFavorite(contact.ID)
       : addFavorite(contact.ID);
@@ -67,18 +67,22 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
             </Stack>
             <div
               className={styles.actions}
-              // hidden
             >
               <IconButton
                 size="small"
-                // disabled={addIsFetching}
                 onClick={handleEditClick}
               >
                 <EditIcon fontSize="small" />
               </IconButton>
             </div>
           </Stack>
-          <Typography variant="caption" my={'2px'}>{contact.COMPANY?.NAME ?? ''}</Typography>
+          <Typography
+            variant="caption"
+            my={'2px'}
+            noWrap
+          >
+            {contact.COMPANY?.NAME ?? ''}
+          </Typography>
           {
             Array.isArray(contact.PHONES) && contact.PHONES.length > 0 &&
             <Stack direction="row" spacing={1}>
@@ -242,7 +246,7 @@ export function ContactCards({
   contactsCount = 0,
   onEditClick,
   paginationData,
-  paginationClick
+  paginationClick,
 }: ContactCardsProps) {
   const [pageOptions, setPageOptions] = useState<number[]>([]);
   const theme = useTheme();
@@ -276,29 +280,36 @@ export function ContactCards({
   };
 
   return (
-    <div className={styles['container']}>
-      <CustomizedScrollBox>
-        <ul className={styles.list}>
-          {contacts?.map((contact) =>
-            <li key={contact.ID} className={styles.item}>
-              <CardItem contact={contact} onEditClick={handleClick} />
-            </li>
-          )}
-        </ul>
-      </CustomizedScrollBox>
-      <Divider />
-      <div className={styles.footer}>
-        <TablePagination
-          component="div"
-          labelRowsPerPage="Карточек на странице:"
-          count={contactsCount}
-          page={paginationData.pageNo}
-          rowsPerPageOptions={pageOptions}
-          rowsPerPage={paginationData.pageSize}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </div>
+    <div className={`container ${styles['container']}`}>
+      {contacts?.length === 0
+        ? <div className={styles.noData}><CustomNoData /></div>
+        : <>
+          <CustomizedScrollBox>
+            <ul className={`list ${styles.list}`}>
+              {contacts?.map((contact) =>
+                <li key={contact.ID} className={styles.item}>
+                  <CardItem contact={contact} onEditClick={handleClick} />
+                </li>
+              )}
+            </ul>
+          </CustomizedScrollBox>
+          <Divider />
+          <div className={styles.footer}>
+            <TablePagination
+              component="div"
+              labelRowsPerPage="Карточек на странице:"
+              count={contactsCount}
+              page={paginationData.pageNo}
+              rowsPerPageOptions={pageOptions}
+              rowsPerPage={paginationData.pageSize}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </div>
+        </>
+      }
+
+
     </div>
   );
 }

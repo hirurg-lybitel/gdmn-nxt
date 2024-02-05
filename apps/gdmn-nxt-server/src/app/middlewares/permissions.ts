@@ -49,6 +49,7 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 };
 
 export const setPermissonsCache = async () => {
+  console.log('setPermissonsCache');
   const { fetchAsObject, releaseTransaction } = await startTransaction('permissions');
   try {
     const query = `
