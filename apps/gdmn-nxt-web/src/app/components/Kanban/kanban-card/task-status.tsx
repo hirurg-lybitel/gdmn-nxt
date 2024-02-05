@@ -105,8 +105,9 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
     <div
       style={{
         height: open ? tasks.length * rowHeight : '1px',
+        visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
-        transition: '0.5s'
+        transition: 'height 0.5s, visibility  0.5s'
       }}
       onWheelCapture={handleScroll}
     >
