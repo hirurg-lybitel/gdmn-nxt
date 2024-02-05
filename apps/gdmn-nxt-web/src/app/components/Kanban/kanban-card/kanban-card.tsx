@@ -201,7 +201,7 @@ export function KanbanCard(props: KanbanCardProps) {
         >
           {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
         </Typography>
-        <Tooltip title={'Дней осталось'} arrow>
+        <Tooltip title={deadline >= 0 ? 'Дней осталось' : 'Дней просрочено'} arrow>
           <AccessTimeIcon />
         </Tooltip>
       </Stack>

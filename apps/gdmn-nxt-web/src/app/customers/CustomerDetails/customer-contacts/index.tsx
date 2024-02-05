@@ -22,8 +22,6 @@ export function CustomerContacts({
   const theme = useTheme();
   const matchUpUW = useMediaQuery(theme.breakpoints.up('ultraWide'));
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
     pageSize: matchUpUW ? 25 : 12,
