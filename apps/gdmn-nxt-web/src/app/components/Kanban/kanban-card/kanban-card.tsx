@@ -271,6 +271,7 @@ export function KanbanCard(props: KanbanCardProps) {
           <Stack
             direction="row"
             style={{ position: 'relative' }}
+            spacing={1}
           >
             <Typography
               variant="subtitle1"
