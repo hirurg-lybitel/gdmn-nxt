@@ -59,10 +59,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               <Typography
                 variant="body2"
                 fontWeight={600}
-                style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis' }}
+                className={styles.contactName}
               >
                 {contact.NAME}
               </Typography>
