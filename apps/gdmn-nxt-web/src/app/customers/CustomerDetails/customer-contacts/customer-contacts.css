@@ -1,14 +1,14 @@
-.container {
+.contacts-container {
   flex: 1;
 }
 
-.container .list {
+.contacts-container .list {
   grid-template-columns: repeat(3, 1fr);
   padding: 0;
 }
 
 @media (min-width: 1920px) {
-  .container .list {
+  .contacts-container .list {
       grid-template-columns: repeat(4, 1fr);
   }
 }

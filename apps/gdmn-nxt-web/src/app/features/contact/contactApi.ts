@@ -186,6 +186,55 @@ export const contactApi = createApi({
         });
       },
     }),
+    updateConstactPersons: builder.mutation<IContactPerson[], Partial<IContactPerson[]>>({
+      query: (body) => ({
+        url: 'contacts/persons/many',
+        method: 'PUT',
+        body
+      }),
+      transformResponse: (response: IContactPersonsRequestResult) => response.queries?.persons || null,
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data: newContacts } = await queryFulfilled;
+          cachedOptions?.forEach(async opt => {
+            const options = Object.keys(opt).length > 0 ? opt : undefined;
+            dispatch(
+              contactApi.util.updateQueryData('getContactPersons', options, (draft) => {
+                if (Array.isArray(draft?.records)) {
+                  newContacts?.forEach(contact => {
+                    if (!contact) return;
+                    const { filter } = opt;
+                    const isByCustomer = !!filter?.customerId;
+                    const findIndex = draft.records?.findIndex(c => c.ID === contact.ID);
+                    if (isByCustomer) {
+                      if (findIndex >= 0 && filter?.customerId !== contact.COMPANY?.ID) {
+                        draft.records.splice(findIndex, 1);
+                        draft.count -= 1;
+                        return;
+                      }
+                      if (findIndex < 0 && filter?.customerId === contact.COMPANY?.ID) {
+                        draft.records.unshift(contact);
+                        if (draft.count) draft.count += 1;
+                        return;
+                      }
+                      return;
+                    }
+                    if (findIndex >= 0) {
+                      draft.records[findIndex] = { ...draft.records[findIndex], ...contact };
+                      return;
+                    }
+                    draft.records.unshift(contact);
+                    if (draft.count) draft.count += 1;
+                  });
+                }
+              })
+            );
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    }),
     getEmployees: builder.query<IEmployee[], number | void>({
       query: (id) => ({
         url: `contacts/employees${id ? `/${id}` : ''}`,
@@ -260,5 +309,6 @@ export const {
   useDeleteContactPersonMutation,
   useGetEmployeesQuery,
   useAddFavoriteMutation,
-  useDeleteFavoriteMutation
+  useDeleteFavoriteMutation,
+  useUpdateConstactPersonsMutation
 } = contactApi;

@@ -34,7 +34,6 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
 
   const handleFavoriteClick = useCallback((e: any) => {
     e.stopPropagation();
-    console.log('handleFavoriteClick', e, contact.isFavorite);
     contact.isFavorite
       ? deleteFavorite(contact.ID)
       : addFavorite(contact.ID);
@@ -67,11 +66,9 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
             </Stack>
             <div
               className={styles.actions}
-              // hidden
             >
               <IconButton
                 size="small"
-                // disabled={addIsFetching}
                 onClick={handleEditClick}
               >
                 <EditIcon fontSize="small" />

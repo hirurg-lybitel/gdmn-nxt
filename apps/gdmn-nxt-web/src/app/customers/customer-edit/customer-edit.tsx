@@ -7,40 +7,21 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  IconButton,
   Stack,
   TextField,
   Box,
-  Typography,
   Tab
 } from '@mui/material';
-import {
-  Theme
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
-import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { useGetGroupsQuery } from '../../features/contact/contactGroupApi';
-import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../features/labels';
-import LabelMarker from '../../components/Labels/label-marker/label-marker';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import 'react-perfect-scrollbar/dist/css/styles.css';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
-import ContactPersonList from '../contact-person-list/contact-person-list';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
-import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
-import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import LabelListItemEdit from '@gdmn-nxt/components/Labels/label-list-item-edit/label-list-item-edit';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
-import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -51,7 +32,7 @@ import ActCompletion from '../CustomerDetails/act-completion/act-completion';
 import BankStatement from '../CustomerDetails/bank-statement/bank-statement';
 import ContractsList from '../CustomerDetails/contracts-list/contracts-list';
 import CustomerDeals from '../CustomerDetails/customer-deals/customer-deals';
-import { emailValidation, emailsValidation } from '@gdmn-nxt/components/helpers/validators';
+import { emailValidation } from '@gdmn-nxt/components/helpers/validators';
 import { CustomerContacts } from '../CustomerDetails/customer-contacts';
 
 export interface CustomerEditProps {
@@ -157,7 +138,10 @@ export function CustomerEdit({
               spacing={2}
               height="100%"
             >
-              <Stack width={350} spacing={2}>
+              <Stack
+                className={styles.editPanel}
+                spacing={2}
+              >
                 <TextField
                   label="Наименование"
                   type="text"
@@ -250,17 +234,41 @@ export function CustomerEdit({
               <Stack flex={1}>
                 <TabContext value={tabIndex}>
                   <TabList
+                    className={styles.tabHeaderRoot}
                     onChange={handleTabsChange}
-                    style={{ minHeight: 30 }}
                     variant="scrollable"
                     scrollButtons="auto"
                   >
-                    <Tab label="Контакты" value="1" />
-                    <Tab label="Реквизиты" value="2" />
-                    <Tab label="Акты выполненных работ" value="3" />
-                    <Tab label="Выписки по р/с" value="4" />
-                    <Tab label="Договоры" value="5" />
-                    <Tab label="Сделки" value="6" />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Контакты"
+                      value="1"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Реквизиты"
+                      value="2"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Акты выполненных работ"
+                      value="3"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Выписки по р/с"
+                      value="4"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Договоры"
+                      value="5"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Сделки"
+                      value="6"
+                    />
                   </TabList>
                   <Divider />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >

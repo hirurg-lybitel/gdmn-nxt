@@ -2,6 +2,12 @@ import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connectio
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
+/**
+ * Finds persons that match given find clause.
+ * If persons was not found in the database - returns empty array.
+ * @param sessionID Session identifier
+ * @param clause The find clause object
+ */
 const find = async (
   sessionID: string,
   clause = {}
@@ -152,6 +158,31 @@ const find = async (
   }
 };
 
+/**
+ * Finds first person by a given find clause.
+ * If person was not found in the database - returns null.
+ * @param sessionID Session identifier
+ * @param clause The find clause object
+ */
+const findOne = async (
+  sessionID: string,
+  clause = {}
+): Promise<IContactPerson> => {
+  const persons = await find(sessionID, clause);
+
+  if (persons.length === 0) {
+    return null;
+  }
+  return persons[0];
+};
+
+/**
+ * Updates person partially. Person can be found by a given id.
+ * If person was not found in the database - returns null.
+ * @param sessionID Session identifier
+ * @param id Person id
+ * @param metadata Partial person
+ */
 const update = async (
   sessionID: string,
   id: number,
@@ -159,23 +190,30 @@ const update = async (
 ): Promise<IContactPerson> => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob, executeQuery } = await startTransaction(sessionID);
   try {
+    const contact = await findOne(sessionID, { id });
+
+    if (!contact) {
+      await releaseTransaction(false);
+      return contact;
+    };
+
     const {
-      NAME,
-      COMPANY,
-      USR$LETTER_OF_AUTHORITY,
-      RANK,
-      PHONES,
-      EMAILS,
-      MESSENGERS,
-      LABELS,
-      RESPONDENT,
-      ADDRESS,
-      NOTE,
-      USR$BG_OTDEL,
-      PHOTO
+      NAME = contact.NAME,
+      COMPANY = contact.COMPANY,
+      USR$LETTER_OF_AUTHORITY = contact.USR$LETTER_OF_AUTHORITY,
+      RANK = contact.RANK,
+      PHONES = contact.PHONES,
+      EMAILS = contact.EMAILS,
+      MESSENGERS = contact.MESSENGERS,
+      LABELS = contact.LABELS,
+      RESPONDENT = contact.RESPONDENT,
+      ADDRESS = contact.ADDRESS,
+      NOTE = contact.NOTE,
+      USR$BG_OTDEL = contact.USR$BG_OTDEL,
+      PHOTO = contact.PHOTO
     } = metadata;
 
-    const contact = await fetchAsSingletonObject<IContactPerson>(
+    await fetchAsSingletonObject<IContactPerson>(
       `UPDATE GD_CONTACT
         SET
           NAME = :NAME,
@@ -198,11 +236,6 @@ const update = async (
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
-
-    if (!contact.ID) {
-      await releaseTransaction(false);
-      return contact;
-    };
 
     const position = await fetchAsSingletonObject(
       `UPDATE OR INSERT INTO WG_POSITION(NAME)
@@ -529,6 +562,7 @@ const remove = async (
 
 export const contactPersonsRepository = {
   find,
+  findOne,
   update,
   save,
   remove

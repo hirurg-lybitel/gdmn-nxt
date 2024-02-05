@@ -1,8 +1,7 @@
-import ChecklistIcon from '@mui/icons-material/Checklist';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import './customer-contacts.css';
 import { IContactPerson, IPaginationData } from '@gsbelarus/util-api-types';
-import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateContactPersonMutation } from '../../../features/contact/contactApi';
+import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateConstactPersonsMutation, useUpdateContactPersonMutation } from '../../../features/contact/contactApi';
 import { useMemo, useState } from 'react';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
 import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact';
@@ -11,6 +10,7 @@ import { Box, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/m
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import ContactsChoose from '@gdmn-nxt/components/Contacts/contacts-choose';
 
 export interface CustomerContactsProps {
   customerId: number;
@@ -22,6 +22,8 @@ export function CustomerContacts({
   const theme = useTheme();
   const matchUpUW = useMediaQuery(theme.breakpoints.up('ultraWide'));
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
     pageSize: matchUpUW ? 25 : 12,
@@ -31,6 +33,7 @@ export function CustomerContacts({
 
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
+  const [updatePersons] = useUpdateConstactPersonsMutation();
   const [deletePerson] = useDeleteContactPersonMutation();
 
   const [upsertContact, setUpsertContact] = useState<{
@@ -61,6 +64,46 @@ export function CustomerContacts({
     addPerson(person);
   };
 
+  const handlePersonAdd = () => {
+    setUpsertContact({
+      addContact: true,
+      contact: {
+        ID: -1,
+        NAME: '',
+        COMPANY: { ID: customerId, NAME: '' }
+      }
+    });
+  };
+
+  const handleContactsChooseSubmit = (values: IContactPerson[]) => {
+    const contacts = persons?.records ?? [];
+
+    const addedContacts = values?.reduce((acc, contact) => {
+      if (contacts.findIndex(({ ID }) => ID === contact.ID) < 0) {
+        const { ID, NAME } = contact;
+        acc.push({
+          ID,
+          NAME,
+          COMPANY: { ID: customerId, NAME: '' } });
+      }
+      return acc;
+    }, [] as Partial<IContactPerson[]>);
+
+    const deletedContacts = contacts.reduce((acc, contact) => {
+      if (values.findIndex(({ ID }) => ID === contact.ID) < 0) {
+        const { ID, NAME } = contact;
+        acc.push({
+          ID,
+          NAME,
+          COMPANY: null });
+      }
+      return acc;
+    }, [] as Partial<IContactPerson[]>);
+
+    updatePersons(addedContacts);
+    updatePersons(deletedContacts);
+  };
+
   const {
     data: persons,
     isFetching: personsIsFetching,
@@ -83,30 +126,26 @@ export function CustomerContacts({
   const memoAddContact = useMemo(() =>
     <AddContact
       open={!!upsertContact.addContact}
+      contact={upsertContact.contact}
       onSubmit={handlePersonAddSubmit}
       onCancel={handleCancel}
     />,
-  [upsertContact.addContact]);
+  [upsertContact.addContact, customerId]);
 
   return (
-    <Stack className="container">
+    <Stack className="contacts-container">
       <Stack direction="row" spacing={1}>
-        {/* <div>select</div> */}
-        <IconButton
-          size="small"
+        <ContactsChoose
+          value={persons?.records ?? []}
           disabled={personsIsFetching}
-          // onClick={() => setUpsertContact({ addContact: true })}
-        >
-          <Tooltip arrow title="Выбрать контакты">
-            <ChecklistIcon color={personsIsFetching ? 'disabled' : 'primary'} />
-          </Tooltip>
-        </IconButton>
+          onSubmit={handleContactsChooseSubmit}
+        />
         <Box display="inline-flex" alignSelf="center">
           <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
             <IconButton
               size="small"
               disabled={personsIsFetching}
-              onClick={() => setUpsertContact({ addContact: true })}
+              onClick={handlePersonAdd}
             >
               <Tooltip arrow title="Создать контакт">
                 <AddCircleIcon color={personsIsFetching ? 'disabled' : 'primary'} />

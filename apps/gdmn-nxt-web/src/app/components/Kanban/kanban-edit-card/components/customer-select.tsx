@@ -29,7 +29,7 @@ type BaseTextFieldProps = Omit<
   'onChange'
 >;
 
-type Value<Multiple> = Multiple extends true ? Array<ICustomer> : ICustomer;
+type Value<Multiple> = (Multiple extends true ? Array<ICustomer> : ICustomer) | null;
 
 interface CustomerSelectProps<Multiple extends boolean | undefined> extends BaseTextFieldProps {
   value?: Value<Multiple>;

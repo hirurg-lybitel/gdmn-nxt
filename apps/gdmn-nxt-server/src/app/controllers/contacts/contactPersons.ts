@@ -4,6 +4,7 @@ import { resultError } from '../../responseMessages';
 import { cachedRequets } from '../../utils/cached requests';
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const getById: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
@@ -197,7 +198,7 @@ const updateById: RequestHandler = async (req, res) => {
   }
   try {
     const updatedPerson = await contactPersonsRepository.update(req.sessionID, id, req.body);
-    if (!updatedPerson.ID) {
+    if (!updatedPerson?.ID) {
       return res.sendStatus(404);
     }
     const persons = await contactPersonsRepository.find(req.sessionID, { id: updatedPerson.ID });
@@ -206,6 +207,41 @@ const updateById: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: { persons },
+      _schema: {}
+    };
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(500).send(resultError(error.message));
+  }
+};
+
+const updateMany: RequestHandler = async (req, res) => {
+  try {
+    const persons: IContactPerson[] = req.body;
+
+    const updatedPersons = await forEachAsync(persons, async ({ ID, ...person }: IContactPerson) => {
+      if (isNaN(ID)) {
+        return;
+      }
+
+      const updatedPerson = await contactPersonsRepository.update(req.sessionID, ID, person);
+      if (!updatedPerson?.ID) {
+        return;
+      }
+
+      const personInfo = await contactPersonsRepository.findOne(req.sessionID, { id: updatedPerson.ID });
+
+      return personInfo;
+    });
+
+    if (updatedPersons.includes(undefined)) {
+      return res.sendStatus(500);
+    }
+
+    cachedRequets.cacheRequest('customerPersons');
+
+    const result: IRequestResult = {
+      queries: { persons: updatedPersons },
       _schema: {}
     };
     return res.status(200).json(result);
@@ -239,5 +275,6 @@ export const contactPersonsController = {
   getAll,
   createContact,
   updateById,
+  updateMany,
   removeById
 };
