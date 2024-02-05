@@ -9,6 +9,8 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useGetUserGroupLineQuery } from '../../../features/permissions';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -110,6 +112,7 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
                     options={users?.filter(user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0) ?? []}
                     getOptionLabel={option => option.NAME}
                     filterOptions={filterOptions}
+                    disableCloseOnSelect
                     value={formik.values.USERS || undefined}
                     loading={usersIsFetching}
                     loadingText="Загрузка данных..."
@@ -119,8 +122,14 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
                         'USERS', value
                       );
                     }}
-                    renderOption={(props, option) => (
+                    renderOption={(props, option, { selected }) => (
                       <li {...props} key={option.ID}>
+                        <Checkbox
+                          icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                          checkedIcon={<CheckBoxIcon fontSize="small" />}
+                          style={{ marginRight: 8 }}
+                          checked={selected}
+                        />
                         <div>
                           {option.NAME}
                           <div>
