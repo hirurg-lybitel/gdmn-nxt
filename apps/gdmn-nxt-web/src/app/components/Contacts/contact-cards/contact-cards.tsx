@@ -78,6 +78,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
           <Typography
             variant="caption"
             my={'2px'}
+            pl={'2px'}
             noWrap
           >
             {contact.COMPANY?.NAME ?? ''}

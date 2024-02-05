@@ -27,6 +27,8 @@ import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ContactsDeals from '../contacts-deals';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -43,7 +45,7 @@ export function EditContact({
 }: EditContactProps) {
   const userPermissions = usePermissions();
   const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
-  const [tabIndex, setTabIndex] = useState('1');
+  const [tabIndex, setTabIndex] = useState('2');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -81,10 +83,9 @@ export function EditContact({
     },
     onReset: (values) => {
       setDeleting(false);
+      setTabIndex('2');
     }
   });
-
-  // console.log('formik', formik.values);
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -102,7 +103,6 @@ export function EditContact({
     };
 
     formik.setFieldValue('PHONES', newPhones);
-    // setPhones(newPhones);
   };
 
   const handleAddPhone = () => {
@@ -421,128 +421,135 @@ export function EditContact({
               spacing={2}
               height="100%"
             >
-              <Stack width={350} spacing={2}>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  alignItems="center"
-                >
-                  <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
-                  <EditableTypography
-                    name="NAME"
-                    value={formik.values.NAME}
-                    onChange={formik.handleChange}
-                  />
-                </Stack>
-                {phoneOptions}
-                {emailsOptions}
-                {messengersOptions}
-                <Divider flexItem />
-                <Autocomplete
-                  fullWidth
-                  options={persons?.records ?? []}
-                  getOptionLabel={option => option.NAME}
-                  filterOptions={filterOptions(50, 'NAME')}
-                  value={persons?.records?.find(el => el.ID === formik.values.RESPONDENT?.ID) ?? null}
-                  loading={personsIsFetching}
-                  loadingText="Загрузка данных..."
-                  onChange={(event, value) => {
-                    formik.setFieldValue('RESPONDENT', value);
-                  }}
-                  renderOption={(props, option) => {
-                    return (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Ответственный"
-                      placeholder="Выберите ответственного"
-                      error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
-                      helperText={formik.touched.RESPONDENT && formik.errors.RESPONDENT}
+              <div className={styles.editPanel}>
+                <CustomizedScrollBox>
+                  <Stack spacing={2} style={{ marginRight: '16px' }}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      alignItems="center"
+                    >
+                      <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
+                      <EditableTypography
+                        name="NAME"
+                        value={formik.values.NAME}
+                        onChange={formik.handleChange}
+                      />
+                    </Stack>
+                    {phoneOptions}
+                    {emailsOptions}
+                    {messengersOptions}
+                    <Divider flexItem />
+                    <Autocomplete
+                      fullWidth
+                      options={persons?.records ?? []}
+                      getOptionLabel={option => option.NAME}
+                      filterOptions={filterOptions(50, 'NAME')}
+                      value={persons?.records?.find(el => el.ID === formik.values.RESPONDENT?.ID) ?? null}
+                      loading={personsIsFetching}
+                      loadingText="Загрузка данных..."
+                      onChange={(event, value) => {
+                        formik.setFieldValue('RESPONDENT', value);
+                      }}
+                      renderOption={(props, option) => {
+                        return (
+                          <li {...props} key={option.ID}>
+                            {option.NAME}
+                          </li>
+                        );
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Ответственный"
+                          placeholder="Выберите ответственного"
+                          error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
+                          helperText={formik.touched.RESPONDENT && formik.errors.RESPONDENT}
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <InputAdornment position="end">
+                                <ManageAccountsIcon />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                    <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
+                    <CustomerSelect
+                      value={formik.values.COMPANY}
+                      onChange={handleCustomerChange}
+                      // required
+                      error={formik.touched.COMPANY && Boolean(formik.errors.COMPANY)}
+                      helperText={formik.touched.COMPANY && formik.errors.COMPANY}
                       InputProps={{
-                        ...params.InputProps,
                         startAdornment: (
                           <InputAdornment position="end">
-                            <ManageAccountsIcon />
+                            <PeopleAltIcon />
                           </InputAdornment>
                         ),
                       }}
                     />
-                  )}
-                />
-                <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
-                <CustomerSelect
-                  value={formik.values.COMPANY}
-                  onChange={handleCustomerChange}
-                  // required
-                  error={formik.touched.COMPANY && Boolean(formik.errors.COMPANY)}
-                  helperText={formik.touched.COMPANY && formik.errors.COMPANY}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="end">
-                        <PeopleAltIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Должность"
-                  type="text"
-                  name="RANK"
-                  onChange={formik.handleChange}
-                  value={formik.values.RANK ?? ''}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <WorkIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Адрес"
-                  type="text"
-                  name="ADDRESS"
-                  onChange={formik.handleChange}
-                  value={formik.values.ADDRESS ?? ''}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOnIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Stack>
+                    <TextField
+                      label="Должность"
+                      type="text"
+                      name="RANK"
+                      onChange={formik.handleChange}
+                      value={formik.values.RANK ?? ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <WorkIcon />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <TextField
+                      label="Адрес"
+                      type="text"
+                      name="ADDRESS"
+                      onChange={formik.handleChange}
+                      value={formik.values.ADDRESS ?? ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LocationOnIcon />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Stack>
+                </CustomizedScrollBox>
+              </div>
               <Divider orientation="vertical" flexItem />
               <Stack flex={1}>
                 <TabContext value={tabIndex}>
-                  <TabList onChange={handleTabsChange}>
-                    <Tab label="История" value="1" />
+                  <TabList onChange={handleTabsChange} className={styles.tabHeaderRoot}>
+                    <Tab
+                      label="История"
+                      value="1"
+                      disabled
+                    />
                     <Tab
                       label="Сделки"
                       value="2"
-                      // disabled={isLoading}
                     />
                     <Tab
                       label="Задачи"
                       value="3"
-                      // disabled={isLoading}
+                      disabled
                     />
                   </TabList>
                   <Divider style={{ margin: 0 }} />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
-                    <CustomNoData />
+                    <div className={styles.noData}><CustomNoData /></div>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
-                    <CustomNoData />
+                    <ContactsDeals contactId={contact?.ID ?? -1} />
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
-                    <CustomNoData />
+                    <div className={styles.noData}><CustomNoData /></div>
                   </TabPanel>
                 </TabContext>
               </Stack>
