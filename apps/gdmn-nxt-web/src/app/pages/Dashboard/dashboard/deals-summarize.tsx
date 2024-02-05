@@ -53,7 +53,7 @@ export const DealsSummarize = ({ period }: DealsSummarizeProps) => {
                 <CustomizedCard
                   borders={theme.palette.mode === ColorMode.Light}
                   style={{
-                    backgroundColor: theme.palette.mode === ColorMode.Light ? 'whitesmoke' : 'dimgrey',
+                    backgroundColor: 'var(--color-card-bg)',
                     width: '180px',
                     flex: 1
                   }}

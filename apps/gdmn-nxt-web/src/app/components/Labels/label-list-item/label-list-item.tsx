@@ -1,17 +1,12 @@
 import { ILabel, Permissions } from '@gsbelarus/util-api-types';
-import { Box, Grid, IconButton } from '@mui/material';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Box, Grid, Typography } from '@mui/material';
 import styles from './label-list-item.module.less';
 import { useCallback, useState } from 'react';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { useAddLabelMutation, useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
+import { useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
-import { makeStyles } from '@mui/styles';
 import LabelMarker from '../label-marker/label-marker';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -24,22 +19,6 @@ export interface LabelListItemProps {
 }
 
 
-const useStyles = makeStyles(() => ({
-  label: {
-    display: 'inline-block',
-    fontSize: '0.625rem',
-    fontWeight: 'bold',
-    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-    textTransform: 'uppercase',
-    borderRadius: '2em',
-    padding: '2.5px 9px',
-    margin: '0px 5px',
-    width: 'fit-content',
-    height: 'fit-content',
-    border: '1px solid'
-  }
-}));
-
 export function LabelListItem(props: LabelListItemProps) {
   const { data, onEdit, onDelete } = props;
   const { ID } = data;
@@ -49,9 +28,6 @@ export function LabelListItem(props: LabelListItemProps) {
 
   const [deleteLabel, { isLoading: deleteIsLoading }] = useDeleteLabelMutation();
   const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
-
-  const classes = useStyles();
-
 
   const handleEditClick = useCallback(() => {
     setOpenEditForm(true);
@@ -150,34 +126,41 @@ export function LabelListItem(props: LabelListItemProps) {
 
 
   return (
-    <Box style={{ padding: '12px 0px' }}>
+    <Box style={{ padding: '4px 0px' }}>
       <Grid container alignItems="center">
-        <Grid item xs={4} paddingLeft={2} paddingRight={2}>
+        <Grid
+          item
+          xs={4}
+          paddingLeft={2}
+          paddingRight={2}
+        >
           <LabelMarker label={data} />
         </Grid>
         <Grid item flex={1}>
-          {data.USR$DESCRIPTION}
+          <Typography variant="body2">{data.USR$DESCRIPTION}</Typography>
         </Grid>
-        <Grid item xs={2} md={1}>
-          <Box display={'inline-flex'} width="100%" justifyContent={'center'} style={{ marginRight: 0 }}>
+        <Grid
+          item
+          xs={2}
+          md={1}
+        >
+          <Box
+            display={'inline-flex'}
+            width="100%"
+            justifyContent={'center'}
+            style={{ marginRight: 0 }}
+          >
             <PermissionsGate actionAllowed={userPermissions?.labels.PUT}>
               <ItemButtonEdit
                 disabled={editIsLoading || deleteIsLoading}
                 color="primary"
                 onClick={handleEditClick}
               />
-              {/* <IconButton
-                disabled={editIsLoading || deleteIsLoading}
-                color="primary"
-                onClick={handleEditClick}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton> */}
             </PermissionsGate>
             <PermissionsGate actionAllowed={userPermissions?.labels.DELETE}>
               <ItemButtonDelete
+                button
                 disabled={editIsLoading || deleteIsLoading}
-                color="primary"
                 onClick={handleDeleteClick}
               />
             </PermissionsGate>

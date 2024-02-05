@@ -1,14 +1,13 @@
 import { IBusinessProcess, IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
 import { Box, Grid, List, ListItem, Typography } from '@mui/material';
 import { useGetCustomerQuery, useGetCustomersCrossQuery } from '../../../features/customer/customerApi_new';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './customer-info.module.less';
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import { useMemo } from 'react';
 import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 
 type Requisites = IBusinessProcess[] & IContactWithID[] & ICustomerContract[] & IWorkType[] & string;
@@ -30,21 +29,21 @@ export function CustomerInfo(props: CustomerInfoProps) {
     const ID = customerData?.ID || -1;
 
     const DEPARTMENTS: IContactWithID[] = [];
-    customersCross?.departments[ID]?.forEach((el:number) => {
+    customersCross?.departments[ID]?.forEach((el: number) => {
       const department = departments?.find(wt => wt.ID === el);
       if (!department) return;
       DEPARTMENTS.push(department);
     });
 
     const JOBWORKS: IWorkType[] = [];
-    customersCross?.jobWorks[ID]?.forEach((el:number) => {
+    customersCross?.jobWorks[ID]?.forEach((el: number) => {
       const wotkType = wotkTypes?.find(wt => wt.ID === el);
       if (!wotkType) return;
       JOBWORKS.push(wotkType);
     });
 
     const CONTRACTS: ICustomerContract[] = [];
-    customersCross?.contracts[ID]?.forEach((el:number) => {
+    customersCross?.contracts[ID]?.forEach((el: number) => {
       const customerContract = customerContracts?.find(wt => wt.ID === el);
       if (!customerContract) return;
       CONTRACTS.push(customerContract);
@@ -131,15 +130,15 @@ export function CustomerInfo(props: CustomerInfoProps) {
   }
 
   return (
-    <Box flex={1}>
-      <PerfectScrollbar style={{ height: 'Calc(100vh - 262px)', flex: 1, padding: 24 }} >
+    <Box flex={1} height={'100%'}>
+      <CustomizedScrollBox>
         <List>
           {((row: any[]) => {
             for (const [key, value] of Object.entries(customer || {})) {
               columns.forEach((col, idx) => {
                 if (col.field === key) {
                   row.push(
-                    <ListItem key={idx} divider sx={{ py: 2 }}>
+                    <ListItem key={idx} divider>
                       <Grid container>
                         <Grid item minWidth={200}>
                           <Typography variant="subtitle1">{col.title}</Typography>
@@ -164,7 +163,7 @@ export function CustomerInfo(props: CustomerInfoProps) {
             return row;
           })([])}
         </List>
-      </PerfectScrollbar>
+      </CustomizedScrollBox>
     </Box>
   );
 }

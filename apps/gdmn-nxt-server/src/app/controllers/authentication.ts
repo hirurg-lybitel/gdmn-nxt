@@ -25,7 +25,7 @@ interface Info {
 
 /** Send verification code to Email */
 const sendEmailConfirmation = async (userId: number, email: string, info?: Info) => {
-  const subject = 'Подтверждение адреса електронной почты';
+  const subject = 'Подтверждение адреса электронной почты';
   const from = `GDMN CRM <${process.env.SMTP_USER}>`;
 
   const generatedNumber = randomFixedNumber(6);

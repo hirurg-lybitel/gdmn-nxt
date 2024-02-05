@@ -2,7 +2,7 @@ import { DataGridPro, DataGridProProps, GridRenderCellParams, ruRU } from '@mui/
 import styles from './styled-grid.module.less';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLinearLoadingOverlay from './DataGridProOverlay/CustomLinearLoadingOverlay';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Box, Popper, Typography } from '@mui/material';
 import CustomizedCard from '../customized-card/customized-card';
 import { useTheme } from '@mui/material/styles';
@@ -13,6 +13,18 @@ interface IStyledGridProps extends DataGridProProps{
   hideHeaderSeparator?: boolean;
   loadingMode?: 'circular' | 'linear';
 }
+
+/** Disable license expired message error */
+const disableLicenseError = () => {
+  const searchText = 'MUI X: License key expired';
+  const elements = document.querySelectorAll('div');
+  elements.forEach((element) => {
+    if (element.textContent === searchText) {
+      element.style.display = 'none';
+    }
+  });
+};
+
 
 export default function StyledGrid(props: IStyledGridProps) {
   const theme = useTheme();
@@ -80,6 +92,10 @@ export default function StyledGrid(props: IStyledGridProps) {
 
   const { loadingMode = 'linear', hideColumnHeaders } = props;
 
+  useEffect(() => {
+    disableLicenseError();
+  }, []);
+
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
@@ -90,6 +106,7 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
       headerHeight={hideColumnHeaders ? 0 : 50}
+      rowHeight={40}
       {...props}
       sx={{
         ...defaultTheme(props),

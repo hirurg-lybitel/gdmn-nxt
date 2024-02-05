@@ -29,8 +29,6 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
-  if (!open) return <></>;
-
   const columns: GridColumns = [
     {
       field: 'USR$CLOSED',
@@ -94,7 +92,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
     },
   ];
 
-  const rowHeight = 50;
+  const rowHeight = 40;
   const maxLines = 4;
 
   const handleScroll = (e: WheelEvent<HTMLDivElement>) => {
@@ -105,10 +103,11 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   return (
     <div
-      hidden={!open}
       style={{
-        height: tasks.length * rowHeight,
-        maxHeight: maxLines * rowHeight
+        height: open ? tasks.length * rowHeight : '1px',
+        visibility: open ? 'visible' : 'hidden',
+        maxHeight: maxLines * rowHeight,
+        transition: 'height 0.5s, visibility  0.5s'
       }}
       onWheelCapture={handleScroll}
     >
@@ -117,6 +116,9 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
           '& .MuiDataGrid-cell': {
             padding: 0,
           },
+          '& .MuiTypography-root': {
+            lineHeight: 1,
+          }
         }}
         onRowDoubleClick={(p, e) => e.stopPropagation()}
         rows={tasks}
@@ -144,7 +146,7 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
   const allTasks = tasks?.length;
   const closedTasks = tasks?.filter(task => task.USR$CLOSED).length;
   return (
-    <Stack>
+    <Stack flex={1}>
       <Stack
         direction="row"
         alignItems="center"

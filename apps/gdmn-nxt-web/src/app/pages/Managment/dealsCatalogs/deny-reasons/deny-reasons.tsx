@@ -84,7 +84,6 @@ export function DenyReasons(props: DenyReasonsProps) {
 
   return (
     <CustomizedCard
-      borders
       className={styles.Card}
     >
       <CardHeader title={<Typography variant="pageHeader">Причины отказа</Typography>} />
@@ -109,7 +108,6 @@ export function DenyReasons(props: DenyReasonsProps) {
           rows={data}
           columns={columns}
           loading={isLoading}
-          rowHeight={60}
           hideHeaderSeparator
         />
         {memoUpsertDenyReason}

@@ -67,7 +67,6 @@ export function UpdatesList(props: UpdatesListProps) {
 
   return (
     <CustomizedCard
-      borders
       className={styles.card}
     >
       <CardHeader

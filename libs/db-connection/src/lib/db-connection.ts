@@ -1,8 +1,9 @@
 import { wrapForNamedParams } from '@gsbelarus/util-helpers';
 import { Semaphore } from '@gsbelarus/util-useful';
-import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation } from 'node-firebird-driver-native';
+import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation, Blob } from 'node-firebird-driver-native';
 import { config } from './db-config';
 import { genId } from './genId';
+import { getBlob, getStringFromBlob } from './convertors';
 
 const { host, port, db, username, password } = config;
 
@@ -218,16 +219,20 @@ export const acquireReadTransaction = async (sessionId: string) => {
       dbSession.lock -= 1;
       dbSession.touched = new Date().getTime();
     } catch (error) {
-      console.log('releaseReadTransaction', error);
+      console.error(`[ error ] release read transaction of ${sessionId}`, error);
     } finally {
       semaphore.release();
     }
   };
 
+
+  const blob2String = (value: Blob) => getStringFromBlob(attachment, transaction, value);
+
   return {
     attachment,
     transaction,
     releaseReadTransaction,
+    blob2String,
     ...wrapForNamedParams(attachment, transaction)
   };
 };
@@ -260,12 +265,14 @@ export const startTransaction = async (sessionId: string) => {
   };
 
   const generateId = () => genId(attachment, transaction);
+  const string2Blob = (value: string) => getBlob(attachment, transaction, value);
 
   return {
     attachment,
     transaction,
     releaseTransaction,
     generateId,
+    string2Blob,
     ...wrapForNamedParams(attachment, transaction)
   };
 };

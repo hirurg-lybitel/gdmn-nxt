@@ -780,6 +780,7 @@ const upsertUserGroupLine: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
+    setPermissonsCache();
   };
 };
 

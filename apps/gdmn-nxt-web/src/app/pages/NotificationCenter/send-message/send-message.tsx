@@ -78,7 +78,6 @@ export function SendMessage(props: SendMessageProps) {
 
   return (
     <CustomizedCard
-      borders
       boxShadows
       className={styles['item-card']}
     >

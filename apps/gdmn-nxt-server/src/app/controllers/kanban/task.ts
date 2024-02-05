@@ -200,7 +200,7 @@ const upsert: RequestHandler = async (req, res) => {
         USR$USERKEY: userId
       });
     };
-    if ((task.USR$CLOSED || -1) !== (oldTaskRecord.USR$CLOSED === 1)) {
+    if ((task.USR$CLOSED || false) !== (oldTaskRecord.USR$CLOSED === 1)) {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',

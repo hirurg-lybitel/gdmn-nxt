@@ -4,8 +4,7 @@ import Button from '@mui/material/Button/Button';
 import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from './customer-edit/customer-edit';
@@ -104,7 +103,7 @@ export function Customers(props: CustomersProps) {
   const [filteringData, setFilteringData] = useState<IFilteringData>({});
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 10
+    pageSize: 20
   });
   const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
@@ -227,7 +226,7 @@ export function Customers(props: CustomersProps) {
         const labels = (row as ICustomer)?.LABELS;
 
         return (
-          <Stack spacing={1}>
+          <Stack spacing={1} direction="row">
             <div>{value}</div>
             {labels?.length
               ?
@@ -301,11 +300,11 @@ export function Customers(props: CustomersProps) {
 
         return (
           <Box>
-            <IconButton {...detailsComponent} disabled={customerFetching}>
+            {/* <IconButton {...detailsComponent} disabled={customerFetching}>
               <Tooltip arrow title="Детализация">
                 <VisibilityIcon fontSize="small" color="primary" />
               </Tooltip>
-            </IconButton>
+            </IconButton> */}
             <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
               <ItemButtonEdit
                 onClick={handleCustomerEdit(customerId)}
@@ -386,15 +385,6 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(true);
   };
 
-  const handleOrganizationDeleteOnClick = () => {
-    if (!currentOrganization) {
-      setSnackBarMessage('Не выбрана организация');
-      setOpenSnackBar(true);
-      return;
-    }
-    setDataChanged(true);
-    deleteCustomer(currentOrganization);
-  };
   const filterHandlers = {
     handleFilter: async () => {
       setOpenFilters(!openFilters);
@@ -468,8 +458,7 @@ export function Customers(props: CustomersProps) {
           null
         }
         onSubmit={handleOrganiztionEditSubmit}
-        onCancelClick={handleOrganiztionEditCancelClick}
-        onDeleteClick={handleOrganizationDeleteOnClick}
+        onCancel={handleOrganiztionEditCancelClick}
       />
     ),
     [openEditForm]
@@ -522,7 +511,6 @@ export function Customers(props: CustomersProps) {
 
   return (
     <CustomizedCard
-      borders
       style={{
         width: '100%',
         display: 'flex',
@@ -537,61 +525,64 @@ export function Customers(props: CustomersProps) {
           })
       }}
     >
-      <CardHeader title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>} />
-      <Divider />
-      <CardToolbar>
-        <Stack direction="row" spacing={1}>
-          <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
-            <Box display="inline-flex" alignSelf="center" >
-              <Button
-                variant="contained"
-                onClick={handleAddOrganization}
+      <CardHeader
+        title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>}
+        action={
+          <Stack direction="row" spacing={1}>
+            <Box paddingX={'4px'} />
+            {memoSearchBar}
+            <Box display="inline-flex" alignSelf="center">
+              <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
+                <IconButton
+                  size="small"
+                  onClick={handleAddOrganization}
+                  disabled={customerFetching}
+                >
+                  <Tooltip arrow title="Добавить клиента">
+                    <AddCircleIcon color={customerFetching ? 'disabled' : 'primary'} />
+                  </Tooltip>
+                </IconButton>
+              </PermissionsGate>
+            </Box>
+            <Box display="inline-flex" alignSelf="center">
+              <CustomLoadingButton
+                hint="Обновить данные"
+                loading={customerFetching}
+                onClick={() => customerRefetch()}
+              />
+            </Box>
+            <Box display="inline-flex" alignSelf="center">
+              <IconButton
+                onClick={filterHandlers.handleFilter}
                 disabled={customerFetching}
-                startIcon={<AddIcon />}
                 size="small"
               >
-                Добавить
-              </Button>
+                <Tooltip
+                  title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                    ? 'У вас есть активные фильтры'
+                    : 'Выбрать фильтры'
+                  }
+                  arrow
+                >
+                  <Badge
+                    color="error"
+                    variant={
+                      Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                        ? 'dot'
+                        : 'standard'
+                    }
+                  >
+                    <FilterListIcon
+                      color={customerFetching ? 'disabled' : 'primary'}
+                    />
+                  </Badge>
+                </Tooltip>
+              </IconButton>
             </Box>
-          </PermissionsGate>
-          <Box flex={1} />
-          <Box>{memoSearchBar}</Box>
-          <CustomLoadingButton
-            hint="Обновить данные"
-            loading={customerFetching}
-            onClick={() => customerRefetch()}
-          />
-          <IconButton
-            onClick={filterHandlers.handleFilter}
-            disabled={customerFetching}
-            style={{
-              width: 40
-            }}
-          >
-            <Tooltip
-              title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                ? 'У вас есть активные фильтры'
-                : 'Выбрать фильтры'
-              }
-              arrow
-            >
-              <Badge
-                color="error"
-                variant={
-                  Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
-                    ? 'dot'
-                    : 'standard'
-                }
-              >
-                <FilterListIcon
-                  color={customerFetching ? 'disabled' : 'primary'}
-                />
-              </Badge>
-            </Tooltip>
-          </IconButton>
-          {/* </Box> */}
-        </Stack>
-      </CardToolbar>
+          </Stack>
+        }
+      />
+      <Divider />
       <CardContent
         style={{
           flex: 1,
@@ -658,12 +649,13 @@ export function Customers(props: CustomersProps) {
           >
             <Box flex={1}>
               <StyledGrid
-                sx={{
-                  '& .MuiDataGrid-row, .MuiDataGrid-cell': {
-                    minHeight: '60px !important',
-                    maxHeight: 'fit-content !important'
-                  }
-                }}
+                // sx={{
+                //   '& .MuiDataGrid-row, .MuiDataGrid-cell': {
+                //     minHeight: '40px !important',
+                //     maxHeight: 'fit-content !important'
+                //   }
+                // }}
+                rowHeight={40}
                 onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}

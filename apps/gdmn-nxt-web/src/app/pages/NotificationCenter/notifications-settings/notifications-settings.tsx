@@ -9,7 +9,6 @@ export function NotificationsSettings(props: NotificationsSettingsProps) {
   return (
     <CustomizedCard
       className={styles['item-card']}
-      borders
       boxShadows
     >
       <Box flex={1}>

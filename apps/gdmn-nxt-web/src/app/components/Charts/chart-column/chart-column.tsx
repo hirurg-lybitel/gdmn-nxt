@@ -260,7 +260,6 @@ export function ChartColumn(props: ChartColumnProps) {
 
   return (
     <CustomizedCard
-      borders
       boxShadows={theme.palette.mode === ColorMode.Light}
       ref={ref2}
       sx={(theme: any) => ({

@@ -147,7 +147,6 @@ export function ChartDonut({ period }: ChartDonutProps) {
 
   return (
     <CustomizedCard
-      borders
       boxShadows={theme.palette.mode === ColorMode.Light}
       sx={(theme: any) => ({
         flex: 1,

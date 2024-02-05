@@ -25,7 +25,14 @@ async function init(cacheManager: CacheManager) {
     }
 
     const execQuery = async ({ name, query }) => {
-      const data = await fetchAsObject(query);
+      const data = await (async () => {
+        switch (typeof query) {
+          case 'string':
+            return fetchAsObject(query);
+          default:
+            return query('Caching');
+        }
+      })();
       return { name, data };
     };
 
@@ -50,10 +57,18 @@ async function init(cacheManager: CacheManager) {
 async function cacheRequest(requestName: keyof typeof requests) {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction('cache-manager');
   try {
-    const data = await fetchAsObject(requests[requestName]);
+    const data = await (async () => {
+      const query = requests[requestName];
+      switch (typeof query) {
+        case 'string':
+          return fetchAsObject(query);
+        default:
+          return query('Caching');
+      }
+    })();
     usingCacheManager.setKey(requestName, data);
   } catch (error) {
-    console.error(error);
+    console.error(`[ ${requestName} ]`, error);
   } finally {
     await releaseReadTransaction();
   }

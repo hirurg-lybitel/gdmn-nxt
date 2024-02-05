@@ -12,7 +12,12 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-input-text': theme.textColor,
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
+          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#5a5a5a' : '#f5f5f5',
+          '--color-main-bg': theme.palette.background.default,
+          '--color-paper-bg': theme.palette.background.paper,
+          '--color-borders': theme.mainContent.borderColor,
           '--border-radius': theme.mainContent.borderRadius,
+          '--menu-width': `${theme.drawerWidth}px`,
         },
         body: {
           fontFamily: theme.fontFamily,
@@ -20,7 +25,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             width: 10,
             height: 10,
-            borderRadius: theme.mainContent.borderRadius,
+            borderRadius: 'var(--border-radius)',
             backgroundColor: 'inherit',
           },
           '&::-webkit-scrollbar:hover, & *::-webkit-scrollbar:hover': {
@@ -32,7 +37,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           //   backgroundColor: 'inherit',
           // },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: theme.mainContent.borderRadius,
+            borderRadius: 'var(--border-radius)',
             backgroundColor: 'var(--color-scroll-thumb)',
             border: '2px solid transparent',
             backgroundClip: 'padding-box',
@@ -85,7 +90,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           backgroundImage: 'none',
         },
         rounded: {
-          borderRadius: '12px',
+          borderRadius: 'var(--border-radius)',
         },
       }
     },
@@ -93,21 +98,21 @@ export default function componentStyleOverrides(theme: Theme): Components {
       defaultProps: {
         size: 'small',
         style: {
-          textTransform: 'none'
+          textTransform: 'none',
         }
       },
       styleOverrides: {
         text: {
           letterSpacing: '1px'
         },
-        contained: {
-          letterSpacing: '1px',
-          backgroundColor: 'var(--color-btn-primary-bg)',
-          ':hover': {
+        contained: ({ ownerState: { color } }) => (
+          color === 'primary' && {
             backgroundColor: 'var(--color-btn-primary-bg)',
-            opacity: 0.9
-          }
-        },
+            ':hover': {
+              backgroundColor: 'var(--color-btn-primary-bg)',
+              opacity: 0.9
+            }
+          }),
         outlined: {
           letterSpacing: '1px'
         },
@@ -136,7 +141,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: '12px',
+          borderRadius: 'var(--border-radius)',
         }
       }
     },
@@ -159,7 +164,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
       styleOverrides: {
         root: {
           '& .MuiSwitch-thumb': {
-            boxShadow: '0 0 10px grey'
+            boxShadow: '0 0 5px grey'
           }
         }
       }
@@ -167,6 +172,13 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiAlert: {
       defaultProps: {
         variant: theme.palette?.mode === ColorMode.Dark ? 'filled' : 'standard'
+      }
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          // borderRadius: 'var(--border-radius)',
+        }
       }
     }
   };

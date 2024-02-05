@@ -22,6 +22,7 @@ import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
 import { setError } from '../../../features/error-slice/error-slice';
+import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -75,6 +76,18 @@ export function Profile(props: ProfileProps) {
     create: false,
     check: false
   });
+
+  const handleAvatarChange = (value = '') => {
+    setImage(value);
+
+    setSettings({
+      userId: userProfile?.id || -1,
+      body: {
+        ...settings,
+        AVATAR: value
+      }
+    });
+  }
 
   const onDelete = () => {
     handleConfirmCancelClick();
@@ -324,7 +337,7 @@ export function Profile(props: ProfileProps) {
       {memoCheckCode}
       {memoCreateCode}
       {memoConfirmDialog}
-      <CustomizedCard className={styles.mainCard} borders>
+      <CustomizedCard className={styles.mainCard}>
         <CardHeader title={<Typography variant="pageHeader">Профиль</Typography>} />
         <Divider />
         <CardContent className={styles['card-content']}>
@@ -340,45 +353,11 @@ export function Profile(props: ProfileProps) {
                   height={300}
                   width={300}
                 />
-                :
-                <Avatar
-                  className={styles.image}
-                  src={image}
+                : <EditableAvatar
+                  size={200}
+                  value={image}
+                  onChange={handleAvatarChange}
                 />}
-              <Box position="absolute" top={250}>
-                <Fab
-                  disabled={isLoading || updateIsLoading}
-                  component="span"
-                  color="error"
-                  onClick={handleDeleteClick}
-                >
-                  <DeleteIcon fontSize="medium" />
-                </Fab>
-              </Box>
-              <Box
-                position="absolute"
-                top={250}
-                left={245}
-              >
-                <label htmlFor="contained-button-file">
-                  <Fab
-                    component="span"
-                    color="primary"
-                    disabled={isLoading || updateIsLoading}
-                  >
-                    <AddPhotoAlternateIcon fontSize="medium" />
-                  </Fab>
-                </label>
-              </Box>
-              <input
-                disabled={isLoading || updateIsLoading}
-                className={styles['input-hide']}
-                accept="image/*"
-                id="contained-button-file"
-                type="file"
-                onChange={handleUploadClick}
-                ref={inputRef}
-              />
             </Box>
             <Divider orientation="vertical" flexItem />
             <Box display="flex" flex={1}>
