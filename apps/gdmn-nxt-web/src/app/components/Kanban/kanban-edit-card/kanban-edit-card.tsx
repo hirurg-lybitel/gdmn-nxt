@@ -250,7 +250,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onSubmit(formik.values, deleting);
+    onSubmit({ ...formik.values, DEAL: { ...formik.values.DEAL, USR$AMOUNT: formik.values.DEAL?.USR$AMOUNT || 0, ID: formik.values.DEAL?.ID || -1 } }, deleting);
   }, [formik.values, deleting]);
 
   const handleConfirmCancelClick = useCallback(() => {
