@@ -266,7 +266,7 @@ export function KanbanCard(props: KanbanCardProps) {
             right: 0,
           },
           '&:hover .number': {
-            display: isFirstColumn ? 'none' : 'inline',
+            opacity: 0, visibility: 'hidden'
           },
           '&:hover': {
             boxShadow: '0 4px 18px rgba(0,0,0,.3)'
@@ -277,7 +277,8 @@ export function KanbanCard(props: KanbanCardProps) {
         <Stack direction="column" spacing={0.5}>
           <Stack
             direction="row"
-            style={{ position: 'relative', justifyContent: 'space-between' }}
+            style={{ position: 'relative' }}
+            spacing={1}
           >
             <Typography
               variant="subtitle1"
