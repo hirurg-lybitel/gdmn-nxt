@@ -43,6 +43,11 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       open={open}
       TransitionComponent={Transition}
       onClose={handleOnClose}
+      PaperProps={{
+        style: {
+          maxWidth: '400px'
+        }
+      }}
     >
       <DialogTitle className={classes.dialogTitle}>{title}</DialogTitle>
       <DialogContent dividers>

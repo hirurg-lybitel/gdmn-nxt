@@ -2,10 +2,6 @@ import { IProfileSettings, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
 
-// interface IBusinessProcesses {
-//   businessProcesses: IBusinessProcess[];
-// };
-
 type IProfileSettingsRequestResult = IRequestResult<{ settings: IProfileSettings }>;
 
 export const profileSettingsApi = createApi({
@@ -37,11 +33,24 @@ export const profileSettingsApi = createApi({
           : error
             ? [{ type: 'settings', id: 'ERROR' }]
             : [{ type: 'settings', id: 'LIST' }]
+    }),
+    resetProfileSettings: builder.mutation<IProfileSettings, number>({
+      query: (userId) => ({
+        url: `profile-settings/reset/${userId}`,
+        method: 'POST'
+      }),
+      invalidatesTags: (result, error) =>
+        result
+          ? [{ type: 'settings', id: 'LIST' }]
+          : error
+            ? [{ type: 'settings', id: 'ERROR' }]
+            : [{ type: 'settings', id: 'LIST' }]
     })
   })
 });
 
 export const {
   useGetProfileSettingsQuery,
-  useSetProfileSettingsMutation
+  useSetProfileSettingsMutation,
+  useResetProfileSettingsMutation
 } = profileSettingsApi;

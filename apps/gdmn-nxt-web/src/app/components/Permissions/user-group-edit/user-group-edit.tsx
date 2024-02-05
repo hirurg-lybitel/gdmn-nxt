@@ -153,6 +153,7 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       <DialogActions>
         {userGroup &&
         <ItemButtonDelete
+          button
           onClick={onDeleteClick}
         />}
         <Box flex={1}/>

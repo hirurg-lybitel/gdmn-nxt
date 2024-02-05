@@ -206,7 +206,7 @@ export interface IContactPerson extends IContactWithID {
   MESSENGERS?: IMessenger[];
   LABELS?: ILabel[];
   PHOTO?: string;
-  COMPANY?: IContactWithID;
+  COMPANY?: IContactWithID | null;
   isFavorite?: boolean;
 };
 

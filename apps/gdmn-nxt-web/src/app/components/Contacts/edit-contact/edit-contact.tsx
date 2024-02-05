@@ -1,13 +1,11 @@
-import SmsIcon from '@mui/icons-material/Sms';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WorkIcon from '@mui/icons-material/Work';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import DeleteIcon from '@mui/icons-material/Delete';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import EmailIcon from '@mui/icons-material/Email';
-import { Autocomplete, Avatar, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputAdornment, Stack, Tab, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
@@ -24,7 +22,6 @@ import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
-import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
@@ -555,7 +552,7 @@ export function EditContact({
       </DialogContent>
       <DialogActions>
         <PermissionsGate actionAllowed={userPermissions?.contacts?.DELETE}>
-          <ItemButtonDelete onClick={handleDeleteClick} />
+          <ItemButtonDelete button onClick={handleDeleteClick} />
         </PermissionsGate>
         <Box flex={1}/>
         <Button

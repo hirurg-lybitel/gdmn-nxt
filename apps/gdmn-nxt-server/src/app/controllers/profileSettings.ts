@@ -4,6 +4,8 @@ import { Request, RequestHandler } from 'express';
 import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, startTransaction, releaseReadTransaction as releaseRT } from '@gdmn-nxt/db-connection';
 import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
+import { closeUserSession } from '../utils/sessions-helper';
+import { setPermissonsCache } from '../middlewares/permissions';
 
 const getSettings = async (userId: number, req: Request) => {
   const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(req.sessionID);
@@ -200,4 +202,40 @@ const upsertLastIP = async (req: Request, body: { userId: number, ip: string }) 
   }
 };
 
-export const profileSettingsController = { get, set, getSettings, upsertSecretKey, upsertLastIP };
+const resetSettings: RequestHandler = async (req, res) => {
+  const { releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
+
+  const userId = parseIntDef(req.params.userId, -1);
+
+  try {
+    await executeSingletonAsObject(
+      `DELETE FROM USR$CRM_PROFILE_SETTINGS
+      WHERE USR$USERKEY = :userId`,
+      { userId }
+    );
+
+    closeUserSession(req, userId);
+    setPermissonsCache();
+
+    const result: IRequestResult = {
+      queries: { settings: [{ id: userId }] },
+      _params: [{ userId }],
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(res.statusCode === 200);
+  }
+};
+
+export const profileSettingsController = {
+  get,
+  set,
+  getSettings,
+  upsertSecretKey,
+  upsertLastIP,
+  resetSettings
+};

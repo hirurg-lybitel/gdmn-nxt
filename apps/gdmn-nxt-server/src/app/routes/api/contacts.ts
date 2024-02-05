@@ -21,6 +21,7 @@ router.get('/labels', getLabelsContact);
 router.post('/labels', addLabelsContact);
 router.delete('/labels/:contactId', deleteLabelsContact);
 
+router.put('/persons/many', contactPersonsController.updateMany);
 router.get('/persons', contactPersonsController.getAll);
 router.get('/persons/:id', contactPersonsController.getById);
 router.post('/persons', contactPersonsController.createContact);

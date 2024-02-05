@@ -1,4 +1,4 @@
-import { Autocomplete, Button, TextField } from '@mui/material';
+import { Autocomplete, Button, TextField, Tooltip } from '@mui/material';
 import styles from './icon-select.module.less';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -92,14 +92,16 @@ export function IconSelect(props: Readonly<IconSelectProps>) {
 
   return (
     <div>
-      <Button
-        className={styles.button}
-        color="inherit"
-        onClick={handlecloseToggleSelect}
-      >
-        {icon ? <IconByName name={icon} color="primary" /> : <RadioButtonUncheckedIcon color="primary" />}
-        <ArrowDropDownIcon />
-      </Button>
+      <Tooltip title={'Выбрать пиктограмму'}>
+        <Button
+          className={styles.button}
+          color="inherit"
+          onClick={handlecloseToggleSelect}
+        >
+          {icon ? <IconByName name={icon} color="primary" /> : <RadioButtonUncheckedIcon color="primary" />}
+          <ArrowDropDownIcon />
+        </Button>
+      </Tooltip>
       <ListboxComponent
         open={toggleSelect}
         onClose={handleCloseSelect}

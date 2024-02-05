@@ -12,12 +12,14 @@ interface Props {
   onChange: (value: IContactPerson[]) => void;
   label?: string;
   placeholder?: string;
+  limitTags?: number;
 }
 export function ContactSelect({
   value,
   onChange,
   label = 'Контакты',
-  placeholder = 'Выберите контакт',
+  placeholder = 'Выберите контакты',
+  limitTags = -1
 }: Props) {
   const {
     data: persons,
@@ -30,11 +32,11 @@ export function ContactSelect({
     <Autocomplete
       options={persons?.records ?? []}
       value={
-        persons?.records?.filter(employee => value?.find((el) => el.ID === employee.ID))
+        persons?.records?.filter(employee => value?.find((el) => el.ID === employee.ID)) ?? []
       }
       onChange={handleOnChange}
       multiple
-      limitTags={2}
+      limitTags={limitTags}
       getOptionLabel={option => option.NAME}
       filterOptions={filterOptions(50, 'NAME')}
       renderOption={(props, option, { selected }) => (
