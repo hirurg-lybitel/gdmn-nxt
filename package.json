@@ -62,7 +62,7 @@
     "mustache": "^4.2.0",
     "nested-sets-tree": "^2.0.0",
     "node-firebird-driver-native": "^2.3.0",
-    "nodemailer": "^6.7.2",
+    "nodemailer": "^6.9.9",
     "notistack": "^2.0.8",
     "number-to-words-ru": "^2.3.2",
     "otplib": "^12.0.1",
