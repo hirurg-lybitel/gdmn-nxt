@@ -12,6 +12,7 @@ interface IStyledGridProps extends DataGridProProps{
   hideColumnHeaders?: boolean;
   hideHeaderSeparator?: boolean;
   loadingMode?: 'circular' | 'linear';
+  autoHeightForFields?: string[];
 }
 
 /** Disable license expired message error */
@@ -99,7 +100,16 @@ export default function StyledGrid(props: IStyledGridProps) {
     })
   });
 
-  const { loadingMode = 'linear', hideColumnHeaders } = props;
+  const {
+    loadingMode = 'linear',
+    hideColumnHeaders,
+    autoHeightForFields
+  } = props;
+
+  useEffect(() => {
+    disableLicenseError();
+  }, []);
+
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
@@ -112,6 +122,13 @@ export default function StyledGrid(props: IStyledGridProps) {
       }}
       headerHeight={hideColumnHeaders ? 0 : 50}
       rowHeight={40}
+      getRowHeight={({ model }) => {
+        const isAutoHeight = autoHeightForFields?.some((field) => !!model[field]);
+        if (isAutoHeight) {
+          return 'auto';
+        }
+        return 40;
+      }}
       {...props}
       sx={{
         ...defaultTheme(props),

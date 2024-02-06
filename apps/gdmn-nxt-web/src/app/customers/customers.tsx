@@ -143,7 +143,7 @@ export function Customers(props: CustomersProps) {
     () => customersResponse?.count ?? 0,
     [customersResponse?.count]
   );
-  // const { data: customersData } = customersResponse;
+
   const { data: wotkTypes } = useGetWorkTypesQuery();
   const { data: departments } = useGetDepartmentsQuery();
   const { data: customerContracts } = useGetCustomerContractsQuery();
@@ -226,7 +226,12 @@ export function Customers(props: CustomersProps) {
         const labels = (row as ICustomer)?.LABELS;
 
         return (
-          <Stack spacing={1} direction="row">
+          <Stack
+            spacing={1}
+            direction="row"
+            display="flex"
+            alignItems="center"
+          >
             <div>{value}</div>
             {labels?.length
               ?
@@ -649,13 +654,7 @@ export function Customers(props: CustomersProps) {
           >
             <Box flex={1}>
               <StyledGrid
-                // sx={{
-                //   '& .MuiDataGrid-row, .MuiDataGrid-cell': {
-                //     minHeight: '40px !important',
-                //     maxHeight: 'fit-content !important'
-                //   }
-                // }}
-                rowHeight={40}
+                autoHeightForFields={['LABELS']}
                 onRowDoubleClick={lineDoubleClick}
                 columns={columns}
                 rows={customers ?? []}
