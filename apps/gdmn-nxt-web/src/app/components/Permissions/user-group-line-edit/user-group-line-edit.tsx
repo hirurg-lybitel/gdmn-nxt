@@ -62,7 +62,8 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
       ...initValue
     },
     validationSchema: yup.object().shape({
-      USERS: yup.array().required('Не выбран пользователь'),
+      USERS: yup.array().min(1, 'Не выбран пользователь')
+        .required('Не выбран пользователь'),
     }),
     onSubmit: (value) => {
       setConfirmOpen(true);
