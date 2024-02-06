@@ -228,7 +228,7 @@ export function Customers(props: CustomersProps) {
         return (
           <Stack spacing={1} direction="row">
             <div>{value}</div>
-            {labels?.length
+            {Array.isArray(labels) && labels.length > 0
               ?
               <List
                 style={{

@@ -121,7 +121,7 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
       headerHeight={hideColumnHeaders ? 0 : 50}
-      rowHeight={40}
+      // rowHeight={40}
       getRowHeight={({ model }) => {
         const isAutoHeight = autoHeightForFields?.some((field) => !!model[field]);
         if (isAutoHeight) {

@@ -64,7 +64,7 @@ export function ContactList({
             alignItems="center"
           >
             <Typography>{value}</Typography>
-            {Array.isArray(labels)
+            {Array.isArray(labels) && labels.length > 0
               ?
               <List
                 style={{
