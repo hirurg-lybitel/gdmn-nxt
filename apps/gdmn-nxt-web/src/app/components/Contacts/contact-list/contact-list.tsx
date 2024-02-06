@@ -57,7 +57,11 @@ export function ContactList({
       renderCell: ({ value, row }) => {
         const labels: ILabel[] = row.LABELS ?? [];
         return (
-          <Stack spacing={1} direction="row">
+          <Stack
+            spacing={1}
+            direction="row"
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
             <Typography>{value}</Typography>
             {Array.isArray(labels)
               ?
@@ -72,7 +76,7 @@ export function ContactList({
                   alignItems: 'center'
                 }}
               >
-                {labels.slice(0, 1).map((label) => {
+                {labels.map((label) => {
                   return (
                     <div key={label.ID}>
                       <Tooltip
@@ -91,11 +95,10 @@ export function ContactList({
                         </ListItemButton>
                       </Tooltip>
                     </div>
-
                   );
                 }
                 )}
-                {labels.length > 1 && <Typography variant="caption">+{labels.length - 1}</Typography>}
+                {/* {labels.length > 1 && <Typography variant="caption">+{labels.length - 1}</Typography>} */}
               </List>
               : <></>}
           </Stack>
@@ -160,8 +163,8 @@ export function ContactList({
         rows={contacts}
         columns={columns}
         onRowDoubleClick={({ row }) => onEditClick(row)}
+        getRowHeight={() => 'auto'}
         loading={isLoading}
-        rowHeight={40}
         rowCount={contactsCount}
         hideHeaderSeparator
         disableMultipleSelection
