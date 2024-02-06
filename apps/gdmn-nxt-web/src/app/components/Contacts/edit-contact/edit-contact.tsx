@@ -29,6 +29,7 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import ContactsDeals from '../contacts-deals';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import ContactsTasks from '../contact-tasks';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -538,7 +539,6 @@ export function EditContact({
                     <Tab
                       label="Задачи"
                       value="3"
-                      disabled
                     />
                   </TabList>
                   <Divider style={{ margin: 0 }} />
@@ -549,7 +549,7 @@ export function EditContact({
                     <ContactsDeals contactId={contact?.ID ?? -1} />
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
-                    <div className={styles.noData}><CustomNoData /></div>
+                    <ContactsTasks contactId={contact?.ID ?? -1} />
                   </TabPanel>
                 </TabContext>
               </Stack>
