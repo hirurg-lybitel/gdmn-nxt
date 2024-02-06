@@ -60,7 +60,8 @@ export function ContactList({
           <Stack
             spacing={1}
             direction="row"
-            style={{ display: 'flex', alignItems: 'center' }}
+            display="flex"
+            alignItems="center"
           >
             <Typography>{value}</Typography>
             {Array.isArray(labels)
@@ -98,7 +99,6 @@ export function ContactList({
                   );
                 }
                 )}
-                {/* {labels.length > 1 && <Typography variant="caption">+{labels.length - 1}</Typography>} */}
               </List>
               : <></>}
           </Stack>
@@ -145,16 +145,6 @@ export function ContactList({
           : <></>
       ]
     }
-    // { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100, type: 'date',
-    //   renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
-    // },
-    // { field: 'DEPT_NAME', headerName: 'Отдел', width: 100 },
-    // { field: 'JOB_NUMBER', headerName: 'Заказ', width: 100 },
-    // { field: 'CSUMNCU', headerName: 'Сумма', minWidth: 100, align: 'right',
-    //   renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-    // { field: 'COMMENT', headerName: 'Комментарии', flex: 1, minWidth: 300,
-    //   renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
-    // }
   ];
 
   return (
@@ -163,12 +153,7 @@ export function ContactList({
         rows={contacts}
         columns={columns}
         onRowDoubleClick={({ row }) => onEditClick(row)}
-        getRowHeight={(params) => {
-          if (!params.model.LABELS) {
-            return 40;
-          }
-          return 'auto';
-        }}
+        autoHeightForFields={['LABELS']}
         loading={isLoading}
         rowCount={contactsCount}
         hideHeaderSeparator
@@ -185,20 +170,12 @@ export function ContactList({
             ...paginationData,
             pageNo: data
           });
-          // setPaginationData((prevState) => ({
-          //   ...prevState,
-          //   pageNo: data
-          // }));
         }}
         onPageSizeChange={(data) => {
           paginationClick({
             ...paginationData,
             pageSize: data
           });
-          // setPaginationData((prevState) => ({
-          //   ...prevState,
-          //   pageSize: data
-          // }));
         }}
         pageSize={paginationData.pageSize}
         rowsPerPageOptions={pageOptions}
