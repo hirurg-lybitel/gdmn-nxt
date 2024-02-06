@@ -29,7 +29,7 @@ type BaseTextFieldProps = Omit<
   'onChange'
 >;
 
-type Value<Multiple> = Multiple extends true ? Array<ICustomer> : ICustomer;
+type Value<Multiple> = (Multiple extends true ? Array<ICustomer> : ICustomer) | null;
 
 interface CustomerSelectProps<Multiple extends boolean | undefined> extends BaseTextFieldProps {
   value?: Value<Multiple>;
@@ -103,7 +103,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       open={addCustomer}
       deleteable={false}
       customer={editingCustomer}
-      onCancelClick={handleCancelCustomer}
+      onCancel={handleCancelCustomer}
       onSubmit={handleSubmitCustomer}
     />, [addCustomer, editingCustomer]);
 

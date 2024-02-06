@@ -50,6 +50,7 @@ export function ContactsFilter({
     <CustomizedDialog
       open={open}
       onClose={onClose}
+      width={400}
     >
       <CardContent style={{ flex: 1 }}>
         <Stack spacing={2}>
@@ -72,6 +73,7 @@ export function ContactsFilter({
           <ContactSelect
             label="Ответственный"
             placeholder="Выберите ответственного"
+            limitTags={2}
             value={filteringData?.RESPONDENTS as IContactPerson[] ?? []}
             onChange={(value) => handleOnChange('RESPONDENTS', value)}
           />

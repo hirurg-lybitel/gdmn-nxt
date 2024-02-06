@@ -18,10 +18,19 @@ interface IStyledGridProps extends DataGridProProps{
 /** Disable license expired message error */
 const disableLicenseError = () => {
   const searchText = 'MUI X: License key expired';
-  const elements = document.querySelectorAll('div');
-  elements.forEach((element) => {
-    if (element.textContent === searchText) {
-      element.style.display = 'none';
+  const root = document.querySelectorAll('.MuiDataGrid-main');
+
+  root.forEach((grid) => {
+    const children = Array.from(grid.childNodes);
+
+    for (const element of children) {
+      if (element.textContent?.toLowerCase() === searchText.toLowerCase()) {
+        if (element.nodeName.toLowerCase() !== 'div') {
+          return;
+        }
+        const div = element as HTMLDivElement;
+        div.style.display = 'none';
+      }
     }
   });
 };
@@ -104,6 +113,7 @@ export default function StyledGrid(props: IStyledGridProps) {
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+      onStateChange={() => disableLicenseError()}
       getRowId={row => row.ID}
       components={{
         LoadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,

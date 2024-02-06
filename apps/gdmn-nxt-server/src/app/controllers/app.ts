@@ -92,7 +92,7 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
           userName,
           contactkey: data[0]['CONTACTKEY'],
           rank: data[0]['RANK'],
-          colorMode: data[0]['COLORMODE'] ?? ColorMode.Light,
+          colorMode: data[0]['COLORMODE'] ?? ColorMode.Dark,
         };
       } else if (!data.length) {
         return undefined;

@@ -82,7 +82,7 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
-          const colorMode = data.user.colorMode ?? ColorMode.Light;
+          const colorMode = data.user.colorMode ?? ColorMode.Dark;
           switch (colorMode) {
             case ColorMode.Dark:
               dispatch(setColorMode(ColorMode.Dark));

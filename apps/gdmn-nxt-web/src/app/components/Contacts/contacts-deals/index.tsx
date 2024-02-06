@@ -1,38 +1,39 @@
-import { Box, Chip } from '@mui/material';
-import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
-import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import styles from './customer-deals.module.less';
-import { GridColumns } from '@mui/x-data-grid-pro';
-import { renderCellExpand } from '../../../components/Styled/styled-grid/styled-grid';
 import WarningIcon from '@mui/icons-material/Warning';
-import CheckIcon from '@mui/icons-material/Check';
 import InProgressIcon from '@mui/icons-material/Autorenew';
 import InfoIcon from '@mui/icons-material/Info';
-import useDateComparator from '../../../components/helpers/hooks/useDateComparator';
-import { useRef, useState } from 'react';
+import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
+import { GridColumns } from '@mui/x-data-grid-pro';
+import { IDeal } from '@gsbelarus/util-api-types';
+import { Box, Chip } from '@mui/material';
+import { useRef } from 'react';
+import useDateComparator from '@gdmn-nxt/components/helpers/hooks/useDateComparator';
+import KanbanList from '@gdmn-nxt/components/Kanban/kanban-list/kanban-list';
 
-export interface CustomerDealsProps {
-  customerId: number
+interface Props {
+  contactId: number
 }
 
-export function CustomerDeals(props: CustomerDealsProps) {
-  const { customerId } = props;
+export default function ContactsDeals({
+  contactId
+}: Props) {
+  const { id: userId } = useUserData();
 
   const { getDayDiff } = useDateComparator();
   const currentDate = useRef(new Date());
 
   const {
-    data: nonCachedData,
-    currentData: columns = nonCachedData || [],
+    data: rows = [],
+    isFetching: isFetchingDeals
   } = useGetKanbanDealsQuery({
-    userId: -1,
+    userId,
     filter: {
-      customers: [{ ID: customerId }]
+      performers: [{ ID: contactId }],
+      creators: [{ ID: contactId }],
     }
   });
 
-
-  const newGridColumns: GridColumns = [
+  const columns: GridColumns<IDeal> = [
     {
       field: 'CREATIONDATE',
       headerName: 'Дата создания',
@@ -97,36 +98,20 @@ export function CustomerDeals(props: CustomerDealsProps) {
             return <></>;
         }
       }
-    },
-    {
-      field: 'REQUESTNUMBER',
-      headerName: '№ заявки',
-      type: 'string',
-      headerAlign: 'center',
-      align: 'center',
-      width: 150,
-      resizable: false,
-    },
-    {
-      field: 'PRODUCTNAME',
-      headerName: 'Наименование',
-      type: 'string',
-      flex: 1,
-      resizable: false,
-    },
+    }
   ];
+
   return (
     <Box
       flex={1}
       display="flex"
     >
       <KanbanList
-        columns={columns}
-        gridColumns={newGridColumns}
+        columns={rows}
+        loading={isFetchingDeals}
+        gridColumns={columns}
         disableAddCard
       />
     </Box>
   );
 }
-
-export default CustomerDeals;
