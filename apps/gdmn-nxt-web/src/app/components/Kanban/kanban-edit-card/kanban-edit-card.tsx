@@ -225,7 +225,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
             .max(180, 'Слишком длинное наименование'),
-          USR$AMOUNT: yup.number()
+          USR$AMOUNT: yup.number().nullable()
             .max(1000000, 'Слишком большая сумма'),
         })
     }),
@@ -250,7 +250,20 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onSubmit(formik.values, deleting);
+    onSubmit(
+      {
+        ...formik.values,
+        ...(formik.values.DEAL?.ID
+          ? {
+            DEAL: {
+              ...formik.values.DEAL,
+              USR$AMOUNT: formik.values.DEAL?.USR$AMOUNT ?? 0,
+            }
+          }
+          : {}),
+      },
+      deleting
+    );
   }, [formik.values, deleting]);
 
   const handleConfirmCancelClick = useCallback(() => {
