@@ -163,7 +163,12 @@ export function ContactList({
         rows={contacts}
         columns={columns}
         onRowDoubleClick={({ row }) => onEditClick(row)}
-        getRowHeight={() => 'auto'}
+        getRowHeight={(params) => {
+          if (!params.model.LABELS) {
+            return 40;
+          }
+          return 'auto';
+        }}
         loading={isLoading}
         rowCount={contactsCount}
         hideHeaderSeparator
