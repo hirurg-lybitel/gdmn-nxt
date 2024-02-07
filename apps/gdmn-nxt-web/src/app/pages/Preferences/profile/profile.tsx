@@ -1,14 +1,12 @@
 import styles from './profile.module.less';
 import NoPhoto from './img/NoPhoto.png';
-import { Avatar, Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, Fab, FormControlLabel, Icon, List, ListItem, ListItemIcon, Skeleton, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, FormControlLabel, Icon, List, ListItem, ListItemIcon, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
-import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import InfoIcon from '@mui/icons-material/Info';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
@@ -27,6 +25,9 @@ import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar
 /* eslint-disable-next-line */
 export interface ProfileProps {}
 
+export const TABS = ['account', 'settings', 'notifications'] as const;
+type TabIndex = typeof TABS[number];
+
 export function Profile(props: ProfileProps) {
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
   const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id || -1);
@@ -42,31 +43,17 @@ export function Profile(props: ProfileProps) {
 
   const [activate2fa] = useCreate2faMutation();
 
-  const [tabIndex, setTabIndex] = useState('1');
+  const tabDefault = window.location.pathname.split('/').at(-1) as TabIndex ?? 'account';
+  const [tabIndex, setTabIndex] = useState<TabIndex>(tabDefault);
+  useEffect(() => {
+    setTabIndex(tabDefault as TabIndex);
+  }, [tabDefault]);
+
   const [image, setImage] = useState<string>(NoPhoto);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<IUserProfile>();
   const { addSnackbar } = useSnackbar();
-
-  const handleUploadClick = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0] || undefined;
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onloadend = (e) => {
-      setImage(reader.result?.toString() || '');
-
-      setSettings({
-        userId: userProfile?.id || -1,
-        body: {
-          ...settings,
-          AVATAR: reader.result?.toString() || ''
-        }
-      });
-    };
-  }, [settings]);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [twoFAOpen, setTwoFAOpen] = useState<{
@@ -87,7 +74,7 @@ export function Profile(props: ProfileProps) {
         AVATAR: value
       }
     });
-  }
+  };
 
   const onDelete = () => {
     handleConfirmCancelClick();
@@ -104,15 +91,11 @@ export function Profile(props: ProfileProps) {
     }
   };
 
-  const handleDeleteClick = () => {
-    setConfirmOpen(true);
-  };
-
   const handleConfirmCancelClick = () => {
     setConfirmOpen(false);
   };
 
-  const handleTabsChange = (event: any, newindex: string) => {
+  const handleTabsChange = (event: any, newindex: TabIndex) => {
     setTabIndex(newindex);
   };
 
@@ -338,7 +321,7 @@ export function Profile(props: ProfileProps) {
       {memoCreateCode}
       {memoConfirmDialog}
       <CustomizedCard className={styles.mainCard}>
-        <CardHeader title={<Typography variant="pageHeader">Профиль</Typography>} />
+        <CardHeader title={<Typography variant="pageHeader">Настройки</Typography>} />
         <Divider />
         <CardContent className={styles['card-content']}>
           <Stack
@@ -346,20 +329,6 @@ export function Profile(props: ProfileProps) {
             flex={1}
             spacing={2}
           >
-            <Box position="relative">
-              {isLoading || updateIsLoading
-                ? <Skeleton
-                  variant="circular"
-                  height={300}
-                  width={300}
-                />
-                : <EditableAvatar
-                  size={200}
-                  value={image}
-                  onChange={handleAvatarChange}
-                />}
-            </Box>
-            <Divider orientation="vertical" flexItem />
             <Box display="flex" flex={1}>
               <FormikProvider value={formik}>
                 <Form
@@ -369,43 +338,55 @@ export function Profile(props: ProfileProps) {
                 >
                   <TabContext value={tabIndex}>
                     <TabList onChange={handleTabsChange}>
-                      <Tab label="Общее" value="1" />
+                      <Tab label="Профиль" value="account" />
                       <Tab
                         label="Безопасность"
-                        value="2"
+                        value="settings"
                         disabled={isLoading}
                       />
                       <Tab
                         label="Уведомления"
-                        value="3"
+                        value="notifications"
                         disabled={isLoading}
                       />
                     </TabList>
                     <Divider style={{ margin: 0 }} />
-                    <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
-                      <Stack spacing={2}>
-                        <TextField
-                          label="Имя"
-                          value={userProfile?.userName || ''}
-                          disabled
+                    <TabPanel value="account" className={tabIndex === 'account' ? styles.tabPanel : ''}>
+                      <Stack direction="row" spacing={2}>
+                        <EditableAvatar
+                          size={120}
+                          value={image}
+                          onChange={handleAvatarChange}
+                          loading={isLoading || updateIsLoading}
                         />
-                        <TextField
-                          label="Должность"
-                          value={settings?.RANK || ''}
-                          disabled
-                        />
-                        <TextField
-                          disabled={isLoading}
-                          label="Email"
-                          name="EMAIL"
-                          onChange={formik.handleChange}
-                          value={formik.values.EMAIL ?? ''}
-                          helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
-                          error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
-                        />
+                        <Stack spacing={2} flex={1}>
+                          <Stack direction="row" spacing={2}>
+                            <TextField
+                              label="Имя"
+                              value={userProfile?.userName || ''}
+                              disabled
+                              fullWidth
+                            />
+                            <TextField
+                              label="Должность"
+                              value={settings?.RANK || ''}
+                              disabled
+                              fullWidth
+                            />
+                          </Stack>
+                          <TextField
+                            disabled={isLoading}
+                            label="Email"
+                            name="EMAIL"
+                            onChange={formik.handleChange}
+                            value={formik.values.EMAIL ?? ''}
+                            helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+                            error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
+                          />
+                        </Stack>
                       </Stack>
                     </TabPanel>
-                    <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
+                    <TabPanel value="settings" className={tabIndex === 'settings' ? styles.tabPanel : ''}>
                       <Typography variant="subtitle1">Способы входа</Typography>
                       <Stack direction="row" spacing={1}>
                         <Icon fontSize="large" style={{ height: '100%', marginLeft: -7 }}>
@@ -437,7 +418,7 @@ export function Profile(props: ProfileProps) {
                         </Tooltip>
                       </Stack>
                     </TabPanel>
-                    <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
+                    <TabPanel value="notifications" className={tabIndex === 'notifications' ? styles.tabPanel : ''}>
                       <Stack direction="row" alignItems="center">
                         <FormControlLabel
                           disabled={isLoading}

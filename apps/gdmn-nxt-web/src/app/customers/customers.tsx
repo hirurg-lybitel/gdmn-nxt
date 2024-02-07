@@ -233,7 +233,7 @@ export function Customers(props: CustomersProps) {
             alignItems="center"
           >
             <div>{value}</div>
-            {labels?.length
+            {Array.isArray(labels) && labels.length > 0
               ?
               <List
                 style={{

@@ -4,7 +4,7 @@ import { RootState, store } from './app/store';
 import { Provider, useSelector } from 'react-redux';
 import { BrowserRouter, HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { registerMUI } from './mui-license';
-import { Theme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { Theme, ThemeProvider } from '@mui/material/styles';
 import { theme } from './app/theme';
 import { LoginStage } from './app/features/user/userSlice';
 import { MainLayout } from './app/layouts/MainLayout';
@@ -27,7 +27,6 @@ import Deals from './app/pages/Managment/deals/deals';
 import SalesFunnel from './app/pages/Analytics/sales-funnel/sales-funnel';
 import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
-import CustomerDetails from './app/pages/Customers/customer-details/customer-details';
 import { NlpMain } from './app/nlp-main/nlp-main';
 import { SqlEditor } from './app/components/System/sql-editor/sql-editor';
 import CustomersMap from './app/customers/customers-map/customers-map';
@@ -39,8 +38,7 @@ import ruLocale from 'date-fns/locale/ru';
 import PermissionsList from './app/pages/Permissions/permissions-list/permissions-list';
 import UserGroups from './app/pages/Permissions/user-groups/user-groups';
 import TopEarningPage from './app/pages/Analytics/UserReports/TopEarningPage';
-import Profile from './app/pages/Preferences/profile/profile';
-import AccountSettings from './app/pages/Preferences/account-settings/account-settings';
+import Profile, { TABS } from './app/pages/Preferences/profile/profile';
 import NotificationCenter from './app/pages/NotificationCenter/notification-center/notification-center';
 import FAQ from './app/pages/FAQ/Index';
 import UpdatesHistory from './app/pages/UpdatesHistory';
@@ -133,8 +131,13 @@ const Main = () => {
                           </Route>
                           <Route path="preferences">
                             <Route path="" element={<Navigate to="account" />} />
-                            <Route path="account" element={<Profile />} />
-                            <Route path="settings" element={<AccountSettings />} />
+                            {TABS.map((tab) => (
+                              <Route
+                                key={tab}
+                                path={tab}
+                                element={<Profile />}
+                              />
+                            ))}
                             <Route path="permissions">
                               <Route path="" element={<Navigate to="list" />} />
                               <Route path="list" element={<PermissionsList />} />

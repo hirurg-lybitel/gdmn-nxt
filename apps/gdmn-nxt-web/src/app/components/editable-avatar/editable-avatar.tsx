@@ -1,6 +1,7 @@
 import styles from './editable-avatar.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Avatar, ClickAwayListener, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popper } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import { Avatar, ClickAwayListener, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popper, Skeleton } from '@mui/material';
 import { ChangeEvent, MouseEvent, useRef, useState } from 'react';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CustomizedCard from '../Styled/customized-card/customized-card';
@@ -10,6 +11,7 @@ export interface EditableAvatarProps {
   onChange: (arg1: string | undefined) => void,
   disabled?: boolean,
   size?: number,
+  loading?: boolean;
 }
 
 export function EditableAvatar({
@@ -17,6 +19,7 @@ export function EditableAvatar({
   onChange,
   disabled,
   size = 40,
+  loading = false,
 }: EditableAvatarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -51,14 +54,29 @@ export function EditableAvatar({
     setDialogOpen(false);
   };
 
+  if (loading) {
+    return (
+      <Skeleton
+        variant="circular"
+        height={size}
+        width={size}
+      />
+    );
+  }
+
   return (
-    <div>
+    <div className={styles.mainContainer} style={{ height: size }}>
       <Avatar
         className={styles.avatar}
         sx={{ width: size, height: size }}
         src={value}
-        onClick={handleAvatarClick}
       />
+      <div
+        className={styles.editBox}
+        onClick={handleAvatarClick}
+      >
+        <EditIcon color="secondary" />
+      </div>
       <input
         id="input-file"
         disabled={disabled}
