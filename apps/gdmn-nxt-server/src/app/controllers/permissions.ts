@@ -461,11 +461,13 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
           con.ID AS CONTACT_ID,
           con.NAME AS CONTACT_NAME,
           con.PHONE CONTACT_PHONE,
-          ul.USR$REQUIRED_2FA AS REQUIRED_2FA
+          ul.USR$REQUIRED_2FA AS REQUIRED_2FA,
+          IIF(ps.ID IS NULL, 0, 1) AS IsActivated
         FROM USR$CRM_PERMISSIONS_USERGROUPS ug
         JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
         JOIN GD_USER u ON u.ID = ul.USR$USERKEY
         JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
         WHERE
           ug.ID = ?`,
       params: [groupId]
@@ -485,6 +487,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['USER_NAME'],
         FULLNAME: user['USER_FULLNAME'],
         DISABLED: user['USER_DISABLED'],
+        isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT }
       };
       const USERGROUP = {
