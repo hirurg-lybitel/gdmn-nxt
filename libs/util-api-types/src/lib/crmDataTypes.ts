@@ -252,6 +252,7 @@ export interface IUser extends IWithID {
   FULLNAME: string;
   CONTACT: IContactWithID;
   DISABLED: boolean;
+  isActivated?: boolean;
 };
 
 export interface IPermissionsView extends IWithID {

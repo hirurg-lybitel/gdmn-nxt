@@ -57,6 +57,9 @@ export function Users(props: IUsersProps) {
         );
       },
     },
+    { field: 'isActivated', headerName: 'Активирован', resizable: false, type: 'boolean', width: 150,
+      valueGetter: (params) => params.row.USER?.isActivated ?? false
+    },
     { field: 'REQUIRED_2FA', headerName: '2FA', width: 100, resizable: false,
       renderCell: ({ value = false, row }) =>
         <Tooltip
