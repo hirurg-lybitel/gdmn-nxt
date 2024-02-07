@@ -88,12 +88,12 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
   return (
     <>
       <CustomizedCard
-        borders={colorModeIsLight}
         onDoubleClick={doubleClick}
         style={{
           backgroundColor: 'var(--color-card-bg)',
           padding: '12px',
           cursor: 'pointer',
+          color: colorModeIsLight ? '#636b74' : '#bababa',
           ...(card?.STATUS && ('isRead' in card?.STATUS) && !card?.STATUS?.isRead
             ? {
               backgroundColor: 'rgba(193, 228, 250, 0.5)',
@@ -112,7 +112,11 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             direction="row"
             style={{ justifyContent: 'space-between', lineHeight: '.4em' }}
           >
-            <Typography variant="subtitle1" lineHeight="1.2em">
+            <Typography
+              variant="subtitle1"
+              lineHeight="1.2em"
+              fontWeight={400}
+            >
               {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME ?? '', 39)}
             </Typography>
             <Typography
@@ -131,7 +135,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               {`${card.DEAL?.CONTACT_NAME}, `}
             </Typography> */}
             <Typography
-              variant="subtitle2"
+              variant="body2"
               component="span"
               sx={{ display: 'inline', lineHeight: 'inherit' }}
             >

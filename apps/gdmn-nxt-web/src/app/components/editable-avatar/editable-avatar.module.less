@@ -4,13 +4,32 @@
   margin-top: 4px !important;
 }
 
-.avatar {
-  box-shadow: 0 0 0 1px var(--color-borders);
+.mainContainer {
+  position: relative;
+  border-radius: 100%;
 }
 
-.avatar:hover {
+.editBox {
+  display: none;
+  position: absolute;
   cursor: pointer !important;
-  opacity: 0.7;
+  background-color: rgba(0,0,0,0.7);
+  height: 100%;
+  width: 100%;
+  top: 0;
+  border-radius: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.mainContainer:hover .editBox{
+  display: flex;
+}
+
+.avatar {
+  height: 100%;
+  width: 100%;
+  box-shadow: 0 0 0 1px var(--color-borders);
 }
 
 .menuLabel:hover {

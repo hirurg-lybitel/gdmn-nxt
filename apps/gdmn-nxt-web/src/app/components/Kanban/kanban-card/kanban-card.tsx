@@ -274,7 +274,11 @@ export function KanbanCard(props: KanbanCardProps) {
         }}
         onDoubleClick={doubleClick}
       >
-        <Stack direction="column" spacing={0.5}>
+        <Stack
+          direction="column"
+          spacing={0.5}
+          color={colorModeIsLight ? '#636b74' : '#bababa'}
+        >
           <Stack
             direction="row"
             style={{ position: 'relative' }}
@@ -284,6 +288,7 @@ export function KanbanCard(props: KanbanCardProps) {
               variant="subtitle1"
               flex={1}
               lineHeight="1.2em"
+              fontWeight={400}
               maxWidth={280}
             >
               {card.DEAL?.USR$NAME}
@@ -291,8 +296,9 @@ export function KanbanCard(props: KanbanCardProps) {
             <Typography
               className="number"
               variant="caption"
-              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
-            >{'#' + card.DEAL?.USR$NUMBER}</Typography>
+            >
+              {'#' + card.DEAL?.USR$NUMBER}
+            </Typography>
             {isFirstColumn
               ?
               <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
