@@ -46,20 +46,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   arrow: {
     position: 'absolute',
+    background: theme.palette.background.paper,
     width: '0.71em',
     height: '0.71em',
-    boxSizing: 'border-box',
-    color: theme.palette.background.paper,
-    '&::before': {
-      content: '""',
-      margin: 'auto',
-      display: 'block',
-      width: '100%',
-      height: '100%',
-      boxShadow: theme.shadows[1],
-      backgroundColor: 'currentColor',
-      transform: 'translateY(-50%) rotate(45deg)'
-    }
+    transform: 'translateY(-50%) rotate(45deg)',
+    border: `1px solid ${theme.mainContent.borderColor}`
+  },
+  arrowHide: {
+    position: 'absolute',
+    width: '150%',
+    left: '-3px',
+    height: '100%',
+    zIndex: '1',
+    background: theme.palette.background.paper,
   },
   listItemIcon: {
     minWidth: '40px'
@@ -170,7 +169,10 @@ export function Profile(props: ProfileProps) {
             <Paper style={{ marginRight: 16, marginLeft: 16 }} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders>
-                  <span className={classes.arrow} ref={setArrowRef} />
+                  <div style={{ width: '0.71em', height: '0.71em' }} ref={setArrowRef}>
+                    <div className={classes.arrowHide} />
+                    <div className={classes.arrow}/>
+                  </div>
                   <List disablePadding>
                     <ListItem>
                       <Stack direction="column">
