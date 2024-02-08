@@ -24,6 +24,23 @@ import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contac
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
+const highlightFields = (searchValue: string) => {
+  const elements = document.querySelectorAll('[data-searchable=true]');
+
+  elements.forEach(element => {
+    const text = element.textContent?.toLowerCase();
+    if (!text?.includes(searchValue)) {
+      element.innerHTML = element.textContent ? element.textContent : '';
+      return;
+    }
+    const regex = new RegExp(searchValue, 'i');
+    element.innerHTML = element.textContent?.replace(
+      regex,
+      (match: string) => `<span class=${styles.highlight}>${match}</span>`
+    ) ?? '';
+  });
+};
+
 export default function Contacts() {
   const userPermissions = usePermissions();
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
@@ -75,6 +92,15 @@ export default function Contacts() {
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
   const [deletePerson] = useDeleteContactPersonMutation();
+
+  useEffect(() => {
+    if (!persons?.records.length) {
+      return;
+    }
+    console.log('useEffect');
+    const searchText = Array.isArray(filterData?.name) ? filterData.name[0] ?? '' : '';
+    highlightFields(searchText);
+  }, [persons?.records, filterData?.name]);
 
   const handleCancel = () => {
     setUpsertContact({ addContact: false, editContact: false });
@@ -150,7 +176,6 @@ export default function Contacts() {
       onFilteringDataChange={handleFilteringDataChange}
     />,
   [openFilters, filterData]);
-
 
   return (
     <CustomizedCard style={{ flex: 1 }}>

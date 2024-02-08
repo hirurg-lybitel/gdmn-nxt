@@ -16,6 +16,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-main-bg': theme.palette.background.default,
           '--color-paper-bg': theme.palette.background.paper,
           '--color-borders': theme.mainContent.borderColor,
+          '--color-hihglight-bg': 'yellow',
           '--border-radius': theme.mainContent.borderRadius,
           '--menu-width': `${theme.drawerWidth}px`,
         },

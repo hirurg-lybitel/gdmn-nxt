@@ -60,10 +60,11 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 variant="body2"
                 fontWeight={600}
                 className={styles.contactName}
+                data-searchable={true}
               >
                 {contact.NAME}
               </Typography>
-              <Typography variant="caption">{contact.RANK}</Typography>
+              <Typography variant="caption" data-searchable={true}>{contact.RANK}</Typography>
             </Stack>
             <div
               className={styles.actions}
@@ -81,6 +82,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
             my={'2px'}
             pl={'2px'}
             noWrap
+            data-searchable={true}
           >
             {contact.COMPANY?.NAME ?? ''}
           </Typography>
@@ -95,7 +97,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 rel="noreferrer"
                 target="_blank"
               >
-                <Typography variant="caption">{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
+                <Typography variant="caption" data-searchable={true}>{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
               </a>
             </Stack>
           }
@@ -110,7 +112,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 rel="noreferrer"
                 target="_blank"
               >
-                <Typography variant="caption">{contact.EMAILS[0]?.EMAIL}</Typography>
+                <Typography variant="caption" data-searchable={true}>{contact.EMAILS[0]?.EMAIL}</Typography>
               </a>
             </Stack>
           }
@@ -131,7 +133,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 rel="noreferrer"
                 target="_blank"
               >
-                <Typography variant="caption">{contact.MESSENGERS[0]?.USERNAME}</Typography>
+                <Typography variant="caption" data-searchable={true}>{contact.MESSENGERS[0]?.USERNAME}</Typography>
               </a>
             </Stack>
           }
@@ -181,7 +183,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                     onClick={handleStopPropagation}
                     href={`tel:${phone.USR$PHONENUMBER.replace(/\s+/g, '')}`}
                   >
-                    <Typography variant="caption">{phone.USR$PHONENUMBER}</Typography>
+                    <Typography variant="caption" data-searchable={true}>{phone.USR$PHONENUMBER}</Typography>
                   </a>
                 </Stack>)}
             </div>
@@ -198,7 +200,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                     onClick={handleStopPropagation}
                     href={`mailto:${email.EMAIL}`}
                   >
-                    <Typography variant="caption">{email.EMAIL}</Typography>
+                    <Typography variant="caption" data-searchable={true}>{email.EMAIL}</Typography>
                   </a>
                 </Stack>)}
             </div>
@@ -223,7 +225,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                     rel="noreferrer"
                     target="_blank"
                   >
-                    <Typography variant="caption">{mes.USERNAME}</Typography>
+                    <Typography variant="caption" data-searchable={true}>{mes.USERNAME}</Typography>
                   </a>
                 </Stack>)}
             </div>
