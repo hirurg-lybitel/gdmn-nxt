@@ -45,11 +45,7 @@ export function Profile(props: ProfileProps) {
   const [activate2fa] = useCreate2faMutation();
 
   const location = useLocation();
-
-  console.log('location', location.pathname);
-
   const tabDefault = location.pathname.split('/').at(-1) as TabIndex ?? 'account';
-  console.log('tabDefault', tabDefault, window.location.pathname.split('/').at(-1), window.location.pathname);
   const [tabIndex, setTabIndex] = useState<TabIndex>(tabDefault);
   useEffect(() => {
     setTabIndex(tabDefault as TabIndex);
