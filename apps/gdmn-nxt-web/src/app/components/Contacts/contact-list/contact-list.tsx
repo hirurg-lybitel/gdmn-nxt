@@ -1,7 +1,7 @@
 import EditIcon from '@mui/icons-material/Edit';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import styles from './contact-list.module.less';
-import { IconButton, List, ListItemButton, Stack, Tooltip, Typography } from '@mui/material';
+import { IconButton, List, ListItemButton, Stack, Tooltip, Typography, Theme } from '@mui/material';
 import { IContactPerson, IEmail, ILabel, IPaginationData, IPhone } from '@gsbelarus/util-api-types';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import { GridColumns } from '@mui/x-data-grid-pro';
@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
+import { makeStyles } from '@mui/styles';
 
 export interface ContactListProps {
   contacts: IContactPerson[];
@@ -19,6 +20,14 @@ export interface ContactListProps {
   paginationClick: (data: IPaginationData) => void;
 }
 
+const useStyles = makeStyles((theme: Theme) => ({
+  grid: {
+    '& .MuiDataGrid-cell': {
+      padding: '4.6px 24px !important'
+    }
+  }
+}));
+
 export function ContactList({
   contacts = [],
   contactsCount = 0,
@@ -28,6 +37,8 @@ export function ContactList({
   paginationClick
 }: ContactListProps) {
   const [pageOptions, setPageOptions] = useState<number[]>([]);
+
+  const classes = useStyles();
 
   useEffect(() => {
     const rowPerPage = 20;
@@ -151,6 +162,7 @@ export function ContactList({
     <>
       <StyledGrid
         rows={contacts}
+        className={classes.grid}
         columns={columns}
         onRowDoubleClick={({ row }) => onEditClick(row)}
         autoHeightForFields={['LABELS']}
