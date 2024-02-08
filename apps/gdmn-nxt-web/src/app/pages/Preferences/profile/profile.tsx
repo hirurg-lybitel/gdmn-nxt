@@ -21,6 +21,7 @@ import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
 import { setError } from '../../../features/error-slice/error-slice';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
+import { useLocation } from 'react-router-dom';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -43,7 +44,11 @@ export function Profile(props: ProfileProps) {
 
   const [activate2fa] = useCreate2faMutation();
 
-  const tabDefault = window.location.pathname.split('/').at(-1) as TabIndex ?? 'account';
+  const location = useLocation();
+
+  console.log('location', location.pathname);
+
+  const tabDefault = location.pathname.split('/').at(-1) as TabIndex ?? 'account';
   console.log('tabDefault', tabDefault, window.location.pathname.split('/').at(-1), window.location.pathname);
   const [tabIndex, setTabIndex] = useState<TabIndex>(tabDefault);
   useEffect(() => {
