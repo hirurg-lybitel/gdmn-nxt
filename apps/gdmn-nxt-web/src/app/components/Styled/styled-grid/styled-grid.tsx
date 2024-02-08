@@ -17,14 +17,18 @@ interface IStyledGridProps extends DataGridProProps{
 
 /** Disable license expired message error */
 const disableLicenseError = () => {
-  const searchText = 'MUI X: License key expired';
+  const searchText = ['MUI X: Missing license key', 'MUI X: License key expired']
+    .map(s => s.toLowerCase());
   const root = document.querySelectorAll('.MuiDataGrid-main');
 
   root.forEach((grid) => {
     const children = Array.from(grid.childNodes);
 
     for (const element of children) {
-      if (element.textContent?.toLowerCase() === searchText.toLowerCase()) {
+      if (!element.textContent) {
+        return;
+      }
+      if (searchText.includes(element.textContent?.toLowerCase())) {
         if (element.nodeName.toLowerCase() !== 'div') {
           return;
         }
