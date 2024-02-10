@@ -21,7 +21,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import NotificationList from '../notification-list/notification-list';
 import { ClientToServerEvents, IMessage, NotificationAction, ServerToClientEvents, clearSocket, setSocketClient } from '@gdmn-nxt/socket';
-import logo from './NoNotifications.png'; // with import
+import logo from './NoNotifications.png';
 import { Socket } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -36,32 +36,27 @@ import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/p
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
     zIndex: 2000,
-    '&[x-placement*="bottom"] $arrow': {
-      top: 0,
-      left: 0,
-      marginTop: '-0.71em',
-      marginLeft: 4,
-      marginRight: 4,
-      '&::before': {
-        transformOrigin: '0 100%'
-      }
-    },
   },
   arrow: {
+    overflow: 'hidden',
     position: 'absolute',
-    background: theme.palette.background.paper,
-    width: '0.71em',
-    height: '0.71em',
-    transform: 'translateY(-50%) rotate(45deg)',
-    border: `1px solid ${theme.mainContent.borderColor}`
-  },
-  arrowHide: {
-    position: 'absolute',
-    width: '150%',
-    left: '-3px',
-    height: '100%',
-    zIndex: '1',
-    background: theme.palette.background.paper,
+    width: '1em',
+    height: '0.7em',
+    boxSizing: 'border-box',
+    color: 'var(--color-paper-bg)',
+    marginTop: '-0.7em',
+    '&::before': {
+      content: '""',
+      margin: 'auto',
+      display: 'block',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'currentColor',
+      transform: 'rotate(45deg)',
+      transformOrigin: '0 100%',
+      border: '1px solid',
+      borderColor: 'var(--color-borders) transparent transparent var(--color-borders)',
+    }
   },
   mainPaper: {
     marginLeft: 16,
@@ -69,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: '20vw',
     minWidth: '400px',
     minHeight: '300px',
-    display: 'flex'
+    display: 'flex',
   },
   header: {
     padding: '8px 16px'
@@ -266,9 +261,6 @@ export function Notification(props: NotificationProps) {
           onClick={(event: any) => handleToogle(event.currentTarget)}
         >
           <Badge
-            // classes={{
-            //   dot: clsx(classes.badgeFadeIn, { [classes.badgeFadeOut]: fadeOut }),
-            // }}
             color="error"
             variant="standard"
             badgeContent={messages.length}
@@ -300,10 +292,7 @@ export function Notification(props: NotificationProps) {
             <Paper className={classes.mainPaper} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders style={{ flex: 1, display: 'flex' }}>
-                  <div style={{ width: '0.71em', height: '0.71em' }} ref={setArrowRef}>
-                    <div className={classes.arrowHide} />
-                    <div className={classes.arrow}/>
-                  </div>
+                  <div className={classes.arrow} ref={setArrowRef} />
                   <Stack direction="column" style={{ maxHeight: '90vh', flex: 1, display: 'flex' }}>
                     <Stack
                       className={classes.header}

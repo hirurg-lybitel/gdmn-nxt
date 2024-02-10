@@ -28,37 +28,34 @@ import { useDispatch, useSelector } from 'react-redux';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   popper: {
     zIndex: 2000,
     minWidth: 250,
-    '&[x-placement*="bottom"] $arrow': {
-      top: 0,
-      left: 0,
-      marginTop: '-0.71em',
-      '&::before': {
-        transformOrigin: '0 100%'
-      }
-    },
   },
   arrow: {
+    overflow: 'hidden',
     position: 'absolute',
-    background: theme.palette.background.paper,
-    width: '0.71em',
-    height: '0.71em',
-    transform: 'translateY(-50%) rotate(45deg)',
-    border: `1px solid ${theme.mainContent.borderColor}`
-  },
-  arrowHide: {
-    position: 'absolute',
-    width: '150%',
-    left: '-3px',
-    height: '100%',
-    zIndex: '1',
-    background: theme.palette.background.paper,
+    width: '1em',
+    height: '0.7em',
+    boxSizing: 'border-box',
+    color: 'var(--color-paper-bg)',
+    marginTop: '-0.7em',
+    '&::before': {
+      content: '""',
+      margin: 'auto',
+      display: 'block',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'currentColor',
+      transform: 'rotate(45deg)',
+      transformOrigin: '0 100%',
+      border: '1px solid',
+      borderColor: 'var(--color-borders) transparent transparent var(--color-borders)',
+    }
   },
   listItemIcon: {
     minWidth: '40px'
@@ -135,7 +132,6 @@ export function Profile(props: ProfileProps) {
   return (
     <>
       <IconButton
-        // size="small"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
         <Avatar src={settings?.AVATAR || undefined} />
@@ -148,12 +144,6 @@ export function Profile(props: ProfileProps) {
         transition
         popperOptions={{
           modifiers: [
-            // {
-            //   name: 'offset',
-            //   options: {
-            //     offset: [100, 0]
-            //   }
-            // },
             {
               name: 'arrow',
               options: {
@@ -169,10 +159,7 @@ export function Profile(props: ProfileProps) {
             <Paper style={{ marginRight: 16, marginLeft: 16 }} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders>
-                  <div style={{ width: '0.71em', height: '0.71em' }} ref={setArrowRef}>
-                    <div className={classes.arrowHide} />
-                    <div className={classes.arrow}/>
-                  </div>
+                  <div className={classes.arrow} ref={setArrowRef} />
                   <List disablePadding>
                     <ListItem>
                       <Stack direction="column">
