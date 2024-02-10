@@ -159,7 +159,7 @@ export function Profile(props: ProfileProps) {
             <Paper style={{ marginRight: 16, marginLeft: 16 }} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders>
-                  <div className={classes.arrow} ref={setArrowRef} />
+                  <span className={classes.arrow} ref={setArrowRef} />
                   <List disablePadding>
                     <ListItem>
                       <Stack direction="column">
