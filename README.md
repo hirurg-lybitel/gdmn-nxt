@@ -1,10 +1,6 @@
-# Gedemin CRM
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![GitHub package version](https://img.shields.io/github/package-json/v/gsbelarus/gdmn-nxt?style=flat-square)](https://github.com/gsbelarus/gdmn-nxt/)
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&size=32&pause=1000&color=C9D1D9&random=false&width=600&lines=Gedemin+CRM;Построено+на+знаменитой+платформе;Версия+0.4.0" alt="Typing SVG" />
 
 ![image](https://github.com/gsbelarus/gdmn-nxt/assets/11502258/552f3ae1-2ac2-4615-9c10-7c9766d6c58e)
-
 
 ## Установка и запуск
  - скачать и установить [nodejs](https://nodejs.org/en/download/)
