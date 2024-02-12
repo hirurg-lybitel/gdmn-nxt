@@ -9,7 +9,7 @@ import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import { useCallback, useEffect, useState } from 'react';
 import AddContact from '@gdmn-nxt/components/Contacts/add-contact/add-contact';
 import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateContactPersonMutation } from '../../../features/contact/contactApi';
-import { IContactPerson, IFilteringData } from '@gsbelarus/util-api-types';
+import { IContactPerson, IFilteringData, ISortingData } from '@gsbelarus/util-api-types';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { IPaginationData } from '../../../features/customer/customerApi_new';
 import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact';
@@ -43,6 +43,7 @@ const highlightFields = (searchValue: string) => {
 
 export default function Contacts() {
   const userPermissions = usePermissions();
+  const [sortingData, setSortingData] = useState<ISortingData | null>();
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
@@ -87,7 +88,8 @@ export default function Contacts() {
     refetch: personsRefetch
   } = useGetContactPersonsQuery({
     pagination: paginationData,
-    ...(filterData && { filter: filterData })
+    ...(filterData && { filter: filterData }),
+    ...(sortingData ? { sort: sortingData } : {})
   });
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
@@ -97,7 +99,6 @@ export default function Contacts() {
     if (!persons?.records.length) {
       return;
     }
-    console.log('useEffect');
     const searchText = Array.isArray(filterData?.name) ? filterData.name[0] ?? '' : '';
     highlightFields(searchText);
   }, [persons?.records, filterData?.name]);
@@ -150,6 +151,8 @@ export default function Contacts() {
       setOpenFilters(false);
     },
   };
+
+  const handleSortChange = useCallback((sortModel: ISortingData | null) => setSortingData(sortModel), []);
 
   const memoEditContact = useMemo(() =>
     <EditContact
@@ -290,6 +293,7 @@ export default function Contacts() {
             isLoading={isLoading}
             paginationData={paginationData}
             paginationClick={(data) => setPaginationData(data)}
+            onSortChange={handleSortChange}
           />}
         {memoAddContact}
         {memoEditContact}
