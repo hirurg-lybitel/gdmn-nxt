@@ -2,9 +2,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import styles from './contact-list.module.less';
 import { IconButton, List, ListItemButton, Stack, Tooltip, Typography } from '@mui/material';
-import { IContactPerson, IEmail, ILabel, IPaginationData, IPhone } from '@gsbelarus/util-api-types';
+import { IContactPerson, IEmail, ILabel, IPaginationData, IPhone, ISortingData } from '@gsbelarus/util-api-types';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
-import { GridColumns } from '@mui/x-data-grid-pro';
+import { GridColumns, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -17,6 +17,7 @@ export interface ContactListProps {
   onEditClick: (contact: IContactPerson) => void;
   paginationData: IPaginationData;
   paginationClick: (data: IPaginationData) => void;
+  onSortChange?: (sortModel: ISortingData | null) => void;
 }
 
 export function ContactList({
@@ -25,7 +26,8 @@ export function ContactList({
   isLoading = false,
   onEditClick,
   paginationData,
-  paginationClick
+  paginationClick,
+  onSortChange
 }: ContactListProps) {
   const [pageOptions, setPageOptions] = useState<number[]>([]);
 
@@ -50,6 +52,10 @@ export function ContactList({
     },
     [filterData]
   );
+
+  const handleSortModelChange = useCallback((sortModel: GridSortModel) => {
+    onSortChange && onSortChange(sortModel.length > 0 ? { ...sortModel[0] } : null);
+  }, []);
 
   const columns: GridColumns<IContactPerson> = [
     {
@@ -106,7 +112,7 @@ export function ContactList({
       }
     },
     {
-      field: 'PHONES', headerName: 'Телефон', width: 150,
+      field: 'PHONES', headerName: 'Телефон', width: 150, sortable: false,
       renderCell: ({ value: phones }) => {
         return (
           <Stack>
@@ -115,7 +121,7 @@ export function ContactList({
       }
     },
     {
-      field: 'EMAILS', headerName: 'Email', width: 200,
+      field: 'EMAILS', headerName: 'Email', width: 200, sortable: false,
       renderCell: ({ value: emails }) => {
         return (
           <Stack>
@@ -180,6 +186,7 @@ export function ContactList({
         pageSize={paginationData.pageSize}
         rowsPerPageOptions={pageOptions}
         sortingMode="server"
+        onSortModelChange={handleSortModelChange}
       />
     </>
   );

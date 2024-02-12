@@ -1,16 +1,17 @@
 import { ColorMode, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Checkbox, CircularProgress, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
-import { ChangeEvent, WheelEvent, useCallback, useState } from 'react';
+import { ChangeEvent, MouseEvent, WheelEvent, useCallback, useMemo, useRef, useState } from 'react';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
-import { GridColumns } from '@mui/x-data-grid-pro';
+import { GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import useDateComparator from '../../helpers/hooks/useDateComparator';
 import useDeadlineColor from '../../helpers/hooks/useDeadlineColor';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
+import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
+import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 
 interface ExpandedListProps {
   open: boolean;
@@ -19,10 +20,15 @@ interface ExpandedListProps {
 
 const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
   const [updateTask] = useUpdateTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+
   const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
     const newTask = { ...row, USR$CLOSED: checked };
     updateTask(newTask);
   }, []);
+
+  const currentTask = useRef<IKanbanTask | undefined>();
+  const [editTaskForm, setEditTaskForm] = useState(false);
 
   const { getDayDiff } = useDateComparator();
   const { daysColor } = useDeadlineColor();
@@ -36,7 +42,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       maxWidth: 25,
       minWidth: 25,
       renderCell: ({ value, row }) =>
-        <div style={{ position: 'absolute', left: '-2px', display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', display: 'flex', alignItems: 'center' }}>
           <Checkbox
             style={{ padding: 0 }}
             checked={value}
@@ -50,8 +56,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       flex: 1,
       renderCell: (params) =>
         <Typography
-          variant="subtitle2"
-          fontWeight={400}
+          variant="body2"
           whiteSpace="normal"
         >
           {params.value}
@@ -70,14 +75,14 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
             {
               !value
                 ? <Typography
-                  variant="subtitle2"
+                  variant="body2"
                   fontWeight={600}
                 >
-              Без срока
+                  Без срока
                 </Typography>
                 :
                 <Typography
-                  variant="subtitle2"
+                  variant="body2"
                   fontWeight={600}
                   color={closed ? colorMode === ColorMode.Light ? 'green' : 'lightgreen' : daysColor(days)}
                 >
@@ -91,6 +96,36 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       }
     },
   ];
+
+  const setTask = (task?: IKanbanTask) => {
+    currentTask.current = task;
+  };
+
+  const onRowDoubleClick = useCallback(({ row }: GridRowParams<IKanbanTask>, e: any) => {
+    e.stopPropagation();
+    setTask(row);
+    setEditTaskForm(true);
+  }, []);
+
+  const handleTaskEditSubmit = useCallback((task: IKanbanTask, deleting: boolean) => {
+    deleting
+      ? deleteTask(task.ID)
+      : updateTask(task);
+    setEditTaskForm(false);
+  }, []);
+
+  const handleTaskEditCancelClick = useCallback(() => setEditTaskForm(false), []);
+
+  const memoKanbanEditTask = useMemo(() =>
+    currentTask.current
+      ? <KanbanEditTask
+        open={editTaskForm}
+        task={currentTask.current}
+        onSubmit={handleTaskEditSubmit}
+        onCancelClick={handleTaskEditCancelClick}
+      />
+      : <></>,
+  [editTaskForm]);
 
   const rowHeight = 40;
   const maxLines = 4;
@@ -118,9 +153,10 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
           },
           '& .MuiTypography-root': {
             lineHeight: 1,
-          }
+          },
+          color: 'inherit'
         }}
-        onRowDoubleClick={(p, e) => e.stopPropagation()}
+        onRowDoubleClick={onRowDoubleClick}
         rows={tasks}
         columns={columns}
         rowHeight={rowHeight}
@@ -128,6 +164,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
         hideFooter
         disableSelectionOnClick
       />
+      {memoKanbanEditTask}
     </div>
   );
 };
@@ -151,6 +188,7 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
         direction="row"
         alignItems="center"
         spacing={0.5}
+        onClick={handleClick}
       >
         {closedTasks
           ? <>
@@ -181,8 +219,8 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
             </Typography>
           </>
           : <>
-            <FactCheckOutlinedIcon color="action" fontSize="small" />
-            <Typography variant="subtitle2">
+            <FactCheckOutlinedIcon fontSize="small" />
+            <Typography variant="body2">
               {`${allTasks} задач`}
             </Typography>
           </>}
@@ -190,7 +228,7 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
           <IconButton
             size="small"
             style={{ padding: 0 }}
-            onClick={handleClick}
+            color="inherit"
           >
             {
               expandedList
