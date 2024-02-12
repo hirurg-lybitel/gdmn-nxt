@@ -130,6 +130,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     if (res.statusCode === 200) {
       cachedRequets.cacheRequest('customerLabels');
+      cachedRequets.cacheRequest('customerPersons');
     }
   };
 };
@@ -178,6 +179,7 @@ export const remove: RequestHandler = async(req, res) => {
 
     if (res.statusCode === 200) {
       cachedRequets.cacheRequest('customerLabels');
+      cachedRequets.cacheRequest('customerPersons');
     }
   }
 };
