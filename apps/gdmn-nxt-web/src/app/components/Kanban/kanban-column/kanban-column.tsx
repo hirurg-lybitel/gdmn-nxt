@@ -275,7 +275,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
                 </Stack>
               </CustomizedScrollBox>
             </CardContent>
-            <CardActions>
+            {/* <CardActions>
               <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
                 {!disabledAddDeal && item.USR$INDEX === 0 &&
                 <Button
@@ -286,7 +286,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
                 >Сделка</Button>
                 }
               </PermissionsGate>
-            </CardActions>
+            </CardActions> */}
           </CustomizedCard>
           {memoAddCard}
         </>
