@@ -1,7 +1,7 @@
 import styles from './editable-avatar.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Avatar, ClickAwayListener, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popper, Skeleton } from '@mui/material';
+import { Avatar, ClickAwayListener, Fade, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popper, Skeleton } from '@mui/material';
 import { ChangeEvent, MouseEvent, useRef, useState } from 'react';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CustomizedCard from '../Styled/customized-card/customized-card';
@@ -22,8 +22,9 @@ export function EditableAvatar({
   loading = false,
 }: EditableAvatarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [arrowRef, setArrowRef] = useState<HTMLElement | null>(null);
+  const avatarRef = useRef<HTMLDivElement>(null);
 
   const handleUploadAvatar = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -38,7 +39,6 @@ export function EditableAvatar({
   };
 
   const handleAvatarClick = (e: MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(e.currentTarget);
     setDialogOpen(true);
   };
 
@@ -70,6 +70,7 @@ export function EditableAvatar({
         className={styles.avatar}
         sx={{ width: size, height: size }}
         src={value}
+        ref={avatarRef}
       />
       <div
         className={styles.editBox}
@@ -89,40 +90,57 @@ export function EditableAvatar({
       <Popper
         className={styles.menuContainer}
         open={dialogOpen}
-        anchorEl={anchorEl}
+        anchorEl={avatarRef.current}
         placement="bottom-start"
+        transition
         sx={{
           paddingLeft: `${size / 2 - 20}px`,
           '::before': {
             left: `calc(-100% - -${size}px)`
           }
         }}
+        modifiers={[
+          {
+            name: 'arrow',
+            enabled: true,
+            options: {
+              element: arrowRef,
+            },
+          },
+        ]}
       >
-        <ClickAwayListener onClickAway={handleClickAway}>
-          <CustomizedCard
-            borders
-            boxShadows
-          >
-            <List>
-              <ListItem disablePadding>
-                <ListItemButton style={{ height: 30 }}>
-                  <ListItemIcon style={{ minWidth: 30 }}>
-                    <UploadFileIcon />
-                  </ListItemIcon>
-                  <label htmlFor="input-file" className={styles.menuLabel}>Загрузить</label>
-                </ListItemButton>
-              </ListItem>
-              <ListItem disablePadding>
-                <ListItemButton style={{ height: 30 }} onClick={handleDeleteAvatar}>
-                  <ListItemIcon style={{ minWidth: 30 }}>
-                    <DeleteIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Удалить" />
-                </ListItemButton>
-              </ListItem>
-            </List>
-          </CustomizedCard>
-        </ClickAwayListener>
+        {({ TransitionProps }) => (
+          <ClickAwayListener onClickAway={handleClickAway}>
+            <Fade {...TransitionProps} timeout={350}>
+              <div>
+                <span className={styles.arrow} ref={setArrowRef} />
+                <CustomizedCard
+                  borders
+                  boxShadows
+                >
+                  <List>
+                    <ListItem disablePadding>
+                      <ListItemButton style={{ height: 30 }}>
+                        <ListItemIcon style={{ minWidth: 30 }}>
+                          <UploadFileIcon />
+                        </ListItemIcon>
+                        <label htmlFor="input-file" className={styles.menuLabel}>Загрузить</label>
+                      </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                      <ListItemButton style={{ height: 30 }} onClick={handleDeleteAvatar}>
+                        <ListItemIcon style={{ minWidth: 30 }}>
+                          <DeleteIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Удалить" />
+                      </ListItemButton>
+                    </ListItem>
+                  </List>
+                </CustomizedCard>
+              </div>
+            </Fade>
+          </ClickAwayListener>
+        )}
       </Popper>
     </div>
   );

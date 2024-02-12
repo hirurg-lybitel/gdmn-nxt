@@ -36,18 +36,25 @@
   cursor: pointer !important;
 }
 
-.menuContainer:before {
+.arrow {
+  overflow: hidden;
+  position: absolute;
+  width: 1em;
+  height: 0.7em;
+  box-sizing: border-box;
+  color: var(--color-paper-bg);
+  margin-top: -0.65em;
+}
+
+.arrow:before {
   content: "";
   margin: auto;
-  position: absolute;
   display: block;
-  left: 12px;
-  right: 0;
-  top: 0;
-  width: 10px;
-  height: 10px;
+  width: 100%;
+  height: 100%;
   transform: rotate(45deg);
+  transform-origin: 0 100%;
+  background-color: currentColor;
   border: 1px solid;
   border-color: var(--color-borders) transparent transparent var(--color-borders);
-  background-color: var(--color-paper-bg)
- }
+}
