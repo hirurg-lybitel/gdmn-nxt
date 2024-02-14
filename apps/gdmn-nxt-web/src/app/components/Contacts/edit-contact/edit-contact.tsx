@@ -232,29 +232,31 @@ export function EditContact({
             spacing={2}
           >
             <PhoneAndroidIcon fontSize="small" color="primary" />
-            <a
-              className={styles.link}
-              href={`tel:${USR$PHONENUMBER.replace(/\s+/g, '')}`}
-            >
-              <EditableTypography
-                value={USR$PHONENUMBER}
-                width={'100%'}
-                deleteable
-                onDelete={() => handleDeletePhone(index)}
-                editComponent={
-                  <TelephoneInput
-                    name={`PHONE${index}`}
-                    autoFocus
-                    value={USR$PHONENUMBER ?? ''}
-                    onChange={(value) => handlePhoneChange(index, value)}
-                    fixedCode
-                    strictMode
-                    error={isTouched && Boolean(error)}
-                    helperText={isTouched && error}
-                  />
-                }
-              />
-            </a>
+            <EditableTypography
+              value={USR$PHONENUMBER}
+              container={(value) =>
+                <a
+                  className={styles.link}
+                  href={`tel:${USR$PHONENUMBER.replace(/\s+/g, '')}`}
+                >
+                  {value}
+                </a>}
+              width={'100%'}
+              deleteable
+              onDelete={() => handleDeletePhone(index)}
+              editComponent={
+                <TelephoneInput
+                  name={`PHONE${index}`}
+                  autoFocus
+                  value={USR$PHONENUMBER ?? ''}
+                  onChange={(value) => handlePhoneChange(index, value)}
+                  fixedCode
+                  strictMode
+                  error={isTouched && Boolean(error)}
+                  helperText={isTouched && error}
+                />
+              }
+            />
           </Stack>
         );
       })}
@@ -283,28 +285,24 @@ export function EditContact({
             spacing={2}
           >
             <EmailIcon fontSize="small" color="primary" />
-            <a
-              className={styles.link}
-              href={`mailto:${EMAIL}`}
-            >
-              <EditableTypography
-                value={EMAIL}
-                width={'100%'}
-                deleteable
-                onDelete={() => handleDeleteEmail(index)}
-                editComponent={
-                  <TextField
-                    fullWidth
-                    autoFocus
-                    name={`EMAIL${index}`}
-                    value={EMAIL ?? ''}
-                    onChange={(e) => handleEmailChange(index, e.target.value)}
-                    error={isTouched && Boolean(error)}
-                    helperText={isTouched && error}
-                  />
-                }
-              />
-            </a>
+            <EditableTypography
+              value={EMAIL}
+              container={(value) => <a className={styles.link} href={`mailto:${value}`}>{value}</a>}
+              width={'100%'}
+              deleteable
+              onDelete={() => handleDeleteEmail(index)}
+              editComponent={
+                <TextField
+                  fullWidth
+                  autoFocus
+                  name={`EMAIL${index}`}
+                  value={EMAIL ?? ''}
+                  onChange={(e) => handleEmailChange(index, e.target.value)}
+                  error={isTouched && Boolean(error)}
+                  helperText={isTouched && error}
+                />
+              }
+            />
           </Stack>
         );
       })}
@@ -342,36 +340,36 @@ export function EditContact({
               spacing={1}
               flex={1}
             >
-              {/* <img src={socialMediaIcons[CODE]} width={17} /> */}
-              <a
-                className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
-                onClick={handleStopPropagation}
-                href={`${socialMediaLinks[CODE]}${USERNAME}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <EditableTypography
-                  value={USERNAME}
-                  width={'100%'}
-                  deleteable
-                  onDelete={() => handleDeleteMessenger(index)}
-                  editComponent={
-                    <SocialMediaInput
-                      value={{
-                        name: CODE,
-                        text: USERNAME
-                      }}
-                      name={`MESSANGER${index}`}
-                      autoFocus
-                      // label={`Мессенджер ${index === 0 ? '' : (index + 1)}`}
-                      onChange={(value) => handleMessengerChange(index, value)}
-                      placeholder="имя пользователя"
-                      error={isTouched && Boolean(error)}
-                      helperText={isTouched && error}
-                    />
-                  }
-                />
-              </a>
+              <EditableTypography
+                value={USERNAME}
+                container={(value) =>
+                  <a
+                    className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
+                    onClick={handleStopPropagation}
+                    href={socialMediaLinks[CODE] ? `${socialMediaLinks[CODE]}${USERNAME}` : ''}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {value}
+                  </a>}
+                width={'100%'}
+                deleteable
+                onDelete={() => handleDeleteMessenger(index)}
+                editComponent={
+                  <SocialMediaInput
+                    value={{
+                      name: CODE,
+                      text: USERNAME
+                    }}
+                    name={`MESSANGER${index}`}
+                    autoFocus
+                    onChange={(value) => handleMessengerChange(index, value)}
+                    placeholder="имя пользователя"
+                    error={isTouched && Boolean(error)}
+                    helperText={isTouched && error}
+                  />
+                }
+              />
             </Stack>
           </Stack>
 
