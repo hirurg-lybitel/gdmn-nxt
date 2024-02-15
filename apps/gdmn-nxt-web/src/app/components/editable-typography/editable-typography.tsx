@@ -1,45 +1,45 @@
-import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { IconButton, TextField, Tooltip, Typography, TypographyProps, styled } from '@mui/material';
+import { IconButton, TextField, Tooltip, Typography, TypographyProps } from '@mui/material';
 import styles from './editable-typography.module.less';
-import { KeyboardEvent, createElement, useMemo, useState } from 'react';
+import { KeyboardEvent, cloneElement, createElement, useMemo, useState } from 'react';
 
-export interface EditableTypographyProps extends TypographyProps {
+export interface EditableTypographyProps<Value extends React.ReactNode> extends TypographyProps {
   name?: string;
-  value: string;
-  editComponent?: React.ReactNode;
+  value: Value;
+  editComponent?: React.ReactElement;
   deleteable?: boolean;
   onDelete?: () => void;
+  container?: (value: Value) => React.ReactNode;
 }
 
-export const EditableTypography = styled(({
+const EditableTypography = <Value extends React.ReactNode>({
   value,
   name,
   onDelete,
   onChange,
   editComponent,
   deleteable = false,
+  container,
   ...props
-}: EditableTypographyProps) => {
+}: EditableTypographyProps<Value>) => {
   const [editText, setEditText] = useState(!value);
 
-  const editElement = useMemo(() => {
-    if (typeof editComponent === 'object' && editComponent && 'props' in editComponent) {
-      return createElement('div', {
-        onClick: (e: any) => {
-          e.preventDefault();
-        },
-        style: {
-          flex: 1
-        }
-
+  const clonedElement = useMemo(() => editComponent
+    ? cloneElement(editComponent, {
+      onClick: (e: any) => {
+        e.preventDefault();
       },
-      editComponent);
-    }
-    return editComponent;
-  }, [editComponent]);
+      onBlur: (e: any) => {
+        onClose(e);
+      },
+      style: {
+        flex: 1
+      }
+    })
+    : editComponent,
+  [editComponent]);
 
   const handleEdit = (e: any) => {
     e.preventDefault();
@@ -48,6 +48,9 @@ export const EditableTypography = styled(({
 
   const onClose = (e: any) => {
     e.preventDefault();
+    if (!value?.toString().trim()) {
+      onDelete && onDelete();
+    }
     setEditText(false);
   };
 
@@ -67,20 +70,21 @@ export const EditableTypography = styled(({
       onKeyDown={onKeyDown}
     >
       {editText
-        ? editElement ??
+        ? clonedElement ??
           <TextField
             variant="standard"
             value={value}
             name={name}
             fullWidth
             onChange={onChange}
+            onBlur={onClose}
           />
         : <Typography
           {...props}
           className={styles['title']}
           autoFocus
         >
-          {value}
+          {container ? container(value) : value}
         </Typography>
       }
       <div
@@ -108,6 +112,6 @@ export const EditableTypography = styled(({
       </div>
     </div>
   );
-})(() => ({}));
+};
 
 export default EditableTypography;

@@ -28,37 +28,33 @@ import { useDispatch, useSelector } from 'react-redux';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   popper: {
     zIndex: 2000,
     minWidth: 250,
-    '&[x-placement*="bottom"] $arrow': {
-      top: 0,
-      left: 0,
-      marginTop: '-0.71em',
-      '&::before': {
-        transformOrigin: '0 100%'
-      }
-    },
   },
   arrow: {
+    overflow: 'hidden',
     position: 'absolute',
-    width: '0.71em',
-    height: '0.71em',
+    width: '1em',
+    height: '0.7em',
     boxSizing: 'border-box',
-    color: theme.palette.background.paper,
+    color: 'var(--color-paper-bg)',
+    marginTop: '-0.7em',
     '&::before': {
       content: '""',
       margin: 'auto',
       display: 'block',
       width: '100%',
       height: '100%',
-      boxShadow: theme.shadows[1],
       backgroundColor: 'currentColor',
-      transform: 'translateY(-50%) rotate(45deg)'
+      transform: 'rotate(45deg)',
+      transformOrigin: '0 100%',
+      border: '1px solid',
+      borderColor: 'var(--color-borders) transparent transparent var(--color-borders)',
     }
   },
   listItemIcon: {
@@ -136,7 +132,6 @@ export function Profile(props: ProfileProps) {
   return (
     <>
       <IconButton
-        // size="small"
         onClick={(event: any) => handleToogle(event.currentTarget)}
       >
         <Avatar src={settings?.AVATAR || undefined} />
@@ -149,12 +144,6 @@ export function Profile(props: ProfileProps) {
         transition
         popperOptions={{
           modifiers: [
-            // {
-            //   name: 'offset',
-            //   options: {
-            //     offset: [100, 0]
-            //   }
-            // },
             {
               name: 'arrow',
               options: {

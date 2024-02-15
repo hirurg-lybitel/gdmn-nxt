@@ -93,7 +93,7 @@ export interface KanbanEditCardProps {
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
-  const { open, currentStage, card, stages, deleteable = true } = props;
+  const { open, card, stages, currentStage = stages[0], deleteable = true } = props;
   const { onSubmit, onCancelClick } = props;
 
   const classes = useStyles();
