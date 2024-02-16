@@ -1,25 +1,22 @@
-import { IContactsList, IRequestResult } from '@gsbelarus/util-api-types';
+import { ContractType, IContract, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';;
 
-interface IContactsLists{
-  contractsList: IContactsList[];
+interface IContracts{
+  contracts: IContract[];
 };
 
-type IContactsListRequestResult = IRequestResult<IContactsLists>;
+type IContractsRequestResult = IRequestResult<IContracts>;
 
 export const contractsListApi = createApi({
   reducerPath: 'contractsList',
   tagTypes: ['ConList'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getContractsList: builder.query<IContactsList[], number | void>({
-      query: (companyId) => `contracts-list/${companyId}`,
-      onQueryStarted(companyId) {
-        console.info('⏩ request', 'GET', `${baseUrlApi}contracts-list/${companyId}`);
-      },
-      transformResponse: (response: IContactsListRequestResult) =>
-        response.queries?.contractsList.map(el => ({
+    getContractsList: builder.query<IContract[], { companyId: number, contractType?: ContractType}>({
+      query: ({ companyId, contractType = ContractType.GS }) => `contracts-list/${companyId}/contractType/${contractType}`,
+      transformResponse: (response: IContractsRequestResult) =>
+        response.queries?.contracts.map(el => ({
           ...el,
           DOCUMENTDATE: new Date(el.DOCUMENTDATE),
           DATEBEGIN: new Date(el.DATEBEGIN),
