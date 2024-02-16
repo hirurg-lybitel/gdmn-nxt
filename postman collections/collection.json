@@ -38,6 +38,18 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Договоры",
+							"id": "bc8f8a0d-95e9-4e0b-99f9-e2191b6d513e",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
 						}
 					],
 					"id": "a8f514a6-4d26-440f-ac50-898df31d2702"
@@ -1503,6 +1515,18 @@
 								}
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "Настройки системы",
+					"id": "9d83ff53-ca68-4b6c-ba35-f508768d0092",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
 					},
 					"response": []
 				}
