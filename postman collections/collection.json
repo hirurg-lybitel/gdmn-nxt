@@ -47,7 +47,29 @@
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contracts-list/:companyId/contractType/:contractType",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contracts-list",
+										":companyId",
+										"contractType",
+										":contractType"
+									],
+									"variable": [
+										{
+											"key": "companyId",
+											"value": "153588010"
+										},
+										{
+											"key": "contractType",
+											"value": "1"
+										}
+									]
+								}
 							},
 							"response": []
 						}
