@@ -22,16 +22,21 @@ import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
 import { setError } from '../../../features/error-slice/error-slice';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import { useLocation } from 'react-router-dom';
+import SystemTab from './tabs/system';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
 
-export const TABS = ['account', 'settings', 'notifications'] as const;
+export const TABS = ['account', 'settings', 'notifications', 'system'] as const;
 type TabIndex = typeof TABS[number];
 
 export function Profile(props: ProfileProps) {
-  const { userProfile } = useSelector<RootState, UserState>(state => state.user);
-  const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id || -1);
+  const userProfile = useUserData();
+  const userPermissions = usePermissions();
+  const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
   const [setSettings, { isLoading: updateIsLoading }] = useSetProfileSettingsMutation();
 
   const [disableOtp] = useDisableOtpMutation();
@@ -98,6 +103,7 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleTabsChange = (event: any, newindex: TabIndex) => {
+    console.log('handleTabsChange', newindex);
     setTabIndex(newindex);
   };
 
@@ -339,7 +345,7 @@ export function Profile(props: ProfileProps) {
                   className={styles.tabPanelForm}
                 >
                   <TabContext value={tabIndex}>
-                    <TabList onChange={handleTabsChange}>
+                    <TabList onChange={handleTabsChange} className={styles.tabHeaderRoot}>
                       <Tab label="Профиль" value="account" />
                       <Tab
                         label="Безопасность"
@@ -350,6 +356,12 @@ export function Profile(props: ProfileProps) {
                         label="Уведомления"
                         value="notifications"
                         disabled={isLoading}
+                      />
+                      <Tab
+                        label="Система"
+                        value="system"
+                        disabled={isLoading}
+                        className={!userPermissions?.system.forGroup ? styles.tabHeaderHide : ''}
                       />
                     </TabList>
                     <Divider style={{ margin: 0 }} />
@@ -476,7 +488,11 @@ export function Profile(props: ProfileProps) {
                         <Button variant="contained" onClick={checkPushNotifications}>Проверить</Button>
                       </Stack>
                     </TabPanel>
-
+                    <PermissionsGate actionAllowed={userPermissions?.system.forGroup}>
+                      <TabPanel value="system" className={tabIndex === 'system' ? styles.tabPanel : ''}>
+                        <SystemTab />
+                      </TabPanel>
+                    </PermissionsGate>
                   </TabContext>
                   <Box flex={1}/>
                   <Button

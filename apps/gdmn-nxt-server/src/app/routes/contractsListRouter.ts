@@ -1,7 +1,7 @@
 import express from 'express';
-import contractsList from '../controllers/contractsList';
+import { contractsController } from '../controllers/contractsList';
 
 const router = express.Router();
-router.get('/contracts-list/:companyId', contractsList.get);
+router.get('/contracts-list/:companyId/contractType/:contractType', contractsController.getAllByCustomer);
 
 export default router;
