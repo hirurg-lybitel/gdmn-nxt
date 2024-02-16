@@ -1,5 +1,5 @@
 import { Divider, InputAdornment, Stack, TextField, TextFieldProps } from '@mui/material';
-import React, { FocusEvent, useRef, useState } from 'react';
+import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import SocialMediaButton from './components/social-media-button/social-media-button';
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
 import { IIconsNames } from './social-media-icons';
@@ -36,6 +36,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     ...restTextFieldProps
   } = props;
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const textFieldRef = useRef<HTMLDivElement>(null);
   const inputDigitsRef = useRef<HTMLInputElement>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
@@ -78,9 +79,29 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     onChange({ ...value, text: (e.target.value).replace(/\s+/g, ' ') });
   };
 
+  const { onBlur } = restTextFieldProps;
+
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (!anchorEl &&
+        containerRef.current &&
+        !containerRef.current.contains(event.target)) {
+        onBlur && onBlur(event);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [anchorEl, onBlur]);
+
   return (
-    <>
+    <div
+      ref={containerRef}
+    >
       <TextField
+        fullWidth
         {...restTextFieldProps}
         disabled={disabled}
         value={value.text}
@@ -89,6 +110,9 @@ export function SocialMediaInput(props: socialMediaInputProps) {
         onDoubleClick={handleDoubleClick}
         onChange={handleTextChange}
         onFocus={handleFocus}
+        onBlur={(e) => {
+          e.preventDefault();
+        }}
         inputProps={{
           ...inputProps
         }}
@@ -105,7 +129,6 @@ export function SocialMediaInput(props: socialMediaInputProps) {
                 />
                 <Divider orientation="vertical" flexItem />
               </Stack>
-
             </InputAdornment>
           ),
         }}
@@ -118,7 +141,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
           onChangeSocial={handleSocialChange}
         />
       ) : null}
-    </>
+    </div>
   );
 }
 

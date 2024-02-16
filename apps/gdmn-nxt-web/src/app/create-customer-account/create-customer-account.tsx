@@ -82,7 +82,6 @@ export function CreateCustomerAccount({ onCancel }: CreateCustomerAccountProps) 
   }, [step, isFetchingAccount, accountData, contactData]);
 
   useEffect( () => {
-    console.log('useEffect');
     if (step === 'SAVING_PROFILE') {
       if (isSuccess) {
         setStep('PROFILE_CREATED');

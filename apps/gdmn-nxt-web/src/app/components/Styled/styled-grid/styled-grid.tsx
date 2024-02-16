@@ -8,6 +8,9 @@ import CustomizedCard from '../customized-card/customized-card';
 import { useTheme } from '@mui/material/styles';
 import CustomCircularLoadingOverlay from './DataGridProOverlay/CustomCircularLoadingOverlay';
 
+const defaultRowHeight = 40;
+const stylelessRowHeight = 31;
+
 interface IStyledGridProps extends DataGridProProps{
   hideColumnHeaders?: boolean;
   hideHeaderSeparator?: boolean;
@@ -42,7 +45,7 @@ const disableLicenseError = () => {
 
 export default function StyledGrid(props: IStyledGridProps) {
   const theme = useTheme();
-  const defaultTheme = ({ hideHeaderSeparator }: IStyledGridProps) => ({
+  const defaultTheme = ({ hideHeaderSeparator, rowHeight = defaultRowHeight }: IStyledGridProps) => ({
     border: 'none',
     padding: '0px',
     flex: 1,
@@ -59,25 +62,6 @@ export default function StyledGrid(props: IStyledGridProps) {
       paddingLeft: '24px',
       paddingRight: '24px',
     },
-    // '& ::-webkit-scrollbar': {
-    //   width: '6px',
-    //   height: '6px',
-    //   backgroundColor: 'transparent',
-    //   borderRadius: '6px',
-    //   // transition: 'background-color 5s linear, width 5s ease-in-out',
-    // },
-    // '& ::-webkit-scrollbar:hover': {
-    //   backgroundColor: '#f0f0f0',
-    // },
-    // '& ::-webkit-scrollbar-thumb': {
-    //   position: 'absolute',
-    //   right: 10,
-    //   borderRadius: '6px',
-    //   backgroundColor: 'rgba(170, 170, 170, 0.5)',
-    // },
-    // '& ::-webkit-scrollbar-thumb:hover': {
-    //   backgroundColor: '#999',
-    // },
     '& > .MuiDataGrid-columnSeparator': {
       visibility: 'hidden',
     },
@@ -101,7 +85,12 @@ export default function StyledGrid(props: IStyledGridProps) {
       '& .MuiDataGrid-columnHeaders': {
         display: 'none'
       },
-    })
+    }),
+    '& .cell-with-auto-height': {
+      '& .MuiDataGrid-cell': {
+        padding: `calc((${rowHeight}px - ${stylelessRowHeight}px) / 2) 24px`
+      },
+    }
   });
 
   const {
@@ -125,13 +114,13 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
       headerHeight={hideColumnHeaders ? 0 : 50}
-      // rowHeight={40}
+      getRowClassName={(params) => autoHeightForFields?.some((field) => !!params.row[field]) ? 'cell-with-auto-height' : ''}
       getRowHeight={({ model }) => {
         const isAutoHeight = autoHeightForFields?.some((field) => !!model[field]);
         if (isAutoHeight) {
           return 'auto';
         }
-        return 40;
+        return props.rowHeight ?? defaultRowHeight;
       }}
       {...props}
       sx={{
