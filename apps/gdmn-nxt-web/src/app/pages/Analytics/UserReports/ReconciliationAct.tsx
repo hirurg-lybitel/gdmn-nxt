@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 
 const filterOptions = createFilterOptions({
@@ -28,11 +29,11 @@ interface IInputParams {
 
 interface IInitState {
   cutomerId: number | null;
-  dates: DateRangePickerProps<Date>;
+  dates: DateRange<any>;
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as Array<Date> as any
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as Array<Date> as DateRange<any>
 };
 
 export const ReconciliationAct = (props: IReconciliationAct) => {
@@ -41,7 +42,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
   const inCustomerId = Number(id);
 
   const [customerId, setCustomerId] = useState(inCustomerId ? inCustomerId : initState.cutomerId);
-  const [dates, setDates] = useState<DateRangePickerProps<Date>>(initState.dates);
+  const [dates, setDates] = useState <DateRange<any>>(initState.dates);
 
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<IInputParams>();
@@ -118,8 +119,8 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
                 <DateRangePicker
                   // startText="Начало периода"
                   // endText="Конец периода"
-                  value={dates as any}
-                  onChange={setDates as any}
+                  value={dates}
+                  onChange={setDates}
                   slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>

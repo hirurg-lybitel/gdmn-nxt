@@ -349,14 +349,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           >
             <DesktopDatePicker
               label="Дата"
-              value={formik.values.DEAL?.CREATIONDATE}
+              value={formik.values.DEAL?.CREATIONDATE ? new Date(formik.values.DEAL?.CREATIONDATE) : null}
               format="dd.MM.yyyy"
               onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
               slotProps={{ textField: { variant: 'outlined' } }}
             />
             <TimePicker
               label="Время"
-              value={formik.values.DEAL?.CREATIONDATE}
+              value={formik.values.DEAL?.CREATIONDATE ? new Date(formik.values.DEAL?.CREATIONDATE) : null}
               onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
               slotProps={{ textField: { variant: 'outlined' } }}
             />
@@ -580,7 +580,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           />
                           <DesktopDatePicker
                             label="Срок"
-                            value={formik.values.DEAL?.USR$DEADLINE || null}
+                            value={formik.values.DEAL?.USR$DEADLINE ? new Date(formik.values.DEAL?.USR$DEADLINE) : null}
                             format="dd.MM.yyyy"
                             onChange={(value) => {
                               formik.setFieldValue(

@@ -136,9 +136,9 @@ export function Dashboard(props: DashboardProps) {
                       <CustomizedCard borders>
                         <StaticDateRangePicker
                           displayStaticWrapperAs="desktop"
-                          value={period}
+                          value={undefined}
                           onChange={dateRangePickerChange}
-                          slotProps={{ textField: { variant: 'outlined' } } as any}
+                          slotProps={{ toolbar: { } }}
                         />
                       </CustomizedCard>
                     </Popper>

@@ -8,20 +8,21 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 interface IInitState {
   cutomerId: number | null;
-  dates: DateRangePickerProps<Date>;
+  dates: DateRange<any>;
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as DateRangePickerProps<Date>
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as DateRange<any>
 };
 
 export default function TopEarningPage() {
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<ITopEarningParams>();
-  const [dates, setDates] = useState<DateRangePickerProps<Date>>(initState.dates);
+  const [dates, setDates] = useState<DateRange<any>>(initState.dates);
   const [customerCount, setCustomerCount] = useState(10);
   const [selectedDep, setSelectedDep] = useState<IContactWithID | null>(null);
   const [selectedConstract, setSelectedConstract] = useState<ICustomerContract | null>(null);
@@ -33,17 +34,14 @@ export default function TopEarningPage() {
     contractJob: selectedConstract ? [selectedConstract.ID] : undefined
   });
 
-  const renderOption = (fieldName: string) => (props: any, option: any) => {
-    return (
-      <li {...props} key={option.ID}>
-        {option[fieldName]}
-      </li>
-    );
-  };
+  const renderOption = (fieldName: string) => (props: any, option: any) =>
+    <li {...props} key={option.ID}>
+      {option[fieldName]}
+    </li>;
 
   const handleGenerate = () => {
     setInputParams((prevState) => ({
-      dates,
+      dates: dates as DateRangePickerProps<Date>,
       customerCount,
       ...(selectedDep && { depId: selectedDep.ID }),
       ...(selectedConstract && { jobId: selectedConstract.ID }),
@@ -77,8 +75,8 @@ export default function TopEarningPage() {
             >
               <Grid item>
                 <DateRangePicker
-                  value={dates as any}
-                  onChange={setDates as any}
+                  value={dates}
+                  onChange={setDates}
                   slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>
