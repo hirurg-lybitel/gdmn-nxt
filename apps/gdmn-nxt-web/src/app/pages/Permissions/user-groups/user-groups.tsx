@@ -4,7 +4,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import styles from './user-groups.module.less';
 import SearchBar from '../../../components/search-bar/search-bar';
-import { useAddUserGroupLineMutation, useAddUserGroupMutation, useDeleteUseGroupMutation, useGetUserGroupsQuery, useUpdateUserGroupMutation } from '../../../features/permissions';
+import { useAddUserGroupLineMutation, useAddUserGroupMutation, useAddUsersGroupLineMutation, useDeleteUseGroupMutation, useGetUserGroupsQuery, useUpdateUserGroupMutation } from '../../../features/permissions';
 import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
 import { useEffect, useMemo, useState } from 'react';
 import { Users } from './user-groups-line';
@@ -17,9 +17,21 @@ import UserGroupLineEdit from '../../../components/Permissions/user-group-line-e
 const ItemGroupSkeleton = () => {
   return (
     <Stack spacing={1} p={2}>
-      <Skeleton variant="text" height={50} width="40%" />
-      <Skeleton variant="text" height={10} width="100%" />
-      <Skeleton variant="text" height={10} width="60%" />
+      <Skeleton
+        variant="text"
+        height={50}
+        width="40%"
+      />
+      <Skeleton
+        variant="text"
+        height={10}
+        width="100%"
+      />
+      <Skeleton
+        variant="text"
+        height={10}
+        width="60%"
+      />
     </Stack>
   );
 };
@@ -33,6 +45,7 @@ export function UserGroups(props: UserGroupsProps) {
   const [updateUserGroup] = useUpdateUserGroupMutation();
   const [deleteUserGroup] = useDeleteUseGroupMutation();
   const [addUserGroupLine] = useAddUserGroupLineMutation();
+  const [addUsersGroupLine] = useAddUsersGroupLineMutation();
 
   const [searchName, setSearchName] = useState('');
   const [selectedUserGroup, setSelectedUserGroup] = useState<IUserGroup>();
@@ -88,9 +101,9 @@ export function UserGroups(props: UserGroupsProps) {
   };
 
   const userUsersHandlers = {
-    handleOnSubmit: async (userGroupLine: IUserGroupLine) => {
+    handleOnSubmit: async (usersGroupLine: IUserGroupLine[]) => {
       setOpenEditUserForm(false);
-      addUserGroupLine(userGroupLine);
+      addUsersGroupLine(usersGroupLine);
     },
     handleCancel: async () => {
       setOpenEditUserForm(false);
@@ -103,7 +116,6 @@ export function UserGroups(props: UserGroupsProps) {
 
   return (
     <CustomizedCard
-      borders
       style={{
         flex: 1,
         display: 'flex',
@@ -120,7 +132,11 @@ export function UserGroups(props: UserGroupsProps) {
         }}
       >
         <Stack direction="row" flex={1}>
-          <Stack flex={0.3} p={2} spacing={2}>
+          <Stack
+            flex={0.3}
+            p={2}
+            spacing={2}
+          >
             <Stack direction="row">
               <Box flex={1} />
               <Button
@@ -178,7 +194,11 @@ export function UserGroups(props: UserGroupsProps) {
             />
           </Stack>
           <Divider orientation="vertical" flexItem />
-          <Stack flex={1} p={2} spacing={2}>
+          <Stack
+            flex={1}
+            p={2}
+            spacing={2}
+          >
             <Stack direction="row">
               <Box flex={1} />
               <Button

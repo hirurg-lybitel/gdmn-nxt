@@ -42,7 +42,7 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
 
   return (
     <Stack direction="column" flex={1} spacing={2}>
-      <CustomizedCard borders boxShadows>
+      <CustomizedCard>
         <CardHeader title={<Typography variant="pageHeader">Остатки по расчётным счетам</Typography>} />
         <Divider />
         <CardContent>
@@ -73,8 +73,6 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
       </CustomizedCard>
       {generate
         ? <CustomizedCard
-          borders
-          boxShadows
           style={{ padding: '16px' }}
         >
           <RemainsByInvoicesReport onDate={onDate || new Date()} />

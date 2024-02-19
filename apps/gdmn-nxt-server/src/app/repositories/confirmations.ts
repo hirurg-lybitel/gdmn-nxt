@@ -17,7 +17,7 @@ const create = async (
     return await fetchAsSingletonObject(sql, { USERKEY, EMAIL, CODE })
       .then(r => {
         const { USR$CODE, ...rest } = r;
-        return { ...rest, CODE: USR$CODE };
+        return { ...rest, CODE: USR$CODE } as IConfirmation;
       });
   } finally {
     await releaseTransaction();

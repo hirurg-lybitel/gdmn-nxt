@@ -69,7 +69,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
   return (
     <Box flex="1">
       <Stack direction="column" spacing={2}>
-        <CustomizedCard borders boxShadows>
+        <CustomizedCard>
           <CardHeader title={<Typography variant="pageHeader">Акт сверки</Typography>} />
           <Divider />
           <CardContent>
@@ -152,8 +152,6 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
 
         {generate
           ? <CustomizedCard
-            borders
-            boxShadows
             sx={{ p: 2 }}
             >
             <ReconciliationStatement

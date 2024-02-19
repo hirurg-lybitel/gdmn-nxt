@@ -93,7 +93,6 @@ export function LabelList(props: LabelListProps) {
       className={classes.body}
     >
       <CustomizedCard
-        borders
         style={{ height: '100%' }}
       >
         <CardHeader

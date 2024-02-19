@@ -32,7 +32,7 @@ function CustomTabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ pt: 3, px: 0, pb: 0, height: '100%', display: 'flex' }}>
+        <Box sx={{ pt: 1, px: 0, pb: 0, height: '100%', display: 'flex' }}>
           {children}
         </Box>
       )}
@@ -58,7 +58,6 @@ export function NotificationCenter(props: NotificationCenterProps) {
 
   return (
     <CustomizedCard
-      borders
       className={styles['main-card']}
     >
       <CardHeader title={<Typography variant="pageHeader">Центр уведомлений</Typography>} />
@@ -76,7 +75,7 @@ export function NotificationCenter(props: NotificationCenterProps) {
           </Tabs>
           <CustomTabPanel value={tabIndex} index={0}>
             <Stack
-              spacing={5}
+              spacing={3}
               direction="row"
               flex={1}
             >

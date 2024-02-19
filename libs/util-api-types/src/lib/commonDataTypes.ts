@@ -122,3 +122,23 @@ export interface IChanges {
   oldValue: string | number | undefined;
   newValue: string | number | undefined;
 };
+
+
+export interface ISortingData {
+  field: string;
+  sort: 'asc' | 'desc' | null | undefined;
+};
+
+export interface IPaginationData {
+  pageNo: number;
+  pageSize: number;
+};
+
+export interface IFilteringData {
+  [name: string]: any;
+}
+export interface IQueryOptions {
+  pagination?: IPaginationData;
+  filter?: IFilteringData;
+  sort?: ISortingData;
+};

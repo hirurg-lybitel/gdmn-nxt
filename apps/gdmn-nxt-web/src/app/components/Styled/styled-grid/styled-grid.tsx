@@ -2,21 +2,50 @@ import { DataGridPro, DataGridProProps, GridRenderCellParams, ruRU } from '@mui/
 import styles from './styled-grid.module.less';
 import CustomNoRowsOverlay from './DataGridProOverlay/CustomNoRowsOverlay';
 import CustomLinearLoadingOverlay from './DataGridProOverlay/CustomLinearLoadingOverlay';
-import React, { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Box, Popper, Typography } from '@mui/material';
 import CustomizedCard from '../customized-card/customized-card';
 import { useTheme } from '@mui/material/styles';
 import CustomCircularLoadingOverlay from './DataGridProOverlay/CustomCircularLoadingOverlay';
 
+const defaultRowHeight = 40;
+const stylelessRowHeight = 31;
+
 interface IStyledGridProps extends DataGridProProps{
   hideColumnHeaders?: boolean;
   hideHeaderSeparator?: boolean;
   loadingMode?: 'circular' | 'linear';
+  autoHeightForFields?: string[];
 }
+
+/** Disable license expired message error */
+const disableLicenseError = () => {
+  const searchText = ['MUI X: Missing license key', 'MUI X: License key expired']
+    .map(s => s.toLowerCase());
+  const root = document.querySelectorAll('.MuiDataGrid-main');
+
+  root.forEach((grid) => {
+    const children = Array.from(grid.childNodes);
+
+    for (const element of children) {
+      if (!element.textContent) {
+        return;
+      }
+      if (searchText.includes(element.textContent?.toLowerCase())) {
+        if (element.nodeName.toLowerCase() !== 'div') {
+          return;
+        }
+        const div = element as HTMLDivElement;
+        div.style.display = 'none';
+      }
+    }
+  });
+};
+
 
 export default function StyledGrid(props: IStyledGridProps) {
   const theme = useTheme();
-  const defaultTheme = ({ hideHeaderSeparator }: IStyledGridProps) => ({
+  const defaultTheme = ({ hideHeaderSeparator, rowHeight = defaultRowHeight }: IStyledGridProps) => ({
     border: 'none',
     padding: '0px',
     flex: 1,
@@ -33,25 +62,6 @@ export default function StyledGrid(props: IStyledGridProps) {
       paddingLeft: '24px',
       paddingRight: '24px',
     },
-    // '& ::-webkit-scrollbar': {
-    //   width: '6px',
-    //   height: '6px',
-    //   backgroundColor: 'transparent',
-    //   borderRadius: '6px',
-    //   // transition: 'background-color 5s linear, width 5s ease-in-out',
-    // },
-    // '& ::-webkit-scrollbar:hover': {
-    //   backgroundColor: '#f0f0f0',
-    // },
-    // '& ::-webkit-scrollbar-thumb': {
-    //   position: 'absolute',
-    //   right: 10,
-    //   borderRadius: '6px',
-    //   backgroundColor: 'rgba(170, 170, 170, 0.5)',
-    // },
-    // '& ::-webkit-scrollbar-thumb:hover': {
-    //   backgroundColor: '#999',
-    // },
     '& > .MuiDataGrid-columnSeparator': {
       visibility: 'hidden',
     },
@@ -75,14 +85,28 @@ export default function StyledGrid(props: IStyledGridProps) {
       '& .MuiDataGrid-columnHeaders': {
         display: 'none'
       },
-    })
+    }),
+    '& .cell-with-auto-height': {
+      '& .MuiDataGrid-cell': {
+        padding: `calc((${rowHeight}px - ${stylelessRowHeight}px) / 2) 24px`
+      },
+    }
   });
 
-  const { loadingMode = 'linear', hideColumnHeaders } = props;
+  const {
+    loadingMode = 'linear',
+    hideColumnHeaders,
+    autoHeightForFields
+  } = props;
+
+  useEffect(() => {
+    disableLicenseError();
+  }, []);
 
   return (
     <DataGridPro
       localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+      onStateChange={() => disableLicenseError()}
       getRowId={row => row.ID}
       components={{
         LoadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,
@@ -90,6 +114,14 @@ export default function StyledGrid(props: IStyledGridProps) {
         NoResultsOverlay: CustomNoRowsOverlay,
       }}
       columnHeaderHeight={hideColumnHeaders ? 0 : 50}
+      getRowClassName={(params) => autoHeightForFields?.some((field) => !!params.row[field]) ? 'cell-with-auto-height' : ''}
+      getRowHeight={({ model }) => {
+        const isAutoHeight = autoHeightForFields?.some((field) => !!model[field]);
+        if (isAutoHeight) {
+          return 'auto';
+        }
+        return props.rowHeight ?? defaultRowHeight;
+      }}
       {...props}
       sx={{
         ...defaultTheme(props),

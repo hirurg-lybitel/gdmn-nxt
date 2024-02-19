@@ -85,7 +85,6 @@ export function DealSources(props: DealSourcesProps) {
 
   return (
     <CustomizedCard
-      borders
       className={styles.Card}
     >
       <CardHeader title={<Typography variant="pageHeader">Источники заявок</Typography>} />
@@ -110,7 +109,6 @@ export function DealSources(props: DealSourcesProps) {
           rows={data}
           columns={columns}
           loading={isLoading}
-          rowHeight={60}
           hideHeaderSeparator
         />
         {memoUpsertDealSource}

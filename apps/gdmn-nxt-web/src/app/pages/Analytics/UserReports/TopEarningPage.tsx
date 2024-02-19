@@ -66,7 +66,7 @@ export default function TopEarningPage() {
         flex={1}
         spacing={2}
       >
-        <CustomizedCard borders boxShadows>
+        <CustomizedCard>
           <CardHeader title={<Typography variant="pageHeader">ТОП по выручке</Typography>} />
           <Divider />
           <CardContent>
@@ -181,8 +181,6 @@ export default function TopEarningPage() {
         </CustomizedCard>
         {generate
           ? <CustomizedCard
-            borders
-            boxShadows
             style={{ padding: '16px' }}
           >
             <TopEarning params={inputParams} />

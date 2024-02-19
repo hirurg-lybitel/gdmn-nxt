@@ -119,7 +119,6 @@ export function CustomerDeals(props: CustomerDealsProps) {
     <Box
       flex={1}
       display="flex"
-      p={3}
     >
       <KanbanList
         columns={columns}

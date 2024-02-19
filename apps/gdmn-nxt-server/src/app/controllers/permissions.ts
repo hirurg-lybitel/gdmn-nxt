@@ -461,11 +461,13 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
           con.ID AS CONTACT_ID,
           con.NAME AS CONTACT_NAME,
           con.PHONE CONTACT_PHONE,
-          ul.USR$REQUIRED_2FA AS REQUIRED_2FA
+          ul.USR$REQUIRED_2FA AS REQUIRED_2FA,
+          IIF(ps.ID IS NULL, 0, 1) AS IsActivated
         FROM USR$CRM_PERMISSIONS_USERGROUPS ug
         JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
         JOIN GD_USER u ON u.ID = ul.USR$USERKEY
         JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
         WHERE
           ug.ID = ?`,
       params: [groupId]
@@ -485,6 +487,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['USER_NAME'],
         FULLNAME: user['USER_FULLNAME'],
         DISABLED: user['USER_DISABLED'],
+        isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT }
       };
       const USERGROUP = {
@@ -578,6 +581,117 @@ const getUserByGroup: RequestHandler = async (req, res) => {
   }
 };
 
+const upsertUsersGroupLine: RequestHandler = async (req, res) => {
+  const isInsertMode = (req.method === 'POST');
+
+  const id = parseInt(req.params.id);
+  if (!isInsertMode) {
+    // if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
+  };
+
+  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
+
+  try {
+    const _schema = {};
+
+    // if (isInsertMode) {
+    //   const userExistsQuery = `
+    //     SELECT
+    //       ug.USR$NAME NAME
+    //     FROM USR$CRM_PERMISSIONS_UG_LINES ul
+    //     JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = ul.USR$GROUPKEY
+    //     WHERE
+    //       ul.USR$GROUPKEY != :groupId
+    //       AND ul.USR$USERKEY = :userId`;
+
+    //   const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID'] });
+
+    //   if (userExists.length) {
+    //     return res.status(409).json(resultError(`Пользователь уже добавлен в группу ${userExists[0]['NAME']}`));
+    //   }
+    // };
+
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+      const data = await attachment.executeSingletonAsObject(transaction, query, params);
+
+      return [name, data];
+    };
+
+    const { erModel } = await importedModels;
+    const allFields = [...new Set(erModel.entities['TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_UG_LINES'].attributes.map(attr => attr.name))];
+
+    const createQuery = (REQUIRED_2FA, USER, USERGROUP) => {
+      const actualFields = allFields.filter(field => {
+        switch (field) {
+          case 'USR$REQUIRED_2FA':
+            return typeof REQUIRED_2FA !== 'undefined';
+          case 'USR$USERKEY':
+            return typeof USER !== 'undefined';
+          case 'USR$GROUPKEY':
+            return typeof USERGROUP !== 'undefined';
+          case 'ID':
+            break;
+          default:
+            return typeof req.body[field] !== 'undefined';
+        }
+      });
+
+      const paramsValues = actualFields.map(field => {
+        switch (field) {
+          case 'USR$REQUIRED_2FA':
+            return REQUIRED_2FA;
+          case 'USR$USERKEY':
+            return USER.ID;
+          case 'USR$GROUPKEY':
+            return USERGROUP.ID;
+          default:
+            return req.body[field];
+        }
+      });
+
+      return {
+        name: 'users',
+        query: `
+          UPDATE OR INSERT INTO USR$CRM_PERMISSIONS_UG_LINES(${actualFields})
+          VALUES(${actualFields.map(f => '?')})
+          MATCHING(USR$USERKEY)
+          RETURNING ID, USR$USERKEY, USR$GROUPKEY`,
+        params: paramsValues,
+      };
+    };
+
+    const querys = req.body.map((value, index) => {
+      const user = req.body[index];
+
+      return createQuery(
+        user.REQUIRED_2FA,
+        user.USER,
+        user.USERGROUP
+      );
+    });
+
+    const result: IRequestResult = {
+      queries: {
+        ...Object.fromEntries([await Promise.all(querys.map(execQuery))])
+      },
+      _schema
+    };
+
+    let i = typeof req.body !== 'string' ? req.body.length : 0;
+    while (i--) {
+      const user = req.body[i];
+      closeUserSession(req, user.ID);
+    }
+
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseTransaction(res.statusCode === 200);
+  };
+};
+
 const upsertUserGroupLine: RequestHandler = async (req, res) => {
   const isInsertMode = (req.method === 'POST');
 
@@ -669,6 +783,7 @@ const upsertUserGroupLine: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
+    setPermissonsCache();
   };
 };
 
@@ -749,5 +864,6 @@ export const PermissionsController = {
   upsertUserGroupLine,
   removeUserGroupLine,
   getUserGroupLine,
-  getPermissionByUser
+  getPermissionByUser,
+  upsertUsersGroupLine
 };

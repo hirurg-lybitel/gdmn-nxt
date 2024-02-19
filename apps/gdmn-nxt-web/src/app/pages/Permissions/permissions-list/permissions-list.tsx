@@ -85,7 +85,6 @@ export function PermissionsList(props: PermissionsListProps) {
 
   return (
     <CustomizedCard
-      borders
       style={{
         flex: 1,
         display: 'flex',

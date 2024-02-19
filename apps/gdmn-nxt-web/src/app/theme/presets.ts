@@ -8,6 +8,7 @@ interface Style {
   paperColor?: string;
   primaryColor: string;
   secondaryColor: string;
+  errorColor?: string;
   textColor: string;
   captionTextColor: string;
   borderColor: string;
@@ -20,6 +21,9 @@ const defaultStyle: Partial<Style> = {
   fontFamily: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"'].join(','),
   buttonTextColor: colors.common.white,
   paperColor: colors.common.white,
+  // errorColor: '#f44336'
+  errorColor: 'rgb(205, 92, 92)'
+
 };
 
 export const themes: {[key in ColorMode]: { [key: string]: Style}} = {
@@ -46,7 +50,7 @@ export const themes: {[key in ColorMode]: { [key: string]: Style}} = {
       borderColor: 'rgb(240, 240, 240)',
       menuBackgroundColor: 'rgb(78, 125, 149)',
       menuTextColor: colors.common.white,
-      buttonPrimaryColor: 'rgb(254, 131, 75)',
+      buttonPrimaryColor: 'rgb(58, 175, 159)',
     }
 
   },
@@ -55,14 +59,14 @@ export const themes: {[key in ColorMode]: { [key: string]: Style}} = {
       ...defaultStyle,
       backgroundColor: colors.grey[900],
       menuBackgroundColor: colors.blueGrey[900],
-      primaryColor: colors.blue[400],
+      primaryColor: colors.blue[500],
       textColor: colors.common.white,
-      captionTextColor: colors.grey[500],
+      captionTextColor: colors.grey[400],
       secondaryColor: colors.grey[300],
       menuTextColor: colors.grey[300],
-      paperColor: colors.grey[800],
-      borderColor: '#303030',
-      buttonPrimaryColor: colors.blue[500],
+      paperColor: 'rgb(45, 45, 45)', // colors.grey[800],
+      borderColor: 'rgba(255, 255, 255, 0.23)',
+      buttonPrimaryColor: colors.blue['A400'],
 
     },
   }

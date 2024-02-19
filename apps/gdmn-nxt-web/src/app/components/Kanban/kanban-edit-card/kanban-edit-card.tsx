@@ -93,7 +93,7 @@ export interface KanbanEditCardProps {
 }
 
 export function KanbanEditCard(props: KanbanEditCardProps) {
-  const { open, currentStage, card, stages, deleteable = true } = props;
+  const { open, card, stages, currentStage = stages[0], deleteable = true } = props;
   const { onSubmit, onCancelClick } = props;
 
   const classes = useStyles();
@@ -225,7 +225,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             .max(20, 'Слишком длинный номер'),
           PRODUCTNAME: yup.string().nullable()
             .max(180, 'Слишком длинное наименование'),
-          USR$AMOUNT: yup.number()
+          USR$AMOUNT: yup.number().nullable()
             .max(1000000, 'Слишком большая сумма'),
         })
     }),
@@ -250,7 +250,20 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-    onSubmit(formik.values, deleting);
+    onSubmit(
+      {
+        ...formik.values,
+        ...(formik.values.DEAL?.ID
+          ? {
+            DEAL: {
+              ...formik.values.DEAL,
+              USR$AMOUNT: formik.values.DEAL?.USR$AMOUNT ?? 0,
+            }
+          }
+          : {}),
+      },
+      deleting
+    );
   }, [formik.values, deleting]);
 
   const handleConfirmCancelClick = useCallback(() => {
@@ -408,8 +421,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     <CustomizedDialog
       open={open}
       onClose={handleOnClose}
-      width={windowWidth}
       minWidth={400}
+      width="calc(100% - var(--menu-width))"
     >
       <DialogTitle>
         {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
@@ -523,7 +536,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                           spacing={2}
                           flex={1}
                         >
-                          <CustomerSelect formik={formik} />
+                          <CustomerSelect
+                            value={formik.values.DEAL?.CONTACT}
+                            onChange={(value) => formik.setFieldValue('DEAL.CONTACT', value)}
+                            required
+                            name="DEAL.CONTACT"
+                            error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
+                            helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
+                          />
                           <DealSourcesSelect formik={formik} />
                         </Stack>
                         <Stack

@@ -33,7 +33,6 @@ export function BankStatement(props: BankStatementProps) {
       flex="1"
       display="flex"
       spacing={1}
-      p={3}
     >
       {/* <Box>
         <Button

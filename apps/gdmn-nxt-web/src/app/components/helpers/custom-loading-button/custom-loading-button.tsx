@@ -16,12 +16,12 @@ export function CustomLoadingButton(props: CustomLoadingButtonProps) {
   return (
 
     <IconButton
-      style={{ width: '40px', height: '40px' }}
+      style={{ width: '30px', height: '30px' }}
       disabled={loading}
       onClick={handleOnClick}
     >
       <Tooltip arrow title={hint}>
-        {loading ? <CircularProgress size={17} color="inherit" /> : <RefreshIcon color="primary" />}
+        {loading ? <CircularProgress size={14} color="inherit" /> : <RefreshIcon color="primary" />}
       </Tooltip>
     </IconButton>
 

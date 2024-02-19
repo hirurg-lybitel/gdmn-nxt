@@ -134,6 +134,16 @@ export const permissionsApi = createApi({
       }),
       invalidatesTags: [{ type: 'Users', id: 'LIST' }]
     }),
+    addUsersGroupLine: builder.mutation<IUserGroupLine, Partial<IUserGroupLine[]>>({
+      query: (body) => {
+        return {
+          url: 'permissions/usersgroupsline',
+          method: 'POST',
+          body
+        };
+      },
+      invalidatesTags: [{ type: 'Users', id: 'LIST' }]
+    }),
     updateUserGroupLine: builder.mutation<IUserGroupLine, Partial<IUserGroupLine>>({
       query(data) {
         const { ID, ...body } = data;
@@ -177,6 +187,7 @@ export const {
   useGetUserGroupsQuery,
   useUpdateMatrixMutation,
   useAddUserGroupLineMutation,
+  useAddUsersGroupLineMutation,
   useAddUserGroupMutation,
   useDeleteUseGroupMutation,
   useDeleteUserGroupLineMutation,

@@ -102,7 +102,6 @@ export function Tasks(props: TasksProps) {
     return (
       <>
         <CustomizedCard
-          borders
           direction="row"
           className={styles.headerCard}
         >
@@ -149,6 +148,7 @@ export function Tasks(props: TasksProps) {
               disabled={columnsIsFetching}
               onClick={addTaskClick}
               color="primary"
+              size="small"
             >
               <Tooltip title="Добавить новую задачу" arrow>
                 <AddCircleIcon />
@@ -163,6 +163,7 @@ export function Tasks(props: TasksProps) {
           <IconButton
             onClick={filterClick}
             disabled={columnsIsFetching}
+            size="small"
           >
             <Tooltip
               title={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0

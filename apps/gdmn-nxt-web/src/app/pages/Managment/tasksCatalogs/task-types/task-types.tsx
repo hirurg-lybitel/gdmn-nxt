@@ -198,7 +198,7 @@ export function TaskTypes(props: TaskTypesProps) {
         </IconButton>
         <IconButton
           role="menuitem"
-          color="primary"
+          color="error"
           size="small"
           onClick={handleConfirmDelete}
         >
@@ -294,7 +294,6 @@ export function TaskTypes(props: TaskTypesProps) {
     <>
       {memoConfirmDialog}
       <CustomizedCard
-        borders
         className={styles.card}
       >
         <CardHeader title={<Typography variant="pageHeader">Типы задач</Typography>} />
@@ -318,8 +317,8 @@ export function TaskTypes(props: TaskTypesProps) {
             rows={taskTypes}
             columns={columns}
             loading={isLoading}
-            rowHeight={60}
             apiRef={apiRef}
+            rowHeight={50}
             onRowEditStart={handleRowEditStart}
             onRowEditStop={handleRowEditStop}
             onCellKeyDown={handleCellKeyDown}

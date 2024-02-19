@@ -173,12 +173,41 @@ export interface IPhone extends IWithID {
   USR$CONTACTKEY?: number;
   USR$PHONENUMBER: string;
 }
+
+export interface IEmail extends IWithID {
+  CONTACTKEY?: number;
+  EMAIL: string;
+}
+
+type MessengerCode = 'facebook'
+| 'instagram'
+| 'telegram'
+| 'viber'
+| 'linkedin'
+| 'skype'
+| 'ok'
+| 'whatsApp'
+| 'github'
+| 'vk';
+
+export interface IMessenger extends IWithID {
+  USR$CONTACTKEY?: number;
+  USERNAME: string;
+  CODE: MessengerCode;
+}
+
 export interface IContactPerson extends IContactWithID {
   USR$BG_OTDEL?: IContactWithID;
-  PHONES?: IPhone[];
   RANK?: string;
   USR$LETTER_OF_AUTHORITY?: string;
-  WCOMPANYKEY?: number;
+  RESPONDENT?: IContactPerson;
+  PHONES?: IPhone[];
+  EMAILS?: IEmail[];
+  MESSENGERS?: IMessenger[];
+  LABELS?: ILabel[];
+  PHOTO?: string;
+  COMPANY?: IContactWithID | null;
+  isFavorite?: boolean;
 };
 
 export interface IContactsList extends IWithID {
@@ -223,6 +252,7 @@ export interface IUser extends IWithID {
   FULLNAME: string;
   CONTACT: IContactWithID;
   DISABLED: boolean;
+  isActivated?: boolean;
 };
 
 export interface IPermissionsView extends IWithID {
@@ -280,6 +310,7 @@ export type ActionName =
   'customers' |
   'updates' |
   'stages' |
+  'contacts' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -324,4 +355,9 @@ export interface IConfirmation extends IWithID {
   CODE: string;
   ATTEMPTS?: number;
   CREATIONDATE?: Date;
+}
+
+export interface IFavoriteContact extends IWithID {
+  USER?: number;
+  CONTACT: IContactWithID;
 }
