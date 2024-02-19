@@ -8,7 +8,7 @@ import { renderCellExpand } from '../../../components/Styled/styled-grid/styled-
 
 interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams {};
 
-export const CustomGridTreeDataGroupingCell = (props: GridRenderCellParams<any, any>) => {
+export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGroupingCellProps) => {
   const { id, field, rowNode, value, row } = props;
 
 
@@ -32,12 +32,12 @@ export const CustomGridTreeDataGroupingCell = (props: GridRenderCellParams<any, 
       event.stopPropagation();
     }
     if (isNavigationKey(event.key) && !event.shiftKey) {
-      apiRef.current.publishEvent('cellNavigationKeyDown', props, event);
+      apiRef.current.publishEvent('cellNavigationKeyDown' as any, props, event);
     }
   };
 
   const handleClick: ButtonProps['onClick'] = (event) => {
-    apiRef.current.setRowChildrenExpansion(id, !rowNode.childrenExpanded);
+    apiRef.current.setRowChildrenExpansion(id, !(rowNode as any).childrenExpanded);
     apiRef.current.setCellFocus(id, field);
     event.stopPropagation();
   };
@@ -66,7 +66,7 @@ export const CustomGridTreeDataGroupingCell = (props: GridRenderCellParams<any, 
             onKeyDown={handleKeyDown}
             size="small"
           >
-            {rowNode.childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+            {(rowNode as any).childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
           </IconButton>
           <Stack
             direction="row"

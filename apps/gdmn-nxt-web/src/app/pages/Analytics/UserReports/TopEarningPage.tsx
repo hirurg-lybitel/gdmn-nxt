@@ -77,8 +77,8 @@ export default function TopEarningPage() {
             >
               <Grid item>
                 <DateRangePicker
-                  value={dates}
-                  onViewChange={setDates}
+                  value={dates as any}
+                  onChange={setDates as any}
                   slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>

@@ -135,11 +135,10 @@ export function Dashboard(props: DashboardProps) {
                     >
                       <CustomizedCard borders>
                         <StaticDateRangePicker
-
                           displayStaticWrapperAs="desktop"
                           value={period}
                           onChange={dateRangePickerChange}
-                          slotProps={{ textField: { variant: 'outlined' } }}
+                          slotProps={{ textField: { variant: 'outlined' } } as any}
                         />
                       </CustomizedCard>
                     </Popper>

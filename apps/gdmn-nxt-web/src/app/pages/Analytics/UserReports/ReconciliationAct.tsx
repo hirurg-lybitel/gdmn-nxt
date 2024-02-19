@@ -32,7 +32,7 @@ interface IInitState {
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as Array<Date>
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as Array<Date> as any
 };
 
 export const ReconciliationAct = (props: IReconciliationAct) => {
@@ -118,8 +118,8 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
                 <DateRangePicker
                   // startText="Начало периода"
                   // endText="Конец периода"
-                  value={dates}
-                  onViewChange={setDates}
+                  value={dates as any}
+                  onChange={setDates as any}
                   slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>

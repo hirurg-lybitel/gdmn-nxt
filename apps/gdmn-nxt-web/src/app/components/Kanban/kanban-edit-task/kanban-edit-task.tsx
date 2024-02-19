@@ -400,12 +400,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     <DesktopDatePicker
                       label="Дата"
                       value={formik.values.USR$DEADLINE || null}
-                      mask="__.__.____"
                       // onChange={formik.handleChange}
                       onChange={(value) => {
                         formik.setFieldValue('USR$DEADLINE', value);
                       }}
-                      renderInput={(params: any) => <TextField {...params} />}
+                      slotProps={{ textField: { variant: 'outlined' } }}
                     />
                     <TimePicker
                       label="Время"
@@ -429,9 +428,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         label="Дата"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
-                        mask="__.__.____"
                         onChange={formik.handleChange}
-                        renderInput={(params: any) => <TextField {...params} />}
+                        slotProps={{ textField: { variant: 'outlined' } }}
                       />
                       <DateTimePicker
                         label="Время"

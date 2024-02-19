@@ -42,12 +42,12 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
       event.stopPropagation();
     }
     if (isNavigationKey(event.key) && !event.shiftKey) {
-      apiRef.current.publishEvent('cellNavigationKeyDown', props, event);
+      apiRef.current.publishEvent('cellNavigationKeyDown' as any, props, event);
     }
   };
 
   const handleClick: ButtonProps['onClick'] = (event) => {
-    apiRef.current.setRowChildrenExpansion(id, !rowNode.childrenExpanded);
+    apiRef.current.setRowChildrenExpansion(id, !(rowNode as any).childrenExpanded);
     apiRef.current.setCellFocus(id, field);
     event.stopPropagation();
   };
@@ -92,7 +92,7 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
               size="small"
               tabIndex={-1}
             >
-              {rowNode.childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              {(rowNode as any).childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
             </IconButton>
             <Stack
               direction="row"
