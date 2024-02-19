@@ -3,12 +3,12 @@ import InProgressIcon from '@mui/icons-material/Autorenew';
 import InfoIcon from '@mui/icons-material/Info';
 import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { GridColumns } from '@mui/x-data-grid-pro';
 import { IDeal } from '@gsbelarus/util-api-types';
 import { Box, Chip } from '@mui/material';
 import { useRef } from 'react';
 import useDateComparator from '@gdmn-nxt/components/helpers/hooks/useDateComparator';
 import KanbanList from '@gdmn-nxt/components/Kanban/kanban-list/kanban-list';
+import { GridColDef, GridRenderCellParams, GridTreeNodeWithRender, GridValueFormatterParams } from '@mui/x-data-grid-pro';
 
 interface Props {
   contactId: number
@@ -33,7 +33,7 @@ export default function ContactsDeals({
     }
   });
 
-  const columns: GridColumns<IDeal> = [
+  const columns: GridColDef<IDeal>[] = [
     {
       field: 'CREATIONDATE',
       headerName: 'Дата создания',
@@ -42,7 +42,7 @@ export default function ContactsDeals({
       align: 'center',
       width: 150,
       resizable: false,
-      valueFormatter: ({ value }) => value ? new Date(value).toLocaleDateString() || null : null,
+      valueFormatter: ({ value }: GridValueFormatterParams) => value ? new Date(value).toLocaleDateString() || null : null,
     },
     {
       field: 'USR$DEADLINE',
@@ -52,7 +52,7 @@ export default function ContactsDeals({
       align: 'center',
       width: 200,
       resizable: false,
-      renderCell: ({ value, row }) => {
+      renderCell: ({ value, row }: GridRenderCellParams<IDeal, any, any, GridTreeNodeWithRender>) => {
         if (Object.keys(row).length === 0) return <></>;
         if (row.USR$DONE) return <></>;
         if (row.DENIED) return <></>;

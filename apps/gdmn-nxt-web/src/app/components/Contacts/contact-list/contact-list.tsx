@@ -4,7 +4,7 @@ import styles from './contact-list.module.less';
 import { IconButton, List, ListItemButton, Stack, Tooltip, Typography } from '@mui/material';
 import { IContactPerson, IEmail, ILabel, IPaginationData, IPhone, ISortingData } from '@gsbelarus/util-api-types';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
-import { GridColumns, GridSortModel } from '@mui/x-data-grid-pro';
+import { GridColDef, GridRenderCellParams, GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -57,10 +57,10 @@ export function ContactList({
     onSortChange && onSortChange(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
 
-  const columns: GridColumns<IContactPerson> = [
+  const columns: GridColDef<IContactPerson>[] = [
     {
       field: 'NAME', headerName: 'Имя', flex: 1, minWidth: 200,
-      renderCell: ({ value, row }) => {
+      renderCell: ({ value, row }: GridRenderCellParams) => {
         const labels: ILabel[] = row.LABELS ?? [];
         return (
           <Stack
@@ -113,7 +113,7 @@ export function ContactList({
     },
     {
       field: 'PHONES', headerName: 'Телефон', width: 150, sortable: false,
-      renderCell: ({ value: phones }) => {
+      renderCell: ({ value: phones }: GridRenderCellParams) => {
         return (
           <Stack>
             {phones?.slice(0, 2)?.map((phone: IPhone) => <Typography key={phone.ID} variant="caption">{phone.USR$PHONENUMBER}</Typography>)}
@@ -122,7 +122,7 @@ export function ContactList({
     },
     {
       field: 'EMAILS', headerName: 'Email', width: 200, sortable: false,
-      renderCell: ({ value: emails }) => {
+      renderCell: ({ value: emails }: GridRenderCellParams) => {
         return (
           <Stack>
             {emails?.slice(0, 2)?.map((email: IEmail) => <Typography key={email.ID} variant="caption">{email.EMAIL}</Typography>)}
@@ -134,7 +134,7 @@ export function ContactList({
       type: 'actions',
       resizable: false,
       // width: 50,
-      getActions: ({ row }) => [
+      getActions: ({ row }: GridRowParams) => [
         Object.keys(row).length > 0
           ? <>
             {/* <PermissionsGate actionAllowed={userPermissions?.deals.PUT}> */}
@@ -163,7 +163,7 @@ export function ContactList({
         loading={isLoading}
         rowCount={contactsCount}
         hideHeaderSeparator
-        disableMultipleSelection
+        disableMultipleRowSelection
         hideFooterSelectedRowCount
         disableColumnResize
         disableColumnReorder
@@ -171,20 +171,15 @@ export function ContactList({
         disableColumnMenu
         pagination
         paginationMode="server"
-        onPageChange={(data) => {
+        onPaginationModelChange={(data: {page: number, pageSize: number}) => {
           paginationClick({
             ...paginationData,
-            pageNo: data
+            pageSize: data.pageSize,
+            pageNo: data.page
           });
         }}
-        onPageSizeChange={(data) => {
-          paginationClick({
-            ...paginationData,
-            pageSize: data
-          });
-        }}
-        pageSize={paginationData.pageSize}
-        rowsPerPageOptions={pageOptions}
+        paginationModel={{ page: paginationData.pageNo, pageSize: paginationData?.pageSize }}
+        pageSizeOptions={pageOptions}
         sortingMode="server"
         onSortModelChange={handleSortModelChange}
       />
