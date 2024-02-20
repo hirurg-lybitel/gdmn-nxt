@@ -1,3 +1,5 @@
+import { ContractType } from './crmDataTypes';
+
 export type FieldDataType = 'date' | 'timestamp' | 'curr' | 'boolean' | 'array';
 
 export interface IFieldSchema {
@@ -101,6 +103,10 @@ export interface IProfileSettings {
   REQUIRED_2FA?: boolean;
   SECRETKEY?: string;
   LAST_IP?: string;
+}
+
+export interface ISystemSettings extends IWithID{
+  CONTRACTTYPE: ContractType;
 }
 
 export enum ColorMode {

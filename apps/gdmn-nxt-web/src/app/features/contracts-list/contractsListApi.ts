@@ -1,34 +1,51 @@
-import { IContactsList, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '../../const';;
+import { ContractType, IContract, IRequestResult } from '@gsbelarus/util-api-types';
+import { FetchBaseQueryError, createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
+import { baseUrlApi } from '../../const';import { RootState } from '../../store';
+import { MaybePromise } from '@reduxjs/toolkit/dist/query/tsHelpers';
+import { QueryReturnValue } from '@reduxjs/toolkit/dist/query/baseQueryTypes';
+;
 
-interface IContactsLists{
-  contractsList: IContactsList[];
+interface IContracts{
+  contracts: IContract[];
 };
 
-type IContactsListRequestResult = IRequestResult<IContactsLists>;
+type IContractsRequestResult = IRequestResult<IContracts>;
 
 export const contractsListApi = createApi({
   reducerPath: 'contractsList',
   tagTypes: ['ConList'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getContractsList: builder.query<IContactsList[], number | void>({
-      query: (companyId) => `contracts-list/${companyId}`,
-      onQueryStarted(companyId) {
-        console.info('⏩ request', 'GET', `${baseUrlApi}contracts-list/${companyId}`);
+    getContractsList: builder.query<IContract[], { companyId: number }>({
+      queryFn: async ({ companyId }, api, extraOptions, baseQuery) => {
+        const state = api.getState() as RootState;
+        const systemSettings = state.settings.system;
+
+        const fetch = baseQuery({
+          url: `contracts-list/${companyId}/contractType/${systemSettings?.CONTRACTTYPE}`,
+          method: 'GET',
+        }) as MaybePromise<QueryReturnValue<IContractsRequestResult, FetchBaseQueryError>>;
+
+        const result = await fetch;
+        return { data: result.data?.queries?.contracts ?? [] };
       },
-      transformResponse: (response: IContactsListRequestResult) =>
-        response.queries?.contractsList.map(el => ({
-          ...el,
-          DOCUMENTDATE: new Date(el.DOCUMENTDATE),
-          DATEBEGIN: new Date(el.DATEBEGIN),
-          DATEEND: new Date(el.DATEEND),
-        })) || [],
-      providesTags: (result) =>
-        result
-          ? [...result.map(({ ID }) => ({ type: 'ConList' as const, ID }))]
-          : [{ type: 'ConList', id: 'LIST' }],
+      // query: ({ companyId, contractType = ContractType.GS }) => {
+      //   return {
+      //     url: `contracts-list/${companyId}/contractType/${contractType}`,
+      //     method: 'GET',
+      //   };
+      // },
+      // transformResponse: (response: IContractsRequestResult) =>
+      //   response.queries?.contracts.map(el => ({
+      //     ...el,
+      //     DOCUMENTDATE: new Date(el.DOCUMENTDATE),
+      //     DATEBEGIN: new Date(el.DATEBEGIN),
+      //     DATEEND: new Date(el.DATEEND),
+      //   })) || [],
+      // providesTags: (result) =>
+      //   result
+      //     ? [...result.map(({ ID }) => ({ type: 'ConList' as const, ID }))]
+      //     : [{ type: 'ConList', id: 'LIST' }],
     })
   })
 });

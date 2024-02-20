@@ -87,12 +87,12 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleAccountClick = () => {
-    navigate('preferences/account');
+    navigate('system/settings/account');
     handleClose();
   };
 
   const handleSettingsClick = () => {
-    navigate('preferences/settings');
+    navigate('system/settings/security');
     handleClose();
   };
 
@@ -109,7 +109,7 @@ export function Profile(props: ProfileProps) {
       <Link
         ref={ref}
         {...props}
-        to="preferences/account"
+        to="system/settings/account"
         target="_self"
       />)
   };
@@ -120,7 +120,7 @@ export function Profile(props: ProfileProps) {
       <Link
         ref={ref}
         {...props}
-        to="preferences/settings"
+        to="system/settings/security"
         target="_self"
       />)
   };

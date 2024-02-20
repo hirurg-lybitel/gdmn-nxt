@@ -1,4 +1,4 @@
-import { ColorMode } from '@gsbelarus/util-api-types';
+import { ColorMode, ISystemSettings } from '@gsbelarus/util-api-types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ICustomization {
@@ -11,7 +11,8 @@ const initCustomization: ICustomization = {
 
 interface ISettingsState {
   menuOpened: boolean;
-  customization: ICustomization
+  customization: ICustomization,
+  system?: ISystemSettings
 };
 
 const initialState: ISettingsState = {
@@ -31,12 +32,16 @@ export const settingsSlice = createSlice({
     setColorMode: (state, action: PayloadAction<ColorMode>) => {
       return ({ ...state, customization: { ...state.customization, colorMode: action.payload } });
     },
+    setSystemSettings: (state, action: PayloadAction<ISystemSettings>) => {
+      return ({ ...state, system: action.payload });
+    },
   }
 });
 
 export const {
   toggleMenu,
   setColorMode,
+  setSystemSettings
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

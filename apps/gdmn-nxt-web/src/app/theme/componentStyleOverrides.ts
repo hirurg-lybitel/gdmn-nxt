@@ -19,6 +19,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-hihglight-bg': 'yellow',
           '--border-radius': theme.mainContent.borderRadius,
           '--menu-width': `${theme.drawerWidth}px`,
+          '--tabs-height': '40px',
         },
         body: {
           fontFamily: theme.fontFamily,
@@ -179,6 +180,20 @@ export default function componentStyleOverrides(theme: Theme): Components {
       styleOverrides: {
         root: {
           // borderRadius: 'var(--border-radius)',
+        }
+      }
+    },
+    MuiTabs: {
+      styleOverrides: {
+        root: {
+          minHeight: 'var(--tabs-height)'
+        }
+      }
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          minHeight: 'var(--tabs-height)'
         }
       }
     }
