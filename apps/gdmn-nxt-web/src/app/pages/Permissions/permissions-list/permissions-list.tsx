@@ -1,6 +1,6 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
-import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridSortModel } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridRenderCellParams, GridSortModel, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
@@ -39,7 +39,7 @@ export function PermissionsList(props: PermissionsListProps) {
     editable: false,
     type: 'boolean',
     minWidth: 150,
-    renderCell: ({ row, id }: {row: any, id: any}) => {
+    renderCell: ({ row, id }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => {
       if (Object.keys(row).length === 0) return <></>;
       const actionID = id;
       const matrixNode = matrix?.filter(c => c.ACTION.ID === actionID).find(f => f.USERGROUP.ID === ug.ID);

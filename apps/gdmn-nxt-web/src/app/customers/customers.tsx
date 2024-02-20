@@ -514,8 +514,6 @@ export function Customers(props: CustomersProps) {
     filterHandlers.handleFilteringData(Object.assign(newObject));
   };
 
-  console.log(paginationData);
-
   return (
     <CustomizedCard
       style={{

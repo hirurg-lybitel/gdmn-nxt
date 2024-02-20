@@ -12,17 +12,17 @@ import { DateRange } from '@mui/x-date-pickers-pro';
 
 interface IInitState {
   cutomerId: number | null;
-  dates: DateRange<any>;
+  dates: DateRange<Date>;
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as DateRange<any>
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()]
 };
 
 export default function TopEarningPage() {
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<ITopEarningParams>();
-  const [dates, setDates] = useState<DateRange<any>>(initState.dates);
+  const [dates, setDates] = useState<DateRange<Date>>(initState.dates);
   const [customerCount, setCustomerCount] = useState(10);
   const [selectedDep, setSelectedDep] = useState<IContactWithID | null>(null);
   const [selectedConstract, setSelectedConstract] = useState<ICustomerContract | null>(null);

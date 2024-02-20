@@ -29,11 +29,11 @@ interface IInputParams {
 
 interface IInitState {
   cutomerId: number | null;
-  dates: DateRange<any>;
+  dates: DateRange<Date>;
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()] as Array<Date> as DateRange<any>
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()]
 };
 
 export const ReconciliationAct = (props: IReconciliationAct) => {
@@ -42,7 +42,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
   const inCustomerId = Number(id);
 
   const [customerId, setCustomerId] = useState(inCustomerId ? inCustomerId : initState.cutomerId);
-  const [dates, setDates] = useState <DateRange<any>>(initState.dates);
+  const [dates, setDates] = useState <DateRange<Date>>(initState.dates);
 
   const [generate, setGenerate] = useState(false);
   const [inputParams, setInputParams] = useState<IInputParams>();
@@ -54,8 +54,8 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
     setInputParams((prevState) => ({
       ...prevState,
       cutomerId: customerId,
-      dateBegin: (dates as Array<Date>)[0],
-      dateEnd: (dates as Array<Date>)[1],
+      dateBegin: (dates)[0],
+      dateEnd: (dates)[1],
     }));
 
     setGenerate(true);
