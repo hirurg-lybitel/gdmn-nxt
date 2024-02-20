@@ -16,9 +16,9 @@ export const genRandomPassword = (len = 10, pc = validPasswordChars) => Array(le
 
 export const randomFixedNumber = (lenght: number) => genRandomPassword(lenght, '0123456789');
 
-export const parseIntDef = (v: string, def = 0) => {
+export const parseIntDef = (v: string, defaultValue = 0) => {
   const parsed = parseInt(v);
-  return isNaN(parsed) ? def : parsed;
+  return isNaN(parsed) ? defaultValue : parsed;
 };
 
 export const detectLanguage = (s: string): Language => {

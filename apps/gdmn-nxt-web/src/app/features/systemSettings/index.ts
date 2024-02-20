@@ -1,8 +1,9 @@
 import { IRequestResult, ISystemSettings } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { baseUrlApi } from '../../const';
+import { setSystemSettings } from '../../store/settingsSlice';
 
-type ISystemSettingsRequestResult = IRequestResult<{ settings: ISystemSettings }>;
+type ISystemSettingsRequestResult = IRequestResult<{ settings: ISystemSettings[] }>;
 
 export const systemSettingsApi = createApi({
   reducerPath: 'systemSettings',
@@ -11,18 +12,26 @@ export const systemSettingsApi = createApi({
   endpoints: (builder) => ({
     getSystemSettings: builder.query<ISystemSettings, void>({
       query: () => 'system-settings',
-      transformResponse: (response: ISystemSettingsRequestResult) => response.queries?.settings || {},
+      transformResponse: (response: ISystemSettingsRequestResult) => response.queries?.settings[0] || {},
       providesTags: (result, error) =>
         result
           ? [{ type: 'settings', id: 'LIST' }]
           : error
             ? [{ type: 'settings', id: 'ERROR' }]
-            : [{ type: 'settings', id: 'LIST' }]
+            : [{ type: 'settings', id: 'LIST' }],
+      onQueryStarted: async (body, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setSystemSettings(data));
+        } catch (e) {
+          console.error(e);
+        }
+      }
     }),
     setSystemSettings: builder.mutation<ISystemSettings, Partial<ISystemSettings>>({
-      query(body) {
+      query({ ID = -1, ...body }) {
         return {
-          url: 'system-settings',
+          url: `system-settings/${ID > 0 ? ID : null}`,
           method: 'PUT',
           body: body
         };

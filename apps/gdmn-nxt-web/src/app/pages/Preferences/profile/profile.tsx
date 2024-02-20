@@ -1,53 +1,33 @@
 import styles from './profile.module.less';
-import NoPhoto from './img/NoPhoto.png';
-import { Box, Button, CardContent, CardHeader, Checkbox, Dialog, Divider, FormControlLabel, Icon, List, ListItem, ListItemIcon, Stack, Switch, Tab, TextField, Tooltip, Typography } from '@mui/material';
+import { CardContent, CardHeader, Divider, Tab, Tabs, Typography } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { UserState } from '../../../features/user/userSlice';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import InfoIcon from '@mui/icons-material/Info';
-import { Form, FormikProvider, getIn, useFormik } from 'formik';
-import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
-import * as yup from 'yup';
+import { useEffect, useState } from 'react';
+import { useGetProfileSettingsQuery } from '../../../features/profileSettings';
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import ShieldIcon from '@mui/icons-material/Shield';
+import PersonIcon from '@mui/icons-material/Person';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
-import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
-import { useGetCreate2faQuery, useDisableOtpMutation, useCreate2faMutation } from '../../../features/auth/authApi';
-import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
-import addNotification from 'react-push-notification';
-import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
-import { setError } from '../../../features/error-slice/error-slice';
-import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import { useLocation } from 'react-router-dom';
 import SystemTab from './tabs/system';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import AccountTab from './tabs/account';
+import SecurityTab from './tabs/security';
+import NotificationsTab from './tabs/notifications';
+import LinkTab from '@gdmn-nxt/components/link-tab/link-tab';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
 
-export const TABS = ['account', 'settings', 'notifications', 'system'] as const;
+export const TABS = ['account', 'security', 'notifications', 'system'] as const;
 type TabIndex = typeof TABS[number];
 
 export function Profile(props: ProfileProps) {
   const userProfile = useUserData();
   const userPermissions = usePermissions();
-  const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
-  const [setSettings, { isLoading: updateIsLoading }] = useSetProfileSettingsMutation();
-
-  const [disableOtp] = useDisableOtpMutation();
-
-  const [fetchDataCreate2fa, setFetchDataCreate2fa] = useState(false);
-  const { data: dataCreate2fa } = useGetCreate2faQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-    skip: !fetchDataCreate2fa
-  });
-
-  const [activate2fa] = useCreate2faMutation();
+  const { isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
 
   const location = useLocation();
   const tabDefault = location.pathname.split('/').at(-1) as TabIndex ?? 'account';
@@ -56,460 +36,94 @@ export function Profile(props: ProfileProps) {
     setTabIndex(tabDefault as TabIndex);
   }, [tabDefault]);
 
-  const [image, setImage] = useState<string>(NoPhoto);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const [user, setUser] = useState<IUserProfile>();
-  const { addSnackbar } = useSnackbar();
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [twoFAOpen, setTwoFAOpen] = useState<{
-    create?: boolean;
-    check?: boolean;
-  }>({
-    create: false,
-    check: false
-  });
-
-  const handleAvatarChange = (value = '') => {
-    setImage(value);
-
-    setSettings({
-      userId: userProfile?.id || -1,
-      body: {
-        ...settings,
-        AVATAR: value
-      }
-    });
-  };
-
-  const onDelete = () => {
-    handleConfirmCancelClick();
-    if (image.length === 1) return;
-    setSettings({
-      userId: userProfile?.id || -1,
-      body: {
-        ...settings,
-        AVATAR: null,
-      }
-    });
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
-  };
-
-  const handleConfirmCancelClick = () => {
-    setConfirmOpen(false);
-  };
 
   const handleTabsChange = (event: any, newindex: TabIndex) => {
-    console.log('handleTabsChange', newindex);
     setTabIndex(newindex);
   };
 
-  useEffect(() => {
-    settings?.AVATAR && setImage(settings?.AVATAR);
-  }, [settings?.AVATAR]);
-
-  const initValue: Partial<IProfileSettings> = {
-    SEND_EMAIL_NOTIFICATIONS: settings?.SEND_EMAIL_NOTIFICATIONS ?? false,
-    PUSH_NOTIFICATIONS_ENABLED: settings?.PUSH_NOTIFICATIONS_ENABLED ?? false,
-    ENABLED_2FA: settings?.ENABLED_2FA ?? false,
-    REQUIRED_2FA: settings?.REQUIRED_2FA ?? false,
-  };
-
-  const formik = useFormik<IProfileSettings>({
-    enableReinitialize: true,
-    validateOnBlur: false,
-    initialValues: {
-      ...settings,
-      ...initValue
-    },
-    validationSchema: yup.object().shape({
-      EMAIL: yup.string()
-        .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
-          ({ value }) => {
-            const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
-            if (invalidChar) {
-              return `Адрес не может содержать символ "${invalidChar}"`;
-            }
-            return 'Некорректный адрес';
-          })
-        .max(40, 'Слишком длинный email'),
-    }),
-    onSubmit: (value) => {
-      setSettings({
-        userId: userProfile?.id ?? -1,
-        body: {
-          ...settings,
-          ...value
-        }
-      });
-    }
-  });
-
-  const handleEnable2FAWithNewEmail = async (email: string): Promise<IAuthResult> => {
-    setFetchDataCreate2fa(true);
-    return new Promise((resolve) => resolve({} as IAuthResult));
-    // const response = await generateOtp({ userId: userProfile?.id ?? -1, email });
-
-    // if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
-
-    // setUser({
-    //   ...userProfile,
-    //   userName: userProfile?.userName ?? '',
-    //   email,
-    //   qr: response.data.qr,
-    //   base32Secret: response.data.base32
-    // });
-    // setTwoFAOpen({ create: true });
-
-    // return new Promise((resolve) => resolve({} as IAuthResult));
-  };
-
-  const onEnable2FAChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-
-    if (checked) {
-      if (!formik.values.EMAIL) {
-        setTwoFAOpen({ create: true });
-        return;
-      }
-      setFetchDataCreate2fa(true);
-    }
-    /** Если хотим отключить, то надо ввести текущий код */
-    if (!checked) {
-      setTwoFAOpen({ check: true });
-    }
-  };
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    if (dataCreate2fa?.result === 'SUCCESS') {
-      setUser({
-        ...userProfile,
-        userName: userProfile?.userName ?? '',
-        email: formik.values.EMAIL ?? '',
-        qr: dataCreate2fa.userProfile?.qr,
-        base32Secret: dataCreate2fa.userProfile?.base32Secret
-      });
-      setTwoFAOpen({ create: true });
-      setFetchDataCreate2fa(false);
-    }
-    if (dataCreate2fa?.result === 'ERROR') {
-      dispatch(setError({
-        errorMessage: dataCreate2fa.message ?? '',
-        errorStatus: 500
-      }));
-      setFetchDataCreate2fa(false);
-    }
-  }, [dataCreate2fa]);
-
-  const handleCreateOnSubmit = async (authCode: string, emailCode: string): Promise<IAuthResult> => {
-    const response = await activate2fa({ authCode, emailCode });
-
-    if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
-
-    if (response.data.result === 'SUCCESS') {
-      formik.setFieldValue('ENABLED_2FA', true);
-      formik.handleSubmit();
-      setTwoFAOpen({ create: false });
-    }
-
-    return response.data;
-  };
-
-  const handleCheckOnSubmit = async (code: string): Promise<IAuthResult> => {
-    const response = await disableOtp({ code });
-
-    if (!('data' in response)) return new Promise((resolve) => resolve({} as IAuthResult));
-
-    if (response.data.result === 'SUCCESS') {
-      formik.setFieldValue('ENABLED_2FA', false);
-      formik.handleSubmit();
-      setTwoFAOpen({ check: false });
-    }
-
-    return response.data;
-  };
-
-  const checkPushNotifications = () => {
-    const { message, OK } = (() => {
-      if (Notification.permission === 'granted') {
-        return {
-          message: 'Уведомления разрешены в вашем браузере',
-          OK: true
-        };
-      } else if (Notification.permission === 'denied') {
-        return {
-          message: 'Уведомления отключены в вашем браузере',
-          OK: false
-        };
-      } else {
-        /** Запрос разрешения на уведомления */
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            return {
-              message: 'Уведомления разрешены в вашем браузере',
-              OK: true
-            };
-          } else {
-            return {
-              message: 'Уведомления отключены в вашем браузере',
-              OK: false
-            };
-          }
-        });
-      }
-      return {
-        message: 'Не удалось провести проверку',
-        OK: false
-      };
-    })();
-
-    addSnackbar(message, {
-      variant: OK ? 'success' : 'error',
-    });
-
-    if (OK) {
-      addNotification({
-        title: 'Проверка настроек crm',
-        message: 'Push-уведомления успешно подключены',
-        native: true,
-        duration: PUSH_NOTIFICATIONS_DURATION
-      });
-    }
-  };
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      dangerous={true}
-      title={'Удаление фото'}
-      text="Вы уверены, что хотите продолжить?"
-      confirmClick={onDelete}
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen]);
-
-
-  const memoCheckCode = useMemo(() =>
-    <Dialog open={twoFAOpen.check ?? false} style={{ padding: 2 }}>
-      <Stack
-        direction="column"
-        justifyContent="center"
-        alignContent="center"
-        sx={{ maxWidth: '360px', margin: 3 }}
-      >
-        <CheckCode onCancel={() => setTwoFAOpen({ check: false })} onSubmit={handleCheckOnSubmit} />
-      </Stack>
-    </Dialog>, [twoFAOpen.check]);
-
-  const memoCreateCode = useMemo(() =>
-    <Dialog open={twoFAOpen.create ?? false} style={{ padding: 2 }}>
-      <Stack
-        direction="column"
-        justifyContent="center"
-        alignContent="center"
-        sx={{ maxWidth: '440px', margin: 3 }}
-      >
-        <CreateCode
-          user={user}
-          onCancel={() => setTwoFAOpen({ check: false })}
-          onSubmit={handleCreateOnSubmit}
-          onSignIn={handleEnable2FAWithNewEmail}
-        />
-      </Stack>
-    </Dialog>, [twoFAOpen.create, user]);
-
   return (
-    <>
-      {memoCheckCode}
-      {memoCreateCode}
-      {memoConfirmDialog}
-      <CustomizedCard className={styles.mainCard}>
-        <CardHeader title={<Typography variant="pageHeader">Настройки</Typography>} />
-        <Divider />
-        <CardContent className={styles['card-content']}>
-          <Stack
-            direction="row"
-            flex={1}
-            spacing={2}
-          >
-            <Box display="flex" flex={1}>
-              <FormikProvider value={formik}>
-                <Form
-                  id="profileForm"
-                  onSubmit={formik.handleSubmit}
-                  className={styles.tabPanelForm}
-                >
-                  <TabContext value={tabIndex}>
-                    <TabList onChange={handleTabsChange} className={styles.tabHeaderRoot}>
-                      <Tab label="Профиль" value="account" />
-                      <Tab
-                        label="Безопасность"
-                        value="settings"
-                        disabled={isLoading}
-                      />
-                      <Tab
-                        label="Уведомления"
-                        value="notifications"
-                        disabled={isLoading}
-                      />
-                      <Tab
-                        label="Система"
-                        value="system"
-                        disabled={isLoading}
-                        className={!userPermissions?.system.forGroup ? styles.tabHeaderHide : ''}
-                      />
-                    </TabList>
-                    <Divider style={{ margin: 0 }} />
-                    <TabPanel value="account" className={tabIndex === 'account' ? styles.tabPanel : ''}>
-                      <Stack direction="row" spacing={2}>
-                        <EditableAvatar
-                          size={120}
-                          value={image}
-                          onChange={handleAvatarChange}
-                          loading={isLoading || updateIsLoading}
-                        />
-                        <Stack spacing={2} flex={1}>
-                          <Stack direction="row" spacing={2}>
-                            <TextField
-                              label="Имя"
-                              value={userProfile?.userName || ''}
-                              disabled
-                              fullWidth
-                            />
-                            <TextField
-                              label="Должность"
-                              value={settings?.RANK || ''}
-                              disabled
-                              fullWidth
-                            />
-                          </Stack>
-                          <TextField
-                            disabled={isLoading}
-                            label="Email"
-                            name="EMAIL"
-                            onChange={formik.handleChange}
-                            value={formik.values.EMAIL ?? ''}
-                            helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
-                            error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
-                          />
-                        </Stack>
-                      </Stack>
-                    </TabPanel>
-                    <TabPanel value="settings" className={tabIndex === 'settings' ? styles.tabPanel : ''}>
-                      <Typography variant="subtitle1">Способы входа</Typography>
-                      <Stack direction="row" spacing={1}>
-                        <Icon fontSize="large" style={{ height: '100%', marginLeft: -7 }}>
-                          <SystemSecurityUpdateGoodIcon fontSize="large" color="action"/>
-                        </Icon>
-                        <Stack>
-                          <Typography >Двухфакторная аутентификация</Typography>
-                          <Typography variant="caption">Дополнительная защита аккаунта с паролем</Typography>
-                        </Stack>
-                        <Box flex={1} />
-                        <Tooltip
-                          style={{ cursor: 'help' }}
-                          arrow
-                          title={formik.values.REQUIRED_2FA ? 'Для вашего пользователя установлена обязательная двухфакторная аутентификация' : ''}
-                        >
-                          <FormControlLabel
-                            style={{
-                              width: '155px'
-                            }}
-                            label={<Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
-                            disabled={formik.values.REQUIRED_2FA}
-                            control={
-                              <Switch
-                                name="ENABLED_2FA"
-                                checked={formik.values.ENABLED_2FA}
-                                onChange={onEnable2FAChange}
-                              />}
-                          />
-                        </Tooltip>
-                      </Stack>
-                    </TabPanel>
-                    <TabPanel value="notifications" className={tabIndex === 'notifications' ? styles.tabPanel : ''}>
-                      <Stack direction="row" alignItems="center">
-                        <FormControlLabel
-                          disabled={isLoading}
-                          label="Получать уведомления по почте"
-                          control={<Checkbox
-                            name="SEND_EMAIL_NOTIFICATIONS"
-                            checked={formik.values.SEND_EMAIL_NOTIFICATIONS}
-                            onChange={formik.handleChange}
-                          />}
-                          style={{
-                            minWidth: '190px',
-                          }}
-                        />
-                        <Tooltip
-                          style={{ cursor: 'help' }}
-                          arrow
-                          title="Новые уведомления будут приходить списком каждый час с 9:00 до 17:00"
-                        >
-                          <InfoIcon color="action" />
-                        </Tooltip>
-                      </Stack>
-                      <Stack direction="row" alignItems="center">
-                        <FormControlLabel
-                          disabled={isLoading}
-                          label="Push-уведомления"
-                          control={<Checkbox
-                            name="PUSH_NOTIFICATIONS_ENABLED"
-                            checked={formik.values.PUSH_NOTIFICATIONS_ENABLED}
-                            onChange={formik.handleChange}
-                          />}
-                        />
-                        <Tooltip
-                          style={{ cursor: 'help' }}
-                          arrow
-                          title={<List disablePadding dense>
-                            <ListItem disableGutters alignItems="flex-start">
-                              <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
-                                1.
-                              </ListItemIcon >
-                              Убедитесь, что на вашем компьютере включены уведомления от текущего браузера
-                            </ListItem>
-                            <ListItem disableGutters alignItems="flex-start">
-                              <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
-                                2.
-                              </ListItemIcon >
-                              Проверьте, что в вашем браузере включены уведомления, нажав кнопку Проверить
-                            </ListItem>
-                          </List>}
-                        >
-                          <InfoIcon color="action" />
-                        </Tooltip>
-                        <Box flex={1} />
-                        <Button variant="contained" onClick={checkPushNotifications}>Проверить</Button>
-                      </Stack>
-                    </TabPanel>
-                    <PermissionsGate actionAllowed={userPermissions?.system.forGroup}>
-                      <TabPanel value="system" className={tabIndex === 'system' ? styles.tabPanel : ''}>
-                        <SystemTab />
-                      </TabPanel>
-                    </PermissionsGate>
-                  </TabContext>
-                  <Box flex={1}/>
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    disabled={(JSON.stringify(formik.values) === JSON.stringify(settings)) || isLoading}
-                    style={{ alignSelf: 'flex-start' }}
-                  >
-                    Сохранить
-                  </Button>
-                </Form>
-              </FormikProvider>
-            </Box>
-          </Stack>
-        </CardContent>
-      </CustomizedCard>
-    </>
+    <CustomizedCard className={styles.mainCard}>
+      <CardHeader title={<Typography variant="pageHeader">Настройки</Typography>} />
+      <Divider />
+      <CardContent className={styles['card-content']}>
+        <TabContext value={tabIndex}>
+          <TabList onChange={handleTabsChange} className={styles.tabHeaderRoot}>
+            <LinkTab
+              label="Профиль"
+              value="account"
+              href="/employee/system/settings/account"
+              icon={<PersonIcon />}
+              iconPosition="start"
+            />
+            <LinkTab
+              label="Безопасность"
+              value="security"
+              href="/employee/system/settings/security"
+              icon={<ShieldIcon />}
+              iconPosition="start"
+            />
+            <LinkTab
+              label="Уведомления"
+              value="notifications"
+              href="/employee/system/settings/notifications"
+              icon={<NotificationsIcon />}
+              iconPosition="start"
+            />
+            <LinkTab
+              label="Система"
+              value="system"
+              href="/employee/system/settings/system"
+              className={!userPermissions?.system?.forGroup ? styles.tabHeaderHide : ''}
+              icon={<SettingsSuggestIcon />}
+              iconPosition="start"
+            />
+            {/* <Tab
+              label="Профиль"
+              value="account"
+              icon={<PersonIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              label="Безопасность"
+              value="settings"
+              disabled={isLoading}
+              icon={<ShieldIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              label="Уведомления"
+              value="notifications"
+              disabled={isLoading}
+              icon={<NotificationsIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              label="Система"
+              value="system"
+              disabled={isLoading}
+              className={!userPermissions?.system?.forGroup ? styles.tabHeaderHide : ''}
+              icon={<SettingsSuggestIcon />}
+              iconPosition="start"
+            /> */}
+          </TabList>
+          <Divider style={{ margin: 0 }} />
+          <TabPanel value="account" className={tabIndex === 'account' ? styles.tabPanel : ''}>
+            <AccountTab />
+          </TabPanel>
+          <TabPanel value="security" className={tabIndex === 'security' ? styles.tabPanel : ''}>
+            <SecurityTab />
+          </TabPanel>
+          <TabPanel value="notifications" className={tabIndex === 'notifications' ? styles.tabPanel : ''}>
+            <NotificationsTab />
+          </TabPanel>
+          <PermissionsGate actionAllowed={userPermissions?.system?.PUT}>
+            <TabPanel value="system" className={tabIndex === 'system' ? styles.tabPanel : ''}>
+              <SystemTab />
+            </TabPanel>
+          </PermissionsGate>
+        </TabContext>
+      </CardContent>
+    </CustomizedCard>
   );
 }
 

@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { startTransaction } from '@gdmn-nxt/db-connection';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { ActionName, Permissions } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
@@ -49,7 +49,6 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 };
 
 export const setPermissonsCache = async () => {
-  console.log('setPermissonsCache');
   const { fetchAsObject, releaseTransaction } = await startTransaction('permissions');
   try {
     const query = `
