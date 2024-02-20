@@ -514,6 +514,8 @@ export function Customers(props: CustomersProps) {
     filterHandlers.handleFilteringData(Object.assign(newObject));
   };
 
+  console.log(paginationData);
+
   return (
     <CustomizedCard
       style={{
@@ -661,13 +663,14 @@ export function Customers(props: CustomersProps) {
                 loading={customerFetching}
                 pagination
                 paginationMode="server"
-                paginationModel={{ page: 0, pageSize: paginationData.pageSize }}
+                paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
                 rowCount={customersCount}
                 pageSizeOptions={[10, 20, 50]}
                 onPaginationModelChange={(data: any) => {
                   setPaginationData((prevState) => ({
                     ...prevState,
-                    pageNo: data
+                    pageNo: data.page,
+                    pageSize: data.pageSize
                   }));
                 }}
                 sortingMode="server"
