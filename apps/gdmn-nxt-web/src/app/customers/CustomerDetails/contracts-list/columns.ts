@@ -7,15 +7,15 @@ interface Columns<T extends GridValidRowModel> {
 
 export const columns: Columns<IContract> = {
   [ContractType.GS]: [
-    { field: 'NUMBER', headerName: 'Номер', width: 170 },
+    { field: 'NUMBER', headerName: 'Номер', minWidth: 185, flex: 1 },
     { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100, type: 'date',
-      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      valueFormatter: params => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
     { field: 'DATEBEGIN', headerName: 'Дата начала', width: 150, type: 'date',
-      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      valueFormatter: params => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
     { field: 'DATEEND', headerName: 'Дата окончания', width: 150, type: 'date',
-      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      valueFormatter: params => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
     { field: 'SUMNCU', headerName: 'Сумма', width: 100, align: 'right',
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },

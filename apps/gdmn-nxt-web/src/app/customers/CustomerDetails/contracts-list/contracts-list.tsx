@@ -7,6 +7,8 @@ import { makeStyles } from '@mui/styles';
 import { ColorMode, ContractType } from '@gsbelarus/util-api-types';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { columns } from './columns';
+import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useSystemSettings from '@gdmn-nxt/components/helpers/hooks/useSystemSettings';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dataGrid: {
@@ -23,9 +25,11 @@ export interface ContractsListProps {
 export function ContractsList(props: ContractsListProps) {
   const { companyId = -1 } = props;
   const classes = useStyles();
-  const { data: contracts, refetch, isFetching: contractsIsFetching } = useGetContractsListQuery({ companyId, contractType: undefined });
+  const { data: contracts, refetch, isFetching: contractsIsFetching } = useGetContractsListQuery({ companyId });
 
-  const cols = columns[ContractType.GS];
+  const systemSettings = useSystemSettings();
+
+  const cols = columns[systemSettings?.CONTRACTTYPE ?? ContractType.GS];
 
   return (
     <Stack

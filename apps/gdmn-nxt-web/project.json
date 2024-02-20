@@ -70,7 +70,8 @@
           "host": "0.0.0.0"
         },
         "development": {
-          "buildTarget": "gdmn-nxt-web:build:development"
+          "buildTarget": "gdmn-nxt-web:build:development",
+          "hmr": true
         }
       },
       "defaultConfiguration": "development"

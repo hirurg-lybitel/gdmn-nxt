@@ -42,14 +42,16 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
             doctype.USR$NAME as doctypename,
             '' as DEPT_NAME,
             0 as JOB_NUMBER,
-            0 SUMNCU,
-            0 SUMCURNCU
-          FROM usr$bnf_contract h
-            LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
-            LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
-            LEFT JOIN gd_companycode cc ON con.id = cc.companykey
-            LEFT JOIN gd_company comp ON con.id = comp.contactkey
-            LEFT JOIN USR$MGAZ_TYPECONTRACT  doctype on doctype.ID = h.USR$TYPECONTRACTKEY
+            (select SUM(l.USR$SUMNCU) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMNCU,
+            (select SUM(l.USR$SUMCURR) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMCURNCU
+            FROM usr$bnf_contract h
+              LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
+              LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
+              LEFT JOIN gd_companycode cc ON con.id = cc.companykey
+              LEFT JOIN gd_company comp ON con.id = comp.contactkey
+              LEFT JOIN USR$MGAZ_TYPECONTRACT  doctype on doctype.ID = h.USR$TYPECONTRACTKEY
+              LEFT JOIN gd_curr curr on curr.ID = h.USR$CURRKEY
+              LEFT JOIN USR$GS_CONTRACTKIND kind on kind.ID = h.USR$CONTRACTKINDKEY
             ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}
           ORDER BY
             doc.DOCUMENTDATE desc
@@ -70,9 +72,11 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
             c.USR$DATEEND DATEEND
           FROM
             USR$BG_CONTRACT c
-            join gd_document doc on c.DOCUMENTKEY = doc.id
-            join gd_contact dep on dep.ID = c.USR$CONTACTKEY
-            join usr$bg_contractjob job on job.ID = c.USR$CONTRACTJOBKEY
+            left join gd_document doc on c.DOCUMENTKEY = doc.id
+            LEFT JOIN gd_contact con ON con.id = c.USR$CUSTOMER
+            left join gd_contact dep on dep.ID = c.USR$CONTACTKEY
+            left join usr$bg_contractjob job on job.ID = c.USR$CONTRACTJOBKEY
+            left join gd_curr curr on curr.ID = c.USR$CURRCODE
           ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}
           ORDER BY
             doc.DOCUMENTDATE DESC`;
