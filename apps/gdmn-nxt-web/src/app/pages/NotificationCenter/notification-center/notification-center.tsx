@@ -48,7 +48,7 @@ export function NotificationCenter(props: NotificationCenterProps) {
 
   const [tabIndex, setTabIndex] = useState(0);
 
-  if (!userPermissions?.notifications.forGroup) {
+  if (!userPermissions?.notifications?.forGroup) {
     return <Navigate to="/" />;
   };
 

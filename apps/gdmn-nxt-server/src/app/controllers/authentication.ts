@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import passport from 'passport';
-import { profileSettingsController } from './profileSettings';
+import { profileSettingsController } from './settings/profileSettings';
 import { IConfirmation, authResult } from '@gsbelarus/util-api-types';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/messages';
 import { config } from '@gdmn-nxt/config';

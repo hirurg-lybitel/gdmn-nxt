@@ -105,8 +105,8 @@ export interface IProfileSettings {
   LAST_IP?: string;
 }
 
-export interface ISystemSettings {
-  contractType: ContractType;
+export interface ISystemSettings extends IWithID{
+  CONTRACTTYPE: ContractType;
 }
 
 export enum ColorMode {

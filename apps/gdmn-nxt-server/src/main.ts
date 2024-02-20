@@ -23,7 +23,7 @@ import workTypes from './app/controllers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
 import { permissionsRouter } from './app/routes/permissionsRouter';
 import businessProcessRouter from './app/routes/businessProcess';
-import profileSettingsRouter from './app/routes/profileSettings';
+import profileSettingsRouter from './app/routes/settings/profileSettings';
 import faqRouter from './app/routes/faqRouter';
 import updatesRouter from './app/routes/updatesRouter';
 import cookieParser from 'cookie-parser';
@@ -43,6 +43,7 @@ import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cached requests';
 import fs from 'fs';
 import https, { ServerOptions } from 'https';
+import systemSettingsRouter from './app/routes/settings/systemSettings';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -324,10 +325,9 @@ router.put('/account/:ID', upsertAccount);
 
 router.use(reportsRouter);
 
-/** Profile settings */
+/** Settings */
 router.use(profileSettingsRouter);
-
-// router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
+router.use(systemSettingsRouter);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;
