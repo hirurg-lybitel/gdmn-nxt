@@ -109,7 +109,7 @@ export function CustomerContacts({
     refetch: personsRefetch
   } = useGetContactPersonsQuery({
     pagination: paginationData,
-    filter: { customerId }
+    filter: { customerId: isNaN(customerId) ? -1 : customerId }
   });
 
   const memoEditContact = useMemo(() =>
@@ -135,18 +135,18 @@ export function CustomerContacts({
       <Stack direction="row" spacing={1}>
         <ContactsChoose
           value={persons?.records ?? []}
-          disabled={personsIsFetching}
+          disabled={personsIsFetching || isNaN(customerId)}
           onSubmit={handleContactsChooseSubmit}
         />
         <Box display="inline-flex" alignSelf="center">
           <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
             <IconButton
               size="small"
-              disabled={personsIsFetching}
+              disabled={personsIsFetching || isNaN(customerId)}
               onClick={handlePersonAdd}
             >
               <Tooltip arrow title="Создать контакт">
-                <AddCircleIcon color={personsIsFetching ? 'disabled' : 'primary'} />
+                <AddCircleIcon color={personsIsFetching || isNaN(customerId) ? 'disabled' : 'primary'} />
               </Tooltip>
             </IconButton>
           </PermissionsGate>

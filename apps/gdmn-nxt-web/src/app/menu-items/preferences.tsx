@@ -7,7 +7,7 @@ import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 
 const preferences: IMenuItem = {
-  id: 'preferences',
+  id: 'system',
   title: 'Система',
   type: 'group',
   children: [
@@ -15,14 +15,14 @@ const preferences: IMenuItem = {
       id: 'settings',
       title: 'Настройки',
       type: 'item',
-      url: 'preferences/account',
+      url: 'system/settings/account',
       icon: <Settings color="secondary" />
     },
     {
       id: 'permissions',
       title: 'Настройка прав',
       type: 'collapse',
-      url: 'preferences/permissions',
+      url: 'system/permissions',
       actionCheck: {
         name: 'permissions',
         method: 'forGroup'
@@ -33,7 +33,7 @@ const preferences: IMenuItem = {
           id: 'permissions-view',
           title: 'Действия',
           type: 'item',
-          url: 'preferences/permissions/list',
+          url: 'system/permissions/list',
           actionCheck: {
             name: 'permissions',
             method: 'forGroup'
@@ -43,7 +43,7 @@ const preferences: IMenuItem = {
           id: 'permissions-usergroups',
           title: 'Группы пользователей',
           type: 'item',
-          url: 'preferences/permissions/usergroups',
+          url: 'system/permissions/usergroups',
           actionCheck: {
             name: 'permissions',
             method: 'forGroup'
@@ -59,21 +59,21 @@ const preferences: IMenuItem = {
         name: 'notifications',
         method: 'forGroup'
       },
-      url: 'preferences/notifications',
+      url: 'system/notifications',
       icon: <EditNotificationsIcon color="secondary" />
     },
     {
       id: 'faq',
       title: 'База знаний',
       type: 'item',
-      url: 'preferences/faq',
+      url: 'system/faq',
       icon: <HelpIcon color="secondary" />
     },
     {
       id: 'updates-history',
       title: 'История обновлений',
       type: 'item',
-      url: 'preferences/updates-history',
+      url: 'system/updates-history',
       icon: <TipsAndUpdatesIcon color="secondary" />
     },
   ]

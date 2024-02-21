@@ -1,31 +1,24 @@
-import { Box, Button, Stack } from '@mui/material';
-import { GridColDef } from '@mui/x-data-grid-pro';
+import { Stack } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetBankStatementQuery } from '../../../features/bank-statement/bankStatementApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
+import { columns } from './columns';
+import { ContractType } from '@gsbelarus/util-api-types';
+import useSystemSettings from '@gdmn-nxt/components/helpers/hooks/useSystemSettings';
 
 export interface BankStatementProps {
   companyId?: number;
 };
 
-export function BankStatement(props: BankStatementProps) {
-  const { companyId } = props;
-  const { data: bankStatement, refetch, isFetching: bankStatementIsFetching } = useGetBankStatementQuery(companyId);
+export function BankStatement({
+  companyId
+}: BankStatementProps) {
+  const { data: bankStatement = [], refetch, isFetching: bankStatementIsFetching } = useGetBankStatementQuery(companyId);
 
-  const columns: GridColDef[] = [
-    { field: 'NUMBER', headerName: 'Номер', width: 100 },
-    { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100, type: 'date',
-      renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
-    },
-    { field: 'DEPT_NAME', headerName: 'Отдел', width: 100 },
-    { field: 'JOB_NUMBER', headerName: 'Заказ', width: 100 },
-    { field: 'CSUMNCU', headerName: 'Сумма', minWidth: 100, align: 'right',
-      renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-    { field: 'COMMENT', headerName: 'Комментарии', flex: 1, minWidth: 300,
-      renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
-    }
-  ];
+  const systemSettings = useSystemSettings();
+
+  const cols = columns[systemSettings?.CONTRACTTYPE ?? ContractType.GS];
 
   return (
     <Stack
@@ -48,8 +41,8 @@ export function BankStatement(props: BankStatementProps) {
         }}
       >
         <StyledGrid
-          rows={bankStatement || []}
-          columns={columns}
+          rows={bankStatement}
+          columns={cols}
           loading={bankStatementIsFetching}
           loadingMode="circular"
           pagination

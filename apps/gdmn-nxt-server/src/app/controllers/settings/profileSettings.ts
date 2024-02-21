@@ -1,11 +1,11 @@
 import { IProfileSettings, IRequestResult } from '@gsbelarus/util-api-types';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { Request, RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
+import { resultError } from '../../responseMessages';
 import { acquireReadTransaction, getReadTransaction, startTransaction, releaseReadTransaction as releaseRT } from '@gdmn-nxt/db-connection';
 import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
-import { closeUserSession } from '../utils/sessions-helper';
-import { setPermissonsCache } from '../middlewares/permissions';
+import { closeUserSession } from '../../utils/sessions-helper';
+import { setPermissonsCache } from '../../middlewares/permissions';
 
 const getSettings = async (userId: number, req: Request) => {
   const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(req.sessionID);

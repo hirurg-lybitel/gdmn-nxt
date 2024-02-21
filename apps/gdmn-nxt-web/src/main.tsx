@@ -129,15 +129,17 @@ const Main = () => {
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />
                           </Route>
-                          <Route path="preferences">
-                            <Route path="" element={<Navigate to="account" />} />
-                            {TABS.map((tab) => (
-                              <Route
-                                key={tab}
-                                path={tab}
-                                element={<Profile />}
-                              />
-                            ))}
+                          <Route path="system">
+                            <Route path="settings">
+                              <Route path="" element={<Navigate to="account" />} />
+                              {TABS.map((tab) => (
+                                <Route
+                                  key={tab}
+                                  path={tab}
+                                  element={<Profile />}
+                                />
+                              ))}
+                            </Route>
                             <Route path="permissions">
                               <Route path="" element={<Navigate to="list" />} />
                               <Route path="list" element={<PermissionsList />} />
@@ -148,7 +150,7 @@ const Main = () => {
                             <Route path="updates-history" element={<UpdatesHistory />} />
                           </Route>
                         </Route>
-                        <Route path="/system" element={<BaseForm />}>
+                        <Route path="/platform" element={<BaseForm />}>
                           <Route path="" element={<Navigate to="er-model-domains" />} />
                           <Route path="er-model-domains" element={<ErModelDomains />} />
                           <Route path="er-model" element={<ErModel />} />

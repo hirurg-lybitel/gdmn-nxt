@@ -210,7 +210,7 @@ export interface IContactPerson extends IContactWithID {
   isFavorite?: boolean;
 };
 
-export interface IContactsList extends IWithID {
+export interface IContract extends IWithID {
   NUMBER: string;
   DOCUMENTDATE: Date;
   DEPT_NAME: string;
@@ -222,6 +222,11 @@ export interface IContactsList extends IWithID {
   DATEBEGIN: Date;
   DATEEND: Date;
 };
+
+export enum ContractType {
+  GS = 1,
+  BG = 2,
+}
 
 export interface IWorkType extends IWithID {
   USR$NAME: string;
@@ -311,6 +316,7 @@ export type ActionName =
   'updates' |
   'stages' |
   'contacts' |
+  'system' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 

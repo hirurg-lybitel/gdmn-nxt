@@ -128,7 +128,7 @@ export function CustomerEdit({
       width="calc(100% - var(--menu-width))"
     >
       <DialogTitle>
-        Редактирование клиента
+        {customer ? 'Редактирование клиента' : 'Добавление клиента'}
       </DialogTitle>
       <DialogContent dividers style={{ display: 'grid' }}>
         <FormikProvider value={formik}>
