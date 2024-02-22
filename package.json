@@ -27,7 +27,6 @@
     "@mui/lab": "^5.0.0-alpha.160",
     "@mui/material": "^5.15.4",
     "@mui/styles": "^5.15.4",
-    "@mui/types": "^7.2.13",
     "@mui/x-data-grid-pro": "^6.18.7",
     "@mui/x-date-pickers-pro": "^6.19.0",
     "@mui/x-tree-view": "^6.17.0",

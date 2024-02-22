@@ -8,7 +8,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { DealsSummarize } from './deals-summarize';
 import { TasksSummarize } from './tasks-summarize';
 import { Fragment, KeyboardEvent, useRef, useState } from 'react';
-import { DateRange, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
+import { DateRange, DateRangeCalendar, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from 'dayjs';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -66,9 +66,11 @@ export function Dashboard(props: DashboardProps) {
   };
 
   const dateRangePickerChange = (newValue: DateRange<dayjs.Dayjs>) => {
-    if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
+    // if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
     setPeriod([dayjs(newValue[0]), dayjs(newValue[1])]);
   };
+
+  console.log([period[0]?.toDate(), period[1]?.toDate()]);
 
   return (
     <Grid
@@ -134,11 +136,9 @@ export function Dashboard(props: DashboardProps) {
                       onKeyDown={closeDateRangeCardByKey}
                     >
                       <CustomizedCard borders>
-                        <StaticDateRangePicker
-                          displayStaticWrapperAs="desktop"
-                          value={undefined}
+                        <DateRangeCalendar
+                          value={[period[0]?.toDate(), period[1]?.toDate()] as any}
                           onChange={dateRangePickerChange}
-                          slotProps={{ toolbar: { } }}
                         />
                       </CustomizedCard>
                     </Popper>
