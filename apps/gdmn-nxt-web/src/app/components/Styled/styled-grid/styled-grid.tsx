@@ -104,30 +104,34 @@ export default function StyledGrid(props: IStyledGridProps) {
   }, []);
 
   return (
-    <DataGridPro
-      localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-      onStateChange={() => disableLicenseError()}
-      getRowId={row => row.ID}
-      components={{
-        LoadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,
-        NoRowsOverlay: CustomNoRowsOverlay,
-        NoResultsOverlay: CustomNoRowsOverlay,
-      }}
-      columnHeaderHeight={hideColumnHeaders ? 0 : 50}
-      getRowClassName={(params) => autoHeightForFields?.some((field) => !!params.row[field]) ? 'cell-with-auto-height' : ''}
-      getRowHeight={({ model }) => {
-        const isAutoHeight = autoHeightForFields?.some((field) => !!model[field]);
-        if (isAutoHeight) {
-          return 'auto';
-        }
-        return props.rowHeight ?? defaultRowHeight;
-      }}
-      {...props}
-      sx={{
-        ...defaultTheme(props),
-        ...props.sx
-      }}
-    />
+    <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}>
+        <DataGridPro
+          localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+          onStateChange={() => disableLicenseError()}
+          getRowId={row => row.ID}
+          components={{
+            LoadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,
+            NoRowsOverlay: CustomNoRowsOverlay,
+            NoResultsOverlay: CustomNoRowsOverlay,
+          }}
+          columnHeaderHeight={hideColumnHeaders ? 0 : 50}
+          getRowClassName={(params) => autoHeightForFields?.some((field) => !!params.row[field]) ? 'cell-with-auto-height' : ''}
+          getRowHeight={({ model }) => {
+            const isAutoHeight = autoHeightForFields?.some((field) => !!model[field]);
+            if (isAutoHeight) {
+              return 'auto';
+            }
+            return props.rowHeight ?? defaultRowHeight;
+          }}
+          {...props}
+          sx={{
+            ...defaultTheme(props),
+            ...props.sx
+          }}
+        />
+      </div>
+    </div>
   );
 };
 

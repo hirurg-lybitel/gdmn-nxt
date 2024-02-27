@@ -652,44 +652,42 @@ export function Customers(props: CustomersProps) {
             display="flex"
             className={classes.row}
           >
-            <Box flex={1}>
-              <StyledGrid
-                autoHeightForFields={['LABELS']}
-                onRowDoubleClick={lineDoubleClick}
-                columns={columns}
-                rows={customers ?? []}
-                loading={customerFetching}
-                pagination
-                paginationMode="server"
-                paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-                rowCount={customersCount}
-                pageSizeOptions={[10, 20, 50]}
-                onPaginationModelChange={(data: any) => {
-                  setPaginationData((prevState) => ({
-                    ...prevState,
-                    pageNo: data.page,
-                    pageSize: data.pageSize
-                  }));
-                }}
-                sortingMode="server"
-                onSortModelChange={handleSortModelChange}
-                disableMultipleRowSelection
-                hideFooterSelectedRowCount
-                hideHeaderSeparator
-                disableColumnResize
-                disableColumnReorder
-                disableColumnFilter
-                disableColumnMenu
-                columnVisibilityModel={{
-                  CONTRACTS: false,
-                  DEPARTMENTS: false,
-                  WORKTYPES: false
-                }}
-                onRowSelectionModelChange={(ids: any) =>
-                  setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
-                }
-              />
-            </Box>
+            <StyledGrid
+              autoHeightForFields={['LABELS']}
+              onRowDoubleClick={lineDoubleClick}
+              columns={columns}
+              rows={customers ?? []}
+              loading={customerFetching}
+              pagination
+              paginationMode="server"
+              paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
+              rowCount={customersCount}
+              pageSizeOptions={[10, 20, 50]}
+              onPaginationModelChange={(data: any) => {
+                setPaginationData((prevState) => ({
+                  ...prevState,
+                  pageNo: data.page,
+                  pageSize: data.pageSize
+                }));
+              }}
+              sortingMode="server"
+              onSortModelChange={handleSortModelChange}
+              disableMultipleRowSelection
+              hideFooterSelectedRowCount
+              hideHeaderSeparator
+              disableColumnResize
+              disableColumnReorder
+              disableColumnFilter
+              disableColumnMenu
+              columnVisibilityModel={{
+                CONTRACTS: false,
+                DEPARTMENTS: false,
+                WORKTYPES: false
+              }}
+              onRowSelectionModelChange={(ids: any) =>
+                setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
+              }
+            />
             <Box>{memoFilter}</Box>
             {memoUpsertCustomer}
           </Stack>
