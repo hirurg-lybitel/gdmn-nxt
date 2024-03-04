@@ -1,5 +1,6 @@
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
-import { ContractType, FindHandler, IContract } from '@gsbelarus/util-api-types';
+import { ContractType, FindHandler, FindOneHandler, IContract, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
@@ -43,15 +44,17 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
             '' as DEPT_NAME,
             0 as JOB_NUMBER,
             (select SUM(l.USR$SUMNCU) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMNCU,
-            (select SUM(l.USR$SUMCURR) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMCURNCU
-            FROM usr$bnf_contract h
-              LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
-              LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
-              LEFT JOIN gd_companycode cc ON con.id = cc.companykey
-              LEFT JOIN gd_company comp ON con.id = comp.contactkey
-              LEFT JOIN USR$MGAZ_TYPECONTRACT  doctype on doctype.ID = h.USR$TYPECONTRACTKEY
-              LEFT JOIN gd_curr curr on curr.ID = h.USR$CURRKEY
-              LEFT JOIN USR$GS_CONTRACTKIND kind on kind.ID = h.USR$CONTRACTKINDKEY
+            (select SUM(l.USR$SUMCURR) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMCURNCU,
+            con.NAME as CUSTOMER_NAME,
+            con.ID as CUSTOMER_ID
+          FROM usr$bnf_contract h
+            LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
+            LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
+            LEFT JOIN gd_companycode cc ON con.id = cc.companykey
+            LEFT JOIN gd_company comp ON con.id = comp.contactkey
+            LEFT JOIN USR$MGAZ_TYPECONTRACT  doctype on doctype.ID = h.USR$TYPECONTRACTKEY
+            LEFT JOIN gd_curr curr on curr.ID = h.USR$CURRKEY
+            LEFT JOIN USR$GS_CONTRACTKIND kind on kind.ID = h.USR$CONTRACTKINDKEY
             ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}
           ORDER BY
             doc.DOCUMENTDATE desc
@@ -69,7 +72,9 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
             c.USR$SUMM SUMNCU,
             c.USR$CURR SUMCURNCU,
             c.USR$DATEBEGIN DATEBEGIN,
-            c.USR$DATEEND DATEEND
+            c.USR$DATEEND DATEEND,
+            con.NAME as CUSTOMER_NAME,
+            con.ID as CUSTOMER_ID
           FROM
             USR$BG_CONTRACT c
             left join gd_document doc on c.DOCUMENTKEY = doc.id
@@ -85,12 +90,55 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
 
     const contracts = await fetchAsObject<IContract>(sql, preparedClause);
 
+    await forEachAsync(contracts, async (c) => {
+      c.customer = {
+        ID: c['CUSTOMER_ID'],
+        NAME: c['CUSTOMER_NAME']
+      };
+      delete c['CUSTOMER_NAME'];
+      delete c['CUSTOMER_ID'];
+    })
+
     return contracts;
   } finally {
     releaseReadTransaction();
   }
 };
 
+const findOne: FindOneHandler = async (
+  sessionID,
+  clause = {}
+) => {
+  return new Promise((resolve) => resolve({}));
+};
+
+const update: UpdateHandler = async (
+  sessionID,
+  id,
+  metadata
+) => {
+  return new Promise((resolve) => resolve({}));
+};
+
+const save: SaveHandler = async (
+  sessionID,
+  metadata
+) => {
+  return new Promise((resolve) => resolve({}));
+};
+
+const remove: RemoveHandler = async (
+  sessionID,
+  id
+) => {
+  return new Promise((resolve) => resolve({}));
+};
+
+
 export const contractsRepository = {
-  find
+  find,
+  findOne,
+  update,
+  save,
+  remove
 };

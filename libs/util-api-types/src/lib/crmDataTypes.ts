@@ -221,6 +221,7 @@ export interface IContract extends IWithID {
   ISBUDGET: boolean;
   DATEBEGIN: Date;
   DATEEND: Date;
+  customer: ICustomer;
 };
 
 export enum ContractType {
