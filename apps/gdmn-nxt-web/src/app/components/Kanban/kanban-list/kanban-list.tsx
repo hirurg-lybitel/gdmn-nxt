@@ -17,10 +17,33 @@ export interface KanbanListProps {
   loading?: boolean;
   gridColumns?: GridColumns;
   disableAddCard?: boolean;
+  withEdit?: boolean
 }
 
 export function KanbanList(props: KanbanListProps) {
-  const { columns = [], gridColumns, disableAddCard = false, loading = false } = props;
+  const { columns = [], gridColumns, disableAddCard = false, loading = false, withEdit = false } = props;
+
+  const editObj: GridColumns = [{
+    field: 'actions',
+    type: 'actions',
+    resizable: false,
+    getActions: (params: GridRowParams) => [
+      Object.keys(params.row).length > 0
+        ? <>
+          <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
+            <IconButton
+              key={1}
+              color="primary"
+              size="small"
+              onClick={handleCardEdit(params.row)}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </PermissionsGate>
+        </>
+        : <></>
+    ]
+  }];
 
   const defaultGridColumns: GridColumns = [
     {
@@ -74,7 +97,7 @@ export function KanbanList(props: KanbanListProps) {
   const [editCard, setEditCard] = useState(false);
   const [card, setCard] = useState<IKanbanCard>();
   const [column, setColumn] = useState<IKanbanColumn>();
-  const [cols, setCols] = useState<GridColumns>(gridColumns || defaultGridColumns);
+  const [cols, setCols] = useState<GridColumns>(gridColumns ? (withEdit ? [...gridColumns, ...editObj] : gridColumns) : defaultGridColumns);
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();

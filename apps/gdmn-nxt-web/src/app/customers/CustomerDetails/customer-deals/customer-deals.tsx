@@ -121,6 +121,7 @@ export function CustomerDeals(props: CustomerDealsProps) {
       display="flex"
     >
       <KanbanList
+        withEdit={true}
         columns={columns}
         gridColumns={newGridColumns}
         disableAddCard
