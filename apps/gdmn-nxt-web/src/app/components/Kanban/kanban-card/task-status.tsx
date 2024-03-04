@@ -16,9 +16,11 @@ import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 interface ExpandedListProps {
   open: boolean;
   tasks: IKanbanTask[];
+  editTaskForm: boolean
+  setEditTaskForm: (value: React.SetStateAction<boolean>) => void
 }
 
-const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
+const ExpandedList = ({ open, tasks, editTaskForm, setEditTaskForm }: ExpandedListProps) => {
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
 
@@ -28,7 +30,6 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
   }, []);
 
   const currentTask = useRef<IKanbanTask | undefined>();
-  const [editTaskForm, setEditTaskForm] = useState(false);
 
   const { getDayDiff } = useDateComparator();
   const { daysColor } = useDeadlineColor();
@@ -171,11 +172,12 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
 interface TaskStatusProps {
   tasks: IKanbanTask[];
+  editTaskForm: boolean
+  setEditTaskForm: (value: React.SetStateAction<boolean>) => void
 }
 
-export function TaskStatus({ tasks }: TaskStatusProps) {
+export function TaskStatus({ tasks, editTaskForm, setEditTaskForm }: TaskStatusProps) {
   const [expandedList, setExpandedList] = useState(false);
-
   const handleClick = useCallback(() => setExpandedList(prev => !prev), []);
 
   if (!tasks || !tasks?.length) return <></>;
@@ -238,7 +240,12 @@ export function TaskStatus({ tasks }: TaskStatusProps) {
           </IconButton>
         </Tooltip>
       </Stack>
-      <ExpandedList open={expandedList} tasks={tasks} />
+      <ExpandedList
+        open={expandedList}
+        tasks={tasks}
+        editTaskForm={editTaskForm}
+        setEditTaskForm={setEditTaskForm}
+      />
     </Stack>
   );
 };
