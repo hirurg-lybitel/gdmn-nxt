@@ -221,7 +221,15 @@ export interface IContract extends IWithID {
   ISBUDGET: boolean;
   DATEBEGIN: Date;
   DATEEND: Date;
+  customer: ICustomer;
 };
+
+export interface IContractDetail extends IWithID {
+  CONTRACTID: number;
+  QUANTITY: number;
+  PRICE: number;
+  AMOUNT: number;
+}
 
 export enum ContractType {
   GS = 1,

@@ -28,3 +28,10 @@ export type UpdateHandler<T = object> = (sessionID: string, id: number, metadata
  * @param metadata the entity
  */
 export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID'>) => Promise<T>;
+
+/**
+ * Delete entity.
+ * @param sessionID Session identifier
+ * @param id uniq id of entity
+ */
+export type RemoveHandler<T = object> = (sessionID: string, id: number) => Promise<T>;
