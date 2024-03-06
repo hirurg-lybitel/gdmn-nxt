@@ -272,12 +272,12 @@ export function KanbanCard(props: KanbanCardProps) {
             boxShadow: '0 4px 18px rgba(0,0,0,.3)'
           }
         }}
-        onDoubleClick={doubleClick}
       >
         <Stack
           direction="column"
           spacing={0.5}
           color={colorModeIsLight ? '#636b74' : '#bababa'}
+          onDoubleClick={doubleClick}
         >
           <Stack
             direction="row"
@@ -342,29 +342,30 @@ export function KanbanCard(props: KanbanCardProps) {
               </Typography>
             }
           </Stack>
-          <Stack
-            direction="row"
-            spacing={0.5}
-            position="relative"
-            minHeight={20}
-          >
-            <TaskStatus tasks={card.TASKS ?? []} />
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={0.5}
+          position="relative"
+          minHeight={20}
+          color={colorModeIsLight ? '#636b74' : '#bababa'}
+        >
+          <TaskStatus tasks={card.TASKS ?? []} />
 
-            <Stack
-              direction={'row'}
-              spacing={0.5}
-              position="absolute"
-              right={0}
-            >
-              <Typography variant="body2">
-                {card.DEAL?.CREATIONDATE
-                  ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
-                  : '-/-'}
-              </Typography>
-              <Tooltip title={'Дата создания'} arrow>
-                <TodayIcon />
-              </Tooltip>
-            </Stack>
+          <Stack
+            direction={'row'}
+            spacing={0.5}
+            position="absolute"
+            right={0}
+          >
+            <Typography variant="body2">
+              {card.DEAL?.CREATIONDATE
+                ? (new Date(card.DEAL.CREATIONDATE)).toLocaleString('default', { day: '2-digit', month: 'short' })
+                : '-/-'}
+            </Typography>
+            <Tooltip title={'Дата создания'} arrow>
+              <TodayIcon />
+            </Tooltip>
           </Stack>
         </Stack>
       </CustomizedCard>
