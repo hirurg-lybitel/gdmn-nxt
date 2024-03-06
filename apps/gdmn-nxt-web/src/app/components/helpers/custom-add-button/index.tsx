@@ -5,7 +5,6 @@ interface Props {
   disabled?: boolean;
   onClick?: () => void;
   label?: string
-
 }
 
 export default function CustomAddButton({

@@ -224,6 +224,13 @@ export interface IContract extends IWithID {
   customer: ICustomer;
 };
 
+export interface IContractDetail extends IWithID {
+  CONTRACTID: number;
+  QUANTITY: number;
+  PRICE: number;
+  AMOUNT: number;
+}
+
 export enum ContractType {
   GS = 1,
   BG = 2,

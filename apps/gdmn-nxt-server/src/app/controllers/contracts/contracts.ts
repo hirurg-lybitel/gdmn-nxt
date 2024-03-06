@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
-import { contractsRepository } from '@gdmn-nxt/repositories/contracts';
+import { resultError } from '../../responseMessages';
+import { contractsRepository } from '@gdmn-nxt/repositories/contracts/contracts';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { IContract } from '@gsbelarus/util-api-types';
 

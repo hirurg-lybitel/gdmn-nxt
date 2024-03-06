@@ -1,6 +1,6 @@
 import { ContractType, IContract } from '@gsbelarus/util-api-types';
 import { Box, Typography } from '@mui/material';
-import { GridColumns, GridValidRowModel } from '@mui/x-data-grid-pro';
+import { GridColumns, GridValidRowModel, GRID_DETAIL_PANEL_TOGGLE_COL_DEF } from '@mui/x-data-grid-pro';
 
 interface Columns<T extends GridValidRowModel> {
   [key: number]: GridColumns<T>
@@ -8,6 +8,10 @@ interface Columns<T extends GridValidRowModel> {
 
 export const columns: Columns<IContract> = {
   [ContractType.GS]: [
+    {
+      ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
+      align: 'center',
+    },
     // { field: 'NUMBER', headerName: 'Номер', minWidth: 185, flex: 1 },
     { field: 'NUMBER', headerName: 'Клиент', minWidth: 250, flex: 1,
       renderCell({ value, row: { customer: { NAME } } }) {
@@ -33,7 +37,6 @@ export const columns: Columns<IContract> = {
     { field: 'SUMCURNCU', headerName: 'Сумма вал.', width: 120, align: 'right',
       renderCell: ({ value }) => (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
     { field: 'ISACTIVE', headerName: 'Действующий', type: 'boolean', width: 140, resizable: false, sortable: false },
-
   ],
   [ContractType.BG]: [
     // { field: 'NUMBER', headerName: 'Номер', flex: 1, minWidth: 100 },

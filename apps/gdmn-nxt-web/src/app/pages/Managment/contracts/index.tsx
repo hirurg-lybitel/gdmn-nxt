@@ -1,23 +1,22 @@
-import FilterListIcon from '@mui/icons-material/FilterList';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { Badge, Box, CardContent, CardHeader, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import { useGetContractsListQuery } from '../../../features/contracts-list/contractsListApi';
 import { useCallback, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import ContractsList from '../../../customers/CustomerDetails/contracts-list/contracts-list';
 import { columns } from './columns';
 import useSystemSettings from '@gdmn-nxt/components/helpers/hooks/useSystemSettings';
-import { ContractType, IFilteringData, ISortingData } from '@gsbelarus/util-api-types';
+import { ContractType, IContract, IFilteringData, ISortingData } from '@gsbelarus/util-api-types';
 import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
-import { GridSortModel } from '@mui/x-data-grid-pro';
+import { GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
+import DetailContent from './detail-content';
+import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
 
 export interface ContractsProps {}
 
@@ -80,7 +79,6 @@ export function Contracts(props: ContractsProps) {
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
 
   const requestSearch = useCallback((value: string) => {
-    console.log('requestSearch', filterData);
     const newObject = { ...filterData };
     delete newObject.name;
     handleFilteringDataChange({
@@ -103,6 +101,8 @@ export function Contracts(props: ContractsProps) {
       setOpenFilters(false);
     },
   };
+
+  const getDetailPanelContent = useCallback(({ row }: GridRowParams<IContract>) => <DetailContent row={row} />, []);
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
@@ -141,32 +141,12 @@ export function Contracts(props: ContractsProps) {
               />
             </Box>
             <Box display="inline-flex" alignSelf="center">
-              <IconButton
+              <CustomFilterButton
                 onClick={filterHandlers.filterClick}
-                disabled={contractsIsFetching}
-                size ="small"
-              >
-                <Tooltip
-                  title={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
-                    ? 'У вас есть активные фильтры'
-                    : 'Выбрать фильтры'
-                  }
-                  arrow
-                >
-                  <Badge
-                    color="error"
-                    variant={
-                      Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
-                        ? 'dot'
-                        : 'standard'
-                    }
-                  >
-                    <FilterListIcon
-                      color={contractsIsFetching ? 'disabled' : 'primary'}
-                    />
-                  </Badge>
-                </Tooltip>
-              </IconButton>
+                // disabled={contractsIsFetching}
+                disabled
+                hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
+              />
             </Box>
           </Stack>
         }
@@ -186,6 +166,8 @@ export function Contracts(props: ContractsProps) {
           rowsPerPageOptions={[10, 20, 50]}
           sortingMode="server"
           onSortModelChange={handleSortModelChange}
+          getDetailPanelHeight={() => 'auto'}
+          getDetailPanelContent={getDetailPanelContent}
         />
       </CardContent>
     </CustomizedCard>

@@ -29,7 +29,7 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
 
   try {
     const sql = (() => {
-      switch (clause?.['contractType'] ?? 1) {
+      switch (clause?.['contractType'] ?? ContractType.GS) {
         case ContractType.GS:
           return `
           SELECT
@@ -97,7 +97,7 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
       };
       delete c['CUSTOMER_NAME'];
       delete c['CUSTOMER_ID'];
-    })
+    });
 
     return contracts;
   } finally {

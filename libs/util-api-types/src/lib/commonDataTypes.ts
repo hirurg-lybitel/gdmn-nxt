@@ -30,7 +30,7 @@ export interface IResults {
 
 export interface IRequestResult<R = IResults> {
   queries: R,
-  _schema: IDataSchema;
+  _schema?: IDataSchema;
   _params?: [IDataRecord];
 };
 
