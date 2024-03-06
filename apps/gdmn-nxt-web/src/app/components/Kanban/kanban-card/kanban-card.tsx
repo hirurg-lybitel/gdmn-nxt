@@ -147,10 +147,7 @@ export function KanbanCard(props: KanbanCardProps) {
   const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
   const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
 
-  const [taskEdit, setTaskEdit] = useState(false);
-
   const doubleClick = useCallback(() => {
-    if (taskEdit) return;
     const isPerformer = card.DEAL?.PERFORMERS?.some(performer => performer.ID === contactId);
     const isCreator = card.DEAL?.CREATOR?.ID === contactId;
 
@@ -162,7 +159,7 @@ export function KanbanCard(props: KanbanCardProps) {
       });
     }
     setEditCard(true);
-  }, [card, taskEdit]);
+  }, [card]);
 
   const dayCalc = (days: number): string => {
     const positiveDays = Math.abs(days);
@@ -351,11 +348,7 @@ export function KanbanCard(props: KanbanCardProps) {
             position="relative"
             minHeight={20}
           >
-            <TaskStatus
-              tasks={card.TASKS ?? []}
-              editTaskForm={taskEdit}
-              setEditTaskForm={setTaskEdit}
-            />
+            <TaskStatus tasks={card.TASKS ?? []} />
 
             <Stack
               direction={'row'}
@@ -376,7 +369,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging, addIsFetching, theme, taskEdit]);
+  }, [card, snapshot.isDragging, addIsFetching, theme]);
 
   return (
     <>
