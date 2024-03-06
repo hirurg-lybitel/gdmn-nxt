@@ -25,7 +25,7 @@ export interface ContractsListProps {
 export function ContractsList(props: ContractsListProps) {
   const { companyId = -1 } = props;
   const classes = useStyles();
-  const { data: contracts, refetch, isFetching: contractsIsFetching } = useGetContractsListQuery({ companyId });
+  const { data: contracts, isFetching: contractsIsFetching } = useGetContractsListQuery({ filter: { companyId } });
 
   const systemSettings = useSystemSettings();
 
@@ -54,7 +54,7 @@ export function ContractsList(props: ContractsListProps) {
         <StyledGrid
           className={classes.dataGrid}
           getRowClassName={({ row }) => `isActive--${row.ISACTIVE}`}
-          rows={contracts || []}
+          rows={contracts?.records || []}
           columns={cols}
           loading={contractsIsFetching}
           loadingMode="circular"

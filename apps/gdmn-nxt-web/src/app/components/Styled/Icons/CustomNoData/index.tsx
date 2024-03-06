@@ -7,7 +7,7 @@ export default function CustomNoData() {
       textAlign="center"
       sx={(theme: Theme) => ({
         flexDirection: 'column',
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: 'transparent',
         '& .ant-empty-img-1': {
           fill: theme.palette.mode === ColorMode.Light ? '#aeb8c2' : '#262626',
         },

@@ -30,7 +30,7 @@ export interface IResults {
 
 export interface IRequestResult<R = IResults> {
   queries: R,
-  _schema: IDataSchema;
+  _schema?: IDataSchema;
   _params?: [IDataRecord];
 };
 
@@ -147,4 +147,39 @@ export interface IQueryOptions {
   pagination?: IPaginationData;
   filter?: IFilteringData;
   sort?: ISortingData;
+};
+
+export function queryOptionsToParamsString(options?: IQueryOptions | void) {
+  if (!options) return '';
+
+  const params: string[] = [];
+
+  for (const [name, value] of Object.entries(options || {})) {
+    switch (true) {
+      case typeof value === 'object' && value !== null:
+        for (const [subName, subKey] of Object.entries(value)) {
+          const subParams = [];
+          if (typeof subKey === 'object' && subKey !== null) {
+            for (const [subNameNested, subKeyNested] of Object.entries(subKey)) {
+              if (typeof subKeyNested === 'object' && subKeyNested !== null) {
+                subParams.push((subKeyNested as any).ID);
+              };
+              if (typeof subKeyNested === 'string') {
+                subParams.push(subKeyNested);
+              };
+            }
+          } else {
+            subParams.push(subKey);
+          };
+          params.push(`${subName}=${subParams}`);
+        };
+        break;
+
+      default:
+        params.push(`${name}=${value}`);
+        break;
+    }
+  };
+
+  return params.join('&');
 };

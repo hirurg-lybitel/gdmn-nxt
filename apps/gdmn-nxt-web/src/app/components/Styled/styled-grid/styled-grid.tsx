@@ -90,6 +90,9 @@ export default function StyledGrid(props: IStyledGridProps) {
       '& .MuiDataGrid-cell': {
         padding: `calc((${rowHeight}px - ${stylelessRowHeight}px) / 2) 24px`
       },
+    },
+    '& .MuiDataGrid-detailPanel': {
+      padding: 0
     }
   });
 
