@@ -14,6 +14,7 @@ export default function DetailContent({
   const { data = [], isLoading } = useGetContractDetailsQuery(row.ID);
 
   const columns: GridColumns<IContractDetail> = [
+    { field: '', headerName: '', width: 50, resizable: false },
     { field: 'NAME', headerName: 'Услуга', sortable: false, resizable: false, disableColumnMenu: true, flex: 1 },
     { field: 'QUANTITY', headerName: 'Количество', sortable: false, resizable: false, disableColumnMenu: true, minWidth: 130 },
     {
@@ -26,7 +27,7 @@ export default function DetailContent({
     }
   ];
 
-  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 200 : recordsCount * 40 + 50, []);
+  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 200 : recordsCount * 40 + 40, []);
 
   return (
     <div
@@ -36,6 +37,15 @@ export default function DetailContent({
       }}
     >
       <StyledGrid
+        sx={{
+          '& .MuiDataGrid-columnHeader': {
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            backgroundColor: 'var(--color-paper-bg)'
+          },
+        }}
+        headerHeight={40}
+        hideHeaderSeparator
         columns={columns}
         rows={data}
         loading={isLoading}
