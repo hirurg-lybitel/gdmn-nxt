@@ -18,10 +18,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
     }),
     display: 'flex',
     justifyContent: 'space-between',
-    width: '100%',
-    '& .MuiInputBase-input': {
-      width: '150px !important'
-    }
+    width: '100%'
   },
   iconButton: {
     color: theme.palette.action.active,
