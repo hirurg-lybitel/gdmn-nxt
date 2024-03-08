@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 
 interface ExpandedListProps {
   open: boolean;
@@ -22,7 +23,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
 
-  const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
+  const handleClosedChange = useCallback((row: IKanbanTask, checked: boolean) => () => {
     const newTask = { ...row, USR$CLOSED: checked };
     updateTask(newTask);
   }, []);
@@ -43,11 +44,17 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       minWidth: 25,
       renderCell: ({ value, row }) =>
         <div style={{ position: 'absolute', display: 'flex', alignItems: 'center' }}>
-          <Checkbox
-            style={{ padding: 0 }}
-            checked={value}
-            onChange={handleClosedChange(row)}
-          />
+          <Confirmation
+            title={'Подтверждение'}
+            text={`Пометить как ${value ? 'не выполнена' : 'выполнена'}?`}
+            onConfirm={handleClosedChange(row, !value)}
+          >
+
+            <Checkbox
+              style={{ padding: 0 }}
+              checked={value}
+            />
+          </Confirmation>
         </div>
     },
     {
