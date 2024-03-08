@@ -1,6 +1,7 @@
 import { ContractType, IContract } from '@gsbelarus/util-api-types';
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { GridColumns, GridValidRowModel, GRID_DETAIL_PANEL_TOGGLE_COL_DEF } from '@mui/x-data-grid-pro';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Columns<T extends GridValidRowModel> {
   [key: number]: GridColumns<T>
@@ -10,6 +11,14 @@ export const columns: Columns<IContract> = {
   [ContractType.GS]: [
     {
       ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
+      renderCell: (params) => {
+        const baseStyle = { trasition: '1s' };
+        return (
+          <IconButton>
+            <ExpandMoreIcon style={{ transition: '0.1s', transform: params.formattedValue ? 'rotate(-90deg)' : 'none' }}/>
+          </IconButton>
+        );
+      },
       align: 'center',
     },
     // { field: 'NUMBER', headerName: 'Номер', minWidth: 185, flex: 1 },
