@@ -178,7 +178,24 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           >
             {card.DEAL?.USR$NAME}
           </Typography>
-          <div style={{ display: 'flex' }}>
+          <Tooltip
+            title={'Срок выполнения'}
+            arrow
+            placement="bottom-start"
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      offset: [0, -5],
+                    },
+                  },
+                ],
+              },
+            }}
+          >
+
             <Typography
               variant="subtitle2"
               color={colorModeIsLight ? 'GrayText' : 'lightgray'}
@@ -199,27 +216,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
                     ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
                 : '-/-'}
             </Typography>
-            <div style={{ marginLeft: '5px' }}>
-              <Tooltip
-                title={'Срок выполнения'}
-                arrow
-                slotProps={{
-                  popper: {
-                    modifiers: [
-                      {
-                        name: 'offset',
-                        options: {
-                          offset: [0, -5],
-                        },
-                      },
-                    ],
-                  },
-                }}
-              >
-                <AccessTimeIcon/>
-              </Tooltip>
-            </div>
-          </div>
+          </Tooltip>
         </Stack>
       </CustomizedCard>
       <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>
