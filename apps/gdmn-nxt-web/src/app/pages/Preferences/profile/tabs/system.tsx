@@ -1,6 +1,7 @@
+import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
-import { ContractType, ISystemSettings } from '@gsbelarus/util-api-types';
+import { ContractType, ICustomer, ISystemSettings } from '@gsbelarus/util-api-types';
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material';
 import { useGetSystemSettingsQuery, useSetSystemSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/systemSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -36,10 +37,18 @@ export default function SystemTab() {
     formik.submitForm();
   };
 
+  const handleCustomerChange = (customer: ICustomer | null | undefined) => {
+    formik.setFieldValue('OURCOMPANY', { ID: customer?.ID, NAME: customer?.NAME });
+  };
+
   return (
     <FormikProvider value={formik}>
       <Form id="systemTabForm" onSubmit={formik.handleSubmit}>
-        <Stack height={'100%'}>
+        <Stack
+          height={'100%'}
+          spacing={2}
+          width="50%"
+        >
           <FormControl size="small" style={{ width: 200 }}>
             <InputLabel id="select-label">Тип договоров</InputLabel>
             <Select
@@ -58,6 +67,15 @@ export default function SystemTab() {
                 ))}
             </Select>
           </FormControl>
+          <CustomerSelect
+            name="OURCOMPANY"
+            label="Рабочая оранизация"
+            placeholder="Укажите вашу рабочую оранизацию"
+            value={formik.values.OURCOMPANY}
+            onChange={handleCustomerChange}
+            error={formik.touched.OURCOMPANY && Boolean(formik.errors.OURCOMPANY)}
+            helperText={formik.touched.OURCOMPANY && formik.errors.OURCOMPANY}
+          />
           <Box flex={1} />
           <Confirmation
             title="Сохранение изменений"

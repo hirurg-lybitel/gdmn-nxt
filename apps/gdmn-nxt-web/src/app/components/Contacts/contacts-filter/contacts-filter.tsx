@@ -63,6 +63,15 @@ export function ContactsFilter({
             }
             label="Только избранные"
           />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={!!filteringData?.isOur}
+                onChange={(e) => handleOnChange('isOur', e.target.checked)}
+              />
+            }
+            label="Только наши"
+          />
           <CustomerSelect
             label="Компании"
             placeholder="Выберите компанию"

@@ -1,4 +1,4 @@
-import { ContractType } from './crmDataTypes';
+import { ContractType, ICustomer } from './crmDataTypes';
 
 export type FieldDataType = 'date' | 'timestamp' | 'curr' | 'boolean' | 'array';
 
@@ -107,6 +107,7 @@ export interface IProfileSettings {
 
 export interface ISystemSettings extends IWithID{
   CONTRACTTYPE: ContractType;
+  OURCOMPANY?: ICustomer
 }
 
 export enum ColorMode {
