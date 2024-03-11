@@ -1,4 +1,4 @@
-export const forEachAsync = async <T>(
+export const forEachAsync = async <T = any>(
   array: T[],
   asyncCallback: (element: T, index: number, array: T[]) => Promise<any>,
   errorHandler: ((error: any, element: T) => any) | null = null

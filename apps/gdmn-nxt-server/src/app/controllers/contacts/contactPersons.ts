@@ -5,6 +5,7 @@ import { cachedRequets } from '../../utils/cached requests';
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { forEachAsync } from '@gsbelarus/util-helpers';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 const getById: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
@@ -36,11 +37,12 @@ const getAll: RequestHandler = async (req, res) => {
   const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
-  const { name, LABELS, COMPANY, RESPONDENTS, isFavorite } = req.query;
+  const { name, LABELS, COMPANY, RESPONDENTS, isFavorite, isOur } = req.query;
   const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
   const companyIds = COMPANY ? (COMPANY as string).split(',').map(Number) ?? [] : [];
   const respondentIds = RESPONDENTS ? (RESPONDENTS as string).split(',').map(Number) ?? [] : [];
   const favoriteOnly = (isFavorite as string)?.toLowerCase() === 'true';
+  const ourCompanyOnly = (isOur as string)?.toLowerCase() === 'true';
   /** Session data */
   const userId = req.user['id'];
 
@@ -53,6 +55,9 @@ const getAll: RequestHandler = async (req, res) => {
   };
 
   try {
+    const systemSettings = await systemSettingsRepository.findOne(req.sessionID);
+    const ourCompanyId = systemSettings.OURCOMPANY?.ID;
+
     const cachedPersons = await cacheManager.getKey<IContactPerson[]>('customerPersons') ?? [];
 
     const favoritesMap: Record<string, number[]> = {};
@@ -106,6 +111,11 @@ const getAll: RequestHandler = async (req, res) => {
         if (favoriteOnly) {
           checkConditions = checkConditions &&
             isFavorite && favoriteOnly;
+        }
+
+        if (ourCompanyOnly) {
+          checkConditions = checkConditions &&
+            (person.COMPANY && person.COMPANY?.ID === ourCompanyId);
         }
 
         if (checkConditions) {

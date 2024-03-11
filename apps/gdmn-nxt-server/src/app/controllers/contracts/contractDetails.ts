@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express';
 import { resultError } from '../../responseMessages';
-import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { IContractDetail, IRequestResult } from '@gsbelarus/util-api-types';
+import { IRequestResult } from '@gsbelarus/util-api-types';
 import { contractDetailRepository } from '@gdmn-nxt/repositories/contracts/contractDetails';
 
 export const getByContract: RequestHandler = async (req, res) => {
