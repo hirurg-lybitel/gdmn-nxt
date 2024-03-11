@@ -13,11 +13,24 @@ const managment: IMenuItem = {
   type: 'group',
   children: [
     {
-      id: 'contacts',
+      id: 'contactsGroup',
       title: 'Контакты',
-      type: 'item',
-      url: 'managment/contacts',
+      type: 'collapse',
       icon: <ContactPhoneIcon color="secondary" />,
+      children: [
+        {
+          id: 'contacts',
+          title: 'Все',
+          type: 'item',
+          url: 'managment/contacts',
+        },
+        {
+          id: 'ourContacts',
+          title: 'Только наши',
+          type: 'item',
+          url: 'managment/ourContacts',
+        },
+      ]
     },
     {
       id: 'dealsGroup',
