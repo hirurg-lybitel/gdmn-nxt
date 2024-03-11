@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import { IconButton } from '@mui/material';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
@@ -77,14 +78,10 @@ export function KanbanList(props: KanbanListProps) {
     getActions: (params: GridRowParams) => [
       Object.keys(params.row).length > 0
         ? <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
-          <IconButton
-            key={1}
+          <ItemButtonEdit
             color="primary"
-            size="small"
             onClick={handleCardEdit(params.row)}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
+          />
         </PermissionsGate>
         : <></>
     ]
