@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
-import { Box, Button, Checkbox, Grid, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, Checkbox, Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { GridColumns } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
@@ -134,15 +134,25 @@ export function KanbanTasks(props: KanbanTasksProps) {
 
   const columns: GridColumns = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
-      renderCell: ({ value, row }) =>
-        <Confirmation
-          title={'Подтверждение'}
-          text={`Пометить как ${value ? 'не выполнена' : 'выполнена'}?`}
-          onConfirm={handleClosedChange(row, !value)}
-        >
-          <Checkbox checked={value}/>
-        </Confirmation>
-    },
+      renderCell: ({ value, row }) => <>{
+        value ?
+          <Tooltip title={'Пометить как не выполнено'} placement="right">
+            <Checkbox
+              checked={value}
+              onClick={handleClosedChange(row, !value)}
+            />
+          </Tooltip>
+          : <Confirmation
+            title={'Подтверждение'}
+            text={'Пометить как выполнено?'}
+            onConfirm={handleClosedChange(row, !value)}
+          >
+            <Tooltip title={'Пометить как выполнено'} placement="right">
+              <Checkbox checked={value}/>
+            </Tooltip>
+          </Confirmation>
+      }
+      </> },
     { field: 'USR$NAME', headerName: 'Описание', flex: 1, minWidth: 100,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
     },

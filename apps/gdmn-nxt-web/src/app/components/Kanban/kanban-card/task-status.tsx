@@ -42,21 +42,27 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       headerName: '',
       maxWidth: 25,
       minWidth: 25,
-      renderCell: ({ value, row }) =>
-        <div style={{ position: 'absolute', display: 'flex', alignItems: 'center' }}>
-          <Confirmation
+      renderCell: ({ value, row }) => <>{
+        value ?
+          <Tooltip title={'Пометить как не выполнено'} placement="right">
+            <Checkbox
+              style={{ width: '100%' }}
+              checked={value}
+              onClick={handleClosedChange(row, !value)}
+            />
+          </Tooltip>
+          : <Confirmation
+            style={{ width: '100%' }}
             title={'Подтверждение'}
-            text={`Пометить как ${value ? 'не выполнена' : 'выполнена'}?`}
+            text={'Пометить как выполнено?'}
             onConfirm={handleClosedChange(row, !value)}
           >
-
-            <Checkbox
-              style={{ padding: 0 }}
-              checked={value}
-            />
+            <Tooltip title={'Пометить как выполнено'} placement="right">
+              <Checkbox style={{ width: '100%' }} checked={value}/>
+            </Tooltip>
           </Confirmation>
-        </div>
-    },
+      }
+      </> },
     {
       field: 'USR$NAME',
       headerName: 'Описание',
