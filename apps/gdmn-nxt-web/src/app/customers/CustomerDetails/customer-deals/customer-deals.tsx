@@ -98,22 +98,22 @@ export function CustomerDeals(props: CustomerDealsProps) {
         }
       }
     },
-    {
-      field: 'REQUESTNUMBER',
-      headerName: '№ заявки',
-      type: 'string',
-      headerAlign: 'center',
-      align: 'center',
-      width: 150,
-      resizable: false,
-    },
-    {
-      field: 'PRODUCTNAME',
-      headerName: 'Наименование',
-      type: 'string',
-      flex: 1,
-      resizable: false,
-    },
+    // {
+    //   field: 'REQUESTNUMBER',
+    //   headerName: '№ заявки',
+    //   type: 'string',
+    //   headerAlign: 'center',
+    //   align: 'center',
+    //   width: 150,
+    //   resizable: false,
+    // },
+    // {
+    //   field: 'PRODUCTNAME',
+    //   headerName: 'Наименование',
+    //   type: 'string',
+    //   flex: 1,
+    //   resizable: false,
+    // },
   ];
   return (
     <Box
@@ -121,7 +121,6 @@ export function CustomerDeals(props: CustomerDealsProps) {
       display="flex"
     >
       <KanbanList
-        withEdit={true}
         columns={columns}
         gridColumns={newGridColumns}
         disableAddCard
