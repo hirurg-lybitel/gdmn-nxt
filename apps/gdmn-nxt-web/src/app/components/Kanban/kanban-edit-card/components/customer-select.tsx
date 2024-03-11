@@ -37,7 +37,6 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   multiple?: Multiple;
 };
 
-// export const CustomerSelect = <Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) => {
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
   const {
     value,
