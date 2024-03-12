@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import Contacts from '../contacts';
+import Contacts from '../Contacts';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { useEffect } from 'react';
 
