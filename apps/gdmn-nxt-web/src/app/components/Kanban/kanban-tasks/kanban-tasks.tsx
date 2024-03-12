@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
-import { Box, Button, Checkbox, Grid, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, Checkbox, Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
@@ -13,6 +13,7 @@ import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '../../../store';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
 import { FormikProps } from 'formik';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {
@@ -79,7 +80,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
     currentTask.current = task;
   };
 
-  const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
+  const handleClosedChange = useCallback((row: IKanbanTask, checked: boolean) => () => {
     const newTask = { ...row, USR$CLOSED: checked };
     updateTask(newTask);
   }, [updateTask]);
@@ -133,7 +134,25 @@ export function KanbanTasks(props: KanbanTasksProps) {
 
   const columns: GridColDef[] = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
-      renderCell: ({ value, row }) => <Checkbox checked={value} onChange={handleClosedChange(row)}/> },
+      renderCell: ({ value, row }) => <>{
+        value ?
+          <Tooltip title={'Пометить как не выполнено'} placement="right">
+            <Checkbox
+              checked={value}
+              onClick={handleClosedChange(row, !value)}
+            />
+          </Tooltip>
+          : <Confirmation
+            title={'Подтверждение'}
+            text={'Пометить как выполнено?'}
+            onConfirm={handleClosedChange(row, !value)}
+          >
+            <Tooltip title={'Пометить как выполнено'} placement="right">
+              <Checkbox checked={value}/>
+            </Tooltip>
+          </Confirmation>
+      }
+      </> },
     { field: 'USR$NAME', headerName: 'Описание', flex: 1, minWidth: 100,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value}</Box>
     },
