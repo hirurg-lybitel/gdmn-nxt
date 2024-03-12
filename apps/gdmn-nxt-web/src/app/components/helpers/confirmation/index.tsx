@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { DetailedHTMLProps, HTMLAttributes, useCallback, useMemo, useState } from 'react';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 
-interface Props {
+interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   children: JSX.Element;
   onConfirm: () => void;
   dangerous?: boolean;
@@ -13,10 +13,10 @@ export default function Confirmation({
   onConfirm,
   dangerous = false,
   text = 'Вы уверены, что хотите продолжить?',
-  title = ''
+  title = '',
+  ...props
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
-
   const handleClick = useCallback(() => {
     setConfirmOpen(true);
   }, []);
@@ -43,7 +43,7 @@ export default function Confirmation({
 
   return (
     <>
-      <div onClick={handleClick}>
+      <div {...props} onClick={handleClick}>
         {children}
       </div>
       {memoConfirmDialog}
