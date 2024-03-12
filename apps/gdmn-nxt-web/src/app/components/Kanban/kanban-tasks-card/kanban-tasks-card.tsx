@@ -4,7 +4,7 @@ import { ColorMode, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { Box, Icon, Stack, Typography } from '@mui/material';
+import { Box, Icon, Stack, Tooltip, Typography } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
@@ -12,6 +12,7 @@ import useTruncate from '../../helpers/hooks/useTruncate';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
 import ForwardIcon from '@mui/icons-material/Forward';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 export interface KanbanTasksCardProps {
   card: IKanbanCard;
@@ -177,26 +178,31 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           >
             {card.DEAL?.USR$NAME}
           </Typography>
-          <Typography
-            variant="subtitle2"
-            color={colorModeIsLight ? 'GrayText' : 'lightgray'}
-            style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
-              ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)'}
-              : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
-                ? { color: 'orange' }
-                : {})}
+          <Tooltip
+            title={'Срок выполнения'}
+            placement="bottom-start"
           >
-            {card.TASK?.USR$DEADLINE
-              ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
-                {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
-              : '-/-'}
-          </Typography>
+            <Typography
+              variant="subtitle2"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+              style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
+                ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)' }
+                : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
+                  ? { color: 'orange' }
+                  : {})}
+            >
+              {card.TASK?.USR$DEADLINE
+                ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
+                  {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
+                : '-/-'}
+            </Typography>
+          </Tooltip>
         </Stack>
       </CustomizedCard>
       <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>
