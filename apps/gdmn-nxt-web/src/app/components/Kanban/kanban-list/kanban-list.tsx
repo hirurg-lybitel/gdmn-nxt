@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridColDef, GridEnrichedColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
@@ -11,64 +11,51 @@ import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import { IconButton } from '@mui/material';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
   loading?: boolean;
   gridColumns?: GridColDef[];
   disableAddCard?: boolean;
+  editable?: boolean;
 }
 
-export function KanbanList(props: KanbanListProps) {
-  const { columns = [], gridColumns, disableAddCard = false, loading = false } = props;
+const defaultGridColumns: GridColDef[] = [
+  {
+    field: 'CONTACT',
+    headerName: 'Клиент',
+    flex: 1,
+    minWidth: 200,
+    sortComparator: (a, b) => ('' + a?.NAME || '').localeCompare(b?.NAME || ''),
+    renderCell: (params) => renderCellExpand(params, params.value?.NAME),
+  },
+  {
+    field: 'USR$DEADLINE',
+    headerName: 'Срок',
+    type: 'date',
+    width: 150,
+    resizable: false,
+    valueFormatter: ({ value }) => value ? new Date(value).toLocaleDateString() || null : null,
+  },
+  {
+    field: 'USR$AMOUNT',
+    headerName: 'Сумма',
+    type: 'number',
+    width: 150,
+    minWidth: 100,
+    valueGetter: ({ value }) => value || '',
+  }
+];
 
-  const defaultGridColumns: GridColDef[] = [
-    {
-      field: 'CONTACT',
-      headerName: 'Клиент',
-      flex: 1,
-      minWidth: 200,
-      sortComparator: (a, b) => ('' + a?.NAME || '').localeCompare(b?.NAME || ''),
-      renderCell: (params) => renderCellExpand(params, params.value?.NAME),
-    },
-    {
-      field: 'USR$DEADLINE',
-      headerName: 'Срок',
-      type: 'date',
-      width: 150,
-      resizable: false,
-      valueFormatter: ({ value }) => value ? new Date(value).toLocaleDateString() || null : null,
-    },
-    {
-      field: 'USR$AMOUNT',
-      headerName: 'Сумма',
-      type: 'number',
-      width: 150,
-      minWidth: 100,
-      valueGetter: ({ value }) => value || '',
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      resizable: false,
-      getActions: (params: GridRowParams) => [
-        Object.keys(params.row).length > 0
-          ? <>
-            <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
-              <IconButton
-                key={1}
-                color="primary"
-                size="small"
-                onClick={handleCardEdit(params.row)}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </PermissionsGate>
-          </>
-          : <></>
-      ]
-    }
-  ];
+export function KanbanList(props: KanbanListProps) {
+  const {
+    columns = [],
+    gridColumns = defaultGridColumns,
+    disableAddCard = false,
+    loading = false,
+    editable = true
+  } = props;
 
   const [addCard, setAddCard] = useState(false);
   const [editCard, setEditCard] = useState(false);
@@ -83,6 +70,28 @@ export function KanbanList(props: KanbanListProps) {
   const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
+
+
+  const actionColumn: GridEnrichedColDef<any, any, any> = useMemo(() => ({
+    field: 'actions',
+    type: 'actions',
+    resizable: false,
+    getActions: (params: GridRowParams) => [
+      Object.keys(params.row).length > 0
+        ? <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
+          <ItemButtonEdit
+            color="primary"
+            onClick={handleCardEdit(params.row)}
+          />
+        </PermissionsGate>
+        : <></>
+    ]
+  }), [userPermissions?.deals.PUT]);
+
+  const cols: GridColumns = useMemo(() => ([
+    ...gridColumns,
+    ...(editable ? [{ ...actionColumn }] : [])
+  ]), [actionColumn, editable, gridColumns]);
 
   const rows: IKanbanCard[] = useMemo(() => {
     const newRows: any[] = [];

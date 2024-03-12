@@ -1,3 +1,4 @@
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
@@ -12,11 +13,24 @@ const managment: IMenuItem = {
   type: 'group',
   children: [
     {
-      id: 'contacts',
+      id: 'contactsGroup',
       title: 'Контакты',
-      type: 'item',
-      url: 'managment/contacts',
+      type: 'collapse',
       icon: <ContactPhoneIcon color="secondary" />,
+      children: [
+        {
+          id: 'contacts',
+          title: 'Все',
+          type: 'item',
+          url: 'managment/contacts',
+        },
+        {
+          id: 'ourContacts',
+          title: 'Только наши',
+          type: 'item',
+          url: 'managment/ourContacts',
+        },
+      ]
     },
     {
       id: 'dealsGroup',
@@ -77,6 +91,13 @@ const managment: IMenuItem = {
           url: 'managment/customers/list'
         },
       ]
+    },
+    {
+      id: 'contracts',
+      title: 'Договоры',
+      type: 'item',
+      icon: <ContentPasteIcon color="secondary" />,
+      url: 'managment/contracts'
     },
     {
       id: 'labels',

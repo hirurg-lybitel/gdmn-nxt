@@ -9,11 +9,24 @@ const findOne: FindOneHandler<ISystemSettings> = async (
   try {
     const sql = `
       SELECT
-        ID,
-        USR$CONTRACTTYPE as CONTRACTTYPE
-      FROM USR$CRM_SYSTEM_SETTINGS`;
+        s.ID,
+        USR$CONTRACTTYPE as CONTRACTTYPE,
+        con.ID as CON_ID,
+        con.NAME as CON_NAME
+      FROM USR$CRM_SYSTEM_SETTINGS s
+      LEFT JOIN GD_CONTACT con ON con.ID = s.USR$OURCOMPANY`;
 
     const settings = await fetchAsSingletonObject<ISystemSettings>(sql);
+
+    if (settings['CON_ID']) {
+      settings.OURCOMPANY = {
+        ID: settings['CON_ID'],
+        NAME: settings['CON_NAME']
+      };
+    }
+
+    delete settings['CON_ID'];
+    delete settings['CON_NAME'];
 
     return settings;
   } finally {
@@ -39,17 +52,19 @@ const update: UpdateHandler<ISystemSettings> = async (
     })();
 
     const {
-      CONTRACTTYPE = settings.CONTRACTTYPE
+      CONTRACTTYPE = settings.CONTRACTTYPE,
+      OURCOMPANY = settings.OURCOMPANY
     } = metadata;
 
     const result = await fetchAsSingletonObject<ISystemSettings>(`
-      UPDATE OR INSERT INTO USR$CRM_SYSTEM_SETTINGS(ID, USR$CONTRACTTYPE)
-      VALUES(:ID, :CONTRACTTYPE)
+      UPDATE OR INSERT INTO USR$CRM_SYSTEM_SETTINGS(ID, USR$CONTRACTTYPE, USR$OURCOMPANY)
+      VALUES(:ID, :CONTRACTTYPE, :OURCOMPANY)
       MATCHING(ID)
       RETURNING ID`,
     {
       ID,
       CONTRACTTYPE,
+      OURCOMPANY: OURCOMPANY?.ID ?? null
     }
     );
 
@@ -69,16 +84,18 @@ const save: SaveHandler<ISystemSettings> = async (
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   const {
-    CONTRACTTYPE
+    CONTRACTTYPE,
+    OURCOMPANY
   } = metadata;
 
   try {
     const result = await fetchAsSingletonObject<ISystemSettings>(
-      `INSERT INTO USR$CRM_SYSTEM_SETTINGS(USR$CONTRACTTYPE)
-      VALUES(:CONTRACTTYPE)
+      `INSERT INTO USR$CRM_SYSTEM_SETTINGS(USR$CONTRACTTYPE, USR$OURCOMPANY)
+      VALUES(:CONTRACTTYPE, :OURCOMPANY)
       RETURNING ID`,
       {
-        CONTRACTTYPE
+        CONTRACTTYPE,
+        OURCOMPANY: OURCOMPANY?.ID ?? null
       }
     );
 

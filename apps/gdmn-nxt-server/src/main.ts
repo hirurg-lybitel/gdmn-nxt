@@ -17,7 +17,7 @@ import contactsRouter from './app/routes/contactsRouter';
 import systemRouter from './app/routes/systemRouter';
 import { disposeConnection } from '@gdmn-nxt/db-connection';
 import { importedModels } from './app/utils/models';
-import contractsListRouter from './app/routes/contractsListRouter';
+import contractsListRouter from './app/routes/contractsRouter';
 import reportsRouter from './app/routes/reportsRouter';
 import workTypes from './app/controllers/workTypes';
 import labelsRouter from './app/routes/labelsRouter';
