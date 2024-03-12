@@ -180,22 +180,8 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           </Typography>
           <Tooltip
             title={'Срок выполнения'}
-            arrow
             placement="bottom-start"
-            slotProps={{
-              popper: {
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [0, -5],
-                    },
-                  },
-                ],
-              },
-            }}
           >
-
             <Typography
               variant="subtitle2"
               color={colorModeIsLight ? 'GrayText' : 'lightgray'}
