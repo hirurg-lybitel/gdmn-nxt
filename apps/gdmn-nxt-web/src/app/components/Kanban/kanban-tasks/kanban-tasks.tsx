@@ -1,7 +1,7 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, Grid, IconButton, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { GridColDef} from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './kanban-tasks.module.less';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
@@ -158,7 +158,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
           <Typography>{value && (new Date(value)?.toLocaleString('default', { hour: '2-digit', minute: '2-digit' }))}</Typography>
         </Stack>
     },
-    { field: 'PERFORMER', headerName: 'Исполнитель', width: 130,
+    { field: 'PERFORMER', headerName: 'Исполнитель', width: 150,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value?.NAME}</Box>
     },
     { field: 'CREATOR', headerName: 'Создатель', width: 130,

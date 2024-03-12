@@ -47,7 +47,6 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
   };
 
   const handleClick: ButtonProps['onClick'] = (event) => {
-    console.log('asd');
     apiRef.current.setRowChildrenExpansion(id, !(rowNode as any).childrenExpanded);
     apiRef.current.setCellFocus(id, field);
     event.stopPropagation();

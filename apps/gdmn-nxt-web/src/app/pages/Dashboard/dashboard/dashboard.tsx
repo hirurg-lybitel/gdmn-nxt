@@ -66,11 +66,9 @@ export function Dashboard(props: DashboardProps) {
   };
 
   const dateRangePickerChange = (newValue: DateRange<dayjs.Dayjs>) => {
-    // if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
+    if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
     setPeriod([dayjs(newValue[0]), dayjs(newValue[1])]);
   };
-
-  console.log([period[0]?.toDate(), period[1]?.toDate()]);
 
   return (
     <Grid
