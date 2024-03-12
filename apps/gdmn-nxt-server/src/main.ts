@@ -296,8 +296,6 @@ router.use(labelsRouter);
 /** FAQ*/
 router.use(faqRouter);
 
-// Updates
-
 router.use(updatesRouter);
 
 /** Contracts list */
