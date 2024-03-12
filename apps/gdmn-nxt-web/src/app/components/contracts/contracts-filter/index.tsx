@@ -73,13 +73,7 @@ export function ContractsFilter({
           <DateRangePicker
             value={period}
             onChange={dateRangePickerChange}
-            renderInput={(startProps: any, endProps: any) => (
-              <>
-                <TextField {...startProps} />
-                <Box sx={{ mx: 2 }}/>
-                <TextField {...endProps} />
-              </>
-            )}
+            slotProps={{ textField: { variant: 'outlined' } }}
           />
           <FormControlLabel
             control={

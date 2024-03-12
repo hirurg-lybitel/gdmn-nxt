@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridEnrichedColDef, GridRowParams } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
@@ -61,7 +61,6 @@ export function KanbanList(props: KanbanListProps) {
   const [editCard, setEditCard] = useState(false);
   const [card, setCard] = useState<IKanbanCard>();
   const [column, setColumn] = useState<IKanbanColumn>();
-  const [cols, setCols] = useState<GridColDef[]>(gridColumns || defaultGridColumns);
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
@@ -72,7 +71,7 @@ export function KanbanList(props: KanbanListProps) {
   const [deleteTask] = useDeleteTaskMutation();
 
 
-  const actionColumn: GridEnrichedColDef<any, any, any> = useMemo(() => ({
+  const actionColumn: GridColDef<any, any, any> = useMemo(() => ({
     field: 'actions',
     type: 'actions',
     resizable: false,
@@ -88,7 +87,7 @@ export function KanbanList(props: KanbanListProps) {
     ]
   }), [userPermissions?.deals.PUT]);
 
-  const cols: GridColumns = useMemo(() => ([
+  const cols: GridColDef[] = useMemo(() => ([
     ...gridColumns,
     ...(editable ? [{ ...actionColumn }] : [])
   ]), [actionColumn, editable, gridColumns]);
