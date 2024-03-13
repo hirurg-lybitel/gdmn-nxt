@@ -31,6 +31,7 @@ interface actionCheck {
   method: ActionMethod;
 }
 
+
 export interface MenuItemProps {
   item: IMenuItem;
   level?: number;
@@ -73,12 +74,10 @@ export function MenuItem(props: MenuItemProps) {
   const MyNavLink = useMemo(() => forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
     const { className: previousClasses, ...rest } = navLinkProps;
     const elementClasses = previousClasses?.toString() ?? '';
-    item.checkAction;
     return (<NavLink
       {...rest}
       ref={ref}
       to={item.url || ''}
-      end
       className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
     />);
   }), [item.url]);

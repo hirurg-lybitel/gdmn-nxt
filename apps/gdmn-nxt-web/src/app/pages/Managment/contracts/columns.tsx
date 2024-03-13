@@ -1,6 +1,22 @@
 import { ContractType, IContract } from '@gsbelarus/util-api-types';
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { GridColDef, GridValidRowModel, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridRenderCellParams, GridValueFormatterParams } from '@mui/x-data-grid-pro';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useGetContractDetailsQuery } from '../../../features/contracts-list/contractsListApi';
+
+interface ArrowProps {
+  id: number,
+  formattedValue: boolean
+}
+
+const Arrow = ({ id, formattedValue }: ArrowProps) => {
+  const { data = [], isLoading } = useGetContractDetailsQuery(id);
+  return (
+    <IconButton size="small" disabled={data.length === 0 || isLoading}>
+      <ExpandMoreIcon style={{ transition: '0.1s', transform: formattedValue ? 'rotate(-90deg)' : 'none' }}/>
+    </IconButton>
+  );
+};
 
 interface Columns<T extends GridValidRowModel> {
   [key: number]: GridColDef<T>[]
@@ -10,6 +26,11 @@ export const columns: Columns<IContract> = {
   [ContractType.GS]: [
     {
       ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
+      renderCell: (params) => {
+        return (
+          <Arrow id={params.row.ID} formattedValue={params.formattedValue}/>
+        );
+      },
       align: 'center',
     },
     // { field: 'NUMBER', headerName: 'Номер', minWidth: 185, flex: 1 },
