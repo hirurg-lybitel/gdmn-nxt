@@ -12,7 +12,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 
 interface ExpandedListProps {
   open: boolean;
@@ -23,7 +22,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
 
-  const handleClosedChange = useCallback((row: IKanbanTask, checked: boolean) => () => {
+  const handleClosedChange = useCallback((row: IKanbanTask) => (e: ChangeEvent<HTMLInputElement>, checked: boolean) => {
     const newTask = { ...row, USR$CLOSED: checked };
     updateTask(newTask);
   }, []);
@@ -44,27 +43,15 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
       headerName: '',
       maxWidth: 25,
       minWidth: 25,
-      renderCell: ({ value, row }) => <>{
-        value ?
-          <Tooltip title={'Пометить как не выполнено'} placement="right">
-            <Checkbox
-              style={{ width: '100%' }}
-              checked={value}
-              onClick={handleClosedChange(row, !value)}
-            />
-          </Tooltip>
-          : <Confirmation
-            style={{ width: '100%' }}
-            title={'Подтверждение'}
-            text={'Пометить как выполнено?'}
-            onConfirm={handleClosedChange(row, !value)}
-          >
-            <Tooltip title={'Пометить как выполнено'} placement="right">
-              <Checkbox style={{ width: '100%' }} checked={value}/>
-            </Tooltip>
-          </Confirmation>
-      }
-      </> },
+      renderCell: ({ value, row }) =>
+        <div style={{ position: 'absolute', display: 'flex', alignItems: 'center' }}>
+          <Checkbox
+            style={{ padding: 0 }}
+            checked={value}
+            onChange={handleClosedChange(row)}
+          />
+        </div>
+    },
     {
       field: 'USR$NAME',
       headerName: 'Описание',
