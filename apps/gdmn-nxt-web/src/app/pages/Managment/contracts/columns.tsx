@@ -12,7 +12,7 @@ interface ArrowProps {
 const Arrow = ({ id, formattedValue }: ArrowProps) => {
   const { data = [], isLoading } = useGetContractDetailsQuery(id);
   return (
-    <IconButton disabled={data.length <= 0 || isLoading}>
+    <IconButton size="small" disabled={data.length === 0 || isLoading}>
       <ExpandMoreIcon style={{ transition: '0.1s', transform: formattedValue ? 'rotate(-90deg)' : 'none' }}/>
     </IconButton>
   );
