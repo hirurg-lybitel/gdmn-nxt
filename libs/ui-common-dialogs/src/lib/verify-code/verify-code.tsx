@@ -76,9 +76,16 @@ const VerifyCode = forwardRef<VerifyCodeRef, VerifyCodeProps>((props, ref) => {
   const inputsRef = useRef<Array<HTMLInputElement>>([]);
   const inputProps = propsMap[allowedCharacters];
 
+  const handleSubmit = () => {
+    if (inputsRef.current[length - 1].value === '') return;
+    const res = inputsRef.current.map((input) => input.value).join('');
+    onSubmit && onSubmit(res);
+  };
+
   const sendResult = () => {
     const res = inputsRef.current.map((input) => input.value).join('');
     onChange && onChange(res);
+    handleSubmit();
   };
 
   useImperativeHandle(ref, () => ({
@@ -159,7 +166,7 @@ const VerifyCode = forwardRef<VerifyCodeRef, VerifyCodeProps>((props, ref) => {
 
   const handleOnPaste = (e: ClipboardEvent<HTMLInputElement>) => {
     const pastedValue = e.clipboardData.getData('Text');
-
+    
     let currentInput = 0;
 
     try {
@@ -194,8 +201,8 @@ const VerifyCode = forwardRef<VerifyCodeRef, VerifyCodeProps>((props, ref) => {
         //   }
         // }
       }
-      sendResult();
     } finally {
+      sendResult();
       e.preventDefault();
     }
   };
@@ -225,10 +232,7 @@ const VerifyCode = forwardRef<VerifyCodeRef, VerifyCodeProps>((props, ref) => {
 
   const containerOnKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter') return;
-    if (inputsRef.current[length - 1].value === '') return;
-
-    const res = inputsRef.current.map((input) => input.value).join('');
-    onSubmit && onSubmit(res);
+    handleSubmit();
   };
 
   return (
