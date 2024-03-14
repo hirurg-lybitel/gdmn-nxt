@@ -24,7 +24,7 @@ export function ContractsFilter({
 }: ContractsFilterProps) {
   const dispatch = useDispatch();
 
-  const [period, setPeriod] = useState<DateRange<Dayjs>>([filteringData?.dateBegin ?? null, filteringData?.dateEnd ?? null]);
+  const [period, setPeriod] = useState<DateRange<Date>>([filteringData?.dateBegin ?? null, filteringData?.dateEnd ?? null]);
 
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
@@ -49,10 +49,10 @@ export function ContractsFilter({
   }, []);
 
 
-  const dateRangePickerChange = async (newValue: DateRange<dayjs.Dayjs>) => {
+  const dateRangePickerChange = async (newValue: DateRange<Date>) => {
     if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
     handleOnChange('dateRange', [newValue[0]?.toISOString(), newValue[1]?.toISOString()]);
-    setPeriod([dayjs(newValue[0]), dayjs(newValue[1])]);
+    setPeriod(newValue);
   };
 
   return (
