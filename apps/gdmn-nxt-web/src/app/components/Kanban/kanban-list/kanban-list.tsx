@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridColDef, GridGroupNode, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
@@ -224,13 +224,13 @@ export function KanbanList(props: KanbanListProps) {
   const groupingColDef: DataGridProProps['groupingColDef'] = {
     headerName: 'Сделка',
     flex: 1,
-    minWidth: 200,
+    minWidth: 280,
     renderCell: (params) => <CustomGridTreeDataGroupingCell
-      {...params}
+      {...params as GridRenderCellParams<any, any, any, GridGroupNode>}
       columns={columns}
       onCardAddClick={handleCardAdd}
       disableAddCard={disableAddCard}
-                            />,
+    />,
   };
 
   const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {

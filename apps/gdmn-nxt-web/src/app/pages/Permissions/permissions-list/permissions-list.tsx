@@ -1,6 +1,6 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
-import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridRenderCellParams, GridSortModel, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridSortModel, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
@@ -80,7 +80,7 @@ export function PermissionsList(props: PermissionsListProps) {
     width: 300,
     minWidth: 250,
     flex: 1,
-    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params} />,
+    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<any, any, any, GridGroupNode>} />,
   };
 
   return (

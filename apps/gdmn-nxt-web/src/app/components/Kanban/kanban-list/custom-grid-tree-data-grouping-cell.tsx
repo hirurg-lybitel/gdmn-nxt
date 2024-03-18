@@ -2,14 +2,14 @@ import { Box, ButtonProps, Chip, IconButton, Stack } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { GridRenderCellParams, gridFilteredDescendantCountLookupSelector, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
+import { GridGroupNode, GridRenderCellParams, gridFilteredDescendantCountLookupSelector, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
 import { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import { useCallback } from 'react';
 import { IKanbanColumn } from '@gsbelarus/util-api-types';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
 
-interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams {
+interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams<any, any, any, GridGroupNode> {
   columns?: IKanbanColumn[];
   onCardAddClick?: (columnId: number) => void;
   disableAddCard?: boolean;
@@ -47,7 +47,7 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
   };
 
   const handleClick: ButtonProps['onClick'] = (event) => {
-    apiRef.current.setRowChildrenExpansion(id, !(rowNode as any).childrenExpanded);
+    apiRef.current.setRowChildrenExpansion(id, !rowNode.childrenExpanded);
     apiRef.current.setCellFocus(id, field);
     event.stopPropagation();
   };
@@ -92,7 +92,7 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
               size="small"
               tabIndex={-1}
             >
-              {(rowNode as any).childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              {rowNode.childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
             </IconButton>
             <Stack
               direction="row"

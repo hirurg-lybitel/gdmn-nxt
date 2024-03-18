@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import { IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridColDef, GridGroupNode, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import { IconButton } from '@mui/material';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
@@ -57,7 +57,7 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
     width: 300,
     minWidth: 300,
     flex: 1,
-    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params} columns={columns} />,
+    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<any, any, any, GridGroupNode>} columns={columns} />,
   };
 
   const cols: GridColDef[] = [
