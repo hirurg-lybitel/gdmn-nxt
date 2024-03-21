@@ -96,7 +96,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        update: [...(await fetchAsObject(sql, { ID, VERSION, CHANGES, ONDATE: new Date(ONDATE) }))]
+        update: [...await fetchAsObject(sql, { ID, VERSION, CHANGES, ONDATE: new Date(ONDATE) })]
       },
       _params: id ? [{ id: id }] : undefined,
       _schema

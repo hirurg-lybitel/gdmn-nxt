@@ -20,7 +20,7 @@ const get: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        dealSources: [...(await fetchAsObject(query.query))]
+        dealSources: [...await fetchAsObject(query.query)]
       },
       _schema
     };
@@ -63,7 +63,7 @@ const upsert: RequestHandler = async(req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        dealSources: [...(await fetchAsObject(sql, { ID, NAME }))]
+        dealSources: [...await fetchAsObject(sql, { ID, NAME })]
       },
       _schema
     };

@@ -140,7 +140,7 @@ async (req: Request, userName: string, password: string, done) => {
       if (res.result === 'SUCCESS') {
         console.log('valid gedemin user');
 
-        const permissions = (await cacheManager.getKey('permissions')) ?? {};
+        const permissions = await cacheManager.getKey('permissions') ?? {};
         const userPermissions: Permissions = permissions?.[res.userProfile.id];
 
         if (!userPermissions) {
