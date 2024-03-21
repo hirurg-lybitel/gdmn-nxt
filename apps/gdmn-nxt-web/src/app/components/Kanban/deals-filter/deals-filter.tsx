@@ -37,7 +37,7 @@ export function DealsFilter(props: DealsFilterProps) {
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { data, isFetching: customerFetching } = useGetCustomersQuery();
   const { data: departments, isFetching: departmentsFetching } = useGetDepartmentsQuery();
-  const customers: ICustomer[] = useMemo(() => [...(data?.data || [])], [data?.data]);
+  const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
 
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
