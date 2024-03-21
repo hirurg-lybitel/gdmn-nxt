@@ -1,4 +1,4 @@
-import { GridColumns } from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../Styled/styled-grid/styled-grid';
 import { useGetDocumentsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { Box } from '@mui/material';
@@ -10,7 +10,7 @@ export interface DealDocumentsProps {
 export function DealDocuments ({ dealId }: DealDocumentsProps) {
   const { data = [], isFetching } = useGetDocumentsQuery(dealId);
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     {
       field: 'DESCRIPTION',
       headerName: 'Наименование',

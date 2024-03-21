@@ -29,7 +29,7 @@ export const filtersSlice = createSlice({
     },
     clearFilterData: (state, action: PayloadAction<string>) => {
       /** Никогда не удаляем deals.deadline  */
-      const deadline = [...state.filterData[action.payload]?.deadline || []];
+      const deadline = [...(state.filterData[action.payload]?.deadline || [])];
       const { [action.payload]: deletedData, ...clearedFilterData } = state.filterData;
       const newFilterData = { ...clearedFilterData, ...(deadline.length > 0 ? { [action.payload]: { deadline }} : {}) };
 

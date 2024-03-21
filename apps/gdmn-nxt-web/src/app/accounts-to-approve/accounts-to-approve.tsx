@@ -54,7 +54,7 @@ export function AccountsToApprove(props: AccountsToApproveProps) {
           rows={accounts ?? []}
           columns={columns}
           pagination
-          disableMultipleSelection
+          disableMultipleRowSelection
           loading={isFetching || isLoading}
           getRowId={row => row.ID}
           components={{

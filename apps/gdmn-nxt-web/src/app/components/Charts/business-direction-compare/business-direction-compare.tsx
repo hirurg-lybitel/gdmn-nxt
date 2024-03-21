@@ -5,7 +5,8 @@ import ApexCharts, { ApexOptions } from 'apexcharts';
 import Chart from 'react-apexcharts';
 import { Box, Grid, Stack, TextField, useTheme } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
-import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRange } from '@mui/x-date-pickers-pro';
 import { IChartFilter, useGetBusinessDirectionQuery } from '../../../features/charts/chartDataApi';
 
 const colorsMaster = ['#4ECDC4',	'#C7F464',	'#81D4FA',	'#546E7A',	'#FD6A6A', '#33B2DF',	'#03A9F4',	'#D4526E',	'#13D8AA',	'#A5978B'];
@@ -334,26 +335,48 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
 
 
   return (
-    <Grid container direction="column" spacing={3}>
-      <Grid item container direction={{ xs: 'column', md: 'column', lg: 'row' }} xs={6} spacing={3} >
-        <Grid item container xs={6}>
+    <Grid
+      container
+      direction="column"
+      spacing={3}
+    >
+      <Grid
+        item
+        container
+        direction={{ xs: 'column', md: 'column', lg: 'row' }}
+        xs={6}
+        spacing={3}
+      >
+        <Grid
+          item
+          container
+          xs={6}
+        >
           <CustomizedCard style={{ flex: 1, display: 'block' }}>
             <Grid container direction="column">
-              <Grid item p={2} xs={3} alignSelf="center">
+              <Grid
+                item
+                p={2}
+                xs={3}
+                alignSelf="center"
+              >
                 <DateRangePicker
                   value={datesLeft}
                   onChange={setDatesLeft}
-                  renderInput={(startProps: any, endProps: any) => (
-                    <>
-                      <TextField {...startProps} style={{ width: '150px' }} />
-                      <Box sx={{ mx: 2 }}/>
-                      <TextField {...endProps} style={{ width: '150px' }} />
-                    </>
-                  )}
+                  slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>
-              <Grid item container direction="row" xs={9}>
-                <Grid item xs={6} alignSelf="center">
+              <Grid
+                item
+                container
+                direction="row"
+                xs={9}
+              >
+                <Grid
+                  item
+                  xs={6}
+                  alignSelf="center"
+                >
                   <Chart
                     type="pie"
                     // height="99%"
@@ -362,7 +385,11 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
                     series={chartOptionsLeft.master.series}
                   />
                 </Grid>
-                <Grid item xs={6} alignSelf="center">
+                <Grid
+                  item
+                  xs={6}
+                  alignSelf="center"
+                >
                   <Chart
                     type="pie"
                     // height="auto"
@@ -375,24 +402,37 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
             </Grid>
           </CustomizedCard>
         </Grid>
-        <Grid item container xs={6}>
+        <Grid
+          item
+          container
+          xs={6}
+        >
           <CustomizedCard style={{ flex: 1, display: 'block' }}>
             <Grid container direction="column" >
-              <Grid item p={2} xs={3} alignSelf="center">
+              <Grid
+                item
+                p={2}
+                xs={3}
+                alignSelf="center"
+              >
                 <DateRangePicker
                   value={datesRight}
                   onChange={setDatesRight}
-                  renderInput={(startProps: any, endProps: any) => (
-                    <>
-                      <TextField {...startProps} style={{ width: '150px' }} />
-                      <Box sx={{ mx: 2 }}/>
-                      <TextField {...endProps} style={{ width: '150px' }} />
-                    </>
-                  )}
+                  slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>
-              <Grid item container direction="row" flex={1} xs={9}>
-                <Grid item xs={6} alignSelf="center" >
+              <Grid
+                item
+                container
+                direction="row"
+                flex={1}
+                xs={9}
+              >
+                <Grid
+                  item
+                  xs={6}
+                  alignSelf="center"
+                >
                   <Chart
                     type="pie"
                     // height="99%"
@@ -401,7 +441,11 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
                     series={chartOptionsRight.master.series}
                   />
                 </Grid>
-                <Grid item xs={6} alignSelf="center">
+                <Grid
+                  item
+                  xs={6}
+                  alignSelf="center"
+                >
                   <Chart
                     type="pie"
                     // height="99%"
@@ -415,7 +459,12 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
           </CustomizedCard>
         </Grid>
       </Grid>
-      <Grid item container flex={0.99} minHeight={'300px'}>
+      <Grid
+        item
+        container
+        flex={0.99}
+        minHeight={'300px'}
+      >
         <CustomizedCard style={{ flex: 1 }}>
           <Chart
             type="bar"

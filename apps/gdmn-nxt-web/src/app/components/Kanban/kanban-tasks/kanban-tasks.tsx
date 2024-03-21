@@ -1,7 +1,7 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { GridColumns } from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './kanban-tasks.module.less';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
@@ -132,7 +132,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
     USR$CLOSED: false
   }), [formik.values.TASKS?.length]);
 
-  const columns: GridColumns = useMemo(() => [
+  const columns: GridColDef[] = useMemo(() => [
     { field: 'USR$CLOSED', headerName: '', width: 50, align: 'center',
       renderCell: ({ value, row }) => <>{
         value ?
@@ -146,7 +146,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
             title={'Подтверждение'}
             text={'Пометить как выполнено?'}
             onConfirm={handleClosedChange(row, !value)}
-          >
+            >
             <Tooltip title={'Пометить как выполнено'} placement="right">
               <Checkbox checked={value}/>
             </Tooltip>
@@ -177,7 +177,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
           <Typography>{value && (new Date(value)?.toLocaleString('default', { hour: '2-digit', minute: '2-digit' }))}</Typography>
         </Stack>
     },
-    { field: 'PERFORMER', headerName: 'Исполнитель', width: 130,
+    { field: 'PERFORMER', headerName: 'Исполнитель', width: 150,
       renderCell: ({ value }) => <Box style={{ width: '100%', whiteSpace: 'initial' }}>{value?.NAME}</Box>
     },
     { field: 'CREATOR', headerName: 'Создатель', width: 130,

@@ -93,7 +93,11 @@ export function ErModelDomains(props: ErModelDomainsProps) {
   return (
     <>
       <MainToolbar />
-      <Grid container height="calc(100% - 80px)" columnSpacing={2}>
+      <Grid
+        container
+        height="calc(100% - 80px)"
+        columnSpacing={2}
+      >
         <Grid item xs={12}>
           <StyledDataGrid
             rows={rows}
@@ -101,10 +105,10 @@ export function ErModelDomains(props: ErModelDomainsProps) {
             pagination
             loading={isFetching}
             getRowId={row => row.name}
-            onSelectionModelChange={setSelectionModel}
-            selectionModel={selectionModel}
+            onRowSelectionModelChange={setSelectionModel}
+            rowSelectionModel={selectionModel}
             rowHeight={24}
-            headerHeight={24}
+            columnHeaderHeight={24}
             editMode="row"
             components={gridComponents}
           />

@@ -203,7 +203,7 @@ export const kanbanApi = createApi({
                 if (findCardIndex < 0) return true;
 
                 const tasks = column.CARDS[findCardIndex].TASKS;
-                column.CARDS[findCardIndex].TASKS = [...tasks || [], task];
+                column.CARDS[findCardIndex].TASKS = [...(tasks || []), task];
                 return false;
               });
             });

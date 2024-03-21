@@ -44,16 +44,16 @@ const History = ({ onSelectScript }: IHistoryProps) => {
       rows={data ?? []}
       columns={historyColumns}
       rowHeight={24}
-      headerHeight={24}
+      columnHeaderHeight={24}
       getRowId={row => row.ID}
       onRowClick={params => onSelectScript(params.row.SQL_TEXT)}
       loading={isFetching}
       disableColumnResize
       disableColumnSelector
-      disableMultipleSelection
+      disableMultipleRowSelection
       pagination
-      onSelectionModelChange={setSelectionModel}
-      selectionModel={selectionModel}
+      onRowSelectionModelChange={setSelectionModel}
+      rowSelectionModel={selectionModel}
       components={gridComponents}
     />
   );

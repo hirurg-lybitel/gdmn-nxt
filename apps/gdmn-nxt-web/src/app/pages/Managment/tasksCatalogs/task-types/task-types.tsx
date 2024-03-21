@@ -2,12 +2,12 @@ import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customiz
 import styles from './task-types.module.less';
 import { Button, CardContent, CardHeader, Divider, IconButton, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import { GridActionsCellItem, GridCellParams, GridColumns, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridActionsCellItem, GridCellParams, GridColDef, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { ChangeEvent, KeyboardEvent, useCallback, useMemo, useState, MouseEvent, SyntheticEvent } from 'react';
+import { ChangeEvent, KeyboardEvent, useCallback, useMemo, useState, MouseEvent, SyntheticEvent, useReducer, useEffect } from 'react';
 import { useAddTaskTypeMutation, useDeleteTaskTypeMutation, useGetTaskTypesQuery, useUpdateTaskTypeMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { ITaskType } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
@@ -46,7 +46,7 @@ const CustomCellEditForm = (props: GridRenderEditCellParams) => {
 
   const handleCellOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    apiRef.current.setEditCellValue({ id, field, value });
+    apiRef.current.setEditCellValue({ id, field, value });apiRef.current.forceUpdate();
   }, [apiRef, field, id]);
 
   return (
@@ -78,7 +78,7 @@ export function TaskTypes(props: TaskTypesProps) {
       }>({
         title: '', mode: 'additing', method: () => {}
       });
-
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
   const handleSetTitleAndMethod = (mode: ConfirmationMode, method: () => void) => {
     const title = (() => {
       switch (mode) {
@@ -108,15 +108,29 @@ export function TaskTypes(props: TaskTypesProps) {
     const api = useGridApiContext();
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
+    const [first, setFirst] = useState(true);
+
+    useEffect(() => {
+      if (first) {
+        setFirst(false);
+        return;
+      };
+      const row = { ...api.current.getRow(id) };
+      if (row!.ID === 0) delete row['ID'];
+      handleSubmit(row);
+    }, [apiRef.current.getRowModels().get(id)]);
+
     const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
+      forceUpdate();
       event.stopPropagation();
-      api.current.setRowMode(id, GridRowModes.Edit);
+      api.current.startRowEditMode({ id });
     };
 
     const handleConfirmSave = (event: MouseEvent<HTMLButtonElement>) => {
+      forceUpdate();
       event.stopPropagation();
       const row = api.current.getRow(id);
-      if (row?.isNew) {
+      if (row?.ID === 0) {
         handleSetTitleAndMethod('additing', handleSaveClick);
       } else {
         handleSetTitleAndMethod('editing', handleSaveClick);
@@ -126,20 +140,9 @@ export function TaskTypes(props: TaskTypesProps) {
 
     const handleSaveClick = () => {
       setConfirmOpen(false);
-
-      const rowModel = apiRef.current.getEditRowsModel();
-      const newRow: { [key: string]: any } = {};
-      for (const [key, { value }] of Object.entries(rowModel[id])) {
-        newRow[key] = value;
-      }
-      newRow['ID'] = id;
-
-      api.current.updateRows([newRow]);
-      api.current.setRowMode(id, GridRowModes.View);
-
-      const row = api.current.getRow(id);
-      if (row!.isNew) delete row['ID'];
-      handleSubmit(row);
+      api.current.stopRowEditMode({ id });
+      const row = { ...api.current.getRow(id) };
+      forceUpdate();
     };
 
     const handleConfirmDelete = (event: MouseEvent<HTMLButtonElement>) => {
@@ -154,16 +157,13 @@ export function TaskTypes(props: TaskTypesProps) {
     };
 
     const handleCancelClick = () => {
-      api.current.setRowMode(id, GridRowModes.View);
-
-      const row = api.current.getRow(id);
-      if (row!.isNew) {
-        api.current.updateRows([{ ID: id, _action: 'delete' }]);
-      }
+      api.current.stopRowEditMode({ id, ignoreModifications: true });
+      if (api.current.getRow(id)!.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
+      forceUpdate();
     };
 
     if (isInEditMode) {
-      const rowModel = apiRef.current.getEditRowsModel();
+      const rowModel = apiRef.current.getRowModels();
       return (
         <>
           <IconButton
@@ -171,7 +171,6 @@ export function TaskTypes(props: TaskTypesProps) {
             color="primary"
             size="small"
             onClick={handleConfirmSave}
-            disabled={!rowModel[id]['NAME']?.value || !!rowModel[id]['NAME']?.error}
           >
             <SaveIcon fontSize="small" />
           </IconButton>
@@ -222,7 +221,7 @@ export function TaskTypes(props: TaskTypesProps) {
 
   const renderEditCell = (params: GridRenderEditCellParams) => <CustomCellEditForm {...params} />;
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     {
       field: 'NAME',
       headerName: 'Наименование',
@@ -268,12 +267,13 @@ export function TaskTypes(props: TaskTypesProps) {
 
   const handleAddSource = () => {
     const id = 0;
-    apiRef.current.updateRows([{ ID: id, isNew: true }]);
+    apiRef.current.updateRows([{ ID: id }]);
     apiRef.current.setRowIndex(id, 0);
     apiRef.current.scrollToIndexes({
       rowIndex: 0,
     });
-    apiRef.current.setRowMode(id, GridRowModes.Edit);
+    apiRef.current.startRowEditMode({ id });
+    forceUpdate();
   };
 
   const memoConfirmDialog = useMemo(() =>

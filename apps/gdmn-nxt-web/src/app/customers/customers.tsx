@@ -206,7 +206,7 @@ export function Customers(props: CustomersProps) {
   const handleLabelClick = useCallback(
     (label: ILabel) => () => {
       if (filteringData?.['LABELS']?.findIndex((l: ILabel) => l.ID === label.ID) >= 0) return;
-      filterHandlers.handleFilteringData({ ...filteringData, 'LABELS': [...filteringData?.['LABELS'] || [], label] });
+      filterHandlers.handleFilteringData({ ...filteringData, 'LABELS': [...(filteringData?.['LABELS'] || []), label] });
     },
     [filteringData]
   );
@@ -652,49 +652,42 @@ export function Customers(props: CustomersProps) {
             display="flex"
             className={classes.row}
           >
-            <Box flex={1}>
-              <StyledGrid
-                autoHeightForFields={['LABELS']}
-                onRowDoubleClick={lineDoubleClick}
-                columns={columns}
-                rows={customers ?? []}
-                loading={customerFetching}
-                pagination
-                paginationMode="server"
-                pageSize={paginationData.pageSize}
-                rowCount={customersCount}
-                rowsPerPageOptions={[10, 20, 50]}
-                onPageChange={(data) => {
-                  setPaginationData((prevState) => ({
-                    ...prevState,
-                    pageNo: data
-                  }));
-                }}
-                onPageSizeChange={(data) => {
-                  setPaginationData((prevState) => ({
-                    ...prevState,
-                    pageSize: data
-                  }));
-                }}
-                sortingMode="server"
-                onSortModelChange={handleSortModelChange}
-                disableMultipleSelection
-                hideFooterSelectedRowCount
-                hideHeaderSeparator
-                disableColumnResize
-                disableColumnReorder
-                disableColumnFilter
-                disableColumnMenu
-                columnVisibilityModel={{
-                  CONTRACTS: false,
-                  DEPARTMENTS: false,
-                  WORKTYPES: false
-                }}
-                onSelectionModelChange={(ids) =>
-                  setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
-                }
-              />
-            </Box>
+            <StyledGrid
+              autoHeightForFields={['LABELS']}
+              onRowDoubleClick={lineDoubleClick}
+              columns={columns}
+              rows={customers ?? []}
+              loading={customerFetching}
+              pagination
+              paginationMode="server"
+              paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
+              rowCount={customersCount}
+              pageSizeOptions={[10, 20, 50]}
+              onPaginationModelChange={(data: any) => {
+                setPaginationData((prevState) => ({
+                  ...prevState,
+                  pageNo: data.page,
+                  pageSize: data.pageSize
+                }));
+              }}
+              sortingMode="server"
+              onSortModelChange={handleSortModelChange}
+              disableMultipleRowSelection
+              hideFooterSelectedRowCount
+              hideHeaderSeparator
+              disableColumnResize
+              disableColumnReorder
+              disableColumnFilter
+              disableColumnMenu
+              columnVisibilityModel={{
+                CONTRACTS: false,
+                DEPARTMENTS: false,
+                WORKTYPES: false
+              }}
+              onRowSelectionModelChange={(ids: any) =>
+                setCurrentOrganization(ids[0] ? Number(ids[0]) : 0)
+              }
+            />
             <Box>{memoFilter}</Box>
             {memoUpsertCustomer}
           </Stack>

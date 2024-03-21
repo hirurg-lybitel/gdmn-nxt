@@ -1,6 +1,6 @@
 import { IContactWithID, ICustomerContract, IWorkType } from '@gsbelarus/util-api-types';
 import { Autocomplete, Box, Button, CardActions, CardContent, CardHeader, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
-import { DateRange, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRangePickerProps, DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useState } from 'react';
 import TopEarning, { ITopEarningParams } from '../../../components/Reports/top-earning/top-earning';
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
@@ -8,6 +8,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 interface IInitState {
   cutomerId: number | null;
@@ -15,7 +16,7 @@ interface IInitState {
 }
 const initState: IInitState = {
   cutomerId: null,
-  dates: [new Date((new Date).getFullYear(), (new Date).getMonth(), 1), new Date()]
+  dates: [new Date((new Date()).getFullYear(), (new Date()).getMonth(), 1), new Date()]
 };
 
 export default function TopEarningPage() {
@@ -33,17 +34,14 @@ export default function TopEarningPage() {
     contractJob: selectedConstract ? [selectedConstract.ID] : undefined
   });
 
-  const renderOption = (fieldName: string) => (props: any, option: any) => {
-    return (
-      <li {...props} key={option.ID}>
-        {option[fieldName]}
-      </li>
-    );
-  };
+  const renderOption = (fieldName: string) => (props: any, option: any) =>
+    <li {...props} key={option.ID}>
+      {option[fieldName]}
+    </li>;
 
   const handleGenerate = () => {
     setInputParams((prevState) => ({
-      dates,
+      dates: dates as DateRangePickerProps<Date>,
       customerCount,
       ...(selectedDep && { depId: selectedDep.ID }),
       ...(selectedConstract && { jobId: selectedConstract.ID }),
@@ -61,23 +59,25 @@ export default function TopEarningPage() {
 
   return (
     <>
-      <Stack direction="column" flex={1} spacing={2}>
+      <Stack
+        direction="column"
+        flex={1}
+        spacing={2}
+      >
         <CustomizedCard>
           <CardHeader title={<Typography variant="pageHeader">ТОП по выручке</Typography>} />
           <Divider />
           <CardContent>
-            <Grid container direction="column" spacing={2}>
+            <Grid
+              container
+              direction="column"
+              spacing={2}
+            >
               <Grid item>
                 <DateRangePicker
                   value={dates}
                   onChange={setDates}
-                  renderInput={(startProps: any, endProps: any) => (
-                    <>
-                      <TextField {...startProps} />
-                      <Box sx={{ mx: 2 }}/>
-                      <TextField {...endProps} />
-                    </>
-                  )}
+                  slotProps={{ textField: { variant: 'outlined' } }}
                 />
               </Grid>
               <Grid item>
@@ -88,7 +88,13 @@ export default function TopEarningPage() {
                   onChange={(e) => setCustomerCount(Number(e.target.value))}
                 />
               </Grid>
-              <Grid item container xs={12} spacing={2} direction={{ sm: 'column', md: 'row' }}>
+              <Grid
+                item
+                container
+                xs={12}
+                spacing={2}
+                direction={{ sm: 'column', md: 'row' }}
+              >
                 <Grid item xs={4}>
                   <Autocomplete
                     options={departments || []}
@@ -115,7 +121,7 @@ export default function TopEarningPage() {
                     value={selectedConstract || null}
                     onChange={(e, value) => {
                       setSelectedConstract(value);
-                      setSelectedWorkType(null)
+                      setSelectedWorkType(null);
                     }}
                     renderInput={(params) => (
                       <TextField
@@ -148,7 +154,11 @@ export default function TopEarningPage() {
           </CardContent>
           <Divider />
           <CardActions style={{ padding: '16px' }}>
-            <Stack direction="row" spacing={2} flex={1}>
+            <Stack
+              direction="row"
+              spacing={2}
+              flex={1}
+            >
               <Box flex={1} />
               <Button
                 onClick={handelClear}

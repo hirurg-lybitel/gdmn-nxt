@@ -169,10 +169,15 @@ export function Contracts(props: ContractsProps) {
           loading={contractsIsFetching}
           pagination
           paginationMode="server"
-          onPageChange={pageOnChange}
-          onPageSizeChange={pageSizeOnChange}
-          pageSize={pagination.pageSize}
-          rowsPerPageOptions={[10, 20, 50]}
+          onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+            setPagination({
+              ...pagination,
+              pageSize: data.pageSize,
+              pageNo: data.page
+            });
+          }}
+          paginationModel={{ page: pagination.pageNo, pageSize: pagination?.pageSize }}
+          pageSizeOptions={[10, 20, 50]}
           sortingMode="server"
           onSortModelChange={handleSortModelChange}
           getDetailPanelHeight={() => 'auto'}

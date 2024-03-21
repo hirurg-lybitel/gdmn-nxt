@@ -1,6 +1,6 @@
 import styles from './deal-sources.module.less';
 import { Box, Button, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
-import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
+import { GridActionsCellItem, GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
 import { useAddDealSourceMutation, useDeleteDealSourceMutation, useGetDealSourcesQuery, useUpdateDealSourceMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
@@ -50,7 +50,7 @@ export function DealSources(props: DealSourcesProps) {
     setUpsertSource(false);
   }, []);
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, cellClassName: styles.ColName, },
     {
       field: 'actions',

@@ -1,6 +1,6 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { Box, Grid, Typography } from '@mui/material';
-import { DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { DateRangePickerProps } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useGetTopEarningQuery } from '../../../features/topEarning';
@@ -11,7 +11,7 @@ import styles from './top-earning.module.less';
 
 /* eslint-disable-next-line */
 export interface ITopEarningParams {
-  dates: DateRange<Date>;
+  dates: DateRangePickerProps<Date>;
   depId?: number;
   jobId?: number;
   jobWorkId?: number;
@@ -22,8 +22,8 @@ export interface TopEarningProps {
   params?: ITopEarningParams
 };
 
-export function TopEarning({params}: TopEarningProps) {
-  const [getTopEarning, {data, isLoading, isSuccess}] = useGetTopEarningQuery();
+export function TopEarning({ params }: TopEarningProps) {
+  const [getTopEarning, { data, isLoading, isSuccess }] = useGetTopEarningQuery();
 
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
@@ -39,7 +39,11 @@ export function TopEarning({params}: TopEarningProps) {
     <>
       {data
         ? <><Grid container className={styles['table']} >
-          <Grid container item className={`${styles['header']} ${colorMode === ColorMode.Dark ? styles['headerDark'] : ''}`}>
+          <Grid
+            container
+            item
+            className={`${styles['header']} ${colorMode === ColorMode.Dark ? styles['headerDark'] : ''}`}
+          >
             <Grid item xs={9}>
               <Typography className={`${styles['cell']} ${styles['noTopBorder']}`} fontWeight={600}>Наименование</Typography>
             </Grid>
@@ -49,9 +53,27 @@ export function TopEarning({params}: TopEarningProps) {
           </Grid>
           <>
             {data.map((el, idx) =>
-              <Grid key={idx} item container direction="row" justifyItems="center" justifyContent="center">
-                <Grid item className={styles['cell']} xs={9}>{el.NAME}</Grid>
-                <Grid item className={`${styles['cell']} ${styles['noRightBorder']}`} xs={3} textAlign="right" justifyItems="center" justifyContent="center" >
+              <Grid
+                key={idx}
+                item
+                container
+                direction="row"
+                justifyItems="center"
+                justifyContent="center"
+              >
+                <Grid
+                  item
+                  className={styles['cell']}
+                  xs={9}
+                >{el.NAME}</Grid>
+                <Grid
+                  item
+                  className={`${styles['cell']} ${styles['noRightBorder']}`}
+                  xs={3}
+                  textAlign="right"
+                  justifyItems="center"
+                  justifyContent="center"
+                >
                   <Typography justifyContent="center">{(Math.round(el.AMOUNT * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Typography>
                 </Grid>
               </Grid>)
