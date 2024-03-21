@@ -11,8 +11,11 @@ export interface LinkTabProps extends TabProps {
 export function LinkTab({
   href = '',
   label,
+  selected,
   ...props
 }: LinkTabProps) {
+  const MyLink = <Link to={href ?? ''} />;
+
   const detailsComponent = {
     // eslint-disable-next-line react/display-name
     component: forwardRef((props, ref: ForwardedRef<any>) => (
@@ -28,7 +31,7 @@ export function LinkTab({
   return (
     <Tab
       {...detailsComponent}
-      aria-current={props.selected && 'page'}
+      aria-current={selected && 'page'}
       label={label}
       {...props}
     />

@@ -20,13 +20,13 @@ export function ErModel(props: ErModelProps) {
   const [selectionModel, setSelectionModel] = useState<GridRowId[]>([]);
   const rows = useMemo(
     () => data?.entities[selectedEntity]?.attributes ?? [],
-  [data, selectedEntity]);
+    [data, selectedEntity]);
 
-  useEffect( () => {
+  useEffect(() => {
     if (selectionModel.length) {
       setSelectionModel([]);
     }
-  }, [selectedEntity])
+  }, [selectedEntity]);
 
   const columns: GridColDef[] = [
     {
@@ -55,10 +55,14 @@ export function ErModel(props: ErModelProps) {
   ];
 
   const recurse = (parent?: string) => data && Object.values(data.entities)
-    .filter( e => e.parent === parent )
+    .filter(e => e.parent === parent)
     .map(
       e =>
-        <StyledTreeItem key={e.name} nodeId={e.name} label={`${e.name}${e.lName ? ' - ' + e.lName : ''}`}>
+        <StyledTreeItem
+          key={e.name}
+          nodeId={e.name}
+          label={`${e.name}${e.lName ? ' - ' + e.lName : ''}`}
+        >
           {recurse(e.name)}
         </StyledTreeItem>
     );
@@ -68,7 +72,7 @@ export function ErModel(props: ErModelProps) {
   return (
     isFetching ?
       <CircularIndeterminate open={true} />
-    :
+      :
       <>
         <MainToolbar />
         <Grid
@@ -85,14 +89,14 @@ export function ErModel(props: ErModelProps) {
               overflowY: 'auto',
               maxHeight: '100%',
             }}
-        >
+          >
             <StyledTreeView
               aria-label="er-model"
               defaultExpanded={['TgdcBase']}
               defaultCollapseIcon={'🞃'}
               defaultExpandIcon={'🞂'}
               defaultEndIcon={<div style={{ width: 14 }} />}
-              onNodeSelect={ (_evt: any, ids: any) => {
+              onNodeSelect={(_evt: any, ids: any) => {
                 if (ids) {
                   setSelectedEntity(ids);
                 }
@@ -107,11 +111,11 @@ export function ErModel(props: ErModelProps) {
               columns={columns}
               loading={isFetching}
               getRowId={row => row.name}
-              onSelectionModelChange={setSelectionModel}
-              selectionModel={selectionModel}
+              onRowSelectionModelChange={setSelectionModel}
+              rowSelectionModel={selectionModel}
               rowHeight={24}
-              headerHeight={24}
-              editMode='row'
+              columnHeaderHeight={24}
+              editMode="row"
               components={gridComponents}
             />
           </Grid>

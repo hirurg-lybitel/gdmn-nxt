@@ -1,5 +1,5 @@
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColumns, GridEnrichedColDef, GridRowParams } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GridColDef, GridGroupNode, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
@@ -16,12 +16,12 @@ import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-ed
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
   loading?: boolean;
-  gridColumns?: GridColumns;
+  gridColumns?: GridColDef[];
   disableAddCard?: boolean;
   editable?: boolean;
 }
 
-const defaultGridColumns: GridColumns = [
+const defaultGridColumns: GridColDef[] = [
   {
     field: 'CONTACT',
     headerName: 'Клиент',
@@ -71,7 +71,7 @@ export function KanbanList(props: KanbanListProps) {
   const [deleteTask] = useDeleteTaskMutation();
 
 
-  const actionColumn: GridEnrichedColDef<any, any, any> = useMemo(() => ({
+  const actionColumn: GridColDef<any, any, any> = useMemo(() => ({
     field: 'actions',
     type: 'actions',
     resizable: false,
@@ -87,7 +87,7 @@ export function KanbanList(props: KanbanListProps) {
     ]
   }), [userPermissions?.deals.PUT]);
 
-  const cols: GridColumns = useMemo(() => ([
+  const cols: GridColDef[] = useMemo(() => ([
     ...gridColumns,
     ...(editable ? [{ ...actionColumn }] : [])
   ]), [actionColumn, editable, gridColumns]);
@@ -224,9 +224,9 @@ export function KanbanList(props: KanbanListProps) {
   const groupingColDef: DataGridProProps['groupingColDef'] = {
     headerName: 'Сделка',
     flex: 1,
-    minWidth: 200,
+    minWidth: 280,
     renderCell: (params) => <CustomGridTreeDataGroupingCell
-      {...params}
+      {...params as GridRenderCellParams<any, any, any, GridGroupNode>}
       columns={columns}
       onCardAddClick={handleCardAdd}
       disableAddCard={disableAddCard}

@@ -1,6 +1,6 @@
 import styles from './deny-reasons.module.less';
 import { IDenyReason } from '@gsbelarus/util-api-types';
-import { GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
+import { GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import { useAddDenyReasonMutation, useDeleteDenyReasonMutation, useGetDenyReasonsQuery, useUpdateDenyReasonMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { useCallback, useMemo, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -49,7 +49,7 @@ export function DenyReasons(props: DenyReasonsProps) {
     setUpsertDenyReason(false);
   }, []);
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, cellClassName: styles.ColName, },
     {
       field: 'actions',

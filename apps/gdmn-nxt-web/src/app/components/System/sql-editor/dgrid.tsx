@@ -1,6 +1,6 @@
-import { GridRowId, GridColDef } from "@mui/x-data-grid-pro";
-import { useMemo } from "react";
-import { StyledDataGrid, gridComponents } from "../../Styled/styled-data-grid/styled-data-grid";
+import { GridRowId, GridColDef } from '@mui/x-data-grid-pro';
+import { useMemo } from 'react';
+import { StyledDataGrid, gridComponents } from '../../Styled/styled-data-grid/styled-data-grid';
 
 interface IDataGridProps {
   rows?: any[];
@@ -10,7 +10,7 @@ interface IDataGridProps {
 };
 
 export const DGrid = ({ rows, isLoading, selectionModel, setSelectionModel }: IDataGridProps) => {
-  const columns: GridColDef[] = useMemo( () => {
+  const columns: GridColDef[] = useMemo(() => {
     const fields = rows?.length ? Object.keys(rows[0]) : [];
     return fields.map(f => ({
       field: f,
@@ -25,10 +25,10 @@ export const DGrid = ({ rows, isLoading, selectionModel, setSelectionModel }: ID
       columns={columns}
       pagination
       loading={isLoading}
-      onSelectionModelChange={setSelectionModel}
-      selectionModel={selectionModel}
+      onRowSelectionModelChange={setSelectionModel}
+      rowSelectionModel={selectionModel}
       rowHeight={24}
-      headerHeight={24}
+      columnHeaderHeight={24}
       components={gridComponents}
     />
   );

@@ -46,8 +46,8 @@ export function BankStatement({
           loading={bankStatementIsFetching}
           loadingMode="circular"
           pagination
-          rowsPerPageOptions={[20]}
-          pageSize={20}
+          pageSizeOptions={[20]}
+          paginationModel={{ page: 0, pageSize: 20 }}
           rowHeight={100}
         />
       </CustomizedCard>

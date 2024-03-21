@@ -3,7 +3,7 @@ import { Box, Checkbox, CircularProgress, IconButton, Stack, Tooltip, Typography
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { ChangeEvent, MouseEvent, WheelEvent, useCallback, useMemo, useRef, useState } from 'react';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
-import { GridColumns, GridRowParams } from '@mui/x-data-grid-pro';
+import { GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import useDateComparator from '../../helpers/hooks/useDateComparator';
@@ -36,7 +36,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
 
   const colorMode = useSelector((state: RootState) => state.settings.customization.colorMode);
 
-  const columns: GridColumns = [
+  const columns: GridColDef[] = [
     {
       field: 'USR$CLOSED',
       headerName: '',
@@ -175,7 +175,7 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
         rowHeight={rowHeight}
         hideColumnHeaders
         hideFooter
-        disableSelectionOnClick
+        disableRowSelectionOnClick
       />
       {memoKanbanEditTask}
     </div>

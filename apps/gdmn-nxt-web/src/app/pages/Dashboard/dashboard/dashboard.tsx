@@ -8,7 +8,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { DealsSummarize } from './deals-summarize';
 import { TasksSummarize } from './tasks-summarize';
 import { Fragment, KeyboardEvent, useRef, useState } from 'react';
-import { DateRange, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
+import { DateRange, DateRangeCalendar, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from 'dayjs';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -111,7 +111,9 @@ export function Dashboard(props: DashboardProps) {
                   <TextField
                     variant="standard"
                     style={{ height: '26px', width: '180px' }}
-                    value={`${dayjs(period[0], dateFormat)?.toDate().toLocaleDateString()} - ${dayjs(period[1], dateFormat)?.toDate().toLocaleDateString()}`}
+                    value={`${dayjs(period[0], dateFormat)?.toDate()
+                      .toLocaleDateString()} - ${dayjs(period[1], dateFormat)?.toDate()
+                      .toLocaleDateString()}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setOpenDateRange(true);
@@ -132,17 +134,9 @@ export function Dashboard(props: DashboardProps) {
                       onKeyDown={closeDateRangeCardByKey}
                     >
                       <CustomizedCard borders>
-                        <StaticDateRangePicker
-                          displayStaticWrapperAs="desktop"
-                          value={period}
+                        <DateRangeCalendar
+                          value={[period[0]?.toDate(), period[1]?.toDate()] as any}
                           onChange={dateRangePickerChange}
-                          renderInput={(startProps, endProps) => (
-                            <Fragment>
-                              <TextField {...startProps} />
-                              <Box sx={{ mx: 2 }}> to </Box>
-                              <TextField {...endProps} />
-                            </Fragment>
-                          )}
                         />
                       </CustomizedCard>
                     </Popper>

@@ -1,12 +1,12 @@
 import { Box, ButtonProps, Chip, IconButton, Stack } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { GridRenderCellParams, gridFilteredDescendantCountLookupSelector, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
+import { GridGroupNode, GridRenderCellParams, gridFilteredDescendantCountLookupSelector, useGridApiContext, useGridSelector } from '@mui/x-data-grid-pro';
 import { useCallback } from 'react';
 import { IKanbanColumn } from '@gsbelarus/util-api-types';
 import { renderCellExpand } from '../../../components/Styled/styled-grid/styled-grid';
 
-interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams {};
+interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams<any, any, any, GridGroupNode> {};
 
 export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGroupingCellProps) => {
   const { id, field, rowNode, value, row } = props;
@@ -32,7 +32,7 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
       event.stopPropagation();
     }
     if (isNavigationKey(event.key) && !event.shiftKey) {
-      apiRef.current.publishEvent('cellNavigationKeyDown', props, event);
+      apiRef.current.publishEvent('cellNavigationKeyDown' as any, props, event);
     }
   };
 

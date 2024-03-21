@@ -11,7 +11,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { UserState } from '../../../features/user/userSlice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers-pro';
+import { DateTimePicker, TimePicker } from '@mui/x-date-pickers-pro';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useAddTaskMutation, useDeleteCardMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
@@ -399,12 +400,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     <DesktopDatePicker
                       label="Дата"
                       value={formik.values.USR$DEADLINE || null}
-                      mask="__.__.____"
                       // onChange={formik.handleChange}
                       onChange={(value) => {
                         formik.setFieldValue('USR$DEADLINE', value);
                       }}
-                      renderInput={(params) => <TextField {...params} />}
+                      slotProps={{ textField: { variant: 'outlined' } }}
                     />
                     <TimePicker
                       label="Время"
@@ -417,7 +417,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                           combineDateAndTime(formik.values.USR$DEADLINE ? new Date(formik.values.USR$DEADLINE) : new Date(), value || undefined)
                         );
                       }}
-                      renderInput={(params) => <TextField {...params} />}
+                      slotProps={{ textField: { variant: 'outlined' } }}
                     />
                   </Stack>
                   {!!formik.values.USR$DATECLOSE &&
@@ -428,16 +428,15 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         label="Дата"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
-                        mask="__.__.____"
                         onChange={formik.handleChange}
-                        renderInput={(params) => <TextField {...params} />}
+                        slotProps={{ textField: { variant: 'outlined' } }}
                       />
-                      <TimePicker
+                      <DateTimePicker
                         label="Время"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
                         onChange={formik.handleChange}
-                        renderInput={(params) => <TextField {...params} />}
+                        slotProps={{ textField: { variant: 'outlined' } }}
                       />
                     </Stack>
                   </>}
