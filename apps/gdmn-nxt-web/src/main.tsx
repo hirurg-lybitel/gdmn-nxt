@@ -53,6 +53,7 @@ import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types
 import Contacts from './app/pages/Managment/Contacts';
 import { Contracts } from './app/pages/Managment/contracts';
 import OurContacts from './app/pages/Managment/ourContacts';
+import EmailTemplate from '@gdmn-nxt/components/email-template/email-template';
 
 registerMUI();
 
@@ -96,6 +97,7 @@ const Main = () => {
                           <Route path="" element={<Navigate to="dashboard/overview" />} />
                           <Route path="dashboard">
                             <Route path="" element={<Navigate to="overview" />} />
+                            <Route path="email" element={<EmailTemplate />}/>
                             <Route path="overview" element={<Dashboard />} />
                             <Route path="analytics" element={<Analytics />} />
                           </Route>
