@@ -20,7 +20,7 @@ jobs:
   build:
     name: Build and publish image
     runs-on: ubuntu-latest
-    environment: Production
+    environment: Belgiss
     permissions:
       contents: read
       packages: write
