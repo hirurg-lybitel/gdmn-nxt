@@ -1,4 +1,4 @@
-name: Build and Deploy Server Image
+name: Build and Deploy GS Server Image
 run-name: ${{ github.actor }} triggered Docker server 🗄️ deploying 🐳
 
 on:

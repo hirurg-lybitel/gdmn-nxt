@@ -1,4 +1,4 @@
-name: Build and Deploy Client Image
+name: Build and Deploy GS Client Image
 run-name: ${{ github.actor }} triggered Docker client 🖥️ deploying 🐳
 
 on:

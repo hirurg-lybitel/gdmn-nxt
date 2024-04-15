@@ -1,26 +1,23 @@
-name: Build and Deploy Client Image
-run-name: ${{ github.actor }} triggered Docker client 🖥️ deploying 🐳
+name: Build Belgiss Server Image
+run-name: ${{ github.actor }} triggered Docker server 🗄️ deploying 🐳
 
 on:
   push:
     branches:
       - belgiss-prod
     paths:
-      - 'apps/gdmn-nxt-web/**'
+      - 'apps/gdmn-nxt-server/**'
       - 'libs/**'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/gdmn-crm-client
-  ENV_SERVER_HOST: ${{ vars.ENV_SERVER_HOST }}
-  ENV_SOCKET_NOTIFICATIONS_PORT: ${{ vars.ENV_SOCKET_NOTIFICATIONS_PORT}}
-  ENV_SOCKET_STREAMING_UPDATE_PORT: ${{ vars.ENV_SOCKET_STREAMING_UPDATE_PORT }}
+  IMAGE_NAME: ${{ github.repository_owner }}/belgiss-crm-server
 
 jobs:
   build:
-    name: Build and publish gdmn image
+    name: Build and publish image
     runs-on: ubuntu-latest
-    environment: Belgiss
+    environment: Production
     permissions:
       contents: read
       packages: write
@@ -49,37 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          build-args: |
-            "NX_SERVER_HOST=${{ env.ENV_SERVER_HOST }}"
-            "NX_SOCKET_NOTIFICATIONS_PORT=${{ env.ENV_SOCKET_NOTIFICATIONS_PORT }}"
-            "NX_SOCKET_STREAMING_UPDATE_PORT=${{ env.ENV_SOCKET_STREAMING_UPDATE_PORT }}"
-          target: client
+          target: server
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-  deploy:
-    needs: build
-    name: Deploy image
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install SSH client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client
-
-      - name: SSH to Remote Server and Execute Command
-        uses: appleboy/ssh-action@master
-        with:
-            host: ${{ secrets.DEPLOY_HOST }}
-            username: ${{ secrets.DEPLOY_USERNAME }}
-            password: ${{ secrets.DEPLOY_PASSWORD }}
-            port: ${{ secrets.DEPLOY_PORT }}
-            script: |
-              cd workspace/Yuri/crm
-              docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-              sh run_client_container.sh
-              exit
