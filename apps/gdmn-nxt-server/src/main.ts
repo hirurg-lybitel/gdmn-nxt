@@ -347,7 +347,7 @@ if (config.serverStaticMode) {
   });
 }
 
-app.get('*', (req) => console.log(`Unknown request: ${req.url}`));
+app.get('*', (req, res) => res.status(200).send('Hello from crm server!'));
 
 const privateKey = fs.readFileSync(path.join(__dirname, '../../../ssl', 'private.key'));
 const certificate = fs.readFileSync(path.join(__dirname, '../../../ssl', 'public.crt'));
