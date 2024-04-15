@@ -60,9 +60,11 @@ const Main = () => {
   const customization = useSelector(
     (state: RootState) => state.settings.customization
   );
+
   const loginStage = useSelector<RootState, LoginStage>(
     (state) => state.user.loginStage
   );
+
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
 

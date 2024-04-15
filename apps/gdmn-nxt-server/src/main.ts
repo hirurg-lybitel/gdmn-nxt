@@ -100,6 +100,7 @@ app.use(cors({
 if (config.serverStaticMode) {
   app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
 }
+
 app.use(express.json({ limit: bodySize }));
 app.use(express.urlencoded({ extended: true }));
 const apiRoot = {
