@@ -60,8 +60,8 @@
         "buildTarget": "gdmn-nxt-web:build",
         "port": 4201,
         "ssl": true,
-        "sslKey": "./ssl/gdmn.app.key",
-        "sslCert": "./ssl/gdmn.app.crt"
+        "sslKey": "./ssl/private.key",
+        "sslCert": "./ssl/public.crt"
       },
       "configurations": {
         "production": {

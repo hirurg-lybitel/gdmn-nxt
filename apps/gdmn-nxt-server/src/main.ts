@@ -351,9 +351,9 @@ if (config.serverStaticMode) {
 
 app.get('*', (req) => console.log(`Unknown request: ${req.url}`));
 
-const privateKey = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key'));
-const bundle = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.ca-bundle'));
-const certificate = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt'));
+const privateKey = fs.readFileSync(path.join(__dirname, '../../../ssl', 'private.key'));
+const certificate = fs.readFileSync(path.join(__dirname, '../../../ssl', 'public.crt'));
+const bundle = fs.readFileSync(path.join(__dirname, '../../../ssl', 'ca.bundle'));
 
 const options: ServerOptions = {
   key: privateKey,
