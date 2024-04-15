@@ -302,9 +302,6 @@ router.use(contractsListRouter);
 /** Bank Statements */
 router.use(bankStatementsRouter);
 
-/** Deals */
-// router.use(dealsRouter);
-
 /** Kanban */
 router.use(kanbanRouter);
 

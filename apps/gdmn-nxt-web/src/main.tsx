@@ -65,9 +65,11 @@ const Main = () => {
   );
   const [savedTheme, setSavedTheme] = useState<Theme>(theme(customization));
   const settings = useSelector((state: RootState) => state.settings);
+
   useEffect(() => {
     setSavedTheme(theme(customization));
   }, [customization]);
+
   const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
 
   return (
