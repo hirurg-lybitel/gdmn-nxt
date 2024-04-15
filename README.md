@@ -3,7 +3,7 @@
 ![image](https://github.com/gsbelarus/gdmn-nxt/assets/11502258/552f3ae1-2ac2-4615-9c10-7c9766d6c58e)
 
 ## Установка и запуск
- - скачать и установить [nodejs](https://nodejs.org/en/download/)
+ - скачать и устанoвить [nodejs](https://nodejs.org/en/download/)
  - скачать и установить [firebird 3](https://firebirdsql.org/en/firebird-3-0/)
  - установить yarn:
  ```
