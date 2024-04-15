@@ -1,3 +1,8 @@
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import { CssBaseline } from '@mui/material';
 import { StrictMode, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RootState, store } from './app/store';
@@ -15,12 +20,6 @@ import { OrderList } from './app/pages/Customers/order-list/order-list';
 import { ErModel } from './app/er-model/er-model';
 import App from './app/app';
 import CustomerHomePage from './app/customer-home-page/customer-home-page';
-
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import { CssBaseline } from '@mui/material';
 import StandardOrder from './app/standard-order/standard-order';
 import ReconciliationStatement from './app/reconciliation-statement/reconciliation-statement';
 import Deals from './app/pages/Managment/deals/deals';
