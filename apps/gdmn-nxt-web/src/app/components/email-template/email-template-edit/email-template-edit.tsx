@@ -6,9 +6,8 @@ import { EmailTemplate, baseComponent, componentTypes } from '../email-template'
 import { UseFormGetValues, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useEffect, useReducer, useState } from 'react';
+import { ChangeEventHandler, useEffect, useReducer, useState } from 'react';
 import { CheckBox } from '@mui/icons-material';
-import { fontSizes, fonts } from '../fonts';
 
 export interface EmailTemplateEditProps {
   editedIndex: number,
@@ -16,13 +15,19 @@ export interface EmailTemplateEditProps {
   getValues: UseFormGetValues<EmailTemplate>,
   setValue: UseFormSetValue<EmailTemplate>,
   register: UseFormRegister<EmailTemplate>,
-  forceUpdate: React.DispatchWithoutAction
+  forceUpdate: React.DispatchWithoutAction,
+  removeEl: (arg: number) => void;
+  changeIsFocus: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
-  const { editedIndex, close, getValues, setValue, register, forceUpdate } = props;
+  const { editedIndex, close, getValues, setValue, register, forceUpdate, removeEl, changeIsFocus } = props;
 
   const component = getValues(`${editedIndex}`);
+
+  const handleRemove = () => {
+    removeEl(editedIndex);
+  };
 
   const sizeSettings = (type: 'width' | 'height') => {
     const marks = [
@@ -45,7 +50,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       forceUpdate();
       setValue(`${editedIndex}.${type}.auto`, !component[`${type}`]?.auto);
     };
-    console.log(component);
     return (
       <div>
         <Typography>
@@ -62,61 +66,123 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             valueLabelDisplay="auto"
           />
         </div>
-        <FormControlLabel
+        {/* <FormControlLabel
           onClick={handleWidthAutoChange}
           control={<Switch checked={component[`${type}`]?.auto} />}
           label="Автоматически"
-        />
+        /> */}
       </div>
+    );
+  };
+
+  const paddingEdit = () => {
+    type Sides = 'top' | 'left' | 'right' | 'bottom' | 'all';
+
+    const handleChange = (side: Sides) => (e: any) => {
+      if (side === 'all') {
+        handleChange('top')(e);
+        handleChange('left')(e);
+        handleChange('right')(e);
+        handleChange('bottom')(e);
+      } else {
+        const padding = (e.target.value).length === 0 ? 0 : Number(e.target.value);
+        if (isNaN(padding)) return;
+        if (padding > 99) return;
+        setValue(`${editedIndex}.padding.${side}`, padding);
+      }
+      forceUpdate();
+    };
+
+    const handleChangeMode = () => {
+      forceUpdate();
+      setValue(`${editedIndex}.padding.common`, !component.padding.common);
+    };
+
+    return (
+      <>
+        <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center  ' }}>
+          <Typography >
+          Отступ:
+          </Typography>
+          <Box flex={1}/>
+          <FormControlLabel
+            onClick={handleChangeMode}
+            control={<Switch checked={component.padding.common} />}
+            label="Общий"
+          />
+        </div>
+        {component.padding.common
+          ? <TextField
+            fullWidth
+            value={component.padding.top}
+            onChange={handleChange('all')}
+            label="Общий"
+            />
+          : <><div style={{ display: 'flex', marginBottom: '10px' }}>
+            <TextField
+              style={{ marginRight: '10px' }}
+              value={component.padding.top}
+              onChange={handleChange('top')}
+              label="Верх"
+            />
+            <TextField
+              value={component.padding.bottom}
+              onChange={handleChange('bottom')}
+              label="Низ"
+            />
+          </div>
+          <div style={{ display: 'flex', marginBottom: '10px' }}>
+            <TextField
+              style={{ marginRight: '10px' }}
+              value={component.padding.left}
+              onChange={handleChange('left')}
+              label="Лево"
+            />
+            <TextField
+              value={component.padding.right}
+              onChange={handleChange('right')}
+              label="Право"
+            />
+          </div>
+          </>
+        }
+      </>
+
     );
   };
 
   const baseComponent = () => {
     return (
       <>
-        {sizeSettings('width')}
-        {sizeSettings('height')}
+        {component.width && sizeSettings('width')}
+        {component.height && sizeSettings('height')}
+        {component.padding && paddingEdit()}
       </>
     );
   };
 
   const mainContent = () => {
-    switch (component.type) {
+    switch (component?.type) {
       case 'text': {
-        const handleFontChange = (e: SelectChangeEvent) => {
-          forceUpdate();
-          setValue(`${editedIndex}.font`, e.target?.value);
-        };
-        const handleFontSizeChange = (e: SelectChangeEvent) => {
-          forceUpdate();
-          setValue(`${editedIndex}.fontSize`, Number(e.target?.value));
-        };
-        const handleSpacingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-          const value = Number(e.target.value);
-          if (isNaN(value)) return;
-          if (value > 999) return;
-          setValue(`${editedIndex}.letterSpacing`, value);
-          forceUpdate();
-        };
         return (
           <>
-            {sizeSettings('width')}
+            {baseComponent()}
           </>
         );
       }
       case 'button': return (
         <div>
-            Кнопка
+          {baseComponent()}
         </div>
       );
       case 'divider': return (
         <div>
-            Разделитель
+          {baseComponent()}
         </div>
       );
       case 'image': return (
         <div>
-            Картинка
+          {baseComponent()}
         </div>
       );
       default:return <div />;
@@ -127,11 +193,15 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     <CustomizedCard style={{ height: '100%' }}>
       <CardContent>
         {mainContent()}
-
       </CardContent>
       <Divider />
       <CardActions>
-        <IconButton size="small"><DeleteIcon /></IconButton>
+        <IconButton
+          size="small"
+          onClick={handleRemove}
+        >
+          <DeleteIcon />
+        </IconButton>
         <Box flex={1}/>
         <IconButton onClick={close} size="small"><CloseIcon /></IconButton>
       </CardActions>

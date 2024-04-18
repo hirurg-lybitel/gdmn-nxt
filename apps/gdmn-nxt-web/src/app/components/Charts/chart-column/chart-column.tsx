@@ -17,7 +17,7 @@ import ChartSkeleton from './chart-skeleton';
 interface IPeriodType {
   id: number;
   value: string;
-};
+}
 
 const periods: IPeriodType[] = [
   {
@@ -37,7 +37,7 @@ const generateArrayOfYears = () => {
 
   for (let i = max; i >= min; i--) {
     years.push(i);
-  };
+  }
   years.sort();
 
   return years;
@@ -51,11 +51,11 @@ const years = generateArrayOfYears();
 
 interface IMapOfArrays {
   [key: string]: number;
-};
+}
 
 interface IMapOfChartData {
   [key: string]: IMapOfArrays;
-};
+}
 
 const filterOptions = (limit = 50, fieldName = '') => createFilterOptions({
   matchFrom: 'any',
@@ -69,7 +69,7 @@ interface IAnalyticsDataParams {
   departments?: IContactWithID[],
   workTypes?: IWorkType[]
   contracts?: ICustomerContract[]
-};
+}
 
 
 /* eslint-disable-next-line */
@@ -112,12 +112,12 @@ export function ChartColumn(props: ChartColumnProps) {
     /** При очистке выбранных заказов очищаем выбранные виды работ */
     if (key === 'contracts' && value?.length === 0) {
       delete newChartFilter.workTypes;
-    };
+    }
 
     /** Если были выбраны виды работ без указания заказов, то очищаем их при первичном выборе заказов */
     if (key === 'contracts' && !newChartFilter.contracts) {
       delete newChartFilter.workTypes;
-    };
+    }
     setChartFilter({ ...newChartFilter, [key]: value });
   };
 
@@ -128,13 +128,13 @@ export function ChartColumn(props: ChartColumnProps) {
   if (periodType?.id === 1) {
     for (let index = 0; index < 12; index++) {
       initialSeries[index] = 0;
-    };
+    }
   } else {
     initialSeries[0] = 0 ;
     activeYears.forEach(year =>
       seriesMap[year] = { ...initialSeries }
     );
-  };
+  }
 
   analyticsData?.forEach(el => {
     const year = el.ONDATE.getFullYear();
@@ -149,10 +149,10 @@ export function ChartColumn(props: ChartColumnProps) {
           seriesMap[year][month] = Math.round((seriesMap[year][month] + el.AMOUNT) * 100) / 100;
         } else {
           seriesMap[year][month] = el.AMOUNT;
-        };
+        }
       } else {
         seriesMap[year] = { ...initialSeries, [month]: el.AMOUNT };
-      };
+      }
     }
   });
 
@@ -164,16 +164,16 @@ export function ChartColumn(props: ChartColumnProps) {
   if (periodType?.id === 1) {
     for (const [key, value] of Object.entries(seriesMap)) {
       series.push({ name: key, data: Object.values(value) });
-    };
+    }
   } else {
     const seriesData: number[] = [];
 
     for (const [key, value] of Object.entries(seriesMap)) {
       seriesData.push(Number(Object.values(value)));
-    };
+    }
 
     series.push({ name: 'Сумма продаж', data: seriesData });
-  };
+  }
 
   const chartCategories: string[] =
     periodType?.id === 1
@@ -456,6 +456,6 @@ export function ChartColumn(props: ChartColumnProps) {
       </Stack>
     </CustomizedCard>
   );
-};
+}
 
 export default ChartColumn;
