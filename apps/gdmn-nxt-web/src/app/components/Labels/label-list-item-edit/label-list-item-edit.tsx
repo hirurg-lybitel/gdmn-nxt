@@ -8,9 +8,9 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { SketchPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
-import { useOutsideClick } from '../../../features/common/useOutsideClick';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import IconSelect from '@gdmn-nxt/components/icon-select/icon-select';
+import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -29,7 +29,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: '120px',
   },
   piker: {
-
     position: 'absolute',
     zIndex: '1400 !important',
     right: '10px',
@@ -114,8 +113,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
-  const [ref] = useOutsideClick(selectColor, () => setSelectColor(false));
-
   const changeIcon = (iconName: string) => {
     formik.setFieldValue('USR$ICON', iconName);
   };
@@ -155,34 +152,13 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                     helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
                   />
                 </div>
-
-                <Stack ref={ref} spacing={0.5}>
-                  <TextField
-                    label="Цвет"
-                    type="text"
-                    inputProps={{
-                      readOnly: true
-                    }}
-                    onSelect={() => setSelectColor(true)}
-                    value={formik.values.USR$COLOR}
-                    helperText={formik.errors.USR$COLOR}
-                  />
-                  {selectColor &&
-                  <div className={classes.piker}>
-                    <>
-                      <SketchPicker
-                        color={colorLabel}
-                        onChange= {(color) => {
-                          setColorLabel(color.hex);
-                        }}
-                        onChangeComplete={(color) => {
-                          formik.setFieldValue('USR$COLOR', color.hex);
-                        }}
-                      />
-                    </>
-                  </div>
-                  }
-                </Stack>
+                <ColorEdit
+                  value={formik.values.USR$COLOR}
+                  onChange={(color) => {
+                    formik.setFieldValue('USR$COLOR', color);
+                  }}
+                  errorMessage={formik.errors.USR$COLOR}
+                />
                 <TextField
                   label="Описание"
                   type="text"

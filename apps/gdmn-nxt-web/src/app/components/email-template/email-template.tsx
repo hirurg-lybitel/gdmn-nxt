@@ -3,8 +3,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Button, Divider, IconButton, TextField, useTheme } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
-import { useForm } from 'react-hook-form';
-import { useOutsideClick } from '../../features/common/useOutsideClick';
+import { RegisterOptions, UseFormRegisterReturn, useForm } from 'react-hook-form';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
 import { extend } from 'dayjs';
 import Draft from './draft/draft';
@@ -14,6 +13,8 @@ export interface EmailTemplateProps {
 }
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
+
+export type IComponentPosition = 'start' | 'center' | 'end'
 
 export interface baseComponent {
   id: number,
@@ -33,7 +34,8 @@ export interface baseComponent {
     bottom: number,
     left: number,
     common: boolean
-  }
+  },
+  position: IComponentPosition
 }
 
 export interface ITextComponent extends baseComponent {
@@ -41,98 +43,123 @@ export interface ITextComponent extends baseComponent {
 }
 
 export interface IImageComponent extends baseComponent {
+  image?: any
 }
 
 export interface IDeviderComponent extends baseComponent {
 }
 
 export interface IButtonComponent extends baseComponent {
+  text?: string,
+  url?: string,
+  color?: {
+    text?: string,
+    button?: string,
+  },
+  font?: {
+    size?: number,
+    value: string
+  }
 }
 
 export interface IComponent extends ITextComponent, IImageComponent, IDeviderComponent, IButtonComponent {}
-
-const components: IComponent[] = [
-  {
-    id: 0,
-    title: 'Текст',
-    type: 'text',
-    width: {
-      auto: false,
-      value: 100
-    },
-    padding: {
-      top: 10,
-      right: 10,
-      bottom: 10,
-      left: 10,
-      common: true
-    }
-  },
-  {
-    id: 1,
-    title: 'Картинка',
-    type: 'image',
-    width: {
-      auto: false,
-      value: 100
-    },
-    height: {
-      auto: true,
-      value: 100
-    },
-    padding: {
-      top: 10,
-      right: 10,
-      bottom: 10,
-      left: 10,
-      common: true
-    }
-  },
-  {
-    id: 2,
-    title: 'Кнопка',
-    type: 'button',
-    width: {
-      auto: false,
-      value: 100
-    },
-    height: {
-      auto: true,
-      value: 100
-    },
-    padding: {
-      top: 10,
-      right: 10,
-      bottom: 10,
-      left: 10,
-      common: true
-    }
-  },
-  {
-    id: 3,
-    title: 'Резделитель',
-    type: 'divider',
-    width: {
-      auto: false,
-      value: 100
-    },
-    padding: {
-      top: 10,
-      right: 10,
-      bottom: 10,
-      left: 10,
-      common: true
-    }
-  },
-];
 
 export interface EmailTemplate {
   [key: string]: IComponent
 }
 
 const EmailTemplate = () => {
-  const [lastId, setLastId] = useState(10);
+  const theme = useTheme();
 
+  const components: IComponent[] = [
+    {
+      id: 0,
+      title: 'Текст',
+      type: 'text',
+      width: {
+        auto: true,
+        value: 100
+      },
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10,
+        common: true
+      },
+      position: 'center'
+    },
+    {
+      id: 1,
+      title: 'Картинка',
+      type: 'image',
+      width: {
+        auto: false,
+        value: 100
+      },
+      height: {
+        auto: true,
+        value: 100
+      },
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10,
+        common: true
+      },
+      position: 'center'
+    },
+    {
+      id: 2,
+      title: 'Кнопка',
+      type: 'button',
+      width: {
+        auto: true,
+        value: 100
+      },
+      height: {
+        auto: true,
+        value: 100
+      },
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10,
+        common: true
+      },
+      position: 'center',
+      text: 'Текст кнопки',
+      color: {
+        text: '#ffffff',
+        button: theme.palette.primary.main
+      },
+      font: {
+        size: 14,
+        value: 'Arial'
+      }
+    },
+    {
+      id: 3,
+      title: 'Резделитель',
+      type: 'divider',
+      width: {
+        auto: false,
+        value: 100
+      },
+      padding: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10,
+        common: true
+      },
+      position: 'center'
+    },
+  ];
+
+  const [lastId, setLastId] = useState(10);
 
   const {
     handleSubmit,
@@ -144,7 +171,7 @@ const EmailTemplate = () => {
     clearErrors,
     setError
   } = useForm<EmailTemplate>({
-    mode: 'onSubmit'
+    mode: 'all'
   });
   // return (
   //   <Draft
@@ -155,6 +182,13 @@ const EmailTemplate = () => {
   //     editedIndex={0}
   //   />
   // );
+
+  const customRegister = (name: any, options?: RegisterOptions<EmailTemplate, any> | undefined): UseFormRegisterReturn<any> => {
+    return Object.assign(register(name, options), { onChange: (e: any) => {
+      setValue(name, e.target.value);
+      forceUpdate();
+    } });
+  };
 
   const handleEditUnFocus = () => {
     setEditIsFocus(false);
@@ -222,8 +256,6 @@ const EmailTemplate = () => {
   };
 
 
-  const theme = useTheme();
-
   const [editedIndex, setEditedIndex] = useState<number | null>(null);
 
   const openEditForm = (index: number) => {
@@ -250,7 +282,6 @@ const EmailTemplate = () => {
     }
   }, [editedIndex]);
 
-  // const [ref] = useOutsideClick(true, closeEditForm);
 
   const [isEnter, setIsEnter] = useState<number | null>(null);
 
@@ -261,36 +292,6 @@ const EmailTemplate = () => {
   const handleLeave = () => {
     setIsEnter(null);
   };
-
-  const findComponent = (component: IComponent, index: number) => {
-    switch (component.type) {
-      case 'text':
-        return (
-          <Draft
-            isOpen={editIsFocus && index === editedIndex}
-            width={component.width.auto ? 'auto' : component.width.value + '%'}
-            setValue={setValue}
-            getValues={getValues}
-            editedIndex={index || 0}
-          />
-        );
-      case 'image':
-        return (<div style={{ background: 'blue' }}>Картинка</div>);
-      case 'button':
-        return <Button>Кнопка</Button>;
-      case 'divider':
-        return (
-          <div
-            style={{ paddingTop: '5px', paddingBottom: '5px',
-              width: component.width.auto ? 'auto' : `${component.width.value}%`
-            }}
-          >
-            <Divider />
-          </div>);
-      default: return <div />;
-    }
-  };
-
   return (
     <div style={{ width: '100%', overflow: 'hidden', height: '100%', display: 'flex', background: theme.palette.background.paper }}>
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -303,24 +304,33 @@ const EmailTemplate = () => {
                 {...droppableProvider.droppableProps}
               >
                 <CustomizedScrollBox className={style.templateScrollBox}>
-                  {Object.values(getValues()).map((template: IComponent, index: number) => (
-                    <Draggable
-                      index={index}
-                      key={template.id}
-                      draggableId={`${template.id}`}
-                    >
-                      {(draggableProvider) => (
-                        <div
-                          onMouseDown={handleOpenEditForm(index)}
-                          ref={draggableProvider.innerRef}
-                          {...draggableProvider.draggableProps}
-                          {...draggableProvider.dragHandleProps}
-                        >
-                          {findComponent(template, index)}
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
+                  <div style={{ width: '700px' }}>
+                    {Object.values(getValues()).map((template: IComponent, index: number) => (
+                      <Draggable
+                        index={index}
+                        key={template.id}
+                        draggableId={`${template.id}`}
+                      >
+                        {(draggableProvider) => (
+                          <div
+                            onMouseDown={handleOpenEditForm(index)}
+                            ref={draggableProvider.innerRef}
+                            {...draggableProvider.draggableProps}
+                            {...draggableProvider.dragHandleProps}
+                          >
+                            <EmailTemplateItem
+                              editUnFocus={handleEditUnFocus}
+                              editedIndex={editedIndex}
+                              index={index}
+                              editIsFocus={editIsFocus}
+                              getValues={getValues}
+                              setValue={setValue}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                  </div>
                 </CustomizedScrollBox>
                 {droppableProvider.placeholder}
               </div>
@@ -341,7 +351,7 @@ const EmailTemplate = () => {
                 close={closeEditForm}
                 getValues={getValues}
                 setValue={setValue}
-                register={register}
+                register={customRegister}
                 forceUpdate={forceUpdate}
               />
             </div>
@@ -360,12 +370,25 @@ const EmailTemplate = () => {
                       {(draggableProvider) => {
                         return (
                           <div
-                            className={style.component}
                             ref={draggableProvider.innerRef}
                             {...draggableProvider.draggableProps}
                             {...draggableProvider.dragHandleProps}
                           >
-                            {component.title}
+                            <div
+                              style={{
+                                border: `1px solid ${theme.palette.primary.main}`,
+                                width: '110px',
+                                height: '110px',
+                                padding: '5px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                margin: '5px',
+                                borderRadius: '20px'
+                              }}
+                            >
+                              {component.title}
+                            </div>
                           </div>
                         );
                       }}

@@ -8,8 +8,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { Theme } from '@mui/material';
 
+interface makeStyleProps {
+  width: string
+};
+
 const useStyles = makeStyles((theme: Theme) => ({
-  draft: ((props: any) => ({
+  draft: (({
     color: 'black',
     '& .jodit-status-bar': {
       visibility: 'hidden',
@@ -25,8 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     '& .jodit-workplace': {
       backgroundColor: 'transparent !important',
       minHeight: '0px !important',
-      cursor: 'text',
-      width: props.width
+      cursor: 'text'
     },
     '& .jodit-toolbar__box': {
       background: 'none'
@@ -34,7 +37,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     '& .jodit-container': {
       background: 'none',
       minHeight: '0px !important',
-      border: 'none !important'
+      border: 'none !important',
+      minWidth: '0px !important'
     },
     '& .jodit-jodit_fullsize_true': {
       background: theme.palette.background.paper
@@ -51,7 +55,13 @@ interface draftProps {
 }
 
 export default function Draft({ isOpen, width, editedIndex, getValues, setValue }: draftProps) {
-  const classes = useStyles({ width: '100px' });
+  const classesProps: makeStyleProps = {
+    width: width
+  };
+
+  const classes = useStyles();
+
+  console.log(classes);
 
   const component = getValues(`${editedIndex}`);
 
@@ -78,6 +88,7 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue 
       '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'lineHeight', 'hr', '|', 'spellcheck', 'eraser', '|', 'copy', 'paste',
       'cut', 'selectall', '|'],
     width: '100%',
+    maxWidth: '100%',
     height: 'auto',
     theme: settings.customization.colorMode
   };
@@ -85,9 +96,8 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue 
   return (
     <div
       className={classes.draft}
-      style={{ maxWidth: editorConfig.width, minWidth: '200px', display: 'flex', justifyContent: 'center', color: 'white' }}
+      style={{ maxWidth: editorConfig.width, width: isOpen ? 'auto' : width, display: 'flex', justifyContent: 'center', color: 'white' }}
     >
-      {width}
       <JoditEditor
         value={component?.text || ''}
         config={editorConfig as any}

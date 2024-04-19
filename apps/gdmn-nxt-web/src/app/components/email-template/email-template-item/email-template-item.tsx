@@ -7,6 +7,7 @@ import { UseFormGetValues, UseFormSetValue, useForm } from 'react-hook-form';
 import Draft from '../draft/draft';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import { EmailTemplate, IComponent } from '../email-template';
+import ImageIcon from '@mui/icons-material/Image';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -38,15 +39,18 @@ interface EmailTemplateItemProps{
   editIsFocus: boolean,
   getValues: UseFormGetValues<EmailTemplate>,
   setValue: UseFormSetValue<EmailTemplate>,
+  editUnFocus: () => void
 }
 
 
 const EmailTemplateItem = (props: EmailTemplateItemProps) => {
   const theme = useTheme();
-  const { editedIndex, index, editIsFocus, getValues, setValue } = props;
+  const { editedIndex, index, editIsFocus, getValues, setValue, editUnFocus } = props;
   const component = getValues(`${index}`);
 
   const classes = useStyles();
+
+  console.log(component);
 
   const findComponent = () => {
     switch (component.type) {
@@ -61,9 +65,36 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           />
         );
       case 'image':
-        return (<div style={{ background: 'blue' }}>Картинка</div>);
+        return (
+          <>
+            {component.image
+              ? <img
+                style={{ width: `${component.width.value}%` }}
+                src={component.image}
+              />
+              : <ImageIcon fontSize="large" />
+            }
+          </>
+        );
       case 'button':
-        return <Button>Кнопка</Button>;
+        return <div
+          onClick={() => {
+            // window.open(component.url, '_blank');
+          }}
+          style={{
+            width: component.width.auto ? 'auto' : component.width.value + '%',
+            backgroundColor: component.color?.button,
+            color: component.color?.text,
+            padding: '6px 8px',
+            font: `${component.font?.size}px ${component.font?.value}`,
+            fontWeight: '600',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            textAlign: 'center'
+          }}
+        >
+          {component.text}
+        </div>;
       case 'divider':
         return (
           <div
@@ -82,7 +113,9 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       className={classes.templateItem}
       style={{
         padding: `${component.padding.top}px ${component.padding.right}px ${component.padding.bottom}px ${component.padding.left}px`,
-        border: index === editedIndex ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent'
+        border: index === editedIndex ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent',
+        display: 'flex',
+        justifyContent: component.position
       }}
     >
       {
@@ -95,9 +128,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           <ZoomOutMapIcon sx={{ fontSize: '15px' }} style={{ transform: 'rotate(0.125turn)' }}/>
         </div>
       }
-      <div style={{ display: 'flex' }}>
-        {findComponent()}
-      </div>
+      {findComponent()}
     </div>
   );
 };
