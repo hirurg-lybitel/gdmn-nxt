@@ -51,7 +51,7 @@ export default function ColorEdit({ value, onChange, errorMessage, sx, label }: 
 
   return (
     <ClickAwayListener onClickAway={handleClose}>
-      <>
+      <div>
         <TextField
           sx={sx}
           fullWidth
@@ -74,7 +74,7 @@ export default function ColorEdit({ value, onChange, errorMessage, sx, label }: 
           </>
         </div>
         }
-      </>
+      </div>
     </ClickAwayListener>
   );
 }

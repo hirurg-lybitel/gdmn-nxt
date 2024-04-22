@@ -14,17 +14,20 @@ interface makeStyleProps {
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
-    color: 'black',
     '& .jodit-status-bar': {
       visibility: 'hidden',
-      height: '0px'
+      height: '0px',
+      border: 'none',
+      width: '0px'
     },
     '& .jodit-react-container': {
       width: '100%'
     },
     '& .jodit-wysiwyg': {
       background: 'none',
-      minHeight: '0px !important'
+      minHeight: '0px !important',
+      padding: '0px !important',
+      color: 'black'
     },
     '& .jodit-workplace': {
       backgroundColor: 'transparent !important',
@@ -52,16 +55,12 @@ interface draftProps {
   editedIndex: number,
   getValues: UseFormGetValues<EmailTemplate>,
   setValue: UseFormSetValue<EmailTemplate>,
+  setDrag: (arg: boolean) => void,
+  drag?: boolean
 }
 
-export default function Draft({ isOpen, width, editedIndex, getValues, setValue }: draftProps) {
-  const classesProps: makeStyleProps = {
-    width: width
-  };
-
+export default function Draft({ isOpen, width, editedIndex, getValues, setValue, setDrag, drag }: draftProps) {
   const classes = useStyles();
-
-  console.log(classes);
 
   const component = getValues(`${editedIndex}`);
 
@@ -89,19 +88,27 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue 
       'cut', 'selectall', '|'],
     width: '100%',
     maxWidth: '100%',
-    height: 'auto',
-    theme: settings.customization.colorMode
+    height: 'auto'
   };
+
 
   return (
     <div
+      onMouseEnter={() => {
+        if (component.text?.indexOf('<img') === -1) return;
+        setDrag(false);
+      }}
       className={classes.draft}
-      style={{ maxWidth: editorConfig.width, width: isOpen ? 'auto' : width, display: 'flex', justifyContent: 'center', color: 'white' }}
+      style={{
+        maxWidth: editorConfig.width, width: isOpen ? 'auto'
+          : ((!component.text || component.text === '<p><br></p>') ? '150px' : width),
+        display: 'flex',
+        justifyContent: 'center' }}
     >
       <JoditEditor
         value={component?.text || ''}
         config={editorConfig as any}
-        onBlur={value => {
+        onChange={value => {
           setValue(`${editedIndex}.text`, value);
         }}
       />

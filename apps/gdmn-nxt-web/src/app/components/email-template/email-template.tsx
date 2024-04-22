@@ -1,6 +1,6 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Button, Divider, IconButton, TextField, useTheme } from '@mui/material';
+import { Box, Button, Divider, IconButton, Tab, TextField, useTheme } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import { RegisterOptions, UseFormRegisterReturn, useForm } from 'react-hook-form';
@@ -8,7 +8,12 @@ import EmailTemplateEdit from './email-template-edit/email-template-edit';
 import { extend } from 'dayjs';
 import Draft from './draft/draft';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
-import EmailTemplateItem from './email-template-item/email-template-item';
+import EmailTemplateItem, { findComponent } from './email-template-item/email-template-item';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
+import ComputerIcon from '@mui/icons-material/Computer';
+import { RootState } from '../../store';
+import { useSelector } from 'react-redux';
 export interface EmailTemplateProps {
 }
 
@@ -150,10 +155,10 @@ const EmailTemplate = () => {
       },
       padding: {
         top: 10,
-        right: 10,
+        right: 0,
         bottom: 10,
-        left: 10,
-        common: true
+        left: 0,
+        common: false
       },
       position: 'center'
     },
@@ -173,15 +178,6 @@ const EmailTemplate = () => {
   } = useForm<EmailTemplate>({
     mode: 'all'
   });
-  // return (
-  //   <Draft
-  //     isOpen={true}
-  //     width={'auto'}
-  //     setValue={setValue}
-  //     getValues={getValues}
-  //     editedIndex={0}
-  //   />
-  // );
 
   const customRegister = (name: any, options?: RegisterOptions<EmailTemplate, any> | undefined): UseFormRegisterReturn<any> => {
     return Object.assign(register(name, options), { onChange: (e: any) => {
@@ -282,123 +278,206 @@ const EmailTemplate = () => {
     }
   }, [editedIndex]);
 
+  const [tabIndex, setTabIndex] = useState('2');
 
-  const [isEnter, setIsEnter] = useState<number | null>(null);
-
-  const handleEnter = (index: number) => () => {
-    setIsEnter(index);
+  const handleTabsChange = (event: any, newindex: string) => {
+    setTabIndex(newindex);
   };
 
-  const handleLeave = () => {
-    setIsEnter(null);
-  };
+  const [drag, setDrag] = useState(true);
+
+  const [isPc, setIsPc] = useState(true);
+
+  const settings = useSelector((state: RootState) => state.settings);
+
   return (
-    <div style={{ width: '100%', overflow: 'hidden', height: '100%', display: 'flex', background: theme.palette.background.paper }}>
+    <div
+      style={{
+        width: '100%',
+        overflow: 'hidden',
+        height: '100%',
+        background: settings.customization.colorMode === 'light' ? 'gray' : theme.palette.background.paper
+      }}
+    >
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div style={{ width: '100%', background: theme.palette.background.paper, height: '100%' }}>
-          <Droppable droppableId="tamplate" >
-            {(droppableProvider) => (
-              <div
-                className={style.templateBody}
-                ref={droppableProvider.innerRef}
-                {...droppableProvider.droppableProps}
-              >
-                <CustomizedScrollBox className={style.templateScrollBox}>
-                  <div style={{ width: '700px' }}>
-                    {Object.values(getValues()).map((template: IComponent, index: number) => (
-                      <Draggable
-                        index={index}
-                        key={template.id}
-                        draggableId={`${template.id}`}
-                      >
-                        {(draggableProvider) => (
-                          <div
-                            onMouseDown={handleOpenEditForm(index)}
-                            ref={draggableProvider.innerRef}
-                            {...draggableProvider.draggableProps}
-                            {...draggableProvider.dragHandleProps}
-                          >
-                            <EmailTemplateItem
-                              editUnFocus={handleEditUnFocus}
-                              editedIndex={editedIndex}
+        <TabContext value={tabIndex}>
+          <div>
+            <TabList onChange={handleTabsChange} centered>
+              <Tab
+                label="Редактирование"
+                value="1"
+              />
+              <Tab
+                label="Просмотр"
+                value="2"
+              />
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <IconButton
+                  style={{ marginRight: '5px' }}
+                  color={isPc ? 'primary' : 'default'}
+                  onClick={() => {
+                    setIsPc(true);
+                  }}
+                >
+                  <ComputerIcon/>
+                </IconButton>
+                <IconButton
+                  color={!isPc ? 'primary' : 'default'}
+                  onClick={() => {
+                    setIsPc(false);
+                  }}
+                >
+                  <PhoneAndroidIcon/>
+                </IconButton>
+              </div>
+            </TabList>
+            <Divider style={{ margin: 0 }} />
+          </div>
+          <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%' }}>
+            <div style={{ width: '100%', height: '100%' }}>
+              <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
+                <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
+                  <div style={{ width: isPc ? '700px' : '340px', background: 'white' }}>
+                    <Droppable droppableId="tamplate" >
+                      {(droppableProvider) => (
+                        <div
+                          className={style.templateBody}
+                          ref={droppableProvider.innerRef}
+                          {...droppableProvider.droppableProps}
+                        >
+
+                          {Object.values(getValues()).map((template: IComponent, index: number) => (
+                            <Draggable
                               index={index}
-                              editIsFocus={editIsFocus}
-                              getValues={getValues}
-                              setValue={setValue}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
+                              key={template.id}
+                              draggableId={`${template.id}`}
+                            >
+                              {(draggableProvider) => {
+                                const dragProps = drag ? { ...draggableProvider.draggableProps } : {};
+                                return (
+                                  <div
+                                    onMouseDown={handleOpenEditForm(index)}
+                                    ref={draggableProvider.innerRef}
+                                    {...dragProps}
+                                    {...draggableProvider.dragHandleProps}
+                                  >
+                                    <EmailTemplateItem
+                                      editUnFocus={handleEditUnFocus}
+                                      editedIndex={editedIndex}
+                                      index={index}
+                                      editIsFocus={editIsFocus}
+                                      getValues={getValues}
+                                      setValue={setValue}
+                                      setDrag={(arg: boolean) => {
+                                        setDrag(arg);
+                                      }}
+                                      drag={drag}
+                                    />
+                                  </div>
+                                );
+                              }}
+                            </Draggable>
+                          ))}
+
+                          {droppableProvider.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+
                   </div>
                 </CustomizedScrollBox>
-                {droppableProvider.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </div>
-        <div
-          style={{ width: '400px', height: '100%', background: theme.palette.background.paper,
-            borderLeft: `1px solid ${theme.mainContent.borderColor}`, borderRadius: '20px 0 0 20px'
-          }}
-        >
-          {editedIndex || editedIndex === 0
-            ? <div style={{ height: '100%' }} onMouseDown={handleEditUnFocus}>
-              <EmailTemplateEdit
-                changeIsFocus={setEditIsFocus}
-                removeEl={removeEl}
-                editedIndex={editedIndex as number}
-                close={closeEditForm}
-                getValues={getValues}
-                setValue={setValue}
-                register={customRegister}
-                forceUpdate={forceUpdate}
-              />
-            </div>
-            : <Droppable droppableId="compotents" >
-              {(droppableProvider) => (
-                <div
-                  className={style.componentBody}
-                  ref={droppableProvider.innerRef}
-                >
-                  {components.map((component: any, index: any) => (
-                    <Draggable
-                      index={index}
-                      key={component.id}
-                      draggableId={`${component.id}`}
-                    >
-                      {(draggableProvider) => {
-                        return (
-                          <div
-                            ref={draggableProvider.innerRef}
-                            {...draggableProvider.draggableProps}
-                            {...draggableProvider.dragHandleProps}
-                          >
-                            <div
-                              style={{
-                                border: `1px solid ${theme.palette.primary.main}`,
-                                width: '110px',
-                                height: '110px',
-                                padding: '5px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                margin: '5px',
-                                borderRadius: '20px'
-                              }}
-                            >
-                              {component.title}
-                            </div>
-                          </div>
-                        );
-                      }}
-                    </Draggable>
-                  ))}
+              </TabPanel>
+              <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
+                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ width: isPc ? '700px' : '340px', height: '100%', background: 'white' }}>
+                    <CustomizedScrollBox options={{ suppressScrollX: true }}>
+                      {Object.values(getValues()).map((template: IComponent, index: number) => (
+                        <EmailTemplateItem
+                          key={index}
+                          isPreview={true}
+                          template={template}
+                        />
+                      ))}
+                    </CustomizedScrollBox>
+                  </div>
                 </div>
-              )}
-            </Droppable>
-          }
-        </div>
+              </TabPanel>
+            </div>
+            <div
+              style={{ width: tabIndex === '2' ? '0px' : '300px', height: '100%', transition: '0.5s', zIndex: 1 }}
+            >
+              <div
+                style={{ width: '300px',
+                  height: '100%',
+                  borderLeft: `1px solid ${theme.mainContent.borderColor}`, borderRadius: '20px 0 0 20px',
+                  background: theme.palette.background.paper,
+                }}
+              >
+                {editedIndex || editedIndex === 0
+                  ? <div style={{ height: '100%' }} onMouseDown={handleEditUnFocus}>
+                    <EmailTemplateEdit
+                      changeIsFocus={setEditIsFocus}
+                      removeEl={removeEl}
+                      editedIndex={editedIndex as number}
+                      close={closeEditForm}
+                      getValues={getValues}
+                      setValue={setValue}
+                      register={customRegister}
+                      forceUpdate={forceUpdate}
+                    />
+                  </div>
+                  : <Droppable droppableId="compotents" >
+                    {(droppableProvider) => (
+                      <div
+                        className={style.componentBody}
+                        ref={droppableProvider.innerRef}
+                      >
+                        {components.map((component: any, index: any) => (
+                          <Draggable
+                            index={index}
+                            key={component.id}
+                            draggableId={`${component.id}`}
+                          >
+                            {(draggableProvider) => {
+                              return (
+                                <div
+                                  ref={draggableProvider.innerRef}
+                                  {...draggableProvider.draggableProps}
+                                  {...draggableProvider.dragHandleProps}
+                                >
+                                  <Box
+                                    sx={{
+                                      background: theme.palette.primary.main,
+                                      color: theme.textColor,
+                                      width: '110px',
+                                      height: '110px',
+                                      padding: '5px',
+                                      display: 'flex',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      margin: '5px',
+                                      '& :hover': {
+                                        filter: 'brightness(70%)'
+                                      },
+                                      borderRadius: '20px'
+                                    }}
+                                  >
+                                    {component.title}
+                                  </Box>
+                                </div>
+                              );
+                            }}
+                          </Draggable>
+                        ))}
+                      </div>
+                    )}
+
+                  </Droppable>
+                }
+              </div>
+            </div>
+          </div>
+        </TabContext>
       </DragDropContext>
     </div>
   );

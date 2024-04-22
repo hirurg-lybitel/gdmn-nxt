@@ -43,7 +43,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         label: '10%',
       },
       {
-        value: 1000,
+        value: 100,
         label: '100%'
       },
     ];
