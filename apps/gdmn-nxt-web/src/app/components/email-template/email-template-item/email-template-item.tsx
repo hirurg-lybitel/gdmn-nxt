@@ -1,14 +1,12 @@
 import style from './email-template.module.less';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Button, Divider, IconButton, TextField, Theme, useTheme } from '@mui/material';
-import { useEffect, useReducer, useState } from 'react';
+import { Divider, Theme, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { UseFormGetValues, UseFormSetValue, useForm } from 'react-hook-form';
 import Draft from '../draft/draft';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import { EmailTemplate, IComponent } from '../email-template';
 import ImageIcon from '@mui/icons-material/Image';
-import ReactHtmlParser, { processNodes, convertNodeToElement } from 'react-html-parser';
+import ReactHtmlParser from 'react-html-parser';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -86,7 +84,7 @@ export const findComponent = (props: findComponentProps) => {
           width: component.width.auto ? 'auto' : component.width.value + '%',
           backgroundColor: component.color?.button,
           color: component.color?.text,
-          padding: '6px 8px',
+          padding: `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
           font: `${component.font?.size}px ${component.font?.value}`,
           fontWeight: '600',
           borderRadius: '10px',
@@ -136,7 +134,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       <div
         style={{
           display: 'flex', justifyContent: template.position,
-          padding: `${template.padding.top}px ${template.padding.right}px ${template.padding.bottom}px ${template.padding.left}px`
+          padding: `${template.margin.top}px ${template.margin.right}px ${template.margin.bottom}px ${template.margin.left}px`
         }}
       >
         {findComponent({ isPreview: true, component: template })}
@@ -150,7 +148,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
     <div
       className={classes.templateItem}
       style={{
-        padding: `${component.padding.top}px ${component.padding.right}px ${component.padding.bottom}px ${component.padding.left}px`,
+        padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
         border: index === editedIndex ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent',
         display: 'flex',
         justifyContent: component.position

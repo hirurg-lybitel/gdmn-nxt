@@ -1,20 +1,19 @@
 import style from './email-template-edit.module.less';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, useTheme } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { EmailTemplate, IComponentPosition, baseComponent, componentTypes } from '../email-template';
-import { RegisterOptions, UseFormGetValues, UseFormRegister, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
+import { EmailTemplate, IComponentPosition } from '../email-template';
+import { RegisterOptions, UseFormGetValues, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ChangeEvent, ChangeEventHandler, useEffect, useReducer, useRef, useState } from 'react';
-import { CheckBox } from '@mui/icons-material';
+import { ChangeEvent, useRef, useState } from 'react';
 import AlignHorizontalCenterIcon from '@mui/icons-material/AlignHorizontalCenter';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import AlignHorizontalRightIcon from '@mui/icons-material/AlignHorizontalRight';
-import { SketchPicker } from 'react-color';
 import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 import { fontSize, fonts } from './font';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 export interface EmailTemplateEditProps {
   editedIndex: number,
@@ -25,18 +24,15 @@ export interface EmailTemplateEditProps {
   forceUpdate: React.DispatchWithoutAction,
   removeEl: (arg: number) => void;
   changeIsFocus: React.Dispatch<React.SetStateAction<boolean>>
+  copy: () => void
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
-  const { editedIndex, close, getValues, setValue, register, forceUpdate, removeEl, changeIsFocus } = props;
+  const { editedIndex, close, getValues, setValue, register, forceUpdate, removeEl, changeIsFocus, copy } = props;
   const theme = useTheme();
   const component = getValues(`${editedIndex}`);
 
-  const handleRemove = () => {
-    removeEl(editedIndex);
-  };
-
-  const sizeSettings = (type: 'width' | 'height') => {
+  const sizeSettings = () => {
     const marks = [
       {
         value: 10,
@@ -50,29 +46,27 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
     const handleWidthChange = (event: Event, value: number | number[], activeThumb: number) => {
       forceUpdate();
-      setValue(`${editedIndex}.${type}.value`, value as number);
+      setValue(`${editedIndex}.width.value`, value as number);
     };
 
     const handleWidthAutoChange = () => {
       forceUpdate();
-      setValue(`${editedIndex}.${type}.auto`, !component[`${type}`]?.auto);
+      setValue(`${editedIndex}.width.auto`, !component.width?.auto);
     };
-
-    if (type === 'height') return <></>;
 
     return (
       <div>
         <Typography>
-          {type === 'width' ? 'Ширина:' : 'Высота:'}
+          {'Ширина:'}
         </Typography>
         <div style={{ padding: '0 15px 0 15px ' }}>
           <Slider
-            disabled={component[`${type}`]?.auto}
+            disabled={component.width?.auto}
             onChange={handleWidthChange}
             marks={marks}
             size="small"
             min={10}
-            value={component?.[`${type}`]?.value}
+            value={component.width?.value}
             aria-label="Small"
             valueLabelDisplay="auto"
           />
@@ -81,7 +75,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         <FormControlLabel
           sx={{ marginLeft: '0px' }}
           onClick={handleWidthAutoChange}
-          control={<Switch checked={component[`${type}`]?.auto} />}
+          control={<Switch checked={component.width?.auto} />}
           label="Автоматически"
         />
         }
@@ -89,10 +83,12 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     );
   };
 
-  const paddingEdit = () => {
+  const paddingEdit = (type: 'inside' | 'outside') => {
     type Sides = 'top' | 'left' | 'right' | 'bottom' | 'all';
 
-    const handleChange = (side: Sides) => (e: any) => {
+    const paddingType = type === 'inside' ? 'padding' : 'margin';
+
+    const handleChange = (side: Sides) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       if (side === 'all') {
         handleChange('top')(e);
         handleChange('left')(e);
@@ -102,45 +98,45 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         const padding = (e.target.value).length === 0 ? 0 : Number(e.target.value);
         if (isNaN(padding)) return;
         if (padding > 99) return;
-        setValue(`${editedIndex}.padding.${side}`, padding);
+        setValue(`${editedIndex}.${paddingType}.${side}`, padding);
       }
       forceUpdate();
     };
 
     const handleChangeMode = () => {
       forceUpdate();
-      setValue(`${editedIndex}.padding.common`, !component.padding.common);
+      setValue(`${editedIndex}.${paddingType}.common`, !component[`${paddingType}`]?.common);
     };
 
     return (
       <>
         <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center  ' }}>
           <Typography >
-          Отступ:
+            {type === 'inside' ? 'Внутренний отступ: ' : 'Отступ: '}
           </Typography>
           <Box flex={1}/>
           <FormControlLabel
             onClick={handleChangeMode}
-            control={<Switch checked={component.padding.common} />}
+            control={<Switch checked={component[`${paddingType}`]?.common} />}
             label="Общий"
           />
         </div>
-        {component.padding.common
+        {component[`${paddingType}`]?.common
           ? <TextField
             fullWidth
-            value={component.padding.top}
+            value={component[`${paddingType}`]?.top}
             onChange={handleChange('all')}
             label="Общий"
             />
           : <><div style={{ display: 'flex', marginBottom: '10px' }}>
             <TextField
               style={{ marginRight: '10px' }}
-              value={component.padding.top}
+              value={component[`${paddingType}`]?.top}
               onChange={handleChange('top')}
               label="Верх"
             />
             <TextField
-              value={component.padding.bottom}
+              value={component[`${paddingType}`]?.bottom}
               onChange={handleChange('bottom')}
               label="Низ"
             />
@@ -148,12 +144,12 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
           <div style={{ display: 'flex', marginBottom: '10px' }}>
             <TextField
               style={{ marginRight: '10px' }}
-              value={component.padding.left}
+              value={component[`${paddingType}`]?.left}
               onChange={handleChange('left')}
               label="Лево"
             />
             <TextField
-              value={component.padding.right}
+              value={component[`${paddingType}`]?.right}
               onChange={handleChange('right')}
               label="Право"
             />
@@ -193,9 +189,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
   const baseComponent = () => {
     return (
       <>
-        {component.width && sizeSettings('width')}
-        {component.height && sizeSettings('height')}
-        {component.padding && paddingEdit()}
+        {component.width && sizeSettings()}
+        {component.margin && paddingEdit('outside')}
+        {component.padding && paddingEdit('inside')}
         {component.position && positionEdit()}
       </>
     );
@@ -210,13 +206,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       forceUpdate();
       setValue(`${editedIndex}.color.button`, color);
     };
-    const handleFontChange = (e: any) => {
+    const handleFontChange = (e: SelectChangeEvent<string>) => {
       forceUpdate();
       setValue(`${editedIndex}.font.value`, e.target.value);
     };
-    const handleFontSizeChange = (e: any) => {
+    const handleFontSizeChange = (e: SelectChangeEvent<number>) => {
       forceUpdate();
-      setValue(`${editedIndex}.font.size`, e.target.value);
+      setValue(`${editedIndex}.font.size`, Number(e.target.value));
     };
     return (
       <div>
@@ -284,7 +280,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
   const ImageComponent = () => {
     const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files || e.target.files.length === 0) return;
-
       const file = e.target.files[0] || undefined;
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -353,8 +348,28 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     }
   };
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleConfirmOkClick = () => {
+    removeEl(editedIndex);
+  };
+  const handleConfirmCancelClick = () => {
+    setConfirmOpen(false);
+  };
+
+  const handleConfirmOpen = () => {
+    setConfirmOpen(true);
+  };
+
   return (
     <CustomizedCard style={{ height: '100%' }}>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={'Удаление'}
+        text="Вы уверены, что хотите продолжить?"
+        confirmClick={handleConfirmOkClick}
+        cancelClick={handleConfirmCancelClick}
+      />
       <CardContent sx={{ paddingRight: 0 }}>
         <CustomizedScrollBox options={{ suppressScrollX: true }}>
           <div style={{ paddingRight: '16px' }}>
@@ -366,9 +381,12 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       <CardActions>
         <IconButton
           size="small"
-          onClick={handleRemove}
+          onClick={handleConfirmOpen}
         >
           <DeleteIcon />
+        </IconButton>
+        <IconButton onClick={copy}>
+          <ContentCopyIcon />
         </IconButton>
         <Box flex={1}/>
         <IconButton onClick={close} size="small"><CloseIcon /></IconButton>

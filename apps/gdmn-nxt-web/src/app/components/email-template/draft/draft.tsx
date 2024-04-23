@@ -1,16 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
 import 'jodit';
-import JoditEditor, { IJoditEditorProps, Jodit } from 'jodit-react';
+import JoditEditor from 'jodit-react';
 import { makeStyles } from '@mui/styles';
 import { UseFormGetValues, UseFormSetValue } from 'react-hook-form';
 import { EmailTemplate } from '../email-template';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { Theme } from '@mui/material';
-
-interface makeStyleProps {
-  width: string
-};
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
@@ -73,7 +68,6 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue,
     addNewLine: false,
     spellcheck: true,
     language: 'ru',
-    toolbarButtonSize: 'medium',
     toolbarAdaptive: false,
     showCharsCounter: true,
     showWordsCounter: true,
@@ -107,7 +101,7 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue,
     >
       <JoditEditor
         value={component?.text || ''}
-        config={editorConfig as any}
+        config={editorConfig}
         onChange={value => {
           setValue(`${editedIndex}.text`, value);
         }}
