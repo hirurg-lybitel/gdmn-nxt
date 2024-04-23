@@ -1900,7 +1900,7 @@
 					"name": "Segments",
 					"item": [
 						{
-							"name": "segments",
+							"name": "All",
 							"id": "d58c668b-1001-4232-b08a-33e740258635",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
