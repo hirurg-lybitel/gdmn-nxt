@@ -1987,7 +1987,21 @@
 				},
 				{
 					"name": "Mailing",
-					"item": [],
+					"item": [
+						{
+							"name": "All",
+							"id": "ddeaab0d-ad64-46f5-be5c-034094b12af0",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/marketing/mailing"
+							},
+							"response": []
+						}
+					],
 					"id": "0abcc61d-184e-4ecc-9cd9-57da11172e60"
 				}
 			],
