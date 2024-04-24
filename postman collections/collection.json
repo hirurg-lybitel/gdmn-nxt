@@ -2002,7 +2002,7 @@
 							"response": []
 						},
 						{
-							"name": "New Request",
+							"name": "Launch",
 							"id": "94789ad2-edba-4441-9999-dd7fa6f32a3c",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
