@@ -55,5 +55,3 @@ ssl/*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
-merge.bat
