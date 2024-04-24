@@ -2000,6 +2000,18 @@
 								"url": "{{baseUrl}}/marketing/mailing"
 							},
 							"response": []
+						},
+						{
+							"name": "Launch",
+							"id": "94789ad2-edba-4441-9999-dd7fa6f32a3c",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
 						}
 					],
 					"id": "0abcc61d-184e-4ecc-9cd9-57da11172e60"
