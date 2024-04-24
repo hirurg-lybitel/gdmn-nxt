@@ -53,7 +53,7 @@ export const customerApi = createApi({
         const params = queryOptionsToParamsString(options);
 
         return {
-          url: `contacts?${params ? `?${params}` : ''}`,
+          url: `contacts${params ? `?${params}` : ''}`,
           method: 'GET',
         };
       },
