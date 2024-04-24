@@ -45,7 +45,7 @@ apps/gdmn-nxt-server/db/*.json
 .env.dev
 .env.prod
 
-openssl/*
+ssl/*
 
 # Yarn
 .yarn/*
