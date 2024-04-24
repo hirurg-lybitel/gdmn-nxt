@@ -1,6 +1,6 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Button, Divider, IconButton, Tab, useTheme } from '@mui/material';
+import { Box, Button, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import { RegisterOptions, UseFormRegisterReturn, useForm } from 'react-hook-form';
@@ -11,6 +11,7 @@ import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import ComputerIcon from '@mui/icons-material/Computer';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
+import TabletAndroidIcon from '@mui/icons-material/TabletAndroid';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -311,7 +312,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const [drag, setDrag] = useState(true);
 
-  const [isPc, setIsPc] = useState(true);
+  const [previewMode, setPreviewmode] = useState('700px');
 
   const settings = useSelector((state: RootState) => state.settings);
 
@@ -362,25 +363,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   />
 
                 </TabList>
-                <div>
-                  <IconButton
-                    style={{ marginRight: '5px' }}
-                    color={isPc ? 'primary' : 'default'}
-                    onClick={() => {
-                      setIsPc(true);
-                    }}
-                  >
-                    <ComputerIcon/>
-                  </IconButton>
-                  <IconButton
-                    color={!isPc ? 'primary' : 'default'}
-                    onClick={() => {
-                      setIsPc(false);
-                    }}
-                  >
-                    <PhoneAndroidIcon/>
-                  </IconButton>
-                </div>
                 <Button
                   type="submit"
                   variant="contained"
@@ -391,11 +373,46 @@ const EmailTemplate = (props: EmailTemplateProps) => {
               </div>
               <Divider style={{ margin: 0 }} />
             </div>
-            <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%' }}>
+            <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
+              <div style={{ position: 'absolute', right: '0', padding: '5px' }}>
+                <Tooltip title={'Компьютер'}>
+                  <IconButton
+                    style={{ marginRight: '5px' }}
+                    color={previewMode === '700px' ? 'primary' : 'default'}
+                    onClick={() => {
+                      setPreviewmode('700px');
+                    }}
+                  >
+                    <ComputerIcon/>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={'Планшет'}>
+                  <IconButton
+                    style={{ marginRight: '5px' }}
+                    color={previewMode === '500px' ? 'primary' : 'default'}
+                    onClick={() => {
+                      setPreviewmode('500px');
+                    }}
+                  >
+                    <TabletAndroidIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={'Телефон'}>
+                  <IconButton
+                    color={previewMode === '300px' ? 'primary' : 'default'}
+                    onClick={() => {
+                      setPreviewmode('300px');
+                    }}
+                  >
+                    <PhoneAndroidIcon/>
+                  </IconButton>
+                </Tooltip>
+              </div>
               <div style={{ width: '100%', height: '100%' }}>
+
                 <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
                   <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
-                    <div style={{ width: isPc ? '700px' : '340px', background: 'white', transition: '0.5s' }}>
+                    <div style={{ width: '700px', background: 'white', transition: '0.5s' }}>
                       <Droppable droppableId="tamplate" >
                         {(droppableProvider) => (
                           <div
@@ -447,7 +464,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 </TabPanel>
                 <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
                   <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
-                    <div style={{ maxWidth: isPc ? '700px' : '340px', width: '100%', height: '100%', background: 'white', transition: '0.5s' }}>
+                    <div style={{ maxWidth: previewMode, width: '100%', height: '100%', background: 'white', transition: '0.5s' }}>
                       <CustomizedScrollBox options={{ suppressScrollX: true }}>
                         {Object.values(getValues()).map((template: IComponent, index: number) => (
                           <EmailTemplateItem
