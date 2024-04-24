@@ -184,3 +184,6 @@ export function queryOptionsToParamsString(options?: IQueryOptions | void) {
 
   return params.join('&');
 };
+
+
+export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[] ? ElementType : never;

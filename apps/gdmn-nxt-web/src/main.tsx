@@ -52,6 +52,9 @@ import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types
 import Contacts from './app/pages/Managment/Contacts';
 import { Contracts } from './app/pages/Managment/contracts';
 import OurContacts from './app/pages/Managment/ourContacts';
+import Mailing from './app/pages/Marketing/mailing';
+import CustomersSegments from './app/pages/Marketing/segments';
+import Templates from './app/pages/Marketing/templates';
 
 registerMUI();
 
@@ -135,6 +138,11 @@ const Main = () => {
                               <Route path="topEarning" element={<TopEarningPage />} />
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />
+                          </Route>
+                          <Route path="marketing">
+                            <Route path="mailing" element={<Mailing />} />
+                            <Route path="segments" element={<CustomersSegments />} />
+                            <Route path="templates" element={<Templates />} />
                           </Route>
                           <Route path="system">
                             <Route path="settings">

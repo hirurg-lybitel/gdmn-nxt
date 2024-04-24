@@ -44,6 +44,7 @@ import { cachedRequets } from './app/utils/cached requests';
 import fs from 'fs';
 import https, { ServerOptions } from 'https';
 import systemSettingsRouter from './app/routes/settings/systemSettings';
+import { marketingRouter } from './app/routes/mailingRouter';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -326,6 +327,9 @@ router.use(reportsRouter);
 router.use(profileSettingsRouter);
 router.use(systemSettingsRouter);
 
+/** Marketing */
+router.use(marketingRouter);
+
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;
   res.json(erModelNoAdapters);
@@ -349,9 +353,17 @@ if (config.serverStaticMode) {
 
 app.get('*', (req, res) => res.status(200).send('Hello from crm server!'));
 
-const privateKey = fs.readFileSync(path.join('/ssl', 'private.key'));
-const certificate = fs.readFileSync(path.join('/ssl', 'public.crt'));
-const bundle = fs.readFileSync(path.join('/ssl', 'ca.bundle'));
+const privateKey = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'private.key'))
+  : fs.readFileSync(path.join('/ssl', 'private.key'));
+
+const certificate = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'public.crt'))
+  : fs.readFileSync(path.join('/ssl', 'public.crt'));
+
+const bundle = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'ca.bundle'))
+  : fs.readFileSync(path.join('/ssl', 'ca.bundle'));
 
 const options: ServerOptions = {
   key: privateKey,

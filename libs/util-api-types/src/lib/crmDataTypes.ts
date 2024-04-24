@@ -375,3 +375,25 @@ export interface IFavoriteContact extends IWithID {
   USER?: number;
   CONTACT: IContactWithID;
 }
+
+export interface ISegmnentFields {
+  NAME: string;
+  VALUE: string;
+}
+
+export interface ISegment extends IWithID {
+  NAME: string;
+  QUANTITY: number;
+  FIELDS: ISegmnentFields[]
+}
+
+export interface IMailing extends IWithID {
+  NAME: string;
+  LAUNCHDATE: Date;
+  STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
+  segments: ISegment[];
+}
+
+export interface ITemplate extends IWithID {
+  HTML: string;
+}

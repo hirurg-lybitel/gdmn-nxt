@@ -5,6 +5,7 @@ import managment from './managment';
 import preferences from './preferences';
 import { systemMenu } from './system';
 import { ActionMethod, Permissions } from '@gsbelarus/util-api-types';
+import marketing from './marketing';
 
 type IType = 'group' | 'collapse' | 'item'
 export interface IMenuItem {
@@ -21,9 +22,14 @@ export interface IMenuItem {
   }
 }
 
-// TODO доделать systemMenu или убрать вовсе
 const menuItems = {
-  items: [dashboard, managment, analytics, preferences].concat(process.env.NODE_ENV === 'development' ? systemMenu : [])
+  items: [
+    dashboard,
+    managment,
+    marketing,
+    analytics,
+    preferences,
+  ].concat(process.env.NODE_ENV === 'development' ? systemMenu : [])
 };
 
 export default menuItems;
