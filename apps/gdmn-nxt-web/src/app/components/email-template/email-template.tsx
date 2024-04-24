@@ -303,7 +303,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     };
   }, []);
 
-  const [tabIndex, setTabIndex] = useState('2');
+  const [tabIndex, setTabIndex] = useState('1');
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -317,6 +317,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const [primaryDrag, setPrimaryDrag] = useState('');
   const [allowChangePrimary, setAllowChangePrimary] = useState(true);
+  console.log(primaryDrag);
+  console.log(allowChangePrimary);
   const handleChangeAllowChangePrimary = (value: boolean) => () => {
     setAllowChangePrimary(value);
   };
@@ -341,24 +343,26 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       <form style={{ width: '100%', height: '100%' }} onSubmit={handleSubmit(onSubmit)}>
         <DragDropContext onDragEnd={handleDragEnd}>
           <TabContext value={tabIndex}>
-            <div>
-              <TabList
-                onChange={handleTabsChange}
-                centered
-                sx={{
-                  position: 'relative'
-                }}
-              >
-                <div style={{ width: '84px' }} />
-                <Tab
-                  label="Редактирование"
-                  value="1"
-                />
-                <Tab
-                  label="Просмотр"
-                  value="2"
-                />
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ width: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+                <TabList
+                  onChange={handleTabsChange}
+                  centered
+                  sx={{
+                    position: 'relative'
+                  }}
+                >
+                  <Tab
+                    label="Редактирование"
+                    value="1"
+                  />
+                  <Tab
+                    label="Просмотр"
+                    value="2"
+                  />
+
+                </TabList>
+                <div>
                   <IconButton
                     style={{ marginRight: '5px' }}
                     color={isPc ? 'primary' : 'default'}
@@ -376,18 +380,15 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   >
                     <PhoneAndroidIcon/>
                   </IconButton>
-                  <Box flex={1}/>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    style={{ position: 'absolute',
-                      right: '5px'
-                    }}
-                  >
-                    Сохранить
-                  </Button>
                 </div>
-              </TabList>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  style={{ position: 'absolute', right: '6px' }}
+                >
+                    Сохранить
+                </Button>
+              </div>
               <Divider style={{ margin: 0 }} />
             </div>
             <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%' }}>
@@ -501,8 +502,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                 return (
                                   <div
                                     onMouseDown={handleChangeAllowChangePrimary(false)}
+                                    onMouseUp={handleChangeAllowChangePrimary(true)}
                                     onMouseEnter={handleChangePrimaryDrag(`${component.id}`)}
-                                    style={{ width: '110px', height: '110px', margin: '5px', }}
+                                    style={{ width: '110px', height: '110px', margin: '5px', cursor: 'pointer' }}
                                   >
                                     <div
                                       ref={draggableProvider.innerRef}

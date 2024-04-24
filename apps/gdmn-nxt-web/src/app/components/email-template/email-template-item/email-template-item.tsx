@@ -51,7 +51,7 @@ export const findComponent = (props: findComponentProps) => {
   switch (component.type) {
     case 'text':
       return (isPreview || !setValue || !getValues || !setDrag)
-        ? <div style={{ width: component.width.auto ? 'auto' : component.width.value + '%' }}>
+        ? <div style={{ width: component.width.auto ? 'auto' : component.width.value + '%', color: 'black' }}>
           {ReactHtmlParser(component.text || '')}
         </div>
         : <Draft
