@@ -318,8 +318,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const [primaryDrag, setPrimaryDrag] = useState('');
   const [allowChangePrimary, setAllowChangePrimary] = useState(true);
-  console.log(primaryDrag);
-  console.log(allowChangePrimary);
   const handleChangeAllowChangePrimary = (value: boolean) => () => {
     setAllowChangePrimary(value);
   };
