@@ -1892,6 +1892,36 @@
 				}
 			],
 			"id": "e006d411-a9d9-4ceb-82e4-94dab88a7f0b"
+		},
+		{
+			"name": "Marketing",
+			"item": [
+				{
+					"name": "Segments",
+					"item": [
+						{
+							"name": "All",
+							"id": "d58c668b-1001-4232-b08a-33e740258635",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/marketing/segments"
+							},
+							"response": []
+						}
+					],
+					"id": "20e95168-7043-4b73-a544-21922de60358"
+				},
+				{
+					"name": "Mailing",
+					"item": [],
+					"id": "0abcc61d-184e-4ecc-9cd9-57da11172e60"
+				}
+			],
+			"id": "4924770e-0bb8-4bf2-b36d-0320d93a670c"
 		}
 	],
 	"auth": {

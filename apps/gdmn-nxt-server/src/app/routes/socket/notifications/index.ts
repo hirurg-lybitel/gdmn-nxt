@@ -27,8 +27,8 @@ interface NotificationsProps {
 
 export function Notifications({ router }: NotificationsProps) {
   const httpsServer = createServer({
-    key: readFileSync(path.join(__dirname, '../../../ssl', 'private.key')),
-    cert: readFileSync(path.join(__dirname, '../../../ssl', 'public.crt')),
+    key: readFileSync(path.join('/ssl', 'private.key')),
+    cert: readFileSync(path.join('/ssl', 'public.crt')),
   });
 
   const socketIO = new Server<
