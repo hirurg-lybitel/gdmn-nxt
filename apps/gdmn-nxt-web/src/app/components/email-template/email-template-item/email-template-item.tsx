@@ -1,5 +1,5 @@
 import style from './email-template.module.less';
-import { Divider, Theme, useTheme } from '@mui/material';
+import { Divider, IconButton, Theme, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { UseFormGetValues, UseFormSetValue, useForm } from 'react-hook-form';
 import Draft from '../draft/draft';
@@ -7,6 +7,8 @@ import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import { EmailTemplate, IComponent } from '../email-template';
 import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -42,11 +44,12 @@ interface findComponentProps {
   setValue?: UseFormSetValue<EmailTemplate>,
   editUnFocus?: () => void,
   setDrag?: (arg: boolean) => void,
-  drag?: boolean
+  drag?: boolean,
+  forceUpdate?: () => void
 }
 
 export const findComponent = (props: findComponentProps) => {
-  const { component, isPreview, editedIndex, index, editIsFocus, getValues, setValue, setDrag, drag } = props;
+  const { component, isPreview, editedIndex, index, editIsFocus, getValues, setValue, setDrag, drag, forceUpdate } = props;
 
   switch (component.type) {
     case 'text':
@@ -62,6 +65,7 @@ export const findComponent = (props: findComponentProps) => {
           editedIndex={index || 0}
           setDrag={setDrag}
           drag={drag}
+          forceUpdate={forceUpdate}
         />;
     case 'image':
       return (
@@ -117,16 +121,17 @@ interface EmailTemplateItemProps{
   isPreview?: boolean,
   template?: IComponent,
   setDrag?: (arg: boolean) => void,
-  drag?: boolean
+  drag?: boolean,
+  removeEl?: (index: number) => void;
+  copy?: (index: number) => void,
+  forceUpdate?: () => void
 }
 
 const EmailTemplateItem = (props: EmailTemplateItemProps) => {
   const theme = useTheme();
-  const { editedIndex, index, editIsFocus, getValues, setValue, editUnFocus, isPreview, template, setDrag, drag } = props;
-
+  const { editedIndex, index, editIsFocus, getValues, setValue, editUnFocus, isPreview, template, setDrag, drag, copy, removeEl, forceUpdate } = props;
 
   const classes = useStyles();
-
 
   if (isPreview || !setValue || !getValues) {
     if (!template) return <div />;
@@ -144,6 +149,17 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
 
   const component = getValues(`${index}`);
 
+  const handleRemove = () => {
+    console.log(!removeEl || index === undefined);
+    if (!removeEl || index === undefined) return;
+    removeEl(index);
+  };
+
+  const handleCopy = () => {
+    if (!copy || index === undefined) return;
+    copy(index);
+  };
+
   return (
     <div
       className={classes.templateItem}
@@ -154,7 +170,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
         justifyContent: component.position
       }}
     >
-      {
+      <div >
         <div
           onMouseEnter={() => {
             setDrag && setDrag(true);
@@ -166,8 +182,41 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
         >
           <ZoomOutMapIcon sx={{ fontSize: '15px' }} style={{ transform: 'rotate(0.125turn)' }}/>
         </div>
-      }
-      {findComponent({ component, isPreview: false, editedIndex, index, editIsFocus, getValues, setValue, setDrag, drag })}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-36px',
+            right: '0',
+            display: 'flex',
+            background: theme.palette.primary.main,
+            visibility: index === editedIndex ? 'visible' : 'hidden',
+            borderRadius: '0px 0px 10px 10px',
+            zIndex: '1'
+          }}
+        >
+          <IconButton
+            onClick={handleRemove}
+            sx={{
+              borderRadius: '0px !important',
+              '& .MuiTouchRipple-root span': { borderRadius: '0px !important' },
+              '& .MuiTouchRipple-root': { borderRadius: '0px !important' }
+            }}
+          >
+            <DeleteIcon/>
+          </IconButton>
+          <IconButton
+            onClick={handleCopy}
+            sx={{
+              borderRadius: '0px !important',
+              '& .MuiTouchRipple-root span': { borderRadius: '0px !important' },
+              '& .MuiTouchRipple-root': { borderRadius: '0px !important' }
+            }}
+          >
+            <ContentCopyIcon/>
+          </IconButton>
+        </div>
+      </div>
+      {findComponent({ component, isPreview: false, editedIndex, index, editIsFocus, getValues, setValue, setDrag, drag, forceUpdate })}
     </div>
   );
 };

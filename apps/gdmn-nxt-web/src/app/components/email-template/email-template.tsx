@@ -11,7 +11,8 @@ import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import ComputerIcon from '@mui/icons-material/Computer';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
-import TabletAndroidIcon from '@mui/icons-material/TabletAndroid';
+import TabletIcon from '@mui/icons-material/Tablet';
+import ColorEdit from '../Styled/colorEdit/colorEdit';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -75,8 +76,15 @@ export interface EmailTemplate {
   [key: string]: IComponent
 }
 
+export type ITemplateContent = ITextComponent | IImageComponent | IDeviderComponent | IButtonComponent
+
+export interface ITemplate {
+  content: ITemplateContent[]
+}
+
 interface EmailTemplateProps {
-  onSubmit?: (arg: IComponent[]) => void,
+  value?: ITemplate,
+  onChange: (value: ITemplate) => void
   // defaultValues?: {
   //   text?: baseComponentSettings,
   //   image?: baseComponentSettings,
@@ -86,7 +94,12 @@ interface EmailTemplateProps {
 }
 
 const EmailTemplate = (props: EmailTemplateProps) => {
-  const { onSubmit: send } = props;
+  const {
+    value = {
+      content: []
+    },
+    onChange
+  } = props;
 
   const theme = useTheme();
 
@@ -203,7 +216,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     setEditIsFocus(false);
   };
 
-  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+  const forceUpdate = () => {
+    onChange({
+      content: Object.values(getValues())
+    });
+  };
+
+  // const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const [editIsFocus, setEditIsFocus] = useState<boolean>(false);
 
@@ -223,9 +242,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     }
   };
 
-  const copyEl = () => {
-    const component = getValues(`${editedIndex}`);
-    const endIndex = editedIndex || 0 + 1;
+  const copyEl = (index: number) => {
+    const component = getValues(`${index}`);
+    const endIndex = index || 0 + 1;
     const componentCopy = { ...component };
     componentCopy.id = lastId;
     setLastId(lastId + 1);
@@ -259,6 +278,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             newTemplate[`${index}`] = el;
           });
           reset(newTemplate);
+          forceUpdate();
         }
       }
     }
@@ -277,6 +297,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         openEditForm(endIndex);
       }
       reset(newTemplate);
+      forceUpdate();
     }
   };
 
@@ -292,6 +313,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const closeEditForm = () => {
     setEditIsFocus(false);
     setEditedIndex(null);
+    forceUpdate();
   };
 
   useEffect(() => {
@@ -327,7 +349,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   const onSubmit = () => {
-    send && send(Object.values(getValues()) || []);
+    // send && send(Object.values(getValues()) || []);
   };
 
   return (
@@ -343,7 +365,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         <DragDropContext onDragEnd={handleDragEnd}>
           <TabContext value={tabIndex}>
             <div style={{ width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <TabList
                   onChange={handleTabsChange}
                   centered
@@ -361,51 +383,47 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   />
 
                 </TabList>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  style={{ position: 'absolute', right: '6px' }}
-                >
-                    Сохранить
-                </Button>
+                <div>
+                  {tabIndex === '2' && <>
+                    <Tooltip title={'Компьютер'}>
+                      <IconButton
+                        style={{ marginRight: '5px' }}
+                        color={previewMode === '700px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('700px');
+                        }}
+                      >
+                        <ComputerIcon/>
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={'Планшет'}>
+                      <IconButton
+                        style={{ marginRight: '5px' }}
+                        color={previewMode === '500px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('500px');
+                        }}
+                      >
+                        <TabletIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={'Телефон'}>
+                      <IconButton
+                        color={previewMode === '300px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('300px');
+                        }}
+                      >
+                        <PhoneAndroidIcon/>
+                      </IconButton>
+                    </Tooltip>
+                  </>}
+                </div>
               </div>
               <Divider style={{ margin: 0 }} />
             </div>
             <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
-              <div style={{ position: 'absolute', right: '0', padding: '5px' }}>
-                <Tooltip title={'Компьютер'}>
-                  <IconButton
-                    style={{ marginRight: '5px' }}
-                    color={previewMode === '700px' ? 'primary' : 'default'}
-                    onClick={() => {
-                      setPreviewmode('700px');
-                    }}
-                  >
-                    <ComputerIcon/>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={'Планшет'}>
-                  <IconButton
-                    style={{ marginRight: '5px' }}
-                    color={previewMode === '500px' ? 'primary' : 'default'}
-                    onClick={() => {
-                      setPreviewmode('500px');
-                    }}
-                  >
-                    <TabletAndroidIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={'Телефон'}>
-                  <IconButton
-                    color={previewMode === '300px' ? 'primary' : 'default'}
-                    onClick={() => {
-                      setPreviewmode('300px');
-                    }}
-                  >
-                    <PhoneAndroidIcon/>
-                  </IconButton>
-                </Tooltip>
-              </div>
+
               <div style={{ width: '100%', height: '100%' }}>
 
                 <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
@@ -435,6 +453,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                       {...draggableProvider.dragHandleProps}
                                     >
                                       <EmailTemplateItem
+                                        copy={copyEl}
+                                        removeEl={removeEl}
                                         editUnFocus={handleEditUnFocus}
                                         editedIndex={editedIndex}
                                         index={index}
@@ -445,6 +465,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                           setDrag(arg);
                                         }}
                                         drag={drag}
+                                        forceUpdate={forceUpdate}
                                       />
                                     </div>
                                   );
@@ -542,6 +563,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                         {component.title}
                                       </Box>
                                     </div>
+                                    {/* <ColorEdit /> */}
                                   </div>
                                 );
                               }}

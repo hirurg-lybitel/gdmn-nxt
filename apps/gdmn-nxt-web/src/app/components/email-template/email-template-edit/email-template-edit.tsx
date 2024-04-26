@@ -22,9 +22,9 @@ export interface EmailTemplateEditProps {
   setValue: UseFormSetValue<EmailTemplate>,
   register: (name: any, options?: RegisterOptions<EmailTemplate, any> | undefined) => UseFormRegisterReturn<any>,
   forceUpdate: React.DispatchWithoutAction,
-  removeEl: (arg: number) => void;
-  changeIsFocus: React.Dispatch<React.SetStateAction<boolean>>
-  copy: () => void
+  changeIsFocus: React.Dispatch<React.SetStateAction<boolean>>,
+  removeEl: (index: number) => void;
+  copy: (index: number) => void
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
@@ -353,6 +353,11 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
   const handleConfirmOkClick = () => {
     removeEl(editedIndex);
   };
+
+  const handleCopy = () => {
+    copy(editedIndex);
+  };
+
   const handleConfirmCancelClick = () => {
     setConfirmOpen(false);
   };
@@ -379,15 +384,15 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       </CardContent>
       <Divider />
       <CardActions>
-        <IconButton
+        {/* <IconButton
           size="small"
           onClick={handleConfirmOpen}
         >
           <DeleteIcon />
         </IconButton>
-        <IconButton onClick={copy}>
+        <IconButton onClick={handleCopy}>
           <ContentCopyIcon />
-        </IconButton>
+        </IconButton> */}
         <Box flex={1}/>
         <IconButton onClick={close} size="small"><CloseIcon /></IconButton>
       </CardActions>

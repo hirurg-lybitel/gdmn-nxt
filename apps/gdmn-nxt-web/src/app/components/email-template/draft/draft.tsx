@@ -51,10 +51,11 @@ interface draftProps {
   getValues: UseFormGetValues<EmailTemplate>,
   setValue: UseFormSetValue<EmailTemplate>,
   setDrag: (arg: boolean) => void,
-  drag?: boolean
+  drag?: boolean,
+  forceUpdate?: () => void
 }
 
-export default function Draft({ isOpen, width, editedIndex, getValues, setValue, setDrag, drag }: draftProps) {
+export default function Draft({ isOpen, width, editedIndex, getValues, setValue, setDrag, drag, forceUpdate }: draftProps) {
   const classes = useStyles();
 
   const component = getValues(`${editedIndex}`);
@@ -85,6 +86,9 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue,
     height: 'auto'
   };
 
+  const handleChange = (value: string) => {
+    setValue(`${editedIndex}.text`, value);
+  };
 
   return (
     <div
@@ -102,9 +106,7 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue,
       <JoditEditor
         value={component?.text || ''}
         config={editorConfig}
-        onChange={value => {
-          setValue(`${editedIndex}.text`, value);
-        }}
+        onChange={handleChange}
       />
     </div>
   );
