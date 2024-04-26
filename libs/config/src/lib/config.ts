@@ -39,7 +39,6 @@ const origin = process.env.NODE_ENV === 'production'
   ? `https://${host}`
   : `https://${host}:${appPort}`;
 
-
 export const config: IConfig = {
   host,
   appPort,

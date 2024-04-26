@@ -100,6 +100,7 @@ app.use(cors({
 if (config.serverStaticMode) {
   app.use(express.static(path.resolve(__dirname, '../gdmn-nxt-web')));
 }
+
 app.use(express.json({ limit: bodySize }));
 app.use(express.urlencoded({ extended: true }));
 const apiRoot = {
@@ -303,9 +304,6 @@ router.use(contractsListRouter);
 /** Bank Statements */
 router.use(bankStatementsRouter);
 
-/** Deals */
-// router.use(dealsRouter);
-
 /** Kanban */
 router.use(kanbanRouter);
 
@@ -349,11 +347,19 @@ if (config.serverStaticMode) {
   });
 }
 
-app.get('*', (req) => console.log(`Unknown request: ${req.url}`));
+app.get('*', (req, res) => res.status(200).send('Hello from crm server!'));
 
-const privateKey = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.key'));
-const bundle = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.ca-bundle'));
-const certificate = fs.readFileSync(path.join(__dirname, '../../../ssl', 'gdmn.app.crt'));
+const privateKey = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'private.key'))
+  : fs.readFileSync(path.join('/ssl', 'private.key'));
+
+const certificate = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'public.crt'))
+  : fs.readFileSync(path.join('/ssl', 'public.crt'));
+
+const bundle = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'ca.bundle'))
+  : fs.readFileSync(path.join('/ssl', 'ca.bundle'));
 
 const options: ServerOptions = {
   key: privateKey,
