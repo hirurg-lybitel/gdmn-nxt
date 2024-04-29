@@ -134,13 +134,14 @@ export default function Contacts() {
       ...newObject,
       ...(value !== '' ? { name: [value] } : {})
     });
-  }, []);
+    setPaginationData(prev => ({ ...prev, pageNo: 0 }));
+  }, [filterData]);
 
   const cancelSearch = useCallback(() => {
     const newObject = { ...filterData };
     delete newObject.name;
     handleFilteringDataChange(newObject);
-  }, []);
+  }, [filterData]);
 
   const filterHandlers = {
     filterClick: useCallback(() => {
