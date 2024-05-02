@@ -9,6 +9,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
 
 export interface ContactListProps {
   contacts: IContactPerson[];
@@ -53,11 +56,40 @@ export function ContactList({
     [filterData]
   );
 
+  const [addFavorite] = useAddFavoriteMutation();
+  const [deleteFavorite] = useDeleteFavoriteMutation();
+
   const handleSortModelChange = useCallback((sortModel: GridSortModel) => {
     onSortChange && onSortChange(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
 
   const columns: GridColDef<IContactPerson>[] = [
+    {
+      field: 'favorite', width: 10, type: 'actions',
+      renderCell: ({ value, row }: GridRenderCellParams) => {
+        const handleFavoriteClick = () => {
+          row.isFavorite
+            ? deleteFavorite(row.ID)
+            : addFavorite(row.ID);
+        };
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+            <div style={{ position: 'relative', width: '30px', height: '30px' }}>
+              <Tooltip title={row.isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}>
+                <IconButton
+                  size="small"
+                  className={styles.chosenButton}
+                  onClick={handleFavoriteClick}
+                >
+                  <StarIcon className={`${styles.selectedStar} ${row.isFavorite ? '' : styles.starInvisible}`} />
+                  <StarBorderIcon className={`${styles.unselectedStar} ${!row.isFavorite ? '' : styles.starInvisible}`} />
+                </IconButton>
+              </Tooltip>
+            </div>
+          </div>
+        );
+      }
+    },
     {
       field: 'NAME', headerName: 'Имя', flex: 1, minWidth: 200,
       renderCell: ({ value, row }: GridRenderCellParams) => {
