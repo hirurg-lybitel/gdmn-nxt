@@ -2,13 +2,17 @@ import 'jodit';
 import JoditEditor from 'jodit-react';
 import { makeStyles } from '@mui/styles';
 import { UseFormGetValues, UseFormSetValue } from 'react-hook-form';
-import { EmailTemplate } from '../email-template';
+import { EmailTemplate, IComponent } from '../email-template';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { Theme } from '@mui/material';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Visibility } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
+    maxWidth: '100%',
+    color: 'black',
     '& .jodit-status-bar': {
       visibility: 'hidden',
       height: '0px',
@@ -40,55 +44,99 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     '& .jodit-jodit_fullsize_true': {
       background: theme.palette.background.paper
+    },
+    '& .jodit-ui-form': {
+      color: 'red'
+    },
+    '& .jodit-popup__content': {
+      color: 'red'
     }
-  }))
+  })),
+  formPopup: {
+    '& div:nth-last-child(2)': {
+      position: 'absolute',
+      border: 'none',
+      width: '0px',
+      height: '0px',
+      Visibility: 'hidden',
+      opacity: 0,
+      overflow: 'hidden'
+    }
+  },
+  file: {
+    backGround: 'red'
+  }
 }));
 
 interface draftProps {
   isOpen: boolean,
   width: string,
   editedIndex: number,
-  getValues: UseFormGetValues<EmailTemplate>,
-  setValue: UseFormSetValue<EmailTemplate>,
+  setValue: (stringIndex: string, newValue: any) => void,
   setDrag: (arg: boolean) => void,
   drag?: boolean,
-  forceUpdate?: () => void
+  component: IComponent
 }
 
-export default function Draft({ isOpen, width, editedIndex, getValues, setValue, setDrag, drag, forceUpdate }: draftProps) {
+export default function Draft({ isOpen, width, editedIndex, component, setValue, setDrag, drag }: draftProps) {
   const classes = useStyles();
 
-  const component = getValues(`${editedIndex}`);
-
-  const settings = useSelector((state: RootState) => state.settings);
-
-  const editorConfig = {
-    readonly: false,
-    autofocus: isOpen,
-    toolbar: isOpen,
-    addNewLine: false,
-    spellcheck: true,
-    language: 'ru',
-    toolbarAdaptive: false,
-    showCharsCounter: true,
-    showWordsCounter: true,
-    showXPathInStatusbar: false,
-    askBeforePasteHTML: false,
-    askBeforePasteFromWord: false,
-    uploader: {
-      insertImageAsBase64URI: true
-    },
-    buttons: ['fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough', 'superscript', 'subscript',
-      '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'lineHeight', 'hr', '|', 'spellcheck', 'eraser', '|', 'copy', 'paste',
-      'cut', 'selectall', '|'],
-    width: '100%',
-    maxWidth: '100%',
-    height: 'auto'
+  const save = () => {
+    if (!ref?.current?.value || component?.text === ref?.current?.value) return;
+    setValue(`${editedIndex}.text`, ref?.current?.value);
   };
 
-  const handleChange = (value: string) => {
-    setValue(`${editedIndex}.text`, value);
-  };
+  useEffect(() => {
+    save();
+  }, [isOpen]);
+
+  const ref = useRef<any>(null);
+
+  const joditEditorMemo = useMemo(() => {
+    const editorConfig = {
+      readonly: false,
+      autofocus: isOpen,
+      toolbar: isOpen,
+      events: {
+        paste: (e: any) => setDrag(false)
+      },
+      addNewLine: false,
+      spellcheck: true,
+      language: 'ru',
+      toolbarAdaptive: false,
+      showCharsCounter: true,
+      showWordsCounter: true,
+      showXPathInStatusbar: false,
+      askBeforePasteHTML: false,
+      askBeforePasteFromWord: false,
+      uploader: {
+        insertImageAsBase64URI: true
+      },
+      buttons: ['fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough',
+        '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'link', '|', 'spellcheck', 'eraser', '|'],
+      width: '100%',
+      maxWidth: '100%',
+      height: 'auto',
+      link: {
+        openInNewTabCheckbox: false,
+        noFollowCheckbox: false,
+        formClassName: classes.formPopup
+      },
+      controls: {
+        file: {
+          name: '',
+          popup: () => {}
+        }
+      }
+    };
+    return (
+      <JoditEditor
+        ref={ref}
+        value={component?.text || ''}
+        config={editorConfig}
+      />
+    );
+  }, [ref, component, isOpen]);
 
   return (
     <div
@@ -98,16 +146,12 @@ export default function Draft({ isOpen, width, editedIndex, getValues, setValue,
       }}
       className={classes.draft}
       style={{
-        maxWidth: editorConfig.width, width: isOpen ? 'auto'
+        width: isOpen ? 'auto'
           : ((!component.text || component.text === '<p><br></p>') ? '150px' : width),
         display: 'flex',
         justifyContent: 'center' }}
     >
-      <JoditEditor
-        value={component?.text || ''}
-        config={editorConfig}
-        onChange={handleChange}
-      />
+      {joditEditorMemo}
     </div>
   );
 }

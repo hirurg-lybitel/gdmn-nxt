@@ -1,7 +1,7 @@
 import style from './email-template-edit.module.less';
 import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, useTheme } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { EmailTemplate, IComponentPosition } from '../email-template';
+import { EmailTemplate, IComponent, IComponentPosition } from '../email-template';
 import { RegisterOptions, UseFormGetValues, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -18,19 +18,15 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 export interface EmailTemplateEditProps {
   editedIndex: number,
   close: () => void,
-  getValues: UseFormGetValues<EmailTemplate>,
   setValue: UseFormSetValue<EmailTemplate>,
-  register: (name: any, options?: RegisterOptions<EmailTemplate, any> | undefined) => UseFormRegisterReturn<any>,
-  forceUpdate: React.DispatchWithoutAction,
-  changeIsFocus: React.Dispatch<React.SetStateAction<boolean>>,
   removeEl: (index: number) => void;
-  copy: (index: number) => void
+  copy: (index: number) => void,
+  component: IComponent
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
-  const { editedIndex, close, getValues, setValue, register, forceUpdate, removeEl, changeIsFocus, copy } = props;
+  const { editedIndex, close, setValue, removeEl, copy, component } = props;
   const theme = useTheme();
-  const component = getValues(`${editedIndex}`);
 
   const sizeSettings = () => {
     const marks = [
@@ -45,12 +41,10 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     ];
 
     const handleWidthChange = (event: Event, value: number | number[], activeThumb: number) => {
-      forceUpdate();
       setValue(`${editedIndex}.width.value`, value as number);
     };
 
     const handleWidthAutoChange = () => {
-      forceUpdate();
       setValue(`${editedIndex}.width.auto`, !component.width?.auto);
     };
 
@@ -95,16 +89,14 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         handleChange('right')(e);
         handleChange('bottom')(e);
       } else {
-        const padding = (e.target.value).length === 0 ? 0 : Number(e.target.value);
+        const padding = (e.target?.value).length === 0 ? 0 : Number(e.target?.value);
         if (isNaN(padding)) return;
         if (padding > 99) return;
         setValue(`${editedIndex}.${paddingType}.${side}`, padding);
       }
-      forceUpdate();
     };
 
     const handleChangeMode = () => {
-      forceUpdate();
       setValue(`${editedIndex}.${paddingType}.common`, !component[`${paddingType}`]?.common);
     };
 
@@ -162,7 +154,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   const positionEdit = () => {
     const handleChange = (position: IComponentPosition) => () => {
-      forceUpdate();
       setValue(`${editedIndex}.position`, position);
     };
 
@@ -199,28 +190,34 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   const ButtonComponent = () => {
     const handleTextColorChange = (color: string) => {
-      forceUpdate();
       setValue(`${editedIndex}.color.text`, color);
     };
     const handleButtonColorChange = (color: string) => {
-      forceUpdate();
       setValue(`${editedIndex}.color.button`, color);
     };
     const handleFontChange = (e: SelectChangeEvent<string>) => {
-      forceUpdate();
-      setValue(`${editedIndex}.font.value`, e.target.value);
+      setValue(`${editedIndex}.font.value`, e.target?.value);
     };
     const handleFontSizeChange = (e: SelectChangeEvent<number>) => {
-      forceUpdate();
-      setValue(`${editedIndex}.font.size`, Number(e.target.value));
+      setValue(`${editedIndex}.font.size`, Number(e.target?.value));
     };
+
+    const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setValue(`${editedIndex}.text`, e.target?.value);
+    };
+
+    const handleUrlChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setValue(`${editedIndex}.url`, e.target?.value);
+    };
+
     return (
       <div>
         <div>
           <TextField
             sx={{ marginTop: '10px' }}
             fullWidth
-            {...register(`${editedIndex}.text`)}
+            value={component.text}
+            onChange={handleTextChange}
             label="Текст кнопки"
           />
           <div style={{ display: 'flex' }}>
@@ -241,7 +238,8 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
           <TextField
             sx={{ marginTop: '10px' }}
             fullWidth
-            {...register(`${editedIndex}.url`)}
+            value={component.url}
+            onChange={handleUrlChange}
             label="Ссылка"
           />
           <FormControl sx={{ marginTop: '10px' }} fullWidth>
@@ -285,12 +283,10 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       reader.readAsDataURL(file);
       reader.onloadend = (e) => {
         setValue(`${editedIndex}.image`, reader.result?.toString() ?? '');
-        forceUpdate();
       };
     };
     const handleDeleteImage = () => {
       setValue(`${editedIndex}.image`, '');
-      forceUpdate();
       if (inputRef.current) {
         inputRef.current.value = '';
       }
