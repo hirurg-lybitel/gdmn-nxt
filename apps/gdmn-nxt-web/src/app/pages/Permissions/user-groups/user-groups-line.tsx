@@ -1,5 +1,5 @@
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
-import { Box, IconButton, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation } from '../../../features/permissions';
@@ -39,6 +39,16 @@ export function Users(props: IUsersProps) {
   };
 
   const columns: GridColDef<IUserGroupLine>[] = [
+    {
+      field: 'Avatar',
+      type: 'actions',
+      width: 35,
+      renderCell({ row }) {
+        return (
+          <Avatar sx={{ width: 35, height: 35 }} src={row.USER?.Avatar} />
+        );
+      },
+    },
     { field: 'NAME', headerName: 'Логин', minWidth: 150,
       valueGetter: ({ row }) => row.USER?.NAME
     },
