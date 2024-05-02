@@ -401,6 +401,7 @@ export function Customers(props: CustomersProps) {
         ...newObject,
         ...(value !== '' ? { NAME: [value] } : {})
       });
+      setPaginationData(prev => ({ ...prev, pageNo: 0 }));
     },
     handleCancelSearch: async () => {
       const newObject = { ...filteringData };
