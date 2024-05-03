@@ -1,10 +1,11 @@
-import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDataSchema, IRequestResult, IUserGroupLine } from '@gsbelarus/util-api-types';
 import { Request, RequestHandler } from 'express';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
-import { bin2String } from '@gsbelarus/util-helpers';
+import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
@@ -477,28 +478,8 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
 
     const rawUsers = await Promise.resolve(execQuery(query));
 
-
-    const users = await Promise.all(rawUsers.map(async(user) => {
-      const blob2String = async () => {
-        if (user['AVATAR_BLOB'] !== null && typeof user['AVATAR_BLOB'] === 'object') {
-          // eslint-disable-next-line dot-notation
-          const readStream = await attachment.openBlob(transaction, user['AVATAR_BLOB']);
-          const blobLength = await readStream?.length;
-          const resultBuffer = Buffer.alloc(blobLength);
-
-          let size = 0;
-          let n: number;
-          while (size < blobLength && (n = await readStream.read(resultBuffer.subarray(size))) > 0) size += n;
-
-          await readStream.close();
-
-          const blob2String = resultBuffer.toString();
-          // eslint-disable-next-line dot-notation
-          return bin2String(blob2String.split(','));
-        };
-        return '';
-      };
-
+    const users: IUserGroupLine[] = [];
+    await forEachAsync(rawUsers, async user => {
       const CONTACT = {
         ID: user['CONTACT_ID'],
         NAME: user['CONTACT_NAME'],
@@ -511,20 +492,21 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT },
-        Avatar: await blob2String()
+        AVATAR: await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB'])
       };
+
       const USERGROUP = {
         ID: user['GROUP_ID'],
         NAME: user['GROUP_NAME'],
       };
-      const { CONTACT_ID, CONTACT_NAME, PHONE, ...newObject } = user;
-      return {
+
+      users.push({
         ID: user['ID'],
         REQUIRED_2FA: user['REQUIRED_2FA'] === 1,
         USERGROUP: { ...USERGROUP },
         USER: { ...USER }
-      };
-    }));
+      });
+    });
 
     const result: IRequestResult = {
       queries: {

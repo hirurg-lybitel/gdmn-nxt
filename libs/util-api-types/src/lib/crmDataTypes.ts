@@ -266,7 +266,7 @@ export interface IUser extends IWithID {
   CONTACT: IContactWithID;
   DISABLED: boolean;
   isActivated?: boolean;
-  Avatar?: string;
+  AVATAR?: string;
 };
 
 export interface IPermissionsView extends IWithID {
