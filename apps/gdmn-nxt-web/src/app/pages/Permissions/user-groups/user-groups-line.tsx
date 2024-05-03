@@ -49,7 +49,7 @@ export function Users(props: IUsersProps) {
         return (
           <Stack
             direction="row"
-            spacing={1}
+            spacing={1.5}
             alignItems="center"
           >
             <div>
