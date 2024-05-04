@@ -84,7 +84,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const labelStyle: CSSProperties = {
   display: 'inline-block',
-  padding: '2.5px 0px',
+  margin: '2.5px 0px',
+  padding: 0,
+  borderRadius: '20px'
 };
 
 /* eslint-disable-next-line */
