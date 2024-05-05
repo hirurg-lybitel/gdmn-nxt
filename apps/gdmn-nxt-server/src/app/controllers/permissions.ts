@@ -1,9 +1,11 @@
-import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDataSchema, IRequestResult, IUserGroupLine } from '@gsbelarus/util-api-types';
 import { Request, RequestHandler } from 'express';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
+import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
@@ -462,7 +464,8 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
           con.NAME AS CONTACT_NAME,
           con.PHONE CONTACT_PHONE,
           ul.USR$REQUIRED_2FA AS REQUIRED_2FA,
-          IIF(ps.ID IS NULL, 0, 1) AS IsActivated
+          IIF(ps.ID IS NULL, 0, 1) AS IsActivated,
+          ps.USR$AVATAR as AVATAR_BLOB
         FROM USR$CRM_PERMISSIONS_USERGROUPS ug
         JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
         JOIN GD_USER u ON u.ID = ul.USR$USERKEY
@@ -475,8 +478,8 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
 
     const rawUsers = await Promise.resolve(execQuery(query));
 
-
-    const users = rawUsers.map(user => {
+    const users: IUserGroupLine[] = [];
+    await forEachAsync(rawUsers, async user => {
       const CONTACT = {
         ID: user['CONTACT_ID'],
         NAME: user['CONTACT_NAME'],
@@ -488,19 +491,21 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         FULLNAME: user['USER_FULLNAME'],
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
-        CONTACT: { ...CONTACT }
+        CONTACT: { ...CONTACT },
+        AVATAR: await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB'])
       };
+
       const USERGROUP = {
         ID: user['GROUP_ID'],
         NAME: user['GROUP_NAME'],
       };
-      const { CONTACT_ID, CONTACT_NAME, PHONE, ...newObject } = user;
-      return {
+
+      users.push({
         ID: user['ID'],
         REQUIRED_2FA: user['REQUIRED_2FA'] === 1,
         USERGROUP: { ...USERGROUP },
         USER: { ...USER }
-      };
+      });
     });
 
     const result: IRequestResult = {
