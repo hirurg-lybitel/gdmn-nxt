@@ -81,7 +81,7 @@ export function LabelMarker(props: LabelMarkerProps) {
         display: 'flex',
         alignItems: 'center',
         padding: '0px 5px',
-        minHeight: '22px',
+        minHeight: '20px',
         fontSize: '0.8125rem',
         fontWeight: 600,
         textTransform: 'none'
