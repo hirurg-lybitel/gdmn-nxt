@@ -24,7 +24,7 @@ export function CustomerContacts({
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: matchUpUW ? 25 : 12,
+    pageSize: matchUpUW ? 16 : 9,
   });
 
   const userPermissions = usePermissions();

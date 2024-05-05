@@ -67,7 +67,7 @@ export default function Contacts() {
       setPaginationData(prev => ({ ...prev, pageSize: 20 }));
       return;
     }
-    setPaginationData(prev => ({ ...prev, pageSize: matchUpUW ? 25 : 12 }));
+    setPaginationData(prev => ({ ...prev, pageSize: matchUpUW ? 16 : 9 }));
   };
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function Contacts() {
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: matchUpUW ? 25 : 12,
+    pageSize: matchUpUW ? 16 : 9,
   });
 
   const {
@@ -134,13 +134,14 @@ export default function Contacts() {
       ...newObject,
       ...(value !== '' ? { name: [value] } : {})
     });
-  }, []);
+    setPaginationData(prev => ({ ...prev, pageNo: 0 }));
+  }, [filterData]);
 
   const cancelSearch = useCallback(() => {
     const newObject = { ...filterData };
     delete newObject.name;
     handleFilteringDataChange(newObject);
-  }, []);
+  }, [filterData]);
 
   const filterHandlers = {
     filterClick: useCallback(() => {

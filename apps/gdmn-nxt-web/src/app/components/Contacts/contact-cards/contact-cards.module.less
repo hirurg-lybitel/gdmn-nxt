@@ -41,13 +41,13 @@
 
 @media (min-width: 1366px) {
   .list {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1920px) {
   .list {
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
   }
 }
 .card {
@@ -78,7 +78,7 @@
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.5s;
-  height: 138px;
+  height: 172px;
 }
 
 
@@ -106,6 +106,7 @@
   position: absolute !important;
   bottom: 0;
   right: 0;
+  margin: 5px !important;
 }
 
 .unselectedStar {
@@ -157,4 +158,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.contactRank {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.1 !important;
 }
