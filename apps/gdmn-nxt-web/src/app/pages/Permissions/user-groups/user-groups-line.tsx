@@ -1,5 +1,5 @@
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
-import { Box, IconButton, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation } from '../../../features/permissions';
@@ -39,9 +39,6 @@ export function Users(props: IUsersProps) {
   };
 
   const columns: GridColDef<IUserGroupLine>[] = [
-    { field: 'NAME', headerName: 'Логин', minWidth: 150,
-      valueGetter: ({ row }) => row.USER?.NAME
-    },
     {
       field: 'CONTACT',
       headerName: 'Сотрудник',
@@ -50,17 +47,30 @@ export function Users(props: IUsersProps) {
       renderCell({ row }) {
         const value = row.USER?.CONTACT;
         return (
-          <Box>
-            <Typography variant="body2">{value?.NAME}</Typography>
-            <Typography variant="caption">{value?.PHONE && `Тел. ${value?.PHONE}`}</Typography>
-          </Box>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+          >
+            <div>
+              <Avatar sx={{ width: 30, height: 30 }} src={row.USER?.AVATAR} />
+            </div>
+            <Box>
+              <Typography variant="body2">{value?.NAME}</Typography>
+              <Typography variant="caption">{value?.PHONE && `Тел. ${value?.PHONE}`}</Typography>
+            </Box>
+          </Stack>
         );
       },
+    },
+    {
+      field: 'NAME', headerName: 'Логин', minWidth: 140,
+      valueGetter: ({ row }) => row.USER?.NAME,
     },
     { field: 'isActivated', headerName: 'Активирован', resizable: false, type: 'boolean', width: 150,
       valueGetter: (params) => params.row.USER?.isActivated ?? false
     },
-    { field: 'REQUIRED_2FA', headerName: '2FA', width: 100, resizable: false,
+    { field: 'REQUIRED_2FA', headerName: '2FA', width: 70, resizable: false,
       renderCell: ({ value = false, row }) =>
         <Tooltip
           arrow
@@ -78,7 +88,7 @@ export function Users(props: IUsersProps) {
       field: 'ACTIONS',
       headerName: '',
       resizable: false,
-      width: 100,
+      width: 50,
       align: 'center',
       renderCell: ({ id, row: { USER, USERGROUP } }) =>
         <MenuBurger

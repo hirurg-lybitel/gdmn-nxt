@@ -348,9 +348,17 @@ if (config.serverStaticMode) {
 
 app.get('*', (req, res) => res.status(200).send('Hello from crm server!'));
 
-const privateKey = fs.readFileSync(path.join('/ssl', 'private.key'));
-const certificate = fs.readFileSync(path.join('/ssl', 'public.crt'));
-const bundle = fs.readFileSync(path.join('/ssl', 'ca.bundle'));
+const privateKey = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'private.key'))
+  : fs.readFileSync(path.join('/ssl', 'private.key'));
+
+const certificate = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'public.crt'))
+  : fs.readFileSync(path.join('/ssl', 'public.crt'));
+
+const bundle = process.env.NODE_ENV === 'development'
+  ? fs.readFileSync(path.join(__dirname, '../../../ssl', 'ca.bundle'))
+  : fs.readFileSync(path.join('/ssl', 'ca.bundle'));
 
 const options: ServerOptions = {
   key: privateKey,
