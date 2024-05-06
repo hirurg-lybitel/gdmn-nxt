@@ -70,13 +70,14 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
       u.id,
       u.name,
       u.contactkey,
-      p.RANK,
+      w.NAME as RANK,
       ps.USR$MODE as ColorMode
     FROM
       gd_user u
       JOIN gd_contact c ON c.id = u.contactkey
       JOIN gd_people p ON p.contactkey = c.id
       LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
+      LEFT JOIN WG_POSITION w ON w.ID = p.WPOSITIONKEY
     WHERE UPPER(u.name) = ?
   `;
 
