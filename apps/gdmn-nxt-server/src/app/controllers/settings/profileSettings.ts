@@ -22,7 +22,7 @@ const getSettings = async (userId: number, req: Request) => {
 
     const sqlResult = await fetchAsObject(`
       SELECT
-        p.RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION,
+        w.NAME as RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION,
         ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL,
         ps.USR$2FA_ENABLED AS ENABLED_2FA, ps.USR$SECRETKEY AS SECRETKEY,
         ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
@@ -31,6 +31,7 @@ const getSettings = async (userId: number, req: Request) => {
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       JOIN GD_CONTACT c ON c.ID = u.CONTACTKEY
       LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
+      LEFT JOIN WG_POSITION w ON w.ID = p.WPOSITIONKEY
       WHERE u.ID = :userId`, { userId });
 
     for (const r of sqlResult) {
