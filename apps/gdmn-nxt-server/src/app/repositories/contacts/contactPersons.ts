@@ -2,6 +2,15 @@ import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connectio
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
+const getFIO = (value: string) => {
+  const data = value.split(' ');
+  return [
+    data[0].slice(0, 20),
+    data.length > 1 ? data[1].slice(0, 20) : '',
+    data.length > 2 ? data[2].slice(0, 20) : '',
+  ];
+};
+
 /**
  * Finds persons that match given find clause.
  * If persons was not found in the database - returns empty array.
@@ -107,7 +116,7 @@ const find = async (
 
     const sql = `
       SELECT
-        con.ID, con.NAME, p.RANK,
+        con.ID, con.NAME, w.NAME as RANK,
         CAST(con.NOTE AS VARCHAR(1024)) AS NOTE,
         con.ADDRESS,
         con.USR$BG_OTDEL AS BG_OTDEL,
@@ -120,6 +129,7 @@ const find = async (
       JOIN GD_PEOPLE p ON p.CONTACTKEY = con.ID
       LEFT JOIN GD_CONTACT comp ON comp.ID = p.WCOMPANYKEY
       LEFT JOIN GD_CONTACT respondent ON respondent.ID = con.USR$CRM_RESPONDENT
+      LEFT JOIN WG_POSITION w ON w.ID = p.WPOSITIONKEY
     ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}`;
 
     const persons = await fetchAsObject<Omit<IContactPerson, 'PHONES' | 'USR$BG_OTDEL'>>(sql, { ...defaultClause, ...clause });
@@ -217,8 +227,6 @@ const update = async (
       `UPDATE GD_CONTACT
         SET
           NAME = :NAME,
-          PARENT = :PARENT,
-          CONTACTTYPE = :CONTACTTYPE,
           USR$CRM_RESPONDENT = :RESPONDENT,
           ADDRESS = :ADDRESS,
           NOTE = :NOTE,
@@ -228,8 +236,6 @@ const update = async (
       {
         ID: id,
         NAME,
-        PARENT: 650001,
-        CONTACTTYPE: 2,
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
         NOTE: await string2Blob(NOTE),
@@ -245,6 +251,8 @@ const update = async (
       { NAME: RANK }
     );
 
+    const fio = getFIO(NAME);
+
     const people = await fetchAsSingletonObject(
       `UPDATE GD_PEOPLE
         SET
@@ -252,7 +260,9 @@ const update = async (
           WPOSITIONKEY = :POSITIONKEY,
           USR$LETTER_OF_AUTHORITY = :LETTER_OF_AUTHORITY,
           WCOMPANYKEY = :WCOMPANYKEY,
-          SURNAME = :NAME,
+          SURNAME = :SURNAME,
+          FIRSTNAME = :FIRSTNAME,
+          MIDDLENAME = :MIDDLENAME,
           PHOTO = :PHOTO
         WHERE CONTACTKEY = :CONTACTKEY
         RETURNING CONTACTKEY`,
@@ -261,7 +271,9 @@ const update = async (
         POSITIONKEY: position.ID,
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
         WCOMPANYKEY: COMPANY?.ID,
-        NAME: NAME.slice(0, 20),
+        SURNAME: fio[0],
+        FIRSTNAME: fio[1],
+        MIDDLENAME: fio[2],
         PHOTO: PHOTO ? await string2Blob(PHOTO) : null
       }
     );
@@ -428,23 +440,27 @@ const save = async (
       { NAME: RANK }
     );
 
+    const fio = getFIO(NAME);
+
     // insert gd_people
     const people = await fetchAsSingletonObject(
-      `INSERT INTO GD_PEOPLE(CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY, SURNAME, PHOTO)
-      VALUES(:CONTACTKEY, :POSITIONKEY, :LETTER_OF_AUTHORITY, :WCOMPANYKEY, :NAME, :PHOTO)
+      `INSERT INTO GD_PEOPLE(CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY, PHOTO, SURNAME, FIRSTNAME, MIDDLENAME)
+      VALUES(:CONTACTKEY, :POSITIONKEY, :LETTER_OF_AUTHORITY, :WCOMPANYKEY, :PHOTO, :SURNAME, :FIRSTNAME, :MIDDLENAME)
       RETURNING CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY`,
       {
         CONTACTKEY: contact.ID,
         POSITIONKEY: position.ID,
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
         WCOMPANYKEY: COMPANY?.ID,
-        NAME: NAME.slice(0, 20),
+        SURNAME: fio[0],
+        FIRSTNAME: fio[1],
+        MIDDLENAME: fio[2],
         PHOTO: await string2Blob(PHOTO)
       }
     );
 
     // insert gd_employee
-    const employee = await fetchAsSingletonObject(
+    await fetchAsSingletonObject(
       `INSERT INTO GD_EMPLOYEE(CONTACTKEY)
       VALUES(:CONTACTKEY)
       RETURNING CONTACTKEY`,

@@ -73,7 +73,7 @@ export function EditContact({
         .max(40, 'Слишком длинное имя'),
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       //TODO:
-      //FIXME: switched off email validation because it doesn't allow slavavw1978gmail.com address 
+      //FIXME: switched off email validation because it doesn't allow slavavw1978gmail.com address
       //EMAILS: yup.array().of(emailsValidation()),
       PHONES: yup.array().of(phonesValidation())
     }),
@@ -496,6 +496,7 @@ export function EditContact({
                       label="Должность"
                       type="text"
                       name="RANK"
+                      multiline
                       onChange={formik.handleChange}
                       value={formik.values.RANK ?? ''}
                       InputProps={{
