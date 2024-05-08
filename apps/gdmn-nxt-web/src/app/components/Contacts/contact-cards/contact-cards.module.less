@@ -41,13 +41,13 @@
 
 @media (min-width: 1366px) {
   .list {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1920px) {
   .list {
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
   }
 }
 .card {
@@ -78,7 +78,7 @@
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.5s;
-  height: 138px;
+  height: 172px;
 }
 
 
@@ -102,33 +102,11 @@
   transform: rotateY(180deg);
 }
 
-.chosenButton {
+.starButton {
   position: absolute !important;
   bottom: 0;
   right: 0;
-}
-
-.unselectedStar {
-  // position: absolute !important;
-}
-.selectedStar {
-  color: #faaf00;
-
-  transition: 2.5s !important;
-  // position: absolute !important;
-}
-
-.starInvisible {
-  display: none !important;
-}
-
-.chosenButton:hover .unselectedStar {
-  display: none;
-}
-
-.chosenButton:hover .selectedStar {
-  display: inline-block !important;
-  // transform: scale(1.5);
+  margin: 5px !important;
 }
 
 .link {
@@ -145,7 +123,6 @@
   text-decoration: underline var(--color-primary-bg);
 }
 
-
 .noData {
   flex: 1;
   display: flex;
@@ -157,4 +134,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.contactRank {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.1 !important;
 }
