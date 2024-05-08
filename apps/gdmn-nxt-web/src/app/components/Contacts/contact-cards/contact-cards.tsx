@@ -16,6 +16,7 @@ import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 
 interface CardItemProps {
   contact: IContactPerson;
@@ -210,17 +211,12 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 : <></>}
             </Stack>
           }
-          <Tooltip title={contact.isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}>
-            <IconButton
-              size="small"
-              className={styles.chosenButton}
+          <div className={styles.starButton}>
+            <SwitchStar
+              selected={!!contact.isFavorite}
               onClick={handleFavoriteClick}
-            >
-              <StarIcon className={`${styles.selectedStar} ${contact.isFavorite ? '' : styles.starInvisible}`} />
-              <StarBorderIcon className={`${styles.unselectedStar} ${!contact.isFavorite ? '' : styles.starInvisible}`} />
-            </IconButton>
-          </Tooltip>
-
+            />
+          </div>
         </CustomizedCard>
       </div>
       <div className={styles.backside}>
