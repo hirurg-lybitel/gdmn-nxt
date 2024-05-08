@@ -9,6 +9,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 
 export interface ContactListProps {
   contacts: IContactPerson[];
@@ -57,7 +61,24 @@ export function ContactList({
     onSortChange && onSortChange(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
 
+  const [addFavorite] = useAddFavoriteMutation();
+  const [deleteFavorite] = useDeleteFavoriteMutation();
+
+  const handleFavoriteClick = useCallback((contact: IContactPerson) => () => {
+    contact.isFavorite
+      ? deleteFavorite(contact.ID)
+      : addFavorite(contact.ID);
+  }, []);
+
   const columns: GridColDef<IContactPerson>[] = [
+    {
+      field: 'isFavorite', type: 'actions', width: 60, align: 'left',
+      renderCell: ({ value, row }) =>
+        <SwitchStar
+          selected={!!value}
+          onClick={handleFavoriteClick(row)}
+        />
+    },
     {
       field: 'NAME', headerName: 'Имя', flex: 1, minWidth: 200,
       renderCell: ({ value, row }: GridRenderCellParams) => {
