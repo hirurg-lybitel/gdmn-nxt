@@ -82,13 +82,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   }
 }));
 
-const labelStyle: CSSProperties = {
-  display: 'inline-block',
-  margin: '2.5px 0px',
-  padding: 0,
-  borderRadius: '20px'
-};
-
 /* eslint-disable-next-line */
 export interface CustomersProps {}
 
@@ -243,9 +236,8 @@ export function Customers(props: CustomersProps) {
                   padding: '0px',
                   width: 'fit-content',
                   display: 'flex',
-
                   flexWrap: 'wrap',
-                  columnGap: '5px',
+                  gap: '2px 5px',
                 }}
               >
                 {labels.map((label) => {
@@ -259,8 +251,9 @@ export function Customers(props: CustomersProps) {
                         <ListItemButton
                           key={label.ID}
                           onClick={handleLabelClick(label)}
-                          style={labelStyle}
                           sx={{
+                            padding: 0,
+                            borderRadius: 'var(--label-border-radius)',
                             '&:hover': {
                               backgroundColor: 'transparent'
                             }
