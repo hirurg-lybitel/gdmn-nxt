@@ -1,11 +1,8 @@
 import { GridColDef, GridFilterModel, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
-import Button from '@mui/material/Button/Button';
-import React, { CSSProperties, ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, Tooltip } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CustomerEdit from './customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,9 +26,7 @@ import { useGetCustomerContractsQuery } from '../features/customer-contracts/cus
 import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import style from './customers.module.less';
 import DataField from './dataField/DataField';
-import { LoadingButton } from '@mui/lab';
 import StyledGrid from '../components/Styled/styled-grid/styled-grid';
-import CardToolbar from '../components/Styled/card-toolbar/card-toolbar';
 import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
@@ -88,10 +83,7 @@ export interface CustomersProps {}
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
   const userPermissions = usePermissions();
-  const [reconciliationShow, setReconciliationShow] = useState(false);
   const [currentOrganization, setCurrentOrganization] = useState(0);
-  const [openSnackBar, setOpenSnackBar] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openFilters, setOpenFilters] = useState(false);
   const [filterModel, setFilterModel] = useState<GridFilterModel>();
@@ -192,8 +184,6 @@ export function Customers(props: CustomersProps) {
   const [deleteCustomer] = useDeleteCustomerMutation();
 
   const dispatch = useDispatch();
-
-  const { errorMessage } = useSelector((state: RootState) => state.error);
 
   const theme = useTheme();
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
@@ -300,11 +290,6 @@ export function Customers(props: CustomersProps) {
 
         return (
           <Box>
-            {/* <IconButton {...detailsComponent} disabled={customerFetching}>
-              <Tooltip arrow title="Детализация">
-                <VisibilityIcon fontSize="small" color="primary" />
-              </Tooltip>
-            </IconButton> */}
             <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
               <ItemButtonEdit
                 onClick={handleCustomerEdit(customerId)}
@@ -322,37 +307,9 @@ export function Customers(props: CustomersProps) {
     SaveFilters();
   }, [filterModel, filteringData]);
 
-  useEffect(() => {
-    if (errorMessage) {
-      setSnackBarMessage(errorMessage);
-      setOpenSnackBar(true);
-    }
-  }, [errorMessage]);
-
-  /** Close snackbar manually */
-  const handleSnackBarClose = (
-    event: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    dispatch(clearError());
-    setOpenSnackBar(false);
-  };
-
   const SaveFilters = () => {
     dispatch(saveFilterData({ customers: filteringData }));
     dispatch(saveFilterModel({ customers: filterModel }));
-  };
-
-  const handleReconciliationClick = () => {
-    if (!currentOrganization) {
-      setSnackBarMessage('Не выбрана организация');
-      setOpenSnackBar(true);
-      return;
-    }
-    setReconciliationShow(true);
   };
 
   /** Cancel organization change */
