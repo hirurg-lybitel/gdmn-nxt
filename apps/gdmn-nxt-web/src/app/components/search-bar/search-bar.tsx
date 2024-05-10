@@ -224,7 +224,7 @@ export function SearchBar(props: SearchBarProps) {
           fullWidth
           className={classes.input}
           disableUnderline
-          disabled={disabled}
+          disabled={false}
           placeholder={placeholder}
         />
       </div>
