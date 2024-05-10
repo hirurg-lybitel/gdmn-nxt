@@ -89,6 +89,11 @@ export interface IResultError {
   description?: string;
 };
 
+export interface IResultDescription {
+  message: string;
+  description?: string;
+};
+
 export type IEmployee = IContactWithID;
 
 export interface IProfileSettings {

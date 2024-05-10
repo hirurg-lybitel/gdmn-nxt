@@ -392,6 +392,7 @@ export interface IMailing extends IWithID {
   LAUNCHDATE: Date;
   STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
   segments: ISegment[];
+  TEMPLATE?: string;
 }
 
 export interface ITemplate extends IWithID {

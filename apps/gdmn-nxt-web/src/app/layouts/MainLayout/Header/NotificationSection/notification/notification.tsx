@@ -30,7 +30,7 @@ import { saveFilterData } from 'apps/gdmn-nxt-web/src/app/store/filtersSlice';
 import { useGetFiltersDeadlineQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanFiltersApi';
 import { config } from '@gdmn-nxt/config';
 import addNotification from 'react-push-notification';
-import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
+import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 
 const useStyles = makeStyles((theme: Theme) => ({

@@ -1,4 +1,4 @@
-import { IResultError } from '@gsbelarus/util-api-types';
+import { IResultDescription, IResultError } from '@gsbelarus/util-api-types';
 
 const localizations = {
   'Foreign key reference target does not exist': 'Нарушение ссылочной целостности',
@@ -11,4 +11,11 @@ export const resultError = (message: string): IResultError => {
     if (message.includes(key)) return { errorMessage: value, description: message };
   }
   return { errorMessage: message };
+};
+
+export const resultDescription = (message: string): IResultDescription => {
+  for (const [key, value] of Object.entries(localizations)) {
+    if (message.includes(key)) return { message: value, description: message };
+  }
+  return { message };
 };

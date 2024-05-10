@@ -544,15 +544,15 @@ const remove = async (
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   try {
-    const deletedPerson = await fetchAsSingletonObject<{ID: number}>(
-      `DELETE FROM GD_CONTACT WHERE ID = :id
+    const deletedMailing = await fetchAsSingletonObject<{ID: number}>(
+      `DELETE FROM USR$CRM_MARKETING_MAILING WHERE ID = :id
       RETURNING ID`,
       { id }
     );
 
     await releaseTransaction();
 
-    return deletedPerson;
+    return deletedMailing;
   } catch (error) {
     await releaseTransaction(false);
     throw new Error(error);

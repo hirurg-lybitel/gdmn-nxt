@@ -1,10 +1,10 @@
-import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, IMailing, ISegment } from '@gsbelarus/util-api-types';
+import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { FindHandler, FindOneHandler, IMailing, ISegment, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { segmentsRepository } from '../segments';
 
 const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
+  const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
     const clauseString = Object
@@ -17,7 +17,8 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         m.ID,
         m.USR$NAME NAME,
         m.USR$LAUNCHDATE LAUNCHDATE,
-        IIF(m.USR$STATUS IS NULL, 0, m.USR$STATUS) STATUS
+        IIF(m.USR$STATUS IS NULL, 0, m.USR$STATUS) STATUS,
+        USR$TEMPLATE TEMPLATE_BLOB
       FROM USR$CRM_MARKETING_MAILING m
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
@@ -47,8 +48,12 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         segments.push(fullSegment);
       });
 
+      const convertedTemplate = await blob2String(m['TEMPLATE_BLOB']);
+      delete m['TEMPLATE_BLOB'];
+
       result.push({
         ...m,
+        TEMPLATE: convertedTemplate,
         segments
       });
     });
@@ -69,7 +74,147 @@ const findOne: FindOneHandler<IMailing> = async (sessionID, clause = {}) => {
   return mailing[0];
 };
 
+const update: UpdateHandler<IMailing> = async (
+  sessionID,
+  id,
+  metadata
+) => {
+  const { fetchAsSingletonObject, executeSingleton, releaseTransaction, string2Blob } = await startTransaction(sessionID);
+
+  try {
+    const mailing = await findOne(sessionID, { id });
+
+    const ID = id;
+
+    const {
+      LAUNCHDATE = mailing.LAUNCHDATE,
+      NAME = mailing.NAME,
+      STATUS = mailing.STATUS,
+      TEMPLATE = mailing.TEMPLATE,
+      segments = mailing.segments
+    } = metadata;
+
+    const result = await fetchAsSingletonObject<IMailing>(
+      `UPDATE USR$CRM_MARKETING_MAILING C
+      SET
+        USR$LAUNCHDATE = :LAUNCHDATE,
+        USR$NAME = :NAME,
+        USR$STATUS = :STATUS,
+        USR$TEMPLATE = :TEMPLATE
+      WHERE
+        ID = :ID
+      RETURNING ID`,
+      {
+        ID,
+        LAUNCHDATE,
+        NAME,
+        STATUS,
+        TEMPLATE: await string2Blob(TEMPLATE)
+      }
+    );
+
+    const deleteSegments = executeSingleton(
+      `DELETE FROM USR$CRM_MARKETING_MAILING_LINE
+      WHERE USR$MASTERKEY = :MASTERKEY`,
+      {
+        MASTERKEY: id
+      });
+
+    const sql = `
+      INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$SEGMENTKEY)
+      VALUES(:MASTERKEY, :SEGMENTKEY)`;
+
+    const insertSegments = segments.map(async s => {
+      return executeSingleton(sql, {
+        MASTERKEY: mailing.ID,
+        SEGMENTKEY: s.ID
+      });
+    });
+
+    await Promise.all([deleteSegments, ...insertSegments]);
+
+    await releaseTransaction();
+
+    return result;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
+const save: SaveHandler<IMailing> = async (
+  sessionID,
+  metadata
+) => {
+  const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
+
+  const {
+    NAME,
+    TEMPLATE,
+    segments
+  } = metadata;
+
+  try {
+    const mailing = await fetchAsSingletonObject<IMailing>(
+      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS)
+      VALUES(:NAME, :TEMPLATE, :STATUS)
+      RETURNING ID`,
+      {
+        NAME,
+        TEMPLATE: await string2Blob(TEMPLATE),
+        STATUS: 0
+      }
+    );
+
+    const sql = `
+      INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$SEGMENTKEY)
+      VALUES(:MASTERKEY, :SEGMENTKEY)
+      RETURNING ID`;
+
+    const insertSegments = segments.map(async s => {
+      return fetchAsSingletonObject(sql, {
+        MASTERKEY: mailing.ID,
+        SEGMENTKEY: s.ID
+      });
+    });
+
+    await Promise.all(insertSegments);
+
+    await releaseTransaction();
+
+    return mailing;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
+const remove: RemoveHandler = async (
+  sessionID,
+  id
+) => {
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+
+  try {
+    const deletedMailing = await fetchAsSingletonObject<{ID: number}>(
+      `DELETE FROM USR$CRM_MARKETING_MAILING WHERE ID = :id
+      RETURNING ID`,
+      { id }
+    );
+
+    await releaseTransaction();
+
+    return !!deletedMailing.ID;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
 export const mailingRepository = {
   find,
-  findOne
+  findOne,
+  update,
+  save,
+  remove
 };

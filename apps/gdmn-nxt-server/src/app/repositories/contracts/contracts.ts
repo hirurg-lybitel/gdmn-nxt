@@ -131,7 +131,7 @@ const remove: RemoveHandler = async (
   sessionID,
   id
 ) => {
-  return new Promise((resolve) => resolve({}));
+  return false;
 };
 
 
