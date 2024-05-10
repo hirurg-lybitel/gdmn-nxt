@@ -2054,6 +2054,44 @@
 							"response": []
 						},
 						{
+							"name": "Update",
+							"id": "2c96e19f-cd3c-4b36-9830-867cd73ed2cb",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Test 456\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Remove",
 							"id": "43aeae29-b7a2-4f78-9dd1-747dbf179b00",
 							"protocolProfileBehavior": {
