@@ -2040,6 +2040,15 @@
 							"request": {
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Test 123\",\r\n    \"TEMPLATE\": \"<html><head><!-- Этот раздел предназначен для заголовка страницы и технической информации. --></head><body><!-- А здесь надо размещать все, что хочется увидеть на странице. --></body></html>\",\r\n    \"segments\": [\r\n        {\r\n            \"ID\": \"949744270\"\r\n        },\r\n        {\r\n            \"ID\": \"1\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": "{{baseUrl}}/marketing/mailing"
 							},
 							"response": []
