@@ -2008,8 +2008,39 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/launch/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										"launch",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744288"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Save",
+							"id": "3665724b-cb3f-46f0-8b59-d34018869350",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": "{{baseUrl}}/marketing/mailing"
 							},
 							"response": []
 						}
