@@ -2008,8 +2008,115 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/launch/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										"launch",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744288"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Save",
+							"id": "3665724b-cb3f-46f0-8b59-d34018869350",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Test 123\",\r\n    \"TEMPLATE\": \"<html><head><!-- Этот раздел предназначен для заголовка страницы и технической информации. --></head><body><!-- А здесь надо размещать все, что хочется увидеть на странице. --></body></html>\",\r\n    \"segments\": [\r\n        {\r\n            \"ID\": \"949744270\"\r\n        },\r\n        {\r\n            \"ID\": \"949744642\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/marketing/mailing"
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"id": "2c96e19f-cd3c-4b36-9830-867cd73ed2cb",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Test 456\",\r\n    \"segments\": [\r\n        {\r\n            \"ID\": \"949744642\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744792"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove",
+							"id": "43aeae29-b7a2-4f78-9dd1-747dbf179b00",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
 							},
 							"response": []
 						}
