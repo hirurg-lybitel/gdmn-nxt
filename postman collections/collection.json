@@ -2043,6 +2043,35 @@
 								"url": "{{baseUrl}}/marketing/mailing"
 							},
 							"response": []
+						},
+						{
+							"name": "Remove",
+							"id": "43aeae29-b7a2-4f78-9dd1-747dbf179b00",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"id": "0abcc61d-184e-4ecc-9cd9-57da11172e60"
