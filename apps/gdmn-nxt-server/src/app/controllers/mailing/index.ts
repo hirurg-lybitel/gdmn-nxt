@@ -37,6 +37,9 @@ const findOne: RequestHandler = async (req, res) => {
     const { id: sessionID } = req.session;
 
     const mailing = await mailingRepository.findOne(sessionID, { ID: id });
+    if (!mailing?.ID) {
+      return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
+    }
 
     const result: IRequestResult = {
       queries: { mailings: [mailing] },
