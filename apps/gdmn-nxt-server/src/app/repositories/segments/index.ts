@@ -1,8 +1,6 @@
-import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { acquireReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
-import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentFields } from '@gsbelarus/util-api-types';
+import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentFields, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
-import { Customer } from '../../utils/cached requests';
 import { customersRepository } from '../customers';
 
 const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
@@ -44,9 +42,11 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
       });
 
       const LABELS = flatSegmentDetails.get('LABELS') ?? '';
+      const DEPARTMENTS = flatSegmentDetails.get('DEPARTMENTS') ?? '';
 
       const customers = await customersRepository.find('', {
-        LABELS
+        LABELS,
+        DEPARTMENTS
       });
 
       const newSegment: ArrayElement<typeof result> = {
@@ -74,8 +74,137 @@ const findOne: FindOneHandler<ISegment> = async (sessionID, clause = {}) => {
   return segments[0];
 };
 
+const update: UpdateHandler<ISegment> = async (
+  sessionID,
+  id,
+  metadata
+) => {
+  const { fetchAsSingletonObject, executeSingleton, releaseTransaction } = await startTransaction(sessionID);
+
+  try {
+    const segment = await findOne(sessionID, { id });
+
+    const ID = id;
+
+    const {
+      NAME = segment.NAME,
+      FIELDS = segment.FIELDS,
+    } = metadata;
+
+    const updatedSegment = await fetchAsSingletonObject<ISegment>(
+      `UPDATE USR$CRM_MARKETING_SEGMENTS
+      SET
+        USR$NAME = :NAME
+      WHERE
+        ID = :ID
+      RETURNING ID`,
+      {
+        ID,
+        NAME
+      }
+    );
+
+    const deleteSegmentLines = executeSingleton(
+      `DELETE FROM USR$CRM_MARKETING_SEGMENTS_LINE
+      WHERE USR$MASTERKEY = :MASTERKEY`,
+      {
+        MASTERKEY: id
+      });
+
+    const sql = `
+      INSERT INTO USR$CRM_MARKETING_SEGMENTS_LINE(USR$MASTERKEY, USR$FIELDNAME, USR$VALUE)
+      VALUES(:MASTERKEY, :FIELDNAME, :VALUE)`;
+
+    const insertSegmentLines = FIELDS.map(async ({ NAME, VALUE }) =>
+      executeSingleton(sql, {
+        MASTERKEY: id,
+        FIELDNAME: NAME,
+        VALUE
+      })
+    );
+
+    await Promise.all([deleteSegmentLines, ...insertSegmentLines]);
+
+    await releaseTransaction();
+
+    return updatedSegment;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
+const save: SaveHandler<ISegment> = async (
+  sessionID,
+  metadata
+) => {
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+
+  const {
+    NAME,
+    FIELDS
+  } = metadata;
+
+  try {
+    const segment = await fetchAsSingletonObject<ISegment>(
+      `INSERT INTO USR$CRM_MARKETING_SEGMENTS(USR$NAME)
+      VALUES(:NAME)
+      RETURNING ID`,
+      {
+        NAME
+      }
+    );
+
+    const sql = `
+      INSERT INTO USR$CRM_MARKETING_SEGMENTS_LINE(USR$MASTERKEY, USR$FIELDNAME, USR$VALUE)
+      VALUES(:MASTERKEY, :FIELDNAME, :VALUE)
+      RETURNING ID`;
+
+    const insertSegmentLines = FIELDS.map(async ({ NAME, VALUE }) =>
+      fetchAsSingletonObject(sql, {
+        MASTERKEY: segment.ID,
+        FIELDNAME: NAME,
+        VALUE
+      })
+    );
+
+    await Promise.all(insertSegmentLines);
+
+    await releaseTransaction();
+
+    return segment;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
+const remove: RemoveHandler = async (
+  sessionID,
+  id
+) => {
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+
+  try {
+    const deletedMailing = await fetchAsSingletonObject<{ID: number}>(
+      `DELETE FROM USR$CRM_MARKETING_SEGMENTS WHERE ID = :id
+      RETURNING ID`,
+      { id }
+    );
+
+    await releaseTransaction();
+
+    return !!deletedMailing.ID;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
 
 export const segmentsRepository = {
   find,
-  findOne
+  findOne,
+  update,
+  save,
+  remove
 };

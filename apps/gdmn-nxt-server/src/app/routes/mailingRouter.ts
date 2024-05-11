@@ -3,7 +3,12 @@ import { segmentsController } from '@gdmn-nxt/controllers/segments';
 import { mailingController } from '@gdmn-nxt/controllers/mailing';
 
 const router = express.Router();
-router.get('/marketing/segments', segmentsController.getAll);
+
+router.get('/marketing/segments', segmentsController.findAll);
+router.get('/marketing/segments/:id', segmentsController.findOne);
+router.post('/marketing/segments', segmentsController.createSegment);
+router.put('/marketing/segments/:id', segmentsController.updateById);
+router.delete('/marketing/segments/:id', segmentsController.removeById);
 
 router.get('/marketing/mailing', mailingController.findAll);
 router.get('/marketing/mailing/:id', mailingController.findOne);
