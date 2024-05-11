@@ -2641,7 +2641,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "949744944"
+											"value": "949744961"
 										}
 									]
 								}
@@ -2659,14 +2659,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"NAME\": \"Потенциальные клиенты\",\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"NAME\": \"Красивенький\",\r\n    \"HTML\": \"<html><head><!-- Этот раздел предназначен для заголовка страницы и технической информации. --></head><body><!-- А здесь надо размещать все, что хочется увидеть на странице. --></body></html>\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "{{baseUrl}}/marketing/segments"
+								"url": "{{baseUrl}}/marketing/templates"
 							},
 							"response": [
 								{
@@ -2760,7 +2760,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"HTML\": \"<html></html>\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2768,20 +2768,19 @@
 									}
 								},
 								"url": {
-									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"raw": "{{baseUrl}}/marketing/templates/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"segments",
+										"templates",
 										":id"
 									],
 									"variable": [
 										{
-											"id": "fc383857-9c3d-4474-992d-fbb408a181c3",
 											"key": "id",
-											"value": "949744944"
+											"value": "949744961"
 										}
 									]
 								}
@@ -2893,20 +2892,19 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"raw": "{{baseUrl}}/marketing/templates/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"segments",
+										"templates",
 										":id"
 									],
 									"variable": [
 										{
-											"id": "b9ce5ff7-0f5f-48b4-9be4-7ced82a9a22d",
 											"key": "id",
-											"value": "949744944"
+											"value": "949744961"
 										}
 									]
 								}
