@@ -33,6 +33,9 @@ const findOne: RequestHandler = async (req, res) => {
     const { id: sessionID } = req.session;
 
     const segment = await segmentsRepository.findOne(sessionID, { ID: id });
+    if (!segment?.ID) {
+      return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
+    }
 
     const result: IRequestResult = {
       queries: { segments: [segment] },
