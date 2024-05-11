@@ -397,5 +397,6 @@ export interface IMailing extends IWithID {
 }
 
 export interface ITemplate extends IWithID {
+  NAME: string;
   HTML: string;
 }
