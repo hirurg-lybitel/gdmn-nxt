@@ -2545,7 +2545,7 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{baseUrl}}/marketing/segments"
+								"url": "{{baseUrl}}/marketing/templates"
 							},
 							"response": [
 								{
@@ -2629,18 +2629,17 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"raw": "{{baseUrl}}/marketing/templates/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"segments",
+										"templates",
 										":id"
 									],
 									"variable": [
 										{
-											"id": "360fee63-c0df-41ea-ad32-113a105113f7",
 											"key": "id",
 											"value": "949744944"
 										}
