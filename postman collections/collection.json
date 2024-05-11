@@ -2013,38 +2013,7 @@
 							"response": []
 						},
 						{
-							"name": "Launch Copy",
-							"id": "4a2f5233-ce40-4836-b4be-118dc4892e38",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/marketing/mailing/launch/:id",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"marketing",
-										"mailing",
-										"launch",
-										":id"
-									],
-									"variable": [
-										{
-											"id": "9e8e2641-66b7-4215-b1bb-498f4a4394f7",
-											"key": "id",
-											"value": "949744288"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Save Copy",
+							"name": "Save",
 							"id": "24c30128-4be1-417f-ae13-42e0f3665d73",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
@@ -2066,7 +2035,7 @@
 							"response": []
 						},
 						{
-							"name": "Update Copy",
+							"name": "Update",
 							"id": "7c77097f-7291-4554-8c1b-a69ec4452491",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
@@ -2105,7 +2074,7 @@
 							"response": []
 						},
 						{
-							"name": "Remove Copy",
+							"name": "Remove",
 							"id": "bfbf328b-1471-4fe4-a881-ee4cb59afdc2",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
@@ -2114,25 +2083,110 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"raw": "{{baseUrl}}/marketing/segments/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"mailing",
+										"segments",
 										":id"
 									],
 									"variable": [
 										{
-											"id": "18295f8d-8380-41c3-98d4-cc129b8c6e45",
 											"key": "id",
 											"value": "949744798"
 										}
 									]
 								}
 							},
-							"response": []
+							"response": [
+								{
+									"id": "d5cbd54e-92da-4b83-824e-0a8608f7bfca",
+									"name": "404",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744798"
+												}
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:45:18 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715456740"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "51"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"33-DwO43rMwJS4OMpMDFXDxkTutcZg\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"errorMessage\": \"Данные не найдены\"\n}"
+								}
+							]
 						}
 					],
 					"id": "20e95168-7043-4b73-a544-21922de60358"
