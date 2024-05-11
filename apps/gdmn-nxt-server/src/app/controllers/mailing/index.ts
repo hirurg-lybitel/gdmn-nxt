@@ -8,14 +8,38 @@ import { forEachAsync } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
-const getAll: RequestHandler = async (req, res) => {
+const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const mailing = await mailingRepository.find(sessionID);
+    const mailings = await mailingRepository.find(sessionID);
 
     const result: IRequestResult = {
-      queries: { mailing },
+      queries: { mailings },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(500).send(resultError(error.message));
+  }
+};
+
+const findOne: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res
+      .status(422)
+      .send(resultError('Field ID is not defined or is not numeric'));
+  }
+
+  try {
+    const { id: sessionID } = req.session;
+
+    const mailing = await mailingRepository.findOne(sessionID, { ID: id });
+
+    const result: IRequestResult = {
+      queries: { mailings: [mailing] },
       _schema: {}
     };
 
@@ -160,18 +184,7 @@ const removeById: RequestHandler = async (req, res) => {
       return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
     }
 
-    const isDeleted = await mailingRepository.remove(req.sessionID, id);
-    //   if (!isDeleted) {
-    //     res.status(500).send(resultError(error.message));
-    //     throw new BadRequestException('Error while deleting user');
-    // }
-
-
-    // const result: IRequestResult = {
-    //   queries: { mailings: [mailing] },
-    //   _params: [{ id }],
-    //   _schema: {}
-    // };
+    await mailingRepository.remove(req.sessionID, id);
 
     res.sendStatus(200);
   } catch (error) {
@@ -180,7 +193,8 @@ const removeById: RequestHandler = async (req, res) => {
 };
 
 export const mailingController = {
-  getAll,
+  findAll,
+  findOne,
   launchMailing,
   createMailing,
   updateById,
