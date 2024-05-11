@@ -183,7 +183,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "363286120"
+											"value": "743256240"
 										}
 									]
 								}
@@ -2010,7 +2010,23 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{baseUrl}}/marketing/mailing"
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
 							},
 							"response": []
 						},
@@ -2126,7 +2142,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": ""
+											"value": "949744798"
 										}
 									]
 								}
