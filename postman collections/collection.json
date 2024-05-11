@@ -1992,20 +1992,19 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"raw": "{{baseUrl}}/marketing/segments/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"mailing",
+										"segments",
 										":id"
 									],
 									"variable": [
 										{
-											"id": "d891ef05-041a-4524-9bfc-cfb605ab1ebb",
 											"key": "id",
-											"value": "1"
+											"value": "949744944"
 										}
 									]
 								}
@@ -2124,7 +2123,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"NAME\": \"Test 456\",\r\n    \"segments\": [\r\n        {\r\n            \"ID\": \"949744642\"\r\n        }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2132,25 +2131,119 @@
 									}
 								},
 								"url": {
-									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"raw": "{{baseUrl}}/marketing/segments/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"mailing",
+										"segments",
 										":id"
 									],
 									"variable": [
 										{
-											"id": "49889a56-71ba-4836-9ebe-d1aa98098285",
 											"key": "id",
-											"value": "949744792"
+											"value": "949744944"
 										}
 									]
 								}
 							},
-							"response": []
+							"response": [
+								{
+									"id": "548ffd40-b29b-4f2b-8919-26535662b3ab",
+									"name": "200",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744944"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "98"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 20:03:20 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457857"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "251"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"fb-048gCDRu1gcNMgyOPUxefOsOmK8\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744944,\n                \"NAME\": \"Потенциальные клиенты\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115\"\n                    },\n                    {\n                        \"NAME\": \"DEPARTMENTS\",\n                        \"VALUE\": \"949740236,154769615\"\n                    }\n                ],\n                \"QUANTITY\": 0\n            }\n        ]\n    },\n    \"_params\": [\n        {\n            \"id\": 949744944\n        }\n    ],\n    \"_schema\": {}\n}"
+								}
+							]
 						},
 						{
 							"name": "Remove",
