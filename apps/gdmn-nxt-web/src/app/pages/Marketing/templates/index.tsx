@@ -7,26 +7,32 @@ import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/m
 const mockData: ITemplate[] = [
   {
     ID: 1,
+    NAME: '',
     HTML: ''
   },
   {
     ID: 2,
+    NAME: '',
     HTML: ''
   },
   {
     ID: 3,
+    NAME: '',
     HTML: ''
   },
   {
     ID: 4,
+    NAME: '',
     HTML: ''
   },
   {
     ID: 5,
+    NAME: '',
     HTML: ''
   },
   {
     ID: 6,
+    NAME: '',
     HTML: ''
   },
 ];
