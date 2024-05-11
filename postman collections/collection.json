@@ -183,7 +183,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "363286120"
+											"value": "743256240"
 										}
 									]
 								}
@@ -1981,9 +1981,1196 @@
 									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744270,\n                \"NAME\": \"Выборка 22.04\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115,949740116\"\n                    },\n                    {\n                        \"NAME\": \"DEPARTMENTS\",\n                        \"VALUE\": \"154769615\"\n                    }\n                ],\n                \"QUANTITY\": 2\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
 								}
 							]
+						},
+						{
+							"name": "Single",
+							"id": "3e8ad59c-71fe-4584-9c56-58ebfbd5d771",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"segments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744944"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Save",
+							"id": "24c30128-4be1-417f-ae13-42e0f3665d73",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Потенциальные клиенты\",\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/marketing/segments"
+							},
+							"response": [
+								{
+									"id": "e573484e-362d-4c5b-92d4-de5756b5087d",
+									"name": "200",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"NAME\": \"Потенциальные клиенты\",\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        }\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": "{{baseUrl}}/marketing/segments"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:51:57 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457160"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "169"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"a9-Ol9CD3lRnAkn2lH396kmNpgimlE\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744944,\n                \"NAME\": \"Потенциальные клиенты\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115\"\n                    }\n                ],\n                \"QUANTITY\": 2\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
+								}
+							]
+						},
+						{
+							"name": "Update",
+							"id": "7c77097f-7291-4554-8c1b-a69ec4452491",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"segments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744944"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "548ffd40-b29b-4f2b-8919-26535662b3ab",
+									"name": "200",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744944"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "98"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 20:03:20 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457857"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "251"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"fb-048gCDRu1gcNMgyOPUxefOsOmK8\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744944,\n                \"NAME\": \"Потенциальные клиенты\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115\"\n                    },\n                    {\n                        \"NAME\": \"DEPARTMENTS\",\n                        \"VALUE\": \"949740236,154769615\"\n                    }\n                ],\n                \"QUANTITY\": 0\n            }\n        ]\n    },\n    \"_params\": [\n        {\n            \"id\": 949744944\n        }\n    ],\n    \"_schema\": {}\n}"
+								}
+							]
+						},
+						{
+							"name": "Remove",
+							"id": "bfbf328b-1471-4fe4-a881-ee4cb59afdc2",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"segments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744944"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "bace6ac6-261c-4d36-852b-52fa21773bfa",
+									"name": "200",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744942"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "plain",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:52:59 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457220"
+										},
+										{
+											"key": "Content-Type",
+											"value": "text/plain; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "2"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"2-nOO9QiTIwXgNtWtBJezz8kv3SLc\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "OK"
+								},
+								{
+									"id": "d5cbd54e-92da-4b83-824e-0a8608f7bfca",
+									"name": "404",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744798"
+												}
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:45:18 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715456740"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "51"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"33-DwO43rMwJS4OMpMDFXDxkTutcZg\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"errorMessage\": \"Данные не найдены\"\n}"
+								},
+								{
+									"id": "023a2f1b-04fd-45ed-a567-d206756a359f",
+									"name": "500",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744944"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "98"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:55:25 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457340"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "257"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"101-wFZWSiYcaDHGZ7+X4lqLVFOvg6I\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"errorMessage\": \"Документ уже изменяется другим пользователем\",\n    \"description\": \"Error: lock conflict on no wait transaction\\n-deadlock\\n-update conflicts with concurrent update\\n-concurrent transaction number is 94038\"\n}"
+								}
+							]
 						}
 					],
 					"id": "20e95168-7043-4b73-a544-21922de60358"
+				},
+				{
+					"name": "Templates",
+					"item": [
+						{
+							"name": "All",
+							"id": "0ad06c17-948f-49cc-93e3-8474a005ce9a",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/marketing/templates"
+							},
+							"response": [
+								{
+									"id": "2ec6f4db-a90b-4f9d-a219-5de8381b4cf3",
+									"name": "200",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": "{{baseUrl}}/marketing/segments"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "98"
+										},
+										{
+											"key": "Date",
+											"value": "Wed, 24 Apr 2024 15:27:11 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1713972488"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "201"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"c9-SVaE0IYeHsZFujIhUzOR5mDVF9E\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744270,\n                \"NAME\": \"Выборка 22.04\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115,949740116\"\n                    },\n                    {\n                        \"NAME\": \"DEPARTMENTS\",\n                        \"VALUE\": \"154769615\"\n                    }\n                ],\n                \"QUANTITY\": 2\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
+								}
+							]
+						},
+						{
+							"name": "Single",
+							"id": "0ae7579a-fbac-439b-8adb-4f6fe3c1c0c1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/templates/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"templates",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949744944"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Save",
+							"id": "b45bb431-d54c-4ec5-a424-7ccf5584b727",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Потенциальные клиенты\",\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/marketing/segments"
+							},
+							"response": [
+								{
+									"id": "b552247c-df74-4c1e-9cc1-db9aece82273",
+									"name": "200",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"NAME\": \"Потенциальные клиенты\",\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        }\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": "{{baseUrl}}/marketing/segments"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:51:57 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457160"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "169"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"a9-Ol9CD3lRnAkn2lH396kmNpgimlE\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744944,\n                \"NAME\": \"Потенциальные клиенты\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115\"\n                    }\n                ],\n                \"QUANTITY\": 2\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
+								}
+							]
+						},
+						{
+							"name": "Update",
+							"id": "bed9b628-0bed-4cb3-9029-98fbe49d356d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"segments",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "fc383857-9c3d-4474-992d-fbb408a181c3",
+											"key": "id",
+											"value": "949744944"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "0a0bc3f6-591d-479b-b886-d03cbd4e44cd",
+									"name": "200",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"FIELDS\": [\r\n        {\r\n            \"NAME\": \"LABELS\",\r\n            \"VALUE\": \"949740115\"\r\n        },\r\n        {\r\n            \"NAME\": \"DEPARTMENTS\",\r\n            \"VALUE\": \"949740236,154769615\"\r\n        }\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744944"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "98"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 20:03:20 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457857"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "251"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"fb-048gCDRu1gcNMgyOPUxefOsOmK8\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744944,\n                \"NAME\": \"Потенциальные клиенты\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115\"\n                    },\n                    {\n                        \"NAME\": \"DEPARTMENTS\",\n                        \"VALUE\": \"949740236,154769615\"\n                    }\n                ],\n                \"QUANTITY\": 0\n            }\n        ]\n    },\n    \"_params\": [\n        {\n            \"id\": 949744944\n        }\n    ],\n    \"_schema\": {}\n}"
+								}
+							]
+						},
+						{
+							"name": "Remove",
+							"id": "8ecf255a-5ed1-47c2-b06c-0711087c1793",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/segments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"segments",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "b9ce5ff7-0f5f-48b4-9be4-7ced82a9a22d",
+											"key": "id",
+											"value": "949744944"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"id": "21355f65-e5d4-47b6-8fec-ee751ee97a50",
+									"name": "200",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744942"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "plain",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:52:59 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457220"
+										},
+										{
+											"key": "Content-Type",
+											"value": "text/plain; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "2"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"2-nOO9QiTIwXgNtWtBJezz8kv3SLc\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "OK"
+								},
+								{
+									"id": "ef1ab1f3-9c4d-4c96-bb6b-45e84604db92",
+									"name": "404",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744798"
+												}
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:45:18 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715456740"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "51"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"33-DwO43rMwJS4OMpMDFXDxkTutcZg\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"errorMessage\": \"Данные не найдены\"\n}"
+								},
+								{
+									"id": "cdc27d87-10da-4406-9ef7-1f914e48506e",
+									"name": "500",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/segments/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"segments",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744944"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "98"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:55:25 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715457340"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "257"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"101-wFZWSiYcaDHGZ7+X4lqLVFOvg6I\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"errorMessage\": \"Документ уже изменяется другим пользователем\",\n    \"description\": \"Error: lock conflict on no wait transaction\\n-deadlock\\n-update conflicts with concurrent update\\n-concurrent transaction number is 94038\"\n}"
+								}
+							]
+						}
+					],
+					"id": "76db88b9-ca9e-4854-a99d-0673f6e36760"
 				},
 				{
 					"name": "Mailing",
@@ -1998,6 +3185,105 @@
 								"method": "GET",
 								"header": [],
 								"url": "{{baseUrl}}/marketing/mailing"
+							},
+							"response": [
+								{
+									"id": "69ccfcf0-fa2a-4e53-bf52-cdf0d8a468f7",
+									"name": "200",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": "{{baseUrl}}/marketing/mailing"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "97"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:43:18 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715456620"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1102"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"44e-gjgciJXqomcBgOp3kF+2+ZdUhfM\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"mailings\": [\n            {\n                \"ID\": 949744288,\n                \"NAME\": \"Рассылка №1\",\n                \"LAUNCHDATE\": \"2024-04-29T13:08:52.620Z\",\n                \"STATUS\": 0,\n                \"TEMPLATE\": \"\",\n                \"segments\": [\n                    {\n                        \"ID\": 949744270,\n                        \"NAME\": \"Выборка 22.04\",\n                        \"FIELDS\": [\n                            {\n                                \"NAME\": \"LABELS\",\n                                \"VALUE\": \"949740115,949740116\"\n                            }\n                        ],\n                        \"QUANTITY\": 2\n                    }\n                ]\n            },\n            {\n                \"ID\": 949744296,\n                \"NAME\": \"Акция!\",\n                \"LAUNCHDATE\": \"2024-04-29T12:36:21.301Z\",\n                \"STATUS\": 1,\n                \"TEMPLATE\": \"\",\n                \"segments\": []\n            },\n            {\n                \"ID\": 949744297,\n                \"NAME\": \"Новые услуги\",\n                \"LAUNCHDATE\": null,\n                \"STATUS\": 0,\n                \"TEMPLATE\": \"\",\n                \"segments\": []\n            },\n            {\n                \"ID\": 949744298,\n                \"NAME\": \"Продление сертификатов\",\n                \"LAUNCHDATE\": null,\n                \"STATUS\": 2,\n                \"TEMPLATE\": \"\",\n                \"segments\": []\n            },\n            {\n                \"ID\": 949744792,\n                \"NAME\": \"Test 456\",\n                \"LAUNCHDATE\": null,\n                \"STATUS\": 0,\n                \"TEMPLATE\": \"<html><head><!-- Этот раздел предназначен для заголовка страницы и технической информации. --></head><body><!-- А здесь надо размещать все, что хочется увидеть на странице. --></body></html>\",\n                \"segments\": [\n                    {\n                        \"ID\": 949744642,\n                        \"NAME\": \"Стоп-лист \",\n                        \"FIELDS\": [],\n                        \"QUANTITY\": 6825\n                    }\n                ]\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
+								}
+							]
+						},
+						{
+							"name": "Single",
+							"id": "2c8a7243-41e2-4353-ae1f-1ed744ddf3c1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
 							},
 							"response": []
 						},
@@ -2113,7 +3399,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": ""
+											"value": "949744798"
 										}
 									]
 								}
