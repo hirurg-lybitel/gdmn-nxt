@@ -2002,6 +2002,19 @@
 							"response": []
 						},
 						{
+							"name": "Single",
+							"id": "2c8a7243-41e2-4353-ae1f-1ed744ddf3c1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/marketing/mailing"
+							},
+							"response": []
+						},
+						{
 							"name": "Launch",
 							"id": "94789ad2-edba-4441-9999-dd7fa6f32a3c",
 							"protocolProfileBehavior": {
