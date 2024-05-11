@@ -1981,6 +1981,158 @@
 									"body": "{\n    \"queries\": {\n        \"segments\": [\n            {\n                \"ID\": 949744270,\n                \"NAME\": \"Выборка 22.04\",\n                \"FIELDS\": [\n                    {\n                        \"NAME\": \"LABELS\",\n                        \"VALUE\": \"949740115,949740116\"\n                    },\n                    {\n                        \"NAME\": \"DEPARTMENTS\",\n                        \"VALUE\": \"154769615\"\n                    }\n                ],\n                \"QUANTITY\": 2\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
 								}
 							]
+						},
+						{
+							"name": "Single",
+							"id": "3e8ad59c-71fe-4584-9c56-58ebfbd5d771",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "d891ef05-041a-4524-9bfc-cfb605ab1ebb",
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Launch Copy",
+							"id": "4a2f5233-ce40-4836-b4be-118dc4892e38",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/launch/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										"launch",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "9e8e2641-66b7-4215-b1bb-498f4a4394f7",
+											"key": "id",
+											"value": "949744288"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Save Copy",
+							"id": "24c30128-4be1-417f-ae13-42e0f3665d73",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Test 123\",\r\n    \"TEMPLATE\": \"<html><head><!-- Этот раздел предназначен для заголовка страницы и технической информации. --></head><body><!-- А здесь надо размещать все, что хочется увидеть на странице. --></body></html>\",\r\n    \"segments\": [\r\n        {\r\n            \"ID\": \"949744270\"\r\n        },\r\n        {\r\n            \"ID\": \"949744642\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/marketing/mailing"
+							},
+							"response": []
+						},
+						{
+							"name": "Update Copy",
+							"id": "7c77097f-7291-4554-8c1b-a69ec4452491",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"NAME\": \"Test 456\",\r\n    \"segments\": [\r\n        {\r\n            \"ID\": \"949744642\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "49889a56-71ba-4836-9ebe-d1aa98098285",
+											"key": "id",
+											"value": "949744792"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Copy",
+							"id": "bfbf328b-1471-4fe4-a881-ee4cb59afdc2",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/mailing/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"mailing",
+										":id"
+									],
+									"variable": [
+										{
+											"id": "18295f8d-8380-41c3-98d4-cc129b8c6e45",
+											"key": "id",
+											"value": "949744798"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"id": "20e95168-7043-4b73-a544-21922de60358"
@@ -1999,7 +2151,77 @@
 								"header": [],
 								"url": "{{baseUrl}}/marketing/mailing"
 							},
-							"response": []
+							"response": [
+								{
+									"id": "69ccfcf0-fa2a-4e53-bf52-cdf0d8a468f7",
+									"name": "200",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": "{{baseUrl}}/marketing/mailing"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "97"
+										},
+										{
+											"key": "Date",
+											"value": "Sat, 11 May 2024 19:43:18 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1715456620"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "1102"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"44e-gjgciJXqomcBgOp3kF+2+ZdUhfM\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"queries\": {\n        \"mailings\": [\n            {\n                \"ID\": 949744288,\n                \"NAME\": \"Рассылка №1\",\n                \"LAUNCHDATE\": \"2024-04-29T13:08:52.620Z\",\n                \"STATUS\": 0,\n                \"TEMPLATE\": \"\",\n                \"segments\": [\n                    {\n                        \"ID\": 949744270,\n                        \"NAME\": \"Выборка 22.04\",\n                        \"FIELDS\": [\n                            {\n                                \"NAME\": \"LABELS\",\n                                \"VALUE\": \"949740115,949740116\"\n                            }\n                        ],\n                        \"QUANTITY\": 2\n                    }\n                ]\n            },\n            {\n                \"ID\": 949744296,\n                \"NAME\": \"Акция!\",\n                \"LAUNCHDATE\": \"2024-04-29T12:36:21.301Z\",\n                \"STATUS\": 1,\n                \"TEMPLATE\": \"\",\n                \"segments\": []\n            },\n            {\n                \"ID\": 949744297,\n                \"NAME\": \"Новые услуги\",\n                \"LAUNCHDATE\": null,\n                \"STATUS\": 0,\n                \"TEMPLATE\": \"\",\n                \"segments\": []\n            },\n            {\n                \"ID\": 949744298,\n                \"NAME\": \"Продление сертификатов\",\n                \"LAUNCHDATE\": null,\n                \"STATUS\": 2,\n                \"TEMPLATE\": \"\",\n                \"segments\": []\n            },\n            {\n                \"ID\": 949744792,\n                \"NAME\": \"Test 456\",\n                \"LAUNCHDATE\": null,\n                \"STATUS\": 0,\n                \"TEMPLATE\": \"<html><head><!-- Этот раздел предназначен для заголовка страницы и технической информации. --></head><body><!-- А здесь надо размещать все, что хочется увидеть на странице. --></body></html>\",\n                \"segments\": [\n                    {\n                        \"ID\": 949744642,\n                        \"NAME\": \"Стоп-лист \",\n                        \"FIELDS\": [],\n                        \"QUANTITY\": 6825\n                    }\n                ]\n            }\n        ]\n    },\n    \"_schema\": {}\n}"
+								}
+							]
 						},
 						{
 							"name": "Single",
