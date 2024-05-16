@@ -1,9 +1,10 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { IconButton, TextField, Tooltip, Typography, TypographyProps } from '@mui/material';
+import { IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyProps, tooltipClasses } from '@mui/material';
 import styles from './editable-typography.module.less';
-import { KeyboardEvent, cloneElement, createElement, useMemo, useState } from 'react';
+import { KeyboardEvent, cloneElement, useMemo, useState } from 'react';
+import { styled } from '@mui/material/styles';
 
 export interface EditableTypographyProps<Value extends React.ReactNode> extends TypographyProps {
   name?: string;
@@ -12,6 +13,8 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   deleteable?: boolean;
   onDelete?: () => void;
   container?: (value: Value) => React.ReactNode;
+  error?: boolean;
+  helperText?: string;
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -22,6 +25,8 @@ const EditableTypography = <Value extends React.ReactNode>({
   editComponent,
   deleteable = false,
   container,
+  error = false,
+  helperText,
   ...props
 }: EditableTypographyProps<Value>) => {
   const [editText, setEditText] = useState(!value);
@@ -69,8 +74,12 @@ const EditableTypography = <Value extends React.ReactNode>({
       className={styles['container']}
       onKeyDown={onKeyDown}
     >
-      {editText
-        ? clonedElement ??
+      <StyledToolTip
+        open={!!helperText}
+        title={helperText}
+      >
+        {editText
+          ? clonedElement ??
           <TextField
             variant="standard"
             value={value}
@@ -79,14 +88,17 @@ const EditableTypography = <Value extends React.ReactNode>({
             onChange={onChange}
             onBlur={onClose}
           />
-        : <Typography
-          {...props}
-          className={styles['title']}
-          autoFocus
-        >
-          {container ? container(value) : value}
-        </Typography>
-      }
+          :
+          <Typography
+            {...props}
+            className={styles['title']}
+            autoFocus
+          >
+            {container ? container(value) : value}
+          </Typography>
+
+        }
+      </StyledToolTip>
       <div
         className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
       >
@@ -113,5 +125,36 @@ const EditableTypography = <Value extends React.ReactNode>({
     </div>
   );
 };
+
+const StyledToolTip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip
+    arrow
+    placement="bottom-start"
+    slotProps={{
+      popper: {
+        modifiers: [
+          {
+            name: 'offset',
+            options: {
+              offset: [0, -7],
+            },
+          },
+        ],
+      },
+    }}
+    {...props}
+    classes={{ popper: className }}
+  />
+))(() => ({
+  [`& .${tooltipClasses.arrow}`]: {
+    transform: 'none !important',
+    left: '10px !important',
+    color: 'rgb(143, 64, 64)',
+  },
+  [`& .${tooltipClasses.tooltip}`]: {
+    fontSize: '0.75rem',
+    backgroundColor: 'rgb(143, 64, 64)',
+  }
+}));
 
 export default EditableTypography;

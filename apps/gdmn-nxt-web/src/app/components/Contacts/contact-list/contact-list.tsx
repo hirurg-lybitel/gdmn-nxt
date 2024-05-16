@@ -80,6 +80,7 @@ export function ContactList({
                   display: 'flex',
                   flexWrap: 'wrap',
                   columnGap: '5px',
+                  rowGap: '2px',
                   alignItems: 'center'
                 }}
               >
@@ -95,7 +96,8 @@ export function ContactList({
                           key={label.ID}
                           onClick={handleLabelClick(label)}
                           sx={{
-                            padding: '2.5px 0px',
+                            padding: 0,
+                            borderRadius: 'var(--label-border-radius)'
                           }}
                         >
                           <LabelMarker label={label} />

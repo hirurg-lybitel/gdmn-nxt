@@ -102,34 +102,11 @@
   transform: rotateY(180deg);
 }
 
-.chosenButton {
+.starButton {
   position: absolute !important;
   bottom: 0;
   right: 0;
   margin: 5px !important;
-}
-
-.unselectedStar {
-  // position: absolute !important;
-}
-.selectedStar {
-  color: #faaf00;
-
-  transition: 2.5s !important;
-  // position: absolute !important;
-}
-
-.starInvisible {
-  display: none !important;
-}
-
-.chosenButton:hover .unselectedStar {
-  display: none;
-}
-
-.chosenButton:hover .selectedStar {
-  display: inline-block !important;
-  // transform: scale(1.5);
 }
 
 .link {
@@ -145,7 +122,6 @@
 .link:hover {
   text-decoration: underline var(--color-primary-bg);
 }
-
 
 .noData {
   flex: 1;
@@ -165,4 +141,21 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-height: 1.1 !important;
+}
+
+.clipboard {
+  display: none;
+  position: relative;
+}
+
+.clipboard button {
+  position: absolute;
+}
+
+.clipboard svg {
+  font-size: 12px;
+}
+
+.infoItem:hover .clipboard {
+  display: inline;
 }
