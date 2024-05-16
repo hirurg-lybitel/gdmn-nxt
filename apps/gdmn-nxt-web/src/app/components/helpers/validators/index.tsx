@@ -8,7 +8,7 @@ export const emailsValidation = (fieldName = 'EMAIL') => yup
       .string()
       .matches(/^[a-zа-я0-9\_\-\'\+]+([.]?[a-zа-я0-9\_\-\'\+])*@[a-zа-я0-9]+([.]?[a-zа-я0-9])*\.[a-zа-я]{2,}$/i,
         ({ value }) => {
-          const invalidChar = value.match(/[^a-zа-я\_\-\'\+ @.]/i);
+          const invalidChar = value.match(/[^a-zа-я0-9\.\_\-\'\+ @.]/i);
           if (invalidChar) {
             return `Адрес не может содержать символ "${invalidChar}"`;
           }

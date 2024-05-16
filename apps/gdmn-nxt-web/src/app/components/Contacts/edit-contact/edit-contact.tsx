@@ -72,9 +72,7 @@ export function EditContact({
         .required('Не указано имя')
         .max(40, 'Слишком длинное имя'),
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
-      //TODO:
-      //FIXME: switched off email validation because it doesn't allow slavavw1978gmail.com address
-      //EMAILS: yup.array().of(emailsValidation()),
+      EMAILS: yup.array().of(emailsValidation()),
       PHONES: yup.array().of(phonesValidation())
     }),
     onSubmit: (values) => {
@@ -224,7 +222,7 @@ export function EditContact({
     <div>
       {formik.values.PHONES?.map(({ ID, USR$PHONENUMBER }, index) => {
         const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[index]?.USR$PHONENUMBER);
-        const error = Array.isArray(formik.errors.PHONES) && (formik.errors.PHONES[index] as unknown as IPhone)?.USR$PHONENUMBER;
+        const error = Array.isArray(formik.errors.PHONES) ? (formik.errors.PHONES[index] as unknown as IPhone)?.USR$PHONENUMBER : '';
 
         return (
           <Stack
@@ -246,6 +244,8 @@ export function EditContact({
               width={'100%'}
               deleteable
               onDelete={() => handleDeletePhone(index)}
+              helperText={error}
+              error={isTouched && Boolean(error)}
               editComponent={
                 <TelephoneInput
                   name={`PHONE${index}`}
@@ -255,7 +255,6 @@ export function EditContact({
                   fixedCode
                   strictMode
                   error={isTouched && Boolean(error)}
-                  helperText={isTouched && error}
                 />
               }
             />
@@ -277,7 +276,7 @@ export function EditContact({
     <div>
       {formik.values.EMAILS?.map(({ ID, EMAIL }, index) => {
         const isTouched = Array.isArray(formik.errors.EMAILS) && Boolean((formik.touched.EMAILS as unknown as IEmail[])?.[index]?.EMAIL);
-        const error = Array.isArray(formik.errors.EMAILS) && (formik.errors.EMAILS[index] as unknown as IEmail)?.EMAIL;
+        const error = Array.isArray(formik.errors.EMAILS) ? (formik.errors.EMAILS[index] as unknown as IEmail)?.EMAIL : '';
 
         return (
           <Stack
@@ -293,6 +292,8 @@ export function EditContact({
               width={'100%'}
               deleteable
               onDelete={() => handleDeleteEmail(index)}
+              error={isTouched && Boolean(error)}
+              helperText={error}
               editComponent={
                 <TextField
                   fullWidth
@@ -301,7 +302,6 @@ export function EditContact({
                   value={EMAIL ?? ''}
                   onChange={(e) => handleEmailChange(index, e.target.value)}
                   error={isTouched && Boolean(error)}
-                  helperText={isTouched && error}
                 />
               }
             />
@@ -323,7 +323,7 @@ export function EditContact({
     <div>
       {formik.values.MESSENGERS?.map(({ ID, CODE, USERNAME }, index) => {
         const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[index]?.USERNAME);
-        const error = Array.isArray(formik.errors.MESSENGERS) && (formik.errors.MESSENGERS[index] as unknown as IMessenger)?.USERNAME;
+        const error = Array.isArray(formik.errors.MESSENGERS) ? (formik.errors.MESSENGERS[index] as unknown as IMessenger)?.USERNAME : '';
 
         return (
           <Stack
@@ -357,6 +357,8 @@ export function EditContact({
                 width={'100%'}
                 deleteable
                 onDelete={() => handleDeleteMessenger(index)}
+                helperText={error}
+                error={isTouched && Boolean(error)}
                 editComponent={
                   <SocialMediaInput
                     value={{
@@ -368,7 +370,6 @@ export function EditContact({
                     onChange={(value) => handleMessengerChange(index, value)}
                     placeholder="имя пользователя"
                     error={isTouched && Boolean(error)}
-                    helperText={isTouched && error}
                   />
                 }
               />
