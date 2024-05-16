@@ -4,6 +4,7 @@ import { AsYouType, getExampleNumber } from 'libphonenumber-js';
 import { COUNTRIES, DEFAULT_ISO_CODE, TelInputCountry } from '../constants/countries';
 import { getPhoneCodeOfCountry } from '../helpers/countries';
 import { TelInputInfo, TelInputReason } from '../types';
+import metadatas from 'libphonenumber-js/metadata.min.json';
 
 type UseDigitsParams = {
   value: string;
@@ -135,20 +136,56 @@ export default function UseDigits(params: UseDigitsParams) {
     return `+${getPhoneCodeOfCountry(country)}${inputValue}`;
   };
 
+  const [isPaste,setIsPaste] = useState<boolean>(false)
+
+  const onInputPaste = (event:any) => {
+    setIsPaste(true)
+  }
+
+  const normilizeNumber = (value:string) => {
+    if(value.length === 0){
+      return {
+        number:'',
+        code:undefined
+      }
+    }
+    let newValue = ''
+    let code = ''
+    for(let i = value.length - 1; i > -1 && code.length < 3 ;i--){
+      const symbol = value.charAt(i)
+      if(!isNaN(Number(symbol)) && newValue?.length === 9){
+        code = symbol + code
+      }
+      if(!isNaN(Number(symbol)) && newValue?.length < 9){
+        newValue = symbol + newValue
+      }
+      
+    }
+
+    const newCode = metadatas.country_calling_codes?.[code]?.[0]
+
+    return {number:newValue,code:newCode}
+  }
+
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const newValues = normilizeNumber(event.target.value)
+    const newValue = isPaste ? newValues.number : event.target.value;
+    setIsPaste(false)
     const inputValue = fixedCode
       ? checkStartWithPlusIsoCode(
-        event.target.value,
-          state.isoCode as TelInputCountry
+        newValue,
+          newValues.code || state.isoCode as TelInputCountry
       )
-      : checkStartWithPlusOrEmpty(event.target.value);
+      : checkStartWithPlusOrEmpty(newValue);
 
     const formattedValue = typeNewValue(inputValue);
     const newCountryCode = asYouTypeRef.current.getCountry();
 
-    const country = fixedCode
-      ? state.isoCode
+    const country = newValue || fixedCode
+      ? newValues.code || state.isoCode
       : newCountryCode || previousCountryRef.current;
+
+      console.log(country)
     const numberValue = asYouTypeRef.current.getNumberValue() ?? '';
 
     if (strictMode) {
@@ -182,10 +219,13 @@ export default function UseDigits(params: UseDigitsParams) {
       const validValue = phoneInfo.nationalNumber ? valueToSet : '';
       onChange?.(validValue, getPhoneInfo('input'));
       setPreviousValue(validValue);
-      setState({
+      
+      const newPhone = {
         isoCode: country,
         inputValue: validValue
-      });
+      }
+      console.log(state)
+      setState(newPhone);
     }
   };
 
@@ -241,7 +281,6 @@ export default function UseDigits(params: UseDigitsParams) {
     if (newCountry === state.isoCode) {
       return;
     };
-
     const callingCode = COUNTRIES[newCountry]?.[0] as string;
     const { inputValue, isoCode } = state;
     const inputValueWithoutCallingCode = isoCode
@@ -271,6 +310,7 @@ export default function UseDigits(params: UseDigitsParams) {
     isoCode: state.isoCode,
     onInputChange,
     onCountryChange,
+    onInputPaste,
     inputRef
   };
 }

@@ -64,7 +64,7 @@ export function TelephoneInput(props: TelephoneInputProps) {
   const inputDigitsRef = useRef<HTMLInputElement>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
 
-  const { onInputChange, onCountryChange, inputRef, isoCode, inputValue } =
+  const { onInputPaste, onInputChange, onCountryChange, inputRef, isoCode, inputValue } =
   UseDigits({
     defaultCountry: defaultCountry || DEFAULT_ISO_CODE,
     value: value ?? '',
@@ -132,6 +132,7 @@ export function TelephoneInput(props: TelephoneInputProps) {
         onDoubleClick={handleDoubleClick}
         onChange={onInputChange}
         onFocus={handleFocus}
+        onPaste={onInputPaste}
         inputProps={{
           ...inputProps
         }}

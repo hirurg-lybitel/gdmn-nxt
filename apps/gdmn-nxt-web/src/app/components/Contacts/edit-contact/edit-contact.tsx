@@ -108,9 +108,13 @@ export function EditContact({
 
   const handleAddPhone = () => {
     let newPhones: IPhone[] = [];
-    if (formik.values.PHONES?.length) {
-      newPhones = [...formik.values.PHONES];
+    const phones = formik.values.PHONES
+    if (phones?.length) {
+      newPhones = [...phones];
     };
+    if(phones && phones[phones.length - 1]?.USR$PHONENUMBER === ''){
+      return
+    }
     newPhones.push({ ID: -1, USR$PHONENUMBER: '' });
 
     formik.setFieldValue('PHONES', newPhones);
@@ -122,7 +126,6 @@ export function EditContact({
       newPhones = [...formik.values.PHONES];
       newPhones.splice(index, 1);
     };
-
     formik.setFieldValue('PHONES', newPhones);
   };
 
@@ -199,10 +202,14 @@ export function EditContact({
     if (!open) formik.resetForm();
   }, [open]);
 
+  const validValues = () => {
+    const newPhones = formik.values.PHONES?.filter(phone => phone.USR$PHONENUMBER.length !== 0) || [];
+    return {...formik.values, PHONES: newPhones}
+  }
+
   const handleConfirmOkClick = useCallback(() => {
     setConfirmOpen(false);
-
-    onSubmit(formik.values, deleting);
+    onSubmit(validValues(), deleting);
   }, [formik.values, deleting]);
 
   const handleConfirmCancelClick = useCallback(() => {
@@ -246,8 +253,10 @@ export function EditContact({
               onDelete={() => handleDeletePhone(index)}
               helperText={error}
               error={isTouched && Boolean(error)}
+              closeOnBlur={false}
               editComponent={
                 <TelephoneInput
+                  sx={{'& .MuiInputBase-input':{padding:'4.5px 14px'}}}
                   name={`PHONE${index}`}
                   autoFocus
                   value={USR$PHONENUMBER ?? ''}
