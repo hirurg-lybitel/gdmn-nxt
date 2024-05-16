@@ -390,7 +390,9 @@ export interface ISegment extends IWithID {
 
 export interface IMailing extends IWithID {
   NAME: string;
-  LAUNCHDATE: Date;
+  LAUNCHDATE?: Date;
+  STARTDATE?: Date;
+  FINISHDATE?: Date;
   STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
   segments: ISegment[];
   TEMPLATE?: string;

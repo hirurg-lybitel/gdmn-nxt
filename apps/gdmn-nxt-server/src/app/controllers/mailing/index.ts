@@ -1,12 +1,14 @@
 import { RequestHandler } from 'express';
 import { resultDescription, resultError } from '../../responseMessages';
-import { IRequestResult } from '@gsbelarus/util-api-types';
+import { IMailing, IRequestResult } from '@gsbelarus/util-api-types';
 import { mailingRepository } from '@gdmn-nxt/repositories/mailing';
 import { customersRepository } from '@gdmn-nxt/repositories/customers';
 import { sendEmail } from '@gdmn/mailer';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
+import dayjs from 'dayjs';
+import { mailingService } from '../../services/mailing';
 
 const findAll: RequestHandler = async (req, res) => {
   try {
@@ -64,76 +66,31 @@ const launchMailing: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const mailing = await mailingRepository.findOne(sessionID, { ID: id });
+    const response = await mailingService.launchMailing(sessionID, id);
 
-    if (!mailing) {
-      return res.status(404).send(resultError(`Не найдена рассылка с id=${id}`));
-    }
-
-    if (mailing.segments.length === 0) {
-      return res.status(200).send(resultDescription('Нет получателей'));
-    }
-
-    const customersClause = new Map();
-    mailing.segments.forEach(({ FIELDS }) => {
-      FIELDS.forEach(({ NAME, VALUE }) => customersClause.set(NAME, VALUE));
-    });
-
-    const customers = await customersRepository.find(sessionID, { ...Object.fromEntries(customersClause.entries()) });
-
-    if (customers.length === 0) {
-      return res.status(204);
-    }
-
-    mailingRepository.update(
-      sessionID,
-      id,
-      {
-        LAUNCHDATE: new Date()
-      });
-
-    const subject = 'Тема письма';
-    const from = `Belgiss <${process.env.SMTP_USER}>`;
-
-    /** Выбранный шаблон письма (НЕ ссылка, а копия для текущей рассылки)  */
-    // const html = `
-    //   <html>
-    //     <body>
-    //       <div>
-    //       Приветствуем, {{ name }}.
-    //       </div>
-    //     </body>
-    //   </html>`;
-    const html = mailing.TEMPLATE ?? '';
-
-    if (html === '') {
-      return res.status(500).send(resultError('Не найден шаблон письма'));
-    }
-
-    await forEachAsync(customers, async ({ NAME, EMAIL }) => {
-      const view = {
-        name: NAME
-      };
-
-      const renderedHtml = Mustache.render(html, view);
-
-      await sendEmail(
-        from,
-        EMAIL,
-        subject,
-        '',
-        renderedHtml);
-    });
-
-    return res.sendStatus(200);
+    return res.status(200).send(response);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
-const createMailing: RequestHandler = async (req, res) => {
+const createMailing: RequestHandler<{}, {}, Omit<IMailing, 'ID'>> = async (req, res) => {
   try {
-    const newMailing = await mailingRepository.save(req.sessionID, req.body);
+    const { FINISHDATE, ...newMailingModel } = req.body;
+    newMailingModel.STATUS = 0;
+
+    if (newMailingModel.LAUNCHDATE) {
+      if (!dayjs(newMailingModel.LAUNCHDATE).isValid()) {
+        return res.status(422).send(resultError('Дата запуска указана неверно'));
+      }
+
+      const currentDate = new Date();
+      if (dayjs(newMailingModel.LAUNCHDATE).isBefore(currentDate)) {
+        return res.status(422).send(resultError('Дата запуска меньше текущей'));
+      }
+    }
+
+    const newMailing = await mailingRepository.save(req.sessionID, newMailingModel);
     const mailing = await mailingRepository.findOne(req.sessionID, { id: newMailing.ID });
 
     const result: IRequestResult = {

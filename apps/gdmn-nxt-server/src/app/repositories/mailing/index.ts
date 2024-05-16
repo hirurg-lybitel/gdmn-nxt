@@ -1,5 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, IMailing, ISegment, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, IMailing, ISegment, IsNotNull, IsNull, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { segmentsRepository } from '../segments';
 
@@ -7,9 +7,19 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
+    const whereClause = {};
     const clauseString = Object
       .keys({ ...clause })
-      .map(f => ` m.${f} = :${f}`)
+      .map(f => {
+        if (clause[f] === IsNotNull()) {
+          return ` m.${f} IS NOT NULL`;
+        }
+        if (clause[f] === IsNull()) {
+          return ` m.${f} IS NULL`;
+        }
+        whereClause[f.replace('USR$', '')] = clause[f];
+        return ` m.${f} = :${f.replace('USR$', '')}`;
+      })
       .join(' AND ');
 
     let sql = `
@@ -17,12 +27,14 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         m.ID,
         m.USR$NAME NAME,
         m.USR$LAUNCHDATE LAUNCHDATE,
-        IIF(m.USR$STATUS IS NULL, 0, m.USR$STATUS) STATUS,
+        m.USR$STARTDATE STARTDATE,
+        m.USR$FINISHDATE FINISHDATE,
+        COALESCE(m.USR$STATUS, 0) AS STATUS,
         USR$TEMPLATE TEMPLATE_BLOB
       FROM USR$CRM_MARKETING_MAILING m
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
-    const mailing = await fetchAsObject<Omit<IMailing, 'segments'>>(sql, { ...clause });
+    const mailing = await fetchAsObject<Omit<IMailing, 'segments'>>(sql, { ...whereClause });
 
     if (mailing.length === 0) {
       return [];
@@ -88,6 +100,8 @@ const update: UpdateHandler<IMailing> = async (
 
     const {
       LAUNCHDATE = mailing.LAUNCHDATE,
+      STARTDATE = mailing.STARTDATE,
+      FINISHDATE = mailing.FINISHDATE,
       NAME = mailing.NAME,
       STATUS = mailing.STATUS,
       TEMPLATE = mailing.TEMPLATE,
@@ -100,13 +114,17 @@ const update: UpdateHandler<IMailing> = async (
         USR$LAUNCHDATE = :LAUNCHDATE,
         USR$NAME = :NAME,
         USR$STATUS = :STATUS,
-        USR$TEMPLATE = :TEMPLATE
+        USR$TEMPLATE = :TEMPLATE,
+        USR$FINISHDATE = :FINISHDATE,
+        USR$STARTDATE = :STARTDATE
       WHERE
         ID = :ID
       RETURNING ID`,
       {
         ID,
-        LAUNCHDATE,
+        LAUNCHDATE: new Date(LAUNCHDATE),
+        STARTDATE: new Date(STARTDATE),
+        FINISHDATE: new Date(FINISHDATE),
         NAME,
         STATUS,
         TEMPLATE: await string2Blob(TEMPLATE)
@@ -151,18 +169,20 @@ const save: SaveHandler<IMailing> = async (
   const {
     NAME,
     TEMPLATE,
-    segments
+    segments,
+    LAUNCHDATE
   } = metadata;
 
   try {
     const mailing = await fetchAsSingletonObject<IMailing>(
-      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS)
-      VALUES(:NAME, :TEMPLATE, :STATUS)
+      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE)
+      VALUES(:NAME, :TEMPLATE, :STATUS, :LAUNCHDATE)
       RETURNING ID`,
       {
         NAME,
         TEMPLATE: await string2Blob(TEMPLATE),
-        STATUS: 0
+        STATUS: 0,
+        LAUNCHDATE: new Date(LAUNCHDATE)
       }
     );
 
