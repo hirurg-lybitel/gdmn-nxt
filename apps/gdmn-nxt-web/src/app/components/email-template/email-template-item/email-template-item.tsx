@@ -1,10 +1,9 @@
 import style from './email-template.module.less';
 import { Divider, IconButton, Theme, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { UseFormGetValues, UseFormSetValue, useForm } from 'react-hook-form';
 import Draft from '../draft/draft';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
-import { EmailTemplate, IComponent } from '../email-template';
+import { IComponent } from '../email-template';
 import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -50,57 +49,60 @@ export const findComponent = (props: findComponentProps) => {
 
   switch (component.type) {
     case 'text':
-      return (isPreview || !setValue || !setDrag)
-        ? <div
+      return (
+        <div
           style={{
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             color: 'black',
             maxWidth: '100%',
             wordWrap: 'break-word'
           }}
-          >
+        >
           {ReactHtmlParser(component.text || '')}
         </div>
-        : <Draft
-          isOpen={!!(editIsFocus && index === editedIndex)}
-          width={component.width.auto ? 'auto' : component.width?.value + '%'}
-          setValue={setValue}
-          editedIndex={index || 0}
-          setDrag={setDrag}
-          drag={drag}
-          component={component}
-        />;
+      );
     case 'image':
       return (
         <>
           {component.image
-            ? <img
-              style={{ width: `${component.width?.value}%` }}
-              src={component.image}
+            ? (
+              <img
+                style={{ width: `${component.width?.value}%` }}
+                src={component.image}
               />
+            )
             : <ImageIcon color="primary" fontSize="large" />
           }
         </>
       );
     case 'button':
-      return <div
-        onClick={() => {
-          isPreview && window.open(component.url, '_blank');
-        }}
-        style={{
-          width: component.width.auto ? 'auto' : component.width?.value + '%',
-          backgroundColor: component.color?.button,
-          color: component.color?.text,
-          padding: `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
-          font: `${component.font?.size}px ${component.font?.value}`,
-          fontWeight: '600',
-          borderRadius: '10px',
-          cursor: 'pointer',
-          textAlign: 'center'
-        }}
-             >
-        {component.text}
-      </div>;
+      return (
+        <div
+          onClick={() => {
+            if (!component.url) {
+              return;
+            }
+            if (component.url?.length < 0) {
+              return;
+            }
+            isPreview && window.open(component.url, '_blank');
+          }}
+          style={{
+            width: component.width.auto ? 'auto' : component.width?.value + '%',
+            backgroundColor: component.color?.button,
+            color: component.color?.text,
+            padding: `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
+            font: `${component.font?.size}px ${component.font?.value}`,
+            fontWeight: '600',
+            borderRadius: '10px',
+            cursor: (!component.url || (component.url?.length || 0) < 1) ? 'auto' : 'pointer',
+            textAlign: 'center',
+            userSelect: 'none'
+          }}
+        >
+          {component.text}
+        </div>
+      );
     case 'divider':
       return (
         <div

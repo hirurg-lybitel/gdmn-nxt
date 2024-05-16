@@ -128,7 +128,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       type: 'image',
       width: {
         auto: false,
-        value: 100
+        value: 50
       },
       margin: {
         top: 10,
@@ -334,19 +334,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     setPrimaryDrag(value);
   };
 
-  const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
-  const [deletableIndex, setDeletableIndex] = useState<number>(0);
-  const confirmOkCkick = () => {
-    setConfirmOpen(false);
-    removeEl(deletableIndex);
-  };
-  const handleConfirmCancelClick = () => {
-    setConfirmOpen(false);
-  };
-
-  const handleComfirmOpen = (index: number) => {
-    setDeletableIndex(index);
-    setConfirmOpen(true);
+  const handleDelete = (index: number) => {
+    removeEl(index);
   };
 
   const [draggedId, setDraggedId] = useState<number>(-1);
@@ -358,7 +347,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     }
     return {
       ...style,
-      transitionDuration: '0.001s',
+      transitionDuration: '0.1s',
     };
   };
 
@@ -371,14 +360,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         background: theme.palette.background.paper
       }}
     >
-      <ConfirmDialog
-        open={confirmOpen}
-        title={'Удаление элемента'}
-        text={'Вы уверены, что хотите продолжить?'}
-        dangerous={true}
-        confirmClick={confirmOkCkick}
-        cancelClick={handleConfirmCancelClick}
-      />
       <DragDropContext onDragEnd={handleDragEnd}>
         <TabContext value={tabIndex} >
           <div style={{ width: '100%' }}>
@@ -445,10 +426,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
               <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
                 <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
-                  <div style={{ width: '100%', maxWidth: '700px', background: anyTemplates.background, transition: '0.5s' }}>
+                  <div style={{ width: '100%', maxWidth: '700px', transition: '0.5s' }}>
                     <Droppable droppableId="tamplate" >
                       {(droppableProvider) => (
                         <div
+                          style={{ background: anyTemplates.background }}
                           className={style.templateBody}
                           ref={droppableProvider.innerRef}
                           {...droppableProvider.droppableProps}
@@ -471,7 +453,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                   >
                                     <EmailTemplateItem
                                       copy={copyEl}
-                                      removeEl={handleComfirmOpen}
+                                      removeEl={handleDelete}
                                       setEditIsFocus={setEditIsFocus}
                                       editedIndex={editedIndex}
                                       index={index}
@@ -564,6 +546,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                   >
                                     <Box
                                       sx={{
+                                        userSelect: 'none',
                                         background: theme.palette.primary.main,
                                         color: theme.textColor,
                                         width: '110px',
