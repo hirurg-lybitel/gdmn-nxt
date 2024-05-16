@@ -1,0 +1,22 @@
+.chosenButton {}
+
+.unselectedStar {
+  // position: absolute !important;
+}
+.selectedStar {
+  color: #faaf00;
+  transition: 2.5s !important;
+}
+
+.starInvisible {
+  display: none !important;
+}
+
+.chosenButton:hover .unselectedStar {
+  display: none;
+}
+
+.chosenButton:hover .selectedStar {
+  display: inline-block !important;
+  // transform: scale(1.5);
+}
