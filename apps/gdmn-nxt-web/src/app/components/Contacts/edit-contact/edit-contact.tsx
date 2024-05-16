@@ -237,6 +237,7 @@ export function EditContact({
             direction="row"
             alignItems="center"
             spacing={2}
+            height={45}
           >
             <PhoneAndroidIcon fontSize="small" color="primary" />
             <EditableTypography
@@ -256,7 +257,6 @@ export function EditContact({
               closeOnBlur={false}
               editComponent={
                 <TelephoneInput
-                  sx={{'& .MuiInputBase-input':{padding:'4.5px 14px'}}}
                   name={`PHONE${index}`}
                   autoFocus
                   value={USR$PHONENUMBER ?? ''}
