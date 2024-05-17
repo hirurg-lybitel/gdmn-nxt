@@ -1,10 +1,8 @@
 import style from './email-template-edit.module.less';
 import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, useTheme } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { EmailTemplate, IComponent, IComponentPosition } from '../email-template';
-import { RegisterOptions, UseFormGetValues, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
+import { IComponent, IComponentPosition } from '../email-template';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { ChangeEvent, useRef, useState } from 'react';
 import AlignHorizontalCenterIcon from '@mui/icons-material/AlignHorizontalCenter';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
@@ -12,20 +10,20 @@ import AlignHorizontalRightIcon from '@mui/icons-material/AlignHorizontalRight';
 import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 import { fontSize, fonts } from './font';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Draft from '../draft/draft';
 
 export interface EmailTemplateEditProps {
   editedIndex: number,
   close: () => void,
-  setValue: UseFormSetValue<EmailTemplate>,
+  setValue: (stringIndex: string, newValue: any) => void,
   removeEl: (index: number) => void;
   copy: (index: number) => void,
-  component: IComponent
+  component: IComponent,
+  length: number
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
-  const { editedIndex, close, setValue, removeEl, copy, component } = props;
+  const { editedIndex, close, setValue, removeEl, component, length } = props;
   const theme = useTheme();
 
   const sizeSettings = () => {
@@ -330,6 +328,14 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         return (
           <>
             {baseComponent()}
+            <div style={{ paddingTop: '10px' }}>
+              <Draft
+                length={length}
+                setValue={setValue}
+                editedIndex={editedIndex}
+                component={component}
+              />
+            </div>
           </>
         );
       }
@@ -344,42 +350,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     }
   };
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const handleConfirmOkClick = () => {
-    removeEl(editedIndex);
-  };
-
-  const handleCopy = () => {
-    copy(editedIndex);
-  };
-
-  const handleConfirmCancelClick = () => {
-    setConfirmOpen(false);
-  };
-
-  const handleConfirmOpen = () => {
-    setConfirmOpen(true);
-  };
-
   return (
-    <CustomizedCard style={{ height: '100%' }}>
-      <ConfirmDialog
-        open={confirmOpen}
-        title={'Удаление'}
-        text="Вы уверены, что хотите продолжить?"
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
-      <CardContent sx={{ paddingRight: 0 }}>
-        <CustomizedScrollBox options={{ suppressScrollX: true }}>
-          <div style={{ paddingRight: '16px' }}>
-            {mainContent()}
-          </div>
-        </CustomizedScrollBox>
-      </CardContent>
-      <Divider />
-      <CardActions>
+    <CustomizedCard style={{ height: '100%', background: 'none' }}>
+      <CardActions sx={{ paddingBottom: 0 }}>
         {/* <IconButton
           size="small"
           onClick={handleConfirmOpen}
@@ -392,6 +365,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         <Box flex={1}/>
         <IconButton onClick={close} size="small"><CloseIcon /></IconButton>
       </CardActions>
+      <CardContent sx={{ paddingRight: 0, paddingTop: 0 }}>
+        <CustomizedScrollBox options={{ suppressScrollX: true }}>
+          <div style={{ paddingRight: '16px' }}>
+            {mainContent()}
+          </div>
+        </CustomizedScrollBox>
+      </CardContent>
     </CustomizedCard>
   );
 };

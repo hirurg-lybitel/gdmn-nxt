@@ -1,13 +1,10 @@
 import 'jodit';
 import JoditEditor from 'jodit-react';
 import { makeStyles } from '@mui/styles';
-import { UseFormGetValues, UseFormSetValue } from 'react-hook-form';
-import { EmailTemplate, IComponent } from '../email-template';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { Theme } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Visibility } from '@mui/icons-material';
+import { IComponent } from '../email-template';
+import { Box, Theme } from '@mui/material';
+import { useMemo, useRef } from 'react';
+import { useTheme } from '@mui/material';
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
@@ -29,9 +26,9 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: 'black'
     },
     '& .jodit-workplace': {
-      backgroundColor: 'transparent !important',
-      minHeight: '0px !important',
-      cursor: 'text'
+      minHeight: '56px !important',
+      cursor: 'text',
+      padding: '5px'
     },
     '& .jodit-toolbar__box': {
       background: 'none'
@@ -50,6 +47,15 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     '& .jodit-popup__content': {
       color: 'red'
+    },
+    '& .jodit-toolbar-button:hover': {
+      background: 'transparent !important'
+    },
+    '& .jodit-toolbar-button__trigger:hover': {
+      background: 'hsla(0,0%,86%,.4) !important',
+    },
+    '& .jodit-toolbar-button__button:hover': {
+      background: 'hsla(0,0%,86%,.4) !important',
     }
   })),
   formPopup: {
@@ -69,37 +75,38 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface draftProps {
-  isOpen: boolean,
-  width: string,
   editedIndex: number,
   setValue: (stringIndex: string, newValue: any) => void,
-  setDrag: (arg: boolean) => void,
-  drag?: boolean,
-  component: IComponent
+  component: IComponent,
+  length: number
 }
 
-export default function Draft({ isOpen, width, editedIndex, component, setValue, setDrag, drag }: draftProps) {
-  const classes = useStyles();
 
+export default function Draft({ editedIndex, component, setValue, length }: draftProps) {
+  const classes = useStyles();
   const save = () => {
-    if (!ref?.current?.value || component?.text === ref?.current?.value) return;
-    setValue(`${editedIndex}.text`, ref?.current?.value);
+    const newValue = ref?.current?.value;
+    let formattedValue = '';
+    for (let i = 0;i < newValue.length;i++) {
+      if (newValue.charAt(i) === 'p' && newValue.charAt(i - 1) === '<' && newValue.charAt(i + 1) === '>') {
+        formattedValue += 'p style="margin:0px"';
+      } else {
+        formattedValue += newValue.charAt(i);
+      }
+    }
+    setValue(`${editedIndex}.text`, formattedValue);
   };
 
-  useEffect(() => {
-    save();
-  }, [isOpen]);
+  const theme = useTheme();
 
   const ref = useRef<any>(null);
 
   const joditEditorMemo = useMemo(() => {
+    console.log(component.text);
     const editorConfig = {
       readonly: false,
-      autofocus: isOpen,
-      toolbar: isOpen,
-      events: {
-        paste: (e: any) => setDrag(false)
-      },
+      autofocus: false,
+      toolbar: true,
       addNewLine: false,
       spellcheck: true,
       language: 'ru',
@@ -112,11 +119,12 @@ export default function Draft({ isOpen, width, editedIndex, component, setValue,
       uploader: {
         insertImageAsBase64URI: true
       },
-      buttons: ['fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough',
-        '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'link', '|', 'spellcheck', 'eraser', '|'],
+      buttons: ['outdent', 'fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough',
+        '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'link', '|', 'spellcheck', 'eraser', 'source', '|'],
       width: '100%',
       maxWidth: '100%',
       height: 'auto',
+      theme: theme.palette.mode,
       link: {
         openInNewTabCheckbox: false,
         noFollowCheckbox: false,
@@ -133,25 +141,40 @@ export default function Draft({ isOpen, width, editedIndex, component, setValue,
       <JoditEditor
         ref={ref}
         value={component?.text || ''}
-        config={editorConfig}
+        config={editorConfig as any}
+        onChange={save}
       />
     );
-  }, [ref, component, isOpen]);
+  }, [ref, component, theme, editedIndex, length]);
+
+  console.log(component.text);
 
   return (
-    <div
-      onMouseEnter={() => {
-        if (component.text?.indexOf('<img') === -1) return;
-        setDrag(false);
+    <Box
+      sx={{
+        '& .jodit-toolbar-button__icon svg': {
+          fill: theme.textColor + '!important',
+          stroke: theme.textColor + '!important'
+        },
+        '& .jodit-toolbar-button__trigger svg': {
+          fill: theme.textColor + '!important',
+          stroke: theme.textColor + '!important'
+        },
+        '& .jodit-wysiwyg p': {
+          margin: 0
+        },
+        '& .jodit-placeholder': {
+          paddingLeft: '5px !important',
+          paddingTop: '5px !important'
+        },
       }}
       className={classes.draft}
       style={{
-        width: isOpen ? 'auto'
-          : ((!component.text || component.text === '<p><br></p>') ? '150px' : width),
+        width: 'auto',
         display: 'flex',
         justifyContent: 'center' }}
     >
       {joditEditorMemo}
-    </div>
+    </Box>
   );
 }

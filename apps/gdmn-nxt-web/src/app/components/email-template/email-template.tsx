@@ -1,7 +1,7 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Box, Button, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import { RegisterOptions, UseFormRegisterReturn, useForm } from 'react-hook-form';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
@@ -14,6 +14,8 @@ import { useSelector } from 'react-redux';
 import TabletIcon from '@mui/icons-material/Tablet';
 import ColorEdit from '../Styled/colorEdit/colorEdit';
 import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
+import { renderToStaticMarkup } from 'react-dom/server';
+import ReactHtmlParser from 'react-html-parser';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -79,12 +81,13 @@ export interface EmailTemplate {
 
 export interface ITemplate {
   content: IComponent[],
-  background: string
+  background: string,
+  html: string
 }
 
 interface EmailTemplateProps {
   value?: ITemplate,
-  onChange: (value: ITemplate) => void
+  onChange: (value: ITemplate) => void,
   // defaultValues?: {
   //   text?: baseComponentSettings,
   //   image?: baseComponentSettings,
@@ -98,6 +101,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const {
     value: anyTemplates = {
       content: [],
+      html: '',
       background: 'white'
     },
     onChange
@@ -194,6 +198,16 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const backgroundChange = (newBackground: string) => {
     onChange({ ...anyTemplates, background: newBackground });
   };
+  const [length, setLenght] = useState<number>(0);
+  useEffect(() => {
+    if (anyTemplates.html === previeConponent) {
+      return;
+    }
+    if (length !== anyTemplates.content.length) {
+      setLenght(anyTemplates.content.length);
+    }
+    onChange({ ...anyTemplates, html: previeConponent });
+  }, [anyTemplates]);
 
   const [lastId, setLastId] = useState(10);
 
@@ -237,7 +251,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     setLastId(lastId + 1);
     const copyTamplate = [...anyTemplates.content];
     copyTamplate.splice(endIndex, 0, componentCopy);
-    onChange({ ...anyTemplates, content: copyTamplate });
+    copyTamplate[endIndex].text = copyTamplate[endIndex].text ? copyTamplate[endIndex].text + ' ' : undefined;
+    onChange({ ...anyTemplates, content: copyTamplate, });
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -292,15 +307,15 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     setEditedIndex(null);
   };
 
-  useEffect(() => {
-    const closeEvent = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeEditForm();
-    };
-    document.addEventListener('keydown', closeEvent);
-    return () => {
-      document.removeEventListener('keydown', closeEvent);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const closeEvent = (e: KeyboardEvent) => {
+  //     if (e.key === 'Escape') closeEditForm();
+  //   };
+  //   document.addEventListener('keydown', closeEvent);
+  //   return () => {
+  //     document.removeEventListener('keydown', closeEvent);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const closeEvent = (e: any) => {
@@ -321,8 +336,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const [drag, setDrag] = useState(true);
 
   const [previewMode, setPreviewmode] = useState('700px');
-
-  const settings = useSelector((state: RootState) => state.settings);
 
   const [primaryDrag, setPrimaryDrag] = useState('');
   const [allowChangePrimary, setAllowChangePrimary] = useState(true);
@@ -350,6 +363,21 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       transitionDuration: '0.1s',
     };
   };
+
+
+  const previeConponent = renderToStaticMarkup(
+    <div style={{ height: '100%', background: anyTemplates.background, }}>
+      {anyTemplates.content.map((component: IComponent, index: number) => (
+        <EmailTemplateItem
+          key={index}
+          isPreview={true}
+          component={component}
+        />
+      ))}
+    </div>
+  );
+
+  const getHtml = () => previeConponent;
 
   return (
     <div
@@ -421,9 +449,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             <Divider style={{ margin: 0 }} />
           </div>
           <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
-
             <div style={{ width: '100%', height: '100%' }}>
-
               <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
                 <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
                   <div style={{ width: '100%', maxWidth: '700px', transition: '0.5s' }}>
@@ -435,7 +461,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                           ref={droppableProvider.innerRef}
                           {...droppableProvider.droppableProps}
                         >
-
                           {anyTemplates.content.map((component: IComponent, index: number) => (
                             <Draggable
                               index={index}
@@ -479,15 +504,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
               </TabPanel>
               <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
                 <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ maxWidth: previewMode, width: '100%', height: '100%', background: anyTemplates.background, transition: '0.5s' }}>
+                  <div style={{ maxWidth: previewMode, width: '100%', transition: '0.5s' }}>
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
-                      {anyTemplates.content.map((component: IComponent, index: number) => (
-                        <EmailTemplateItem
-                          key={index}
-                          isPreview={true}
-                          component={component}
-                        />
-                      ))}
+                      {ReactHtmlParser(previeConponent)}
                     </CustomizedScrollBox>
                   </div>
                 </div>
@@ -504,7 +523,15 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 }}
               >
                 {editedIndex || editedIndex === 0
-                  ? <div style={{ height: '100%' }} onMouseDown={handleEditUnFocus}>
+                  ? <Box
+                    sx={{
+                      '& .jodit-workplace': {
+                        background: anyTemplates.background + '!important'
+                      }
+                    }}
+                    style={{ height: '100%' }}
+                    onMouseDown={handleEditUnFocus}
+                    >
                     <EmailTemplateEdit
                       copy={copyEl}
                       removeEl={removeEl}
@@ -512,8 +539,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                       close={closeEditForm}
                       component={anyTemplates.content[editedIndex]}
                       setValue={valueChange}
+                      length={length}
                     />
-                  </div>
+                  </Box>
                   : <Droppable droppableId="compotents" >
                     {(droppableProvider) => (
                       <div

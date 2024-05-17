@@ -1,7 +1,6 @@
-import style from './email-template.module.less';
-import { Divider, IconButton, Theme, useTheme } from '@mui/material';
+import style from './email-template-item.module.less';
+import { IconButton, Theme, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Draft from '../draft/draft';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import { IComponent } from '../email-template';
 import ImageIcon from '@mui/icons-material/Image';
@@ -13,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
     position: 'relative',
     '&:hover': {
-      border: `1px solid ${theme.palette.primary.main} !important`,
+      border: `1px solid ${theme.palette?.primary.main} !important`,
       '& $templateIcon': {
         visibility: 'visible !important'
       }
@@ -25,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: theme.palette.primary.main, borderRadius: '100%',
+    background: theme.palette?.primary.main, borderRadius: '100%',
     padding: '5px',
     right: '-12.5px',
     top: 'calc(50% - 12.5px)',
@@ -58,7 +57,11 @@ export const findComponent = (props: findComponentProps) => {
             wordWrap: 'break-word'
           }}
         >
-          {ReactHtmlParser(component.text || '')}
+          {ReactHtmlParser(
+            !(component.text === '<p><br></p>' || !component.text || component.text === '')
+              ? component.text
+              : (isPreview ? '' : '<p>Напишите что-либо</p>')
+          )}
         </div>
       );
     case 'image':
@@ -71,7 +74,7 @@ export const findComponent = (props: findComponentProps) => {
                 src={component.image}
               />
             )
-            : <ImageIcon color="primary" fontSize="large" />
+            : isPreview ? <div /> : <ImageIcon color="primary" fontSize="large" />
           }
         </>
       );
@@ -110,7 +113,7 @@ export const findComponent = (props: findComponentProps) => {
             width: component.width.auto ? 'auto' : `${component.width?.value}%`
           }}
         >
-          <Divider sx={{ borderColor: 'rgba(0, 0, 0, 0.08)' }} />
+          <div style={{ background: 'rgba(0, 0, 0, 0.18', height: '1px', width: '100%' }} />
         </div>);
     default: return <div />;
   }
@@ -142,7 +145,8 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       <div
         style={{
           display: 'flex', justifyContent: component.position,
-          padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`
+          padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
+          border: '1px solid transparent'
         }}
       >
         {findComponent({ isPreview: true, component: component })}
@@ -166,7 +170,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       className={classes.templateItem}
       style={{
         padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
-        border: index === editedIndex ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent',
+        border: index === editedIndex ? `1px solid ${theme.palette?.primary.main}` : '1px solid transparent',
       }}
     >
       <div >
@@ -187,7 +191,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
             bottom: '-36px',
             right: '0',
             display: 'flex',
-            background: theme.palette.primary.main,
+            background: theme.palette?.primary.main,
             visibility: index === editedIndex ? 'visible' : 'hidden',
             borderRadius: '0px 0px 10px 10px',
             zIndex: '1'
