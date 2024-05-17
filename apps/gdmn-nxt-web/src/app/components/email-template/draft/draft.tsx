@@ -2,9 +2,11 @@ import 'jodit';
 import JoditEditor from 'jodit-react';
 import { makeStyles } from '@mui/styles';
 import { IComponent } from '../email-template';
-import { Box, Theme } from '@mui/material';
+import { Box, GlobalStyles, Theme } from '@mui/material';
 import { useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material';
+import { popup } from 'leaflet';
+import { ClassNames } from '@emotion/react';
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
@@ -106,6 +108,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
     const editorConfig = {
       readonly: false,
       autofocus: false,
+      popupClassName: classes.draft,
       toolbar: true,
       addNewLine: false,
       spellcheck: true,
@@ -119,7 +122,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
       uploader: {
         insertImageAsBase64URI: true
       },
-      buttons: ['outdent', 'fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough',
+      buttons: ['fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough',
         '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'link', '|', 'spellcheck', 'eraser', 'source', '|'],
       width: '100%',
       maxWidth: '100%',
@@ -147,33 +150,69 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
     );
   }, [ref, component, theme, editedIndex, length]);
 
-  console.log(component.text);
-
   return (
     <Box
-      sx={{
-        '& .jodit-toolbar-button__icon svg': {
-          fill: theme.textColor + '!important',
-          stroke: theme.textColor + '!important'
-        },
-        '& .jodit-toolbar-button__trigger svg': {
-          fill: theme.textColor + '!important',
-          stroke: theme.textColor + '!important'
-        },
-        '& .jodit-wysiwyg p': {
-          margin: 0
-        },
-        '& .jodit-placeholder': {
-          paddingLeft: '5px !important',
-          paddingTop: '5px !important'
-        },
-      }}
       className={classes.draft}
       style={{
         width: 'auto',
         display: 'flex',
         justifyContent: 'center' }}
     >
+      <GlobalStyles
+        styles={{
+          '& .jodit-toolbar-button__icon svg': {
+            fill: theme.textColor + '!important',
+            stroke: theme.textColor + '!important'
+          },
+          '& .jodit-toolbar-button__trigger svg': {
+            fill: theme.textColor + '!important',
+            stroke: theme.textColor + '!important'
+          },
+          '& .jodit-wysiwyg p': {
+            margin: 0
+          },
+          '& .jodit-placeholder': {
+            paddingLeft: '5px !important',
+            paddingTop: '5px !important'
+          },
+          '& .jodit-toolbar__box': {
+            background: theme.palette.background.paper + '!important',
+            border: '1px solid ' + theme.mainContent.borderColor,
+            borderBottom: 'none'
+          },
+          '& .jodit-toolbar-button__button:hover span': {
+            color: theme.textColor + ' !important'
+          },
+          '& .jodit-toolbar-button:hover': {
+            background: 'hsla(0,0%,86%,.4) !important'
+          },
+          '& .jodit-toolbar-button__button:hover': {
+            background: 'none !important',
+          },
+          '& .jodit-toolbar-button:hover span': {
+            color: theme.textColor + ' !important'
+          },
+          '& .jodit-toolbar-button__text:hover': {
+            background: 'none !important'
+          },
+          '& .jodit-toolbar-button': {
+            cursor: 'pointer'
+          },
+          '& .jodit-ui-button:hover': {
+            background: 'hsla(0,0%,86%,.4) !important'
+          },
+          '& .jodit-ui-button:hover span': {
+            color: theme.textColor + ' !important'
+          },
+          '& .jodit-ui-button__text:hover': {
+            background: 'none !important'
+          },
+          '& .jodit-ui-button_variant_outline': {
+            background: 'hsla(0,0%,86%,.2) !important',
+
+          }
+        }}
+      />
       {joditEditorMemo}
     </Box>
   );

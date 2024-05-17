@@ -162,13 +162,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         </Typography>
         <div >
           <IconButton onClick={handleChange('start')} color={component.position === 'start' ? 'primary' : 'default'}>
-            <AlignHorizontalLeftIcon fontSize="medium" />
+            <AlignHorizontalLeftIcon />
           </IconButton>
           <IconButton onClick={handleChange('center')} color={component.position === 'center' ? 'primary' : 'default'}>
-            <AlignHorizontalCenterIcon fontSize="medium" />
+            <AlignHorizontalCenterIcon />
           </IconButton>
           <IconButton onClick={handleChange('end')} color={component.position === 'end' ? 'primary' : 'default'}>
-            <AlignHorizontalRightIcon fontSize="medium" />
+            <AlignHorizontalRightIcon />
           </IconButton>
         </div>
       </>
@@ -352,7 +352,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   return (
     <CustomizedCard style={{ height: '100%', background: 'none' }}>
-      <CardActions sx={{ paddingBottom: 0 }}>
+      <CardActions sx={{ padding: '3px' }}>
         {/* <IconButton
           size="small"
           onClick={handleConfirmOpen}
@@ -365,7 +365,8 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         <Box flex={1}/>
         <IconButton onClick={close} size="small"><CloseIcon /></IconButton>
       </CardActions>
-      <CardContent sx={{ paddingRight: 0, paddingTop: 0 }}>
+      <Divider/>
+      <CardContent sx={{ paddingRight: 0, paddingTop: '10px' }}>
         <CustomizedScrollBox options={{ suppressScrollX: true }}>
           <div style={{ paddingRight: '16px' }}>
             {mainContent()}

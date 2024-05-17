@@ -1,21 +1,19 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Button, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { Box, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
+import { useEffect, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
-import { RegisterOptions, UseFormRegisterReturn, useForm } from 'react-hook-form';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
 import EmailTemplateItem from './email-template-item/email-template-item';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import ComputerIcon from '@mui/icons-material/Computer';
-import { RootState } from '../../store';
-import { useSelector } from 'react-redux';
 import TabletIcon from '@mui/icons-material/Tablet';
 import ColorEdit from '../Styled/colorEdit/colorEdit';
-import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ReactHtmlParser from 'react-html-parser';
+import { RootState } from '../../store';
+import { useSelector } from 'react-redux';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -107,6 +105,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     onChange
   } = props;
 
+  const settings = useSelector((state: RootState) => state.settings);
+
   const components: IComponent[] = [
     {
       id: 0,
@@ -169,7 +169,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       text: 'Текст кнопки',
       color: {
         text: '#ffffff',
-        button: theme.palette.primary.main
+        button: theme.mainContent.buttonPrimaryColor,
       },
       font: {
         size: 14,
@@ -377,8 +377,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     </div>
   );
 
-  const getHtml = () => previeComponent;
-
   return (
     <div
       style={{
@@ -575,15 +573,15 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                     <Box
                                       sx={{
                                         userSelect: 'none',
-                                        background: theme.palette.primary.main,
-                                        color: theme.textColor,
+                                        border: '1px solid ' + theme.mainContent.buttonPrimaryColor,
+                                        background: theme.palette.background.paper,
                                         width: '110px',
                                         height: '110px',
                                         padding: '5px',
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        borderRadius: '20px'
+                                        borderRadius: '20px',
                                       }}
                                     >
                                       {component.title}

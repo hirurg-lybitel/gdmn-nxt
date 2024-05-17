@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
     position: 'relative',
     '&:hover': {
-      border: `1px solid ${theme.palette?.primary.main} !important`,
+      border: `1px solid ${theme.mainContent?.buttonPrimaryColor} !important`,
       '& $templateIcon': {
         visibility: 'visible !important'
       }
@@ -24,7 +24,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: theme.palette?.primary.main, borderRadius: '100%',
+    background: theme.mainContent?.buttonPrimaryColor,
+    color: theme.mainContent?.buttonTextColor,
+    borderRadius: '100%',
     padding: '5px',
     right: '-12.5px',
     top: 'calc(50% - 12.5px)',
@@ -165,7 +167,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       className={classes.templateItem}
       style={{
         padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
-        border: index === editedIndex ? `1px solid ${theme.palette?.primary.main}` : '1px solid transparent',
+        border: index === editedIndex ? `1px solid ${theme.mainContent.buttonPrimaryColor}` : '1px solid transparent',
       }}
     >
       <div >
@@ -175,10 +177,13 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           }}
           className={classes.templateIcon}
           style={{
-            visibility: index === editedIndex ? 'visible' : 'hidden'
+            visibility: index === editedIndex ? 'visible' : 'hidden',
           }}
         >
-          <ZoomOutMapIcon sx={{ fontSize: '15px' }} style={{ transform: 'rotate(0.125turn)' }}/>
+          <ZoomOutMapIcon
+            sx={{ fontSize: '15px' }}
+            style={{ transform: 'rotate(0.125turn)' }}
+          />
         </div>
         <div
           style={{
@@ -186,7 +191,8 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
             bottom: '-36px',
             right: '0',
             display: 'flex',
-            background: theme.palette?.primary.main,
+            background: theme.mainContent.buttonPrimaryColor,
+
             visibility: index === editedIndex ? 'visible' : 'hidden',
             borderRadius: '0px 0px 10px 10px',
             zIndex: '1'
@@ -195,6 +201,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           <IconButton
             onClick={handleRemove}
             sx={{
+              color: theme.mainContent.buttonTextColor,
               borderRadius: '0px !important',
               '& .MuiTouchRipple-root span': { borderRadius: '0px !important' },
               '& .MuiTouchRipple-root': { borderRadius: '0px !important' }
@@ -205,6 +212,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           <IconButton
             onClick={handleCopy}
             sx={{
+              color: theme.mainContent.buttonTextColor,
               borderRadius: '0px !important',
               '& .MuiTouchRipple-root span': { borderRadius: '0px !important' },
               '& .MuiTouchRipple-root': { borderRadius: '0px !important' }
