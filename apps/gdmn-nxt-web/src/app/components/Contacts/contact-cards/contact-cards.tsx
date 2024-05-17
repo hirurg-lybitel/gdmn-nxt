@@ -3,15 +3,22 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EditIcon from '@mui/icons-material/Edit';
-import { IContactPerson, IPaginationData } from '@gsbelarus/util-api-types';
+import { IContactPerson, ILabel, IPaginationData } from '@gsbelarus/util-api-types';
 import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Avatar, Divider, IconButton, Stack, TablePagination, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { ButtonBaseProps, Avatar, Box, Divider, IconButton, List, ListItemButton, Stack, TablePagination, Tooltip, TooltipProps, Typography, tooltipClasses, useMediaQuery, useTheme } from '@mui/material';
 import { socialMediaIcons, socialMediaLinks } from '@gdmn-nxt/components/social-media-input';
 import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
+import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { saveFilterData } from '../../../store/filtersSlice';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
+import { styled } from '@mui/styles';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 interface CardItemProps {
   contact: IContactPerson;
@@ -22,6 +29,9 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
   const [deleteFavorite] = useDeleteFavoriteMutation();
 
   const [isFlipped, setIsFlipped] = useState(false);
+
+  const dispatch = useDispatch();
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
@@ -43,6 +53,39 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
     e.stopPropagation();
   };
 
+  const handleLabelClick = useCallback(
+    (label: ILabel) => (e: any) => {
+      handleStopPropagation(e);
+      if (filterData?.['LABELS']?.findIndex((l: ILabel) => l.ID === label.ID) >= 0) return;
+      dispatch(saveFilterData({ 'contacts': { ...filterData, 'LABELS': [...filterData?.['LABELS'] || [], label] } }));
+    },
+    [filterData]
+  );
+
+  const copyToClipboard = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch (error) {
+      console.error('Unable to copy to clipboard:', error);
+    }
+  };
+
+  const [clipboardTooltipOpen, setClipboardTooltipOpen] = useState({
+    name: false,
+    rank: false,
+    company: false,
+    phone: false,
+    email: false,
+    messanger: false
+  });
+
+  const closeClipboardTooltip = useCallback((fieldName: string) => (e: any) => setClipboardTooltipOpen(prev => ({ ...prev, [fieldName]: false })), []);
+
+  const handleClickWithClipboard = (fieldName: string, value = '') => (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
+    handleStopPropagation(e);
+    copyToClipboard(value);
+    setClipboardTooltipOpen(prev => ({ ...prev, [fieldName]: true }));
+  };
 
   return (
     <div
@@ -55,16 +98,36 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
         >
           <Stack direction="row" spacing={1}>
             <Avatar src={contact.PHOTO ?? ''} />
-            <Stack style={{ overflow: 'hidden', paddingRight: '24px' }}>
-              <Typography
-                variant="body2"
-                fontWeight={600}
-                className={styles.contactName}
-                data-searchable={true}
+            <Stack style={{ overflow: 'hidden', paddingRight: '24px', height: '47px' }}>
+              <StyledToolTip
+                title="Имя скопировано в буфер."
+                open={clipboardTooltipOpen.name}
+                onClose={closeClipboardTooltip('name')}
               >
-                {contact.NAME}
-              </Typography>
-              <Typography variant="caption" data-searchable={true}>{contact.RANK}</Typography>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  className={styles.contactName}
+                  data-searchable={true}
+                  onClick={handleClickWithClipboard('name', contact.NAME)}
+                >
+                  {contact.NAME}
+                </Typography>
+              </StyledToolTip>
+              <StyledToolTip
+                title="Должность скопирована в буфер."
+                open={clipboardTooltipOpen.rank}
+                onClose={closeClipboardTooltip('rank')}
+              >
+                <Typography
+                  variant="caption"
+                  data-searchable={true}
+                  className={styles.contactRank}
+                  onClick={handleClickWithClipboard('rank', contact.RANK)}
+                >
+                  {contact.RANK}
+                </Typography>
+              </StyledToolTip>
             </Stack>
             <div
               className={styles.actions}
@@ -77,77 +140,155 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               </IconButton>
             </div>
           </Stack>
-          <Typography
-            variant="caption"
-            my={'2px'}
-            pl={'2px'}
-            noWrap
-            data-searchable={true}
+          <StyledToolTip
+            title="Компания скопирована в буфер."
+            open={clipboardTooltipOpen.company}
+            onClose={closeClipboardTooltip('company')}
           >
-            {contact.COMPANY?.NAME ?? ''}
-          </Typography>
-          {
-            Array.isArray(contact.PHONES) && contact.PHONES.length > 0 &&
-            <Stack direction="row" spacing={1}>
-              <PhoneIcon fontSize="small" color="primary" />
-              <a
-                className={styles.link}
-                onClick={handleStopPropagation}
-                href={`tel:${contact.PHONES[0].USR$PHONENUMBER.replace(/\s+/g, '')}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Typography variant="caption" data-searchable={true}>{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
-              </a>
-            </Stack>
-          }
-          {
-            Array.isArray(contact.EMAILS) && contact.EMAILS.length > 0 &&
-            <Stack direction="row" spacing={1}>
-              <EmailIcon fontSize="small" color="primary" />
-              <a
-                className={styles.link}
-                onClick={handleStopPropagation}
-                href={`mailto:${contact.EMAILS[0]?.EMAIL}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Typography variant="caption" data-searchable={true}>{contact.EMAILS[0]?.EMAIL}</Typography>
-              </a>
-            </Stack>
-          }
-          {
-            Array.isArray(contact.MESSENGERS) && contact.MESSENGERS.length > 0 &&
-            <Stack direction="row" spacing={1}>
-              <div className={styles['messenger-icon']}>
-                <img
-                  src={socialMediaIcons[contact.MESSENGERS[0]?.CODE]}
-                  width={16}
-                  height={16}
-                />
-              </div>
-              <a
-                className={`${styles.link} ${!socialMediaLinks[contact.MESSENGERS[0]?.CODE] ? styles.linkDisabled : ''}`}
-                onClick={handleStopPropagation}
-                href={`${socialMediaLinks[contact.MESSENGERS[0]?.CODE]}${contact.MESSENGERS[0]?.USERNAME}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Typography variant="caption" data-searchable={true}>{contact.MESSENGERS[0]?.USERNAME}</Typography>
-              </a>
-            </Stack>
-          }
-          <Tooltip title={contact.isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}>
-            <IconButton
-              size="small"
-              className={styles.chosenButton}
-              onClick={handleFavoriteClick}
+            <Typography
+              variant="caption"
+              minHeight={'20px'}
+              noWrap
+              data-searchable={true}
+              onClick={handleClickWithClipboard('company', contact.COMPANY?.NAME)}
             >
-              <StarIcon className={`${styles.selectedStar} ${contact.isFavorite ? '' : styles.starInvisible}`} />
-              <StarBorderIcon className={`${styles.unselectedStar} ${!contact.isFavorite ? '' : styles.starInvisible}`} />
-            </IconButton>
-          </Tooltip>
-
+              {contact.COMPANY?.NAME ?? ''}
+            </Typography>
+          </StyledToolTip>
+          {
+            Array.isArray(contact.PHONES) && contact.PHONES.length > 0
+              ? <Stack
+                direction="row"
+                spacing={1}
+                className={styles.infoItem}
+              >
+                <PhoneIcon fontSize="small" color="primary" />
+                <a
+                  className={styles.link}
+                  onClick={handleStopPropagation}
+                  href={`tel:${contact.PHONES[0].USR$PHONENUMBER.replace(/\s+/g, '')}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Typography variant="caption" data-searchable={true}>{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
+                </a>
+                <CopyToClipboardButton
+                  className={styles.clipboard}
+                  label="номер"
+                  onClick={handleClickWithClipboard('phone', contact.PHONES[0]?.USR$PHONENUMBER)}
+                />
+              </Stack>
+              : <Box height={20} />
+          }
+          {
+            Array.isArray(contact.EMAILS) && contact.EMAILS.length > 0
+              ? <Stack
+                direction="row"
+                spacing={1}
+                className={styles.infoItem}
+              >
+                <EmailIcon fontSize="small" color="primary" />
+                <a
+                  className={styles.link}
+                  onClick={handleStopPropagation}
+                  href={`mailto:${contact.EMAILS[0]?.EMAIL}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Typography variant="caption" data-searchable={true}>{contact.EMAILS[0]?.EMAIL}</Typography>
+                </a>
+                <CopyToClipboardButton
+                  className={styles.clipboard}
+                  label="Email"
+                  onClick={handleClickWithClipboard('email', contact.EMAILS[0]?.EMAIL)}
+                />
+              </Stack>
+              : <Box height={20} />
+          }
+          {
+            Array.isArray(contact.MESSENGERS) && contact.MESSENGERS.length > 0
+              ? <Stack
+                direction="row"
+                spacing={1}
+                className={styles.infoItem}
+              >
+                <div className={styles['messenger-icon']}>
+                  <img
+                    src={socialMediaIcons[contact.MESSENGERS[0]?.CODE]}
+                    width={16}
+                    height={16}
+                  />
+                </div>
+                <a
+                  className={`${styles.link} ${!socialMediaLinks[contact.MESSENGERS[0]?.CODE] ? styles.linkDisabled : ''}`}
+                  onClick={handleStopPropagation}
+                  href={`${socialMediaLinks[contact.MESSENGERS[0]?.CODE]}${contact.MESSENGERS[0]?.USERNAME}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Typography variant="caption" data-searchable={true}>{contact.MESSENGERS[0]?.USERNAME}</Typography>
+                </a>
+                <CopyToClipboardButton
+                  className={styles.clipboard}
+                  label="мессенджер"
+                  onClick={handleClickWithClipboard('messanger', contact.MESSENGERS[0]?.USERNAME)}
+                />
+              </Stack>
+              : <Box height={20} />
+          }
+          {
+            <Stack
+              direction={'row'}
+              pt="8px"
+              pr={'25px'}
+              height={'24px'}
+            >
+              <List
+                style={{
+                  flexDirection: 'row',
+                  padding: '0px',
+                  width: 'fit-content',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  columnGap: '5px',
+                  alignItems: 'center'
+                }}
+              >
+                {contact.LABELS?.slice(0, 2)?.map((label) => {
+                  return (
+                    <div key={label.ID}>
+                      <Tooltip
+                        arrow
+                        placement="bottom-start"
+                        title={label.USR$DESCRIPTION}
+                      >
+                        <ListItemButton
+                          key={label.ID}
+                          onClick={handleLabelClick(label)}
+                          sx={{
+                            padding: 0,
+                            borderRadius: '2em',
+                          }}
+                        >
+                          <LabelMarker label={label} />
+                        </ListItemButton>
+                      </Tooltip>
+                    </div>
+                  );
+                }
+                )}
+              </List>
+              {Array.isArray(contact.LABELS) && contact.LABELS?.length > 2
+                ? <Typography ml={'5px'} variant="caption">+{contact.LABELS.length - 2}</Typography>
+                : <></>}
+            </Stack>
+          }
+          <div className={styles.starButton}>
+            <SwitchStar
+              selected={!!contact.isFavorite}
+              onClick={handleFavoriteClick}
+            />
+          </div>
         </CustomizedCard>
       </div>
       <div className={styles.backside}>
@@ -176,6 +317,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   key={phone.ID}
                   direction="row"
                   spacing={1}
+                  className={styles.infoItem}
                 >
                   <PhoneIcon fontSize="small" color="primary" />
                   <a
@@ -185,6 +327,11 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   >
                     <Typography variant="caption" data-searchable={true}>{phone.USR$PHONENUMBER}</Typography>
                   </a>
+                  <CopyToClipboardButton
+                    className={styles.clipboard}
+                    label="номер"
+                    onClick={handleClickWithClipboard('phone', phone.USR$PHONENUMBER)}
+                  />
                 </Stack>)}
             </div>
             <div>
@@ -193,6 +340,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   key={email.ID}
                   direction="row"
                   spacing={1}
+                  className={styles.infoItem}
                 >
                   <EmailIcon fontSize="small" color="primary" />
                   <a
@@ -202,6 +350,11 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   >
                     <Typography variant="caption" data-searchable={true}>{email.EMAIL}</Typography>
                   </a>
+                  <CopyToClipboardButton
+                    className={styles.clipboard}
+                    label="Email"
+                    onClick={handleClickWithClipboard('email', email.EMAIL)}
+                  />
                 </Stack>)}
             </div>
             <div>
@@ -210,6 +363,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   key={mes.ID}
                   direction="row"
                   spacing={1}
+                  className={styles.infoItem}
                 >
                   <div className={styles['messenger-icon']}>
                     <img
@@ -227,6 +381,11 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   >
                     <Typography variant="caption" data-searchable={true}>{mes.USERNAME}</Typography>
                   </a>
+                  <CopyToClipboardButton
+                    className={styles.clipboard}
+                    label="мессенджер"
+                    onClick={handleClickWithClipboard('messanger', mes.USERNAME)}
+                  />
                 </Stack>)}
             </div>
           </Stack>
@@ -256,7 +415,7 @@ export function ContactCards({
   const matchUpUW = useMediaQuery(theme.breakpoints.up('ultraWide'));
 
   useEffect(() => {
-    const rowPerPage = matchUpUW ? 25 : 12;
+    const rowPerPage = matchUpUW ? 16 : 9;
     setPageOptions([
       rowPerPage,
       rowPerPage * 2,
@@ -316,5 +475,76 @@ export function ContactCards({
     </div>
   );
 }
+
+const StyledToolTip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip
+    placement="bottom-start"
+    slotProps={{
+      popper: {
+        modifiers: [
+          {
+            name: 'offset',
+            options: {
+              offset: [0, -7],
+            },
+          },
+        ],
+      },
+      tooltip: {
+        sx: {
+          backgroundColor: 'rgb(60 60 60 / 90%) !important',
+        },
+      },
+    }}
+    leaveDelay={1500}
+    {...props}
+    classes={{ popper: className }}
+  />
+))(() => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    // backgroundColor: 'rgb(60 60 60 / 90%) !important',
+  }
+}));
+
+interface ICopyToClipboardButton extends ButtonBaseProps {
+  label?: string;
+}
+
+const CopyToClipboardButton = styled(({
+  className,
+  onClick,
+  label = 'поле',
+  ...props
+}: ICopyToClipboardButton) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleOnClick = (e: any) => {
+    setCopied(true);
+    onClick && onClick(e);
+  };
+
+  const handleOnClose = (e: any) => {
+    setCopied(false);
+  };
+
+  return (
+    <div
+      className={className}
+    >
+      <StyledToolTip
+        placement="bottom"
+        title={copied ? `${label.charAt(0).toUpperCase() + label.slice(1)} cкопирован в буфер` : `Скопировать ${label} в буфер`}
+        leaveDelay={0}
+        onClose={handleOnClose}
+      >
+        <IconButton
+          size="small"
+          onClick={handleOnClick}
+        >
+          <ContentCopyIcon />
+        </IconButton>
+      </StyledToolTip>
+    </div>);
+})(() => ({}));
 
 export default ContactCards;

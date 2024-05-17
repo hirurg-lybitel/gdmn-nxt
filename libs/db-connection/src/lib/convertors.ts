@@ -12,6 +12,8 @@ export const getBlob = async (attachment: Attachment, transaction: Transaction, 
 };
 
 export const getStringFromBlob = async (attachment: Attachment, transaction: Transaction, value: Blob) => {
+  if (!value) return '';
+
   const readStream = await attachment.openBlob(transaction, value);
   const blobLength = await readStream?.length;
 
