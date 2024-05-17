@@ -68,7 +68,7 @@ export default function CustomersSegments() {
       {memoSegmentEdit}
       {memoSegmentAdd}
       <CardHeader
-        title={<Typography variant="pageHeader">Группы пользователей</Typography>}
+        title={<Typography variant="pageHeader">Сегменты</Typography>}
         action={
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
@@ -88,7 +88,7 @@ export default function CustomersSegments() {
               <CustomAddButton
                 // disabled={contractsIsFetching}
                 // disabled
-                label="Создать рассылку"
+                label="Создать сегмент"
                 onClick={() => setUpsertSegment({ addSegment: true })}
               />
             </Box>
