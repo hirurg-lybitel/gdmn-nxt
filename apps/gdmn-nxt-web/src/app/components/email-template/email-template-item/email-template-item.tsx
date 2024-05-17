@@ -58,7 +58,7 @@ export const findComponent = (props: findComponentProps) => {
           }}
         >
           {ReactHtmlParser(
-            !(component.text === '<p><br></p>' || !component.text || component.text === '')
+            !(component.text === '<p style="margin:0px"><br></p>' || !component.text || component.text === '')
               ? component.text
               : (isPreview ? '' : '<p>Напишите что-либо</p>')
           )}
@@ -80,17 +80,11 @@ export const findComponent = (props: findComponentProps) => {
       );
     case 'button':
       return (
-        <div
-          onClick={() => {
-            if (!component.url) {
-              return;
-            }
-            if (component.url?.length < 0) {
-              return;
-            }
-            isPreview && window.open(component.url, '_blank');
-          }}
+        <a
+          href={(!component.url || component.url?.length < 0) ? undefined : component.url}
+          target="_blank"
           style={{
+            textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
             color: component.color?.text,
@@ -102,9 +96,10 @@ export const findComponent = (props: findComponentProps) => {
             textAlign: 'center',
             userSelect: 'none'
           }}
+          rel="noreferrer"
         >
           {component.text}
-        </div>
+        </a>
       );
     case 'divider':
       return (

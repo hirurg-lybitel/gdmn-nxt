@@ -112,7 +112,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       id: 0,
       title: 'Текст',
       type: 'text',
-      text: '<p><br></p>',
+      text: '<p style="margin:0px"><br></p>',
       width: {
         auto: true,
         value: 100
