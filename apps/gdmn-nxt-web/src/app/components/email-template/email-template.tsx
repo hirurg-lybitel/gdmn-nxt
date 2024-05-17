@@ -200,13 +200,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
   const [length, setLenght] = useState<number>(0);
   useEffect(() => {
-    if (anyTemplates.html === previeConponent) {
+    if (anyTemplates.html === previeComponent) {
       return;
     }
     if (length !== anyTemplates.content.length) {
       setLenght(anyTemplates.content.length);
     }
-    onChange({ ...anyTemplates, html: previeConponent });
+    onChange({ ...anyTemplates, html: previeComponent });
   }, [anyTemplates]);
 
   const [lastId, setLastId] = useState(10);
@@ -365,8 +365,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
 
-  const previeConponent = renderToStaticMarkup(
-    <div style={{ height: '100%', background: anyTemplates.background, }}>
+  const previeComponent = renderToStaticMarkup(
+    <div style={{ height: '100%', maxWidth: '700px', width: '100%', background: anyTemplates.background, }}>
       {anyTemplates.content.map((component: IComponent, index: number) => (
         <EmailTemplateItem
           key={index}
@@ -377,7 +377,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     </div>
   );
 
-  const getHtml = () => previeConponent;
+  const getHtml = () => previeComponent;
 
   return (
     <div
@@ -506,7 +506,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
                   <div style={{ maxWidth: previewMode, width: '100%', transition: '0.5s' }}>
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
-                      {ReactHtmlParser(previeConponent)}
+                      {ReactHtmlParser(previeComponent)}
                     </CustomizedScrollBox>
                   </div>
                 </div>
