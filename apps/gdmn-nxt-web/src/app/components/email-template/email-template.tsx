@@ -433,7 +433,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <TabContext value={tabIndex} >
           <div style={{ width: '100%' }}>
-            <div onMouseDown={handleEditUnFocus} style={{ display: 'flex' }} >
+            <div onMouseDown={handleEditUnFocus} style={{ display: 'flex', alignItems: 'center' }} >
               <TabList
                 onChange={handleTabsChange}
                 centered
@@ -457,7 +457,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   <IconButton onClick={closeEditForm} size="small"><CloseIcon /></IconButton>
                 </div>
               )}
-              <div>
+              <div style={{ paddingRight: '5px' }}>
                 {tabIndex === '2' && <>
                   <Tooltip title={'Компьютер'}>
                     <IconButton
