@@ -3,7 +3,7 @@
  */
 
 import { IRequestResult } from '..';
-import { IContactWithID, IDataRecord, IWithID } from './commonDataTypes';
+import { IContactWithID, IDataRecord, IWithID, JSONArray } from './commonDataTypes';
 
 export interface IReconciliationStatement {
   customerDebt: IDataRecord[];
@@ -401,4 +401,5 @@ export interface IMailing extends IWithID {
 export interface ITemplate extends IWithID {
   NAME: string;
   HTML: string;
+  CONTENT: JSONArray;
 }
