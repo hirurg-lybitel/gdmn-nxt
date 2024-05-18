@@ -414,6 +414,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     }
   };
 
+  const paperBoxShadow = '0px 0px 10px ' + (
+    settings.customization.colorMode !== 'dark'
+      ? 'rgba(0,0,0,0.1)'
+      : 'rgba(250, 250, 250, 0.1)'
+  );
+
   return (
     <div
       style={{
@@ -501,9 +507,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                         <div
                           style={{
                             background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent',
-                            border: '1px solid hsla(0,0%,86%,.2)',
-                            borderTop: 'none',
-                            borderBottom: 'none'
+                            boxShadow: paperBoxShadow
                           }}
                           className={style.templateBody}
                           ref={droppableProvider.innerRef}
@@ -551,15 +555,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 </CustomizedScrollBox>
               </TabPanel>
               <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
-                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
                   <div
                     style={{
                       maxWidth: previewMode,
                       width: '100%', transition: '0.5s',
                       background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent',
-                      border: '1px solid hsla(0,0%,86%,.2)',
-                      borderTop: 'none',
-                      borderBottom: 'none'
+                      boxShadow: paperBoxShadow
                     }}
                   >
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
