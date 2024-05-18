@@ -1,6 +1,6 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
+import { Box, Divider, FormControlLabel, IconButton, Switch, Tab, Tooltip, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
@@ -14,6 +14,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import ReactHtmlParser from 'react-html-parser';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
+import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import ImageIcon from '@mui/icons-material/Image';
+import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
+import CloseIcon from '@mui/icons-material/Close';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -56,6 +61,7 @@ export interface IButtonComponent extends baseComponent {
   url?: string,
   color?: {
     text?: string,
+    textAuto?: boolean,
     button?: string,
   },
   font?: {
@@ -79,7 +85,10 @@ export interface EmailTemplate {
 
 export interface ITemplate {
   content: IComponent[],
-  background: string,
+  background: {
+    value: string,
+    isView: boolean
+  },
   html: string
 }
 
@@ -100,7 +109,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     value: anyTemplates = {
       content: [],
       html: '',
-      background: 'white'
+      background: {
+        value: theme.palette.background.paper,
+        isView: false
+      }
     },
     onChange
   } = props;
@@ -168,7 +180,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       position: 'center',
       text: 'Текст кнопки',
       color: {
-        text: '#ffffff',
+        text: theme.textColor,
+        textAuto: true,
         button: theme.mainContent.buttonPrimaryColor,
       },
       font: {
@@ -196,7 +209,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   ];
 
   const backgroundChange = (newBackground: string) => {
-    onChange({ ...anyTemplates, background: newBackground });
+    onChange({ ...anyTemplates, background: { ...anyTemplates.background, value: newBackground } });
+  };
+  const backgroundViewChange = () => {
+    onChange({ ...anyTemplates, background: { ...anyTemplates.background, isView: !anyTemplates.background.isView } });
   };
   const [length, setLenght] = useState<number>(0);
   useEffect(() => {
@@ -366,16 +382,37 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
 
   const previeComponent = renderToStaticMarkup(
-    <div style={{ height: '100%', maxWidth: '700px', width: '100%', background: anyTemplates.background, }}>
-      {anyTemplates.content.map((component: IComponent, index: number) => (
-        <EmailTemplateItem
-          key={index}
-          isPreview={true}
-          component={component}
-        />
-      ))}
-    </div>
+    <html lang="ru">
+      <body
+        style={{
+          height: '100%',
+          maxWidth: '700px',
+          width: '100%',
+          background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent'
+        }}
+      >
+        <head>
+          <meta charSet="utf-8" />
+        </head>
+        {anyTemplates.content.map((component: IComponent, index: number) => (
+          <EmailTemplateItem
+            key={index}
+            isPreview={true}
+            component={component}
+          />
+        ))}
+      </body>
+    </html>
   );
+
+  const getComponentIcon = (type: componentTypes) => {
+    switch (type) {
+      case 'text':return <TextIncreaseIcon sx={{ color: theme.mainContent.buttonPrimaryColor, fontSize: '50px' }} />;
+      case 'button':return <AddBoxIcon sx={{ color: theme.mainContent.buttonPrimaryColor, fontSize: '50px' }} />;
+      case 'divider':return <ViewAgendaIcon sx={{ color: theme.mainContent.buttonPrimaryColor, fontSize: '50px' }} />;
+      case 'image':return <ImageIcon sx={{ color: theme.mainContent.buttonPrimaryColor, fontSize: '50px' }} />;
+    }
+  };
 
   return (
     <div
@@ -383,13 +420,14 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         width: '100%',
         overflow: 'hidden',
         height: '100%',
-        background: theme.palette.background.paper
+        background: theme.palette.background.paper,
+        borderRadius: '20px'
       }}
     >
       <DragDropContext onDragEnd={handleDragEnd}>
         <TabContext value={tabIndex} >
           <div style={{ width: '100%' }}>
-            <div onMouseDown={handleEditUnFocus} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div onMouseDown={handleEditUnFocus} style={{ display: 'flex' }} >
               <TabList
                 onChange={handleTabsChange}
                 centered
@@ -407,6 +445,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 />
 
               </TabList>
+              <Box flex={1}/>
+              {editedIndex !== null && tabIndex !== '2' && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '6px' }}>
+                  <IconButton onClick={closeEditForm} size="small"><CloseIcon /></IconButton>
+                </div>
+              )}
               <div>
                 {tabIndex === '2' && <>
                   <Tooltip title={'Компьютер'}>
@@ -446,6 +490,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             </div>
             <Divider style={{ margin: 0 }} />
           </div>
+
           <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
             <div style={{ width: '100%', height: '100%' }}>
               <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
@@ -454,7 +499,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     <Droppable droppableId="tamplate" >
                       {(droppableProvider) => (
                         <div
-                          style={{ background: anyTemplates.background }}
+                          style={{
+                            background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent',
+                            border: '1px solid hsla(0,0%,86%,.2)',
+                            borderTop: 'none',
+                            borderBottom: 'none'
+                          }}
                           className={style.templateBody}
                           ref={droppableProvider.innerRef}
                           {...droppableProvider.droppableProps}
@@ -502,7 +552,16 @@ const EmailTemplate = (props: EmailTemplateProps) => {
               </TabPanel>
               <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
                 <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ maxWidth: previewMode, width: '100%', transition: '0.5s' }}>
+                  <div
+                    style={{
+                      maxWidth: previewMode,
+                      width: '100%', transition: '0.5s',
+                      background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent',
+                      border: '1px solid hsla(0,0%,86%,.2)',
+                      borderTop: 'none',
+                      borderBottom: 'none'
+                    }}
+                  >
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
                       {ReactHtmlParser(previeComponent)}
                     </CustomizedScrollBox>
@@ -511,12 +570,28 @@ const EmailTemplate = (props: EmailTemplateProps) => {
               </TabPanel>
             </div>
             <div
-              style={{ width: tabIndex === '2' ? '0px' : '300px', height: '100%', transition: '0.5s', zIndex: 1 }}
+              style={{
+                width: tabIndex === '2' ? '0px' : 'calc(100% - 40px)',
+                minWidth: tabIndex === '2' ? '0px' : '300px',
+                height: '100%', transition: '0.5s', zIndex: 1
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                right: tabIndex === '2' ? '-50%' : 0,
+                top: 0,
+                bottom: 0,
+                width: 'calc(50% - 10px)',
+                minWidth: '300px',
+                transition: '0.5s',
+                zIndex: 2
+              }}
             >
               <div
-                style={{ width: '300px',
+                style={{
                   height: '100%',
-                  borderLeft: `1px solid ${theme.mainContent.borderColor}`, borderRadius: '20px 0 0 20px',
+                  borderLeft: `1px solid ${theme.mainContent.borderColor}`,
                   background: theme.palette.background.paper,
                 }}
               >
@@ -524,10 +599,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   ? <Box
                     sx={{
                       '& .jodit-workplace': {
-                        background: anyTemplates.background + '!important'
+                        background: (anyTemplates.background.isView ? anyTemplates.background.value : 'transparent') + '!important'
                       }
                     }}
-                    style={{ height: '100%' }}
+                    style={{ height: '100%', minWidth: '300px' }}
                     onMouseDown={handleEditUnFocus}
                     >
                     <EmailTemplateEdit
@@ -540,69 +615,106 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                       length={length}
                     />
                   </Box>
-                  : <Droppable droppableId="compotents" >
-                    {(droppableProvider) => (
-                      <div
-                        className={style.componentBody}
-                        ref={droppableProvider.innerRef}
-                      >
-                        {components.map((component: IComponent, index: number) => (
-                          <Draggable
-                            index={index}
-                            draggableId={`${component.id}`}
-                            key={component.id}
+                  : (
+                    <CustomizedScrollBox options={{ suppressScrollX: true }}>
+                      <Droppable droppableId="compotents" >
+                        {(droppableProvider) => (
+                          <div
+                            className={style.componentBody}
+                            ref={droppableProvider.innerRef}
                           >
-                            {(draggableProvider, snapshot) => {
-                              const dragProps = (draggedId === component.id) || primaryDrag === `${component.id}` ? { ...draggableProvider.draggableProps } : {};
-                              return (
-                                <div
-                                  onMouseDown={() => {
-                                    setDraggedId(component.id);
-                                    handleChangeAllowChangePrimary(false)();
-                                  }}
-                                  onMouseUp={handleChangeAllowChangePrimary(true)}
-                                  onMouseEnter={handleChangePrimaryDrag(`${component.id}`)}
-                                  style={{ width: '110px', height: '110px', margin: '5px', cursor: 'pointer' }}
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                width: '100%',
+                                paddingBottom: '20px'
+                              }}
+                            >
+                              {components.map((component: IComponent, index: number) => (
+                                <Draggable
+                                  index={index}
+                                  draggableId={`${component.id}`}
+                                  key={component.id}
                                 >
-                                  <div
-                                    ref={draggableProvider.innerRef}
-                                    {...dragProps}
-                                    {...draggableProvider.dragHandleProps}
-                                    style={getStyle(draggableProvider.draggableProps.style, snapshot, (draggedId === component.id) || primaryDrag === `${component.id}`)}
-                                  >
-                                    <Box
-                                      sx={{
-                                        userSelect: 'none',
-                                        border: '1px solid ' + theme.mainContent.buttonPrimaryColor,
-                                        background: theme.palette.background.paper,
-                                        width: '110px',
-                                        height: '110px',
-                                        padding: '5px',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        borderRadius: '20px',
-                                      }}
-                                    >
-                                      {component.title}
-                                    </Box>
-                                  </div>
+                                  {(draggableProvider, snapshot) => {
+                                    const dragProps = (draggedId === component.id) || primaryDrag === `${component.id}` ? { ...draggableProvider.draggableProps } : {};
+                                    return (
+                                      <div
+                                        onMouseDown={() => {
+                                          setDraggedId(component.id);
+                                          handleChangeAllowChangePrimary(false)();
+                                        }}
+                                        onMouseUp={handleChangeAllowChangePrimary(true)}
+                                        onMouseEnter={handleChangePrimaryDrag(`${component.id}`)}
+                                        style={{
+                                          width: '110px',
+                                          height: '110px',
+                                          marginRight: '10px',
+                                          cursor: 'pointer',
+                                          marginBottom: '10px'
+                                        }}
+                                      >
+                                        <div
+                                          ref={draggableProvider.innerRef}
+                                          {...dragProps}
+                                          {...draggableProvider.dragHandleProps}
+                                          style={getStyle(draggableProvider.draggableProps.style, snapshot, (draggedId === component.id) || primaryDrag === `${component.id}`)}
+                                        >
+                                          <Box
+                                            sx={{ '& .MuiBox-root:hover': {
+                                              boxShadow: '0px 0px 8px 0px ' + (
+                                                settings.customization.colorMode !== 'dark'
+                                                  ? 'rgba(0,0,0,0.2)'
+                                                  : 'rgba(250, 250, 250, 0.3)'
+                                              )
+                                            } }}
+                                          >
+                                            <Box
+                                              sx={{
+                                                userSelect: 'none',
+                                                background: theme.palette.mode === 'dark' ? 'rgb(67 67 67)' : '#f4f4f4',
+                                                width: '105px',
+                                                height: '105px',
+                                                padding: '5px',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                borderRadius: '20px',
+                                                flexDirection: 'column',
 
-                                </div>
+                                              }}
+                                            >
+                                              {getComponentIcon(component.type)}
+                                              {component.title}
+                                            </Box>
+                                          </Box>
+                                        </div>
+                                      </div>
 
-                              );
-                            }}
-                          </Draggable>
-                        ))}
-                        <ColorEdit
-                          label={'цвет фона'}
-                          sx={{ marginTop: '10px' }}
-                          value={anyTemplates.background}
-                          onChange={backgroundChange}
-                        />
-                      </div>
-                    )}
-                  </Droppable>
+                                    );
+                                  }}
+                                </Draggable>
+                              ))}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'start', alignItems: 'center', marginTop: '5px', flexWrap: 'wrap' }}>
+                              <ColorEdit
+                                label={'цвет фона'}
+                                value={anyTemplates.background.value}
+                                onChange={backgroundChange}
+                              />
+                              <FormControlLabel
+                                sx={{ marginLeft: '0px' }}
+                                onClick={backgroundViewChange}
+                                control={<Switch checked={!anyTemplates.background.isView} />}
+                                label="Прозрачный"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Droppable>
+                    </CustomizedScrollBox>
+                  )
                 }
               </div>
             </div>

@@ -30,7 +30,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     '& .jodit-workplace': {
       minHeight: '56px !important',
       cursor: 'text',
-      padding: '5px'
+      padding: '5px',
+      border: '1px solid #6b6b6b !important',
+      borderTop: 'none !important'
     },
     '& .jodit-toolbar__box': {
       background: 'none'
@@ -122,8 +124,8 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
       uploader: {
         insertImageAsBase64URI: true
       },
-      buttons: ['fullsize', 'undo', 'redo', '|', 'bold', 'underline', 'italic', 'strikethrough',
-        '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'ul', 'ol', 'link', '|', 'spellcheck', 'eraser', 'source', '|'],
+      buttons: ['fullsize', 'undo', 'redo', 'bold', 'underline', 'italic', 'strikethrough',
+        'font', 'fontsize', 'brush', 'paragraph', 'ul', 'ol', 'link', 'spellcheck', 'eraser'],
       width: '100%',
       maxWidth: '100%',
       height: 'auto',
@@ -169,7 +171,8 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
             stroke: theme.textColor + '!important'
           },
           '& .jodit-wysiwyg p': {
-            margin: 0
+            margin: 0,
+            color: 'hsla(0, 5%, 70%, 8)'
           },
           '& .jodit-placeholder': {
             paddingLeft: '5px !important',

@@ -162,13 +162,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         </Typography>
         <div >
           <IconButton onClick={handleChange('start')} color={component.position === 'start' ? 'primary' : 'default'}>
-            <AlignHorizontalLeftIcon />
+            <AlignHorizontalLeftIcon sx={{ fontSize: '22px' }} />
           </IconButton>
           <IconButton onClick={handleChange('center')} color={component.position === 'center' ? 'primary' : 'default'}>
-            <AlignHorizontalCenterIcon />
+            <AlignHorizontalCenterIcon sx={{ fontSize: '22px' }} />
           </IconButton>
           <IconButton onClick={handleChange('end')} color={component.position === 'end' ? 'primary' : 'default'}>
-            <AlignHorizontalRightIcon />
+            <AlignHorizontalRightIcon sx={{ fontSize: '22px' }} />
           </IconButton>
         </div>
       </>
@@ -189,6 +189,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
   const ButtonComponent = () => {
     const handleTextColorChange = (color: string) => {
       setValue(`${editedIndex}.color.text`, color);
+    };
+    const handleTextColorAutoChange = () => {
+      setValue(`${editedIndex}.color.textAuto`, !component.color?.textAuto);
     };
     const handleButtonColorChange = (color: string) => {
       setValue(`${editedIndex}.color.button`, color);
@@ -218,14 +221,21 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             onChange={handleTextChange}
             label="Текст кнопки"
           />
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: '5px', flexWrap: 'wrap' }}>
             <ColorEdit
               label={'цвет текста'}
               sx={{ marginTop: '10px' }}
               value={component.color?.text}
               onChange={handleTextColorChange}
             />
-            <div style={{ width: '20px' }} />
+            <FormControlLabel
+              style={{ paddingLeft: '10px', paddingTop: '5px' }}
+              onClick={handleTextColorAutoChange}
+              control={<Switch checked={component.color?.textAuto} />}
+              label="Автоматически"
+            />
+          </div>
+          <div style={{ display: 'flex', marginTop: '10px' }}>
             <ColorEdit
               label={'Цвет кнопки'}
               sx={{ marginTop: '10px' }}
@@ -234,13 +244,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             />
           </div>
           <TextField
-            sx={{ marginTop: '10px' }}
+            sx={{ marginTop: '15px' }}
             fullWidth
             value={component.url}
             onChange={handleUrlChange}
             label="Ссылка"
           />
-          <FormControl sx={{ marginTop: '10px' }} fullWidth>
+          <FormControl sx={{ marginTop: '15px' }} fullWidth>
             <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Шрифт</InputLabel>
             <Select
               value={component.font?.value}
@@ -253,7 +263,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
               >{font}</MenuItem>)}
             </Select>
           </FormControl>
-          <FormControl sx={{ marginTop: '10px' }} fullWidth>
+          <FormControl sx={{ marginTop: '15px' }} fullWidth>
             <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Размер шрифта</InputLabel>
             <Select
               value={component.font?.size}
@@ -266,6 +276,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             </Select>
           </FormControl>
         </div>
+        <div style={{ height: '5px' }} />
         {baseComponent()}
       </div>
     );
@@ -352,20 +363,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   return (
     <CustomizedCard style={{ height: '100%', background: 'none' }}>
-      <CardActions sx={{ padding: '3px' }}>
-        {/* <IconButton
-          size="small"
-          onClick={handleConfirmOpen}
-        >
-          <DeleteIcon />
-        </IconButton>
-        <IconButton onClick={handleCopy}>
-          <ContentCopyIcon />
-        </IconButton> */}
-        <Box flex={1}/>
-        <IconButton onClick={close} size="small"><CloseIcon /></IconButton>
-      </CardActions>
-      <Divider/>
       <CardContent sx={{ paddingRight: 0, paddingTop: '10px' }}>
         <CustomizedScrollBox options={{ suppressScrollX: true }}>
           <div style={{ paddingRight: '16px' }}>

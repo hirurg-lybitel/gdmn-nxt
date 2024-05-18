@@ -45,17 +45,17 @@ interface findComponentProps {
   drag?: boolean,
 }
 
-export const findComponent = (props: findComponentProps) => {
+export const FindComponent = (props: findComponentProps) => {
   const { component, isPreview, editedIndex, index, editIsFocus, setValue, setDrag, drag } = props;
-
+  const theme = useTheme();
   switch (component.type) {
     case 'text':
       return (
         <div
           style={{
             width: component.width.auto ? 'auto' : component.width?.value + '%',
-            color: 'black',
             maxWidth: '100%',
+            color: 'hsla(0, 5%, 70%, 1)',
             wordWrap: 'break-word'
           }}
         >
@@ -76,7 +76,7 @@ export const findComponent = (props: findComponentProps) => {
                 src={component.image}
               />
             )
-            : isPreview ? <div /> : <ImageIcon color="primary" fontSize="large" />
+            : isPreview ? <div /> : <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />
           }
         </>
       );
@@ -89,7 +89,7 @@ export const findComponent = (props: findComponentProps) => {
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
-            color: component.color?.text,
+            color: component.color?.textAuto ? 'hsla(0, 5%, 81%, 1)' : component.color?.text,
             padding: `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
             font: `${component.font?.size}px ${component.font?.value}`,
             fontWeight: '600',
@@ -110,7 +110,7 @@ export const findComponent = (props: findComponentProps) => {
             width: component.width.auto ? 'auto' : `${component.width?.value}%`
           }}
         >
-          <div style={{ background: 'rgba(0, 0, 0, 0.18', height: '1px', width: '100%' }} />
+          <div style={{ background: 'hsla(0, 5%, 60%, .4)', height: '1px', width: '100%' }} />
         </div>);
     default: return <div />;
   }
@@ -146,7 +146,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           border: '1px solid transparent'
         }}
       >
-        {findComponent({ isPreview: true, component: component })}
+        <FindComponent {...{ isPreview: true, component: component }}/>
       </div>
     );
   }
@@ -233,7 +233,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           setEditIsFocus && setEditIsFocus(true);
         }}
       >
-        {findComponent({ component, isPreview: false, editedIndex, index, editIsFocus, setValue, setDrag, drag })}
+        <FindComponent {...{ component, isPreview: false, editedIndex, index, editIsFocus, setValue, setDrag, drag }}/>
       </div>
     </div>
   );
