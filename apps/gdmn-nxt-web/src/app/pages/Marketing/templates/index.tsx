@@ -8,32 +8,38 @@ const mockData: ITemplate[] = [
   {
     ID: 1,
     NAME: '',
-    HTML: ''
+    HTML: '',
+    CONTENT: []
   },
   {
     ID: 2,
     NAME: '',
-    HTML: ''
+    HTML: '',
+    CONTENT: []
   },
   {
     ID: 3,
     NAME: '',
-    HTML: ''
+    HTML: '',
+    CONTENT: []
   },
   {
     ID: 4,
     NAME: '',
-    HTML: ''
+    HTML: '',
+    CONTENT: []
   },
   {
     ID: 5,
     NAME: '',
-    HTML: ''
+    HTML: '',
+    CONTENT: []
   },
   {
     ID: 6,
     NAME: '',
-    HTML: ''
+    HTML: '',
+    CONTENT: []
   },
 ];
 
