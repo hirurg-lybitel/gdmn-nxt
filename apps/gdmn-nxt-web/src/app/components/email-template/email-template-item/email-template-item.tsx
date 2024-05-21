@@ -2,11 +2,12 @@ import style from './email-template-item.module.less';
 import { IconButton, Theme, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
-import { IComponent } from '../email-template';
+import { IComponent, componentTypes } from '../email-template';
 import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName } from '../html-to-object';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -38,7 +39,7 @@ interface findComponentProps {
   component: IComponent,
   isPreview?: boolean,
   editedIndex?: number | null,
-  index?: number,
+  index: number,
   editIsFocus?: boolean,
   setValue?: (stringIndex: string, newValue: any) => void,
   setDrag?: (arg: boolean) => void,
@@ -52,6 +53,7 @@ export const FindComponent = (props: findComponentProps) => {
     case 'text':
       return (
         <div
+          id={index + ''}
           style={{
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             maxWidth: '100%',
@@ -72,6 +74,7 @@ export const FindComponent = (props: findComponentProps) => {
           {component.image
             ? (
               <img
+                id={index + ''}
                 style={{ width: `${component.width?.value}%` }}
                 src={component.image}
               />
@@ -83,6 +86,7 @@ export const FindComponent = (props: findComponentProps) => {
     case 'button':
       return (
         <a
+          id={index + ''}
           href={(!component.url || component.url?.length < 0 || !isPreview) ? undefined : component.url}
           target="_blank"
           style={{
@@ -90,7 +94,7 @@ export const FindComponent = (props: findComponentProps) => {
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
             color: component.color?.textAuto ? 'hsla(0, 5%, 81%, 1)' : component.color?.text,
-            padding: component.padding?.isCommon ? component.padding?.common + 'px'  : `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
+            padding: component.padding?.isCommon ? component.padding?.common + 'px' : `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
             font: `${component.font?.size}px ${component.font?.value}`,
             fontWeight: '600',
             borderRadius: '10px',
@@ -106,6 +110,7 @@ export const FindComponent = (props: findComponentProps) => {
     case 'divider':
       return (
         <div
+          id={index + ''}
           style={{ paddingTop: '5px', paddingBottom: '5px',
             width: component.width.auto ? 'auto' : `${component.width?.value}%`
           }}
@@ -118,7 +123,7 @@ export const FindComponent = (props: findComponentProps) => {
 
 interface EmailTemplateItemProps{
   editedIndex?: number | null,
-  index?: number,
+  index: number,
   editIsFocus?: boolean,
   setValue?: (stringIndex: string, newValue: any) => void,
   setEditIsFocus?: (value: React.SetStateAction<boolean>) => void,
@@ -130,6 +135,16 @@ interface EmailTemplateItemProps{
   copy?: (index: number) => void
 }
 
+const idByType = (type: componentTypes) => {
+  switch (type) {
+    case 'text': return emailTemplateTextName;
+    case 'image': return emailTemplateImageName;
+    case 'button': return emailTemplateButtonName;
+    case 'divider': return emailTemplateDividerName;
+    default: return '';
+  }
+};
+
 const EmailTemplateItem = (props: EmailTemplateItemProps) => {
   const theme = useTheme();
   const { editedIndex, index, editIsFocus, setValue, setEditIsFocus, isPreview, component, setDrag, drag, copy, removeEl } = props;
@@ -140,14 +155,16 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
     if (!component) return <div />;
     return (
       <div
+        className={idByType(component.type)}
+        id={(component.id + '')}
         style={{
           display: 'flex', justifyContent: component.position,
-          padding: component.margin.isCommon ? component.margin.common + 'px' 
-          : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
+          padding: component.margin.isCommon ? component.margin.common + 'px'
+            : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
           border: '1px solid transparent'
         }}
       >
-        <FindComponent {...{ isPreview: true, component: component }}/>
+        <FindComponent {...{ isPreview: true, component, index }}/>
       </div>
     );
   }
@@ -167,8 +184,8 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
     <div
       className={classes.templateItem}
       style={{
-        padding: component.margin.isCommon ? component.margin.common + 'px' 
-        : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
+        padding: component.margin.isCommon ? component.margin.common + 'px'
+          : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
         border: index === editedIndex ? `1px solid ${theme.mainContent.buttonPrimaryColor}` : '1px solid transparent',
       }}
     >
