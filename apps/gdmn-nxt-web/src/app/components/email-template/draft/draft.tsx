@@ -7,6 +7,7 @@ import { useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material';
 import { popup } from 'leaflet';
 import { ClassNames } from '@emotion/react';
+import { BorderBottom } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
@@ -30,9 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     '& .jodit-workplace': {
       minHeight: '56px !important',
       cursor: 'text',
-      padding: '5px',
-      border: '1px solid #6b6b6b !important',
-      borderTop: 'none !important'
+      padding: '5px'
     },
     '& .jodit-toolbar__box': {
       background: 'none'
@@ -181,7 +180,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
           '& .jodit-toolbar__box': {
             background: theme.palette.background.paper + '!important',
             border: '1px solid ' + theme.mainContent.borderColor,
-            borderBottom: 'none'
+            borderBottom: 'none !important'
           },
           '& .jodit-toolbar-button__button:hover span': {
             color: theme.textColor + ' !important'
@@ -212,8 +211,11 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
           },
           '& .jodit-ui-button_variant_outline': {
             background: 'hsla(0,0%,86%,.2) !important',
-
-          }
+          },
+          '& .jodit-workplace': {
+            border: `1px solid ${ theme.mainContent.borderColor} !important`,
+            borderTop: 'none !important'
+          },
         }}
       />
       {joditEditorMemo}

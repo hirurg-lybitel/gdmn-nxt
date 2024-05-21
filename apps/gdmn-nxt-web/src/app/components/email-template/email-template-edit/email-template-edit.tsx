@@ -1,9 +1,8 @@
 import style from './email-template-edit.module.less';
-import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, useTheme } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, styled, useTheme } from '@mui/material';
 import { IComponent, IComponentPosition } from '../email-template';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, forwardRef, useRef, useState } from 'react';
 import AlignHorizontalCenterIcon from '@mui/icons-material/AlignHorizontalCenter';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import AlignHorizontalRightIcon from '@mui/icons-material/AlignHorizontalRight';
@@ -51,97 +50,97 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         <Typography>
           {'Ширина:'}
         </Typography>
-        <div style={{ padding: '0 15px 0 15px ' }}>
-          <Slider
-            disabled={component.width?.auto}
-            onChange={handleWidthChange}
-            marks={marks}
-            size="small"
-            min={10}
-            value={component.width?.value}
-            aria-label="Small"
-            valueLabelDisplay="auto"
-          />
-        </div>
-        {!(component.type === 'divider' || component.type === 'image') &&
-        <FormControlLabel
-          sx={{ marginLeft: '0px' }}
-          onClick={handleWidthAutoChange}
-          control={<Switch checked={component.width?.auto} />}
-          label="Автоматически"
-        />
-        }
+          <div style={{ padding: '0 20px 0 15px'}}>
+            <Slider
+              disabled={component.width?.auto}
+              onChange={handleWidthChange}
+              marks={marks}
+              size="small"
+              min={10}
+              value={component.width?.value}
+              aria-label="Small"
+              valueLabelDisplay="auto"
+            />
+          </div>
+          {!(component.type === 'divider' || component.type === 'image') &&
+            <FormControlLabel
+              sx={{ marginLeft: '0px',marginRight:0 }}
+              onClick={handleWidthAutoChange}
+              control={<Switch checked={component.width?.auto} />}
+              label="Автоматически"
+            />
+          }
       </div>
     );
   };
 
   const paddingEdit = (type: 'inside' | 'outside') => {
-    type Sides = 'top' | 'left' | 'right' | 'bottom' | 'all';
+    type Sides = 'top' | 'left' | 'right' | 'bottom' | 'common';
 
     const paddingType = type === 'inside' ? 'padding' : 'margin';
 
-    const handleChange = (side: Sides) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (side === 'all') {
-        handleChange('top')(e);
-        handleChange('left')(e);
-        handleChange('right')(e);
-        handleChange('bottom')(e);
-      } else {
-        const padding = (e.target?.value).length === 0 ? 0 : Number(e.target?.value);
-        if (isNaN(padding)) return;
-        if (padding > 99) return;
-        setValue(`${editedIndex}.${paddingType}.${side}`, padding);
-      }
+    const handleChange = (side: Sides) => (e: any) => {
+      const padding = (e.target?.value).length === 0 ? 0 : Number(e.target?.value);
+      if(padding < 0) return
+      if (isNaN(padding)) return;
+      if (padding > 99) return;
+      setValue(`${editedIndex}.${paddingType}.${side}`, padding);
     };
 
     const handleChangeMode = () => {
-      setValue(`${editedIndex}.${paddingType}.common`, !component[`${paddingType}`]?.common);
+      setValue(`${editedIndex}.${paddingType}.isCommon`, !component[`${paddingType}`]?.isCommon); 
     };
 
     return (
       <>
-        <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center  ' }}>
+        <div style={{ display: 'flex', alignItems: 'center'}}>
           <Typography >
             {type === 'inside' ? 'Внутренний отступ: ' : 'Отступ: '}
           </Typography>
           <Box flex={1}/>
           <FormControlLabel
+            sx={{ marginLeft: '0px',marginRight:0 }}
             onClick={handleChangeMode}
-            control={<Switch checked={component[`${paddingType}`]?.common} />}
+            control={<Switch checked={component[`${paddingType}`]?.isCommon} />}
             label="Общий"
           />
         </div>
-        {component[`${paddingType}`]?.common
+        {component[`${paddingType}`]?.isCommon
           ? <TextField
-            fullWidth
-            value={component[`${paddingType}`]?.top}
-            onChange={handleChange('all')}
-            label="Общий"
+              style={{minWidth:'100px',marginTop: '10px'}}
+              value={component[`${paddingType}`]?.common + ''}
+              onChange={handleChange('common')}
+              label="Общий"
+              type='number'
             />
-          : <><div style={{ display: 'flex', marginBottom: '10px' }}>
+          : <><div style={{ display: 'flex',flexWrap:'wrap' }}>
             <TextField
-              style={{ marginRight: '10px' }}
-              value={component[`${paddingType}`]?.top}
+              style={{ marginRight: '10px',width:'80px',marginTop: '10px' }}
+              value={component[`${paddingType}`]?.top + ''}
               onChange={handleChange('top')}
               label="Верх"
+              type='number'
             />
             <TextField
-              value={component[`${paddingType}`]?.bottom}
+              style={{ marginRight: '10px',width:'80px',marginTop: '10px' }}
+              value={component[`${paddingType}`]?.bottom + ''}
               onChange={handleChange('bottom')}
               label="Низ"
+              type='number'
             />
-          </div>
-          <div style={{ display: 'flex', marginBottom: '10px' }}>
             <TextField
-              style={{ marginRight: '10px' }}
-              value={component[`${paddingType}`]?.left}
+              style={{ marginRight: '10px',width:'80px',marginTop: '10px' }}
+              value={component[`${paddingType}`]?.left + ''}
               onChange={handleChange('left')}
               label="Лево"
+              type='number'
             />
             <TextField
-              value={component[`${paddingType}`]?.right}
+              style={{width:'80px',marginTop: '10px'}}
+              value={component[`${paddingType}`]?.right + ''}
               onChange={handleChange('right')}
               label="Право"
+              type='number'
             />
           </div>
           </>
@@ -229,7 +228,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
               onChange={handleTextColorChange}
             />
             <FormControlLabel
-              style={{ paddingLeft: '10px', paddingTop: '5px' }}
+              sx={{ marginLeft: '0px',marginRight:0,paddingLeft: '10px', paddingTop: '5px' }}
               onClick={handleTextColorAutoChange}
               control={<Switch checked={component.color?.textAuto} />}
               label="Автоматически"
@@ -253,6 +252,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
           <FormControl sx={{ marginTop: '15px' }} fullWidth>
             <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Шрифт</InputLabel>
             <Select
+              sx={{ '& .MuiSelect-select': { padding: '8.5px 14px' } }}
               value={component.font?.value}
               onChange={handleFontChange}
             >
@@ -266,6 +266,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
           <FormControl sx={{ marginTop: '15px' }} fullWidth>
             <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Размер шрифта</InputLabel>
             <Select
+              sx={{ '& .MuiSelect-select': { padding: '8.5px 14px' } }}
               value={component.font?.size}
               onChange={handleFontSizeChange}
             >
@@ -363,9 +364,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   return (
     <CustomizedCard style={{ height: '100%', background: 'none' }}>
-      <CardContent sx={{ paddingRight: 0, paddingTop: '10px' }}>
-        <CustomizedScrollBox options={{ suppressScrollX: true }}>
-          <div style={{ paddingRight: '16px' }}>
+      <CardContent sx={{ paddingRight: 0,paddingLeft:'0', paddingTop: '10px' }}>
+        <CustomizedScrollBox options={{ suppressScrollX: true }} style={{paddingLeft:'25px',paddingRight:'25px'}}>
+          <div>
             {mainContent()}
           </div>
         </CustomizedScrollBox>

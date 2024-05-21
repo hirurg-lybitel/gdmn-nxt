@@ -83,14 +83,14 @@ export const FindComponent = (props: findComponentProps) => {
     case 'button':
       return (
         <a
-          href={(!component.url || component.url?.length < 0) ? undefined : component.url}
+          href={(!component.url || component.url?.length < 0 || !isPreview) ? undefined : component.url}
           target="_blank"
           style={{
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
             color: component.color?.textAuto ? 'hsla(0, 5%, 81%, 1)' : component.color?.text,
-            padding: `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
+            padding: component.padding?.isCommon ? component.padding?.common + 'px'  : `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
             font: `${component.font?.size}px ${component.font?.value}`,
             fontWeight: '600',
             borderRadius: '10px',
@@ -142,7 +142,8 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       <div
         style={{
           display: 'flex', justifyContent: component.position,
-          padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
+          padding: component.margin.isCommon ? component.margin.common + 'px' 
+          : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
           border: '1px solid transparent'
         }}
       >
@@ -166,7 +167,8 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
     <div
       className={classes.templateItem}
       style={{
-        padding: `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
+        padding: component.margin.isCommon ? component.margin.common + 'px' 
+        : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
         border: index === editedIndex ? `1px solid ${theme.mainContent.buttonPrimaryColor}` : '1px solid transparent',
       }}
     >

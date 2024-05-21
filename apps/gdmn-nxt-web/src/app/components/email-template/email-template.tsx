@@ -1,6 +1,6 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Divider, FormControlLabel, IconButton, Switch, Tab, Tooltip, useTheme } from '@mui/material';
+import { Box, Divider, FormControlLabel, IconButton, Switch, Tab, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
@@ -34,7 +34,8 @@ interface baseComponentSettings {
     right: number,
     bottom: number,
     left: number,
-    common: boolean
+    isCommon:boolean,
+    common: number
   },
   position: IComponentPosition
 }
@@ -69,11 +70,12 @@ export interface IButtonComponent extends baseComponent {
     value: string
   },
   padding?: {
-    top?: number,
-    right?: number,
-    bottom?: number,
-    left?: number,
-    common?: boolean
+    top: number,
+    right: number,
+    bottom: number,
+    left: number,
+    isCommon:boolean,
+    common: number
   },
 }
 
@@ -84,10 +86,12 @@ export interface EmailTemplate {
 }
 
 export interface ITemplate {
-  content: IComponent[],
-  background: {
-    value: string,
-    isView: boolean
+  content: {
+    components: IComponent[],
+    background: {
+      value: string,
+      isView: boolean
+    }
   },
   html: string
 }
@@ -107,12 +111,14 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const theme = useTheme();
   const {
     value: anyTemplates = {
-      content: [],
+      content: {
+        components: [],
+        background: {
+          value: theme.palette.background.paper,
+          isView: false
+        }
+      },
       html: '',
-      background: {
-        value: theme.palette.background.paper,
-        isView: false
-      }
     },
     onChange
   } = props;
@@ -134,7 +140,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         right: 10,
         bottom: 10,
         left: 10,
-        common: true
+        isCommon: true,
+        common:10
       },
       position: 'center'
     },
@@ -151,7 +158,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         right: 10,
         bottom: 10,
         left: 10,
-        common: true
+        isCommon: true,
+        common:10
       },
       position: 'center'
     },
@@ -168,14 +176,16 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         right: 10,
         bottom: 10,
         left: 10,
-        common: true
+        isCommon: true,
+        common:10
       },
       padding: {
         top: 5,
         right: 6,
         bottom: 5,
         left: 6,
-        common: false
+        common:10,
+        isCommon: false
       },
       position: 'center',
       text: 'Текст кнопки',
@@ -202,25 +212,28 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         right: 0,
         bottom: 10,
         left: 0,
-        common: false
+        common:10,
+        isCommon: false
       },
       position: 'center'
     },
   ];
 
   const backgroundChange = (newBackground: string) => {
-    onChange({ ...anyTemplates, background: { ...anyTemplates.background, value: newBackground } });
+    onChange({ ...anyTemplates, content: {...anyTemplates.content, background: { ...anyTemplates.content.background, value:newBackground } }});
   };
   const backgroundViewChange = () => {
-    onChange({ ...anyTemplates, background: { ...anyTemplates.background, isView: !anyTemplates.background.isView } });
+    onChange({ ...anyTemplates, content: {...anyTemplates.content, background: { ...anyTemplates.content.background, isView: !anyTemplates.content.background.isView } }});
   };
+
   const [length, setLenght] = useState<number>(0);
+
   useEffect(() => {
     if (anyTemplates.html === previeComponent) {
       return;
     }
-    if (length !== anyTemplates.content.length) {
-      setLenght(anyTemplates.content.length);
+    if (length !== anyTemplates.content.components.length) {
+      setLenght(anyTemplates.content.components.length);
     }
     onChange({ ...anyTemplates, html: previeComponent });
   }, [anyTemplates]);
@@ -230,7 +243,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const valueChange = (stringIndex: string, newValue: any) => {
     const masIndex = stringIndex.split('.');
     const newValues: any = { ...anyTemplates };
-    let val: any = newValues.content[Number(masIndex[0])];
+    let val: any = newValues.content.components[Number(masIndex[0])];
     if (val === undefined) return;
     for (let i = 1; i < masIndex.length; i++) {
       if (i + 1 === masIndex.length) {
@@ -249,26 +262,26 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const [editIsFocus, setEditIsFocus] = useState<boolean>(false);
 
   const removeEl = (index: number) => {
-    const copyTamplate = [...anyTemplates.content];
+    const copyTamplate = [...anyTemplates.content.components];
     closeEditForm();
     if (copyTamplate.length === 1) {
-      onChange({ ...anyTemplates, content: [] });
+      onChange({ ...anyTemplates, content: {...anyTemplates.content, components:[]} });
     } else {
       copyTamplate.splice(index, 1);
-      onChange({ ...anyTemplates, content: copyTamplate });
+      onChange({ ...anyTemplates, content: {...anyTemplates.content, components:copyTamplate} });
     }
   };
 
   const copyEl = (index: number) => {
-    const component = [...anyTemplates.content][index];
+    const component = [...anyTemplates.content.components][index];
     const endIndex = index + 1 || 0;
     const componentCopy = structuredClone(component);
     componentCopy.id = lastId;
     setLastId(lastId + 1);
-    const copyTamplate = [...anyTemplates.content];
+    const copyTamplate = [...anyTemplates.content.components];
     copyTamplate.splice(endIndex, 0, componentCopy);
     copyTamplate[endIndex].text = copyTamplate[endIndex].text ? copyTamplate[endIndex].text + ' ' : undefined;
-    onChange({ ...anyTemplates, content: copyTamplate, });
+    onChange({ ...anyTemplates, content: {...anyTemplates.content, components:copyTamplate} });
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -282,13 +295,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         const component = { ...copyComponents[startIndex] };
         component.id = lastId;
         setLastId(lastId + 1);
-        const copyTamplate = [...anyTemplates.content];
+        const copyTamplate = [...anyTemplates.content.components];
         if (copyTamplate.length === 0) {
-          onChange({ ...anyTemplates, content: [component] });
+          onChange({ ...anyTemplates, content: {...anyTemplates.content, components:[component]}  });
         } else {
           const endIndex = result.destination.index;
           copyTamplate.splice(endIndex, 0, component);
-          onChange({ ...anyTemplates, content: copyTamplate });
+          onChange({ ...anyTemplates, content: {...anyTemplates.content, components:copyTamplate} });
         }
       }
     }
@@ -296,13 +309,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       if (result.destination.droppableId === 'compotents') return;
       const startIndex = result.source.index;
       const endIndex = result.destination.index;
-      const copyTamplate = [...anyTemplates.content];
+      const copyTamplate = [...anyTemplates.content.components];
       const [reorderTodo] = copyTamplate.splice(startIndex, 1);
       copyTamplate.splice(endIndex, 0, reorderTodo);
       if (editedIndex === startIndex) {
         openEditForm(endIndex);
       }
-      onChange({ ...anyTemplates, content: copyTamplate });
+      onChange({ ...anyTemplates, content: {...anyTemplates.content, components:copyTamplate} });
     }
   };
 
@@ -388,13 +401,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
           height: '100%',
           maxWidth: '700px',
           width: '100%',
-          background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent'
+          background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent'
         }}
       >
         <head>
           <meta charSet="utf-8" />
         </head>
-        {anyTemplates.content.map((component: IComponent, index: number) => (
+        {anyTemplates.content.components.map((component: IComponent, index: number) => (
           <EmailTemplateItem
             key={index}
             isPreview={true}
@@ -419,6 +432,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       ? 'rgba(0,0,0,0.1)'
       : 'rgba(250, 250, 250, 0.1)'
   );
+
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'))
+  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'))
+
+  const workspaceWidth = matchDownLg ? 350 
+  : matchDownXl ? 500 : 700
 
   return (
     <div
@@ -496,24 +515,23 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             </div>
             <Divider style={{ margin: 0 }} />
           </div>
-
           <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
             <div style={{ width: '100%', height: '100%' }}>
-              <TabPanel value="1" style={{ height: '100%', width: '100%', padding: '0' }} >
+              <TabPanel value="1" style={{ height: '100%', width:  workspaceWidth + 40 + 'px', padding: '0' }} >
                 <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
-                  <div style={{ width: '100%', maxWidth: '700px', transition: '0.5s' }}>
+                  <div style={{ width: workspaceWidth + 'px', maxWidth: '700px', transition: '0.5s' }}>
                     <Droppable droppableId="tamplate" >
                       {(droppableProvider) => (
                         <div
                           style={{
-                            background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent',
+                            background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent',
                             boxShadow: paperBoxShadow
                           }}
                           className={style.templateBody}
                           ref={droppableProvider.innerRef}
                           {...droppableProvider.droppableProps}
                         >
-                          {anyTemplates.content.map((component: IComponent, index: number) => (
+                          {anyTemplates.content.components.map((component: IComponent, index: number) => (
                             <Draggable
                               index={index}
                               key={component.id}
@@ -555,13 +573,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 </CustomizedScrollBox>
               </TabPanel>
               <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
-                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', overflow: 'hidden',padding:'20px' }}>
                   <div
                     style={{
                       maxWidth: previewMode,
                       width: '100%', transition: '0.5s',
-                      background: anyTemplates.background.isView ? anyTemplates.background.value : 'transparent',
-                      boxShadow: paperBoxShadow
+                      background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent',
+                      boxShadow: paperBoxShadow,
                     }}
                   >
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
@@ -573,18 +591,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             </div>
             <div
               style={{
-                width: tabIndex === '2' ? '0px' : 'calc(100% - 40px)',
-                minWidth: tabIndex === '2' ? '0px' : '300px',
-                height: '100%', transition: '0.5s', zIndex: 1
-              }}
-            />
-            <div
-              style={{
                 position: 'absolute',
-                right: tabIndex === '2' ? '-50%' : 0,
+                right: tabIndex === '2' ? '-100%' : 0,
                 top: 0,
                 bottom: 0,
-                width: 'calc(50% - 10px)',
+                width: `calc(100% - ${workspaceWidth + 40}px)`,
                 minWidth: '300px',
                 transition: '0.5s',
                 zIndex: 2
@@ -601,7 +612,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   ? <Box
                     sx={{
                       '& .jodit-workplace': {
-                        background: (anyTemplates.background.isView ? anyTemplates.background.value : 'transparent') + '!important'
+                        background: (anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent') + '!important'
                       }
                     }}
                     style={{ height: '100%', minWidth: '300px' }}
@@ -612,7 +623,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                       removeEl={removeEl}
                       editedIndex={editedIndex as number}
                       close={closeEditForm}
-                      component={anyTemplates.content[editedIndex]}
+                      component={anyTemplates.content.components[editedIndex]}
                       setValue={valueChange}
                       length={length}
                     />
@@ -684,7 +695,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                                 alignItems: 'center',
                                                 borderRadius: '20px',
                                                 flexDirection: 'column',
-
                                               }}
                                             >
                                               {getComponentIcon(component.type)}
@@ -702,13 +712,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                             <div style={{ display: 'flex', justifyContent: 'start', alignItems: 'center', marginTop: '5px', flexWrap: 'wrap' }}>
                               <ColorEdit
                                 label={'цвет фона'}
-                                value={anyTemplates.background.value}
+                                value={anyTemplates.content.background.value}
                                 onChange={backgroundChange}
                               />
                               <FormControlLabel
                                 sx={{ marginLeft: '0px' }}
                                 onClick={backgroundViewChange}
-                                control={<Switch checked={!anyTemplates.background.isView} />}
+                                control={<Switch checked={!anyTemplates.content.background.isView} />}
                                 label="Прозрачный"
                               />
                             </div>
