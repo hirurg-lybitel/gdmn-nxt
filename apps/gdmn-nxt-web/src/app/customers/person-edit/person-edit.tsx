@@ -189,6 +189,12 @@ export function PersonEdit(props: PersonEditProps) {
 
   const onClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
+  const handleEmailChange = (value: string) => {
+    const newValue = value.replace(/\s/g, '');
+
+    formik.setFieldValue('EMAIL', newValue);
+  };
+
   return (
     <CustomizedDialog
       open={open}
@@ -225,7 +231,7 @@ export function PersonEdit(props: PersonEditProps) {
                     label="Email"
                     type="text"
                     name="EMAIL"
-                    onChange={formik.handleChange}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     value={formik.values.EMAIL}
                   />
                   <TelephoneInput

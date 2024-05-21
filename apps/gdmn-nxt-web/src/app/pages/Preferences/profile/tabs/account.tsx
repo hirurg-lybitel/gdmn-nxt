@@ -38,6 +38,12 @@ export default function AccountTab() {
     formik.submitForm();
   };
 
+  const handleEmailChange = (value: string) => {
+    const newValue = value.replace(/\s/g, '');
+
+    formik.setFieldValue('EMAIL', newValue);
+  };
+
   return (
     <FormikProvider value={formik}>
       <Form id="accountTabForm" onSubmit={formik.handleSubmit}>
@@ -68,7 +74,7 @@ export default function AccountTab() {
                 disabled={isLoading}
                 label="Email"
                 name="EMAIL"
-                onChange={formik.handleChange}
+                onChange={(e) => handleEmailChange(e.target.value)}
                 value={formik.values.EMAIL ?? ''}
                 helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
                 error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}

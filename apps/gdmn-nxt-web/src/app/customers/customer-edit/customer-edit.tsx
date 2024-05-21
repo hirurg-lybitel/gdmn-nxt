@@ -121,6 +121,12 @@ export function CustomerEdit({
     onSubmit(formik.values, deleting);
   };
 
+  const handleEmailChange = (value: string) => {
+    const newValue = value.replace(/\s/g, '');
+
+    formik.setFieldValue('EMAIL', newValue);
+  };
+
   return (
     <CustomizedDialog
       open={open}
@@ -165,7 +171,7 @@ export function CustomerEdit({
                   label="Email"
                   type="text"
                   name="EMAIL"
-                  onChange={formik.handleChange}
+                  onChange={(e) => handleEmailChange(e.target.value)}
                   value={formik.values.EMAIL}
                   helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
                   error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}

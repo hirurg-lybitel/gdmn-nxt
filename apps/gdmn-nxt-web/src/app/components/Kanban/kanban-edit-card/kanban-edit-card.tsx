@@ -314,6 +314,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     (formik.values.TASKS?.reduce((acc, task) => acc + Number(!task.USR$CLOSED), 0) || 0) > 0
   , [formik.values.DEAL?.USR$DONE, formik.values.TASKS]);
 
+  const handleEmailChange = (value: string) => {
+    const newValue = value.replace(/\s/g, '');
+
+    formik.setFieldValue('DEAL.CONTACT_EMAIL', newValue);
+  };
+
   const KanbanRequestInfo = useMemo(() => {
     return (
       <Stack
@@ -382,7 +388,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
             type="text"
             fullWidth
             name="DEAL.CONTACT_EMAIL"
-            onChange={formik.handleChange}
+            onChange={(e) => handleEmailChange(e.target.value)}
             value={formik.values.DEAL?.CONTACT_EMAIL || ''}
             error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}

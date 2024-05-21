@@ -195,6 +195,9 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
           label="Email"
           type="text"
           fullWidth
+          onChange={(e) => {
+            e.target.value = e.target.value.replace(/\s/g, '');;
+          }}
           inputRef={emailRef}
           error={email.isError}
           helperText={email.errorMessage}
