@@ -30,6 +30,7 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         m.USR$STARTDATE STARTDATE,
         m.USR$FINISHDATE FINISHDATE,
         COALESCE(m.USR$STATUS, 0) AS STATUS,
+        m.USR$STATUS_DESCRIPTION STATUS_DESCRIPTION,
         USR$TEMPLATE TEMPLATE_BLOB
       FROM USR$CRM_MARKETING_MAILING m
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
@@ -104,6 +105,7 @@ const update: UpdateHandler<IMailing> = async (
       FINISHDATE = mailing.FINISHDATE,
       NAME = mailing.NAME,
       STATUS = mailing.STATUS,
+      STATUS_DESCRIPTION = mailing.STATUS_DESCRIPTION,
       TEMPLATE = mailing.TEMPLATE,
       segments = mailing.segments
     } = metadata;
@@ -114,6 +116,7 @@ const update: UpdateHandler<IMailing> = async (
         USR$LAUNCHDATE = :LAUNCHDATE,
         USR$NAME = :NAME,
         USR$STATUS = :STATUS,
+        USR$STATUS_DESCRIPTION = :STATUS_DESCRIPTION,
         USR$TEMPLATE = :TEMPLATE,
         USR$FINISHDATE = :FINISHDATE,
         USR$STARTDATE = :STARTDATE
@@ -127,6 +130,7 @@ const update: UpdateHandler<IMailing> = async (
         FINISHDATE: new Date(FINISHDATE),
         NAME,
         STATUS,
+        STATUS_DESCRIPTION,
         TEMPLATE: await string2Blob(TEMPLATE)
       }
     );

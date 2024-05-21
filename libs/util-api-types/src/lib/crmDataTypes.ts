@@ -394,6 +394,7 @@ export interface IMailing extends IWithID {
   STARTDATE?: Date;
   FINISHDATE?: Date;
   STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
+  STATUS_DESCRIPTION?: string;
   segments: ISegment[];
   TEMPLATE?: string;
 }

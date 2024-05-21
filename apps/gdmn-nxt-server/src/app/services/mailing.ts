@@ -14,6 +14,7 @@ const launchMailing = async (sessionID: string, id: number) => {
   }
 
   if (mailing.segments.length === 0) {
+    await updateStatus(sessionID, id, 2, 'Нет получателей');
     return resultDescription('Нет получателей');
   }
 
@@ -25,10 +26,11 @@ const launchMailing = async (sessionID: string, id: number) => {
   const customers = await customersRepository.find(sessionID, { ...Object.fromEntries(customersClause.entries()) });
 
   if (customers.length === 0) {
-    throw NoContentException();
+    await updateStatus(sessionID, id, 2, 'Нет получателей');
+    return resultDescription('Нет получателей');
   }
 
-  mailingRepository.update(
+  await mailingRepository.update(
     sessionID,
     id,
     {
@@ -39,45 +41,61 @@ const launchMailing = async (sessionID: string, id: number) => {
   const from = `Belgiss <${process.env.SMTP_USER}>`;
 
   /** Выбранный шаблон письма (НЕ ссылка, а копия для текущей рассылки)  */
-  // const html = `
-  //   <html>
-  //     <body>
-  //       <div>
-  //       Приветствуем, {{ name }}.
-  //       </div>
-  //     </body>
-  //   </html>`;
   const html = mailing.TEMPLATE ?? '';
 
   if (html === '') {
+    await updateStatus(sessionID, id, 2, 'Не найден шаблон письма');
     throw InternalServerErrorException('Не найден шаблон письма');
   }
 
   await forEachAsync(customers, async ({ NAME, EMAIL }) => {
     const view = {
-      name: NAME
+      NAME
     };
 
     const renderedHtml = Mustache.render(html, view);
 
-    // await sendEmail(
-    //   from,
-    //   EMAIL,
-    //   subject,
-    //   '',
-    //   renderedHtml);
+    await sendEmail(
+      from,
+      EMAIL,
+      subject,
+      '',
+      renderedHtml);
   });
 
-  mailingRepository.update(
+  await mailingRepository.update(
     sessionID,
     id,
     {
       FINISHDATE: new Date()
     });
 
+  await updateStatus(sessionID, id, 1, 'Рассылка выполнена');
   return 'Рассылка выполнена';
 };
 
+const updateStatus = async (
+  sessionID: string,
+  id: number,
+  status: 0 | 1 | 2,
+  description: string
+) => {
+  const mailing = await mailingRepository.findOne(sessionID, { ID: id });
+
+  if (!mailing) {
+    throw NotFoundException(`Не найдена рассылка с id=${id}`);
+  }
+
+  mailingRepository.update(
+    sessionID,
+    id,
+    {
+      STATUS: status,
+      STATUS_DESCRIPTION: description
+    });
+};
+
 export const mailingService = {
-  launchMailing
+  launchMailing,
+  updateStatus
 };
