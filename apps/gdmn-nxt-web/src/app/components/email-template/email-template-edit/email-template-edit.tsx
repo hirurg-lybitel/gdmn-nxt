@@ -249,33 +249,35 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             onChange={handleUrlChange}
             label="Ссылка"
           />
-          <FormControl sx={{ marginTop: '15px' }} fullWidth>
-            <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Шрифт</InputLabel>
-            <Select
-              sx={{ '& .MuiSelect-select': { padding: '8.5px 14px' } }}
-              value={component.font?.value}
-              onChange={handleFontChange}
-            >
-              {fonts.map((font, index) => <MenuItem
-                key={index}
-                sx={{ fontFamily: font }}
-                value={font}
-              >{font}</MenuItem>)}
-            </Select>
-          </FormControl>
-          <FormControl sx={{ marginTop: '15px' }} fullWidth>
-            <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Размер шрифта</InputLabel>
-            <Select
-              sx={{ '& .MuiSelect-select': { padding: '8.5px 14px' } }}
-              value={component.font?.size}
-              onChange={handleFontSizeChange}
-            >
-              {fontSize.map((size, index) => <MenuItem
-                key={index}
-                value={size}
-              >{size}px</MenuItem>)}
-            </Select>
-          </FormControl>
+          <div style={{display:'flex'}}>
+            <FormControl sx={{ marginTop: '15px',marginRight:'10px' }} fullWidth>
+              <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Шрифт</InputLabel>
+              <Select
+                sx={{ '& .MuiSelect-select': { padding: '8.5px 14px' } }}
+                value={component.font?.value}
+                onChange={handleFontChange}
+              >
+                {fonts.map((font, index) => <MenuItem
+                  key={index}
+                  sx={{ fontFamily: font }}
+                  value={font}
+                >{font}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ marginTop: '15px' }} fullWidth>
+              <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Размер шрифта</InputLabel>
+              <Select
+                sx={{ '& .MuiSelect-select': { padding: '8.5px 14px' } }}
+                value={component.font?.size}
+                onChange={handleFontSizeChange}
+              >
+                {fontSize.map((size, index) => <MenuItem
+                  key={index}
+                  value={size}
+                >{size}px</MenuItem>)}
+              </Select>
+            </FormControl>
+          </div>
         </div>
         <div style={{ height: '5px' }} />
         {baseComponent()}
