@@ -83,7 +83,6 @@ export interface SearchBarProps {
   style?: CSSProperties,
   value?: string,
   fullWidth?: boolean;
-  disabledInput:boolean
 }
 
 export function SearchBar(props: SearchBarProps) {
@@ -98,10 +97,9 @@ export function SearchBar(props: SearchBarProps) {
     onRequestSearch,
     placeholder = 'Поиск',
     style,
-    value = '', 
+    value = '',
     fullWidth = false,
     iconPosition = 'end',
-    disabledInput = false,
     ...inputProps
   } = props;
 
@@ -226,7 +224,7 @@ export function SearchBar(props: SearchBarProps) {
           fullWidth
           className={classes.input}
           disableUnderline
-          disabled={disabledInput}
+          disabled={disabled}
           placeholder={placeholder}
         />
       </div>
