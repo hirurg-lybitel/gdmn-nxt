@@ -22,6 +22,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -189,12 +190,6 @@ export function PersonEdit(props: PersonEditProps) {
 
   const onClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
-  const handleEmailChange = (value: string) => {
-    const newValue = value.replace(/\s/g, '');
-
-    formik.setFieldValue('EMAIL', newValue);
-  };
-
   return (
     <CustomizedDialog
       open={open}
@@ -227,11 +222,9 @@ export function PersonEdit(props: PersonEditProps) {
                     helperText={formik.touched.NAME && formik.errors.NAME}
                     error={formik.touched.NAME && Boolean(formik.errors.NAME)}
                   />
-                  <TextField
-                    label="Email"
-                    type="text"
+                  <EmailInput
                     name="EMAIL"
-                    onChange={(e) => handleEmailChange(e.target.value)}
+                    onChange={formik.handleChange}
                     value={formik.values.EMAIL}
                   />
                   <TelephoneInput

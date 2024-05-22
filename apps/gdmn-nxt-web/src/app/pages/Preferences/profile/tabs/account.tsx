@@ -6,6 +6,7 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { IProfileSettings } from '@gsbelarus/util-api-types';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 
 export default function AccountTab() {
   const userProfile = useUserData();
@@ -38,12 +39,6 @@ export default function AccountTab() {
     formik.submitForm();
   };
 
-  const handleEmailChange = (value: string) => {
-    const newValue = value.replace(/\s/g, '');
-
-    formik.setFieldValue('EMAIL', newValue);
-  };
-
   return (
     <FormikProvider value={formik}>
       <Form id="accountTabForm" onSubmit={formik.handleSubmit}>
@@ -70,11 +65,10 @@ export default function AccountTab() {
                   fullWidth
                 />
               </Stack>
-              <TextField
+              <EmailInput
                 disabled={isLoading}
-                label="Email"
                 name="EMAIL"
-                onChange={(e) => handleEmailChange(e.target.value)}
+                onChange={formik.handleChange}
                 value={formik.values.EMAIL ?? ''}
                 helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
                 error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}

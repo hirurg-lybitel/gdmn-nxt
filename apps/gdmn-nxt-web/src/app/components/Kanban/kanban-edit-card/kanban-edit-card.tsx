@@ -57,6 +57,7 @@ import { ClientHistory } from './components/client-history';
 import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -314,12 +315,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     (formik.values.TASKS?.reduce((acc, task) => acc + Number(!task.USR$CLOSED), 0) || 0) > 0
   , [formik.values.DEAL?.USR$DONE, formik.values.TASKS]);
 
-  const handleEmailChange = (value: string) => {
-    const newValue = value.replace(/\s/g, '');
-
-    formik.setFieldValue('DEAL.CONTACT_EMAIL', newValue);
-  };
-
   const KanbanRequestInfo = useMemo(() => {
     return (
       <Stack
@@ -383,12 +378,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           spacing={2}
           direction={{ sm: 'column', md: 'row', lg: 'row' }}
         >
-          <TextField
-            label="Email"
-            type="text"
+          <EmailInput
             fullWidth
             name="DEAL.CONTACT_EMAIL"
-            onChange={(e) => handleEmailChange(e.target.value)}
+            onChange={formik.handleChange}
             value={formik.values.DEAL?.CONTACT_EMAIL || ''}
             error={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))}
             helperText={getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && getIn(formik.errors, 'DEAL.CONTACT_EMAIL')}

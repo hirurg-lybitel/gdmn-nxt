@@ -34,6 +34,7 @@ import ContractsList from '../CustomerDetails/contracts-list/contracts-list';
 import CustomerDeals from '../CustomerDetails/customer-deals/customer-deals';
 import { emailValidation } from '@gdmn-nxt/components/helpers/validators';
 import { CustomerContacts } from '../CustomerDetails/customer-contacts';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -121,12 +122,6 @@ export function CustomerEdit({
     onSubmit(formik.values, deleting);
   };
 
-  const handleEmailChange = (value: string) => {
-    const newValue = value.replace(/\s/g, '');
-
-    formik.setFieldValue('EMAIL', newValue);
-  };
-
   return (
     <CustomizedDialog
       open={open}
@@ -167,11 +162,9 @@ export function CustomerEdit({
                   onChange={formik.handleChange}
                   value={formik.values.TAXID}
                 />
-                <TextField
-                  label="Email"
-                  type="text"
+                <EmailInput
                   name="EMAIL"
-                  onChange={(e) => handleEmailChange(e.target.value)}
+                  onChange={formik.handleChange}
                   value={formik.values.EMAIL}
                   helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
                   error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}

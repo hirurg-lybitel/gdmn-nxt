@@ -1,6 +1,6 @@
 import { Alert, Box, Button, Dialog, Divider, FormHelperText, IconButton, List, ListItem, ListItemIcon, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
 import styles from './create-code.module.less';
-import { useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { IAuthResult, IUserProfile } from '@gsbelarus/util-api-types';
 import CloseIcon from '@mui/icons-material/Close';
 import VerifyCode, { VerifyCodeRef } from '../verify-code/verify-code';
@@ -92,6 +92,10 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
 
   const showQR = () => {
     setQRIsOpen(true);
+  };
+
+  const emailPrettier = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    return e.target.value?.replace(/\s/g, '');
   };
 
   const closeQR = () => {
@@ -195,9 +199,7 @@ export function CreateCode({ user, onCancel, onSubmit, onSignIn }: CreateCodePro
           label="Email"
           type="text"
           fullWidth
-          onChange={(e) => {
-            e.target.value = e.target.value.replace(/\s/g, '');;
-          }}
+          onChange={emailPrettier}
           inputRef={emailRef}
           error={email.isError}
           helperText={email.errorMessage}
