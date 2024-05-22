@@ -112,6 +112,7 @@ export function Customers(props: CustomersProps) {
   const {
     data: customersResponse,
     isFetching: customerFetching,
+    isLoading: customerIsLoading,
     refetch: customerRefetch
   } = useGetCustomersQuery(
     {
@@ -425,7 +426,7 @@ export function Customers(props: CustomersProps) {
   const memoSearchBar = useMemo(
     () => (
       <SearchBar
-        disabled={customerFetching}
+        disabled={customerIsLoading}
         onCancelSearch={filterHandlers.handleCancelSearch}
         onRequestSearch={filterHandlers.handleRequestSearch}
         cancelOnEscape

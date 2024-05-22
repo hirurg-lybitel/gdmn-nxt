@@ -40,7 +40,7 @@ export function Contracts(props: ContractsProps) {
   const {
     data: contracts,
     isFetching: contractsIsFetching,
-    // isLoading,
+    isLoading: contactsIsLoading,
     refetch
   } = useGetContractsListQuery({
     pagination,
@@ -122,7 +122,7 @@ export function Contracts(props: ContractsProps) {
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
             <SearchBar
-              disabled={contractsIsFetching}
+              disabled={contactsIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
