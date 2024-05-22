@@ -132,10 +132,11 @@ export function AddContact({
   };
 
   const handleEmailChange = (index: number, value: string) => {
+    const newValue = value.replace(/\s/g, '');
     let newEmails: IEmail[] = [];
     if (formik.values.EMAILS?.length && (formik.values.EMAILS?.length > index)) {
       newEmails = [...formik.values.EMAILS];
-      newEmails[index] = { ...newEmails[index], EMAIL: value };
+      newEmails[index] = { ...newEmails[index], EMAIL: newValue };
     };
 
     formik.setFieldValue('EMAILS', newEmails);

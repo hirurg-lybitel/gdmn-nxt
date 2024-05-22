@@ -34,6 +34,7 @@ import ContractsList from '../CustomerDetails/contracts-list/contracts-list';
 import CustomerDeals from '../CustomerDetails/customer-deals/customer-deals';
 import { emailValidation } from '@gdmn-nxt/components/helpers/validators';
 import { CustomerContacts } from '../CustomerDetails/customer-contacts';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -161,9 +162,7 @@ export function CustomerEdit({
                   onChange={formik.handleChange}
                   value={formik.values.TAXID}
                 />
-                <TextField
-                  label="Email"
-                  type="text"
+                <EmailInput
                   name="EMAIL"
                   onChange={formik.handleChange}
                   value={formik.values.EMAIL}

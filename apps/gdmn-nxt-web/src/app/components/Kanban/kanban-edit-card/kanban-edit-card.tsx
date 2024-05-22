@@ -57,6 +57,7 @@ import { ClientHistory } from './components/client-history';
 import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -377,9 +378,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           spacing={2}
           direction={{ sm: 'column', md: 'row', lg: 'row' }}
         >
-          <TextField
-            label="Email"
-            type="text"
+          <EmailInput
             fullWidth
             name="DEAL.CONTACT_EMAIL"
             onChange={formik.handleChange}
