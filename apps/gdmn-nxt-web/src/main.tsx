@@ -53,6 +53,7 @@ import Contacts from './app/pages/Managment/Contacts';
 import { Contracts } from './app/pages/Managment/contracts';
 import OurContacts from './app/pages/Managment/ourContacts';
 import EmailTemplate, { IComponent, ITemplate } from '@gdmn-nxt/components/email-template/email-template';
+import EmailTemplateList from '@gdmn-nxt/components/email-template-list/email-template-list';
 
 registerMUI();
 
@@ -77,7 +78,7 @@ const Main = () => {
   const [template, setTemplate] = useState<ITemplate | undefined>();
 
   useEffect(() => {
-    console.log(template);
+    console.log(template?.html);
   }, [template]);
 
   return (
@@ -151,6 +152,10 @@ const Main = () => {
                               <Route path="topEarning" element={<TopEarningPage />} />
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />
+                          </Route>
+                          <Route path="marketing">
+                            <Route path="" element={<Navigate to="templates" />}/>
+                            <Route path="templates" element={<EmailTemplateList/>}/>
                           </Route>
                           <Route path="system">
                             <Route path="settings">
