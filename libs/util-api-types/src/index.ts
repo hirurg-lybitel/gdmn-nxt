@@ -7,3 +7,4 @@ export * from './lib/er-types';
 export * from './lib/nlp-types';
 export * from './lib/systemDataTypes';
 export * from './lib/repository';
+export * from './lib/exceptions';
