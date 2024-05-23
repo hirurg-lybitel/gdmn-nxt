@@ -3466,7 +3466,7 @@
 			"name": "Contracts (Договоры)",
 			"item": [
 				{
-					"name": "Договоры",
+					"name": "All",
 					"id": "bc8f8a0d-95e9-4e0b-99f9-e2191b6d513e",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -3475,21 +3475,16 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/contracts-list/:companyId/contractType/:contractType",
+							"raw": "{{baseUrl}}/contracts-list/contractType/:contractType",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"contracts-list",
-								":companyId",
 								"contractType",
 								":contractType"
 							],
 							"variable": [
-								{
-									"key": "companyId",
-									"value": "153588010"
-								},
 								{
 									"key": "contractType",
 									"value": "1"
@@ -3498,6 +3493,133 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Details",
+					"id": "ffbd8061-64f9-4be0-b6d4-279f72d09493",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/contracts-list/contractType/:contractType/details/:contractId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contracts-list",
+								"contractType",
+								":contractType",
+								"details",
+								":contractId"
+							],
+							"variable": [
+								{
+									"key": "contractType",
+									"value": "1"
+								},
+								{
+									"key": "contractId",
+									"value": "943297144"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"id": "149a3469-2839-48f2-a605-d9513153e68b",
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contracts-list/contractType/:contractType/details/:contractId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contracts-list",
+										"contractType",
+										":contractType",
+										"details",
+										":contractId"
+									],
+									"variable": [
+										{
+											"key": "contractType",
+											"value": "1"
+										},
+										{
+											"key": "contractId",
+											"value": "943297144"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "https://localhost:4201"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "97"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 23 May 2024 19:37:55 GMT"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1716493086"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "202"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"ca-WJJpjPa+6Rx3vukqpvJo/CM1waY\""
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"queries\": {\n        \"contractDetails\": [\n            {\n                \"ID\": 943297145,\n                \"CONTRACTID\": 943297144,\n                \"NAME\": \"Абонентское обслуживание ПО\",\n                \"QUANTITY\": 2,\n                \"PRICE\": 32,\n                \"AMOUNT\": 64\n            }\n        ]\n    },\n    \"_params\": [\n        {\n            \"contractType\": 1\n        }\n    ]\n}"
+						}
+					]
 				}
 			],
 			"id": "40966b64-35b7-4d8e-a750-57bf81b4f8f6"
