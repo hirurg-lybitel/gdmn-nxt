@@ -3492,7 +3492,93 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"id": "d69048af-e705-49b8-885a-11df69498638",
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/contracts-list/contractType/:contractType",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"contracts-list",
+										"contractType",
+										":contractType"
+									],
+									"variable": [
+										{
+											"key": "contractType",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "https://localhost:4201"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "98"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 23 May 2024 19:39:58 GMT"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1716493254"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "777"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"309-zVTwzhQFeNlAWR4gJfepinIMz6Q\""
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"queries\": {\n        \"contracts\": [\n            {\n                \"ID\": 943297144,\n                \"DOCUMENTDATE\": \"2022-11-20T21:00:00.000Z\",\n                \"NUMBER\": \"89-10/21 ДС 1\",\n                \"ISACTIVE\": 0,\n                \"ISBUDGET\": 0,\n                \"DATEBEGIN\": \"2022-11-30T21:00:00.000Z\",\n                \"DATEEND\": \"2023-11-29T21:00:00.000Z\",\n                \"DOCTYPENAME\": \"Договор на абонентское\",\n                \"DEPT_NAME\": \"\",\n                \"JOB_NUMBER\": 0,\n                \"SUMNCU\": 64,\n                \"SUMCURNCU\": 0,\n                \"customer\": {\n                    \"ID\": 668353079,\n                    \"NAME\": \"Компания Атлантик ООО\"\n                }\n            },\n            {\n                \"ID\": 948397906,\n                \"DOCUMENTDATE\": \"2022-11-14T21:00:00.000Z\",\n                \"NUMBER\": \"18/22-К\",\n                \"ISACTIVE\": 0,\n                \"ISBUDGET\": 0,\n                \"DATEBEGIN\": \"2022-11-14T21:00:00.000Z\",\n                \"DATEEND\": \"2022-11-14T21:00:00.000Z\",\n                \"DOCTYPENAME\": \"Накладная\",\n                \"DEPT_NAME\": \"\",\n                \"JOB_NUMBER\": 0,\n                \"SUMNCU\": 1422,\n                \"SUMCURNCU\": 0,\n                \"customer\": {\n                    \"ID\": 154850311,\n                    \"NAME\": \"ККС ООО\"\n                }\n            }\n        ],\n        \"rowCount\": 2\n    },\n    \"_params\": [\n        {\n            \"contractType\": 1\n        }\n    ]\n}"
+						}
+					]
 				},
 				{
 					"name": "Details",
