@@ -72,7 +72,7 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
         <Box
           sx={{
             position: 'relative',
-            '& body': { height: scale && scale === 1 ? '360px !important' : '100%' }
+            '& body': { height: scale && scale === 1 ? '360px !important' : '100%', pointerEvents: 'none', userSelect: 'none' }
           }}
         >
           <div style={{ width: '100%', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>

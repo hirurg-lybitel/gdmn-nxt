@@ -88,6 +88,7 @@ export const htmlToTemplateObject = (componentsHtml: string): {
           textAuto: children.style.color === 'rgb(209, 204, 204)',
           button: children.style.backgroundColor
         };
+        object.url = children.href;
         object.font = {
           size: checkNullStrNumber(children.style.fontSize.replace('px', '')) || 14,
           value: checkNullStr(children.style.fontFamily.replaceAll('\"', '')) || 'Arial'

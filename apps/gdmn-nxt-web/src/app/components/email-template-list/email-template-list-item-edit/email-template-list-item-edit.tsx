@@ -61,7 +61,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     onClose();
     if (isDelete) {
       onSumbit(templateOld, true);
-      clear();
+      !templateOld && clear();
       return;
     }
     onSumbit({
@@ -69,7 +69,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
       USR$NAME: templateName,
       USR$HTML: template?.html || ''
     });
-    clear();
+    !templateOld && clear();
   };
 
   const handleConfirmCancelClick = () => {
@@ -133,12 +133,14 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
               onChange={handleTemplateNameChange}
             />
           </ErrorTooltip>
-          <EmailTemplate
-            value={template}
-            onChange={(value) => {
-              setTemplate(value);
-            }}
-          />
+          <div style={{ height: 'calc(100% - 60px)' }}>
+            <EmailTemplate
+              value={template}
+              onChange={(value) => {
+                setTemplate(value);
+              }}
+            />
+          </div>
         </DialogContent>
         <DialogActions>
           <ItemButtonDelete button onClick={handlDelete} />
