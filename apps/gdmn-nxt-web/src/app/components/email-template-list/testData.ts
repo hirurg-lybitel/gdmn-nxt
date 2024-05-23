@@ -1,96 +1,120 @@
+import { ITemplate } from '../../features/template/templateApi';
 import { testItem } from './textItem';
 
-export const templates: any[] = [
+export const templates: ITemplate[] = [
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 1
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 2
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 3
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 4
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 5
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 6
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 7
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 8
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 9
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 10
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 11
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 12
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 13
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 14
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 15
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 16
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 17
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 18
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 19
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 20
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 21
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 22
   },
   {
-    name: 'Template name',
-    html: testItem
+    USR$NAME: 'Template USR$NAME',
+    USR$HTML: testItem,
+    ID: 23
   }
 ];

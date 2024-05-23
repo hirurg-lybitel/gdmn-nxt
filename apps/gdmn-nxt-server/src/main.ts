@@ -44,6 +44,7 @@ import { cachedRequets } from './app/utils/cached requests';
 import fs from 'fs';
 import https, { ServerOptions } from 'https';
 import systemSettingsRouter from './app/routes/settings/systemSettings';
+import templatesRouter from './app/routes/templatesRouter';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -265,6 +266,9 @@ Notifications({ router });
 
 /** Contacts */
 router.use(contactsRouter);
+
+/** Templates */
+router.use(templatesRouter);
 
 /** Contact groups */
 router.get('/contactgroups', contactGroups.get);

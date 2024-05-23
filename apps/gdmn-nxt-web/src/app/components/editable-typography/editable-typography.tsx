@@ -5,6 +5,7 @@ import { IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyPro
 import styles from './editable-typography.module.less';
 import { KeyboardEvent, cloneElement, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
+import { ErrorTooltip } from '../Styled/error-tooltip/error-tooltip';
 
 export interface EditableTypographyProps<Value extends React.ReactNode> extends TypographyProps {
   name?: string;
@@ -74,7 +75,7 @@ const EditableTypography = <Value extends React.ReactNode>({
       className={styles['container']}
       onKeyDown={onKeyDown}
     >
-      <StyledToolTip
+      <ErrorTooltip
         open={!!helperText}
         title={helperText}
       >
@@ -98,7 +99,7 @@ const EditableTypography = <Value extends React.ReactNode>({
           </Typography>
 
         }
-      </StyledToolTip>
+      </ErrorTooltip>
       <div
         className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
       >
@@ -125,36 +126,5 @@ const EditableTypography = <Value extends React.ReactNode>({
     </div>
   );
 };
-
-const StyledToolTip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip
-    arrow
-    placement="bottom-start"
-    slotProps={{
-      popper: {
-        modifiers: [
-          {
-            name: 'offset',
-            options: {
-              offset: [0, -7],
-            },
-          },
-        ],
-      },
-    }}
-    {...props}
-    classes={{ popper: className }}
-  />
-))(() => ({
-  [`& .${tooltipClasses.arrow}`]: {
-    transform: 'none !important',
-    left: '10px !important',
-    color: 'rgb(143, 64, 64)',
-  },
-  [`& .${tooltipClasses.tooltip}`]: {
-    fontSize: '0.75rem',
-    backgroundColor: 'rgb(143, 64, 64)',
-  }
-}));
 
 export default EditableTypography;

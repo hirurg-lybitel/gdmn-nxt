@@ -52,7 +52,7 @@ import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types
 import Contacts from './app/pages/Managment/Contacts';
 import { Contracts } from './app/pages/Managment/contracts';
 import OurContacts from './app/pages/Managment/ourContacts';
-import EmailTemplate, { IComponent, ITemplate } from '@gdmn-nxt/components/email-template/email-template';
+import EmailTemplate, { IComponent, ITemplateEdit } from '@gdmn-nxt/components/email-template/email-template';
 import EmailTemplateList from '@gdmn-nxt/components/email-template-list/email-template-list';
 
 registerMUI();
@@ -74,12 +74,6 @@ const Main = () => {
   }, [customization]);
 
   const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
-
-  const [template, setTemplate] = useState<ITemplate | undefined>();
-
-  useEffect(() => {
-    console.log(template?.html);
-  }, [template]);
 
   return (
     <div
@@ -107,15 +101,6 @@ const Main = () => {
                           <Route path="" element={<Navigate to="dashboard/overview" />} />
                           <Route path="dashboard">
                             <Route path="" element={<Navigate to="overview" />} />
-                            <Route
-                              path="email"
-                              element={<EmailTemplate
-                                value={template}
-                                onChange={(value) => {
-                                  setTemplate(value);
-                                }}
-                                       />}
-                            />
                             <Route path="overview" element={<Dashboard />} />
                             <Route path="analytics" element={<Analytics />} />
                           </Route>

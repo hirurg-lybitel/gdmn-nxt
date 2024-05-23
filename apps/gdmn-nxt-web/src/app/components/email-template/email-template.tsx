@@ -86,7 +86,7 @@ export interface EmailTemplate {
   [key: string]: IComponent
 }
 
-export interface ITemplate {
+export interface ITemplateEdit {
   content: {
     components: IComponent[],
     background: {
@@ -98,8 +98,8 @@ export interface ITemplate {
 }
 
 interface EmailTemplateProps {
-  value?: ITemplate,
-  onChange: (value: ITemplate) => void,
+  value?: ITemplateEdit,
+  onChange: (value: ITemplateEdit) => void,
   // defaultValues?: {
   //   text?: baseComponentSettings,
   //   image?: baseComponentSettings,
@@ -230,6 +230,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const [length, setLenght] = useState<number>(0);
 
   useEffect(() => {
+    console.log(anyTemplates);
     if (anyTemplates.html === previeComponent) {
       return;
     }
@@ -239,7 +240,17 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     onChange({ ...anyTemplates, html: previeComponent });
   }, [anyTemplates]);
 
-  const [lastId, setLastId] = useState(10);
+  const getBiggestId = () => {
+    let id = 10;
+    const components = anyTemplates.content.components;
+    for (let i = 0;i < components.length;i++) {
+      if (components[i].id > id) {
+        id = components[i].id;
+      }
+    }
+
+    return id + 1;
+  };
 
   const valueChange = (stringIndex: string, newValue: any) => {
     const masIndex = stringIndex.split('.');
@@ -277,8 +288,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     const component = [...anyTemplates.content.components][index];
     const endIndex = index + 1 || 0;
     const componentCopy = structuredClone(component);
-    componentCopy.id = lastId;
-    setLastId(lastId + 1);
+    componentCopy.id = getBiggestId();
     const copyTamplate = [...anyTemplates.content.components];
     copyTamplate.splice(endIndex, 0, componentCopy);
     copyTamplate[endIndex].text = copyTamplate[endIndex].text ? copyTamplate[endIndex].text + ' ' : undefined;
@@ -294,8 +304,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         const startIndex = result.source.index;
         const copyComponents = [...components];
         const component = { ...copyComponents[startIndex] };
-        component.id = lastId;
-        setLastId(lastId + 1);
+        component.id = getBiggestId();
         const copyTamplate = [...anyTemplates.content.components];
         if (copyTamplate.length === 0) {
           onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [component] } });
@@ -397,6 +406,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const previeComponent = renderToStaticMarkup(
     <html lang="ru">
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body
         style={{
           height: '100%',
@@ -405,17 +417,16 @@ const EmailTemplate = (props: EmailTemplateProps) => {
           background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent'
         }}
       >
-        <head>
-          <meta charSet="utf-8" />
-        </head>
-        {anyTemplates.content.components.map((component: IComponent, index: number) => (
-          <EmailTemplateItem
-            key={index}
-            index={index}
-            isPreview={true}
-            component={component}
-          />
-        ))}
+        <div>
+          {anyTemplates.content.components.map((component: IComponent, index: number) => (
+            <EmailTemplateItem
+              key={index}
+              index={index}
+              isPreview={true}
+              component={component}
+            />
+          ))}
+        </div>
       </body>
     </html>
   );
@@ -438,8 +449,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
   const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
 
-  const workspaceWidth = matchDownLg ? 350
-    : matchDownXl ? 500 : 700;
+  const workspaceWidth = matchDownLg ? 350 : 450;
 
   return (
     <div
@@ -447,8 +457,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         width: '100%',
         overflow: 'hidden',
         height: '100%',
-        background: theme.palette.background.paper,
-        borderRadius: '20px'
       }}
     >
       <DragDropContext onDragEnd={handleDragEnd}>

@@ -61,6 +61,9 @@ export const htmlToTemplateObject = (componentsHtml: string): {
         value: Number(width.replace('%', ''))
       };
     };
+
+    const checkNullStr = (str: string) => str === '' ? undefined : str;
+    const checkNullStrNumber = (str: string) => str === '' ? undefined : Number(str);
     const object: any = {};
 
     switch (type) {
@@ -68,12 +71,14 @@ export const htmlToTemplateObject = (componentsHtml: string): {
         object.text = children.innerHTML;
         object.type = 'text';
         object.title = 'Текст';
-      } break;
+        break;
+      }
       case 'image':{
         object.type = 'image';
         object.title = 'Картинка';
         object.image = children.src;
-      } break;
+        break;
+      }
       case 'button':{
         object.type = 'button';
         object.title = 'Кнопка';
@@ -84,15 +89,17 @@ export const htmlToTemplateObject = (componentsHtml: string): {
           button: children.style.backgroundColor
         };
         object.font = {
-          size: children.style.fontSize,
-          value: children.style.fontFamily
+          size: checkNullStrNumber(children.style.fontSize.replace('px', '')) || 14,
+          value: checkNullStr(children.style.fontFamily.replaceAll('\"', '')) || 'Arial'
         };
         object.text = children.innerHTML;
-      } break;
+        break;
+      }
       case 'divider':{
         object.type = 'divider';
         object.title = 'Разделитель';
-      } break;
+        break;
+      }
     }
 
     object.index = Number(children.id);

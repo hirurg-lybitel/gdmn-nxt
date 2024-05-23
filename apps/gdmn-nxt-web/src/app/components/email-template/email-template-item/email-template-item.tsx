@@ -79,7 +79,11 @@ export const FindComponent = (props: findComponentProps) => {
                 src={component.image}
               />
             )
-            : isPreview ? <div /> : <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />
+            : isPreview ? (<img
+              id={index + ''}
+              style={{ width: `${component.width?.value}%` }}
+            />)
+              : <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />
           }
         </>
       );
