@@ -4,10 +4,11 @@ import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { useCallback, useEffect, useState } from 'react';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import styles from './user-group-edit.module.less';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -38,9 +39,6 @@ export function UserGroupEdit(props: UserGroupEditProps) {
   const { open, userGroup } = props;
   const { onSubmit, onCancel, onClose } = props;
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
   const classes = useStyles();
 
   const initValue: IUserGroup = {
@@ -63,13 +61,8 @@ export function UserGroupEdit(props: UserGroupEditProps) {
         .max(40, 'Слишком длинное наименование'),
       DESCRIPTION: yup.string().max(260, 'Слишком длинное описание'),
     }),
-    onSubmit: (value) => {
-      if (!confirmOpen) {
-        setDeleting(false);
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+    onSubmit: (values) => {
+      onSubmit(values, false);
     }
   });
 
@@ -78,25 +71,14 @@ export function UserGroupEdit(props: UserGroupEditProps) {
   };
 
   const onDeleteClick = () => {
-    setDeleting(true);
-    setConfirmOpen(true);
+    onSubmit(formik.values, true);
   };
 
   useEffect(() => {
     if (!open) {
-      setDeleting(false);
       formik.resetForm();
     }
   }, [open]);
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    onSubmit(formik.values, deleting);
-  }, [formik.values, deleting]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
 
   return (
     <CustomizedDialog
@@ -152,38 +134,33 @@ export function UserGroupEdit(props: UserGroupEditProps) {
       </DialogContent>
       <DialogActions>
         {userGroup &&
-        <ItemButtonDelete
-          button
-          onClick={onDeleteClick}
-        />}
+          <ItemButtonDelete
+            button
+            text={`Вы действительно хотите удалить группу ${userGroup.NAME}?`}
+            onClick={onDeleteClick}
+          />
+        }
         <Box flex={1}/>
-        <Button
+        <ButtonWithConfirmation
           className={classes.button}
-          onClick={onCancel}
           variant="outlined"
           color="primary"
+          onClick={onCancel}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-            Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <Button
           className={classes.button}
-          type={!formik.isValid ? 'submit' : 'button'}
-          form="mainForm"
-          onClick={() => {
-            setConfirmOpen(formik.isValid);
-          }}
           variant="contained"
+          form="mainForm"
+          type="submit"
         >
-            Сохранить
+          Сохранить
         </Button>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        title="Сохранение"
-        text="Вы уверены, что хотите продолжить?"
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
     </CustomizedDialog>
   );
 }

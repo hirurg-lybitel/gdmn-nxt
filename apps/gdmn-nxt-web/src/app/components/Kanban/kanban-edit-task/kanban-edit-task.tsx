@@ -20,6 +20,9 @@ import filterOptions from '../../helpers/filter-options';
 import { useGetTaskTypesQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -68,9 +71,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   const { onSubmit, onCancelClick } = props;
 
   const classes = useStyles();
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [cards, setCards] = useState<IKanbanCard[]>([]);
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
@@ -94,20 +94,10 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     ID: task?.ID || -1,
     USR$CARDKEY: task?.USR$CARDKEY || -1,
     USR$NAME: task?.USR$NAME || '',
-    CREATOR: task?.CREATOR
-      ? task.CREATOR
-      : {
-        ID: user.userProfile?.contactkey || -1,
-        NAME: user.userProfile?.userName || ''
-      },
+    CREATOR: task?.CREATOR,
     USR$CLOSED: task?.USR$CLOSED || false,
     USR$DEADLINE: task?.USR$DEADLINE,
-    TASKTYPE: task?.TASKTYPE
-      ? task.TASKTYPE
-      : {
-        ID: -1,
-        NAME: ''
-      },
+    TASKTYPE: task?.TASKTYPE,
     USR$INPROGRESS: task?.USR$INPROGRESS || false,
     DESCRIPTION: task?.DESCRIPTION ?? ''
   };
@@ -122,14 +112,13 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     validationSchema: yup.object().shape({
       USR$NAME: yup.string()
         .max(80, 'Слишком длинное описание'),
+      CREATOR: yup.object()
+        .required('Не указан постановщик'),
+      TASKTYPE: yup.object()
+        .required('Не указан тип задачи'),
     }),
     onSubmit: (values) => {
-      if (!confirmOpen) {
-        setDeleting(false);
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      onSubmit(values, false);
     },
     validateOnMount: true,
   });
@@ -139,23 +128,12 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   }, [open]);
 
   const handleDeleteClick = () => {
-    setDeleting(true);
-    setConfirmOpen(true);
+    onSubmit(formik.values, true);
   };
 
   const handleCancelClick = useCallback(() => {
-    setDeleting(false);
     onCancelClick();
   }, [formik, onCancelClick]);
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    onSubmit(formik.values, deleting);
-  }, [formik.values, deleting]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
 
   const handleClose = useCallback(() => {
     handleCancelClick();
@@ -173,18 +151,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
 
     return combined;
   };
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={deleting ? 'Удаление задачи' : 'Сохранение'}
-      text="Вы уверены, что хотите продолжить?"
-      dangerous={deleting}
-      confirmClick={handleConfirmOkClick}
-      cancelClick={handleConfirmCancelClick}
-    />,
-  [confirmOpen, deleting]);
-
 
   const [editDeal, setEditDeal] = useState(false);
   const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
@@ -289,6 +255,9 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         {...params}
                         label="Тип задачи"
                         placeholder="Выберите тип задачи"
+                        required
+                        error={getIn(formik.touched, 'TASKTYPE') && Boolean(getIn(formik.errors, 'TASKTYPE'))}
+                        helperText={getIn(formik.touched, 'TASKTYPE') && getIn(formik.errors, 'TASKTYPE')}
                       />
                     )}
                     loading={taskTypesFetching}
@@ -308,12 +277,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                   />
                   <Autocomplete
                     options={employees || []}
-
-                    readOnly
+                    // readOnly
                     value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
                     onChange={(e, value) => {
                       formik.setFieldValue(
-                        'PERFORMER',
+                        'CREATOR',
                         value ? { ID: value.ID, NAME: value.NAME } : undefined
                       );
                     }}
@@ -329,6 +297,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         label="Постановщик"
                         placeholder="Выберите постановщика"
                         required
+                        error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
+                        helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
                       />
                     )}
                     loading={employeesIsFetching}
@@ -488,33 +458,30 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       </DialogContent>
       <DialogActions className={classes.dialogAction}>
         {formik.values.ID > 0 &&
-        <IconButton onClick={handleDeleteClick} size="small">
-          <DeleteIcon />
-        </IconButton>
+          <PermissionsGate actionAllowed={userPermissions?.tasks?.DELETE}>
+            <ItemButtonDelete button onClick={handleDeleteClick} />
+          </PermissionsGate>
         }
         <Box flex={1} />
-        <Button
+        <ButtonWithConfirmation
           className={classes.button}
-          onClick={handleCancelClick}
           variant="outlined"
-          color="primary"
+          onClick={handleCancelClick}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-            Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <Button
           className={classes.button}
-          type={!formik.isValid ? 'submit' : 'button'}
-          form="taskForm"
-          onClick={() => {
-            setDeleting(false);
-            setConfirmOpen(formik.isValid);
-          }}
           variant="contained"
+          form="taskForm"
+          type="submit"
         >
-            Сохранить
+          Сохранить
         </Button>
       </DialogActions>
-      {memoConfirmDialog}
       {memoEditCard}
     </CustomizedDialog>
   );

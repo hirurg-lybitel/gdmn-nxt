@@ -40,7 +40,7 @@ export function Contracts(props: ContractsProps) {
   const {
     data: contracts,
     isFetching: contractsIsFetching,
-    // isLoading,
+    isLoading: contactsIsLoading,
     refetch
   } = useGetContractsListQuery({
     pagination,
@@ -122,7 +122,7 @@ export function Contracts(props: ContractsProps) {
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
             <SearchBar
-              disabled={contractsIsFetching}
+              disabled={contactsIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
@@ -134,14 +134,14 @@ export function Contracts(props: ContractsProps) {
               }
             />
             <Box display="inline-flex" alignSelf="center">
-              <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
+              {/* <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}> */}
                 <CustomAddButton
                   // disabled={contractsIsFetching}
                   disabled
                   label="Создать договор"
                   // onClick={() => setUpsertContact({ addContact: true })}
                 />
-              </PermissionsGate>
+              {/* </PermissionsGate> */}
             </Box>
             <Box display="inline-flex" alignSelf="center">
               <CustomLoadingButton
