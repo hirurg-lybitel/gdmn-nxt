@@ -210,7 +210,7 @@ export default function Contacts() {
               </ToggleButton>
             </ToggleButtonGroup>
             <SearchBar
-              disabled={personsIsFetching}
+              disabled={isLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth

@@ -109,15 +109,12 @@ export function Users(props: IUsersProps) {
                 <span>Сбросить</span>
               </Stack>
             </Confirmation>,
-            <Confirmation
+            <ItemButtonDelete
               key="delete"
-              title="Удаление пользователя"
-              text={`Вы действительно хотите удалить пользователя ${USER?.NAME} из группы ${USERGROUP?.NAME}?`}
-              dangerous
-              onConfirm={onDelete(Number(id))}
-            >
-              <ItemButtonDelete label="Удалить" />
-            </Confirmation>
+              label="Удалить"
+              text={`Вы действительно хотите удалить пользователя ${USER?.CONTACT.NAME} из группы ${USERGROUP?.NAME}?`}
+              onClick={onDelete(Number(id))}
+            />
           ]}
         />
     }

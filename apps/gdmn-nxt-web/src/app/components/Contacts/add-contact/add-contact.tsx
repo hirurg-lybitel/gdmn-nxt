@@ -20,6 +20,7 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
 import SocialMediaInput, { ISocialMedia } from '../../social-media-input';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export interface AddContactProps {
   open: boolean;
@@ -36,8 +37,6 @@ export function AddContact({
 }: AddContactProps) {
   const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery(undefined, { skip: !open });
   const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const initValue: IContactPerson = {
     ID: -1,
@@ -64,11 +63,16 @@ export function AddContact({
       PHONES: yup.array().of(phonesValidation())
     }),
     onSubmit: (values) => {
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      const newPhones = values.PHONES?.filter(phone => !!phone.USR$PHONENUMBER);
+      if (Array.isArray(newPhones)) values.PHONES = [...newPhones];
+
+      const newEmails = values.EMAILS?.filter(email => !!email.EMAIL);
+      if (Array.isArray(newEmails)) values.EMAILS = [...newEmails];
+
+      const newMessengers = values.MESSENGERS?.filter(mes => !!mes.USERNAME);
+      if (Array.isArray(newMessengers)) values.MESSENGERS = [...newMessengers];
+
+      onSubmit(values);
     },
     onReset: (values) => {
       setPhones([]);
@@ -132,10 +136,11 @@ export function AddContact({
   };
 
   const handleEmailChange = (index: number, value: string) => {
+    const newValue = value.replace(/\s/g, '');
     let newEmails: IEmail[] = [];
     if (formik.values.EMAILS?.length && (formik.values.EMAILS?.length > index)) {
       newEmails = [...formik.values.EMAILS];
-      newEmails[index] = { ...newEmails[index], EMAIL: value };
+      newEmails[index] = { ...newEmails[index], EMAIL: newValue };
     };
 
     formik.setFieldValue('EMAILS', newEmails);
@@ -159,26 +164,6 @@ export function AddContact({
   const handleCustomerChange = (customer: ICustomer | null | undefined) => {
     formik.setFieldValue('COMPANY', { ID: customer?.ID, NAME: customer?.NAME });
   };
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-
-    const newPhones = formik.values.PHONES?.filter(phone => !!phone.USR$PHONENUMBER);
-    if (Array.isArray(newPhones)) formik.values.PHONES = [...newPhones];
-
-    const newEmails = formik.values.EMAILS?.filter(email => !!email.EMAIL);
-    if (Array.isArray(newEmails)) formik.values.EMAILS = [...newEmails];
-
-    const newMessengers = formik.values.MESSENGERS?.filter(mes => !!mes.USERNAME);
-    if (Array.isArray(newMessengers)) formik.values.MESSENGERS = [...newMessengers];
-
-    onSubmit(formik.values);
-    onClose();
-  }, [formik.values]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
 
   const emailOptions = useMemo(() =>
     <>
@@ -482,30 +467,25 @@ export function AddContact({
       </DialogContent>
       <DialogActions>
         <Box flex={1}/>
-        <Button
+        <ButtonWithConfirmation
           className={styles.button}
-          onClick={onClose}
           variant="outlined"
-          color="primary"
+          onClick={onClose}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-             Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <Button
           className={styles.button}
           type="submit"
           form="contactForm"
           variant="contained"
         >
-             Сохранить
+          Сохранить
         </Button>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        title={'Сохранение'}
-        text="Вы уверены, что хотите продолжить?"
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
     </CustomizedDialog>
   );
 }
