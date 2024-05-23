@@ -185,7 +185,6 @@ export default function UseDigits(params: UseDigitsParams) {
       ? newValues.code || state.isoCode
       : newCountryCode || previousCountryRef.current;
 
-    console.log(country);
     const numberValue = asYouTypeRef.current.getNumberValue() ?? '';
 
     if (strictMode) {
@@ -224,7 +223,7 @@ export default function UseDigits(params: UseDigitsParams) {
         isoCode: country,
         inputValue: validValue
       };
-      console.log(state);
+
       setState(newPhone);
     }
   };

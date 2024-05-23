@@ -120,7 +120,7 @@ export interface IKanbanTask extends IWithID {
   USR$NAME: string;
   USR$DEADLINE?: Date;
   PERFORMER?: IContactWithID;
-  CREATOR: IContactWithID;
+  CREATOR: IContactWithID | undefined;
   USR$DATECLOSE?: Date;
   USR$CREATIONDATE?: Date;
   USR$CARDKEY: number;

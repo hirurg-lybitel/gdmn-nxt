@@ -58,6 +58,8 @@ import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutl
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -99,10 +101,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const classes = useStyles();
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const [isFetchingCard, setIsFetchingCard] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [deleting, setDeleting] = useState(false);
   const [tabIndex, setTabIndex] = useState('1');
   const user = useSelector<RootState, UserState>(state => state.user);
 
@@ -140,9 +140,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, [matchBetweenLgUw, matchDownUW]);
 
   const handleDeleteClick = () => {
+    onSubmit(formik.values, true);
     setTabIndex('1');
-    setDeleting(true);
-    setConfirmOpen(true);
   };
 
   const handleOnClose = () => {
@@ -231,45 +230,30 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         })
     }),
     onSubmit: (values) => {
-      if (!confirmOpen) {
-        setDeleting(false);
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      onSubmit(
+        {
+          ...values,
+          ...(values.DEAL?.ID
+            ? {
+              DEAL: {
+                ...values.DEAL,
+                USR$AMOUNT: values.DEAL?.USR$AMOUNT ?? 0,
+              }
+            }
+            : {}),
+        },
+        false
+      );
     },
   });
 
   const handleCancelClick = () => {
-    setDeleting(false);
     setTabIndex('1');
     onCancelClick(formik.values);
     if (isFetchingCard) {
       setIsFetchingCard(false);
     }
   };
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    onSubmit(
-      {
-        ...formik.values,
-        ...(formik.values.DEAL?.ID
-          ? {
-            DEAL: {
-              ...formik.values.DEAL,
-              USR$AMOUNT: formik.values.DEAL?.USR$AMOUNT ?? 0,
-            }
-          }
-          : {}),
-      },
-      deleting
-    );
-  }, [formik.values, deleting]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
 
   useEffect(() => {
     if ((getIn(formik.touched, 'DEAL.USR$NAME"') && Boolean(getIn(formik.errors, 'DEAL.USR$NAME"'))) ||
@@ -401,18 +385,6 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       </Stack>
     );
   }, [formik.values, formik.touched, formik.errors]);
-
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={deleting ? 'Удаление сделки' : 'Сохранение сделки'}
-      text="Вы уверены, что хотите продолжить?"
-      dangerous={deleting}
-      confirmClick={handleConfirmOkClick}
-      cancelClick={handleConfirmCancelClick}
-    />,
-  [confirmOpen, deleting, handleConfirmOkClick, handleConfirmCancelClick]);
 
   const currentStageIndex = useMemo(() => stages.findIndex(s => s.ID === formik.values.USR$MASTERKEY), [stages, formik.values.USR$MASTERKEY]);
 
@@ -920,29 +892,32 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       <DialogActions className={styles.DialogActions}>
         <PermissionsGate actionAllowed={userPermissions?.deals.DELETE}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) && deleteable &&
-            <IconButton onClick={handleDeleteClick} size="small">
-              <DeleteIcon />
-            </IconButton>
+            <ItemButtonDelete button onClick={handleDeleteClick} />
           }
         </PermissionsGate>
         <Box flex={1} />
-        <Button
+        <ButtonWithConfirmation
           className={classes.button}
-          onClick={handleCancelClick}
           variant="outlined"
-        >Отменить</Button>
+          onClick={handleCancelClick}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
+        >
+          Отменить
+        </ButtonWithConfirmation>
         <PermissionsGate show={true} actionAllowed={formik.values.ID > 0 ? userPermissions?.deals.PUT : userPermissions?.deals.POST}>
           <Button
             className={classes.button}
-            form="mainForm"
-            type="submit"
             variant="contained"
             disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching || isFetchingCard}
-          >Сохранить</Button>
+            form="mainForm"
+            type="submit"
+          >
+            Сохранить
+          </Button>
         </PermissionsGate>
       </DialogActions>
-      {memoConfirmDialog}
-      {/* {memoAddDealsSource} */}
     </CustomizedDialog>
   );
 }

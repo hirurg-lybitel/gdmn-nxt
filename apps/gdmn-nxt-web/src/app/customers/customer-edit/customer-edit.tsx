@@ -35,6 +35,7 @@ import CustomerDeals from '../CustomerDetails/customer-deals/customer-deals';
 import { emailValidation } from '@gdmn-nxt/components/helpers/validators';
 import { CustomerContacts } from '../CustomerDetails/customer-contacts';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -56,11 +57,6 @@ export function CustomerEdit({
   const userPermissions = usePermissions();
 
   const [tabIndex, setTabIndex] = useState('1');
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDeleteClick = () => {
-    setDeleting(true);
-  };
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -95,8 +91,8 @@ export function CustomerEdit({
           ({ value }) => validatePhoneNumber(value) ?? '',
           (value = '') => !validatePhoneNumber(value))
     }),
-    onSubmit: () => {
-      setDeleting(false);
+    onSubmit: (values) => {
+      onSubmit(values, false);
     },
   });
 
@@ -107,19 +103,16 @@ export function CustomerEdit({
     };
   }, [open]);
 
+  const handleDeleteClick = () => {
+    onSubmit(formik.values, true);
+  };
+
   const handleLabelsChange = (labels: ILabel[]) => {
     formik.setFieldValue('LABELS', labels);
   };
 
   const handlePhoneChange = (value: string) => {
     formik.setFieldValue('PHONE', value);
-  };
-
-  const handleSubmit = async () => {
-    await formik.submitForm();
-
-    if (!formik.isValid) return;
-    onSubmit(formik.values, deleting);
   };
 
   return (
@@ -297,43 +290,36 @@ export function CustomerEdit({
       <DialogActions>
         {customer && deleteable &&
           <PermissionsGate actionAllowed={userPermissions?.customers?.DELETE}>
-            <Confirmation
-              key="delete"
-              title="Удаление клиента"
+            <ItemButtonDelete
+              button
               text={`Вы действительно хотите удалить клиента ${customer?.NAME}?`}
-              dangerous
-              onConfirm={handleDeleteClick}
-            >
-              <ItemButtonDelete button />
-            </Confirmation>
+              onClick={handleDeleteClick}
+            />
           </PermissionsGate>
         }
         <Box flex={1}/>
-        <Button
+        <ButtonWithConfirmation
           className={styles.button}
-          onClick={onCancel}
           variant="outlined"
           color="primary"
+          onClick={onCancel}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-             Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <PermissionsGate actionAllowed={userPermissions?.customers?.PUT} show>
-          <Confirmation
-            key="save"
-            title="Сохранение клиента"
-            text={'Вы действительно хотите сохранить изменения?'}
-            onConfirm={handleSubmit}
+          <Button
+            className={styles.button}
+            variant="contained"
+            disabled={!userPermissions?.customers?.PUT}
+            form="customerEditForm"
+            type="submit"
           >
-            <Button
-              className={styles.button}
-              variant="contained"
-              disabled={!userPermissions?.customers?.PUT}
-            >
-              Сохранить
-            </Button>
-          </Confirmation>
+            Сохранить
+          </Button>
         </PermissionsGate>
-
       </DialogActions>
     </CustomizedDialog>
   );
