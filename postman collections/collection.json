@@ -38,40 +38,6 @@
 								}
 							},
 							"response": []
-						},
-						{
-							"name": "Договоры",
-							"id": "bc8f8a0d-95e9-4e0b-99f9-e2191b6d513e",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/contracts-list/:companyId/contractType/:contractType",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"contracts-list",
-										":companyId",
-										"contractType",
-										":contractType"
-									],
-									"variable": [
-										{
-											"key": "companyId",
-											"value": "153588010"
-										},
-										{
-											"key": "contractType",
-											"value": "1"
-										}
-									]
-								}
-							},
-							"response": []
 						}
 					],
 					"id": "a8f514a6-4d26-440f-ac50-898df31d2702"
@@ -3495,6 +3461,46 @@
 				}
 			],
 			"id": "e006d411-a9d9-4ceb-82e4-94dab88a7f0b"
+		},
+		{
+			"name": "Contracts (Договоры)",
+			"item": [
+				{
+					"name": "Договоры",
+					"id": "bc8f8a0d-95e9-4e0b-99f9-e2191b6d513e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/contracts-list/:companyId/contractType/:contractType",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"contracts-list",
+								":companyId",
+								"contractType",
+								":contractType"
+							],
+							"variable": [
+								{
+									"key": "companyId",
+									"value": "153588010"
+								},
+								{
+									"key": "contractType",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "40966b64-35b7-4d8e-a750-57bf81b4f8f6"
 		}
 	],
 	"auth": {
