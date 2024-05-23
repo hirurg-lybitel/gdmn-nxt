@@ -6,6 +6,8 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { IProfileSettings } from '@gsbelarus/util-api-types';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import EmailInput from '@gdmn-nxt/components/email-input/email-input';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export default function AccountTab() {
   const userProfile = useUserData();
@@ -64,9 +66,8 @@ export default function AccountTab() {
                   fullWidth
                 />
               </Stack>
-              <TextField
+              <EmailInput
                 disabled={isLoading}
-                label="Email"
                 name="EMAIL"
                 onChange={formik.handleChange}
                 value={formik.values.EMAIL ?? ''}
@@ -76,19 +77,16 @@ export default function AccountTab() {
             </Stack>
           </Stack>
           <Box flex={1}/>
-          <Confirmation
+          <ButtonWithConfirmation
+            variant="contained"
+            disabled={compareObjects(formik.values, settings ?? {}) || isLoading}
+            style={{ alignSelf: 'flex-start' }}
+            onClick={onConfirm}
             title="Сохранение изменений"
-            dangerous
-            onConfirm={onConfirm}
+            confirmation={false}
           >
-            <Button
-              variant="contained"
-              disabled={compareObjects(formik.values, settings ?? {}) || isLoading}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              Сохранить
-            </Button>
-          </Confirmation>
+            Сохранить
+          </ButtonWithConfirmation>
         </Stack>
       </Form>
     </FormikProvider>

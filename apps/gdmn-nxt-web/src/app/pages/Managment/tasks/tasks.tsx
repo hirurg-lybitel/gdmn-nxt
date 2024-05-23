@@ -127,7 +127,7 @@ export function Tasks(props: TasksProps) {
             </ToggleButton>
           </ToggleButtonGroup>
           <SearchBar
-            disabled={columnsIsFetching}
+            disabled={isLoading}
             onCancelSearch={cancelSearch}
             onRequestSearch={requestSearch}
             cancelOnEscape

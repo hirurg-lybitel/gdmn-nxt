@@ -13,7 +13,7 @@ export default function Confirmation({
   onConfirm,
   dangerous = false,
   text = 'Вы уверены, что хотите продолжить?',
-  title = '',
+  title = 'Внимание',
   ...props
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);

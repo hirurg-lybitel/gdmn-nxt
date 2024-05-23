@@ -146,7 +146,7 @@ export function SignInSignUp({
           helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
           disabled={waiting}
           autoFocus
-          onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value })}
+          onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value.replace(/\s/g, '') })}
         />
         <Button
           variant="contained"

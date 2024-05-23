@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 
-import PersonEdit from './person-edit';
+import EmailInput from './email-input';
 
-describe('PersonEdit', () => {
+describe('EmailInput', () => {
   it('should render successfully', () => {
-    // const { baseElement } = render(<PersonEdit />);
+    // const { baseElement } = render(<EmailInput />);
     expect(true).toBeTruthy();
   });
 });

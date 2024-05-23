@@ -1,7 +1,6 @@
 import { Box, Button, DialogActions, DialogContent, DialogTitle, Stack, TextField, Theme } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import styles from './label-list-item-edit.module.less';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ILabel } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
@@ -10,6 +9,7 @@ import { SketchPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import IconSelect from '@gdmn-nxt/components/icon-select/icon-select';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -176,30 +176,25 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
         </DialogContent>
         <DialogActions>
           <Box flex={1}/>
-          <Button
+          <ButtonWithConfirmation
             className={classes.button}
             onClick={onCancel}
             variant="outlined"
             color="primary"
+            title="Внимание"
+            text={'Изменения будут утеряны. Продолжить?'}
+            confirmation={formik.dirty}
           >
             Отменить
-          </Button>
+          </ButtonWithConfirmation>
           <Button
             className={classes.button}
-            type="submit"
-            form="mainForm"
             variant="contained"
+            onClick={handleConfirmOkClick}
           >
             Сохранить
           </Button>
         </DialogActions>
-        <ConfirmDialog
-          open={confirmOpen}
-          title="Сохранение"
-          text="Вы уверены, что хотите продолжить?"
-          confirmClick={handleConfirmOkClick}
-          cancelClick={handleConfirmCancelClick}
-        />
       </CustomizedDialog>
     </>
   );

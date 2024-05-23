@@ -16,6 +16,7 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   container?: (value: Value) => React.ReactNode;
   error?: boolean;
   helperText?: string;
+  closeOnBlur?:boolean
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -28,6 +29,7 @@ const EditableTypography = <Value extends React.ReactNode>({
   container,
   error = false,
   helperText,
+  closeOnBlur = true,
   ...props
 }: EditableTypographyProps<Value>) => {
   const [editText, setEditText] = useState(!value);
@@ -38,7 +40,7 @@ const EditableTypography = <Value extends React.ReactNode>({
         e.preventDefault();
       },
       onBlur: (e: any) => {
-        onClose(e);
+        closeOnBlur && onClose(e);
       },
       style: {
         flex: 1
