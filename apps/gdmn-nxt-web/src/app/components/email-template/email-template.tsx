@@ -230,7 +230,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const [length, setLenght] = useState<number>(0);
 
   useEffect(() => {
-    console.log(anyTemplates);
     if (anyTemplates.html === previeComponent) {
       return;
     }
@@ -527,9 +526,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
           </div>
           <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
             <div style={{ width: '100%', height: '100%' }}>
-              <TabPanel value="1" style={{ height: '100%', width: workspaceWidth + 40 + 'px', padding: '0' }} >
+              <TabPanel value="1" style={{ height: '100%', width: `calc(100% - ${workspaceWidth}px)`, padding: '0' }} >
                 <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
-                  <div style={{ width: workspaceWidth + 'px', maxWidth: '700px', transition: '0.5s' }}>
+                  <div style={{ width: '100% ', transition: '0.5s' }}>
                     <Droppable droppableId="tamplate" >
                       {(droppableProvider) => (
                         <div
@@ -605,7 +604,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                 right: tabIndex === '2' ? '-100%' : 0,
                 top: 0,
                 bottom: 0,
-                width: `calc(100% - ${workspaceWidth + 40}px)`,
+                width: workspaceWidth,
                 minWidth: '300px',
                 transition: '0.5s',
                 zIndex: 2

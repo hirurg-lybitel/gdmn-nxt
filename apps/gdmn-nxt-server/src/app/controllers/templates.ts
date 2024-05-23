@@ -25,8 +25,6 @@ export const get: RequestHandler = async (req, res) => {
     toRecord = fromRecord + Number(pageSize);
   };
 
-  console.log(nameFilter);
-
   try {
     const _schema = {};
     let count = 0;

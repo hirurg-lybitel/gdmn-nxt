@@ -49,7 +49,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     if (firstRender) setFirstRender(false);
     setTemplate({ content: htmlToTemplateObject(templateOld?.USR$HTML), html: '' });
     setTemplateName(templateOld?.USR$NAME);
-  }, [templateOld, firstRender]);
+  }, [templateOld, firstRender, open]);
 
   const clear = () => {
     setTemplate(undefined);
@@ -117,9 +117,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
         width="calc(100% - var(--menu-width))"
       >
         <DialogTitle style={{ display: 'flex' }}>
-        Редактирование:
-          <div style={{ width: '20px' }} />
-          {templateName}
+          {!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateName}
         </DialogTitle>
         <DialogContent dividers>
           <ErrorTooltip

@@ -39,8 +39,6 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
 
-  console.log(filterData);
-
   const requestSearch = useCallback((value: string) => {
     const newObject = { ...filterData };
     delete newObject.name;
@@ -88,8 +86,6 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     pagination: paginationData,
     ...(filterData && { filter: filterData })
   });
-
-  console.log('asdasdasd12323'.indexOf('g'));
 
   const [addTemplate] = useAddTemplateMutation();
   const [updateTemplate] = useUpdateTemplateMutation();
