@@ -134,14 +134,14 @@ export function Contracts(props: ContractsProps) {
               }
             />
             <Box display="inline-flex" alignSelf="center">
-              <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
+              {/* <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}> */}
                 <CustomAddButton
                   // disabled={contractsIsFetching}
                   disabled
                   label="Создать договор"
                   // onClick={() => setUpsertContact({ addContact: true })}
                 />
-              </PermissionsGate>
+              {/* </PermissionsGate> */}
             </Box>
             <Box display="inline-flex" alignSelf="center">
               <CustomLoadingButton

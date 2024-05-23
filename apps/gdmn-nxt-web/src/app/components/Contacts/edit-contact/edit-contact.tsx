@@ -10,7 +10,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
 import * as yup from 'yup';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
@@ -20,7 +20,6 @@ import { useGetContactPersonsQuery } from '../../../features/contact/contactApi'
 import filterOptions from '../../helpers/filter-options';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
@@ -30,6 +29,7 @@ import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-butto
 import ContactsDeals from '../contacts-deals';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import ContactsTasks from '../contact-tasks';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -76,11 +76,7 @@ export function EditContact({
       PHONES: yup.array().of(phonesValidation())
     }),
     onSubmit: (values) => {
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      onSubmit(validValues(), false);
     },
     onReset: (values) => {
       setDeleting(false);
@@ -108,12 +104,12 @@ export function EditContact({
 
   const handleAddPhone = () => {
     let newPhones: IPhone[] = [];
-    const phones = formik.values.PHONES
+    const phones = formik.values.PHONES;
     if (phones?.length) {
       newPhones = [...phones];
     };
-    if(phones && phones[phones.length - 1]?.USR$PHONENUMBER === ''){
-      return
+    if (phones && phones[phones.length - 1]?.USR$PHONENUMBER === '') {
+      return;
     }
     newPhones.push({ ID: -1, USR$PHONENUMBER: '' });
 
@@ -205,21 +201,11 @@ export function EditContact({
 
   const validValues = () => {
     const newPhones = formik.values.PHONES?.filter(phone => phone.USR$PHONENUMBER.length !== 0) || [];
-    return {...formik.values, PHONES: newPhones}
-  }
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    onSubmit(validValues(), deleting);
-  }, [formik.values, deleting]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
+    return { ...formik.values, PHONES: newPhones };
+  };
 
   const handleDeleteClick = () => {
-    setDeleting(true);
-    setConfirmOpen(true);
+    onSubmit(formik.values, true);
   };
 
   const handleStopPropagation = (e: any) => {
@@ -385,7 +371,6 @@ export function EditContact({
               />
             </Stack>
           </Stack>
-
         );
       })}
       <div className={styles['addItemButtonContainer']}>
@@ -398,17 +383,6 @@ export function EditContact({
         </Button>
       </div>
     </div>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      dangerous={deleting}
-      title={deleting ? 'Удаление контакта' : 'Сохранение контакта'}
-      text="Вы уверены, что хотите продолжить?"
-      confirmClick={handleConfirmOkClick}
-      cancelClick={handleConfirmCancelClick}
-    />,
-  [confirmOpen, deleting]);
 
   const handleAvatarChange = (newAvatar: string | undefined) => {
     formik.setFieldValue('PHOTO', newAvatar);
@@ -574,14 +548,16 @@ export function EditContact({
           <ItemButtonDelete button onClick={handleDeleteClick} />
         </PermissionsGate>
         <Box flex={1}/>
-        <Button
+        <ButtonWithConfirmation
           className={styles.button}
-          onClick={onClose}
           variant="outlined"
-          color="primary"
+          onClick={onClose}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-             Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <PermissionsGate actionAllowed={userPermissions?.contacts?.PUT} show>
           <Button
             className={styles.button}
@@ -590,11 +566,10 @@ export function EditContact({
             variant="contained"
             disabled={!userPermissions?.contacts?.PUT}
           >
-             Сохранить
+            Сохранить
           </Button>
         </PermissionsGate>
       </DialogActions>
-      {memoConfirmDialog}
     </CustomizedDialog>
   );
 }

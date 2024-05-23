@@ -1,12 +1,12 @@
 import styles from './deal-source-upsert.module.less';
 import { IDealSource } from '@gsbelarus/util-api-types';
-import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect } from 'react';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import DeleteIcon from '@mui/icons-material/Delete';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 export interface DealSourceUpsertProps {
   open: boolean;
@@ -19,9 +19,6 @@ export interface DealSourceUpsertProps {
 export function DealSourceUpsert(props: DealSourceUpsertProps) {
   const { open, dealSource } = props;
   const { onSubmit, onCancel, onDelete } = props;
-
-  const [deleting, setDeleting] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const initValue: IDealSource = {
     ID: dealSource?.ID || 0,
@@ -41,13 +38,8 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
         .required('')
         .max(60, 'Слишком длинное наименование'),
     }),
-    onSubmit: (value) => {
-      setDeleting(false);
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+    onSubmit: (values) => {
+      onSubmit(values);
     }
   });
 
@@ -65,36 +57,13 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
   }, [onCancel]);
 
   const handleDeleteClick = useCallback(() => {
-    setDeleting(true);
-    setConfirmOpen(true);
-  }, []);
-
-  const handleConfirmOkClick = useCallback((deleting: boolean) => () => {
-    setConfirmOpen(false);
-    deleting
-      ? onDelete && onDelete(formik.values.ID)
-      : onSubmit(formik.values);
-  }, [formik.values]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
+    onDelete && onDelete(formik.values.ID);
+  }, [formik.values.ID, onDelete]);
 
   const handleFocus = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const lengthOfInput = e.target.value.length;
     return e.target.setSelectionRange(lengthOfInput, lengthOfInput);
   }, []);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={deleting ? 'Удаление источника заявок' : 'Сохранение'}
-      text="Вы уверены, что хотите продолжить?"
-      dangerous={deleting}
-      confirmClick={handleConfirmOkClick(deleting)}
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen, deleting]);
 
   return (
     <CustomizedDialog
@@ -129,29 +98,29 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
       <DialogActions className={styles.DialogActions}>
         {
           dealSource &&
-          <IconButton onClick={handleDeleteClick} size="small" hidden>
-            <DeleteIcon />
-          </IconButton>
+          <ItemButtonDelete button onClick={handleDeleteClick} />
         }
         <Box flex={1}/>
-        <Button
+        <ButtonWithConfirmation
           className={styles.Button}
-          onClick={handleCancel}
           variant="outlined"
           color="primary"
+          onClick={handleCancel}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-             Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <Button
           className={styles.Button}
           type="submit"
           form="dealSource"
           variant="contained"
         >
-             Сохранить
+          Сохранить
         </Button>
       </DialogActions>
-      {memoConfirmDialog}
     </CustomizedDialog>
   );
 }

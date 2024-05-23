@@ -1,12 +1,12 @@
 import styles from './deny-reasons-upsert.module.less';
 import { IDenyReason } from '@gsbelarus/util-api-types';
-import { Box, Button, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect } from 'react';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import DeleteIcon from '@mui/icons-material/Delete';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export interface DenyReasonsUpsertProps {
   open: boolean;
@@ -19,9 +19,6 @@ export interface DenyReasonsUpsertProps {
 export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
   const { open, denyReason } = props;
   const { onSubmit, onCancel, onDelete } = props;
-
-  const [deleting, setDeleting] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const initValue: IDenyReason = {
     ID: denyReason?.ID || 0,
@@ -41,20 +38,14 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
         .required('')
         .max(60, 'Слишком длинное наименование'),
     }),
-    onSubmit: (value) => {
-      setDeleting(false);
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+    onSubmit: (values) => {
+      onSubmit(values);
     }
   });
 
   useEffect(() => {
     if (!open) formik.resetForm();
   }, [open]);
-
 
   const handleCancel = useCallback(() => {
     onCancel();
@@ -65,36 +56,13 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
   }, [onCancel]);
 
   const handleDeleteClick = useCallback(() => {
-    setDeleting(true);
-    setConfirmOpen(true);
-  }, []);
-
-  const handleConfirmOkClick = useCallback((deleting: boolean) => () => {
-    setConfirmOpen(false);
-    deleting
-      ? onDelete && onDelete(formik.values.ID)
-      : onSubmit(formik.values);
-  }, [formik.values]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
+    onDelete && onDelete(formik.values.ID);
+  }, [formik.values.ID, onDelete]);
 
   const handleFocus = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const lengthOfInput = e.target.value.length;
     return e.target.setSelectionRange(lengthOfInput, lengthOfInput);
   }, []);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={deleting ? 'Удаление причины отказа' : 'Сохранение'}
-      text="Вы уверены, что хотите продолжить?"
-      dangerous={deleting}
-      confirmClick={handleConfirmOkClick(deleting)}
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen, deleting]);
 
   return (
     <CustomizedDialog
@@ -129,29 +97,29 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
       <DialogActions className={styles.DialogActions}>
         {
           denyReason &&
-          <IconButton onClick={handleDeleteClick} size="small" hidden>
-            <DeleteIcon />
-          </IconButton>
+          <ItemButtonDelete button onClick={handleDeleteClick} />
         }
         <Box flex={1}/>
-        <Button
+        <ButtonWithConfirmation
           className={styles.Button}
-          onClick={handleCancel}
           variant="outlined"
           color="primary"
+          onClick={handleCancel}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
-             Отменить
-        </Button>
+          Отменить
+        </ButtonWithConfirmation>
         <Button
           className={styles.Button}
           type="submit"
           form="denyReason"
           variant="contained"
         >
-             Сохранить
+          Сохранить
         </Button>
       </DialogActions>
-      {memoConfirmDialog}
     </CustomizedDialog>
   );
 }

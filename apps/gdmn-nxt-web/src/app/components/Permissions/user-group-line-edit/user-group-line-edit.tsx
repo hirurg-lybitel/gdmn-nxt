@@ -1,14 +1,12 @@
-import { IUser, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, createFilterOptions, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Stack, TextField } from '@mui/material';
+import { IUser, IUserGroupLine } from '@gsbelarus/util-api-types';
+import { Autocomplete, Box, Button, Checkbox, createFilterOptions, DialogActions, DialogContent, DialogTitle, FormControlLabel, Stack, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useGetUserGroupLineQuery } from '../../../features/permissions';
-import CloseIcon from '@mui/icons-material/Close';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
@@ -42,8 +40,6 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
   const { data: users, isFetching: usersIsFetching } = useGetUsersQuery();
   const { data: existsUsers = [] } = useGetUserGroupLineQuery(userGroupLine.USERGROUP.ID);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
   const classes = useStyles();
 
   interface IUsersGroupLineForm {
@@ -65,25 +61,21 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
       USERS: yup.array().min(1, 'Не выбран пользователь')
         .required('Не выбран пользователь'),
     }),
-    onSubmit: (value) => {
-      setConfirmOpen(true);
+    onSubmit: (values) => {
+      const users = values.USERS.map(user => ({
+        ID: userGroupLine.ID,
+        USER: user,
+        REQUIRED_2FA: values.REQUIRED_2FA,
+        USERGROUP: userGroupLine.USERGROUP
+      }));
+      if (users.length === 0) return;
+      onSubmit(users);
     }
   });
 
   useEffect(() => {
     if (!open) formik.resetForm();
   }, [open]);
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    const users = formik.values.USERS.map(user => ({ ID: userGroupLine.ID, USER: user, REQUIRED_2FA: formik.values.REQUIRED_2FA, USERGROUP: userGroupLine.USERGROUP }));
-    if (users.length === 0) return;
-    onSubmit(users);
-  }, [formik.values, userGroupLine]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
@@ -140,17 +132,15 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
                       </li>
                     )}
                     renderInput={(params) => (
-                      <>
-                        <TextField
-                          {...params}
-                          label="Пользователь"
-                          name={'USERS'}
-                          focused
-                          placeholder="Выберите пользователя"
-                          error={Boolean(formik.errors.USERS)}
-                          helperText={formik.errors.USERS as ReactNode}
-                        />
-                      </>
+                      <TextField
+                        {...params}
+                        label="Пользователь"
+                        name={'USERS'}
+                        focused
+                        placeholder="Выберите пользователя"
+                        error={Boolean(formik.errors.USERS)}
+                        helperText={formik.errors.USERS as ReactNode}
+                      />
                     )}
                   />
                   <FormControlLabel
@@ -185,20 +175,13 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
         </Button>
         <Button
           className={classes.button}
-          type={'submit'}
-          form="mainForm"
           variant="contained"
+          form="mainForm"
+          type="submit"
         >
           Сохранить
         </Button>
       </DialogActions>
-      <ConfirmDialog
-        open={confirmOpen}
-        title="Сохранение"
-        text="Вы уверены, что хотите продолжить?"
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
-      />
     </CustomizedDialog>
   );
 }
