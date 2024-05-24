@@ -77,34 +77,6 @@ export function Profile(props: ProfileProps) {
               icon={<SettingsSuggestIcon />}
               iconPosition="start"
             />
-            {/* <Tab
-              label="Профиль"
-              value="account"
-              icon={<PersonIcon />}
-              iconPosition="start"
-            />
-            <Tab
-              label="Безопасность"
-              value="settings"
-              disabled={isLoading}
-              icon={<ShieldIcon />}
-              iconPosition="start"
-            />
-            <Tab
-              label="Уведомления"
-              value="notifications"
-              disabled={isLoading}
-              icon={<NotificationsIcon />}
-              iconPosition="start"
-            />
-            <Tab
-              label="Система"
-              value="system"
-              disabled={isLoading}
-              className={!userPermissions?.system?.forGroup ? styles.tabHeaderHide : ''}
-              icon={<SettingsSuggestIcon />}
-              iconPosition="start"
-            /> */}
           </TabList>
           <Divider style={{ margin: 0 }} />
           <TabPanel value="account" className={tabIndex === 'account' ? styles.tabPanel : ''}>

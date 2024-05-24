@@ -20,7 +20,7 @@ interface IStyledGridProps extends DataGridProProps{
 
 /** Disable license expired message error */
 const disableLicenseError = () => {
-  const searchText = ['MUI X: Missing license key', 'MUI X: License key expired']
+  const searchText = ['MUI X: Missing license key', 'MUI X: License key expired', 'MUI X Expired package version']
     .map(s => s.toLowerCase());
   const root = document.querySelectorAll('.MuiDataGrid-main');
 
