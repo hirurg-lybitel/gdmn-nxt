@@ -9,6 +9,7 @@ import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export default function NotificationsTab() {
   const userProfile = useUserData();
@@ -152,19 +153,16 @@ export default function NotificationsTab() {
             <Button variant="contained" onClick={checkPushNotifications}>Проверить</Button>
           </Stack>
           <Box flex={1}/>
-          <Confirmation
+          <ButtonWithConfirmation
+            variant="contained"
+            disabled={compareObjects(formik.values, settings ?? {}) || isLoading}
+            style={{ alignSelf: 'flex-start' }}
+            onClick={onConfirm}
             title="Сохранение изменений"
-            dangerous
-            onConfirm={onConfirm}
+            confirmation={false}
           >
-            <Button
-              variant="contained"
-              disabled={compareObjects(formik.values, settings ?? {}) || isLoading}
-              style={{ alignSelf: 'flex-start' }}
-            >
             Сохранить
-            </Button>
-          </Confirmation>
+          </ButtonWithConfirmation>
         </Stack>
       </Form>
     </FormikProvider>

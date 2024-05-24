@@ -212,7 +212,7 @@ export function Deals(props: DealsProps) {
               )}
             />
             <SearchBar
-              disabled={columnsIsFetching}
+              // disabled={columnsIsFetching}
               onCancelSearch={filterHandlers.cancelSearch}
               onRequestSearch={filterHandlers.requestSearch}
               cancelOnEscape

@@ -4,16 +4,15 @@ import styles from './updates-edit.module.less';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Tab, TextField, Theme } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, Stack, Tab, TextField } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '../../helpers/hooks/usePermissions';
-import { makeStyles } from '@mui/styles';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 export interface UpdatesEditProps {
   open: boolean;
@@ -27,8 +26,6 @@ export function UpdatesEdit(props: UpdatesEditProps) {
   const { open, update } = props;
   const { onSubmit, onCancel, onDelete } = props;
 
-  const [deleting, setDeleting] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const [tabIndex, setTabIndex] = useState('1');
 
   const userPermission = usePermissions();
@@ -58,13 +55,8 @@ export function UpdatesEdit(props: UpdatesEditProps) {
           return regEx.test(value);
         })
     }),
-    onSubmit: (value) => {
-      setDeleting(false);
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+    onSubmit: (values) => {
+      onSubmit(values);
     }
   });
 
@@ -82,20 +74,8 @@ export function UpdatesEdit(props: UpdatesEditProps) {
   }, [onCancel]);
 
   const handleDeleteClick = useCallback(() => {
-    setDeleting(true);
-    setConfirmOpen(true);
-  }, []);
-
-  const handleConfirmOkClick = useCallback((deleting: boolean) => () => {
-    setConfirmOpen(false);
-    deleting
-      ? onDelete && onDelete(formik.values.ID)
-      : onSubmit(formik.values);
-  }, [formik.values]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
+    onDelete && onDelete(formik.values.ID);
+  }, [formik.values.ID, onDelete]);
 
   const handleFocus = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const lengthOfInput = e.target.value.length;
@@ -105,17 +85,6 @@ export function UpdatesEdit(props: UpdatesEditProps) {
   const handleTabsChange = useCallback((event: any, newindex: string) => {
     setTabIndex(newindex);
   }, []);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={deleting ? 'Удаление данных о версии' : 'Сохранение'}
-      text="Вы уверены, что хотите продолжить?"
-      dangerous={deleting}
-      confirmClick={handleConfirmOkClick(deleting)}
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen, deleting]);
 
   return (
     <CustomizedDialog
@@ -208,19 +177,23 @@ export function UpdatesEdit(props: UpdatesEditProps) {
         {
           update &&
           <PermissionsGate actionAllowed={userPermission?.updates.DELETE}>
-            <IconButton onClick={handleDeleteClick} size="small">
-              <DeleteIcon />
-            </IconButton>
+            <ItemButtonDelete
+              button
+              onClick={handleDeleteClick}
+            />
           </PermissionsGate>
         }
         <Box flex={1}/>
-        <Button
-          onClick={handleCancel}
+        <ButtonWithConfirmation
+          className={styles.button}
           variant="outlined"
-          color="primary"
+          onClick={handleCancel}
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
         >
           Отменить
-        </Button>
+        </ButtonWithConfirmation>
         <Button
           type="submit"
           form="updates"
@@ -229,7 +202,6 @@ export function UpdatesEdit(props: UpdatesEditProps) {
           Сохранить
         </Button>
       </DialogActions>
-      {memoConfirmDialog}
     </CustomizedDialog>
   );
 }

@@ -1,12 +1,12 @@
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
 import { ContractType, ICustomer, ISystemSettings } from '@gsbelarus/util-api-types';
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material';
 import { useGetSystemSettingsQuery, useSetSystemSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/systemSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { useMemo, useState } from 'react';
-import * as yup from 'yup';
+import { useMemo } from 'react';
 
 export default function SystemTab() {
   const compareObjects = useObjectsComparator();
@@ -77,19 +77,16 @@ export default function SystemTab() {
             helperText={formik.touched.OURCOMPANY && formik.errors.OURCOMPANY}
           />
           <Box flex={1} />
-          <Confirmation
+          <ButtonWithConfirmation
+            variant="contained"
+            disabled={compareObjects(formik.values, settings ?? {}) || isFetching}
+            style={{ alignSelf: 'flex-start' }}
+            onClick={onConfirm}
             title="Сохранение изменений"
-            dangerous
-            onConfirm={onConfirm}
+            confirmation={false}
           >
-            <Button
-              variant="contained"
-              disabled={compareObjects(formik.values, settings ?? {}) || isFetching}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              Сохранить
-            </Button>
-          </Confirmation>
+            Сохранить
+          </ButtonWithConfirmation>
         </Stack>
       </Form>
     </FormikProvider>
