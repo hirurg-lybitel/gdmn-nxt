@@ -5,20 +5,23 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import { ISegment } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 
-const mockData = [
+const mockData: ISegment[] = [
   {
     ID: 1,
     NAME: 'Favorite customers',
-    RECIPIENTS: 48
+    QUANTITY: 48,
+    FIELDS: []
   },
   {
     ID: 2,
     NAME: 'Offer on March 8',
-    RECIPIENTS: 112
+    QUANTITY: 112,
+    FIELDS: []
   }
 ];
 
@@ -43,7 +46,7 @@ export default function CustomersSegments() {
 
   const columns: GridColDef<any>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
-    { field: 'RECIPIENTS', headerName: 'Получатели', width: 150 },
+    { field: 'QUANTITY', headerName: 'Получатели', width: 150 },
   ];
 
   const memoSegmentEdit = useMemo(() =>

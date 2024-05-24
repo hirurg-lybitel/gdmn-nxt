@@ -141,7 +141,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           </div>
         </DialogContent>
         <DialogActions>
-          <ItemButtonDelete button onClick={handlDelete} />
+          {templateOld && <ItemButtonDelete button onClick={handlDelete} />}
           <Box flex={1}/>
           <Button
             style={{ width: '120px' }}
