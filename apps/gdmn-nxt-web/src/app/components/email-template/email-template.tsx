@@ -404,30 +404,24 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
 
   const previeComponent = renderToStaticMarkup(
-    <html lang="ru">
-      <head>
-        <meta charSet="utf-8" />
-      </head>
-      <body
-        style={{
-          height: '100%',
-          maxWidth: '700px',
-          width: '100%',
-          background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent'
-        }}
-      >
-        <div>
-          {anyTemplates.content.components.map((component: IComponent, index: number) => (
-            <EmailTemplateItem
-              key={index}
-              index={index}
-              isPreview={true}
-              component={component}
-            />
-          ))}
-        </div>
-      </body>
-    </html>
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent'
+      }}
+    >
+      <div>
+        {anyTemplates.content.components.map((component: IComponent, index: number) => (
+          <EmailTemplateItem
+            key={index}
+            index={index}
+            isPreview={true}
+            component={component}
+          />
+        ))}
+      </div>
+    </div>
   );
 
   const getComponentIcon = (type: componentTypes) => {

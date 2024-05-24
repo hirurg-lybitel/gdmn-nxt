@@ -105,7 +105,6 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
   const ref = useRef<any>(null);
 
   const joditEditorMemo = useMemo(() => {
-    console.log(component.text);
     const editorConfig = {
       readonly: false,
       autofocus: false,

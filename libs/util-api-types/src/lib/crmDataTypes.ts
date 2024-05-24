@@ -386,6 +386,7 @@ export interface ISegment extends IWithID {
   NAME: string;
   QUANTITY: number;
   FIELDS: ISegmnentField[]
+  CUSTOMERS?: string
 }
 
 export interface IMailing extends IWithID {
