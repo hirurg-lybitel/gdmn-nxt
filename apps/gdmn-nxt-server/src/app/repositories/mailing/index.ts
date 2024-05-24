@@ -1,7 +1,8 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, IMailing, ISegment, IsNotNull, IsNull, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { segmentsRepository } from '../segments';
+import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 
 const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
@@ -11,14 +12,19 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
     const clauseString = Object
       .keys({ ...clause })
       .map(f => {
-        if (clause[f] === IsNotNull()) {
-          return ` m.${f} IS NOT NULL`;
+        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
+          const expression = clause[f] as FindOperator;
+          switch (expression.operator) {
+            case 'LIKE':
+              return ` UPPER(m.${f}) ${expression.value} `;
+            case 'IsNull':
+              return ` m.${f} IS NULL`;
+            case 'IsNotNull':
+              return ` m.${f} IS NOT NULL`;
+          }
         }
-        if (clause[f] === IsNull()) {
-          return ` m.${f} IS NULL`;
-        }
-        whereClause[f.replace('USR$', '')] = clause[f];
-        return ` m.${f} = :${f.replace('USR$', '')}`;
+        whereClause[adjustRelationName(f)] = clause[f];
+        return ` m.${f} = :${adjustRelationName(f)}`;
       })
       .join(' AND ');
 

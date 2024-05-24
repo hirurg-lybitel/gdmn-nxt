@@ -1,5 +1,6 @@
+import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, ITemplate, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ITemplate, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
@@ -8,7 +9,17 @@ const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
   try {
     const clauseString = Object
       .keys({ ...clause })
-      .map(f => ` s.${f} = :${f}`)
+      .map(f => {
+        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
+          const expression = clause[f] as FindOperator;
+          switch (expression.operator) {
+            case 'LIKE':
+              return ` UPPER(s.${f}) ${expression.value} `;
+          }
+        }
+
+        return ` s.${f} = :${adjustRelationName(f)}`;
+      })
       .join(' AND ');
 
     const templates = await fetchAsObject<ITemplate>(

@@ -129,7 +129,7 @@ const findAll = async (
       rowCount
     };
   } catch (error) {
-    throw InternalServerErrorException(error);
+    throw InternalServerErrorException(error.message);
   }
 };
 
@@ -149,7 +149,7 @@ const getDetailByContract = async (
 
     return contractDetails;
   } catch (error) {
-    throw InternalServerErrorException(error);
+    throw InternalServerErrorException(error.message);
   }
 };
 

@@ -33,7 +33,7 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
     const result: ISegment[] = [];
 
     await forEachAsync(segments, async (s) => {
-      const segmentDetails = await fetchAsObject<ISegmnentFields>(sql, { masterKey: s.ID });
+      const segmentDetails = await fetchAsObject<ISegmnentField>(sql, { masterKey: s.ID });
 
       const flatSegmentDetails = new Map();
 
