@@ -377,7 +377,7 @@ export interface IFavoriteContact extends IWithID {
   CONTACT: IContactWithID;
 }
 
-export interface ISegmnentFields {
+export interface ISegmnentField {
   NAME: string;
   VALUE: string;
 }
@@ -385,7 +385,7 @@ export interface ISegmnentFields {
 export interface ISegment extends IWithID {
   NAME: string;
   QUANTITY: number;
-  FIELDS: ISegmnentFields[]
+  FIELDS: ISegmnentField[]
 }
 
 export interface IMailing extends IWithID {

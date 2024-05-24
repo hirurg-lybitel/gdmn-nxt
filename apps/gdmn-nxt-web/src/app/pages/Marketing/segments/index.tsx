@@ -5,31 +5,78 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { ISegment } from '@gsbelarus/util-api-types';
-import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
-import { GridColDef } from '@mui/x-data-grid-pro';
-import { useMemo, useState } from 'react';
+import { IFilteringData, IPaginationData, ISegment } from '@gsbelarus/util-api-types';
+import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { saveFilterData } from '../../../store/filtersSlice';
+import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/managment/segmentsApi';
 
-const mockData: ISegment[] = [
-  {
-    ID: 1,
-    NAME: 'Favorite customers',
-    QUANTITY: 48,
-    FIELDS: []
-  },
-  {
-    ID: 2,
-    NAME: 'Offer on March 8',
-    QUANTITY: 112,
-    FIELDS: []
-  }
-];
+// const serments: ISegment[] = [
+//   {
+//     ID: 1,
+//     NAME: 'Favorite customers',
+//     QUANTITY: 48,
+//     FIELDS: []
+//   },
+//   {
+//     ID: 2,
+//     NAME: 'Offer on March 8',
+//     QUANTITY: 112,
+//     FIELDS: []
+//   }
+// ];
 
 export default function CustomersSegments() {
+  const [paginationData, setPaginationData] = useState<IPaginationData>({
+    pageNo: 0,
+    pageSize: 25,
+  });
+
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.segments);
+
+  const dispatch = useDispatch();
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ 'segments': filteringData }));
+  }, []);
+
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+    setPaginationData(prev => ({ ...prev, pageNo: 0 }));
+  }, [filterData]);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
+  }, [filterData]);
+
+  const { data: sermentsData = {
+    count: 0,
+    segments: []
+  }, isFetching, isLoading, refetch: sermentsRefresh } = useGetAllSegmentsQuery({
+    pagination: paginationData,
+    ...(filterData && { filter: filterData })
+  });
+
+  const [addSegment] = useAddSegmentMutation();
+  const [updateSegment] = useUpdateSegmentMutation();
+  const [deleteSegment] = useDeleteSegmentMutation();
+
   const [upsertSegment, setUpsertSegment] = useState<{
     addSegment: boolean;
     editSegment?: boolean;
-    segment?: any
+    segment?: ISegment
   }>({
     addSegment: false,
     editSegment: false
@@ -39,14 +86,43 @@ export default function CustomersSegments() {
     setUpsertSegment({ addSegment: false, editSegment: false });
   };
 
-  const handleSegmentUpsertSubmit = async (segmant: any, deleting?: boolean) => {
-    // deleting ? deletePerson(person.ID) : updatePerson(person);
+  const handleSegmentUpsertSubmit = async (segment: any, deleting?: boolean) => {
     handleClose();
+    if (deleting) {
+      deleteSegment(segment.ID);
+      return;
+    }
+    if (upsertSegment.addSegment) {
+      addSegment(segment);
+      return;
+    }
+    updateSegment([segment, segment.ID]);
+  };
+
+  const itemEditClick = (segment: ISegment) => () => {
+    setUpsertSegment({ addSegment: false, editSegment: true, segment });
   };
 
   const columns: GridColDef<any>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
     { field: 'QUANTITY', headerName: 'Получатели', width: 150 },
+    {
+      field: 'actions',
+      type: 'actions',
+      resizable: false,
+      // width: 50,
+      renderCell: ({ value, row }: GridRenderCellParams) => {
+        return (
+          <IconButton
+            color="primary"
+            size="small"
+            onClick={itemEditClick(row)}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+        );
+      }
+    }
   ];
 
   const memoSegmentEdit = useMemo(() =>
@@ -76,21 +152,20 @@ export default function CustomersSegments() {
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
             <SearchBar
-              // disabled={personsIsFetching}
-              // onCancelSearch={cancelSearch}
-              // onRequestSearch={requestSearch}
+              disabled={isLoading}
+              onCancelSearch={cancelSearch}
+              onRequestSearch={requestSearch}
               fullWidth
               cancelOnEscape
-              // value={
-              //   filterData?.name
-              //     ? filterData.name[0]
-              //     : undefined
-              // }
+              value={
+                filterData?.name
+                  ? filterData.name[0]
+                  : undefined
+              }
             />
             <Box display="inline-flex" alignSelf="center">
               <CustomAddButton
-                // disabled={contractsIsFetching}
-                // disabled
+                disabled={(isFetching || isLoading)}
                 label="Создать сегмент"
                 onClick={() => setUpsertSegment({ addSegment: true })}
               />
@@ -98,10 +173,8 @@ export default function CustomersSegments() {
             <Box display="inline-flex" alignSelf="center">
               <CustomLoadingButton
                 hint="Обновить данные"
-                loading
-                onClick={() => {}}
-                // loading={personsIsFetching}
-                // onClick={() => personsRefetch()}
+                loading={isFetching || isLoading}
+                onClick={() => sermentsRefresh()}
               />
             </Box>
           </Stack>
@@ -111,8 +184,16 @@ export default function CustomersSegments() {
       <CardContent style={{ padding: 0 }}>
         <StyledGrid
           columns={columns}
-          rows={mockData}
+          rows={sermentsData.segments}
           pagination
+          paginationModel={{ page: paginationData.pageNo, pageSize: paginationData?.pageSize }}
+          onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+            setPaginationData({
+              ...paginationData,
+              pageSize: data.pageSize,
+              pageNo: data.page
+            });
+          }}
         />
       </CardContent>
     </CustomizedCard>
