@@ -123,7 +123,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
         insertImageAsBase64URI: true
       },
       buttons: ['fullsize', 'undo', 'redo', 'bold', 'underline', 'italic', 'strikethrough',
-        'font', 'fontsize', 'brush', 'paragraph', 'ul', 'ol', 'link', 'spellcheck', 'eraser'],
+        'font', 'fontsize', 'brush', 'paragraph', 'ul', 'ol', 'eraser'],
       width: '100%',
       maxWidth: '100%',
       height: 'auto',
