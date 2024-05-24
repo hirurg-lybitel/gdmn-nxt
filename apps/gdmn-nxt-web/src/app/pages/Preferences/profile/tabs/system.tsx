@@ -1,9 +1,8 @@
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
 import { ContractType, ICustomer, ISystemSettings } from '@gsbelarus/util-api-types';
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material';
 import { useGetSystemSettingsQuery, useSetSystemSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/systemSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { useMemo } from 'react';
