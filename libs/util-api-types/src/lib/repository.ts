@@ -35,7 +35,3 @@ export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID'
  * @param id uniq id of entity
  */
 export type RemoveHandler = (sessionID: string, id: number) => Promise<Boolean>;
-
-export const IsNull = () => 'condition_is_null';
-
-export const IsNotNull = () => 'condition_is_not_null';

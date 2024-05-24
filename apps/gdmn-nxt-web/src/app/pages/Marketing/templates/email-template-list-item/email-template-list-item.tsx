@@ -30,7 +30,7 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
           </Typography>
         </div>
         <Box flex={1}/>
-        <div style={{ position: 'absolute', right: 0, top: 0, visibility: show ? 'visible' : 'hidden' }}>
+        <div style={{ position: 'absolute', right: 5, top: 5, visibility: show ? 'visible' : 'hidden' }}>
           <IconButton onClick={() => onOpen(template)} size="small"><EditIcon /></IconButton>
         </div>
       </div>

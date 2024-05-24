@@ -187,7 +187,7 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
               : <>
                 <CustomizedScrollBox>
                   <ul className={`list ${styles.list}`}>
-                    {(isLoading || isFetching) ?
+                    {(isLoading) ?
                       loadingData(paginationData.pageSize).map((value, index) =>
                         <li key={index} className={styles.item}>
                           <Skeleton

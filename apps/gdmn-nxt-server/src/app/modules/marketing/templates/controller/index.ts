@@ -1,23 +1,27 @@
 import { RequestHandler } from 'express';
-import { resultError } from '../../responseMessages';
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { ERROR_MESSAGES } from '@gdmn/constants/server';
-import { templatesRepository } from '@gdmn-nxt/repositories/templates';
+import { templatesService } from '../service';
+import { resultError } from '@gsbelarus/util-helpers';
 
 const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const templates = await templatesRepository.find(sessionID);
+    const response = await templatesService.findAll(
+      sessionID,
+      {
+        ...req.query
+      }
+    );
 
     const result: IRequestResult = {
-      queries: { templates },
+      queries: { ...response },
       _schema: {}
     };
 
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -32,26 +36,23 @@ const findOne: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const template = await templatesRepository.findOne(sessionID, { ID: id });
-    if (!template?.ID) {
-      return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
-    }
+    const template = await templatesService.findOne(sessionID, id);
 
     const result: IRequestResult = {
       queries: { templates: [template] },
+      _params: [{ id }],
       _schema: {}
     };
 
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
 const createTemplate: RequestHandler = async (req, res) => {
   try {
-    const newTemplate = await templatesRepository.save(req.sessionID, req.body);
-    const template = await templatesRepository.findOne(req.sessionID, { id: newTemplate.ID });
+    const template = await templatesService.createTemplate(req.sessionID, req.body);
 
     const result: IRequestResult = {
       queries: { templates: [template] },
@@ -60,7 +61,7 @@ const createTemplate: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -73,20 +74,20 @@ const updateById: RequestHandler = async (req, res) => {
   }
 
   try {
-    const updatedTemplate = await templatesRepository.update(req.sessionID, id, req.body);
-    if (!updatedTemplate?.ID) {
-      return res.sendStatus(404);
-    }
-    const template = await templatesRepository.findOne(req.sessionID, { id: updatedTemplate.ID });
+    const updatedTemplate = await templatesService.updateById(
+      req.sessionID,
+      id,
+      req.body
+    );
 
     const result: IRequestResult = {
-      queries: { templates: [template] },
+      queries: { templates: [updatedTemplate] },
       _params: [{ id }],
       _schema: {}
     };
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -99,16 +100,11 @@ const removeById: RequestHandler = async (req, res) => {
   }
 
   try {
-    const checkTemplate = await templatesRepository.findOne(req.sessionID, { ID: id });
-    if (!checkTemplate?.ID) {
-      return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
-    }
-
-    await templatesRepository.remove(req.sessionID, id);
+    const isDeleted = await templatesService.removeById(req.sessionID, id);
 
     res.sendStatus(200);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
