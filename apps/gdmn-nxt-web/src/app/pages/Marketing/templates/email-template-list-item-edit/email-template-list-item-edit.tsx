@@ -6,9 +6,9 @@ import { htmlToTemplateObject } from '@gdmn-nxt/components/email-template/html-t
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { ITemplate } from '../../../features/template/templateApi';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
+import { ITemplate } from '@gsbelarus/util-api-types';
+import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 
 interface EmailTemplateListItemEditProps {
   template?: ITemplate,
@@ -47,8 +47,8 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
       return;
     }
     if (firstRender) setFirstRender(false);
-    setTemplate({ content: htmlToTemplateObject(templateOld?.USR$HTML), html: '' });
-    setTemplateName(templateOld?.USR$NAME);
+    setTemplate({ content: htmlToTemplateObject(templateOld?.HTML), html: '' });
+    setTemplateName(templateOld?.NAME);
   }, [templateOld, firstRender, open]);
 
   const clear = () => {
@@ -66,8 +66,8 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     }
     onSumbit({
       ID: templateOld?.ID || -1,
-      USR$NAME: templateName,
-      USR$HTML: template?.html || ''
+      NAME: templateName,
+      HTML: template?.html || ''
     });
     !templateOld && clear();
   };

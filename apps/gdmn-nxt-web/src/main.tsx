@@ -128,6 +128,9 @@ const Main = () => {
                             <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="contracts" element={<Contracts />} />
                           </Route>
+                          <Route path="marketing">
+                            <Route path="templates" element={<Templates/>} />
+                          </Route>
                           <Route path="analytics">
                             <Route path="" element={<Navigate to="reports/reconciliation" />} />
                             <Route path="reports">

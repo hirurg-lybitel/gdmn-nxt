@@ -3,7 +3,7 @@ import ReactHtmlParser from 'react-html-parser';
 import { useEffect, useRef, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import styles from './email-template-list-item.module.less';
-import { ITemplate } from '../../../features/template/templateApi';
+import { ITemplate } from '@gsbelarus/util-api-types';
 
 interface EmailTemplateListItemProps {
   template: ITemplate,
@@ -26,7 +26,7 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
       <div style={{ display: 'flex' }}>
         <div style={{ height: '30px', width: '100%', position: 'relative' }}>
           <Typography style={{ position: 'absolute', left: 0, right: '20px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {template.USR$NAME}
+            {template.NAME}
           </Typography>
         </div>
         <Box flex={1}/>
@@ -44,7 +44,7 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
           '& body,html': { height: '100%', pointerEvents: 'none', userSelect: 'none' }
         }}
       >
-        {ReactHtmlParser(template.USR$HTML)}
+        {ReactHtmlParser(template.HTML)}
       </Box>
     </div>
   );

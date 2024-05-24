@@ -15,8 +15,7 @@ const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
       `SELECT
         s.ID,
         USR$NAME NAME,
-        USR$HTML HTML_BLOB,
-        USR$CONTENT CONTENT_BLOB
+        USR$HTML HTML_BLOB
       FROM
         USR$CRM_MARKETING_TEMPLATES s
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`,
@@ -25,9 +24,6 @@ const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
     await forEachAsync(templates, async t => {
       t.HTML = await blob2String(t['HTML_BLOB']);
       delete t['HTML_BLOB'];
-      const contentString = await blob2String(t['CONTENT_BLOB']);
-      t.CONTENT = JSON.parse(contentString);
-      delete t['CONTENT_BLOB'];
     });
 
     return templates;
@@ -60,24 +56,21 @@ const update: UpdateHandler<ITemplate> = async (
 
     const {
       NAME = template.NAME,
-      HTML = template.HTML,
-      CONTENT = template.CONTENT
+      HTML = template.HTML
     } = metadata;
 
     const updatedTemplate = await fetchAsSingletonObject<ITemplate>(
       `UPDATE USR$CRM_MARKETING_TEMPLATES
       SET
         USR$NAME = :NAME,
-        USR$HTML = :HTML,
-        USR$CONTENT = :CONTENT
+        USR$HTML = :HTML
       WHERE
         ID = :ID
       RETURNING ID`,
       {
         ID,
         NAME,
-        HTML: await string2Blob(HTML),
-        CONTENT: await string2Blob(JSON.stringify(CONTENT))
+        HTML: await string2Blob(HTML)
       }
     );
     await releaseTransaction();
@@ -98,18 +91,16 @@ const save: SaveHandler<ITemplate> = async (
   const {
     NAME,
     HTML,
-    CONTENT
   } = metadata;
 
   try {
     const template = await fetchAsSingletonObject<ITemplate>(
-      `INSERT INTO USR$CRM_MARKETING_TEMPLATES(USR$NAME, USR$HTML, USR$CONTENT)
-      VALUES(:NAME, :HTML, :CONTENT)
+      `INSERT INTO USR$CRM_MARKETING_TEMPLATES(USR$NAME, USR$HTML)
+      VALUES(:NAME, :HTML)
       RETURNING ID`,
       {
         NAME,
-        HTML: await string2Blob(HTML),
-        CONTENT: await string2Blob(JSON.stringify(CONTENT))
+        HTML: await string2Blob(HTML)
       }
     );
 

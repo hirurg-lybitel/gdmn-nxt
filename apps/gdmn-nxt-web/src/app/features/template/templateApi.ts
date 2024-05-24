@@ -1,19 +1,13 @@
-import { IPaginationData, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { IPaginationData, IQueryOptions, IRequestResult, ITemplate, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '../../const';
-
-export interface ITemplate {
-  USR$NAME: string,
-  USR$HTML: string,
-  ID: number
-}
 
 export type ITemplateRequestResult = IRequestResult<{templates: ITemplate[], count: number}>;
 
 export const templateApi = createApi({
   reducerPath: 'template',
   tagTypes: ['template'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'marketing/', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTemplate: builder.query<{templates: ITemplate[], count: number}, Partial<IQueryOptions> | void>({
       query: (options) => {
