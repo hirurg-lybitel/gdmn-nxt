@@ -34,7 +34,7 @@ export const templateApi = createApi({
     }),
     getTemplateById: builder.query<ITemplate, number>({
       query: (id) => `templates/${id}`,
-      transformResponse: (response: IRequestResult<{template: ITemplate}>) => response.queries?.template || [],
+      transformResponse: (response: IRequestResult<{templates: ITemplate[]}>) => response.queries?.templates[0],
     }),
     addTemplate: builder.mutation<ITemplateRequestResult, ITemplate>({
       query: (body) => ({
