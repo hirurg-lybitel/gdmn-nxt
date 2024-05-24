@@ -3,10 +3,21 @@ import { ContractType, FindHandler, FindOneHandler, IContract, RemoveHandler, Sa
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
+  const { fetchAsObject, releaseReadTransaction, getIdByRUID } = await acquireReadTransaction(sessionID);
+
+  const documentTypeKey = await (() => {
+    switch (clause?.['contractType'] ?? ContractType.GS) {
+      case ContractType.GS:
+        return getIdByRUID(147071539, 141260635);
+      case ContractType.BG:
+        return getIdByRUID(148090064, 127352715);
+      default:
+        return -1;
+    }
+  })();
 
   const defaultClause = {
-    documentTypeKey: 154758289,
+    documentTypeKey
   };
 
   const clauseString = Object
@@ -131,7 +142,7 @@ const remove: RemoveHandler = async (
   sessionID,
   id
 ) => {
-  return false;
+  return new Promise((resolve) => resolve(false));
 };
 
 

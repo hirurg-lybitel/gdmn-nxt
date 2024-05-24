@@ -2,6 +2,7 @@ import { IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { resultError } from '../../responseMessages';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { cachedRequets } from '../../utils/cached requests';
 
 const getAll: RequestHandler = async (req, res) => {
   try {
@@ -29,6 +30,8 @@ const updateById: RequestHandler = async (req, res) => {
     if (!upsertedSettings?.ID) {
       return res.sendStatus(404);
     }
+
+    cachedRequets.cacheRequests(['contracts']);
 
     const settings = await systemSettingsRepository.findOne(req.sessionID, { id: upsertedSettings.ID });
 
