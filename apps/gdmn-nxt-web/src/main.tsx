@@ -2,7 +2,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, GlobalStyles } from '@mui/material';
 import { StrictMode, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RootState, store } from './app/store';
@@ -52,6 +52,9 @@ import TaskTypes from './app/pages/Managment/tasksCatalogs/task-types/task-types
 import Contacts from './app/pages/Managment/Contacts';
 import { Contracts } from './app/pages/Managment/contracts';
 import OurContacts from './app/pages/Managment/ourContacts';
+import Mailing from './app/pages/Marketing/mailing';
+import CustomersSegments from './app/pages/Marketing/segments';
+import Templates from './app/pages/Marketing/templates';
 
 registerMUI();
 
@@ -124,6 +127,12 @@ const Main = () => {
                             <Route path="contacts" element={<Contacts />} />
                             <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="contracts" element={<Contracts />} />
+                          </Route>
+                          <Route path="marketing">
+                            <Route path="" element={<Navigate to="mailing" />} />
+                            <Route path="mailing" element={<Mailing/>}/>
+                            <Route path="segments" element={<CustomersSegments/>}/>
+                            <Route path="templates" element={<Templates/>} />
                           </Route>
                           <Route path="analytics">
                             <Route path="" element={<Navigate to="reports/reconciliation" />} />

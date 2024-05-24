@@ -3,7 +3,7 @@
  */
 
 import { IRequestResult } from '..';
-import { IContactWithID, IDataRecord, IWithID } from './commonDataTypes';
+import { IContactWithID, IDataRecord, IWithID, JSONArray } from './commonDataTypes';
 
 export interface IReconciliationStatement {
   customerDebt: IDataRecord[];
@@ -375,4 +375,32 @@ export interface IConfirmation extends IWithID {
 export interface IFavoriteContact extends IWithID {
   USER?: number;
   CONTACT: IContactWithID;
+}
+
+export interface ISegmnentField {
+  NAME: string;
+  VALUE: string;
+}
+
+export interface ISegment extends IWithID {
+  NAME: string;
+  QUANTITY: number;
+  FIELDS: ISegmnentField[]
+  CUSTOMERS?: string
+}
+
+export interface IMailing extends IWithID {
+  NAME: string;
+  LAUNCHDATE?: Date;
+  STARTDATE?: Date;
+  FINISHDATE?: Date;
+  STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
+  STATUS_DESCRIPTION?: string;
+  segments: ISegment[];
+  TEMPLATE?: string;
+}
+
+export interface ITemplate extends IWithID {
+  NAME: string;
+  HTML: string;
 }

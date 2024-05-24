@@ -1,27 +1,30 @@
-import { RequestHandler } from 'express';
-import { resultError } from '../../responseMessages';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { IContract } from '@gsbelarus/util-api-types';
+import { ContractType, IContract, InternalServerErrorException } from '@gsbelarus/util-api-types';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import { contractDetailRepository } from '../repository/contractDetails';
+import { contractsRepository } from '../repository';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 dayjs.extend(isBetween);
 
-export const getAll: RequestHandler = async(req, res) => {
-  const contractType = parseInt(req.params.contractType);
-
-  if (isNaN(contractType)) {
-    return res
-      .status(422)
-      .send(resultError('Field contractType is not defined or is not numeric'));
-  }
-
+const findAll = async (
+  sessionID: string,
+  contractType?: number,
+  filter?: { [key: string]: any }
+) => {
   try {
-    const { pageSize, pageNo } = req.query;
+    /** Pagination */
+    const pageSize = filter?.pageSize;
+    const pageNo = filter?.pageNo;
     /** Sorting */
-    const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
+    const sortField = filter?.field ?? 'NAME';
+    const sortMode = filter?.sort ?? 'ASC';
     /** Filtering */
-    const customerId = parseInt(req.query.companyId as string);
-    const { name, customers, dateRange, isActive } = req.query;
+    const customerId = parseInt(filter?.companyId as string);
+    const name = filter?.name;
+    const customers = filter?.customers;
+    const dateRange = filter?.dateRange;
+    const isActive = filter?.isActive;
     const customerIds = customers ? (customers as string).split(',').map(Number) ?? [] : [];
     const activeOnly = (isActive as string)?.toLowerCase() === 'true';
     const period = dateRange ? (dateRange as string).split(',') : [];
@@ -118,32 +121,58 @@ export const getAll: RequestHandler = async(req, res) => {
           : nameB?.localeCompare(nameA);
       });
 
-
-    // const contracts = await contractsRepository.find(
-    //   req.sessionID,
-    //   {
-    //     ...(!isNaN(companyId) && { usr$contactkey: companyId }),
-    //     contractType
-    //   });
-
     const contractsWitPagination = contracts.slice(fromRecord, toRecord);
     const rowCount = contracts.length;
 
-    res
-      .status(200)
-      .json({
-        queries: {
-          contracts: contractsWitPagination,
-          rowCount
-        },
-        _params: [{ contractType }]
-      });
+    return {
+      contracts: contractsWitPagination,
+      rowCount
+    };
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    throw InternalServerErrorException(error.message);
   }
 };
 
-export const contractsController = {
-  // getAllByCustomer,
-  getAll
+const getDetailByContract = async (
+  sessionID: string,
+  contractType: number,
+  filter: { [key: string]: any }
+) => {
+  const { contractId } = filter;
+  try {
+    const contractDetails = await contractDetailRepository.find(
+      sessionID,
+      {
+        contractType,
+        masterkey: contractId
+      });
+
+    return contractDetails;
+  } catch (error) {
+    throw InternalServerErrorException(error.message);
+  }
+};
+
+const cacheData = async (sessionID: string) => {
+  try {
+    const settings = await systemSettingsRepository.findOne(sessionID);
+
+    const contractType = settings.CONTRACTTYPE ?? ContractType.GS;
+
+    const response = await contractsRepository.find(
+      sessionID,
+      {
+        contractType
+      });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const contractsService = {
+  findAll,
+  getDetailByContract,
+  cacheData
 };

@@ -11,7 +11,6 @@ export interface LinkTabProps extends TabProps {
 export function LinkTab({
   href = '',
   label,
-  selected,
   ...props
 }: LinkTabProps) {
   const MyLink = <Link to={href ?? ''} />;
@@ -31,7 +30,7 @@ export function LinkTab({
   return (
     <Tab
       {...detailsComponent}
-      aria-current={selected && 'page'}
+      aria-current={props.selected && 'page'}
       label={label}
       {...props}
     />

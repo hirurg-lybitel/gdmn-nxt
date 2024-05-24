@@ -89,6 +89,11 @@ export interface IResultError {
   description?: string;
 };
 
+export interface IResultDescription {
+  message: string;
+  description?: string;
+};
+
 export type IEmployee = IContactWithID;
 
 export interface IProfileSettings {
@@ -184,3 +189,19 @@ export function queryOptionsToParamsString(options?: IQueryOptions | void) {
 
   return params.join('&');
 };
+
+
+export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
+
+type JSONValue =
+    | string
+    | number
+    | boolean
+    | JSONObject
+    | JSONArray;
+
+interface JSONObject {
+    [x: string]: JSONValue;
+}
+
+export interface JSONArray extends Array<JSONValue> { }
