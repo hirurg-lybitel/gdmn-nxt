@@ -1,12 +1,6 @@
 // import { PERMISSIONS } from '../permission-map';
 import { Tooltip, Typography } from '@mui/material';
-import { ReactNode, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { useGetPermissionByUserQuery } from '../../../features/permissions';
-import { UserState } from '../../../features/user/userSlice';
-import { RootState } from '../../../store';
-import styles from './permissions-gate.module.less';
-import { Permissions } from '@gsbelarus/util-api-types';
+import { ReactNode } from 'react';
 
 export interface PermissionsGateProps {
   children: ReactNode;

@@ -4,6 +4,7 @@ import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Tran
 import { config } from './db-config';
 import { genId } from './genId';
 import { getBlob, getStringFromBlob } from './convertors';
+import { getIdBySystemRUID } from './getIdByRUID';
 
 const { host, port, db, username, password } = config;
 
@@ -225,7 +226,7 @@ export const acquireReadTransaction = async (sessionId: string) => {
     }
   };
 
-
+  const getIdByRUID = (XID: number, DBID: number) => getIdBySystemRUID(attachment, transaction, { XID, DBID });
   const blob2String = (value: Blob) => getStringFromBlob(attachment, transaction, value);
 
   return {
@@ -233,6 +234,7 @@ export const acquireReadTransaction = async (sessionId: string) => {
     transaction,
     releaseReadTransaction,
     blob2String,
+    getIdByRUID,
     ...wrapForNamedParams(attachment, transaction)
   };
 };
