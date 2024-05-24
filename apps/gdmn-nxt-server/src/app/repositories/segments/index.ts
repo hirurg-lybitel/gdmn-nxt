@@ -1,5 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentFields, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { customersRepository } from '../customers';
 
@@ -33,7 +33,7 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
     const result: ISegment[] = [];
 
     await forEachAsync(segments, async (s) => {
-      const segmentDetails = await fetchAsObject<ISegmnentFields>(sql, { masterKey: s.ID });
+      const segmentDetails = await fetchAsObject<ISegmnentField>(sql, { masterKey: s.ID });
 
       const flatSegmentDetails = new Map();
 
