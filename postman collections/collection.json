@@ -2389,16 +2389,62 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{baseUrl}}/marketing/templates"
+								"url": {
+									"raw": "{{baseUrl}}/marketing/templates?pageNo=0&pageSize=2&name=иве",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"templates"
+									],
+									"query": [
+										{
+											"key": "pageNo",
+											"value": "0"
+										},
+										{
+											"key": "pageSize",
+											"value": "2"
+										},
+										{
+											"key": "name",
+											"value": "иве"
+										}
+									]
+								}
 							},
 							"response": [
 								{
-									"id": "82d591a3-2d2b-4d1c-9dc6-6007da0f5c68",
+									"id": "2187e9ef-a93a-4085-b47f-80aaebeed8c0",
 									"name": "200",
 									"originalRequest": {
 										"method": "GET",
 										"header": [],
-										"url": "{{baseUrl}}/marketing/templates"
+										"url": {
+											"raw": "{{baseUrl}}/marketing/templates?pageNo=0&pageSize=2&name=иве",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"templates"
+											],
+											"query": [
+												{
+													"key": "pageNo",
+													"value": "0"
+												},
+												{
+													"key": "pageSize",
+													"value": "2"
+												},
+												{
+													"key": "name",
+													"value": "иве"
+												}
+											]
+										}
 									},
 									"status": "OK",
 									"code": 200,
@@ -2426,15 +2472,15 @@
 										},
 										{
 											"key": "X-RateLimit-Remaining",
-											"value": "98"
+											"value": "96"
 										},
 										{
 											"key": "Date",
-											"value": "Fri, 24 May 2024 11:15:46 GMT"
+											"value": "Fri, 24 May 2024 12:18:41 GMT"
 										},
 										{
 											"key": "X-RateLimit-Reset",
-											"value": "1716549400"
+											"value": "1716553138"
 										},
 										{
 											"key": "Content-Type",
@@ -2442,11 +2488,11 @@
 										},
 										{
 											"key": "Content-Length",
-											"value": "303"
+											"value": "262"
 										},
 										{
 											"key": "ETag",
-											"value": "W/\"12f-6CviV9uGwDmlQP6lbKYGDaCiI40\""
+											"value": "W/\"106-MVTwQmLfGRcV+dzAjw8/4hLsBk0\""
 										},
 										{
 											"key": "Connection",
@@ -2459,7 +2505,7 @@
 									],
 									"cookie": [],
 									"responseTime": null,
-									"body": "{\n    \"queries\": {\n        \"templates\": [\n            {\n                \"ID\": 949745897,\n                \"NAME\": \"tst3\",\n                \"HTML\": \"\"\n            },\n            {\n                \"ID\": 949745381,\n                \"NAME\": \"Красивенький 3\",\n                \"HTML\": \"<html><body><!-- some tags --></body></html>\"\n            },\n            {\n                \"ID\": 949745132,\n                \"NAME\": \"Красивенький\",\n                \"HTML\": \"<html><body><!-- some tags --></body></html>\"\n            }\n        ],\n        \"count\": 3\n    },\n    \"_schema\": {}\n}"
+									"body": "{\n    \"queries\": {\n        \"templates\": [\n            {\n                \"ID\": 949745381,\n                \"NAME\": \"Красивенький 3\",\n                \"HTML\": \"<html><body><!-- some tags --></body></html>\"\n            },\n            {\n                \"ID\": 949745132,\n                \"NAME\": \"Красивенький\",\n                \"HTML\": \"<html><body><!-- some tags --></body></html>\"\n            }\n        ],\n        \"count\": 2\n    },\n    \"_schema\": {}\n}"
 								}
 							]
 						},
