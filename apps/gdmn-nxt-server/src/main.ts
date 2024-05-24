@@ -299,6 +299,9 @@ Notifications({ router });
 /** Contacts */
 router.use(contactsRouter);
 
+/** Templates */
+router.use(templatesRouter);
+
 /** Contact groups */
 router.get('/contactgroups', contactGroups.get);
 router.post('/contactgroups', contactGroups.add);

@@ -2,7 +2,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, GlobalStyles } from '@mui/material';
 import { StrictMode, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RootState, store } from './app/store';
@@ -138,11 +138,6 @@ const Main = () => {
                               <Route path="topEarning" element={<TopEarningPage />} />
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />
-                          </Route>
-                          <Route path="marketing">
-                            <Route path="mailing" element={<Mailing />} />
-                            <Route path="segments" element={<CustomersSegments />} />
-                            <Route path="templates" element={<Templates />} />
                           </Route>
                           <Route path="system">
                             <Route path="settings">
