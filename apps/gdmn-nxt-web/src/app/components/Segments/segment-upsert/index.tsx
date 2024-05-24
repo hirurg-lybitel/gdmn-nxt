@@ -137,6 +137,7 @@ export function SegmentUpsert({
   };
 
   const onClose = () => {
+    setConfirmOpen(false);
     onCancel();
     formik.resetForm();
   };
