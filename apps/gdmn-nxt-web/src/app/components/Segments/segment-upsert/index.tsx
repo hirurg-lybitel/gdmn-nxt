@@ -150,29 +150,21 @@ export function SegmentUpsert({
     return {
       ID: segment?.ID || -1,
       NAME: formik.values.NAME,
-      FIELDS: fieldsParse('CUSTOMERCONTRACTS')
-        .concat(fieldsParse('BUSINESSPROCESSES'))
-        .concat(fieldsParse('WORKTYPES'))
-        .concat(fieldsParse('LABELS'))
-        .concat(fieldsParse('DEPARTMENTS')),
       QUANTITY: segment?.QUANTITY || 0,
+      FIELDS: [
+        ...fieldsParse('BUSINESSPROCESSES'),
+        ...fieldsParse('LABELS'),
+        ...fieldsParse('CUSTOMERCONTRACTS'),
+        ...fieldsParse('DEPARTMENTS'),
+        ...fieldsParse('WORKTYPES')
+      ],
       CUSTOMERS: formik.values.CUSTOMERS.map(el => el.ID).toString()
     };
   }, [formik.values, segment]);
 
   const handleSubmit = (isDelete: boolean) => {
     setConfirmOpen(false);
-    const values: ISegment = {
-      ID: segment?.ID || -1,
-      NAME: formik.values.NAME,
-      QUANTITY: segment?.QUANTITY || 0,
-      FIELDS: fieldsParse('BUSINESSPROCESSES')
-        .concat(fieldsParse('CUSTOMERCONTRACTS'))
-        .concat(fieldsParse('DEPARTMENTS'))
-        .concat(fieldsParse('LABELS'))
-        .concat(fieldsParse('WORKTYPES')),
-      CUSTOMERS: formik.values.CUSTOMERS.map(el => el.ID).toString()
-    };
+    const values: ISegment = getNewValues();
     formik.resetForm();
     onSubmit(values, isDelete);
   };
@@ -190,14 +182,7 @@ export function SegmentUpsert({
   };
 
   const handleCancelClick = () => {
-    const segmentValues = {
-      ID: segment?.ID || -1,
-      NAME: segment?.NAME,
-      QUANTITY: segment?.QUANTITY || 0,
-      FIELDS: segment?.FIELDS || '',
-      CUSTOMERS: segment?.CUSTOMERS || ''
-    };
-    if (JSON.stringify(getNewValues()) !== JSON.stringify(segmentValues)) {
+    if (formik.dirty) {
       setConfirmOpen(true);
       return;
     }
@@ -207,9 +192,9 @@ export function SegmentUpsert({
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={'Сохранение клиента'}
-      text={'Вы действительно хотите отменить изменения?'}
-      confirmClick={() => onClose()}
+      title={'Внимание'}
+      text={'Изменения будут утеряны. Продолжить?'}
+      confirmClick={onClose}
       cancelClick={handleCancel}
     />,
   [confirmOpen, handleCancel]);
@@ -223,7 +208,7 @@ export function SegmentUpsert({
         >
           <CustomizedDialog
             open={open}
-            onClose={onClose}
+            onClose={handleCancelClick}
             width="calc(100% - var(--menu-width))"
           >
             <DialogTitle>
@@ -332,7 +317,7 @@ export function SegmentUpsert({
                           disableCloseOnSelect
                           // filterOptions={filterOptions(30, 'USR$NAME')}
                           options={workTypes || []}
-                          onChange={(e, value) => formik.setFieldValue(' WORKTYPES', value)}
+                          onChange={(e, value) => formik.setFieldValue('WORKTYPES', value)}
                           value={
                             workTypes?.filter(wt => formik.values.WORKTYPES && formik.values.WORKTYPES.find(el => el.ID === wt.ID))
                           }
