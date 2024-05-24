@@ -75,10 +75,10 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
   const handleConfirmCancelClick = () => {
     setIsDelete(false);
     setConfirmOpen(false);
-    onSumbit(templateOld, true);
   };
 
   const handleSubmit = () => {
+    console.log(error);
     if (!checkValidName(templateName)) {
       return;
     }
@@ -126,6 +126,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           >
             <TextField
               fullWidth
+              label="Имя"
               style={{ marginBottom: '20px' }}
               value={templateName}
               onChange={handleTemplateNameChange}
@@ -141,10 +142,14 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           </div>
         </DialogContent>
         <DialogActions>
-          {templateOld && <ItemButtonDelete button onClick={handlDelete} />}
+          {templateOld &&
+          <ItemButtonDelete
+            confirmation={false}
+            button
+            onClick={handlDelete}
+          />}
           <Box flex={1}/>
           <Button
-            style={{ width: '120px' }}
             onClick={onClose}
             variant="outlined"
             color="primary"
@@ -152,11 +157,10 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
              Отменить
           </Button>
           <Button
-            style={{ width: '120px' }}
             variant="contained"
             onClick={handleSubmit}
           >
-          Сохранить
+            Сохранить
           </Button>
         </DialogActions>
       </CustomizedDialog>

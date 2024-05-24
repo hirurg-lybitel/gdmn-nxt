@@ -26,7 +26,7 @@ export const templateApi = createApi({
           };
         }
         return {
-          count: response.queries.count,
+          count: response.queries.count || 0,
           templates: response.queries?.templates
         };
       },

@@ -1,5 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentFields, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { customersRepository } from '../customers';
 

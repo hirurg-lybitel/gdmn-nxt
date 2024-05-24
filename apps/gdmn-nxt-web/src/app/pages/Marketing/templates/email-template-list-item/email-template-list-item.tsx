@@ -33,6 +33,7 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
         <div style={{ position: 'absolute', right: 0, top: 0, visibility: show ? 'visible' : 'hidden' }}>
           <IconButton onClick={() => onOpen(template)} size="small"><EditIcon /></IconButton>
         </div>
+
       </div>
       <Box
         sx={{
