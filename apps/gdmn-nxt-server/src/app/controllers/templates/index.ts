@@ -8,23 +8,10 @@ const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const { pageSize, pageNo, name } = req.query;
-    let fromRecord = 0;
-    let toRecord: number;
-
-    if (pageNo && pageSize) {
-      fromRecord = Number(pageNo) * Number(pageSize);
-      toRecord = fromRecord + Number(pageSize);
-    };
-
     const templates = await templatesRepository.find(sessionID);
 
-    const dataWithFilter = (name && name !== '') ? templates.filter(item => item['NAME'].indexOf(name.toString()) !== -1) : templates;
-    const count = dataWithFilter.length;
-    const dataWitPagination = dataWithFilter.slice(fromRecord, toRecord);
-
     const result: IRequestResult = {
-      queries: { templates: dataWitPagination, count },
+      queries: { templates },
       _schema: {}
     };
 
