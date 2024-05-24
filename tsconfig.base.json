@@ -26,6 +26,7 @@
       "@gdmn-nxt/repositories/*": [
         "apps/gdmn-nxt-server/src/app/repositories/*"
       ],
+      "@gdmn-nxt/modules/*": ["apps/gdmn-nxt-server/src/app/modules/*"],
       "@gdmn-nxt/scheduler": ["libs/scheduler/src/index.ts"],
       "@gdmn-nxt/socket": ["libs/socket/src/index.ts"],
       "@gdmn-nxt/ui-assets": ["libs/ui-assets/src/index.ts"],
