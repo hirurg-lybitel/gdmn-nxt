@@ -23,7 +23,6 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
   const [template, setTemplate] = useState<ITemplateEdit | undefined>();
   const [templateName, setTemplateName] = useState('');
   const [error, setError] = useState<string | undefined>();
-  const [isDelete, setIsDelete] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [firstRender, setFirstRender] = useState(true);
 
@@ -38,6 +37,27 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     }
     setError(undefined);
     return true;
+  };
+
+  const handleClose = () => {
+    setError(undefined);
+    setConfirmOpen(false);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    if ((!templateOld
+      && template?.html === '<div style="height:100%;width:100%;background:transparent"><div></div></div>'
+      && templateName === ''
+    )) {
+      handleClose();
+      return;
+    }
+    if ((templateOld?.HTML === template?.html && templateOld?.NAME === templateName)) {
+      handleClose();
+      return;
+    }
+    setConfirmOpen(true);
   };
 
   useEffect(() => {
@@ -56,9 +76,8 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     setTemplateName('');
   };
 
-  const handleConfirmOkClick = () => {
-    setConfirmOpen(false);
-    onClose();
+  const handeSubmit = (isDelete: boolean) => {
+    handleClose();
     if (isDelete) {
       onSumbit(templateOld, true);
       !templateOld && clear();
@@ -73,22 +92,14 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
   };
 
   const handleConfirmCancelClick = () => {
-    setIsDelete(false);
     setConfirmOpen(false);
   };
 
-  const handleSubmit = () => {
-    console.log(error);
+  const handleSubmitClick = () => {
     if (!checkValidName(templateName)) {
       return;
     }
-    setConfirmOpen(true);
-    setIsDelete(false);
-  };
-
-  const handlDelete = () => {
-    setConfirmOpen(true);
-    setIsDelete(true);
+    handeSubmit(false);
   };
 
   const handleTemplateNameChange = (e: any) => {
@@ -100,19 +111,18 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      dangerous={isDelete}
-      title={isDelete ? 'Удаление шаблона' : 'Сохранение шаблона'}
-      text="Вы уверены, что хотите продолжить?"
-      confirmClick={handleConfirmOkClick}
+      title={'Внимание'}
+      text="Изменения будут утеряны. Продолжить?"
+      confirmClick={handleClose}
       cancelClick={handleConfirmCancelClick}
     />,
-  [confirmOpen, isDelete]);
+  [confirmOpen]);
 
   return (
     <>
       <CustomizedDialog
         open={open}
-        onClose={onClose}
+        onClose={handleCancel}
         disableEscape
         width="calc(100% - var(--menu-width))"
       >
@@ -135,22 +145,19 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           <div style={{ height: 'calc(100% - 60px)' }}>
             <EmailTemplate
               value={template}
-              onChange={(value) => {
-                setTemplate(value);
-              }}
+              onChange={setTemplate}
             />
           </div>
         </DialogContent>
         <DialogActions>
           {templateOld &&
           <ItemButtonDelete
-            confirmation={false}
             button
-            onClick={handlDelete}
+            onClick={() => handeSubmit(true)}
           />}
           <Box flex={1}/>
           <Button
-            onClick={onClose}
+            onClick={handleCancel}
             variant="outlined"
             color="primary"
           >
@@ -158,7 +165,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           </Button>
           <Button
             variant="contained"
-            onClick={handleSubmit}
+            onClick={handleSubmitClick}
           >
             Сохранить
           </Button>
