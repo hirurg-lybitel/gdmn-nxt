@@ -142,11 +142,13 @@ export function SegmentUpsert({
     formik.resetForm();
   };
   const fieldsParse = (NAME: fieldNames): ISegmnentField[] => {
+    if (formik.values[`${NAME}`].length === 0) return [];
     const values = [{ NAME: NAME + '', VALUE: formik.values[`${NAME}`].map((value: any) => value.ID + '').toString() }];
     return values;
   };
 
   const getNewValues = useCallback(() => {
+    const customers = formik.values.CUSTOMERS.map(el => el.ID);
     return {
       ID: segment?.ID || -1,
       NAME: formik.values.NAME,
@@ -158,7 +160,7 @@ export function SegmentUpsert({
         ...fieldsParse('DEPARTMENTS'),
         ...fieldsParse('WORKTYPES')
       ],
-      CUSTOMERS: formik.values.CUSTOMERS.map(el => el.ID).toString()
+      CUSTOMERS: customers.length < 1 ? undefined : customers.toString()
     };
   }, [formik.values, segment]);
 
