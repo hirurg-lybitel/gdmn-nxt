@@ -112,7 +112,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         components: [],
         background: {
           value: getComputedStyle(document.documentElement).getPropertyValue('--color-card-bg'),
-          isView: false
+          isView: true
         }
       },
       html: '',

@@ -16,12 +16,31 @@ export const htmlToTemplateObject = (componentsHtml: string): {
     isView: boolean
   }
 } => {
+  const rgbToHex = (value: string | undefined): string | undefined => {
+    if (!value) return undefined;
+    const rgb = value.replace(/^(rgb|rgba)\(/, '').replace(/\)$/, '')
+      .replace(/\s/g, '')
+      .split(',');
+
+    if (isNaN(Number(rgb[0])) || isNaN(Number(rgb[1])) || isNaN(Number(rgb[2]))) return value;
+    // Helper function to convert one color value
+    const toHex = (colorValue: number): string => {
+      const hex = colorValue.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    // Ensure values are within range and call the helper function
+    return '#' + toHex(Math.max(0, Math.min(255, Number(rgb[0])))) +
+                 toHex(Math.max(0, Math.min(255, Number(rgb[1])))) +
+                 toHex(Math.max(0, Math.min(255, Number(rgb[2]))));
+  };
+
   const bubbleSort = (arr: any[]) => {
     const newArr = [...arr];
     for (let i = 0; i < newArr.length; i++) {
       for (let j = 0; j < newArr.length - i; j++) {
         if (newArr[j]?.index > newArr[j + 1]?.index) {
-          [newArr[j], newArr[j + 1]] = [newArr[j + 1], newArr[j]]; // Меняем значения переменных
+          [newArr[j], newArr[j + 1]] = [newArr[j + 1], newArr[j]];
         }
       }
     }
@@ -87,9 +106,9 @@ export const htmlToTemplateObject = (componentsHtml: string): {
         object.title = 'Кнопка';
         object.padding = getPadding(children.style);
         object.color = {
-          text: children.style.color === 'rgb(209, 204, 204)' ? children.style.color : '#fff',
+          text: children.style.color === 'rgb(209, 204, 204)' ? rgbToHex(children.style.color) : '#ffffff',
           textAuto: children.style.color === 'rgb(209, 204, 204)',
-          button: children.style.backgroundColor
+          button: rgbToHex(children.style.backgroundColor)
         };
         object.url = children.href;
         object.font = {
@@ -136,13 +155,13 @@ export const htmlToTemplateObject = (componentsHtml: string): {
   const objects: IComponent[] = [...buttonObjects, ...textObjects, ...dividerObjects, ...imageObjects];
   const sortObjects: IComponent[] = bubbleSort(objects).map(obj => ({ ...obj, index: undefined }));
 
-  const backgroundColor = (htmlObject.getElementsByClassName(emailTemplateContainerName)[0] as any)?.style.backgroundColor;
+  const backgroundColor = rgbToHex((htmlObject.getElementsByClassName(emailTemplateContainerName)[0] as any)?.style.backgroundColor);
 
   return {
     components: sortObjects,
     background: {
-      value: !backgroundColor || backgroundColor === 'transparent' ? 'rgba(255,255,255)' : backgroundColor,
-      isView: backgroundColor && backgroundColor !== 'transparent'
+      value: !backgroundColor || backgroundColor === 'transparent' ? getComputedStyle(document.documentElement).getPropertyValue('--color-card-bg') : backgroundColor,
+      isView: backgroundColor !== 'transparent'
     }
   };
 };

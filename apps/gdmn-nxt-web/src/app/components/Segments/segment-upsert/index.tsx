@@ -235,7 +235,8 @@ export function SegmentUpsert({
                     },
                     '& .MuiAccordionDetails-root': {
                       paddingRight: 0, paddingLeft: 0
-                    }
+                    },
+                    '&:before': { height: '0px' }
                   }}
                   defaultExpanded
                 >

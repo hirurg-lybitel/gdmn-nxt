@@ -47,7 +47,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
 
   const handleCancel = () => {
     if ((!templateOld
-      && template?.html === '<div class="gs_emailtemplateContainer" style="height:100%;width:100%;background:transparent"><div></div></div>'
+      && template?.html === objectToHtml({ content: htmlToTemplateObject(''), html: '' })
       && templateName === ''
     )) {
       handleClose();
@@ -104,7 +104,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
 
   const handleTemplateNameChange = (e: any) => {
     const value = e.target.value.replace(/\s+/g, ' ');
-    checkValidName(value);
+    error && checkValidName(value);
     setTemplateName(value);
   };
 
