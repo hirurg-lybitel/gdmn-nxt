@@ -32,11 +32,11 @@ const findAll = async (
       toRecord = fromRecord + Number(pageSize);
     };
 
-    const segmentsWitPagination = segments.slice(fromRecord, toRecord);
+    const segmentsWithPagination = segments.slice(fromRecord, toRecord);
     const count = segments.length;
 
     return {
-      segments: segmentsWitPagination,
+      segments: segmentsWithPagination,
       count
     };
   } catch (error) {

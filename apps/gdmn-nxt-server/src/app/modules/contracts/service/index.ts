@@ -121,11 +121,11 @@ const findAll = async (
           : nameB?.localeCompare(nameA);
       });
 
-    const contractsWitPagination = contracts.slice(fromRecord, toRecord);
+    const contractsWithPagination = contracts.slice(fromRecord, toRecord);
     const rowCount = contracts.length;
 
     return {
-      contracts: contractsWitPagination,
+      contracts: contractsWithPagination,
       rowCount
     };
   } catch (error) {

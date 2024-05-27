@@ -46,8 +46,7 @@ import https, { ServerOptions } from 'https';
 import systemSettingsRouter from './app/routes/settings/systemSettings';
 import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
-import { mailingRepository } from '@gdmn-nxt/repositories/mailing';
-import { mailingService } from './app/services/mailing';
+import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -91,31 +90,31 @@ setInterval(() => cachedRequets.init(cacheManager), 20 * 60 * 1000);
 /** Создать планировщик для запуска отложенных email рассылок
  * Запуск отложен на минуту, чтобы успели инициализироваться все необходимые данные
 */
-setTimeout(
-  () => {
-    createScheduler({
-      name: 'mailer',
-      dataGetter: async () => {
-        const mailings = await mailingRepository.find('scheduler', {
-          USR$LAUNCHDATE: IsNotNull(),
-          USR$STATUS: 0
-        });
-        const tasks = mailings.map(m => ({
-          startDate: m.LAUNCHDATE,
-          action: async() => {
-            try {
-              await mailingService.launchMailing('scheduler', m.ID);
-            } catch (error) {
-              console.error('[ Delayed mailing error ]', error);
-            }
-          }
-        }));
+// setTimeout(
+//   () => {
+//     createScheduler({
+//       name: 'mailer',
+//       dataGetter: async () => {
+//         const mailings = await mailingService.findAll('scheduler', {
+//           USR$LAUNCHDATE: IsNotNull(),
+//           USR$STATUS: 0
+//         });
+//         const tasks = mailings.mailings.map(m => ({
+//           startDate: m.LAUNCHDATE,
+//           action: async() => {
+//             try {
+//               await mailingService.launchMailing('scheduler', m.ID);
+//             } catch (error) {
+//               console.error('[ Delayed mailing error ]', error);
+//             }
+//           }
+//         }));
 
-        return tasks;
-      }
-    });
-  },
-  60000);
+//         return tasks;
+//       }
+//     });
+//   },
+//   60000);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);
