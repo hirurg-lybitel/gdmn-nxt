@@ -1,7 +1,7 @@
 import express from 'express';
-import { segmentsController } from '@gdmn-nxt/controllers/segments';
 import { mailingController } from '@gdmn-nxt/controllers/mailing';
 import { templatesController } from '@gdmn-nxt/modules/marketing/templates/controller';
+import { segmentsController } from '@gdmn-nxt/modules/marketing/segments/controller';
 
 const router = express.Router();
 const parentRouter = express.Router();

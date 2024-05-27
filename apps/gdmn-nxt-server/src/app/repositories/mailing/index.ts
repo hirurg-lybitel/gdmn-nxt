@@ -1,8 +1,8 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
-import { segmentsRepository } from '../segments';
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
+import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
 
 const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);

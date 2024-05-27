@@ -1,7 +1,8 @@
+import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { customersRepository } from '@gdmn-nxt/repositories/customers';
+import { ArrayElement, FindHandler, FindOneHandler, FindOperator, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
-import { customersRepository } from '../customers';
 
 const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
@@ -9,7 +10,17 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
   try {
     const clauseString = Object
       .keys({ ...clause })
-      .map(f => ` s.${f} = :${f}`)
+      .map(f => {
+        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
+          const expression = clause[f] as FindOperator;
+          switch (expression.operator) {
+            case 'LIKE':
+              return ` UPPER(s.${f}) ${expression.value} `;
+          }
+        }
+
+        return ` s.${f} = :${adjustRelationName(f)}`;
+      })
       .join(' AND ');
 
     let sql = `
