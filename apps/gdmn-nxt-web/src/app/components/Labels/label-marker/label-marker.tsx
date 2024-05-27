@@ -64,7 +64,6 @@ const getColors = (color: string | undefined, theme: 'dark' | 'light') => {
   const labelH = hsl.h;
   const labelS = hsl.s;
   const labelL = hsl.l;
-  console.log(`rgba(0,0,0, ${0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b})`);
   const textL = (labelL >= 85) ? labelL : 85;
   const textS = labelS === 0 ? labelS : 100;
   if (theme === 'dark') {
