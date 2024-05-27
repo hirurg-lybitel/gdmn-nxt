@@ -136,7 +136,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           >
             <TextField
               fullWidth
-              label="Имя"
+              label="Наименование"
               style={{ marginBottom: '20px' }}
               value={templateName}
               onChange={handleTemplateNameChange}
@@ -160,12 +160,14 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
             onClick={handleCancel}
             variant="outlined"
             color="primary"
+            style={{ width: 120 }}
           >
              Отменить
           </Button>
           <Button
             variant="contained"
             onClick={handleSubmitClick}
+            style={{ width: 120 }}
           >
             Сохранить
           </Button>

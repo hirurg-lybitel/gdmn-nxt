@@ -12,7 +12,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-input-text': theme.textColor,
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
-          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#5a5a5a' : '#f5f5f5',
+          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#434343' : '#f5f5f5',
           '--color-main-bg': theme.palette.background.default,
           '--color-paper-bg': theme.palette.background.paper,
           '--color-borders': theme.mainContent.borderColor,
