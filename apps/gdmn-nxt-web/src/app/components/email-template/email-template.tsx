@@ -19,7 +19,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import ImageIcon from '@mui/icons-material/Image';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import CloseIcon from '@mui/icons-material/Close';
-import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName } from './html-to-object';
+import { emailTemplateBaseName, emailTemplateButtonName, emailTemplateContainerName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, objectToHtml } from './html-to-object';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -403,26 +403,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
 
-  const previeComponent = renderToStaticMarkup(
-    <div
-      style={{
-        height: '100%',
-        width: '100%',
-        background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent'
-      }}
-    >
-      <div>
-        {anyTemplates.content.components.map((component: IComponent, index: number) => (
-          <EmailTemplateItem
-            key={index}
-            index={index}
-            isPreview={true}
-            component={component}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  const previeComponent = objectToHtml(anyTemplates);
 
   const getComponentIcon = (type: componentTypes) => {
     switch (type) {

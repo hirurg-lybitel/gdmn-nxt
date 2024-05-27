@@ -2,7 +2,7 @@ import { Box, Button, DialogActions, DialogContent, DialogTitle, TextField, Tool
 import styles from './email-template-list-item-edit.module.less';
 import EmailTemplate, { ITemplateEdit } from '@gdmn-nxt/components/email-template/email-template';
 import { useEffect, useMemo, useState } from 'react';
-import { htmlToTemplateObject } from '@gdmn-nxt/components/email-template/html-to-object';
+import { htmlToTemplateObject, objectToHtml } from '@gdmn-nxt/components/email-template/html-to-object';
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -47,13 +47,13 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
 
   const handleCancel = () => {
     if ((!templateOld
-      && template?.html === '<div style="height:100%;width:100%;background:transparent"><div></div></div>'
+      && template?.html === '<div class="gs_emailtemplateContainer" style="height:100%;width:100%;background:transparent"><div></div></div>'
       && templateName === ''
     )) {
       handleClose();
       return;
     }
-    if ((templateOld?.HTML === template?.html && templateOld?.NAME === templateName)) {
+    if ((objectToHtml({ content: htmlToTemplateObject(templateOld?.HTML || ''), html: '' }) === template?.html && templateOld?.NAME === templateName)) {
       handleClose();
       return;
     }

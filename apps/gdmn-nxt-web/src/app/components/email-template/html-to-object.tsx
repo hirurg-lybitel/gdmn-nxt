@@ -1,10 +1,13 @@
-import { IComponent, componentTypes } from './email-template';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { IComponent, ITemplateEdit, componentTypes } from './email-template';
+import EmailTemplateItem from './email-template-item/email-template-item';
 
 export const emailTemplateBaseName = 'gs_emailtemplate';
 export const emailTemplateTextName = emailTemplateBaseName + 'Text';
 export const emailTemplateButtonName = emailTemplateBaseName + 'Button';
 export const emailTemplateDividerName = emailTemplateBaseName + 'Divider';
 export const emailTemplateImageName = emailTemplateBaseName + 'Image';
+export const emailTemplateContainerName = emailTemplateBaseName + 'Container';
 
 export const htmlToTemplateObject = (componentsHtml: string): {
   components: IComponent[],
@@ -133,13 +136,37 @@ export const htmlToTemplateObject = (componentsHtml: string): {
   const objects: IComponent[] = [...buttonObjects, ...textObjects, ...dividerObjects, ...imageObjects];
   const sortObjects: IComponent[] = bubbleSort(objects).map(obj => ({ ...obj, index: undefined }));
 
-  const backgroundColor = htmlObject.getElementsByTagName('body')[0].style.backgroundColor;
+  const backgroundColor = (htmlObject.getElementsByClassName(emailTemplateContainerName)[0] as any)?.style.backgroundColor;
 
   return {
     components: sortObjects,
     background: {
-      value: backgroundColor === 'transparent' ? 'rgba(255,255,255)' : backgroundColor,
-      isView: backgroundColor !== 'transparent'
+      value: !backgroundColor || backgroundColor === 'transparent' ? 'rgba(255,255,255)' : backgroundColor,
+      isView: backgroundColor && backgroundColor !== 'transparent'
     }
   };
+};
+
+export const objectToHtml = (template: ITemplateEdit) => {
+  return renderToStaticMarkup(
+    <div
+      className={emailTemplateContainerName}
+      style={{
+        height: '100%',
+        width: '100%',
+        background: template.content.background.isView ? template.content.background.value : 'transparent'
+      }}
+    >
+      <div>
+        {template.content.components.map((component: IComponent, index: number) => (
+          <EmailTemplateItem
+            key={index}
+            index={index}
+            isPreview={true}
+            component={component}
+          />
+        ))}
+      </div>
+    </div>
+  );
 };
