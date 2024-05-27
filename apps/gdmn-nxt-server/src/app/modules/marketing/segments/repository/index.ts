@@ -4,7 +4,11 @@ import { customersRepository } from '@gdmn-nxt/repositories/customers';
 import { ArrayElement, FindHandler, FindOneHandler, FindOperator, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
-const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
+const find: FindHandler<ISegment> = async (
+  sessionID,
+  clause = {},
+  order = { NAME: 'ASC' }
+) => {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
   try {
@@ -29,7 +33,8 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
         USR$NAME NAME
       FROM
         USR$CRM_MARKETING_SEGMENTS s
-      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
+      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
+      ${order ? ` ORDER BY ${Object.keys(order)[0]} ${Object.values(order)[0]}` : ''}`;
 
     const segments = await fetchAsObject<Pick<ISegment, 'ID' | 'NAME'>>(sql, { ...clause });
 

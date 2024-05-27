@@ -11,11 +11,18 @@ const findAll = async (
     const pageNo = filter?.pageNo;
     const name = filter?.name;
 
+    const sortField = filter.field ?? 'NAME';
+    const sortMode = filter.sort ?? 'ASC';
+
     const segments = await segmentsRepository.find(
       sessionID,
       {
         ...(name && { USR$NAME: Like(name) }),
-      });
+      },
+      {
+        [sortField]: sortMode
+      }
+    );
 
     let fromRecord = 0;
     let toRecord: number;
