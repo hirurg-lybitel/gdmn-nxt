@@ -65,7 +65,6 @@ export default function CustomersSegments() {
     count: 0,
     segments: []
   }, isFetching: segmentsIsFetching, isLoading: segmentsIsLoading, refetch: sermentsRefresh } = useGetAllSegmentsQuery({
-    pagination: paginationData,
     ...(filterData && { filter: filterData })
   });
 
