@@ -8,11 +8,13 @@ import { useGetCustomerContractsQuery } from '../features/customer-contracts/cus
 import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import { useGetAllUpdatesQuery } from '../features/updates';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery } from '../features/kanban/kanbanFiltersApi';
+import { useGetSystemSettingsQuery } from '../features/systemSettings';
 
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
   const skip = userId < 0;
+  const { } = useGetSystemSettingsQuery(undefined, { skip });
   const { } = useGetAllUpdatesQuery(undefined, { skip });
   const { } = useGetFiltersDeadlineQuery(undefined, { skip });
   const { } = useGetLastUsedFilterDeadlineQuery(userId, { skip });
