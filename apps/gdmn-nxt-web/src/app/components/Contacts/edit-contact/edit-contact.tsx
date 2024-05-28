@@ -344,7 +344,7 @@ export function EditContact({
                   <a
                     className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
-                    href={socialMediaLinks[CODE] ? `${socialMediaLinks[CODE]}${USERNAME}` : ''}
+                    href={socialMediaLinks[CODE] ? `${socialMediaLinks[CODE]}${CODE === 'telegram' ? USERNAME.replaceAll('@', '') : USERNAME}` : ''}
                     rel="noreferrer"
                     target="_blank"
                   >
