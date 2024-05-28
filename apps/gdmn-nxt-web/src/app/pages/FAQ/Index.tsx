@@ -22,6 +22,7 @@ import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import usePermissions from '../../components/helpers/hooks/usePermissions';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -45,11 +46,11 @@ export default function FAQ() {
 
   const componentIsFetching = isFetching;
 
-  const addFaqHandler = (question: string, answer: string) => {
-    addFaq({ 'USR$QUESTION': question, 'USR$ANSWER': answer });
+  const addFaqHandler = (values: fullFaq) => {
+    addFaq(values);
   };
-  const editFaqHandler = (question: string, answer: string, id: number) => {
-    editFaq([{ 'USR$QUESTION': question, 'USR$ANSWER': answer }, id]);
+  const editFaqHandler = (values: fullFaq) => {
+    editFaq([values, values.ID]);
   };
   const deleteFaqHandler = (id: number) => {
     deleteFaq(id);
@@ -143,101 +144,96 @@ export default function FAQ() {
           />
         </>
       }
-      <div className={style.body} >
-        <CustomizedCard className={style.card}>
-          <CardHeader
-            title={<Typography variant="pageHeader">База знаний</Typography>}
-          />
-          <Divider />
-          <CardToolbar>
-            {/* <div style={{ padding: '5px 10px' }}>
-              <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
-                <Button
-                  disabled={addFaqObj.isLoading}
-                  variant="contained"
-                  onClick={handleOpenAddPopup}
-                >Добавить</Button>
-              </PermissionsGate>
-            </div> */}
-          </CardToolbar>
+      <CustomizedCard sx={{ width: '100%' }}>
+        <CardHeader
+          title={<Typography variant="pageHeader">База знаний</Typography>}
+          // action={
+          //   <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
+          //     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          //       <div />
+          //       <Button
+          //         disabled={addFaqObj.isLoading}
+          //         variant="contained"
+          //         onClick={handleOpenAddPopup}
+          //       >Добавить</Button>
+          //     </div>
+          //   </PermissionsGate>
+          // }
+        />
+        <Divider />
+        <CardContent sx={{ paddingRight: '0' }}>
+          <CustomizedScrollBox style={{ paddingRight: '20px' }}>
+            {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
 
-          <CardContent className={style.scrollBarContainer}>
-            <PerfectScrollbar style={{ paddingRight: '10px', pointerEvents: componentIsFetching ? 'none' : 'auto' }} >
-              <Grid item xs={12}>
-                {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
-
-                  <div key={item.ID}>
-                    {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
-                    <div className={style.faqList}>
-                      {componentIsFetching ?
-                        <div style={{ margin: '20px', width: '100%' }}>
-                          <Skeleton
-                            variant="text"
-                            width={'100%'}
-                            height={'40px'}
-                          />
-                        </div>
-                        :
-                        <>
-                          <Accordion
-                            expanded={expanded === `panel${item.ID}`}
-                            onChange={handleChange(`panel${item.ID}`)}
-                            className={classes.accordion}
-                          >
-                            <AccordionSummary
-                              expandIcon={<ExpandMoreIcon />}
-                            >
-                              <Typography variant="h6">
-
-                                <ReactMarkdown>
-                                  {item.USR$QUESTION}
-                                </ReactMarkdown>
-                              </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails className={style.details}>
-                              <Typography variant="body1" component="div">
-                                <ReactMarkdown >
-                                  {item.USR$ANSWER}
-                                </ReactMarkdown>
-                              </Typography>
-                            </AccordionDetails>
-                          </Accordion>
-                        </>
-                      }
-                      {!componentIsFetching &&
-                        <>
-                          {/* <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
-                            <IconButton
-                              color="primary"
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                              style={{ marginTop: '20px' }}
-                              onClick={handleOpenEditPopup(item)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </PermissionsGate>
-                          <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
-                            <IconButton
-                              color="primary"
-                              style={{ marginTop: '17.5px' }}
-                              disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                              onClick={handleDeleteClick(item)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </PermissionsGate> */}
-                        </>
-                      }
+              <div key={item.ID}>
+                {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
+                <div className={style.faqList}>
+                  {componentIsFetching ?
+                    <div style={{ margin: '20px', width: '100%' }}>
+                      <Skeleton
+                        variant="text"
+                        width={'100%'}
+                        height={'40px'}
+                      />
                     </div>
-                  </div>
-                )
-                }
-              </Grid>
-            </PerfectScrollbar>
-          </CardContent>
-        </CustomizedCard>
+                    :
+                    <>
+                      <Accordion
+                        expanded={expanded === `panel${item.ID}`}
+                        onChange={handleChange(`panel${item.ID}`)}
+                        className={classes.accordion}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                        >
+                          <Typography variant="h6">
 
-      </div>
+                            <ReactMarkdown>
+                              {item.USR$QUESTION}
+                            </ReactMarkdown>
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails className={style.details}>
+                          <Typography variant="body1" component="div">
+                            <ReactMarkdown >
+                              {item.USR$ANSWER}
+                            </ReactMarkdown>
+                          </Typography>
+                        </AccordionDetails>
+                      </Accordion>
+                    </>
+                  }
+                  {!componentIsFetching &&
+                    <>
+                      {/* <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
+                        <IconButton
+                          color="primary"
+                          disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                          style={{ marginTop: '28px' }}
+                          onClick={handleOpenEditPopup(item)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </PermissionsGate>
+                      <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
+                        <IconButton
+                          color="primary"
+                          style={{ marginTop: '28px' }}
+                          disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                          onClick={handleDeleteClick(item)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </PermissionsGate> */}
+                    </>
+                  }
+                </div>
+              </div>
+            )
+            }
+          </CustomizedScrollBox>
+        </CardContent>
+      </CustomizedCard>
     </>
   );
 };
