@@ -86,9 +86,9 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     ...(filterData && { filter: filterData })
   });
 
-  const [addTemplate] = useAddTemplateMutation();
-  const [updateTemplate] = useUpdateTemplateMutation();
-  const [deleteTemplate] = useDeleteTemplateMutation();
+  const [addTemplate, { isLoading: addIsLoading }] = useAddTemplateMutation();
+  const [updateTemplate, { isLoading: updateIsLoading }] = useUpdateTemplateMutation();
+  const [deleteTemplate, { isLoading: deleteIsLoading }] = useDeleteTemplateMutation();
 
   const [editedTemplate, setEditedTemplate] = useState<ITemplate | undefined>();
   const [isOpen, setIsOpen] = useState(false);
@@ -142,6 +142,8 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     setIsOpen(true);
   };
 
+  const disabled = isLoading || isFetching || updateIsLoading || addIsLoading || deleteIsLoading;
+
   return (
     <>
       <CustomizedCard style={{ flex: 1 }}>
@@ -164,14 +166,14 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
               />
               <Box display="inline-flex" alignSelf="center">
                 <CustomAddButton
-                  disabled={(isLoading || isFetching)}
+                  disabled={disabled}
                   label="Создать шаблон"
                   onClick={handleAdd}
                 />
               </Box>
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton
-                  loading={(isLoading || isFetching)}
+                  loading={disabled}
                   hint="Обновить данные"
                   onClick={templatesRefresh}
                 />

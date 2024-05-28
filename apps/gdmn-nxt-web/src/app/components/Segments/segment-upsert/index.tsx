@@ -437,7 +437,6 @@ export function SegmentUpsert({
                   </AccordionDetails>
                 </Accordion>
                 <Autocomplete
-                  disabled
                   options={customers}
                   onChange={(e, value) => formik.setFieldValue('CUSTOMERS', value)}
                   value={

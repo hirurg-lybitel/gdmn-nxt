@@ -127,7 +127,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
         width="calc(100% - var(--menu-width))"
       >
         <DialogTitle style={{ display: 'flex' }}>
-          {!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateName}
+          {!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateOld.NAME}
         </DialogTitle>
         <DialogContent dividers>
           <ErrorTooltip
