@@ -64,14 +64,16 @@ export default function CustomersSegments() {
   const { data: sermentsData = {
     count: 0,
     segments: []
-  }, isFetching, isLoading, refetch: sermentsRefresh } = useGetAllSegmentsQuery({
+  }, isFetching: segmentsIsFetching, isLoading: segmentsIsLoading, refetch: sermentsRefresh } = useGetAllSegmentsQuery({
     pagination: paginationData,
     ...(filterData && { filter: filterData })
   });
 
-  const [addSegment] = useAddSegmentMutation();
-  const [updateSegment] = useUpdateSegmentMutation();
-  const [deleteSegment] = useDeleteSegmentMutation();
+  const [addSegment, { isLoading: addIsLoading }] = useAddSegmentMutation();
+  const [updateSegment, { isLoading: updateIsLoading }] = useUpdateSegmentMutation();
+  const [deleteSegment, { isLoading: deleteIsLoading }] = useDeleteSegmentMutation();
+
+  const isLoading = addIsLoading || updateIsLoading || deleteIsLoading || segmentsIsFetching || segmentsIsLoading;
 
   const [upsertSegment, setUpsertSegment] = useState<{
     addSegment: boolean;
@@ -152,7 +154,7 @@ export default function CustomersSegments() {
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
             <SearchBar
-              disabled={isLoading}
+              disabled={segmentsIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
@@ -165,7 +167,7 @@ export default function CustomersSegments() {
             />
             <Box display="inline-flex" alignSelf="center">
               <CustomAddButton
-                disabled={(isFetching || isLoading)}
+                disabled={(segmentsIsFetching || segmentsIsLoading)}
                 label="Создать сегмент"
                 onClick={() => setUpsertSegment({ addSegment: true })}
               />
@@ -173,7 +175,7 @@ export default function CustomersSegments() {
             <Box display="inline-flex" alignSelf="center">
               <CustomLoadingButton
                 hint="Обновить данные"
-                loading={isFetching || isLoading}
+                loading={isLoading}
                 onClick={() => sermentsRefresh()}
               />
             </Box>
