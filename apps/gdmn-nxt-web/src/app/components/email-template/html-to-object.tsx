@@ -9,6 +9,44 @@ export const emailTemplateDividerName = emailTemplateBaseName + 'Divider';
 export const emailTemplateImageName = emailTemplateBaseName + 'Image';
 export const emailTemplateContainerName = emailTemplateBaseName + 'Container';
 
+export const hexToRGB = (h: any) => {
+  let r = 0, g = 0, b = 0;
+
+  // 3 digits
+  if (h?.length === 4) {
+    r = h[1] + h[1];
+    g = h[2] + h[2];
+    b = h[3] + h[3];
+
+  // 6 digits
+  } else if (h?.length === 7) {
+    r = parseInt(h[1] + h[2], 16);
+    g = parseInt(h[3] + h[4], 16);
+    b = parseInt(h[5] + h[6], 16);
+  }
+
+  return { r, g, b };
+};
+
+const rgbToHex = (value: string | undefined): string | undefined => {
+  if (!value) return undefined;
+  const rgb = value.replace(/^(rgb|rgba)\(/, '').replace(/\)$/, '')
+    .replace(/\s/g, '')
+    .split(',');
+
+  if (isNaN(Number(rgb[0])) || isNaN(Number(rgb[1])) || isNaN(Number(rgb[2]))) return value;
+  // Helper function to convert one color value
+  const toHex = (colorValue: number): string => {
+    const hex = colorValue.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+
+  // Ensure values are within range and call the helper function
+  return '#' + toHex(Math.max(0, Math.min(255, Number(rgb[0])))) +
+                 toHex(Math.max(0, Math.min(255, Number(rgb[1])))) +
+                 toHex(Math.max(0, Math.min(255, Number(rgb[2]))));
+};
+
 export const htmlToTemplateObject = (componentsHtml: string): {
   components: IComponent[],
   background: {
@@ -16,25 +54,6 @@ export const htmlToTemplateObject = (componentsHtml: string): {
     isView: boolean
   }
 } => {
-  const rgbToHex = (value: string | undefined): string | undefined => {
-    if (!value) return undefined;
-    const rgb = value.replace(/^(rgb|rgba)\(/, '').replace(/\)$/, '')
-      .replace(/\s/g, '')
-      .split(',');
-
-    if (isNaN(Number(rgb[0])) || isNaN(Number(rgb[1])) || isNaN(Number(rgb[2]))) return value;
-    // Helper function to convert one color value
-    const toHex = (colorValue: number): string => {
-      const hex = colorValue.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    };
-
-    // Ensure values are within range and call the helper function
-    return '#' + toHex(Math.max(0, Math.min(255, Number(rgb[0])))) +
-                 toHex(Math.max(0, Math.min(255, Number(rgb[1])))) +
-                 toHex(Math.max(0, Math.min(255, Number(rgb[2]))));
-  };
-
   const bubbleSort = (arr: any[]) => {
     const newArr = [...arr];
     for (let i = 0; i < newArr.length; i++) {
@@ -183,6 +202,7 @@ export const objectToHtml = (template: ITemplateEdit) => {
             index={index}
             isPreview={true}
             component={component}
+            background={template.content.background.value}
           />
         ))}
       </div>

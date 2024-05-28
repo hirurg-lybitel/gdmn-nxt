@@ -19,7 +19,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import ImageIcon from '@mui/icons-material/Image';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import CloseIcon from '@mui/icons-material/Close';
-import { emailTemplateBaseName, emailTemplateButtonName, emailTemplateContainerName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, objectToHtml } from './html-to-object';
+import { emailTemplateBaseName, emailTemplateButtonName, emailTemplateContainerName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, hexToRGB, objectToHtml } from './html-to-object';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -415,6 +415,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const workspaceWidth = 375;
 
+  const workspaceTextColor = () => {
+    const rgb = hexToRGB(anyTemplates.content.background.value);
+    return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black';
+  };
+
   return (
     <div
       style={{
@@ -530,6 +535,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                       setValue={valueChange}
                                       setDrag={(arg: boolean) => setDrag(arg)}
                                       drag={drag}
+                                      background={anyTemplates.content.background.value}
                                     />
                                   </div>
                                 );
@@ -584,7 +590,14 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   ? <Box
                     sx={{
                       '& .jodit-workplace': {
-                        background: (anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent') + '!important'
+                        background: (anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent') + '!important',
+                      },
+                      '& .jodit-wysiwyg p': {
+                        color: workspaceTextColor()
+                      },
+                      '& .jodit-placeholder': {
+                        color: workspaceTextColor(),
+                        opacity: '0.5'
                       }
                     }}
                     style={{ height: '100%', minWidth: '300px' }}

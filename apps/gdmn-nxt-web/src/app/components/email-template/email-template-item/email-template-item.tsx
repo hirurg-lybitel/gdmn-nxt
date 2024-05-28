@@ -7,7 +7,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName } from '../html-to-object';
+import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, hexToRGB } from '../html-to-object';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -44,21 +44,25 @@ interface findComponentProps {
   setValue?: (stringIndex: string, newValue: any) => void,
   setDrag?: (arg: boolean) => void,
   drag?: boolean,
+  background: string
 }
 
 export const FindComponent = (props: findComponentProps) => {
-  const { component, isPreview, editedIndex, index, editIsFocus, setValue, setDrag, drag } = props;
+  const { component, isPreview, editedIndex, index, editIsFocus, setValue, setDrag, drag, background } = props;
   const theme = useTheme();
+
   switch (component.type) {
-    case 'text':
+    case 'text': {
+      const rgb = hexToRGB(background);
       return (
         <div
           id={index + ''}
           style={{
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             maxWidth: '100%',
-            color: 'hsla(0, 5%, 70%, 1)',
-            wordWrap: 'break-word'
+            color: (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black',
+            wordWrap: 'break-word',
+            opacity: !(component.text === '<p style="margin:0px"><br></p>' || !component.text || component.text === '') ? 1 : 0.5
           }}
         >
           {ReactHtmlParser(
@@ -68,6 +72,7 @@ export const FindComponent = (props: findComponentProps) => {
           )}
         </div>
       );
+    }
     case 'image':
       return (
         <>
@@ -87,7 +92,8 @@ export const FindComponent = (props: findComponentProps) => {
           }
         </>
       );
-    case 'button':
+    case 'button': {
+      const rgb = hexToRGB(component.color?.button);
       return (
         <a
           id={index + ''}
@@ -97,7 +103,7 @@ export const FindComponent = (props: findComponentProps) => {
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
-            color: component.color?.textAuto ? 'hsla(0, 5%, 81%, 1)' : component.color?.text,
+            color: component.color?.textAuto ? ((0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black') : component.color?.text,
             padding: component.padding?.isCommon ? component.padding?.common + 'px' : `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
             font: `${component.font?.size}px ${component.font?.value}`,
             fontWeight: '600',
@@ -111,6 +117,7 @@ export const FindComponent = (props: findComponentProps) => {
           {component.text}
         </a>
       );
+    }
     case 'divider':
       return (
         <div
@@ -137,6 +144,7 @@ interface EmailTemplateItemProps{
   drag?: boolean,
   removeEl?: (index: number) => void;
   copy?: (index: number) => void
+  background: string
 }
 
 const idByType = (type: componentTypes) => {
@@ -151,7 +159,7 @@ const idByType = (type: componentTypes) => {
 
 const EmailTemplateItem = (props: EmailTemplateItemProps) => {
   const theme = useTheme();
-  const { editedIndex, index, editIsFocus, setValue, setEditIsFocus, isPreview, component, setDrag, drag, copy, removeEl } = props;
+  const { editedIndex, index, editIsFocus, setValue, setEditIsFocus, isPreview, component, setDrag, drag, copy, removeEl, background } = props;
 
   const classes = useStyles();
 
@@ -168,7 +176,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           border: '1px solid transparent'
         }}
       >
-        <FindComponent {...{ isPreview: true, component, index }}/>
+        <FindComponent {...{ isPreview: true, component, index, background }}/>
       </div>
     );
   }
@@ -256,7 +264,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           setEditIsFocus && setEditIsFocus(true);
         }}
       >
-        <FindComponent {...{ component, isPreview: false, editedIndex, index, editIsFocus, setValue, setDrag, drag }}/>
+        <FindComponent {...{ component, isPreview: false, editedIndex, index, editIsFocus, setValue, setDrag, drag, background }}/>
       </div>
     </div>
   );

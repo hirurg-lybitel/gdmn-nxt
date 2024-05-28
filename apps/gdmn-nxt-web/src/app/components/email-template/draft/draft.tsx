@@ -168,10 +168,6 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
             fill: theme.textColor + '!important',
             stroke: theme.textColor + '!important'
           },
-          '& .jodit-wysiwyg p': {
-            margin: 0,
-            color: 'hsla(0, 5%, 70%, 8)'
-          },
           '& .jodit-placeholder': {
             paddingLeft: '5px !important',
             paddingTop: '5px !important'
