@@ -108,10 +108,12 @@ export function SegmentUpsert({
     CUSTOMERS: ICustomer[]
   }
 
+  const fake = [339618017, 168576374];
+
   const initValue = {
     NAME: segment?.NAME || '',
     ...getFields(),
-    CUSTOMERS: []
+    CUSTOMERS: customers?.filter(customer => segment?.CUSTOMERS && segment?.CUSTOMERS.find((el: number) => el === customer.ID))
   };
 
   const formik = useFormik<IFormikValues>({
@@ -148,7 +150,6 @@ export function SegmentUpsert({
   };
 
   const getNewValues = useCallback(() => {
-    const customers = formik.values.CUSTOMERS.map(el => el.ID);
     return {
       ID: segment?.ID || -1,
       NAME: formik.values.NAME,
@@ -160,7 +161,7 @@ export function SegmentUpsert({
         ...fieldsParse('DEPARTMENTS'),
         ...fieldsParse('WORKTYPES')
       ],
-      CUSTOMERS: customers.length < 1 ? undefined : customers.toString()
+      CUSTOMERS: formik.values.CUSTOMERS?.map(customer => customer.ID) || []
     };
   }, [formik.values, segment]);
 
