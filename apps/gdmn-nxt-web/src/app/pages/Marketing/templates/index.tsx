@@ -1,7 +1,7 @@
 import { Box, CardContent, CardHeader, Divider, Skeleton, Stack, TablePagination, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import EmailTemplateListItem from './email-template-list-item/email-template-list-item';
-import EmailTemplateListItemEdit from './email-template-list-item-edit/email-template-list-item-edit';
+import EmailTemplateListItem from '../../../components/email-template-list-item/email-template-list-item';
+import EmailTemplateListItemEdit from '../../../components/email-template-list-item-edit/email-template-list-item-edit';
 import { IFilteringData, IPaginationData, ITemplate } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -210,7 +210,6 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
                             className={styles.card}
                           >
                             <EmailTemplateListItem
-                              templates={templatesData.templates}
                               onOpen={handleOpen}
                               template={template}
                             />

@@ -1,3 +1,4 @@
+import SelectTemplate from '@gdmn-nxt/components/Mailing/select-template/select-template';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
@@ -5,8 +6,10 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import { ITemplate } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
+import { useMemo, useState } from 'react';
 
 // const mockData = [
 //   {
@@ -93,6 +96,27 @@ export default function Mailing() {
       }, },
   ];
 
+  const [openWindow, setOpenWindow] = useState({
+    selectTempate: false,
+    upsertMailing: false
+  });
+
+  const addMailingClick = () => setOpenWindow(prev => ({ ...prev, selectTempate: true }));
+
+  const selectTemplateCancel = () => setOpenWindow(prev => ({ ...prev, selectTempate: false }));
+
+  const selectTemplate = (selectedTemplate: ITemplate) => {
+    console.log('selectTemplate', selectedTemplate);
+  };
+
+
+  const memoSelectTemplate = useMemo(() =>
+    <SelectTemplate
+      open={openWindow.selectTempate}
+      onCancel={selectTemplateCancel}
+      onSelect={selectTemplate}
+    />, [openWindow.selectTempate]);
+
   return (
     <CustomizedCard style={{ flex: 1 }}>
       <CardHeader
@@ -118,7 +142,7 @@ export default function Mailing() {
                   // disabled={contractsIsFetching}
                   // disabled
                   label="Создать рассылку"
-                  // onClick={() => setUpsertContact({ addContact: true })}
+                  onClick={addMailingClick}
                 />
               </PermissionsGate>
             </Box>
@@ -142,6 +166,7 @@ export default function Mailing() {
           pagination
         />
       </CardContent>
+      {memoSelectTemplate}
     </CustomizedCard>
   );
 };
