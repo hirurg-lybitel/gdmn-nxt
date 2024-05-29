@@ -443,6 +443,7 @@ export function SegmentUpsert({
                   value={
                     customers?.filter(customer => formik.values.CUSTOMERS && formik.values.CUSTOMERS.find((el: any) => el.ID === customer.ID))
                   }
+                  disableCloseOnSelect
                   multiple
                   limitTags={2}
                   filterOptions={filterOptions(50, 'NAME')}

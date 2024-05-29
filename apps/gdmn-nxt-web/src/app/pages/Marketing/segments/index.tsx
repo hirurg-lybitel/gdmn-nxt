@@ -5,9 +5,9 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { IFilteringData, IPaginationData, ISegment } from '@gsbelarus/util-api-types';
+import { IFilteringData, IPaginationData, ISegment, ISortingData } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
-import { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
+import { GridColDef, GridRenderCellParams, GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,25 +15,10 @@ import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/managment/segmentsApi';
 
-// const serments: ISegment[] = [
-//   {
-//     ID: 1,
-//     NAME: 'Favorite customers',
-//     QUANTITY: 48,
-//     FIELDS: []
-//   },
-//   {
-//     ID: 2,
-//     NAME: 'Offer on March 8',
-//     QUANTITY: 112,
-//     FIELDS: []
-//   }
-// ];
-
 export default function CustomersSegments() {
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
-    pageSize: 25,
+    pageSize: 20,
   });
 
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.segments);
@@ -61,12 +46,15 @@ export default function CustomersSegments() {
     handleFilteringDataChange(newObject);
   }, [filterData]);
 
+  const [sortingData, setSortingData] = useState<ISortingData | null>();
+
   const { data: sermentsData = {
     count: 0,
     segments: []
   }, isFetching: segmentsIsFetching, isLoading: segmentsIsLoading, refetch: sermentsRefresh } = useGetAllSegmentsQuery({
     pagination: paginationData,
-    ...(filterData && { filter: filterData })
+    ...(filterData && { filter: filterData }),
+    ...(sortingData ? { sort: sortingData } : {})
   });
 
   const [addSegment, { isLoading: addIsLoading }] = useAddSegmentMutation();
@@ -107,7 +95,7 @@ export default function CustomersSegments() {
 
   const columns: GridColDef<any>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
-    { field: 'QUANTITY', headerName: 'Получатели', width: 150 },
+    { field: 'QUANTITY', headerName: 'Получатели', width: 150, sortable: false, },
     {
       field: 'actions',
       type: 'actions',
@@ -143,6 +131,22 @@ export default function CustomersSegments() {
       onCancel={handleClose}
     />,
   [upsertSegment.addSegment]);
+  const rowPerPage = 20;
+  const [pageOptions, setPageOptions] = useState<number[]>([
+    rowPerPage,
+    rowPerPage * 2,
+    rowPerPage * 5,
+    rowPerPage * 10
+  ]);
+
+  useEffect(() => {
+    setPageOptions([
+      rowPerPage,
+      rowPerPage * 2,
+      rowPerPage * 5,
+      rowPerPage * 10
+    ]);
+  }, [paginationData]);
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
@@ -188,6 +192,7 @@ export default function CustomersSegments() {
           columns={columns}
           rows={sermentsData.segments}
           pagination
+          pageSizeOptions={pageOptions}
           paginationModel={{ page: paginationData.pageNo, pageSize: paginationData?.pageSize }}
           onPaginationModelChange={(data: {page: number, pageSize: number}) => {
             setPaginationData({
@@ -197,7 +202,19 @@ export default function CustomersSegments() {
             });
           }}
           rowCount={sermentsData.count}
-          paginationMode={'server'}
+          paginationMode="server"
+          sortingMode="server"
+          onSortModelChange={(sortModel: GridSortModel) => setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null)}
+          hideHeaderSeparator
+          disableMultipleRowSelection
+          hideFooterSelectedRowCount
+          disableColumnResize
+          disableColumnReorder
+          disableColumnFilter
+          disableColumnMenu
+          onRowDoubleClick={({ row }) => itemEditClick(row)}
+          loading={isLoading}
+
         />
       </CardContent>
     </CustomizedCard>
