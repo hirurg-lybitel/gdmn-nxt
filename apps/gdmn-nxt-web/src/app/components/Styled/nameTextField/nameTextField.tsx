@@ -1,8 +1,6 @@
-import { ClickAwayListener, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, OutlinedInputProps, Stack, TextField, Tooltip, TooltipProps, tooltipClasses } from '@mui/material';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { ClickAwayListener, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, OutlinedInputProps, Stack, TextField } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import CustomizedCard from '../customized-card/customized-card';
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material';
 
