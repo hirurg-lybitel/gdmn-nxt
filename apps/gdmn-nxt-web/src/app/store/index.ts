@@ -36,6 +36,8 @@ import { kanbanFiltersApi } from '../features/kanban/kanbanFiltersApi';
 import { authApi } from '../features/auth/authApi';
 import { updatesApi } from '../features/updates';
 import { systemSettingsApi } from '../features/systemSettings';
+import { templateApi } from '../features/managment/templateApi';
+import { segmentApi } from '../features/managment/segmentsApi';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -72,7 +74,9 @@ const reducers = combineReducers({
   [kanbanCatalogsApi.reducerPath]: kanbanCatalogsApi.reducer,
   [kanbanFiltersApi.reducerPath]: kanbanFiltersApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
-  [systemSettingsApi.reducerPath]: systemSettingsApi.reducer
+  [systemSettingsApi.reducerPath]: systemSettingsApi.reducer,
+  [templateApi.reducerPath]: templateApi.reducer,
+  [segmentApi.reducerPath]: segmentApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
@@ -118,6 +122,8 @@ export const store = configureStore({
     .concat(kanbanFiltersApi.middleware)
     .concat(authApi.middleware)
     .concat(systemSettingsApi.middleware)
+    .concat(templateApi.middleware)
+    .concat(segmentApi.middleware)
 });
 
 setupListeners(store.dispatch);

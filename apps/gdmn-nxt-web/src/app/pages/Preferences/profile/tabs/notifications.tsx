@@ -6,7 +6,7 @@ import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from 'apps/
 import { Form, FormikProvider, useFormik } from 'formik';
 import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 import addNotification from 'react-push-notification';
-import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants';
+import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';

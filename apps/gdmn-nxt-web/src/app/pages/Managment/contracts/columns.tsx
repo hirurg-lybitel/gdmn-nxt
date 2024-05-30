@@ -72,13 +72,13 @@ export const columns: Columns<IContract> = {
       },
     },
     { field: 'DOCUMENTDATE', headerName: 'Дата', width: 100, type: 'date',
-      renderCell: ({ value }: GridRenderCellParams<any, any, any, any>) => value?.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      valueFormatter: (params: GridValueFormatterParams<any>) => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
     { field: 'DATEBEGIN', headerName: 'Дата начала', width: 150, type: 'date',
-      renderCell: ({ value }: GridRenderCellParams<any, any, any, any>) => value?.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      valueFormatter: (params: GridValueFormatterParams<any>) => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
     { field: 'DATEEND', headerName: 'Дата окончания', width: 150, type: 'date',
-      renderCell: ({ value }: GridRenderCellParams<any, any, any, any>) => value?.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      valueFormatter: (params: GridValueFormatterParams<any>) => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
     },
     { field: 'DEPT_NAME', headerName: 'Отдел', width: 100 },
     { field: 'JOB_NUMBER', headerName: 'Заказ', width: 100 },
