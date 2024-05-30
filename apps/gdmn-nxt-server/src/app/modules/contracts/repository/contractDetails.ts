@@ -51,7 +51,7 @@ const find: FindHandler<IContractDetail> = async (sessionID, clause = {}) => {
               left JOIN USR$BG_CONTRACT_STAGE_NAME stname ON stname.ID = cl.USR$STAGENAME
               ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}
             ORDER BY
-            cl.MAST ERKEY, good.USR$NAME`;
+            cl.MASTERKEY, good.USR$NAME`;
       }
     })();
 

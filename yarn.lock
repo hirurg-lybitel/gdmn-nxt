@@ -9633,7 +9633,6 @@ __metadata:
     react-device-detect: ^2.1.2
     react-dnd-html5-backend: ^15.1.2
     react-dom: 18.2.0
-    react-hook-form: ^7.41.0
     react-html-parser: ^2.0.2
     react-idle-timer: ^5.7.2
     react-input-mask: 3.0.0-alpha.2
@@ -15190,15 +15189,6 @@ __metadata:
   version: 2.0.4
   resolution: "react-fast-compare@npm:2.0.4"
   checksum: 06046595f90a4e3e3a56f40a8078c00aa71bdb064ddb98343f577f546aa22e888831fd45f009c93b34707cc842b4c637737e956fd13d6f80607ee92fb9cf9a1c
-  languageName: node
-  linkType: hard
-
-"react-hook-form@npm:^7.41.0":
-  version: 7.51.4
-  resolution: "react-hook-form@npm:7.51.4"
-  peerDependencies:
-    react: ^16.8.0 || ^17 || ^18
-  checksum: b3587c23425025cc4ab9d4de71420aeb9b28809a9183691584ecbbf5bb3d85ab8c232afb01424efed11a761c9c726521a230d4e092c7ad6bb70a011a7ba0acf7
   languageName: node
   linkType: hard
 
