@@ -7,19 +7,23 @@ import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material';
 
 export function NameTextFieldContainer () {
+  const [name, setName] = useState('1 2 3');
+  useEffect(() => console.log(name), [name]);
   return <div style={{ width: '100%' }}>
-    <NameTextField fullWidth/>
+    <NameTextField onChangeName={(value) => setName(value)} value={name}/>
   </div>;
 }
 
+export type IName = { lastName: string, firstName: string, patronymic: string }
+
 export interface INameTextFieldProps extends OutlinedInputProps{
-  onChangeName?: (value: string) => void
+  onChangeName?: (value: string, object: IName) => void
 }
 
 export function NameTextField (props: INameTextFieldProps) {
   const [open, setOpen] = useState(false);
 
-  const { ...style } = props;
+  const { onChangeName, value, ...style } = props;
 
   const handleOpen = () => {
     setOpen(true);
@@ -47,23 +51,42 @@ export function NameTextField (props: INameTextFieldProps) {
 
   const background = theme.palette.background.paper;
 
-  const [name, setName] = useState({ lastName: '', firstName: '', patronymic: '' });
+  const [name, setName] = useState<IName>({ lastName: '', firstName: '', patronymic: '' });
+
+  const parseFullname = (value: string) => {
+    const newName = value.replace(/\s{2,}/g, ' ').split(' ');
+    if (newName.length > 3) return '';
+    return {
+      lastName: (newName[0] || '') + ((value[value.length - 1] === ' ' && newName.length === 2) ? ' ' : ''),
+      firstName: (newName[1] || '') + ((value[value.length - 1] === ' ' && newName.length === 3) ? ' ' : ''),
+      patronymic: newName[2] || ''
+    };
+  };
+
+  const converToFullname = (fullName: IName) => fullName.lastName + (fullName.firstName && ((fullName.lastName ? ' ' : '')
+  + fullName.firstName)) + (fullName.patronymic && (fullName.firstName || fullName.lastName ? ' ' : '') + fullName.patronymic);
 
   const handleChange = (type: 'lastName' | 'firstName' | 'patronymic' | 'all', value: string) => {
     if (type === 'all') {
-      const newName = value.replace(/\s{2,}/g, ' ').split(' ');
-      if (newName.length > 3) return;
-      setName({
-        lastName: (newName[0] || '') + ((value[value.length - 1] === ' ' && newName.length === 2) ? ' ' : ''),
-        firstName: (newName[1] || '') + ((value[value.length - 1] === ' ' && newName.length === 3) ? ' ' : ''),
-        patronymic: newName[2] || '' }
-      );
+      const newValue = parseFullname(value);
+      if (newValue === '') return;
+      setName(newValue);
+      onChangeName && onChangeName(converToFullname(newValue), newValue);
       return;
     };
     const newName = { ...name };
     newName[`${type}`] = value.replaceAll(' ', '');
     setName(newName);
+    onChangeName && onChangeName(converToFullname(newName), newName);
   };
+
+  useEffect(() => {
+    const newValue = parseFullname(value as string);
+    if (newValue === '') return;
+    if (value === converToFullname(name)) return;
+    setName(newValue);
+    return;
+  }, [value]);
 
   return (
     <ClickAwayListener onClickAway={handleClose}>
@@ -73,14 +96,14 @@ export function NameTextField (props: INameTextFieldProps) {
         fullWidth={style.fullWidth}
         sx={{ m: 1, width, margin: 0, position: 'relative', }}
         variant="outlined"
-        onClick={handleOpen}
       >
         <InputLabel style={{ zIndex: 2 }} >ФИО</InputLabel>
         <OutlinedInput
           label="ФИО"
           {...style}
+          onClick={!open ? handleOpen : undefined}
           style={{ width: '100%', height: '40px', zIndex: 1, background }}
-          value={name.lastName + (name.firstName && ' ' + name.firstName) + (name.patronymic && ' ' + name.patronymic)}
+          value={converToFullname(name)}
           onChange={(e) => handleChange('all', e.target.value)}
           endAdornment={
             <InputAdornment position="end">
@@ -93,7 +116,7 @@ export function NameTextField (props: INameTextFieldProps) {
         {open &&
         <div style={{ position: 'absolute', left: '0', right: '0', top: '0px' }}>
           <div style={{ width: tolltipWidth, paddingTop: '40px', background, borderRadius: '15px' }}>
-            <Stack spacing={2} style={{ padding: '10px' }}>
+            <Stack spacing={2} style={{ padding: '10px', paddingTop: '15px' }}>
               <TextField
                 value={name.lastName}
                 onChange={(e) => handleChange('lastName', e.target.value)}
