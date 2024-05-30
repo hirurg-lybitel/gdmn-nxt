@@ -30,6 +30,7 @@ import ContactsDeals from '../contacts-deals';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -344,7 +345,7 @@ export function EditContact({
                   <a
                     className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
-                    href={socialMediaLinks[CODE] ? `${socialMediaLinks[CODE]}${CODE === 'telegram' ? USERNAME.replaceAll('@', '') : USERNAME}` : ''}
+                    href={parseToMessengerLink(CODE, USERNAME)}
                     rel="noreferrer"
                     target="_blank"
                   >
