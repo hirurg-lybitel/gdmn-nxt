@@ -376,7 +376,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   <a
                     className={`${styles.link} ${!socialMediaLinks[mes.CODE] ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
-                    href={`${socialMediaLinks[mes.CODE]}${mes.USERNAME}`}
+                    href={`${socialMediaLinks[mes.CODE]}${mes.CODE === 'telegram' ? mes.USERNAME.replaceAll('@', '') : mes.USERNAME}`}
                     rel="noreferrer"
                     target="_blank"
                   >
