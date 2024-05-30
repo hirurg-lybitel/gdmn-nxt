@@ -3,7 +3,6 @@ import { RootState } from '.';
 import { useGetCustomersCrossQuery, useGetCustomersQuery } from '../features/customer/customerApi_new';
 import { useGetDepartmentsQuery } from '../features/departments/departmentsApi';
 import { useGetKanbanDealsQuery } from '../features/kanban/kanbanApi';
-import { UserState } from '../features/user/userSlice';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../features/customer-contracts/customerContractsApi';
 import { useGetBusinessProcessesQuery } from '../features/business-processes';

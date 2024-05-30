@@ -1,6 +1,7 @@
 import { CacheManager } from '@gdmn-nxt/cache-manager';
 import { requests } from './assets/requests';
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 export * from './types';
 
 let usingCacheManager: CacheManager;
@@ -25,15 +26,20 @@ async function init(cacheManager: CacheManager) {
     }
 
     const execQuery = async ({ name, query }) => {
-      const data = await (async () => {
-        switch (typeof query) {
-          case 'string':
-            return fetchAsObject(query);
-          default:
-            return query('Caching');
-        }
-      })();
-      return { name, data };
+      try {
+        const data = await (async () => {
+          switch (typeof query) {
+            case 'string':
+              return fetchAsObject(query);
+            default:
+              return query('Caching');
+          }
+        })();
+        return { name, data };
+      } catch (error) {
+        console.log('[ cachier error ]', error);
+        return { name, data: [] };
+      }
     };
 
     console.timeLog(timeLabel, 'fetch started');
@@ -74,7 +80,15 @@ async function cacheRequest(requestName: keyof typeof requests) {
   }
 }
 
+async function cacheRequests(requestsNames: (keyof typeof requests)[]) {
+  await forEachAsync(requestsNames, async r => {
+    await cacheRequest(r);
+  });
+}
+
+
 export const cachedRequets = {
   init,
-  cacheRequest
+  cacheRequest,
+  cacheRequests
 };

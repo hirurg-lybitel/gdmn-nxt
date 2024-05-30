@@ -35,6 +35,7 @@ const CustomizedCard = styled(Card, {
   },
   '.MuiCardHeader-action': {
     flex: 'auto',
+    alignSelf: 'auto',
   },
 
 }));
