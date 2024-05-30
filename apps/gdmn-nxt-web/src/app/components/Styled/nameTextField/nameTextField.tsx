@@ -10,7 +10,11 @@ export function NameTextFieldContainer () {
   const [name, setName] = useState('1 2 3');
   useEffect(() => console.log(name), [name]);
   return <div style={{ width: '100%' }}>
-    <NameTextField onChangeName={(value) => setName(value)} value={name}/>
+    <NameTextField
+      onChangeName={(value) => setName(value)}
+      value={name}
+      nameObject={{ lastName: '123', firstName: '456', patronymic: '7d89' }}
+    />
   </div>;
 }
 
@@ -18,12 +22,13 @@ export type IName = { lastName: string, firstName: string, patronymic: string }
 
 export interface INameTextFieldProps extends OutlinedInputProps{
   onChangeName?: (value: string, object: IName) => void
+  nameObject: IName
 }
 
 export function NameTextField (props: INameTextFieldProps) {
   const [open, setOpen] = useState(false);
 
-  const { onChangeName, value, ...style } = props;
+  const { onChangeName, value, nameObject, ...style } = props;
 
   const handleOpen = () => {
     setOpen(true);
@@ -87,6 +92,11 @@ export function NameTextField (props: INameTextFieldProps) {
     setName(newValue);
     return;
   }, [value]);
+
+  useEffect(() => {
+    setName(nameObject);
+    return;
+  }, [nameObject]);
 
   return (
     <ClickAwayListener onClickAway={handleClose}>
