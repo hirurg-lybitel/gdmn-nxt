@@ -155,7 +155,7 @@ export function Notification(props: NotificationProps) {
       userId
     });
     let oldMessages: IMessage[] = [];
-    socket?.on?.('messages', (data: IMessage[]) => {
+    socket.on('messages', (data: IMessage[]) => {
       if (data.toString() === oldMessages.toString()) return;
       oldMessages = data;
       setMessages(data);
@@ -204,6 +204,12 @@ export function Notification(props: NotificationProps) {
 
   const handleDeleteNotification = (id: number) => {
     socketClient?.emit('delete', id);
+    setMessages(prev => {
+      const newMessages = [...prev];
+      const findIndex = newMessages.findIndex(m => m.id === id);
+      newMessages.splice(findIndex, 1);
+      return newMessages;
+    });
   };
 
   const handleToogle = (target: any) => {
@@ -292,7 +298,7 @@ export function Notification(props: NotificationProps) {
             <Paper className={classes.mainPaper} elevation={15}>
               <ClickAwayListener onClickAway={handleClose}>
                 <CustomizedCard borders style={{ flex: 1, display: 'flex' }}>
-                  <span  className={classes.arrow} ref={setArrowRef} />
+                  <span className={classes.arrow} ref={setArrowRef} />
                   <Stack direction="column" style={{ maxHeight: '90vh', flex: 1, display: 'flex' }}>
                     <Stack
                       className={classes.header}

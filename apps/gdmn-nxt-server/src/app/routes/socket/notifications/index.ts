@@ -57,7 +57,7 @@ export function Notifications({ router }: NotificationsProps) {
 
     socket.on('delete', async (notificationId) => {
       await deleteNotification(sessionId, notificationId);
-      sendMessages();
+      await sendMessages();
     });
 
     socket.on('messagesByUser_request', async (userId) => {
