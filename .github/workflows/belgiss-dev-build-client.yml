@@ -1,4 +1,4 @@
-name: Build Belgiss Client Image
+name: Build Belgiss Dev Client Image
 run-name: ${{ github.actor }} triggered Docker client 🖥️ deploying 🐳
 
 on:
@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/belgiss-crm-client
+  IMAGE_NAME: ${{ github.repository_owner }}/belgiss-dev-crm-client
   ENV_SERVER_HOST: ${{ vars.ENV_SERVER_HOST }}
   ENV_SOCKET_NOTIFICATIONS_PORT: ${{ vars.ENV_SOCKET_NOTIFICATIONS_PORT}}
   ENV_SOCKET_STREAMING_UPDATE_PORT: ${{ vars.ENV_SOCKET_STREAMING_UPDATE_PORT }}
@@ -20,7 +20,7 @@ jobs:
   build:
     name: Build and publish image
     runs-on: ubuntu-latest
-    environment: Belgiss
+    environment: Belgiss_test
     permissions:
       contents: read
       packages: write

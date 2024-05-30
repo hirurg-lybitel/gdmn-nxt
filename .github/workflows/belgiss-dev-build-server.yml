@@ -1,26 +1,23 @@
-name: Build Belgiss Client Image
-run-name: ${{ github.actor }} triggered Docker client 🖥️ deploying 🐳
+name: Build Belgiss Dev Server Image
+run-name: ${{ github.actor }} triggered Docker server 🗄️ deploying 🐳
 
 on:
   push:
     branches:
       - belgiss-prod
     paths:
-      - 'apps/gdmn-nxt-web/**'
+      - 'apps/gdmn-nxt-server/**'
       - 'libs/**'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/belgiss-crm-client
-  ENV_SERVER_HOST: ${{ vars.ENV_SERVER_HOST }}
-  ENV_SOCKET_NOTIFICATIONS_PORT: ${{ vars.ENV_SOCKET_NOTIFICATIONS_PORT}}
-  ENV_SOCKET_STREAMING_UPDATE_PORT: ${{ vars.ENV_SOCKET_STREAMING_UPDATE_PORT }}
+  IMAGE_NAME: ${{ github.repository_owner }}/belgiss-dev-crm-server
 
 jobs:
   build:
     name: Build and publish image
     runs-on: ubuntu-latest
-    environment: Belgiss
+    environment: Belgiss_test
     permissions:
       contents: read
       packages: write
@@ -49,11 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          build-args: |
-            "NX_SERVER_HOST=${{ env.ENV_SERVER_HOST }}"
-            "NX_SOCKET_NOTIFICATIONS_PORT=${{ env.ENV_SOCKET_NOTIFICATIONS_PORT }}"
-            "NX_SOCKET_STREAMING_UPDATE_PORT=${{ env.ENV_SOCKET_STREAMING_UPDATE_PORT }}"
-          target: client
+          target: server
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
