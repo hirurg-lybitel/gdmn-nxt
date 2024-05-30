@@ -204,6 +204,12 @@ export function Notification(props: NotificationProps) {
 
   const handleDeleteNotification = (id: number) => {
     socketClient?.emit('delete', id);
+    setMessages(prev => {
+      const newMessages = [...prev];
+      const findIndex = newMessages.findIndex(m => m.id === id);
+      newMessages.splice(findIndex, 1);
+      return newMessages;
+    });
   };
 
   const handleToogle = (target: any) => {
