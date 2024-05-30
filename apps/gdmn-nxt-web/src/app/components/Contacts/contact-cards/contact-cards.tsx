@@ -222,7 +222,8 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 <a
                   className={`${styles.link} ${!socialMediaLinks[contact.MESSENGERS[0]?.CODE] ? styles.linkDisabled : ''}`}
                   onClick={handleStopPropagation}
-                  href={`${socialMediaLinks[contact.MESSENGERS[0]?.CODE]}${contact.MESSENGERS[0]?.USERNAME}`}
+                  href={`${socialMediaLinks[contact.MESSENGERS[0]?.CODE]}${contact.MESSENGERS[0]?.CODE === 'telegram'
+                    ? contact.MESSENGERS[0]?.USERNAME.replaceAll('@', '') : contact.MESSENGERS[0]?.USERNAME}`}
                   rel="noreferrer"
                   target="_blank"
                 >
