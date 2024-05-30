@@ -55,6 +55,7 @@ import OurContacts from './app/pages/Managment/ourContacts';
 import Mailing from './app/pages/Marketing/mailing';
 import CustomersSegments from './app/pages/Marketing/segments';
 import Templates from './app/pages/Marketing/templates';
+import { NameTextFieldContainer } from '@gdmn-nxt/components/Styled/nameTextField/nameTextField';
 
 registerMUI();
 
@@ -99,6 +100,7 @@ const Main = () => {
                     {loginStage === 'EMPLOYEE' ? (
                       <Routes>
                         <Route path="/employee" element={<MainLayout />}>
+                          <Route path="text" element={<NameTextFieldContainer/>} />
                           <Route path="" element={<Navigate to="dashboard/overview" />} />
                           <Route path="dashboard">
                             <Route path="" element={<Navigate to="overview" />} />
