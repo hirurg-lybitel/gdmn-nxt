@@ -19,7 +19,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import ImageIcon from '@mui/icons-material/Image';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import CloseIcon from '@mui/icons-material/Close';
-import { emailTemplateBaseName, emailTemplateButtonName, emailTemplateContainerName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, hexToRGB, objectToHtml } from './html-to-object';
+import { emailTemplateBaseName, emailTemplateButtonName, emailTemplateContainerName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, hexToRGB, htmlToTemplateObject, objectToHtml } from './html-to-object';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -94,8 +94,8 @@ export interface ITemplateEdit {
 }
 
 interface EmailTemplateProps {
-  value?: ITemplateEdit,
-  onChange: (value: ITemplateEdit) => void,
+  value?: string,
+  onChange: (value: string) => void,
   // defaultValues?: {
   //   text?: BaseComponentSettings,
   //   image?: BaseComponentSettings,
@@ -107,7 +107,12 @@ interface EmailTemplateProps {
 const EmailTemplate = (props: EmailTemplateProps) => {
   const theme = useTheme();
   const {
-    value: anyTemplates = {
+    value: inputHtml,
+    onChange
+  } = props;
+
+  const [anyTemplates, setAnyTemplates] = useState<ITemplateEdit>(
+    {
       content: {
         components: [],
         background: {
@@ -116,9 +121,20 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         }
       },
       html: '',
-    },
-    onChange
-  } = props;
+    }
+  );
+
+  const handleChange = (value: ITemplateEdit) => {
+    setAnyTemplates(value);
+    onChange(objectToHtml(value));
+    setLenght(value.content.components.length);
+  };
+
+  useEffect(() => {
+    if (!inputHtml || inputHtml === anyTemplates.html) return;
+    const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(inputHtml), html: inputHtml };
+    setAnyTemplates(newTemplate);
+  }, [inputHtml]);
 
   const settings = useSelector((state: RootState) => state.settings);
 
@@ -217,20 +233,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   ];
 
   const backgroundChange = (newBackground: string) => {
-    onChange({ ...anyTemplates, content: { ...anyTemplates.content, background: { ...anyTemplates.content.background, value: newBackground } } });
+    handleChange({ ...anyTemplates, content: { ...anyTemplates.content, background: { ...anyTemplates.content.background, value: newBackground } } });
   };
 
   const [length, setLenght] = useState<number>(0);
-
-  useEffect(() => {
-    if (anyTemplates.html === previeComponent) {
-      return;
-    }
-    if (length !== anyTemplates.content.components.length) {
-      setLenght(anyTemplates.content.components.length);
-    }
-    onChange({ ...anyTemplates, html: previeComponent });
-  }, [anyTemplates]);
 
   const getBiggestId = () => {
     let id = 10;
@@ -256,7 +262,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       }
       val = val?.[masIndex[i]];
     }
-    onChange(newValues);
+    handleChange(newValues);
   };
 
   const handleEditUnFocus = () => {
@@ -269,10 +275,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     const copyTemplate = [...anyTemplates.content.components];
     closeEditForm();
     if (copyTemplate.length === 1) {
-      onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [] } });
+      handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [] } });
     } else {
       copyTemplate.splice(index, 1);
-      onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+      handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
     }
   };
 
@@ -284,7 +290,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     const copyTemplate = [...anyTemplates.content.components];
     copyTemplate.splice(endIndex, 0, componentCopy);
     copyTemplate[endIndex].text = copyTemplate[endIndex].text ? copyTemplate[endIndex].text + ' ' : undefined;
-    onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+    handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -299,11 +305,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         component.id = getBiggestId();
         const copyTemplate = [...anyTemplates.content.components];
         if (copyTemplate.length === 0) {
-          onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [component] } });
+          handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [component] } });
         } else {
           const endIndex = result.destination.index;
           copyTemplate.splice(endIndex, 0, component);
-          onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+          handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
         }
       }
     }
@@ -317,7 +323,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       if (editedIndex === startIndex) {
         openEditForm(endIndex);
       }
-      onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+      handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
     }
   };
 

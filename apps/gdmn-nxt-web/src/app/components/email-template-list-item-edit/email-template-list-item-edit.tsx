@@ -20,7 +20,7 @@ interface EmailTemplateListItemEditProps {
 const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
   const { template: templateOld, open, onClose, onSumbit } = props;
 
-  const [template, setTemplate] = useState<ITemplateEdit | undefined>();
+  const [template, setTemplate] = useState<string>();
   const [templateName, setTemplateName] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -47,13 +47,13 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
 
   const handleCancel = () => {
     if ((!templateOld
-      && template?.html === objectToHtml({ content: htmlToTemplateObject(''), html: '' })
+      && (template === objectToHtml({ content: htmlToTemplateObject(''), html: '' }) || !template)
       && templateName === ''
     )) {
       handleClose();
       return;
     }
-    if ((objectToHtml({ content: htmlToTemplateObject(templateOld?.HTML || ''), html: '' }) === template?.html && templateOld?.NAME === templateName)) {
+    if (templateOld?.HTML === template && templateOld?.NAME === templateName) {
       handleClose();
       return;
     }
@@ -67,7 +67,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
       return;
     }
     if (firstRender) setFirstRender(false);
-    setTemplate({ content: htmlToTemplateObject(templateOld?.HTML), html: '' });
+    setTemplate(templateOld?.HTML);
     setTemplateName(templateOld?.NAME);
   }, [templateOld, firstRender, open]);
 
@@ -86,7 +86,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     onSumbit({
       ID: templateOld?.ID || -1,
       NAME: templateName,
-      HTML: template?.html || ''
+      HTML: template || ''
     });
     !templateOld && clear();
   };
