@@ -6,13 +6,23 @@ import { useTheme } from '@mui/material';
 
 export function NameTextFieldContainer () {
   const [name, setName] = useState('1 2 3');
-  useEffect(() => console.log(name), [name]);
+  const [objectName, setObjectName] = useState({ lastName: '123', firstName: '456', patronymic: '7d89' });
+
   return <div style={{ width: '100%' }}>
+    Object
     <NameTextField
       onChangeName={(value) => setName(value)}
       value={name}
-      nameObject={{ lastName: '123', firstName: '456', patronymic: '7d89' }}
+      fullWidth
     />
+    <div style={{ paddingTop: '20px' }}>
+      Text
+      <NameTextField
+        onChangeName={(value, obj) => setObjectName(obj)}
+        nameObject={objectName}
+        fullWidth
+      />
+    </div>
   </div>;
 }
 
@@ -20,7 +30,7 @@ export type IName = { lastName: string, firstName: string, patronymic: string }
 
 export interface INameTextFieldProps extends OutlinedInputProps{
   onChangeName?: (value: string, object: IName) => void
-  nameObject: IName
+  nameObject?: IName
 }
 
 export function NameTextField (props: INameTextFieldProps) {
@@ -57,11 +67,11 @@ export function NameTextField (props: INameTextFieldProps) {
   const [name, setName] = useState<IName>({ lastName: '', firstName: '', patronymic: '' });
 
   const parseFullname = (value: string) => {
-    const newName = value.replace(/\s{2,}/g, ' ').split(' ');
-    if (newName.length > 3) return '';
+    const newName = value?.replace(/\s{2,}/g, ' ').split(' ');
+    if (newName?.length > 3) return '';
     return {
-      lastName: (newName[0] || '') + ((value[value.length - 1] === ' ' && newName.length === 2) ? ' ' : ''),
-      firstName: (newName[1] || '') + ((value[value.length - 1] === ' ' && newName.length === 3) ? ' ' : ''),
+      lastName: (newName[0] || '') + ((value[value?.length - 1] === ' ' && newName?.length === 2) ? ' ' : ''),
+      firstName: (newName[1] || '') + ((value[value?.length - 1] === ' ' && newName?.length === 3) ? ' ' : ''),
       patronymic: newName[2] || ''
     };
   };
@@ -78,12 +88,13 @@ export function NameTextField (props: INameTextFieldProps) {
       return;
     };
     const newName = { ...name };
-    newName[`${type}`] = value.replaceAll(' ', '');
+    newName[`${type}`] = value?.replaceAll(' ', '');
     setName(newName);
     onChangeName && onChangeName(converToFullname(newName), newName);
   };
 
   useEffect(() => {
+    if (!value) return;
     const newValue = parseFullname(value as string);
     if (newValue === '') return;
     if (value === converToFullname(name)) return;
@@ -92,6 +103,7 @@ export function NameTextField (props: INameTextFieldProps) {
   }, [value]);
 
   useEffect(() => {
+    if (!nameObject) return;
     setName(nameObject);
     return;
   }, [nameObject]);
@@ -105,12 +117,12 @@ export function NameTextField (props: INameTextFieldProps) {
         sx={{ m: 1, width, margin: 0, position: 'relative', }}
         variant="outlined"
       >
-        <InputLabel style={{ zIndex: 2 }} >ФИО</InputLabel>
+        <InputLabel >ФИО</InputLabel>
         <OutlinedInput
           label="ФИО"
           {...style}
           onClick={!open ? handleOpen : undefined}
-          style={{ width: '100%', height: '40px', zIndex: 1, background }}
+          style={{ width: '100%', height: '40px', background }}
           value={converToFullname(name)}
           onChange={(e) => handleChange('all', e.target.value)}
           endAdornment={
@@ -122,8 +134,8 @@ export function NameTextField (props: INameTextFieldProps) {
           }
         />
         {open &&
-        <div style={{ position: 'absolute', left: '0', right: '0', top: '0px' }}>
-          <div style={{ width: tolltipWidth, paddingTop: '40px', background, borderRadius: '15px' }}>
+        <div style={{ position: 'absolute', left: '0', right: '0', top: '40px', zIndex: '1400' }}>
+          <div style={{ width: tolltipWidth, paddingTop: '0px', background, borderRadius: '15px' }}>
             <Stack spacing={2} style={{ padding: '10px', paddingTop: '15px' }}>
               <TextField
                 value={name.lastName}
