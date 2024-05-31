@@ -1,7 +1,7 @@
 import { ILabel } from '@gsbelarus/util-api-types';
 import styles from './label-marker.module.less';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
-
+import { useTheme } from '@mui/material';
 /* eslint-disable-next-line */
 export interface LabelMarkerProps {
   label: ILabel;
@@ -58,33 +58,51 @@ function RGBToHSL(r: number, g: number, b: number) {
   return { h, s, l };
 }
 
-export function LabelMarker(props: LabelMarkerProps) {
-  const { USR$COLOR: color, USR$NAME: name, USR$ICON } = props.label;
-  const { icon } = props;
+const getColors = (color: string | undefined, theme: 'dark' | 'light') => {
   const rgb = hexToRGB(color);
   const hsl = RGBToHSL(rgb.r, rgb.g, rgb.b);
   const labelH = hsl.h;
   const labelS = hsl.s;
   const labelL = hsl.l;
-  const backgroundAlpha = 0.2;
-  const borderAlpha = 0.3;
+  const textL = (labelL >= 85) ? labelL : 85;
+  const textS = labelS === 0 ? labelS : 100;
+  if (theme === 'dark') {
+    return {
+      background: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${0.2})`,
+      text: `hsl(${labelH}, ${textS}%, ${textL}%)`,
+      border: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`
+    };
+  }
+  const background = `hsl(${labelH}, ${labelS}%, ${labelL}%)`;
+  return {
+    background: background,
+    text: (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black',
+    border: labelL >= 95 ? 'rgba(0, 0, 0, 0.2)' : background
+  };
+};
+
+export function LabelMarker(props: LabelMarkerProps) {
+  const { USR$COLOR: color, USR$NAME: name, USR$ICON } = props.label;
+  const { icon } = props;
+  const theme = useTheme();
+
+  const colors = getColors(color, theme.palette.mode);
 
   if (!name) return <></>;
-
   return (
     <div
       className={styles.label}
       style={{
-        color: `hsl(${labelH}, ${labelS}%, ${labelL - 5}%)`,
-        backgroundColor: `hsla(${labelH}, ${labelS}%, ${labelL + 20}%, ${backgroundAlpha})`,
-        borderColor: `hsla(${labelH}, ${labelS}%, ${labelL}, ${borderAlpha})`, maxWidth: '100%', wordWrap: 'break-word',
+        backgroundColor: colors.background,
+        border: `1px solid ${colors.border}`, maxWidth: '100%', wordWrap: 'break-word',
         display: 'flex',
         alignItems: 'center',
         padding: '0px 5px',
         minHeight: '20px',
         fontSize: '0.8125rem',
         fontWeight: 600,
-        textTransform: 'none'
+        textTransform: 'none',
+        color: colors.text
       }}
     >
       {(icon || USR$ICON) &&
@@ -92,7 +110,7 @@ export function LabelMarker(props: LabelMarkerProps) {
           <IconByName name={icon ?? USR$ICON} style={{ width: 14, height: 14 }} />
         </div>
       }
-      <span style={{ margin: '0 5px', marginTop: '-3px' }}>
+      <span style={{ margin: '0 5px', marginTop: '-1px', textTransform: 'capitalize' }}>
         {name || 'Пример'}
       </span>
     </div>
