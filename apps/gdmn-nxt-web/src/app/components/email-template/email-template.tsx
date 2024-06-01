@@ -131,8 +131,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   useEffect(() => {
-    if (!inputHtml || inputHtml === anyTemplates.html) return;
-    const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(inputHtml), html: inputHtml };
+    if (inputHtml === objectToHtml(anyTemplates)) return;
+    closeEditForm();
+    const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(inputHtml || ''), html: inputHtml || '' };
     setAnyTemplates(newTemplate);
   }, [inputHtml]);
 
@@ -401,9 +402,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     };
   };
 
-
-  const previeComponent = objectToHtml(anyTemplates);
-
   const getComponentIcon = (type: componentTypes) => {
     switch (type) {
       case 'text':return <TextIncreaseIcon sx={{ color: theme.mainContent.buttonPrimaryColor, fontSize: '50px' }} />;
@@ -567,7 +565,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     }}
                   >
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
-                      {ReactHtmlParser(previeComponent)}
+                      {ReactHtmlParser(objectToHtml(anyTemplates))}
                     </CustomizedScrollBox>
                   </div>
                 </div>
