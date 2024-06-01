@@ -62,11 +62,11 @@ export const FindComponent = (props: findComponentProps) => {
             maxWidth: '100%',
             color: (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black',
             wordWrap: 'break-word',
-            opacity: !(component.text === '<p style="margin:0px"><br></p>' || !component.text || component.text === '') ? 1 : 0.5
+            opacity: !(component.text?.trim() === '<p style="margin:0px"><br></p>' || !component.text) ? 1 : 0.5
           }}
         >
           {ReactHtmlParser(
-            !(component.text === '<p style="margin:0px"><br></p>' || !component.text || component.text === '')
+            !(component.text?.trim() === '<p style="margin:0px"><br></p>' || !component.text)
               ? component.text
               : (isPreview ? '' : '<p>Напишите что-либо</p>')
           )}

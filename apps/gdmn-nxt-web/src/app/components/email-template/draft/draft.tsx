@@ -1,4 +1,3 @@
-import 'jodit';
 import JoditEditor from 'jodit-react';
 import { makeStyles } from '@mui/styles';
 import { IComponent } from '../email-template';
@@ -20,13 +19,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       width: '100%'
     },
     '& .jodit-wysiwyg': {
+      minHeight: '56px !important',
       background: 'none !important',
-      minHeight: '0px !important',
       padding: '0px !important',
       color: 'black'
     },
     '& .jodit-workplace': {
-      minHeight: '56px !important',
+      minHeight: '0px !important',
       cursor: 'text',
       padding: '5px'
     },
@@ -86,6 +85,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
   const classes = useStyles();
 
   const save = (value: string) => {
+    if (needDubleUpdate) return;
     const newValue = ref?.current?.value;
     let formattedValue = '';
     for (let i = 0;i < newValue.length;i++) {
@@ -234,7 +234,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
             borderTop: 'none !important'
           },
           '& .jodit-wysiwyg p': {
-            marginBottom: `${ref?.current?.value === '<p style="margin:0px"><br></p>' ? 20 : 0}px !important`
+            margin: '0px !important'
           }
         }}
       />

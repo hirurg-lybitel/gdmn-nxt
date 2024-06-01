@@ -131,8 +131,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   useEffect(() => {
+    console.log(inputHtml);
+    console.log(objectToHtml(anyTemplates));
     if (inputHtml === objectToHtml(anyTemplates)) return;
-    closeEditForm();
+    console.log('Есть отличия');
     const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(inputHtml || ''), html: inputHtml || '' };
     setAnyTemplates(newTemplate);
   }, [inputHtml]);
