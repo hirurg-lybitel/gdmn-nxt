@@ -4,26 +4,34 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material';
 
-export function NameTextFieldContainer () {
-  const [name, setName] = useState('1 2 3');
-  const [objectName, setObjectName] = useState({ lastName: '123', firstName: '456', patronymic: '7d89' });
+export function NameTextFieldTest ({ type }: {type?: 'string' |'object'}) {
+  const [name, setName] = useState('');
+  const [objectName, setObjectName] = useState({ lastName: '', firstName: '', patronymic: '' });
 
-  return <div style={{ width: '100%' }}>
-    Object
+  const stringComponent = <div style={{ width: '100%' }}>
+  String
     <NameTextField
       onChangeName={(value) => setName(value)}
       value={name}
       fullWidth
     />
-    <div style={{ paddingTop: '20px' }}>
-      Text
-      <NameTextField
-        onChangeName={(value, obj) => setObjectName(obj)}
-        nameObject={objectName}
-        fullWidth
-      />
-    </div>
   </div>;
+
+  const objectComponent = <div style={{ width: '100%' }}>
+  Object
+    <NameTextField
+      onChangeName={(value, obj) => setObjectName(obj)}
+      nameObject={objectName}
+      fullWidth
+    />
+  </div>;
+
+  if (type === 'string') return stringComponent;
+  if (type === 'object') return objectComponent;
+  return <>
+    {stringComponent}
+    {objectComponent}
+  </>;
 }
 
 export type IName = { lastName: string, firstName: string, patronymic: string }
@@ -134,7 +142,7 @@ export function NameTextField (props: INameTextFieldProps) {
           }
         />
         {open &&
-        <div style={{ position: 'absolute', left: '0', right: '0', top: '40px', zIndex: '1400' }}>
+        <div data-testid="name-text-field-popup" style={{ position: 'absolute', left: '0', right: '0', top: '40px', zIndex: '1400' }}>
           <div style={{ width: tolltipWidth, paddingTop: '0px', background, borderRadius: '15px' }}>
             <Stack spacing={2} style={{ padding: '10px', paddingTop: '15px' }}>
               <TextField
