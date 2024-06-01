@@ -6,7 +6,7 @@ export const parseToMessengerLink = (code: MessengerCode, name: string) => {
     return `${socialMediaLinks[code]}${messengerName}`;
   };
   if (code === 'telegram') {
-    return parseToString(name.replaceAll('@', ''));
+    return parseToString(name.replaceAll('@', '').replaceAll('https://t.me/', ''));
   }
   return parseToString(name);
 };
