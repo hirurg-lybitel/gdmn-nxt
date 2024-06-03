@@ -78,15 +78,6 @@ const Main = () => {
 
   const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
 
-  const [temp, setTemp] = useState<string>();
-
-  const handleChangeTemp = (value: string) => {
-    console.log(value);
-    setTemp(value);
-  };
-
-  const initValue = '<div class="gs_emailtemplateContainer" style="height:100%;width:100%;background:#434343"><div><div class="gs_emailtemplateText" id="11" style="display:flex;justify-content:center;padding:10px;border:1px solid transparent"><div id="0" style="width:auto;max-width:100%;color:white;word-wrap:break-word;opacity:1"><p style="margin:0px">asdasd</p></div></div><div class="gs_emailtemplateButton" id="12" style="display:flex;justify-content:center;padding:10px;border:1px solid transparent"><a id="1" target="_blank" style="text-decoration:none;width:auto;background-color:#2979ff;color:#ffffff;padding:10px;font:14px Arial;font-weight:600;border-radius:10px;cursor:auto;text-align:center;user-select:none" rel="noreferrer">Текст кнопки</a></div></div></div>';
-
   return (
     <div
       style={{
@@ -110,13 +101,6 @@ const Main = () => {
                     {loginStage === 'EMPLOYEE' ? (
                       <Routes>
                         <Route path="/employee" element={<MainLayout />}>
-                          <Route
-                            path="email"
-                            element={<div style={{ width: '100%' }}>
-                              <Button onClick={() => setTemp('')}>asd</Button>
-                              <EmailTemplate initialValue={initValue} onChange={handleChangeTemp} />
-                            </div>}
-                          />
                           <Route path="" element={<Navigate to="dashboard/overview" />} />
                           <Route path="dashboard">
                             <Route path="" element={<Navigate to="overview" />} />
