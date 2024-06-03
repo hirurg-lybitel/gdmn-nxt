@@ -1,6 +1,6 @@
 import { ContractType, IContract, IContractDetail, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { FetchBaseQueryError, createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '../../const';import { RootState } from '../../store';
+import { baseUrlApi } from '@gdmn/constants/client';import { RootState } from '../../store';
 import { MaybePromise } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import { QueryReturnValue } from '@reduxjs/toolkit/dist/query/baseQueryTypes';
 ;

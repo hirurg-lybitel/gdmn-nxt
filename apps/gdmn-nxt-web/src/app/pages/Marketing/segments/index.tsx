@@ -13,7 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
-import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/managment/segmentsApi';
+import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/Marketing/segments/segmentsApi';
 
 export default function CustomersSegments() {
   const [paginationData, setPaginationData] = useState<IPaginationData>({

@@ -1,5 +1,4 @@
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import { useGetAllTemplateQuery } from '../../../features/managment/templateApi';
 import styles from './select-template.module.less';
 import { Box, Button, DialogActions, DialogContent, DialogTitle, Grid, Stack, Typography } from '@mui/material';
 import EmailTemplateListItem from '@gdmn-nxt/components/email-template-list-item/email-template-list-item';
@@ -8,6 +7,7 @@ import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IFilteringData, ITemplate } from '@gsbelarus/util-api-types';
 import { useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
+import { useGetAllTemplateQuery } from '../../../features/Marketing/templates/templateApi';
 
 
 export interface SelectTemplateProps {

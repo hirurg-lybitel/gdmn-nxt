@@ -6,7 +6,7 @@ import { IFilteringData, IPaginationData, ITemplate } from '@gsbelarus/util-api-
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
-import { templateApi, useAddTemplateMutation, useDeleteTemplateMutation, useUpdateTemplateMutation } from '../../../features/managment/templateApi';
+import { templateApi, useAddTemplateMutation, useDeleteTemplateMutation, useUpdateTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import styles from './email-template-list.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';

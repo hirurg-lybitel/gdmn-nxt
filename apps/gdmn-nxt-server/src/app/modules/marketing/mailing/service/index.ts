@@ -82,13 +82,13 @@ const launchMailing = async (
       throw NotFoundException(`Не найдена рассылка с id=${id}`);
     }
 
-    if (mailing.segments.length === 0) {
+    if (mailing.includeSegments.length === 0) {
       await updateStatus(sessionID, id, 2, 'Нет получателей');
       return resultDescription('Нет получателей');
     }
 
     const customersClause = new Map();
-    mailing.segments.forEach(({ FIELDS }) => {
+    mailing.includeSegments.forEach(({ FIELDS }) => {
       FIELDS.forEach(({ NAME, VALUE }) => customersClause.set(NAME, VALUE));
     });
 

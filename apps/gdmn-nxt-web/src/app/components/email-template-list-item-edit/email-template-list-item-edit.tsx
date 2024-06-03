@@ -160,14 +160,14 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
             onClick={handleCancel}
             variant="outlined"
             color="primary"
-            style={{ width: 120 }}
+            className="DialogButton"
           >
              Отменить
           </Button>
           <Button
             variant="contained"
             onClick={handleSubmitClick}
-            style={{ width: 120 }}
+            className="DialogButton"
           >
             Сохранить
           </Button>

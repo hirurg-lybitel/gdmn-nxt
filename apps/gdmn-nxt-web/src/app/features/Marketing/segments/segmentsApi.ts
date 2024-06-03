@@ -1,6 +1,6 @@
-import { IPaginationData, IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { baseUrlApi } from '@gdmn/constants/client';
+import { IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
 
 export type ISegmentRequestResult = IRequestResult<{segments: ISegment[], count: number}>;
 

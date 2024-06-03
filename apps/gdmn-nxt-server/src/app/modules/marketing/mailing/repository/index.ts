@@ -41,7 +41,7 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
       FROM USR$CRM_MARKETING_MAILING m
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
-    const mailing = await fetchAsObject<Omit<IMailing, 'segments'>>(sql, { ...whereClause });
+    const mailing = await fetchAsObject<Omit<IMailing, 'includeSegments' | 'excludeSegments'>>(sql, { ...whereClause });
 
     if (mailing.length === 0) {
       return [];
@@ -49,22 +49,32 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
 
     sql = `
       SELECT
-        l.USR$SEGMENTKEY
+        l.USR$INCLUDE_SEGMENT,
+        l.USR$EXCLUDE_SEGMENT
       FROM USR$CRM_MARKETING_MAILING_LINE l
-      LEFT JOIN USR$CRM_MARKETING_SEGMENTS s ON s.ID = l.USR$SEGMENTKEY
+      JOIN USR$CRM_MARKETING_SEGMENTS s ON s.ID = l.USR$INCLUDE_SEGMENT OR s.ID = l.USR$EXCLUDE_SEGMENT
       WHERE l.USR$MASTERKEY = :masterKey`;
 
 
     const result: IMailing[] = [];
 
+    /** TODO: переписть для скорости */
+
     await forEachAsync(mailing, async (m) => {
       const segmentIds = await fetchAsObject(sql, { masterKey: m.ID });
 
-      const segments: ISegment[] = [];
+      const includeSegments: ISegment[] = [];
+      const excludeSegments: ISegment[] = [];
 
       await forEachAsync(segmentIds, async s => {
-        const fullSegment = await segmentsRepository.findOne(sessionID, { ID: s['USR$SEGMENTKEY'] });
-        segments.push(fullSegment);
+        if (s['USR$INCLUDE_SEGMENT'] > 0) {
+          const fullSegment = await segmentsRepository.findOne(sessionID, { ID: s['USR$INCLUDE_SEGMENT'] });
+          includeSegments.push(fullSegment);
+        }
+        if (s['USR$EXCLUDE_SEGMENT'] > 0) {
+          const fullSegment = await segmentsRepository.findOne(sessionID, { ID: s['USR$EXCLUDE_SEGMENT'] });
+          excludeSegments.push(fullSegment);
+        }
       });
 
       const convertedTemplate = await blob2String(m['TEMPLATE_BLOB']);
@@ -73,7 +83,8 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
       result.push({
         ...m,
         TEMPLATE: convertedTemplate,
-        segments
+        includeSegments,
+        excludeSegments
       });
     });
 
@@ -113,7 +124,8 @@ const update: UpdateHandler<IMailing> = async (
       STATUS = mailing.STATUS,
       STATUS_DESCRIPTION = mailing.STATUS_DESCRIPTION,
       TEMPLATE = mailing.TEMPLATE,
-      segments = mailing.segments
+      includeSegments = mailing.includeSegments,
+      excludeSegments = mailing.excludeSegments,
     } = metadata;
 
     const result = await fetchAsSingletonObject<IMailing>(
@@ -149,17 +161,26 @@ const update: UpdateHandler<IMailing> = async (
       });
 
     const sql = `
-      INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$SEGMENTKEY)
+      INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$INCLUDE_SEGMENT, USR$EXCLUDE_SEGMENT)
       VALUES(:MASTERKEY, :SEGMENTKEY)`;
 
-    const insertSegments = segments.map(async s => {
-      return executeSingleton(sql, {
+    const insertIncludeSegments = includeSegments.map(async s => {
+      return fetchAsSingletonObject(sql, {
         MASTERKEY: mailing.ID,
-        SEGMENTKEY: s.ID
+        INCLUDE_SEGMENTKEY: s.ID,
+        EXCLUDE_SEGMENTKEY: null
       });
     });
 
-    await Promise.all([deleteSegments, ...insertSegments]);
+    const insertExcludeSegments = excludeSegments.map(async s => {
+      return fetchAsSingletonObject(sql, {
+        MASTERKEY: mailing.ID,
+        INCLUDE_SEGMENTKEY: null,
+        EXCLUDE_SEGMENTKEY: s.ID
+      });
+    });
+
+    await Promise.all([deleteSegments, ...insertIncludeSegments, ...insertExcludeSegments]);
 
     await releaseTransaction();
 
@@ -179,7 +200,8 @@ const save: SaveHandler<IMailing> = async (
   const {
     NAME,
     TEMPLATE,
-    segments,
+    includeSegments,
+    excludeSegments,
     LAUNCHDATE
   } = metadata;
 
@@ -197,18 +219,27 @@ const save: SaveHandler<IMailing> = async (
     );
 
     const sql = `
-      INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$SEGMENTKEY)
-      VALUES(:MASTERKEY, :SEGMENTKEY)
+      INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$INCLUDE_SEGMENT, USR$EXCLUDE_SEGMENT)
+      VALUES(:MASTERKEY, :INCLUDE_SEGMENTKEY, :EXCLUDE_SEGMENTKEY)
       RETURNING ID`;
 
-    const insertSegments = segments.map(async s => {
+    const insertIncludeSegments = includeSegments.map(async s => {
       return fetchAsSingletonObject(sql, {
         MASTERKEY: mailing.ID,
-        SEGMENTKEY: s.ID
+        INCLUDE_SEGMENTKEY: s.ID,
+        EXCLUDE_SEGMENTKEY: null
       });
     });
 
-    await Promise.all(insertSegments);
+    const insertExcludeSegments = excludeSegments.map(async s => {
+      return fetchAsSingletonObject(sql, {
+        MASTERKEY: mailing.ID,
+        INCLUDE_SEGMENTKEY: null,
+        EXCLUDE_SEGMENTKEY: s.ID
+      });
+    });
+
+    await Promise.all([...insertIncludeSegments, ...insertExcludeSegments]);
 
     await releaseTransaction();
 

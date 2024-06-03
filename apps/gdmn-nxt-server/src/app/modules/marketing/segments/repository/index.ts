@@ -48,6 +48,8 @@ const find: FindHandler<ISegment> = async (
 
     const result: ISegment[] = [];
 
+    /** TODO: ускорить/переписать */
+
     await forEachAsync(segments, async (s) => {
       const segmentDetails = await fetchAsObject<ISegmnentField>(sql, { masterKey: s.ID });
 

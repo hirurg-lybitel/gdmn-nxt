@@ -6,13 +6,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
-import { baseUrlApi } from './const';
+
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
+import { baseUrlApi } from './constants';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {

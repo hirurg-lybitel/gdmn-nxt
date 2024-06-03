@@ -1,6 +1,6 @@
 import { IRequestResult, ISqlHistory } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 interface IHistory{
   history: any[];
