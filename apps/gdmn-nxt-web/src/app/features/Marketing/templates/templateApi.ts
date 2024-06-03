@@ -1,6 +1,7 @@
+import { baseUrlApi } from '@gdmn/constants/client';
 import { IPaginationData, IQueryOptions, IRequestResult, ITemplate, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
+
 
 export type ITemplateRequestResult = IRequestResult<{templates: ITemplate[], count: number}>;
 

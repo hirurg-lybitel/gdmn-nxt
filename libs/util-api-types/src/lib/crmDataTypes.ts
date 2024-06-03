@@ -394,10 +394,11 @@ export interface IMailing extends IWithID {
   LAUNCHDATE?: Date;
   STARTDATE?: Date;
   FINISHDATE?: Date;
-  STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
+  STATUS?: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
   STATUS_DESCRIPTION?: string;
-  segments: ISegment[];
   TEMPLATE?: string;
+  includeSegments?: ISegment[],
+  excludeSegments?: ISegment[]
 }
 
 export interface ITemplate extends IWithID {

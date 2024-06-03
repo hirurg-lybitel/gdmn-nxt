@@ -1,6 +1,6 @@
+import { baseUrlApi } from '@gdmn/constants/client';
 import { IAccount, IRequestResult, IWithID } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
 
 type IAccountWithID = IAccount & IWithID;
 
