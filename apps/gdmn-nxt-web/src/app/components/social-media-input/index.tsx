@@ -74,9 +74,18 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     onChange({ ...value, name: socialValue as IIconsNames });
   };
 
+  const [paste, setPaste] = useState(false);
+
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
     handleClose();
-    onChange({ ...value, text: (e.target.value).replace(/\s+/g, ' ') });
+    if (paste) {
+      setPaste(false);
+      const parsedvalue = newValue.split('/');
+      onChange({ ...value, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
+      return;
+    }
+    onChange({ ...value, text: newValue.replace(/\s+/g, ' ') });
   };
 
   const { onBlur } = restTextFieldProps;
@@ -109,6 +118,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
         inputRef={inputDigitsRef}
         onDoubleClick={handleDoubleClick}
         onChange={handleTextChange}
+        onPaste={() => setPaste(true)}
         onFocus={handleFocus}
         onBlur={(e) => {
           e.preventDefault();
