@@ -213,7 +213,7 @@ export function MailingUpsert({
               </Stack>
               <Box minHeight={600}>
                 <EmailTemplate
-                  value={mailing?.TEMPLATE ?? ''}
+                  initialValue={mailing?.TEMPLATE ?? ''}
                   onChange={(value) => console.log('value', value)}
                 />
               </Box>
