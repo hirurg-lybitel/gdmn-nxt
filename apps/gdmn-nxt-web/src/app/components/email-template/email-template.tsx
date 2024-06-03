@@ -1,6 +1,6 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Divider, FormControlLabel, IconButton, Switch, Tab, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
@@ -10,7 +10,6 @@ import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import ComputerIcon from '@mui/icons-material/Computer';
 import TabletIcon from '@mui/icons-material/Tablet';
 import ColorEdit from '../Styled/colorEdit/colorEdit';
-import { renderToStaticMarkup } from 'react-dom/server';
 import ReactHtmlParser from 'react-html-parser';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
@@ -19,7 +18,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import ImageIcon from '@mui/icons-material/Image';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import CloseIcon from '@mui/icons-material/Close';
-import { emailTemplateBaseName, emailTemplateButtonName, emailTemplateContainerName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, hexToRGB, htmlToTemplateObject, objectToHtml } from './html-to-object';
+import { hexToRGB, htmlToTemplateObject, objectToHtml } from './html-to-object';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
@@ -94,7 +93,7 @@ export interface ITemplateEdit {
 }
 
 interface EmailTemplateProps {
-  value?: string,
+  initialValue?: string,
   onChange: (value: string) => void,
   // defaultValues?: {
   //   text?: BaseComponentSettings,
@@ -107,7 +106,7 @@ interface EmailTemplateProps {
 const EmailTemplate = (props: EmailTemplateProps) => {
   const theme = useTheme();
   const {
-    value: inputHtml,
+    initialValue,
     onChange
   } = props;
 
@@ -131,14 +130,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   useEffect(() => {
-    console.log(inputHtml);
-    console.log(objectToHtml(anyTemplates));
-    if (inputHtml === objectToHtml(anyTemplates)) return;
-    console.log('Есть отличия');
+    if (initialValue === objectToHtml(anyTemplates)) return;
     closeEditForm();
-    const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(inputHtml || ''), html: inputHtml || '' };
+    const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(initialValue || ''), html: initialValue || '' };
     setAnyTemplates(newTemplate);
-  }, [inputHtml]);
+  }, [initialValue]);
 
   const settings = useSelector((state: RootState) => state.settings);
 
@@ -269,12 +265,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     handleChange(newValues);
   };
 
-  const handleEditUnFocus = () => {
-    setEditIsFocus(false);
-  };
-
-  const [editIsFocus, setEditIsFocus] = useState<boolean>(false);
-
   const removeEl = (index: number) => {
     const copyTemplate = [...anyTemplates.content.components];
     closeEditForm();
@@ -334,7 +324,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const [editedIndex, setEditedIndex] = useState<number | null>(null);
 
   const openEditForm = (index: number) => {
-    setEditIsFocus(true);
     setEditedIndex(index);
   };
 
@@ -344,7 +333,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   const closeEditForm = () => {
-    setEditIsFocus(false);
     setEditedIndex(null);
   };
 
@@ -438,7 +426,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <TabContext value={tabIndex} >
           <div style={{ width: '100%' }}>
-            <div onMouseDown={handleEditUnFocus} style={{ display: 'flex', alignItems: 'center' }} >
+            <div style={{ display: 'flex', alignItems: 'center' }} >
               <TabList
                 onChange={handleTabsChange}
                 centered
@@ -534,14 +522,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                     <EmailTemplateItem
                                       copy={copyEl}
                                       removeEl={handleDelete}
-                                      setEditIsFocus={setEditIsFocus}
                                       editedIndex={editedIndex}
                                       index={index}
-                                      editIsFocus={editIsFocus}
                                       component={component}
                                       setValue={valueChange}
                                       setDrag={(arg: boolean) => setDrag(arg)}
-                                      drag={drag}
                                       background={anyTemplates.content.background.value}
                                     />
                                   </div>
@@ -608,16 +593,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                       }
                     }}
                     style={{ height: '100%', minWidth: '300px' }}
-                    onMouseDown={handleEditUnFocus}
                   >
                     <EmailTemplateEdit
-                      copy={copyEl}
-                      removeEl={removeEl}
                       editedIndex={editedIndex as number}
-                      close={closeEditForm}
                       component={anyTemplates.content.components[editedIndex]}
                       setValue={valueChange}
-                      length={length}
                     />
                   </Box>
                   : (

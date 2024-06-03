@@ -15,16 +15,12 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 export interface EmailTemplateEditProps {
   editedIndex: number,
-  close: () => void,
   setValue: (stringIndex: string, newValue: any) => void,
-  removeEl: (index: number) => void;
-  copy: (index: number) => void,
-  component: IComponent,
-  length: number
+  component: IComponent
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
-  const { editedIndex, close, setValue, removeEl, component, length } = props;
+  const { editedIndex, setValue, component } = props;
   const theme = useTheme();
 
   const sizeSettings = () => {
@@ -117,7 +113,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             label="Общий"
             type="number"
           />
-          : <>
+          : (
             <div style={{ display: 'flex', columnGap: 10, marginTop: 10 }}>
               <TextField
                 value={component[`${paddingType}`]?.top + ''}
@@ -144,7 +140,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
                 type="number"
               />
             </div>
-          </>
+          )
         }
       </>
     );
@@ -355,7 +351,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             {baseComponent()}
             <div style={{ paddingTop: '10px' }}>
               <Draft
-                length={length}
                 setValue={setValue}
                 editedIndex={editedIndex}
                 component={component}

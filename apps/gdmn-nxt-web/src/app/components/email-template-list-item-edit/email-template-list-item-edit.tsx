@@ -144,7 +144,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           </ErrorTooltip>
           <div style={{ height: 'calc(100% - 60px)' }}>
             <EmailTemplate
-              value={template}
+              initialValue={templateOld?.HTML || ''}
               onChange={setTemplate}
             />
           </div>

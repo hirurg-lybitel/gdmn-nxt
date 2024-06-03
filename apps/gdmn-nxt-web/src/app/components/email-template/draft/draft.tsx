@@ -76,12 +76,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface draftProps {
   editedIndex: number,
   setValue: (stringIndex: string, newValue: any) => void,
-  component: IComponent,
-  length: number
+  component: IComponent
 }
 
 
-export default function Draft({ editedIndex, component, setValue, length }: draftProps) {
+export default function Draft({ editedIndex, component, setValue }: draftProps) {
   const classes = useStyles();
 
   const save = (value: string) => {

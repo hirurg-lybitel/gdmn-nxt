@@ -35,20 +35,15 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-interface findComponentProps {
+interface IFindComponentProps {
   component: IComponent,
   isPreview?: boolean,
-  editedIndex?: number | null,
   index: number,
-  editIsFocus?: boolean,
-  setValue?: (stringIndex: string, newValue: any) => void,
-  setDrag?: (arg: boolean) => void,
-  drag?: boolean,
   background: string
 }
 
-export const FindComponent = (props: findComponentProps) => {
-  const { component, isPreview, editedIndex, index, editIsFocus, setValue, setDrag, drag, background } = props;
+export const FindComponent = (props: IFindComponentProps) => {
+  const { component, isPreview, index, background } = props;
   const theme = useTheme();
 
   switch (component.type) {
@@ -135,13 +130,11 @@ export const FindComponent = (props: findComponentProps) => {
 interface EmailTemplateItemProps{
   editedIndex?: number | null,
   index: number,
-  editIsFocus?: boolean,
   setValue?: (stringIndex: string, newValue: any) => void,
   setEditIsFocus?: (value: React.SetStateAction<boolean>) => void,
   isPreview?: boolean,
   component: IComponent,
   setDrag?: (arg: boolean) => void,
-  drag?: boolean,
   removeEl?: (index: number) => void;
   copy?: (index: number) => void
   background: string
@@ -159,7 +152,7 @@ const idByType = (type: componentTypes) => {
 
 const EmailTemplateItem = (props: EmailTemplateItemProps) => {
   const theme = useTheme();
-  const { editedIndex, index, editIsFocus, setValue, setEditIsFocus, isPreview, component, setDrag, drag, copy, removeEl, background } = props;
+  const { editedIndex, index, setValue, setEditIsFocus, isPreview, component, setDrag, copy, removeEl, background } = props;
 
   const classes = useStyles();
 
@@ -264,7 +257,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           setEditIsFocus && setEditIsFocus(true);
         }}
       >
-        <FindComponent {...{ component, isPreview: false, editedIndex, index, editIsFocus, setValue, setDrag, drag, background }}/>
+        <FindComponent {...{ component, isPreview: false, index, background }}/>
       </div>
     </div>
   );
