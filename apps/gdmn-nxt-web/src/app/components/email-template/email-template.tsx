@@ -135,6 +135,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     console.log(objectToHtml(anyTemplates));
     if (inputHtml === objectToHtml(anyTemplates)) return;
     console.log('Есть отличия');
+    closeEditForm();
     const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(inputHtml || ''), html: inputHtml || '' };
     setAnyTemplates(newTemplate);
   }, [inputHtml]);
