@@ -58,7 +58,7 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
 
     const result: IMailing[] = [];
 
-    /** TODO: переписть для скорости */
+    // TODO: переписть для скорости
 
     await forEachAsync(mailing, async (m) => {
       const segmentIds = await fetchAsObject(sql, { masterKey: m.ID });
@@ -162,7 +162,8 @@ const update: UpdateHandler<IMailing> = async (
 
     const sql = `
       INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$INCLUDE_SEGMENT, USR$EXCLUDE_SEGMENT)
-      VALUES(:MASTERKEY, :SEGMENTKEY)`;
+      VALUES(:MASTERKEY, :INCLUDE_SEGMENTKEY, :EXCLUDE_SEGMENTKEY)
+      RETURNING ID`;
 
     const insertIncludeSegments = includeSegments.map(async s => {
       return fetchAsSingletonObject(sql, {

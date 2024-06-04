@@ -48,7 +48,7 @@ const find: FindHandler<ISegment> = async (
 
     const result: ISegment[] = [];
 
-    /** TODO: ускорить/переписать */
+    // TODO: ускорить/переписать
 
     await forEachAsync(segments, async (s) => {
       const segmentDetails = await fetchAsObject<ISegmnentField>(sql, { masterKey: s.ID });
@@ -59,6 +59,7 @@ const find: FindHandler<ISegment> = async (
         flatSegmentDetails.set(s.NAME, s.VALUE);
       });
 
+      // TODO: добавить остальные поля
       const LABELS = flatSegmentDetails.get('LABELS') ?? '';
       const DEPARTMENTS = flatSegmentDetails.get('DEPARTMENTS') ?? '';
 

@@ -7,11 +7,14 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { IMailing, ITemplate } from '@gsbelarus/util-api-types';
-import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
+import { IMailing, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
+import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
-import { useGetAllMailingQuery } from '../../../features/Marketing/mailing';
+import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
+import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 export default function Mailing() {
   const userPermissions = usePermissions();
@@ -23,9 +26,14 @@ export default function Mailing() {
     count: 0,
     mailings: []
   },
+  isLoading,
   isFetching,
   refetch
   } = useGetAllMailingQuery();
+
+  const [addMailing] = useAddMailingMutation();
+  const [deleteMailing] = useDeleteMailingMutation();
+  const [updateMailing] = useUpdateMailingMutation();
 
   const columns: GridColDef<IMailing>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
@@ -33,16 +41,67 @@ export default function Mailing() {
     { field: 'STATUS', headerName: 'Статус', width: 200,
       valueGetter({ value }) {
         switch (value) {
-          case 0:
+          case MailingStatus.delayed:
             return 'Отложена';
-          case 1:
+          case MailingStatus.completed:
             return 'Выполнена';
-          case 2:
+          case MailingStatus.error:
             return 'Ошибка';
+          case MailingStatus.manual:
+            return 'Готова к запуску';
+          case MailingStatus.inProgress:
+            return 'В процессе';
+          case MailingStatus.launchNow:
+            return 'Запускается';
           default:
             return 'Неизвестно';
         }
-      }, },
+      }
+    },
+    {
+      field: 'ACTIONS',
+      headerName: '',
+      resizable: false,
+      align: 'center',
+      // renderCell: ({ id, row, api }) =>
+      //   <MenuBurger
+      //     items={[
+      //       <Stack
+      //         key="edit"
+      //         direction="row"
+      //         alignItems="center"
+      //         spacing={1}
+      //         onClick={onEdit(row)}
+      //       >
+      //         <EditIcon />
+      //         <span>Редактировать</span>
+      //       </Stack>,
+      //       <PermissionsGate
+      //         key="delete"
+      //         actionAllowed={userPermissions?.mailings.DELETE}
+      //         show
+      //       >
+      //         <ItemButtonDelete
+      //           disabled
+      //           label="Удалить"
+      //           text={`Вы действительно хотите удалить рассылку ${row.NAME}?`}
+      //           onClick={onDelete(Number(id))}
+      //         />
+      //       </PermissionsGate>
+      //     ]}
+      //   />,
+      renderCell: ({ value, row }) => {
+        return (
+          <IconButton
+            color="primary"
+            size="small"
+            onClick={onEdit(row)}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+        );
+      }
+    }
   ];
 
   const [openWindow, setOpenWindow] = useState<{
@@ -75,18 +134,31 @@ export default function Mailing() {
   const mailingUpsertCancel = () => setOpenWindow(prev => ({ ...prev, upsertMailing: false }));
 
   const mailingUpsertSubmit = (mailing: IMailing, deleting = false) => {
+    console.log('mailingUpsertSubmit', mailing);
+    mailingUpsertCancel();
+
     if (deleting) {
-      /** Здесь удаляем рассылку */
+      deleteMailing(mailing.ID);
       return;
     }
 
     if (mailing.ID > 0) {
-      /** Здесь обновляем рассылку */
+      updateMailing(mailing);
       return;
     }
-    /** Здесь создаём рассылку */
+
+    addMailing(mailing);
   };
 
+
+  const onEdit = (mailing: IMailing) => () => {
+    setOpenWindow(prev => ({
+      ...prev,
+      selectTempate: false,
+      upsertMailing: true,
+      mailing
+    }));
+  };
 
   const memoSelectTemplate = useMemo(() =>
     <SelectTemplate
@@ -145,9 +217,13 @@ export default function Mailing() {
       <Divider />
       <CardContent style={{ padding: 0 }}>
         <StyledGrid
+          loading={isFetching}
           columns={columns}
           rows={mailings}
+          paginationMode="server"
+          sortingMode="server"
           pagination
+          rowCount={count}
         />
       </CardContent>
       {memoSelectTemplate}

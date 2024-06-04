@@ -1,8 +1,8 @@
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import styles from './mailing-upsert.module.less';
 import EmailTemplate from '@gdmn-nxt/components/email-template/email-template';
-import { ArrayElement, IMailing, ISegment } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { ArrayElement, IMailing, ISegment, MailingStatus } from '@gsbelarus/util-api-types';
+import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
@@ -12,6 +12,10 @@ import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { MobileDateTimePicker } from '@mui/x-date-pickers-pro';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 const sendTypes = [
   {
@@ -41,6 +45,8 @@ export function MailingUpsert({
   onSubmit,
   mailing
 }: MailingUpsertProps) {
+  const userPermissions = usePermissions();
+
   const { data: { segments } = {
     count: 0,
     segments: [] },
@@ -51,7 +57,8 @@ export function MailingUpsert({
     ID: -1,
     NAME: '',
     includeSegments: [],
-    excludeSegments: []
+    excludeSegments: [],
+    STATUS: MailingStatus.manual
   };
 
   const formik = useFormik<IMailing>({
@@ -65,6 +72,9 @@ export function MailingUpsert({
       NAME: yup.string()
         .required('Не указано наименование')
         .max(40, 'Слишком длинное наименование'),
+      // LAUNCHDATE: yup
+      //   .date()
+      //   .required('Не указана дата запуска')
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       // EMAILS: yup.array().of(emailsValidation()),
       // PHONES: yup.array().of(phonesValidation())
@@ -75,15 +85,32 @@ export function MailingUpsert({
     },
     onReset: (values) => {
       setSelectedSendType(sendTypes[1]);
+      setSaveTemplate(false);
     }
   });
 
+  const [saveTemplate, setSaveTemplate] = useState(false);
   const [selectedSendType, setSelectedSendType] = useState(sendTypes[1]);
 
   const sendTypeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const name = e.target.value;
     const sendType = sendTypes.find(s => s.name === name);
     sendType && setSelectedSendType(sendType);
+
+    switch (sendType) {
+      case sendTypes[0]:
+        formik.setFieldValue('STATUS', MailingStatus.launchNow);
+        break;
+      case sendTypes[1]:
+        formik.setFieldValue('STATUS', MailingStatus.manual);
+        break;
+      case sendTypes[2]:
+        formik.setFieldValue('STATUS', MailingStatus.delayed);
+        break;
+      default:
+        formik.setFieldValue('STATUS', MailingStatus.manual);
+        break;
+    }
   };
 
   useEffect(() => {
@@ -91,6 +118,12 @@ export function MailingUpsert({
     formik.resetForm();
   }, [open]);
 
+  const onDelete = () => {
+    onSubmit(formik.values, true);
+  };
+
+  const templateChange = (value: string) => formik.setFieldValue('TEMPLATE', value);
+  const saveTemplateChange = (event: ChangeEvent<HTMLInputElement>, checked: boolean) => setSaveTemplate(checked);
 
   return (
     <CustomizedDialog
@@ -105,7 +138,7 @@ export function MailingUpsert({
       </DialogTitle>
       <DialogContent dividers style={{ display: 'grid' }}>
         <FormikProvider value={formik}>
-          <Form id="contactEditForm" onSubmit={formik.handleSubmit}>
+          <Form id="mailingForm" onSubmit={formik.handleSubmit}>
             <Stack
               height="100%"
               spacing={2}
@@ -155,15 +188,6 @@ export function MailingUpsert({
                     <TextField
                       {...params}
                       label="Выбор сегмента получателей"
-                      // placeholder="Выберите ответственного"
-                      // InputProps={{
-                      //   ...params.InputProps,
-                      //   startAdornment: (
-                      //     <InputAdornment position="end">
-                      //       <ManageAccountsIcon />
-                      //     </InputAdornment>
-                      //   ),
-                      // }}
                     />
                   )}
                 />
@@ -198,23 +222,27 @@ export function MailingUpsert({
                     <TextField
                       {...params}
                       label="Выбор исключающих сегментов"
-                      // placeholder="Выберите ответственного"
-                      // InputProps={{
-                      //   ...params.InputProps,
-                      //   startAdornment: (
-                      //     <InputAdornment position="end">
-                      //       <ManageAccountsIcon />
-                      //     </InputAdornment>
-                      //   ),
-                      // }}
                     />
                   )}
                 />
               </Stack>
-              <Box minHeight={600}>
+              <Box minHeight={600} position="relative">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={saveTemplate}
+                      onChange={saveTemplateChange}
+                    />
+                  }
+                  label="Добавить в сохранённые шаблоны"
+                  style={{
+                    position: 'absolute',
+                    right: 30
+                  }}
+                />
                 <EmailTemplate
-                  value={mailing?.TEMPLATE ?? ''}
-                  onChange={(value) => console.log('value', value)}
+                  value={formik.values.TEMPLATE ?? ''}
+                  onChange={templateChange}
                 />
               </Box>
               <Stack
@@ -233,13 +261,18 @@ export function MailingUpsert({
                       size="small"
                       variant="contained"
                       startIcon={<ForwardToInboxIcon />}
+                      disabled
                     >
                       Отправить
                     </Button >
                   </Box>
                 </Tooltip>
               </Stack>
-              <Box width="30%">
+              <Stack
+                direction="row"
+                width="50%"
+                spacing={2}
+              >
                 <TextField
                   select
                   required
@@ -258,12 +291,43 @@ export function MailingUpsert({
                     </MenuItem>
                   ))}
                 </TextField>
-              </Box>
+                {selectedSendType.id === 3 &&
+                <MobileDateTimePicker
+                  name="LAUNCHDATE"
+                  label="Дата запуска"
+                  value={formik.values.LAUNCHDATE ? new Date(formik.values.LAUNCHDATE) : null}
+                  onChange={(value) => formik.setFieldValue('LAUNCHDATE', value, true)}
+                  slotProps={{
+                    textField: {
+                      style: {
+                        minWidth: '170px'
+                      },
+                      error: Boolean(getIn(formik.errors, 'LAUNCHDATE')),
+                      helperText: getIn(formik.errors, 'LAUNCHDATE'),
+                    },
+                  }}
+                />
+                }
+              </Stack>
             </Stack>
           </Form>
         </FormikProvider>
       </DialogContent>
       <DialogActions>
+        {formik.values.ID > 0 &&
+          <PermissionsGate
+            key="delete"
+            actionAllowed={userPermissions?.mailings.DELETE}
+            show
+          >
+            <ItemButtonDelete
+              button
+              text={`Вы действительно хотите удалить рассылку ${mailing?.NAME}?`}
+              onClick={onDelete}
+            />
+          </PermissionsGate>
+        }
+        <Box flex={1} />
         <ButtonWithConfirmation
           className={'DialogButton'}
           variant="outlined"
@@ -276,7 +340,7 @@ export function MailingUpsert({
         <Button
           className={'DialogButton'}
           type="submit"
-          form="dealSource"
+          form="mailingForm"
           variant="contained"
         >
           Сохранить

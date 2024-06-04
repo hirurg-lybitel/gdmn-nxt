@@ -92,7 +92,14 @@ const Main = () => {
             <CssBaseline />
             <LocalizationProvider
               dateAdapter={AdapterDateFns}
-              localeText={{ start: 'Начало периода', end: 'Конец периода' }}
+              localeText={{
+                start: 'Начало периода',
+                end: 'Конец периода',
+                dateTimePickerToolbarTitle: 'Укажите дату и время',
+                openNextView: 'следующее окно',
+                openPreviousView: 'предыдущее окно',
+                cancelButtonLabel: 'Отмена'
+              }}
               adapterLocale={ruLocale}
             >
               <SnackbarProvider maxSnack={3}>

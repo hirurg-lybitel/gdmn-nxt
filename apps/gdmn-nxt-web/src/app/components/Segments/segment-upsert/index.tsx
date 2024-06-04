@@ -475,7 +475,7 @@ export function SegmentUpsert({
               {segment && <ItemButtonDelete onClick={handleDeleteClick} button />}
               <Box flex={1}/>
               <Button
-                // className={styles.button}
+                className="DialogButton"
                 onClick={handleCancelClick}
                 variant="outlined"
                 color="primary"
@@ -488,7 +488,7 @@ export function SegmentUpsert({
                 form="segmentForm"
                 type="submit"
                 onClick={handleSubmitClick}
-                // disabled={!userPermissions?.customers?.PUT}
+                className="DialogButton"
               >
                 Сохранить
               </Button>

@@ -7,14 +7,14 @@ export type IMailingRequestResult = IRequestResult<{mailings: IMailing[], count:
 export const mailingApi = createApi({
   reducerPath: 'mailing',
   tagTypes: ['mailing'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'marketing/', credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'marketing/mailings', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllMailing: builder.query<{mailings: IMailing[], count: number}, Partial<IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
         return {
-          url: `mailing${params ? `?${params}` : ''}`,
+          url: `${params ? `?${params}` : ''}`,
           method: 'GET'
         };
       },
@@ -33,28 +33,31 @@ export const mailingApi = createApi({
       providesTags: result => ['mailing']
     }),
     getMailingById: builder.query<IMailing, number>({
-      query: (id) => `mailings/${id}`,
+      query: (id) => `/${id}`,
       transformResponse: (response: IRequestResult<{mailings: IMailing[]}>) => response.queries?.mailings[0],
     }),
-    addMailing: builder.mutation<IMailingRequestResult, IMailing>({
+    addMailing: builder.mutation<IMailing, Partial<IMailing>>({
       query: (body) => ({
-        url: 'mailings',
+        url: '',
         body: body,
         method: 'POST'
       }),
       invalidatesTags: ['mailing']
     }),
-    updateMailing: builder.mutation<IMailingRequestResult, [IMailing, number]>({
-      query: ([body, id]) => ({
-        url: `mailings/${id}`,
-        body: body,
-        method: 'PUT'
-      }),
+    updateMailing: builder.mutation<IMailing, Partial<IMailing>>({
+      query(data) {
+        const { ID, ...body } = data;
+        return {
+          url: `/${ID}`,
+          method: 'PUT',
+          body,
+        };
+      },
       invalidatesTags: ['mailing']
     }),
-    deleteMailing: builder.mutation<IMailingRequestResult, number>({
+    deleteMailing: builder.mutation<void, number>({
       query: (id) => ({
-        url: `mailings/${id}`,
+        url: `/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['mailing']
