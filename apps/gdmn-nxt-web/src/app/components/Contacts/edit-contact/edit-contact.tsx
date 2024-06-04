@@ -31,6 +31,7 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
+import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -51,11 +52,15 @@ export function EditContact({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const voidPhoneValue: IPhone = { ID: -1, USR$PHONENUMBER: '' };
+  const voidEmailValue: IEmail = { ID: -1, EMAIL: '' };
+  const voidMessengerValue: IMessenger = { ID: -1, CODE: 'telegram', USERNAME: '' };
+
   const initValue: Omit<IContactPerson, 'ID'> = {
     NAME: '',
-    PHONES: [],
-    EMAILS: [],
-    MESSENGERS: [],
+    PHONES: [voidPhoneValue],
+    EMAILS: [voidEmailValue],
+    MESSENGERS: [voidMessengerValue],
     LABELS: [],
     ADDRESS: '',
     RANK: '',
@@ -66,7 +71,11 @@ export function EditContact({
     validateOnBlur: false,
     initialValues: {
       ...initValue,
-      ...contact
+      ...{ ...contact,
+        // PHONES: [...(contact?.PHONES || []), voidPhoneValue],
+        // EMAILS: [...(contact?.EMAILS || []), voidEmailValue],
+        // MESSENGERS: [...(contact?.MESSENGERS || []), voidMessengerValue],
+      }
     },
     validationSchema: yup.object().shape({
       NAME: yup.string()
@@ -109,10 +118,10 @@ export function EditContact({
     if (phones?.length) {
       newPhones = [...phones];
     };
-    if (phones && phones[phones.length - 1]?.USR$PHONENUMBER === '') {
-      return;
-    }
-    newPhones.push({ ID: -1, USR$PHONENUMBER: '' });
+    // if (phones && phones[phones.length - 1]?.USR$PHONENUMBER === '') {
+    //   return;
+    // }
+    newPhones.push(voidPhoneValue);
 
     formik.setFieldValue('PHONES', newPhones);
   };
@@ -142,7 +151,7 @@ export function EditContact({
     if (formik.values.EMAILS?.length) {
       newEmails = [...formik.values.EMAILS];
     };
-    newEmails.push({ ID: -1, EMAIL: '' });
+    newEmails.push(voidEmailValue);
 
     formik.setFieldValue('EMAILS', newEmails);
   };
@@ -162,7 +171,7 @@ export function EditContact({
     if (Array.isArray(formik.values.MESSENGERS)) {
       newMessengers = [...formik.values.MESSENGERS];
     };
-    newMessengers.push({ ID: -1, CODE: 'telegram', USERNAME: '' });
+    newMessengers.push(voidMessengerValue);
 
     formik.setFieldValue('MESSENGERS', newMessengers);
   };
@@ -215,46 +224,40 @@ export function EditContact({
 
   const phoneOptions = useMemo(() =>
     <div>
-      {formik.values.PHONES?.map(({ ID, USR$PHONENUMBER }, index) => {
+      {formik.values.PHONES?.map(({ ID, USR$PHONENUMBER }: IPhone, index: number) => {
         const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[index]?.USR$PHONENUMBER);
         const error = Array.isArray(formik.errors.PHONES) ? (formik.errors.PHONES[index] as unknown as IPhone)?.USR$PHONENUMBER : '';
-
+        const lastElement = !formik.values.PHONES?.[index + 1];
+        const handleBlur = () => {
+          if (USR$PHONENUMBER.split(' ').length < 2 && !lastElement) {
+            handleDeletePhone(index);
+          }
+          // if (USR$PHONENUMBER.split(' ').length > 1 && lastElement) handleAddPhone();
+        };
         return (
           <Stack
             key={index.toString()}
             direction="row"
             alignItems="center"
             spacing={2}
-            height={45}
+            sx={{ paddingBottom: '5px' }}
           >
             <PhoneAndroidIcon fontSize="small" color="primary" />
-            <EditableTypography
-              value={USR$PHONENUMBER}
-              container={(value) =>
-                <a
-                  className={styles.link}
-                  href={`tel:${USR$PHONENUMBER.replace(/\s+/g, '')}`}
-                >
-                  {value}
-                </a>}
-              width={'100%'}
-              deleteable
-              onDelete={() => handleDeletePhone(index)}
-              helperText={error}
-              error={isTouched && Boolean(error)}
-              closeOnBlur={false}
-              editComponent={
-                <TelephoneInput
-                  name={`PHONE${index}`}
-                  autoFocus
-                  value={USR$PHONENUMBER ?? ''}
-                  onChange={(value) => handlePhoneChange(index, value)}
-                  fixedCode
-                  strictMode
-                  error={isTouched && Boolean(error)}
-                />
-              }
-            />
+            <ErrorTooltip
+              open={isTouched && !!error}
+              title={error}
+            >
+              <TelephoneInput
+                name={`PHONE${index}`}
+                value={USR$PHONENUMBER ?? ''}
+                onChange={(value) => handlePhoneChange(index, value)}
+                fixedCode
+                fullWidth
+                strictMode
+                onBlur={handleBlur}
+                error={isTouched && Boolean(error)}
+              />
+            </ErrorTooltip>
           </Stack>
         );
       })}
@@ -274,34 +277,35 @@ export function EditContact({
       {formik.values.EMAILS?.map(({ ID, EMAIL }, index) => {
         const isTouched = Array.isArray(formik.errors.EMAILS) && Boolean((formik.touched.EMAILS as unknown as IEmail[])?.[index]?.EMAIL);
         const error = Array.isArray(formik.errors.EMAILS) ? (formik.errors.EMAILS[index] as unknown as IEmail)?.EMAIL : '';
-
+        const lastElement = !formik.values.EMAILS?.[index + 1];
+        const handleBlur = () => {
+          if (EMAIL === '' && !lastElement) {
+            handleDeleteEmail(index);
+          }
+          // if (EMAIL !== '' && lastElement) handleAddEmail();
+        };
         return (
           <Stack
             key={index.toString()}
             direction="row"
             alignItems="center"
             spacing={2}
+            sx={{ paddingBottom: '5px' }}
           >
             <EmailIcon fontSize="small" color="primary" />
-            <EditableTypography
-              value={EMAIL}
-              container={(value) => <a className={styles.link} href={`mailto:${value}`}>{value}</a>}
-              width={'100%'}
-              deleteable
-              onDelete={() => handleDeleteEmail(index)}
-              error={isTouched && Boolean(error)}
-              helperText={error}
-              editComponent={
-                <TextField
-                  fullWidth
-                  autoFocus
-                  name={`EMAIL${index}`}
-                  value={EMAIL ?? ''}
-                  onChange={(e) => handleEmailChange(index, e.target.value)}
-                  error={isTouched && Boolean(error)}
-                />
-              }
-            />
+            <ErrorTooltip
+              open={isTouched && !!error}
+              title={error}
+            >
+              <TextField
+                fullWidth
+                name={`EMAIL${index}`}
+                value={EMAIL ?? ''}
+                onChange={(e) => handleEmailChange(index, e.target.value)}
+                onBlur={handleBlur}
+                error={isTouched && Boolean(error)}
+              />
+            </ErrorTooltip>
           </Stack>
         );
       })}
@@ -321,13 +325,20 @@ export function EditContact({
       {formik.values.MESSENGERS?.map(({ ID, CODE, USERNAME }, index) => {
         const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[index]?.USERNAME);
         const error = Array.isArray(formik.errors.MESSENGERS) ? (formik.errors.MESSENGERS[index] as unknown as IMessenger)?.USERNAME : '';
-
+        const handleBlur = () => {
+          const lastElement = !formik.values.MESSENGERS?.[index + 1];
+          if (USERNAME === '' && !lastElement) {
+            handleDeleteMessenger(index);
+          }
+          // if (USERNAME !== '' && lastElement) handleAddMessenger();
+        };
         return (
           <Stack
             key={index}
             direction="row"
             alignItems="center"
             spacing={2}
+            sx={{ paddingBottom: '5px' }}
           >
             {/* <SmsIcon fontSize="small" color="primary" /> */}
             <div className={styles['messenger-icon']}>
@@ -339,39 +350,27 @@ export function EditContact({
               spacing={1}
               flex={1}
             >
-              <EditableTypography
-                value={USERNAME}
-                container={(value) =>
-                  <a
-                    className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
-                    onClick={handleStopPropagation}
-                    href={parseToMessengerLink(CODE, USERNAME)}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {value}
-                  </a>}
-                width={'100%'}
-                deleteable
-                onDelete={() => handleDeleteMessenger(index)}
-                helperText={error}
-                error={isTouched && Boolean(error)}
-                editComponent={
-                  <SocialMediaInput
-                    value={{
-                      name: CODE,
-                      text: USERNAME
-                    }}
-                    name={`MESSANGER${index}`}
-                    autoFocus
-                    onChange={(value) => handleMessengerChange(index, value)}
-                    placeholder="имя пользователя"
-                    error={isTouched && Boolean(error)}
-                  />
-                }
-              />
+              <ErrorTooltip
+                open={isTouched && !!error}
+                title={error}
+              >
+                <SocialMediaInput
+                  value={{
+                    name: CODE,
+                    text: USERNAME
+                  }}
+                  autoFocus={formik.values.MESSENGERS?.length === 1 && USERNAME === '' ? false : true}
+                  style={{ width: '100%' }}
+                  onBlur={handleBlur}
+                  name={`MESSANGER${index}`}
+                  onChange={(value) => handleMessengerChange(index, value)}
+                  placeholder="имя пользователя"
+                  error={isTouched && Boolean(error)}
+                />
+              </ErrorTooltip>
             </Stack>
           </Stack>
+
         );
       })}
       <div className={styles['addItemButtonContainer']}>
