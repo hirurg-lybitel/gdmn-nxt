@@ -7,7 +7,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName, hexToRGB } from '../html-to-object';
+import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateMarginAuto, emailTemplatePaddingAuto, emailTemplateTextColor, emailTemplateTextName, emailTemplateWidth, hexToRGB } from '../html-to-object';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -51,6 +51,10 @@ export const FindComponent = (props: IFindComponentProps) => {
       const rgb = hexToRGB(background);
       return (
         <div
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateWidth + component.width?.value)
+          }
           id={index + ''}
           style={{
             width: component.width.auto ? 'auto' : component.width?.value + '%',
@@ -68,25 +72,20 @@ export const FindComponent = (props: IFindComponentProps) => {
         </div>
       );
     }
-    case 'image':
+    case 'image': {
+      if (!component.image && !isPreview) return <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />;
       return (
-        <>
-          {component.image
-            ? (
-              <img
-                id={index + ''}
-                style={{ width: `${component.width?.value}%` }}
-                src={component.image}
-              />
-            )
-            : isPreview ? (<img
-              id={index + ''}
-              style={{ width: `${component.width?.value}%` }}
-            />)
-              : <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />
+        <img
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateWidth + component.width?.value)
           }
-        </>
+          id={index + ''}
+          style={{ width: `${component.width?.value}%` }}
+          src={component.image ? component.image : undefined}
+        />
       );
+    }
     case 'button': {
       const rgb = hexToRGB(component.color?.button);
       return (
@@ -94,6 +93,11 @@ export const FindComponent = (props: IFindComponentProps) => {
           id={index + ''}
           href={(!component.url || component.url?.length < 0 || !isPreview) ? undefined : component.url}
           target="_blank"
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateTextColor + component.color?.text)
+            + (' ' + emailTemplateWidth + component.width?.value)
+          }
           style={{
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
@@ -116,6 +120,10 @@ export const FindComponent = (props: IFindComponentProps) => {
     case 'divider':
       return (
         <div
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateWidth + component.width?.value)
+          }
           id={index + ''}
           style={{ paddingTop: '5px', paddingBottom: '5px',
             width: component.width.auto ? 'auto' : `${component.width?.value}%`
@@ -160,7 +168,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
     if (!component) return <div />;
     return (
       <div
-        className={idByType(component.type)}
+        className={idByType(component.type) + (component.margin.isCommon ? ' ' + emailTemplateMarginAuto : '')}
         id={(component.id + '')}
         style={{
           display: 'flex', justifyContent: component.position,

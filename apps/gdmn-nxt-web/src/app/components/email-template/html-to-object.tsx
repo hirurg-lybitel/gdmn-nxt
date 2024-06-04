@@ -8,6 +8,10 @@ export const emailTemplateButtonName = emailTemplateBaseName + 'Button';
 export const emailTemplateDividerName = emailTemplateBaseName + 'Divider';
 export const emailTemplateImageName = emailTemplateBaseName + 'Image';
 export const emailTemplateContainerName = emailTemplateBaseName + 'Container';
+export const emailTemplateMarginAuto = emailTemplateBaseName + 'AutoMargin';
+export const emailTemplatePaddingAuto = emailTemplateBaseName + 'AutoPadding';
+export const emailTemplateTextColor = emailTemplateBaseName + 'TextColor_';
+export const emailTemplateWidth = emailTemplateBaseName + 'Width_';
 
 export const hexToRGB = (h: any) => {
   let r = 0, g = 0, b = 0;
@@ -68,9 +72,9 @@ export const htmlToTemplateObject = (componentsHtml: string): {
   const getObjectFromHtml = (html: Element, type: componentTypes): IComponent => {
     const container = html as any;
     const children = container.children[0] as any;
-    const getPadding = (style: any) => {
+    const getPadding = (style: any, auto: boolean) => {
       const normilize = (str: string) => Number(str.replace('px', ''));
-      if (style.padding.split(' ').length === 1) {
+      if (auto) {
         return {
           top: 10,
           right: 10,
@@ -89,17 +93,25 @@ export const htmlToTemplateObject = (componentsHtml: string): {
         common: 10
       };
     };
-    const getWidth = (style: any) => {
-      const width = style.width;
-      if (width === 'auto') {
-        return {
-          auto: true,
-          value: 100
-        };
+    const getWidth = (element: any) => {
+      const widthPosition = element.classList.value.search(emailTemplateWidth);
+
+      let width = '';
+      let cycle = true;
+      let i = widthPosition + emailTemplateWidth.length;
+      while (cycle) {
+        const value = element.classList.value[i];
+        if (!value || isNaN(Number(value))) {
+          cycle = false;
+          break;
+        }
+        width += element.classList.value[i];
+        i += 1;
       }
+
       return {
-        auto: false,
-        value: Number(width.replace('%', ''))
+        auto: element.style.width === 'auto',
+        value: (widthPosition === -1) ? 100 : Number(width)
       };
     };
 
@@ -123,10 +135,27 @@ export const htmlToTemplateObject = (componentsHtml: string): {
       case 'button':{
         object.type = 'button';
         object.title = 'Кнопка';
-        object.padding = getPadding(children.style);
+        object.padding = getPadding(children.style, children.classList.value.search(emailTemplatePaddingAuto) !== -1);
+        const autoTextColor = () => {
+          const colorPosition = children.classList.value.search(emailTemplateTextColor);
+          if (colorPosition === -1) return '';
+          let width = '';
+          let cycle = true;
+          let i = colorPosition + emailTemplateTextColor.length;
+          while (cycle) {
+            const value = children.classList.value[i];
+            if (!value || value === ' ') {
+              cycle = false;
+              break;
+            }
+            width += children.classList.value[i];
+            i += 1;
+          }
+          return width;
+        };
         object.color = {
-          text: children.style.color === 'rgb(209, 204, 204)' ? rgbToHex(children.style.color) : '#ffffff',
-          textAuto: children.style.color === 'rgb(209, 204, 204)',
+          text: autoTextColor() !== '' ? autoTextColor() : '#ffffff',
+          textAuto: children.style.color === 'black' || children.style.color === 'white',
           button: rgbToHex(children.style.backgroundColor)
         };
         object.url = children.href;
@@ -146,9 +175,9 @@ export const htmlToTemplateObject = (componentsHtml: string): {
 
     object.index = Number(children.id);
     object.id = Number(container.id);
-    object.margin = getPadding(container.style);
+    object.margin = getPadding(container.style, container.classList.value.search(emailTemplateMarginAuto) !== -1);
     object.position = container.style.justifyContent;
-    object.width = getWidth(children.style);
+    object.width = getWidth(children);
 
     return object;
   };
@@ -192,17 +221,17 @@ export const objectToHtml = (template: ITemplateEdit) => {
       style={{
         height: '100%',
         width: '100%',
-        background: template.content.background.isView ? template.content.background.value : 'transparent'
+        background: template.background.isView ? template.background.value : 'transparent'
       }}
     >
       <div>
-        {template.content.components.map((component: IComponent, index: number) => (
+        {template.components.map((component: IComponent, index: number) => (
           <EmailTemplateItem
             key={index}
             index={index}
             isPreview={true}
             component={component}
-            background={template.content.background.value}
+            background={template.background.value}
           />
         ))}
       </div>

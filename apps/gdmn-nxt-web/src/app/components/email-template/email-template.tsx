@@ -82,18 +82,15 @@ export interface IButtonComponent extends BaseComponent {
 export interface IComponent extends ITextComponent, IImageComponent, IDeviderComponent, IButtonComponent {}
 
 export interface ITemplateEdit {
-  content: {
-    components: IComponent[],
-    background: {
-      value: string,
-      isView: boolean
-    }
-  },
-  html: string
+  components: IComponent[],
+  background: {
+    value: string,
+    isView: boolean
+  }
 }
 
 interface EmailTemplateProps {
-  initialValue?: string,
+  value?: string,
   onChange: (value: string) => void,
   // defaultValues?: {
   //   text?: BaseComponentSettings,
@@ -106,35 +103,15 @@ interface EmailTemplateProps {
 const EmailTemplate = (props: EmailTemplateProps) => {
   const theme = useTheme();
   const {
-    initialValue,
+    value = '',
     onChange
   } = props;
 
-  const [anyTemplates, setAnyTemplates] = useState<ITemplateEdit>(
-    {
-      content: {
-        components: [],
-        background: {
-          value: getComputedStyle(document.documentElement).getPropertyValue('--color-card-bg'),
-          isView: true
-        }
-      },
-      html: '',
-    }
-  );
-
   const handleChange = (value: ITemplateEdit) => {
-    setAnyTemplates(value);
     onChange(objectToHtml(value));
-    setLenght(value.content.components.length);
   };
 
-  useEffect(() => {
-    if (initialValue === objectToHtml(anyTemplates)) return;
-    closeEditForm();
-    const newTemplate: ITemplateEdit = { content: htmlToTemplateObject(initialValue || ''), html: initialValue || '' };
-    setAnyTemplates(newTemplate);
-  }, [initialValue]);
+  const template = htmlToTemplateObject(value);
 
   const settings = useSelector((state: RootState) => state.settings);
 
@@ -233,17 +210,15 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   ];
 
   const backgroundChange = (newBackground: string) => {
-    handleChange({ ...anyTemplates, content: { ...anyTemplates.content, background: { ...anyTemplates.content.background, value: newBackground } } });
+    handleChange({ ...template, background: { ...template.background, value: newBackground } });
   };
-
-  const [length, setLenght] = useState<number>(0);
 
   const getBiggestId = () => {
     let id = 10;
-    const components = anyTemplates.content.components;
-    for (let i = 0;i < components.length;i++) {
-      if (components[i].id > id) {
-        id = components[i].id;
+    const components = template.components;
+    for (const component of components) {
+      if (component.id > id) {
+        id = component.id;
       }
     }
 
@@ -252,8 +227,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const valueChange = (stringIndex: string, newValue: any) => {
     const masIndex = stringIndex.split('.');
-    const newValues: any = { ...anyTemplates };
-    let val: any = newValues.content.components[Number(masIndex[0])];
+    const newValues = { ...template };
+    let val: any = newValues.components[Number(masIndex[0])];
     if (val === undefined) return;
     for (let i = 1; i < masIndex.length; i++) {
       if (i + 1 === masIndex.length) {
@@ -266,25 +241,25 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   const removeEl = (index: number) => {
-    const copyTemplate = [...anyTemplates.content.components];
+    const copyTemplate = [...template.components];
     closeEditForm();
     if (copyTemplate.length === 1) {
-      handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [] } });
+      handleChange({ ...template, components: [] });
     } else {
       copyTemplate.splice(index, 1);
-      handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+      handleChange({ ...template, components: copyTemplate });
     }
   };
 
   const copyEl = (index: number) => {
-    const component = [...anyTemplates.content.components][index];
+    const component = [...template.components][index];
     const endIndex = index + 1 || 0;
     const componentCopy = structuredClone(component);
     componentCopy.id = getBiggestId();
-    const copyTemplate = [...anyTemplates.content.components];
+    const copyTemplate = [...template.components];
     copyTemplate.splice(endIndex, 0, componentCopy);
     copyTemplate[endIndex].text = copyTemplate[endIndex].text ? copyTemplate[endIndex].text + ' ' : undefined;
-    handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+    handleChange({ ...template, components: copyTemplate });
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -297,13 +272,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         const copyComponents = [...components];
         const component = { ...copyComponents[startIndex] };
         component.id = getBiggestId();
-        const copyTemplate = [...anyTemplates.content.components];
+        const copyTemplate = [...template.components];
         if (copyTemplate.length === 0) {
-          handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [component] } });
+          handleChange({ ...template, components: [component] });
         } else {
           const endIndex = result.destination.index;
           copyTemplate.splice(endIndex, 0, component);
-          handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+          handleChange({ ...template, components: copyTemplate });
         }
       }
     }
@@ -311,13 +286,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       if (result.destination.droppableId === 'compotents') return;
       const startIndex = result.source.index;
       const endIndex = result.destination.index;
-      const copyTemplate = [...anyTemplates.content.components];
+      const copyTemplate = [...template.components];
       const [reorderTodo] = copyTemplate.splice(startIndex, 1);
       copyTemplate.splice(endIndex, 0, reorderTodo);
       if (editedIndex === startIndex) {
         openEditForm(endIndex);
       }
-      handleChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTemplate } });
+      handleChange({ ...template, components: copyTemplate });
     }
   };
 
@@ -411,7 +386,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const workspaceWidth = 375;
 
   const workspaceTextColor = () => {
-    const rgb = hexToRGB(anyTemplates.content.background.value);
+    const rgb = hexToRGB(template.background.value);
     return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black';
   };
 
@@ -498,13 +473,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                       {(droppableProvider) => (
                         <div
                           style={{
-                            backgroundColor: anyTemplates.content.background.value,
+                            backgroundColor: template.background.value,
                           }}
                           className={style.templateBody}
                           ref={droppableProvider.innerRef}
                           {...droppableProvider.droppableProps}
                         >
-                          {anyTemplates.content.components.map((component: IComponent, index: number) => (
+                          {template.components.map((component: IComponent, index: number) => (
                             <Draggable
                               index={index}
                               key={component.id}
@@ -527,7 +502,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                       component={component}
                                       setValue={valueChange}
                                       setDrag={(arg: boolean) => setDrag(arg)}
-                                      background={anyTemplates.content.background.value}
+                                      background={template.background.value}
                                     />
                                   </div>
                                 );
@@ -549,11 +524,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     style={{
                       maxWidth: previewMode,
                       width: '100%', transition: '0.5s',
-                      background: anyTemplates.content.background.value,
+                      background: template.background.value,
                     }}
                   >
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
-                      {ReactHtmlParser(objectToHtml(anyTemplates))}
+                      {ReactHtmlParser(value)}
                     </CustomizedScrollBox>
                   </div>
                 </div>
@@ -582,7 +557,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   ? <Box
                     sx={{
                       '& .jodit-workplace': {
-                        background: (anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent') + '!important',
+                        background: (template.background.isView ? template.background.value : 'transparent') + '!important',
                       },
                       '& .jodit-wysiwyg p': {
                         color: workspaceTextColor()
@@ -596,7 +571,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   >
                     <EmailTemplateEdit
                       editedIndex={editedIndex as number}
-                      component={anyTemplates.content.components[editedIndex]}
+                      component={template.components[editedIndex]}
                       setValue={valueChange}
                     />
                   </Box>
@@ -685,7 +660,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                             <div style={{ display: 'flex', justifyContent: 'start', alignItems: 'center', marginTop: '5px', flexWrap: 'wrap' }}>
                               <ColorEdit
                                 label={'Цвет фона'}
-                                value={anyTemplates.content.background.value}
+                                value={template.background.value}
                                 onChange={backgroundChange}
                               />
                             </div>

@@ -35,7 +35,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       },
     ];
 
-    const handleWidthChange = (event: Event, value: number | number[], activeThumb: number) => {
+    const handleWidthChange = (event: Event, value: number | number[]) => {
       setValue(`${editedIndex}.width.value`, value as number);
     };
 

@@ -47,7 +47,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
 
   const handleCancel = () => {
     if ((!templateOld
-      && (template === objectToHtml({ content: htmlToTemplateObject(''), html: '' }) || !template)
+      && (template === objectToHtml(htmlToTemplateObject('')) || !template)
       && templateName === ''
     )) {
       handleClose();
@@ -144,7 +144,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           </ErrorTooltip>
           <div style={{ height: 'calc(100% - 60px)' }}>
             <EmailTemplate
-              initialValue={templateOld?.HTML || ''}
+              value={template}
               onChange={setTemplate}
             />
           </div>
