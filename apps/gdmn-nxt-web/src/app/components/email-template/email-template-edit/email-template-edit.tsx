@@ -1,8 +1,8 @@
 import style from './email-template-edit.module.less';
-import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, styled, useTheme } from '@mui/material';
+import { Box, Button, CardContent, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, useTheme } from '@mui/material';
 import { IComponent, IComponentPosition } from '../email-template';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { ChangeEvent, forwardRef, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import AlignHorizontalCenterIcon from '@mui/icons-material/AlignHorizontalCenter';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import AlignHorizontalRightIcon from '@mui/icons-material/AlignHorizontalRight';
@@ -12,6 +12,7 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import Draft from '../draft/draft';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 
 export interface EmailTemplateEditProps {
   editedIndex: number,
@@ -182,6 +183,10 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     );
   };
 
+  const [urlValue, setUrlValue] = useState<string>(component?.url || '');
+
+  useEffect(() => setUrlValue(component.url || ''), [component?.url]);
+
   const ButtonComponent = () => {
     const handleTextColorChange = (color: string) => {
       setValue(`${editedIndex}.color.text`, color);
@@ -204,7 +209,12 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     };
 
     const handleUrlChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setValue(`${editedIndex}.url`, e.target?.value);
+      const value = e.target?.value;
+      if (value.indexOf('https://') === -1 && value.indexOf('http://') === -1 && value !== '') {
+        setValue(`${editedIndex}.url`, 'https://' + value);
+        return;
+      }
+      setValue(`${editedIndex}.url`, value);
     };
 
     return (
@@ -242,8 +252,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
           <TextField
             sx={{ marginTop: '15px' }}
             fullWidth
-            value={component.url}
-            onChange={handleUrlChange}
+            value={urlValue}
+            onChange={(e) => setUrlValue(e.target.value)}
+            onBlur={handleUrlChange}
             label="Ссылка"
           />
           <div style={{ display: 'flex' }}>
@@ -284,13 +295,27 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [error, setError] = useState<string | null>(null);
+
   const ImageComponent = () => {
     const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files || e.target.files.length === 0) return;
       const file = e.target.files[0] || undefined;
+      if (file.size > 1000000) {
+        setError('Максимальный размер файла 1Mb');
+        setTimeout(() => {
+          setError(null);
+        }, 1000 * 10);
+        if (inputRef.current) {
+          inputRef.current.value = '';
+        }
+        return;
+      }
+      setError(null);
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = (e) => {
+        console.log(reader);
         setValue(`${editedIndex}.image`, reader.result?.toString() ?? '');
       };
     };
@@ -316,15 +341,20 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
               onChange={handleUploadImage}
               ref={inputRef}
             />
-            <Button
-              size="medium"
-              fullWidth
-              variant="contained"
-              startIcon={<UploadFileIcon />}
+            <ErrorTooltip
+              open={!!error}
+              title={error}
             >
-              <label className={style.upload} htmlFor="input-file"/>
+              <Button
+                size="medium"
+                fullWidth
+                variant="contained"
+                startIcon={<UploadFileIcon />}
+              >
+                <label className={style.upload} htmlFor="input-file"/>
               Загрузить
-            </Button>
+              </Button>
+            </ErrorTooltip>
           </div>
           <div style={{ flex: 1 }}>
             <Button
@@ -371,15 +401,17 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
   };
 
   return (
-    <CustomizedCard style={{ height: '100%', background: 'none' }}>
-      <CardContent sx={{ paddingRight: 0, paddingLeft: '0', paddingTop: '20px' }}>
-        <CustomizedScrollBox options={{ suppressScrollX: true }} style={{ paddingLeft: '25px', paddingRight: '25px' }}>
-          <div>
-            {mainContent()}
-          </div>
-        </CustomizedScrollBox>
-      </CardContent>
-    </CustomizedCard>
+    <>
+      <CustomizedCard style={{ height: '100%', background: 'none' }}>
+        <CardContent sx={{ paddingRight: 0, paddingLeft: '0', paddingTop: '20px' }}>
+          <CustomizedScrollBox options={{ suppressScrollX: true }} style={{ paddingLeft: '25px', paddingRight: '25px' }}>
+            <div>
+              {mainContent()}
+            </div>
+          </CustomizedScrollBox>
+        </CardContent>
+      </CustomizedCard>
+    </>
   );
 };
 
