@@ -2373,6 +2373,18 @@
 									"body": "{\n    \"errorMessage\": \"Документ уже изменяется другим пользователем\",\n    \"description\": \"Error: lock conflict on no wait transaction\\n-deadlock\\n-update conflicts with concurrent update\\n-concurrent transaction number is 94038\"\n}"
 								}
 							]
+						},
+						{
+							"name": "calc",
+							"id": "b1a08438-9634-49d9-886d-fe38d0096b69",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
 						}
 					],
 					"id": "20e95168-7043-4b73-a544-21922de60358"
