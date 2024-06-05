@@ -2375,7 +2375,7 @@
 							]
 						},
 						{
-							"name": "calc",
+							"name": "Calc",
 							"id": "b1a08438-9634-49d9-886d-fe38d0096b69",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
