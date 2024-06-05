@@ -61,6 +61,13 @@ export const mailingApi = createApi({
         method: 'DELETE',
       }),
       invalidatesTags: ['mailing']
+    }),
+    postTestLaunching: builder.mutation<any, { emails: string[], subject: string, template: string }>({
+      query: (body) => ({
+        url: '/launch-test',
+        body: body,
+        method: 'POST'
+      }),
     })
   }),
 });
@@ -71,4 +78,5 @@ export const {
   useAddMailingMutation,
   useDeleteMailingMutation,
   useUpdateMailingMutation,
+  usePostTestLaunchingMutation
 } = mailingApi;

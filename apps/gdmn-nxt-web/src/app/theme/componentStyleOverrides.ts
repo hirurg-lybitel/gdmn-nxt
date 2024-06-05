@@ -17,6 +17,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-paper-bg': theme.palette.background.paper,
           '--color-borders': theme.mainContent.borderColor,
           '--color-hihglight-bg': 'yellow',
+          '--color-error': 'rgb(143, 64, 64)',
           '--border-radius': theme.mainContent.borderRadius,
           '--label-border-radius': '2em',
           '--menu-width': `${theme.drawerWidth}px`,
@@ -195,6 +196,13 @@ export default function componentStyleOverrides(theme: Theme): Components {
       styleOverrides: {
         root: {
           minHeight: 'var(--tabs-height)'
+        }
+      }
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontSize: '0.75rem'
         }
       }
     }

@@ -409,7 +409,8 @@ export interface IMailing extends IWithID {
   STATUS_DESCRIPTION?: string;
   TEMPLATE?: string;
   includeSegments?: ISegment[],
-  excludeSegments?: ISegment[]
+  excludeSegments?: ISegment[],
+  testingEmails?: string[];
 }
 
 export interface ITemplate extends IWithID {

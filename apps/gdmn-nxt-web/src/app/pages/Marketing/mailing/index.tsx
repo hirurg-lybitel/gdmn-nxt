@@ -8,13 +8,36 @@ import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-but
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IMailing, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
-import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Chip, ChipOwnProps, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import { useMemo, useState } from 'react';
 import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
+import WarningIcon from '@mui/icons-material/Warning';
+import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
+import SendIcon from '@mui/icons-material/Send';
+import PendingIcon from '@mui/icons-material/Pending';
+
+interface StatusChipProps extends ChipOwnProps {}
+
+const StatusChip = ({
+  ...props
+}: StatusChipProps) => {
+  return (
+    <Chip
+      {...props}
+      variant="outlined"
+      size="small"
+      sx={{
+        paddingLeft: 1,
+        paddingRight: 1
+      }}
+    />
+  );
+};
 
 export default function Mailing() {
   const userPermissions = usePermissions();
@@ -39,24 +62,48 @@ export default function Mailing() {
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
     { field: 'DATE', headerName: 'Дата запуска', width: 150 },
     { field: 'STATUS', headerName: 'Статус', width: 200,
-      valueGetter({ value }) {
+      renderCell({ value }) {
         switch (value) {
           case MailingStatus.delayed:
-            return 'Отложена';
+            return (
+              <StatusChip
+                color="warning"
+                label="Отложена"
+                icon={<ScheduleSendIcon/>}
+              />);
           case MailingStatus.completed:
-            return 'Выполнена';
+            return (
+              <StatusChip
+                color="success"
+                label="Выполнена"
+                icon={<CheckIcon />}
+              />);
           case MailingStatus.error:
-            return 'Ошибка';
+            return (
+              <StatusChip
+                color="error"
+                label="Ошибка"
+                icon={<WarningIcon />}
+              />);
           case MailingStatus.manual:
-            return 'Готова к запуску';
+            return (
+              <StatusChip
+                color="info"
+                label="Запустить"
+                icon={<SendIcon />}
+              />);
           case MailingStatus.inProgress:
-            return 'В процессе';
+            return (
+              <StatusChip
+                label="В процессе"
+                icon={<PendingIcon />}
+              />);
           case MailingStatus.launchNow:
             return 'Запускается';
           default:
             return 'Неизвестно';
         }
-      }
+      },
     },
     {
       field: 'ACTIONS',
@@ -134,7 +181,6 @@ export default function Mailing() {
   const mailingUpsertCancel = () => setOpenWindow(prev => ({ ...prev, upsertMailing: false }));
 
   const mailingUpsertSubmit = (mailing: IMailing, deleting = false) => {
-    console.log('mailingUpsertSubmit', mailing);
     mailingUpsertCancel();
 
     if (deleting) {

@@ -62,10 +62,12 @@ const find: FindHandler<ISegment> = async (
       // TODO: добавить остальные поля
       const LABELS = flatSegmentDetails.get('LABELS') ?? '';
       const DEPARTMENTS = flatSegmentDetails.get('DEPARTMENTS') ?? '';
+      const BUSINESSPROCESSES = flatSegmentDetails.get('BUSINESSPROCESSES') ?? '';
 
       const customers = await customersRepository.find('', {
         LABELS,
-        DEPARTMENTS
+        DEPARTMENTS,
+        BUSINESSPROCESSES
       });
 
       const newSegment: ArrayElement<typeof result> = {

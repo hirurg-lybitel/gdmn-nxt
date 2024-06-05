@@ -106,10 +106,10 @@ const launchMailing = async (
         STARTDATE: new Date()
       });
 
-    const subject = 'Тема письма';
+    const subject = mailing.NAME;
     const from = `Belgiss <${process.env.SMTP_USER}>`;
 
-    const html = mailing.TEMPLATE ?? '';
+    const html = mailing.TEMPLATE.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
     if (html === '') {
       await updateStatus(sessionID, id, 2, 'Не найден шаблон письма');
@@ -229,11 +229,47 @@ const updateStatus = async (
     });
 };
 
+const testLaunchMailing = async (
+  emails: string[],
+  template: string,
+  subject = 'Тестовая рассылка',
+) => {
+  if (emails.length === 0) {
+    throw UnprocessableEntityException('Не указаны адреса для рассылок');
+  }
+
+  const from = `Belgiss <${process.env.SMTP_USER}>`;
+
+  const html = template.replaceAll('#NAME#', '{{ NAME }}') ?? '';
+
+  if (html === '') {
+    throw UnprocessableEntityException('Не указан шаблон письма');
+  }
+
+  await forEachAsync(emails, async (email) => {
+    const view = {
+      NAME: '<наименование клиента>'
+    };
+
+    const renderedHtml = Mustache.render(html, view);
+
+    await sendEmail(
+      from,
+      email,
+      subject,
+      '',
+      renderedHtml);
+  });
+
+  return resultDescription('Тестовая рассылка выполнена');
+};
+
 export const mailingService = {
   findAll,
   findOne,
   launchMailing,
   createMailing,
   updateById,
-  removeById
+  removeById,
+  testLaunchMailing
 };

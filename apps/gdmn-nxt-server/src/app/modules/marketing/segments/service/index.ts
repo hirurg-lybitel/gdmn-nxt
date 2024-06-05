@@ -1,6 +1,8 @@
 import { ISegment, InternalServerErrorException, Like, NotFoundException } from '@gsbelarus/util-api-types';
 import { segmentsRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
+import { forEachAsync } from '@gsbelarus/util-helpers';
+import { customersRepository } from '@gdmn-nxt/repositories/customers';
 
 const findAll = async (
   sessionID: string,
@@ -108,10 +110,78 @@ const removeById = async (
   }
 };
 
+const calcCustomersCount = async (
+  sessionID: string,
+  includeSegments: ISegment[],
+  excludeSegments: ISegment[]
+) => {
+  // includeSegments.forEach(s => {
+  //   console.log('s.FIELDS', s.FIELDS);
+  // });
+
+  const customersMap = new Map();
+
+  await forEachAsync(includeSegments, async (s) => {
+    const fields = [...s.FIELDS];
+
+    // console.log('fields', fields);
+
+    const LABELS = fields.find(f => f.NAME === 'LABELS');
+    const DEPARTMENTS = fields.find(f => f.NAME === 'DEPARTMENTS');
+    const BUSINESSPROCESSES = fields.find(f => f.NAME === 'BUSINESSPROCESSES');
+
+    // console.log('LABELS', LABELS);
+
+    const customers = await customersRepository.find('', {
+      LABELS: LABELS?.VALUE ?? '',
+      DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
+      BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
+    });
+
+    customers.forEach(({ ID, ...c }) => {
+      if (customersMap.has(ID)) {
+        return;
+      };
+      customersMap.set(ID, c);
+    });
+  });
+
+  await forEachAsync(excludeSegments, async (s) => {
+    const fields = [...s.FIELDS];
+
+    // console.log('fields', fields);
+
+    const LABELS = fields.find(f => f.NAME === 'LABELS');
+    const DEPARTMENTS = fields.find(f => f.NAME === 'DEPARTMENTS');
+    const BUSINESSPROCESSES = fields.find(f => f.NAME === 'BUSINESSPROCESSES');
+
+    // console.log('LABELS', LABELS);
+
+    const customers = await customersRepository.find('', {
+      LABELS: LABELS?.VALUE ?? '',
+      DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
+      BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
+    });
+
+    customers.forEach(({ ID, ...c }) => {
+      if (!customersMap.has(ID)) {
+        return;
+      };
+
+      customersMap.delete(ID);
+    });
+  });
+
+  // console.log('customersMap', customersMap);
+
+  return customersMap.size;
+};
+
 export const segmentsService = {
   findAll,
   findOne,
   createSegment,
   updateById,
-  removeById
+  removeById,
+  calcCustomersCount
 };

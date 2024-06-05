@@ -37,7 +37,8 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         m.USR$FINISHDATE FINISHDATE,
         COALESCE(m.USR$STATUS, 0) AS STATUS,
         m.USR$STATUS_DESCRIPTION STATUS_DESCRIPTION,
-        USR$TEMPLATE TEMPLATE_BLOB
+        USR$TEMPLATE TEMPLATE_BLOB,
+        USR$TESTING_EMAILS TESTING_EMAILS
       FROM USR$CRM_MARKETING_MAILING m
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
@@ -80,11 +81,15 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
       const convertedTemplate = await blob2String(m['TEMPLATE_BLOB']);
       delete m['TEMPLATE_BLOB'];
 
+      const arrayEmails = (m['TESTING_EMAILS'] as string)?.split(',') ?? [];
+      delete m['TESTING_EMAILS'];
+
       result.push({
         ...m,
         TEMPLATE: convertedTemplate,
         includeSegments,
-        excludeSegments
+        excludeSegments,
+        testingEmails: arrayEmails
       });
     });
 
@@ -126,6 +131,7 @@ const update: UpdateHandler<IMailing> = async (
       TEMPLATE = mailing.TEMPLATE,
       includeSegments = mailing.includeSegments,
       excludeSegments = mailing.excludeSegments,
+      testingEmails = mailing.testingEmails
     } = metadata;
 
     const result = await fetchAsSingletonObject<IMailing>(
@@ -137,7 +143,8 @@ const update: UpdateHandler<IMailing> = async (
         USR$STATUS_DESCRIPTION = :STATUS_DESCRIPTION,
         USR$TEMPLATE = :TEMPLATE,
         USR$FINISHDATE = :FINISHDATE,
-        USR$STARTDATE = :STARTDATE
+        USR$STARTDATE = :STARTDATE,
+        USR$TESTING_EMAILS = :TESTING_EMAILS
       WHERE
         ID = :ID
       RETURNING ID`,
@@ -149,7 +156,8 @@ const update: UpdateHandler<IMailing> = async (
         NAME,
         STATUS,
         STATUS_DESCRIPTION,
-        TEMPLATE: await string2Blob(TEMPLATE)
+        TEMPLATE: await string2Blob(TEMPLATE),
+        TESTING_EMAILS: testingEmails.join(',')
       }
     );
 
@@ -203,19 +211,21 @@ const save: SaveHandler<IMailing> = async (
     TEMPLATE,
     includeSegments,
     excludeSegments,
-    LAUNCHDATE
+    LAUNCHDATE,
+    testingEmails = []
   } = metadata;
 
   try {
     const mailing = await fetchAsSingletonObject<IMailing>(
-      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE)
-      VALUES(:NAME, :TEMPLATE, :STATUS, :LAUNCHDATE)
+      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE, USR$TESTING_EMAILS)
+      VALUES(:NAME, :TEMPLATE, :STATUS, :LAUNCHDATE, :TESTING_EMAILS)
       RETURNING ID`,
       {
         NAME,
         TEMPLATE: await string2Blob(TEMPLATE),
         STATUS: 0,
-        LAUNCHDATE: new Date(LAUNCHDATE)
+        LAUNCHDATE: new Date(LAUNCHDATE),
+        TESTING_EMAILS: testingEmails.join(',')
       }
     );
 

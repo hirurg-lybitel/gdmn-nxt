@@ -2,11 +2,11 @@ import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/cust
 import styles from './mailing-upsert.module.less';
 import EmailTemplate from '@gdmn-nxt/components/email-template/email-template';
 import { ArrayElement, IMailing, ISegment, MailingStatus } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import { useGetAllSegmentsQuery } from '../../../features/Marketing/segments/segmentsApi';
+import { useGetAllSegmentsQuery, useGetCustomersCountMutation } from '../../../features/Marketing/segments/segmentsApi';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -16,6 +16,10 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import InfoIcon from '@mui/icons-material/Info';
+import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
+import { usePostTestLaunchingMutation } from '../../../features/Marketing/mailing';
 
 const sendTypes = [
   {
@@ -53,12 +57,17 @@ export function MailingUpsert({
   isFetching: segmentsFetching
   } = useGetAllSegmentsQuery();
 
+  const [getCustomersCount] = useGetCustomersCountMutation();
+  const [addTemplate] = useAddTemplateMutation();
+  const [testLaunching] = usePostTestLaunchingMutation();
+
   const initValue: IMailing = {
     ID: -1,
     NAME: '',
     includeSegments: [],
     excludeSegments: [],
-    STATUS: MailingStatus.manual
+    STATUS: MailingStatus.manual,
+    testingEmails: []
   };
 
   const formik = useFormik<IMailing>({
@@ -80,17 +89,25 @@ export function MailingUpsert({
       // PHONES: yup.array().of(phonesValidation())
     }),
     onSubmit: (values) => {
+      if (saveTemplate) {
+        addTemplate({
+          ID: -1,
+          NAME: values.NAME,
+          HTML: values.TEMPLATE ?? ''
+        });
+      }
+
       onSubmit(values, false);
-      // onSubmit(validValues(), false);
     },
     onReset: (values) => {
       setSelectedSendType(sendTypes[1]);
       setSaveTemplate(false);
-    }
+    },
   });
 
   const [saveTemplate, setSaveTemplate] = useState(false);
   const [selectedSendType, setSelectedSendType] = useState(sendTypes[1]);
+  const [customersCount, setCustomersCount] = useState(0);
 
   const sendTypeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const name = e.target.value;
@@ -114,9 +131,41 @@ export function MailingUpsert({
   };
 
   useEffect(() => {
-    if (open) return;
-    formik.resetForm();
-  }, [open]);
+    if (!open) {
+      formik.resetForm();
+      return;
+    }
+
+    switch (formik.values.STATUS) {
+      case MailingStatus.delayed:
+        setSelectedSendType(sendTypes[2]);
+        break;
+      case MailingStatus.manual:
+        setSelectedSendType(sendTypes[1]);
+        break;
+      default:
+        break;
+    }
+
+    const fetchCount = async () => {
+      const response = await getCustomersCount({
+        includeSegments: formik.values.includeSegments ?? [],
+        excludeSegments: formik.values.excludeSegments ?? [],
+      });
+
+      if (!('data' in response)) {
+        return;
+      }
+
+      setCustomersCount(response.data?.count ?? 0);
+    };
+    fetchCount();
+  }, [
+    open,
+    formik.values.STATUS,
+    formik.values.includeSegments,
+    formik.values.excludeSegments
+  ]);
 
   const onDelete = () => {
     onSubmit(formik.values, true);
@@ -124,6 +173,24 @@ export function MailingUpsert({
 
   const templateChange = (value: string) => formik.setFieldValue('TEMPLATE', value);
   const saveTemplateChange = (event: ChangeEvent<HTMLInputElement>, checked: boolean) => setSaveTemplate(checked);
+  const testingEmailsChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const value = e.target.value.split(',');
+    if (value.length > 0 && value[0].length === 0) {
+      formik.setFieldValue('testingEmails', []);
+      return;
+    }
+    formik.setFieldValue('testingEmails', value);
+  };
+
+  const testLaunch = () => {
+    const { NAME, TEMPLATE = '', testingEmails = [] } = formik.values;
+
+    testLaunching({
+      emails: testingEmails,
+      subject: NAME,
+      template: TEMPLATE
+    });
+  };
 
   return (
     <CustomizedDialog
@@ -152,6 +219,24 @@ export function MailingUpsert({
                 required
                 error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
                 helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <Tooltip
+                        style={{ cursor: 'help' }}
+                        arrow
+                        title={
+                          <div>
+                            Системные символы:
+                            <br />
+                            {'#NAME# - наименование клиента'}
+                          </div>}
+                      >
+                        <InfoIcon />
+                      </Tooltip>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <Stack
                 direction="row"
@@ -226,6 +311,14 @@ export function MailingUpsert({
                   )}
                 />
               </Stack>
+              <Box
+                sx={{
+                  marginTop: '2px !important',
+                  marginLeft: '14px !important'
+                }}
+              >
+                <Typography variant="caption">{`Итоговое количество получателей: ${customersCount}`}</Typography>
+              </Box>
               <Box minHeight={600} position="relative">
                 <FormControlLabel
                   control={
@@ -254,6 +347,9 @@ export function MailingUpsert({
                   label="Получатели тестовой отправки"
                   placeholder="Укажите адреса через запятую (test@gmail.com, test2@tut.by, ...)"
                   fullWidth
+                  name="testingEmails"
+                  value={formik.values.testingEmails?.join(',') ?? ''}
+                  onChange={testingEmailsChange}
                 />
                 <Tooltip arrow title="Отправить текущий шаблон на указанные тестовые email адреса ">
                   <Box>
@@ -261,7 +357,8 @@ export function MailingUpsert({
                       size="small"
                       variant="contained"
                       startIcon={<ForwardToInboxIcon />}
-                      disabled
+                      disabled={!formik.values.testingEmails || Array.isArray(formik.values.testingEmails) && formik.values.testingEmails.length === 0}
+                      onClick={testLaunch}
                     >
                       Отправить
                     </Button >
@@ -309,6 +406,10 @@ export function MailingUpsert({
                 />
                 }
               </Stack>
+              {/* <Dropzone
+                acceptedFiles={['image/*']}
+                maxFileSize={5000000}
+              /> */}
             </Stack>
           </Form>
         </FormikProvider>

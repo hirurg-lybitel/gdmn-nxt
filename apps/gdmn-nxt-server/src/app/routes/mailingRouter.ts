@@ -12,6 +12,7 @@ router.get('/segments/:id', segmentsController.findOne);
 router.post('/segments', segmentsController.createSegment);
 router.put('/segments/:id', segmentsController.updateById);
 router.delete('/segments/:id', segmentsController.removeById);
+router.post('/segments/calc', segmentsController.calcCustomersCount);
 
 router.get('/mailings', mailingController.findAll);
 router.get('/mailings/:id', mailingController.findOne);
@@ -19,6 +20,7 @@ router.post('/mailings', mailingController.createMailing);
 router.put('/mailings/:id', mailingController.updateById);
 router.post('/mailings/launch/:id', mailingController.launchMailing);
 router.delete('/mailings/:id', mailingController.removeById);
+router.post('/mailings/launch-test', mailingController.testLaunchMailing);
 
 router.get('/templates', templatesController.findAll);
 router.get('/templates/:id', templatesController.findOne);

@@ -107,10 +107,30 @@ const removeById: RequestHandler = async (req, res) => {
   }
 };
 
+const calcCustomersCount: RequestHandler = async (
+  req,
+  res
+) => {
+  const { includeSegments = [], excludeSegments = [] } = req.body;
+
+  try {
+    const count = await segmentsService.calcCustomersCount(
+      req.sessionID,
+      includeSegments,
+      excludeSegments
+    );
+
+    res.status(200).json({ count });
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const segmentsController = {
   findAll,
   findOne,
   createSegment,
   updateById,
-  removeById
+  removeById,
+  calcCustomersCount
 };

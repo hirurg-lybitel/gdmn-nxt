@@ -58,7 +58,14 @@ export const segmentApi = createApi({
         method: 'DELETE',
       }),
       invalidatesTags: ['segment']
-    })
+    }),
+    getCustomersCount: builder.mutation<{ count: number }, { includeSegments: ISegment[], excludeSegments: ISegment[]}>({
+      query: (body) => ({
+        url: 'segments/calc',
+        body: body,
+        method: 'POST'
+      }),
+    }),
   }),
 });
 
@@ -68,4 +75,5 @@ export const {
   useAddSegmentMutation,
   useDeleteSegmentMutation,
   useUpdateSegmentMutation,
+  useGetCustomersCountMutation
 } = segmentApi;
