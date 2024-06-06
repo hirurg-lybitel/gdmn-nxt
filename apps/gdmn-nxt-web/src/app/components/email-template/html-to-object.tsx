@@ -193,7 +193,7 @@ export const htmlToTemplateObject = (componentsHtml: string): {
     object.index = Number(children.id);
     object.id = Number(container.id);
     object.margin = getPadding(container.style, container.classList.value.search(emailTemplateMarginAuto) !== -1);
-    object.position = container.style.justifyContent;
+    object.position = container.style.textAlign || 'center';
     object.width = getWidth(children);
 
     return object;
