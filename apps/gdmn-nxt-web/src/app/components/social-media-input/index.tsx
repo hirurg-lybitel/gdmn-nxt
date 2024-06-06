@@ -107,6 +107,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
 
   return (
     <div
+      style={{ width: '100%' }}
       ref={containerRef}
     >
       <TextField

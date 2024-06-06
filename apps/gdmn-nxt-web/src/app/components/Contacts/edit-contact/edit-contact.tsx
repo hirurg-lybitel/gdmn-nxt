@@ -51,11 +51,12 @@ export function EditContact({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const voidPhoneValue: IPhone = { ID: -1, USR$PHONENUMBER: '' };
+  const voidEmailValue: IEmail = { ID: -1, EMAIL: '' };
+  const voidMessengerValue: IMessenger = { ID: -1, CODE: 'telegram', USERNAME: '' };
+
   const initValue: Omit<IContactPerson, 'ID'> = {
     NAME: '',
-    PHONES: [],
-    EMAILS: [],
-    MESSENGERS: [],
     LABELS: [],
     ADDRESS: '',
     RANK: '',
@@ -66,7 +67,11 @@ export function EditContact({
     validateOnBlur: false,
     initialValues: {
       ...initValue,
-      ...contact
+      ...{ ...contact,
+        PHONES: (contact?.PHONES && contact?.PHONES?.length > 0) ? contact?.PHONES : [voidPhoneValue],
+        EMAILS: (contact?.EMAILS && contact?.EMAILS?.length > 0) ? contact?.EMAILS : [voidEmailValue],
+        MESSENGERS: (contact?.MESSENGERS && contact?.MESSENGERS?.length > 0) ? contact?.MESSENGERS : [voidMessengerValue]
+      }
     },
     validationSchema: yup.object().shape({
       NAME: yup.string()
@@ -112,7 +117,7 @@ export function EditContact({
     if (phones && phones[phones.length - 1]?.USR$PHONENUMBER === '') {
       return;
     }
-    newPhones.push({ ID: -1, USR$PHONENUMBER: '' });
+    newPhones.push(voidPhoneValue);
 
     formik.setFieldValue('PHONES', newPhones);
   };
@@ -138,11 +143,12 @@ export function EditContact({
   };
 
   const handleAddEmail = () => {
+    if (formik.values.EMAILS?.length === 1 && formik.values.EMAILS[0].EMAIL === '') return;
     let newEmails: IEmail[] = [];
     if (formik.values.EMAILS?.length) {
       newEmails = [...formik.values.EMAILS];
     };
-    newEmails.push({ ID: -1, EMAIL: '' });
+    newEmails.push(voidEmailValue);
 
     formik.setFieldValue('EMAILS', newEmails);
   };
@@ -158,11 +164,12 @@ export function EditContact({
   };
 
   const handleAddMessenger = () => {
+    if (formik.values.MESSENGERS?.length === 1 && formik.values.MESSENGERS[0].USERNAME === '') return;
     let newMessengers: IMessenger[] = [];
     if (Array.isArray(formik.values.MESSENGERS)) {
       newMessengers = [...formik.values.MESSENGERS];
     };
-    newMessengers.push({ ID: -1, CODE: 'telegram', USERNAME: '' });
+    newMessengers.push(voidMessengerValue);
 
     formik.setFieldValue('MESSENGERS', newMessengers);
   };
@@ -202,7 +209,9 @@ export function EditContact({
 
   const validValues = () => {
     const newPhones = formik.values.PHONES?.filter(phone => phone.USR$PHONENUMBER.length !== 0) || [];
-    return { ...formik.values, PHONES: newPhones };
+    const newEmails = formik.values.EMAILS?.filter(email => email.EMAIL.length !== 0) || [];
+    const newMessengers = formik.values.MESSENGERS?.filter(mes => mes.USERNAME.length !== 0) || [];
+    return { ...formik.values, PHONES: newPhones, EMAILS: newEmails, MESSENGERS: newMessengers };
   };
 
   const handleDeleteClick = () => {
@@ -218,7 +227,7 @@ export function EditContact({
       {formik.values.PHONES?.map(({ ID, USR$PHONENUMBER }, index) => {
         const isTouched = Array.isArray(formik.errors.PHONES) && Boolean((formik.touched.PHONES as unknown as IPhone[])?.[index]?.USR$PHONENUMBER);
         const error = Array.isArray(formik.errors.PHONES) ? (formik.errors.PHONES[index] as unknown as IPhone)?.USR$PHONENUMBER : '';
-
+        const firstElement = formik.values.PHONES?.length === 1 && formik.values.PHONES[0].USR$PHONENUMBER === '';
         return (
           <Stack
             key={index.toString()}
@@ -246,7 +255,7 @@ export function EditContact({
               editComponent={
                 <TelephoneInput
                   name={`PHONE${index}`}
-                  autoFocus
+                  autoFocus={!firstElement}
                   value={USR$PHONENUMBER ?? ''}
                   onChange={(value) => handlePhoneChange(index, value)}
                   fixedCode
@@ -274,7 +283,7 @@ export function EditContact({
       {formik.values.EMAILS?.map(({ ID, EMAIL }, index) => {
         const isTouched = Array.isArray(formik.errors.EMAILS) && Boolean((formik.touched.EMAILS as unknown as IEmail[])?.[index]?.EMAIL);
         const error = Array.isArray(formik.errors.EMAILS) ? (formik.errors.EMAILS[index] as unknown as IEmail)?.EMAIL : '';
-
+        const firstElement = formik.values.EMAILS?.length === 1 && formik.values.EMAILS[0].EMAIL === '';
         return (
           <Stack
             key={index.toString()}
@@ -291,10 +300,11 @@ export function EditContact({
               onDelete={() => handleDeleteEmail(index)}
               error={isTouched && Boolean(error)}
               helperText={error}
+              closeOnBlur={!firstElement}
               editComponent={
                 <TextField
                   fullWidth
-                  autoFocus
+                  autoFocus={!firstElement}
                   name={`EMAIL${index}`}
                   value={EMAIL ?? ''}
                   onChange={(e) => handleEmailChange(index, e.target.value)}
@@ -321,7 +331,7 @@ export function EditContact({
       {formik.values.MESSENGERS?.map(({ ID, CODE, USERNAME }, index) => {
         const isTouched = Array.isArray(formik.errors.MESSENGERS) && Boolean((formik.touched.MESSENGERS as unknown as IMessenger[])?.[index]?.USERNAME);
         const error = Array.isArray(formik.errors.MESSENGERS) ? (formik.errors.MESSENGERS[index] as unknown as IMessenger)?.USERNAME : '';
-
+        const firstElement = formik.values.MESSENGERS?.length === 1 && formik.values.MESSENGERS[0].USERNAME === '';
         return (
           <Stack
             key={index}
@@ -356,6 +366,7 @@ export function EditContact({
                 onDelete={() => handleDeleteMessenger(index)}
                 helperText={error}
                 error={isTouched && Boolean(error)}
+                closeOnBlur={!firstElement}
                 editComponent={
                   <SocialMediaInput
                     value={{
@@ -363,7 +374,7 @@ export function EditContact({
                       text: USERNAME
                     }}
                     name={`MESSANGER${index}`}
-                    autoFocus
+                    autoFocus={!firstElement}
                     onChange={(value) => handleMessengerChange(index, value)}
                     placeholder="имя пользователя"
                     error={isTouched && Boolean(error)}
