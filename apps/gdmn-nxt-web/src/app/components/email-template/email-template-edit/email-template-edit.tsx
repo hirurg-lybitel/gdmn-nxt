@@ -212,7 +212,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       const value = e.target?.value;
 
       if (value.indexOf('https://') === -1 && value.indexOf('http://') === -1 && value !== '') {
-        setUrlValue({ ...urlValue, value, error: 'url должен содержать https:// или http://' });
+        setUrlValue({ ...urlValue, value, error: 'Некорректный URL' });
         return;
       }
       setUrlValue({ ...urlValue, value, error: null });
