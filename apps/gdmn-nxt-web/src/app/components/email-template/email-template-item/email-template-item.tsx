@@ -100,6 +100,7 @@ export const FindComponent = (props: IFindComponentProps) => {
             + (' ' + emailTemplateWidth + component.width?.value)
           }
           style={{
+            display: 'inline-block',
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
@@ -173,7 +174,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
         className={idByType(component.type) + (component.margin.isCommon ? ' ' + emailTemplateMarginAuto : '')}
         id={(component.id + '')}
         style={{
-          display: 'flex', justifyContent: component.position,
+          textAlign: component.position,
           padding: component.margin.isCommon ? component.margin.common + 'px'
             : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
           border: '1px solid transparent'
@@ -258,8 +259,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
       </div>
       <div
         style={{
-          display: 'flex',
-          justifyContent: component.position,
+          textAlign: component.position,
           width: '100%',
           height: '100%'
         }}

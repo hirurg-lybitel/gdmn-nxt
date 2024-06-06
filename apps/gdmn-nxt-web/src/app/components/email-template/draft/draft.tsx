@@ -169,7 +169,7 @@ export default function Draft({ editedIndex, component, setValue }: draftProps) 
     setNeedDubleUpdate(false);
     setCurrentValue(component.text || '<p style="margin:0px"><br></p>');
     setLast(component.text || '<p style="margin:0px"><br></p>');
-  }, [component, needDubleUpdate]);
+  }, [component.text, needDubleUpdate]);
 
   return (
     <Box
