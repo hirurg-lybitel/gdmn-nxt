@@ -183,9 +183,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     );
   };
 
-  const [urlValue, setUrlValue] = useState<string>(component?.url || '');
+  const [urlValue, setUrlValue] = useState<{value: string, error: string|null}>({ value: component?.url || '', error: null });
 
-  useEffect(() => setUrlValue(component.url || ''), [component?.url]);
+  useEffect(() => setUrlValue({ ...urlValue, value: component?.url || '' }), [component?.url]);
 
   const ButtonComponent = () => {
     const handleTextColorChange = (color: string) => {
@@ -210,11 +210,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
     const handleUrlChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = e.target?.value;
+
       if (value.indexOf('https://') === -1 && value.indexOf('http://') === -1 && value !== '') {
-        setValue(`${editedIndex}.url`, 'https://' + value);
+        setUrlValue({ ...urlValue, value, error: 'Некорректный URL' });
         return;
       }
-      setValue(`${editedIndex}.url`, value);
+      setUrlValue({ ...urlValue, value, error: null });
+      setValue(`${editedIndex}.url`, e.target?.value);
     };
 
     return (
@@ -249,14 +251,19 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
               onChange={handleButtonColorChange}
             />
           </div>
-          <TextField
-            sx={{ marginTop: '15px' }}
-            fullWidth
-            value={urlValue}
-            onChange={(e) => setUrlValue(e.target.value)}
-            onBlur={handleUrlChange}
-            label="Ссылка"
-          />
+          <ErrorTooltip
+            open={!!urlValue.error}
+            title={urlValue.error}
+          >
+
+            <TextField
+              sx={{ marginTop: '15px' }}
+              fullWidth
+              value={urlValue.value}
+              onChange={handleUrlChange}
+              label="Ссылка"
+            />
+          </ErrorTooltip>
           <div style={{ display: 'flex' }}>
             <FormControl sx={{ marginTop: '15px', marginRight: '10px' }} fullWidth>
               <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Шрифт</InputLabel>
