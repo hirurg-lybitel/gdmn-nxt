@@ -57,6 +57,7 @@ export const FindComponent = (props: IFindComponentProps) => {
           }
           id={index + ''}
           style={{
+            display: 'inline-block',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             maxWidth: '100%',
             color: (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black',
@@ -81,7 +82,7 @@ export const FindComponent = (props: IFindComponentProps) => {
             + (' ' + emailTemplateWidth + component.width?.value)
           }
           id={index + ''}
-          style={{ width: `${component.width?.value}%` }}
+          style={{ display: 'inline-block', width: `${component.width?.value}%` }}
           src={component.image ? component.image : undefined}
         />
       );
@@ -128,7 +129,7 @@ export const FindComponent = (props: IFindComponentProps) => {
             + (' ' + emailTemplateWidth + component.width?.value)
           }
           id={index + ''}
-          style={{ paddingTop: '5px', paddingBottom: '5px',
+          style={{ display: 'inline-block', paddingTop: '5px', paddingBottom: '5px',
             width: component.width.auto ? 'auto' : `${component.width?.value}%`
           }}
         >
