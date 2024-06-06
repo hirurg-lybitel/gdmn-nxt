@@ -1,7 +1,10 @@
 import * as dotenv from 'dotenv';
 import * as nodemailer from 'nodemailer';
+import Mail = require('nodemailer/lib/mailer');
 
 dotenv.config({ path: '../../..' });
+
+export type IAttachment = Mail.Attachment
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -13,4 +16,17 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = (from: string, to: string, subject: string, text?: string, html?: string) => transporter.sendMail({ from, to, subject, text, html });
+export const sendEmail = (
+  from: string,
+  to: string,
+  subject: string,
+  text?: string,
+  html?: string,
+  attachments?: IAttachment[]
+) => transporter.sendMail({
+  from,
+  to,
+  subject,
+  text,
+  html,
+  attachments });

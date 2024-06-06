@@ -6,12 +6,29 @@ import {
   UnprocessableEntityException
 } from '@gsbelarus/util-api-types';
 import { customersRepository } from '@gdmn-nxt/repositories/customers';
-import { sendEmail } from '@gdmn/mailer';
+import { IAttachment, sendEmail } from '@gdmn/mailer';
 import { forEachAsync, resultDescription } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import dayjs from 'dayjs';
 import { mailingRepository } from '../repository';
+import fs from 'fs/promises';
+import path from 'path';
+
+function extractImgSrc(htmlString: string) {
+  const imgTags = htmlString.match(/<img [^>]*src="[^"]*"/g);
+  if (!imgTags) {
+    return [];
+  }
+  return imgTags.map(tag => tag.match(/src="([^"]*)"/)[1]);
+}
+
+async function createTempImageFile(base64String: string, filename: string) {
+  const tempImagePath = path.join(__dirname, filename);
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+  await fs.writeFile(tempImagePath, base64Data, 'base64');
+  return tempImagePath;
+}
 
 const findAll = async (
   sessionID: string,
@@ -246,19 +263,42 @@ const testLaunchMailing = async (
     throw UnprocessableEntityException('Не указан шаблон письма');
   }
 
+  const imgSrcArray = extractImgSrc(html);
+
+  const attachments: IAttachment[] = [];
+  let modifiedHtml = html;
+  await forEachAsync(imgSrcArray, async (item, idx) => {
+    const base64Data = item.replace(/^data:image\/png;base64,/, '');
+
+    const filename = `image${idx}.png`;
+    const cid = `image${idx}@cid`;
+    const filePath = await createTempImageFile(base64Data, filename);
+
+    modifiedHtml = modifiedHtml.replace(item, `cid:${cid}`);
+
+    attachments.push(
+      {
+        filename,
+        path: filePath,
+        cid,
+      }
+    );
+  });
+
   await forEachAsync(emails, async (email) => {
     const view = {
       NAME: '<наименование клиента>'
     };
 
-    const renderedHtml = Mustache.render(html, view);
+    const renderedHtml = Mustache.render(modifiedHtml, view);
 
     await sendEmail(
       from,
       email,
       subject,
       '',
-      renderedHtml);
+      renderedHtml,
+      attachments);
   });
 
   return resultDescription('Тестовая рассылка выполнена');
