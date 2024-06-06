@@ -17,7 +17,7 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import InfoIcon from '@mui/icons-material/Info';
-import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+// import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import { usePostTestLaunchingMutation } from '../../../features/Marketing/mailing';
 

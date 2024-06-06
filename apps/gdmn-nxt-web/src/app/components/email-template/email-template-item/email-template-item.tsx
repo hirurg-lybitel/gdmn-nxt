@@ -7,7 +7,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateMarginAuto, emailTemplatePaddingAuto, emailTemplateTextColor, emailTemplateTextName, emailTemplateWidth, hexToRGB } from '../html-to-object';
+import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateMarginAuto, emailTemplatePaddingAuto, emailTemplateTextColor, emailTemplateTextName, emailTemplateURL, emailTemplateWidth, hexToRGB } from '../html-to-object';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -96,6 +96,7 @@ export const FindComponent = (props: IFindComponentProps) => {
           className={
             (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
             + (' ' + emailTemplateTextColor + component.color?.text)
+            + (' ' + emailTemplateURL + (component.url || ''))
             + (' ' + emailTemplateWidth + component.width?.value)
           }
           style={{

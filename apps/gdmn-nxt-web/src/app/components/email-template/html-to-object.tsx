@@ -12,7 +12,7 @@ export const emailTemplateMarginAuto = emailTemplateBaseName + 'AutoMargin';
 export const emailTemplatePaddingAuto = emailTemplateBaseName + 'AutoPadding';
 export const emailTemplateTextColor = emailTemplateBaseName + 'TextColor_';
 export const emailTemplateWidth = emailTemplateBaseName + 'Width_';
-
+export const emailTemplateURL = emailTemplateBaseName + 'URL_';
 export const hexToRGB = (h: any) => {
   let r = 0, g = 0, b = 0;
 
@@ -95,10 +95,10 @@ export const htmlToTemplateObject = (componentsHtml: string): {
     };
     const getWidth = (element: any) => {
       const widthPosition = element.classList.value.search(emailTemplateWidth);
-
       let width = '';
-      let cycle = true;
+      let cycle = widthPosition !== -1;
       let i = widthPosition + emailTemplateWidth.length;
+
       while (cycle) {
         const value = element.classList.value[i];
         if (!value || isNaN(Number(value))) {
@@ -113,6 +113,24 @@ export const htmlToTemplateObject = (componentsHtml: string): {
         auto: element.style.width === 'auto',
         value: (widthPosition === -1) ? 100 : Number(width)
       };
+    };
+
+    const getURL = (element: any) => {
+      const urlPosition = element.classList.value.search(emailTemplateURL);
+      let url = '';
+      let cycle = urlPosition !== -1;
+      let i = urlPosition + emailTemplateURL.length;
+
+      while (cycle) {
+        const value = element.classList.value[i];
+        if (!value || value === '' || value === ' ') {
+          cycle = false;
+          break;
+        }
+        url += element.classList.value[i];
+        i += 1;
+      }
+      return url;
     };
 
     const checkNullStr = (str: string) => str === '' ? undefined : str;
@@ -138,9 +156,8 @@ export const htmlToTemplateObject = (componentsHtml: string): {
         object.padding = getPadding(children.style, children.classList.value.search(emailTemplatePaddingAuto) !== -1);
         const autoTextColor = () => {
           const colorPosition = children.classList.value.search(emailTemplateTextColor);
-          if (colorPosition === -1) return '';
           let width = '';
-          let cycle = true;
+          let cycle = colorPosition !== -1;
           let i = colorPosition + emailTemplateTextColor.length;
           while (cycle) {
             const value = children.classList.value[i];
@@ -158,7 +175,7 @@ export const htmlToTemplateObject = (componentsHtml: string): {
           textAuto: children.style.color === 'black' || children.style.color === 'white',
           button: rgbToHex(children.style.backgroundColor)
         };
-        object.url = children.href;
+        object.url = getURL(children);
         object.font = {
           size: checkNullStrNumber(children.style.fontSize.replace('px', '')) || 14,
           value: checkNullStr(children.style.fontFamily.replaceAll('\"', '')) || 'Arial'
