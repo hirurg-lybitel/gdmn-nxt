@@ -43,7 +43,51 @@ const highlightFields = (searchValue: string) => {
 export default function Contacts() {
   const userPermissions = usePermissions();
   const [sortingData, setSortingData] = useState<ISortingData | null>();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
+  const filterEntityName = 'contacts';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+  const { data: filters, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetFilterByEntityNameQuery(filterEntityName);
+  const [addFilter] = useAddFilterMutation();
+  const [deleteFilter] = useDeleteFilterMutation();
+  const [updateFilter] = useUpdateFilterMutation();
+  const [lastFilter, setLastFilter] = useState<IFilteringData | null>(null);
+  const [filterId, setFilterId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setFilterId(filters?.ID || null);
+  }, [filters]);
+
+  useEffect(() => {
+    if (filters === undefined) return;
+    setFilterId(filters?.ID || null);
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
+  }, [filtersIsLoading]);
+
+  useEffect(() => {
+    if (!filterData && !filterId) return;
+    setLastFilter(filterData || {});
+    if (!lastFilter) return;
+    if (Object.keys(filterData || {}).length < 1) {
+      if (!filterId) return;
+      deleteFilter(filterId);
+      setFilterId(null);
+      return;
+    }
+    if (Object.keys(lastFilter).length > 0) {
+      if (!filterId) return;
+      updateFilter([{
+        ID: filterId,
+        ENTITYNAME: filterEntityName,
+        FILTERS: filterData
+      }, filterId]);
+      return;
+    }
+    addFilter({
+      ID: -1,
+      ENTITYNAME: filterEntityName,
+      FILTERS: filterData
+    });
+  }, [filterData]);
+
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
 
