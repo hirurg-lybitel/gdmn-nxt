@@ -39,6 +39,7 @@ import { systemSettingsApi } from '../features/systemSettings';
 import { templateApi } from '../features/Marketing/templates/templateApi';
 import { segmentApi } from '../features/Marketing/segments/segmentsApi';
 import { mailingApi } from '../features/Marketing/mailing';
+import { filtersApi } from '../features/filters/filtersApi';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -78,7 +79,8 @@ const reducers = combineReducers({
   [systemSettingsApi.reducerPath]: systemSettingsApi.reducer,
   [templateApi.reducerPath]: templateApi.reducer,
   [segmentApi.reducerPath]: segmentApi.reducer,
-  [mailingApi.reducerPath]: mailingApi.reducer
+  [mailingApi.reducerPath]: mailingApi.reducer,
+  [filtersApi.reducerPath]: filtersApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
@@ -127,6 +129,7 @@ export const store = configureStore({
     .concat(templateApi.middleware)
     .concat(segmentApi.middleware)
     .concat(mailingApi.middleware)
+    .concat(filtersApi.middleware)
 });
 
 setupListeners(store.dispatch);

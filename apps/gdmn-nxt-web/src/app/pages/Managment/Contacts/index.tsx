@@ -22,6 +22,7 @@ import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list
 import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../../../features/filters/filtersApi';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
@@ -166,7 +167,7 @@ export default function Contacts() {
   };
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'contacts': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
@@ -254,7 +255,7 @@ export default function Contacts() {
               </ToggleButton>
             </ToggleButtonGroup>
             <SearchBar
-              disabled={isLoading}
+              disabled={isLoading || filtersIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
@@ -288,7 +289,7 @@ export default function Contacts() {
             <Box display="inline-flex" alignSelf="center">
               <IconButton
                 onClick={filterHandlers.filterClick}
-                disabled={personsIsFetching}
+                disabled={personsIsFetching || filtersIsLoading || filtersIsFetching}
                 size ="small"
               >
                 <Tooltip
