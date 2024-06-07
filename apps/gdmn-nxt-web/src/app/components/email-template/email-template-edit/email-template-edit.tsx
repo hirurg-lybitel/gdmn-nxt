@@ -322,7 +322,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = (e) => {
-        console.log(reader);
         setValue(`${editedIndex}.image`, reader.result?.toString() ?? '');
       };
     };
