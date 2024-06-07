@@ -8,6 +8,7 @@ import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateMarginAuto, emailTemplatePaddingAuto, emailTemplateTextColor, emailTemplateTextName, emailTemplateURL, emailTemplateWidth, hexToRGB } from '../html-to-object';
+import { useMemo } from 'react';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -77,6 +78,7 @@ export const FindComponent = (props: IFindComponentProps) => {
       if (!component.image && !isPreview) return <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />;
       return (
         <img
+          loading="lazy"
           className={
             (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
             + (' ' + emailTemplateWidth + component.width?.value)
@@ -168,6 +170,26 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
 
   const classes = useStyles();
 
+
+  const viewedComponent = useMemo(() => (
+    <div
+      style={{
+        textAlign: component.position,
+        width: '100%',
+        height: '100%'
+      }}
+      onMouseDown={() => {
+        setEditIsFocus && setEditIsFocus(true);
+      }}
+    >
+      <FindComponent
+        component={component}
+        isPreview={isPreview}
+        index={index}
+        background={background}
+      />
+    </div>), [background, JSON.stringify(component), index, isPreview, setEditIsFocus]);
+
   if (isPreview || !setValue) {
     if (!component) return <div />;
     return (
@@ -258,18 +280,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           </IconButton>
         </div>
       </div>
-      <div
-        style={{
-          textAlign: component.position,
-          width: '100%',
-          height: '100%'
-        }}
-        onMouseDown={() => {
-          setEditIsFocus && setEditIsFocus(true);
-        }}
-      >
-        <FindComponent {...{ component, isPreview: false, index, background }}/>
-      </div>
+      {viewedComponent}
     </div>
   );
 };

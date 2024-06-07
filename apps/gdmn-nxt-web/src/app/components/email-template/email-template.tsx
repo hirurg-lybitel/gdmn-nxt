@@ -1,7 +1,7 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Box, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
 import EmailTemplateItem from './email-template-item/email-template-item';
@@ -100,19 +100,19 @@ interface EmailTemplateProps {
   // }
 }
 
+
 const EmailTemplate = (props: EmailTemplateProps) => {
   const theme = useTheme();
   const {
     value = '',
     onChange
   } = props;
-
   const handleChange = (value: ITemplateEdit) => {
     onChange(objectToHtml(value));
   };
 
-  const template = htmlToTemplateObject(value);
 
+  const template = useMemo(() => htmlToTemplateObject(value), [value]);
   const settings = useSelector((state: RootState) => state.settings);
 
   const components: IComponent[] = [
@@ -209,11 +209,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     },
   ];
 
-  const backgroundChange = (newBackground: string) => {
+  const backgroundChange = useCallback((newBackground: string) => {
     handleChange({ ...template, background: { ...template.background, value: newBackground } });
-  };
+  }, [template, handleChange]);
 
-  const getBiggestId = () => {
+  const getBiggestId = useCallback(() => {
     let id = 10;
     const components = template.components;
     for (const component of components) {
@@ -221,11 +221,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         id = component.id;
       }
     }
-
     return id + 1;
-  };
+  }, [template.components]);
 
-  const valueChange = (stringIndex: string, newValue: any) => {
+  const valueChange = useCallback((stringIndex: string, newValue: any) => {
     const masIndex = stringIndex.split('.');
     const newValues = { ...template };
     let val: any = newValues.components[Number(masIndex[0])];
@@ -238,9 +237,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       val = val?.[masIndex[i]];
     }
     handleChange(newValues);
-  };
+  }, [template, handleChange]);
 
-  const removeEl = (index: number) => {
+  const removeEl = useCallback((index: number) => {
     const copyTemplate = [...template.components];
     closeEditForm();
     if (copyTemplate.length === 1) {
@@ -249,9 +248,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       copyTemplate.splice(index, 1);
       handleChange({ ...template, components: copyTemplate });
     }
-  };
+  }, [template, handleChange]);
 
-  const copyEl = (index: number) => {
+  const copyEl = useCallback((index: number) => {
     const component = [...template.components][index];
     const endIndex = index + 1 || 0;
     const componentCopy = structuredClone(component);
@@ -260,9 +259,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     copyTemplate.splice(endIndex, 0, componentCopy);
     copyTemplate[endIndex].text = copyTemplate[endIndex].text ? copyTemplate[endIndex].text + ' ' : undefined;
     handleChange({ ...template, components: copyTemplate });
-  };
+  }, [template, getBiggestId, handleChange]);
 
-  const handleDragEnd = (result: DropResult) => {
+  const [editedIndex, setEditedIndex] = useState<number | null>(null);
+
+  const handleDragEnd = useCallback((result: DropResult) => {
     setDraggedId(-1);
     // setAllowChangePrimary(true);
     if (!result.destination) return;
@@ -294,9 +295,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       }
       handleChange({ ...template, components: copyTemplate });
     }
-  };
+  }, [components, editedIndex, getBiggestId, handleChange, template]);
 
-  const [editedIndex, setEditedIndex] = useState<number | null>(null);
 
   const openEditForm = (index: number) => {
     setEditedIndex(index);
@@ -343,6 +343,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const [primaryDrag, setPrimaryDrag] = useState('');
   const [allowChangePrimary, setAllowChangePrimary] = useState(true);
+
   const handleChangeAllowChangePrimary = (value: boolean) => () => {
     setAllowChangePrimary(value);
   };
@@ -377,18 +378,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     }
   };
 
-  const paperBoxShadow = '0px 0px 10px ' + (
-    settings.customization.colorMode !== 'dark'
-      ? 'rgba(0,0,0,0.1)'
-      : 'rgba(250, 250, 250, 0.1)'
-  );
-
   const workspaceWidth = 375;
 
-  const workspaceTextColor = () => {
+  const workspaceTextColor = useCallback(() => {
     const rgb = hexToRGB(template.background.value);
     return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black';
-  };
+  }, [template.background.value]);
 
   return (
     <div
@@ -668,8 +663,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                         )}
                       </Droppable>
                     </CustomizedScrollBox>
-                  )
-                }
+                  )}
               </div>
             </div>
           </div>
