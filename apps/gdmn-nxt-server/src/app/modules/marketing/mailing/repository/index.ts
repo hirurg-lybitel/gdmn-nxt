@@ -1,8 +1,9 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, MailingStatus, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
+import dayjs from 'dayjs';
 
 const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
@@ -89,7 +90,7 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         TEMPLATE: convertedTemplate,
         includeSegments,
         excludeSegments,
-        testingEmails: arrayEmails
+        testingEmails: arrayEmails,
       });
     });
 
@@ -150,12 +151,12 @@ const update: UpdateHandler<IMailing> = async (
       RETURNING ID`,
       {
         ID,
-        LAUNCHDATE: new Date(LAUNCHDATE),
-        STARTDATE: new Date(STARTDATE),
-        FINISHDATE: new Date(FINISHDATE),
+        LAUNCHDATE: LAUNCHDATE ? new Date(LAUNCHDATE) : null,
+        STARTDATE: STARTDATE ? new Date(STARTDATE) : null,
+        FINISHDATE: FINISHDATE ? new Date(FINISHDATE) : null,
         NAME,
         STATUS,
-        STATUS_DESCRIPTION,
+        STATUS_DESCRIPTION: STATUS === MailingStatus.delayed ? `Запланирована на ${dayjs(LAUNCHDATE).format('MMM DD, YYYY HH:mm')}` : STATUS_DESCRIPTION,
         TEMPLATE: await string2Blob(TEMPLATE),
         TESTING_EMAILS: testingEmails.join(',')
       }
@@ -212,19 +213,21 @@ const save: SaveHandler<IMailing> = async (
     includeSegments,
     excludeSegments,
     LAUNCHDATE,
-    testingEmails = []
+    testingEmails = [],
+    STATUS
   } = metadata;
 
   try {
     const mailing = await fetchAsSingletonObject<IMailing>(
-      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE, USR$TESTING_EMAILS)
-      VALUES(:NAME, :TEMPLATE, :STATUS, :LAUNCHDATE, :TESTING_EMAILS)
+      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE, USR$TESTING_EMAILS, USR$STATUS_DESCRIPTION)
+      VALUES(:NAME, :TEMPLATE, :STATUS, :LAUNCHDATE, :TESTING_EMAILS, :STATUS_DESCRIPTION)
       RETURNING ID`,
       {
         NAME,
         TEMPLATE: await string2Blob(TEMPLATE),
-        STATUS: 0,
-        LAUNCHDATE: new Date(LAUNCHDATE),
+        STATUS,
+        STATUS_DESCRIPTION: STATUS === MailingStatus.delayed ? `Запланирована на ${dayjs(LAUNCHDATE).format('MMM DD, YYYY HH:mm')}` : null,
+        LAUNCHDATE: LAUNCHDATE ? new Date(LAUNCHDATE) : null,
         TESTING_EMAILS: testingEmails.join(',')
       }
     );

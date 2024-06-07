@@ -47,6 +47,10 @@ import systemSettingsRouter from './app/routes/settings/systemSettings';
 import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
+import dayjs from 'dayjs';
+import ru from 'dayjs/locale/ru';
+
+dayjs.locale(ru);
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {

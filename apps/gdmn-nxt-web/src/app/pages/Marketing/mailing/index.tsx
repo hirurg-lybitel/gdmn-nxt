@@ -8,10 +8,10 @@ import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-but
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IMailing, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
-import { Box, CardContent, CardHeader, Chip, ChipOwnProps, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Chip, ChipOwnProps, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
-import { useMemo, useState } from 'react';
-import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
+import { useCallback, useMemo, useState } from 'react';
+import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useLaunchMailingMutation, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -20,8 +20,10 @@ import WarningIcon from '@mui/icons-material/Warning';
 import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import SendIcon from '@mui/icons-material/Send';
 import PendingIcon from '@mui/icons-material/Pending';
-
-interface StatusChipProps extends ChipOwnProps {}
+import dayjs from 'dayjs';
+interface StatusChipProps extends ChipOwnProps {
+  onClick?: () => void;
+}
 
 const StatusChip = ({
   ...props
@@ -57,12 +59,17 @@ export default function Mailing() {
   const [addMailing] = useAddMailingMutation();
   const [deleteMailing] = useDeleteMailingMutation();
   const [updateMailing] = useUpdateMailingMutation();
+  const [launchMailing] = useLaunchMailingMutation();
+
+  const launch = useCallback((id: number) => () => launchMailing(id), []);
 
   const columns: GridColDef<IMailing>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
-    { field: 'DATE', headerName: 'Дата запуска', width: 150 },
-    { field: 'STATUS', headerName: 'Статус', width: 200,
-      renderCell({ value }) {
+    { field: 'STARTDATE', headerName: 'Дата запуска', width: 200,
+      valueFormatter: ({ value }) => dayjs(value).isValid() ? dayjs(value).format('MMM DD, YYYY HH:mm') : ''
+    },
+    { field: 'STATUS', headerName: 'Статус', width: 170,
+      renderCell({ value, id }) {
         switch (value) {
           case MailingStatus.delayed:
             return (
@@ -91,12 +98,14 @@ export default function Mailing() {
                 color="info"
                 label="Запустить"
                 icon={<SendIcon />}
+                clickable
+                onClick={launch(Number(id))}
               />);
           case MailingStatus.inProgress:
             return (
               <StatusChip
                 label="В процессе"
-                icon={<PendingIcon />}
+                icon={<CircularProgress size={14} color="primary" />}
               />);
           case MailingStatus.launchNow:
             return 'Запускается';
@@ -105,11 +114,13 @@ export default function Mailing() {
         }
       },
     },
+    { field: 'STATUS_DESCRIPTION', headerName: 'Описание', flex: 1 },
     {
       field: 'ACTIONS',
       headerName: '',
       resizable: false,
       align: 'center',
+
       // renderCell: ({ id, row, api }) =>
       //   <MenuBurger
       //     items={[

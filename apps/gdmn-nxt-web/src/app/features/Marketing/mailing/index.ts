@@ -1,8 +1,10 @@
 import { baseUrlApi } from '@gdmn/constants/client';
-import { IMailing, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { IMailing, IQueryOptions, IRequestResult, MailingStatus, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export type IMailingRequestResult = IRequestResult<{mailings: IMailing[], count: number}>;
+
+const cachedOptions: Partial<IQueryOptions>[] = [];
 
 export const mailingApi = createApi({
   reducerPath: 'mailing',
@@ -12,6 +14,12 @@ export const mailingApi = createApi({
     getAllMailing: builder.query<{mailings: IMailing[], count: number}, Partial<IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
+
+        const lastOptions: Partial<IQueryOptions> = { ...options };
+
+        if (!cachedOptions.includes(lastOptions)) {
+          cachedOptions.push(lastOptions);
+        }
 
         return {
           url: `${params ? `?${params}` : ''}`,
@@ -30,7 +38,13 @@ export const mailingApi = createApi({
           mailings: response.queries?.mailings
         };
       },
-      providesTags: result => ['mailing']
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.mailings.map(({ ID }) => ({ type: 'mailing' as const, ID })),
+            { type: 'mailing', id: 'LIST' },
+          ]
+          : [{ type: 'mailing', id: 'LIST' }],
     }),
     getMailingById: builder.query<IMailing, number>({
       query: (id) => `/${id}`,
@@ -53,7 +67,10 @@ export const mailingApi = createApi({
           body,
         };
       },
-      invalidatesTags: ['mailing']
+      invalidatesTags: (result, e, { ID }) =>
+        result
+          ? [{ type: 'mailing', id: ID }, { type: 'mailing', id: 'LIST' }]
+          : [{ type: 'mailing', id: 'LIST' }],
     }),
     deleteMailing: builder.mutation<void, number>({
       query: (id) => ({
@@ -62,12 +79,42 @@ export const mailingApi = createApi({
       }),
       invalidatesTags: ['mailing']
     }),
-    postTestLaunching: builder.mutation<any, { emails: string[], subject: string, template: string }>({
+    launchTestMailing: builder.mutation<any, { emails: string[], subject: string, template: string }>({
       query: (body) => ({
         url: '/launch-test',
         body: body,
         method: 'POST'
       }),
+    }),
+    launchMailing: builder.mutation<any, number>({
+      query: (id) => ({
+        url: `/launch/${id}`,
+        method: 'POST'
+      }),
+      invalidatesTags: (result, e, id) =>
+        result
+          ? [{ type: 'mailing', id }, { type: 'mailing', id: 'LIST' }]
+          : [{ type: 'mailing', id: 'LIST' }],
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            mailingApi.util.updateQueryData('getAllMailing', options, (draft) => {
+              if (Array.isArray(draft?.mailings)) {
+                const findIndex = draft.mailings?.findIndex(c => c.ID === id);
+                if (findIndex >= 0) {
+                  draft.mailings[findIndex] = { ...draft.mailings[findIndex], STATUS: MailingStatus.inProgress };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     })
   }),
 });
@@ -78,5 +125,6 @@ export const {
   useAddMailingMutation,
   useDeleteMailingMutation,
   useUpdateMailingMutation,
-  usePostTestLaunchingMutation
+  useLaunchMailingMutation,
+  useLaunchTestMailingMutation
 } = mailingApi;

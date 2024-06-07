@@ -3,6 +3,7 @@ import { segmentsRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { customersRepository } from '@gdmn-nxt/repositories/customers';
+import timersPromises from 'timers/promises';
 
 const findAll = async (
   sessionID: string,
@@ -118,6 +119,8 @@ const calcCustomersCount = async (
   // includeSegments.forEach(s => {
   //   console.log('s.FIELDS', s.FIELDS);
   // });
+
+  // await timersPromises.setTimeout(10000);
 
   const customersMap = new Map();
 

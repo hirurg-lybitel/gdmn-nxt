@@ -55,10 +55,12 @@ import OurContacts from './app/pages/Managment/ourContacts';
 import Mailing from './app/pages/Marketing/mailing';
 import CustomersSegments from './app/pages/Marketing/segments';
 import Templates from './app/pages/Marketing/templates';
-import { Email } from '@mui/icons-material';
-import EmailTemplate from '@gdmn-nxt/components/email-template/email-template';
+import dayjs from 'dayjs';
+import ru from 'dayjs/locale/ru';
+dayjs.locale(ru);
 
 registerMUI();
+
 
 const Main = () => {
   const customization = useSelector(

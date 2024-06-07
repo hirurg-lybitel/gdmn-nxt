@@ -2,11 +2,12 @@ import {
   IMailing,
   InternalServerErrorException,
   Like,
+  MailingStatus,
   NotFoundException,
   UnprocessableEntityException
 } from '@gsbelarus/util-api-types';
 import { customersRepository } from '@gdmn-nxt/repositories/customers';
-import { IAttachment, sendEmail } from '@gdmn/mailer';
+import { IAttachment, sendEmail, sendEmailByTestAccount } from '@gdmn/mailer';
 import { forEachAsync, resultDescription } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
@@ -28,6 +29,35 @@ async function createTempImageFile(base64String: string, filename: string) {
   const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
   await fs.writeFile(tempImagePath, base64Data, 'base64');
   return tempImagePath;
+}
+
+async function getHtmlWithAttachments(html: string) {
+  const imgSrcArray = extractImgSrc(html);
+
+  const attachments: IAttachment[] = [];
+  let modifiedHtml = html;
+  await forEachAsync(imgSrcArray, async (item, idx) => {
+    const base64Data = item.replace(/^data:image\/png;base64,/, '');
+
+    const filename = `image${idx}.png`;
+    const cid = `image${idx}@cid`;
+    const filePath = await createTempImageFile(base64Data, filename);
+
+    modifiedHtml = modifiedHtml.replace(item, `cid:${cid}`);
+
+    attachments.push(
+      {
+        filename,
+        path: filePath,
+        cid,
+      }
+    );
+  });
+
+  return {
+    html: modifiedHtml,
+    attachments
+  };
 }
 
 const findAll = async (
@@ -99,8 +129,15 @@ const launchMailing = async (
       throw NotFoundException(`Не найдена рассылка с id=${id}`);
     }
 
+    await updateById(
+      sessionID,
+      id,
+      {
+        STARTDATE: new Date()
+      });
+
     if (mailing.includeSegments.length === 0) {
-      await updateStatus(sessionID, id, 2, 'Нет получателей');
+      await updateStatus(sessionID, id, MailingStatus.error, 'Нет получателей');
       return resultDescription('Нет получателей');
     }
 
@@ -112,16 +149,9 @@ const launchMailing = async (
     const customers = await customersRepository.find(sessionID, { ...Object.fromEntries(customersClause.entries()) });
 
     if (customers.length === 0) {
-      await updateStatus(sessionID, id, 2, 'Нет получателей');
+      await updateStatus(sessionID, id, MailingStatus.error, 'Нет получателей');
       return resultDescription('Нет получателей');
     }
-
-    await updateById(
-      sessionID,
-      id,
-      {
-        STARTDATE: new Date()
-      });
 
     const subject = mailing.NAME;
     const from = `Belgiss <${process.env.SMTP_USER}>`;
@@ -129,7 +159,7 @@ const launchMailing = async (
     const html = mailing.TEMPLATE.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
     if (html === '') {
-      await updateStatus(sessionID, id, 2, 'Не найден шаблон письма');
+      await updateStatus(sessionID, id, MailingStatus.error, 'Не найден шаблон письма');
       throw InternalServerErrorException('Не найден шаблон письма');
     }
 
@@ -140,7 +170,8 @@ const launchMailing = async (
 
       const renderedHtml = Mustache.render(html, view);
 
-      await sendEmail(
+      // TODO: вернуть sendEmail
+      await sendEmailByTestAccount(
         from,
         EMAIL,
         subject,
@@ -155,7 +186,7 @@ const launchMailing = async (
         FINISHDATE: new Date()
       });
 
-    await updateStatus(sessionID, id, 1, 'Рассылка выполнена');
+    await updateStatus(sessionID, id, MailingStatus.completed, 'Рассылка выполнена');
     return resultDescription('Рассылка выполнена');
   } catch (error) {
     throw InternalServerErrorException(error.message);
@@ -228,7 +259,7 @@ const removeById = async (
 const updateStatus = async (
   sessionID: string,
   id: number,
-  status: 0 | 1 | 2,
+  status: MailingStatus,
   description: string
 ) => {
   const mailing = await findOne(sessionID, id);
@@ -257,51 +288,43 @@ const testLaunchMailing = async (
 
   const from = `Belgiss <${process.env.SMTP_USER}>`;
 
-  const html = template.replaceAll('#NAME#', '{{ NAME }}') ?? '';
+  const originalHtml = template.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
-  if (html === '') {
+  if (originalHtml === '') {
     throw UnprocessableEntityException('Не указан шаблон письма');
   }
 
-  const imgSrcArray = extractImgSrc(html);
+  const { html, attachments } = await getHtmlWithAttachments(originalHtml);
 
-  const attachments: IAttachment[] = [];
-  let modifiedHtml = html;
-  await forEachAsync(imgSrcArray, async (item, idx) => {
-    const base64Data = item.replace(/^data:image\/png;base64,/, '');
-
-    const filename = `image${idx}.png`;
-    const cid = `image${idx}@cid`;
-    const filePath = await createTempImageFile(base64Data, filename);
-
-    modifiedHtml = modifiedHtml.replace(item, `cid:${cid}`);
-
-    attachments.push(
-      {
-        filename,
-        path: filePath,
-        cid,
-      }
-    );
-  });
+  const response = {
+    accepted: [],
+    rejected: []
+  };
 
   await forEachAsync(emails, async (email) => {
     const view = {
       NAME: '<наименование клиента>'
     };
 
-    const renderedHtml = Mustache.render(modifiedHtml, view);
+    const renderedHtml = Mustache.render(html, view);
 
-    await sendEmail(
+    // TODO: вернуть sendEmail
+    const { accepted, rejected } = await sendEmailByTestAccount(
       from,
       email,
       subject,
       '',
       renderedHtml,
       attachments);
+
+    response.accepted.push(...accepted);
+    response.rejected.push(...rejected);
   });
 
-  return resultDescription('Тестовая рассылка выполнена');
+  return {
+    ...resultDescription('Тестовая рассылка выполнена'),
+    ...response
+  };
 };
 
 export const mailingService = {

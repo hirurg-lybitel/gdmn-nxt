@@ -19,7 +19,10 @@ import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-butto
 import InfoIcon from '@mui/icons-material/Info';
 // import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
-import { usePostTestLaunchingMutation } from '../../../features/Marketing/mailing';
+import { useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';
+import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import { LoadingButton } from '@mui/lab';
+import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 
 const sendTypes = [
   {
@@ -57,9 +60,20 @@ export function MailingUpsert({
   isFetching: segmentsFetching
   } = useGetAllSegmentsQuery();
 
-  const [getCustomersCount] = useGetCustomersCountMutation();
+  const { addSnackbar } = useSnackbar();
+
+  const [getCustomersCount, { isLoading: customersCountLoading }] = useGetCustomersCountMutation();
   const [addTemplate] = useAddTemplateMutation();
-  const [testLaunching] = usePostTestLaunchingMutation();
+  const [testLaunching, { isLoading: testLaunchingLoading, isSuccess }] = useLaunchTestMailingMutation();
+
+  useEffect(() => {
+    if (isSuccess) {
+      addSnackbar('Тестовая рассылка успешно выполнена', {
+        variant: 'success'
+      });
+    }
+  }, [isSuccess]);
+
 
   const initValue: IMailing = {
     ID: -1,
@@ -106,7 +120,7 @@ export function MailingUpsert({
   });
 
   const [saveTemplate, setSaveTemplate] = useState(false);
-  const [selectedSendType, setSelectedSendType] = useState(sendTypes[1]);
+  const [selectedSendType, setSelectedSendType] = useState<ArrayElement<typeof sendTypes> | null>(sendTypes[1]);
   const [customersCount, setCustomersCount] = useState(0);
 
   const sendTypeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -144,6 +158,7 @@ export function MailingUpsert({
         setSelectedSendType(sendTypes[1]);
         break;
       default:
+        setSelectedSendType(null);
         break;
     }
 
@@ -182,7 +197,7 @@ export function MailingUpsert({
     formik.setFieldValue('testingEmails', value);
   };
 
-  const testLaunch = () => {
+  const testLaunch = async () => {
     const { NAME, TEMPLATE = '', testingEmails = [] } = formik.values;
 
     testLaunching({
@@ -317,7 +332,7 @@ export function MailingUpsert({
                   marginLeft: '14px !important'
                 }}
               >
-                <Typography variant="caption">{`Итоговое количество получателей: ${customersCount}`}</Typography>
+                <Typography variant="caption">{`Итоговое количество получателей: ${customersCountLoading ? 'идёт расчёт...' : customersCount}`}</Typography>
               </Box>
               <Box minHeight={600} position="relative">
                 <FormControlLabel
@@ -353,7 +368,17 @@ export function MailingUpsert({
                 />
                 <Tooltip arrow title="Отправить текущий шаблон на указанные тестовые email адреса ">
                   <Box>
-                    <Button
+                    <LoadingButton
+                      onClick={testLaunch}
+                      loading={testLaunchingLoading}
+                      loadingPosition="start"
+                      startIcon={<ForwardToInboxIcon />}
+                      variant="contained"
+                      size="small"
+                    >
+                      Отправить
+                    </LoadingButton>
+                    {/* <Button
                       size="small"
                       variant="contained"
                       startIcon={<ForwardToInboxIcon />}
@@ -361,7 +386,7 @@ export function MailingUpsert({
                       onClick={testLaunch}
                     >
                       Отправить
-                    </Button >
+                    </Button > */}
                   </Box>
                 </Tooltip>
               </Stack>
@@ -375,7 +400,7 @@ export function MailingUpsert({
                   required
                   label="Отправить рассылку"
                   onChange={sendTypeChange}
-                  value={selectedSendType.name ?? ''}
+                  value={selectedSendType?.name ?? ''}
                   fullWidth
                 >
                   {sendTypes.map(el => (
@@ -388,7 +413,7 @@ export function MailingUpsert({
                     </MenuItem>
                   ))}
                 </TextField>
-                {selectedSendType.id === 3 &&
+                {selectedSendType?.id === 3 &&
                 <MobileDateTimePicker
                   name="LAUNCHDATE"
                   label="Дата запуска"
