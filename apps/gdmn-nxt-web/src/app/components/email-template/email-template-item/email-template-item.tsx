@@ -103,6 +103,7 @@ export const FindComponent = (props: IFindComponentProps) => {
             + (' ' + emailTemplateWidth + component.width?.value)
           }
           style={{
+            minWidth: 'min-content',
             display: 'inline-block',
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
