@@ -26,7 +26,7 @@ export function ContactSelect({
     isFetching: personsIsFetching,
   } = useGetContactPersonsQuery();
 
-  const handleOnChange = useCallback((e: any, value: IContactPerson[]) => onChange(value), []);
+  const handleOnChange = (e: any, value: IContactPerson[]) => onChange(value);
 
   return (
     <Autocomplete
