@@ -47,7 +47,6 @@ import systemSettingsRouter from './app/routes/settings/systemSettings';
 import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
-import { filtersRouter } from './app/routes/filtersRouter';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -361,9 +360,6 @@ router.use(systemSettingsRouter);
 
 /** Marketing */
 router.use(marketingRouter);
-
-/** Filters */
-router.use(filtersRouter);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;
