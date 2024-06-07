@@ -64,24 +64,17 @@ export default function Contacts() {
   }, [filtersIsLoading]);
 
   useEffect(() => {
-    console.log('1');
     if (!filterData && !filterId) return;
-    console.log('2');
     setLastFilter(filterData || {});
     if (!lastFilter) return;
-    console.log('3');
     if (Object.keys(filterData || {}).length < 1) {
-      console.log('delete');
       if (!filterId) return;
-      console.log('done');
       deleteFilter(filterId);
       setFilterId(null);
       return;
     }
     if (Object.keys(lastFilter).length > 0) {
-      console.log('update');
       if (!filterId) return;
-      console.log('done');
       updateFilter([{
         ID: filterId,
         ENTITYNAME: filterEntityName,
@@ -89,7 +82,6 @@ export default function Contacts() {
       }, filterId]);
       return;
     }
-    console.log('add');
     addFilter({
       ID: -1,
       ENTITYNAME: filterEntityName,
