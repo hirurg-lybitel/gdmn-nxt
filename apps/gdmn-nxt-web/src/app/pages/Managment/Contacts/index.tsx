@@ -23,6 +23,7 @@ import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contac
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../../../features/filters/filtersApi';
+import { useDebounce } from '../../../features/common/useDebunce';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
@@ -52,9 +53,25 @@ export default function Contacts() {
   const [updateFilter] = useUpdateFilterMutation();
   const [lastFilter, setLastFilter] = useState<IFilteringData | null>(null);
   const [filterId, setFilterId] = useState<number | null>(null);
+  const [pendingRequest, setPendingRequest] = useState<string | null>(null);
 
   useEffect(() => {
     setFilterId(filters?.ID || null);
+    if (pendingRequest) {
+      setPendingRequest(null);
+      if (!filters?.ID) return;
+      if (pendingRequest === 'delete') {
+        deleteFilter(filters?.ID);
+        return;
+      }
+      if (pendingRequest === 'update') {
+        updateFilter({
+          ID: filters?.ID,
+          ENTITYNAME: filterEntityName,
+          FILTERS: debouncedFilterData
+        });
+      }
+    }
   }, [filters]);
 
   useEffect(() => {
@@ -63,31 +80,43 @@ export default function Contacts() {
     dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
   }, [filtersIsLoading]);
 
+  const debouncedFilterData = useDebounce(filterData, 1000 * 10);
+
   useEffect(() => {
-    if (!filterData && !filterId) return;
-    setLastFilter(filterData || {});
+    if (!debouncedFilterData && !filterId) return;
+    setLastFilter(debouncedFilterData || {});
     if (!lastFilter) return;
-    if (Object.keys(filterData || {}).length < 1) {
-      if (!filterId) return;
+    if (Object.keys(debouncedFilterData || {}).length < 1) {
+      if (!filterId) {
+        setPendingRequest('delete');
+        return;
+      }
       deleteFilter(filterId);
       setFilterId(null);
       return;
     }
     if (Object.keys(lastFilter).length > 0) {
-      if (!filterId) return;
-      updateFilter([{
+      if (!filterId) {
+        setPendingRequest('update');
+        return;
+      }
+      updateFilter({
         ID: filterId,
         ENTITYNAME: filterEntityName,
-        FILTERS: filterData
-      }, filterId]);
+        FILTERS: debouncedFilterData
+      });
+      return;
+    }
+    if (pendingRequest) {
+      setPendingRequest('update');
       return;
     }
     addFilter({
       ID: -1,
       ENTITYNAME: filterEntityName,
-      FILTERS: filterData
+      FILTERS: debouncedFilterData
     });
-  }, [filterData]);
+  }, [debouncedFilterData]);
 
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();

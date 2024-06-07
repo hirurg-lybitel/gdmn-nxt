@@ -34,9 +34,9 @@ export const filtersApi = createApi({
       }),
       invalidatesTags: ['filters']
     }),
-    updateFilter: builder.mutation<IFilterRequestResult, [IFilter, number]>({
-      query: ([body, id]) => ({
-        url: `filters/${id}`,
+    updateFilter: builder.mutation<IFilterRequestResult, IFilter>({
+      query: (body) => ({
+        url: `filters/${body.ID}`,
         body: body,
         method: 'PUT'
       }),
