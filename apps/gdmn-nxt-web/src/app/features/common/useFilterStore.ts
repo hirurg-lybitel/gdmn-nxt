@@ -40,7 +40,7 @@ export function useFilterStore(filterEntityName: string, filterData: IFilteringD
     dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
   }, [filtersIsLoading]);
 
-  const debouncedFilterData = useDebounce(filterData, 1000);
+  const debouncedFilterData = useDebounce(filterData, 1000 * 10);
 
   useEffect(() => {
     if (!debouncedFilterData && !filterId) return;
