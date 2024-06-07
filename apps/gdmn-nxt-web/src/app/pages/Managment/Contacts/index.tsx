@@ -22,6 +22,7 @@ import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list
 import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../../../features/filters/filtersApi';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
@@ -43,7 +44,51 @@ const highlightFields = (searchValue: string) => {
 export default function Contacts() {
   const userPermissions = usePermissions();
   const [sortingData, setSortingData] = useState<ISortingData | null>();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
+  const filterEntityName = 'contacts';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+  const { data: filters, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetFilterByEntityNameQuery(filterEntityName);
+  const [addFilter] = useAddFilterMutation();
+  const [deleteFilter] = useDeleteFilterMutation();
+  const [updateFilter] = useUpdateFilterMutation();
+  const [lastFilter, setLastFilter] = useState<IFilteringData | null>(null);
+  const [filterId, setFilterId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setFilterId(filters?.ID || null);
+  }, [filters]);
+
+  useEffect(() => {
+    if (filters === undefined) return;
+    setFilterId(filters?.ID || null);
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
+  }, [filtersIsLoading]);
+
+  useEffect(() => {
+    if (!filterData && !filterId) return;
+    setLastFilter(filterData || {});
+    if (!lastFilter) return;
+    if (Object.keys(filterData || {}).length < 1) {
+      if (!filterId) return;
+      deleteFilter(filterId);
+      setFilterId(null);
+      return;
+    }
+    if (Object.keys(lastFilter).length > 0) {
+      if (!filterId) return;
+      updateFilter([{
+        ID: filterId,
+        ENTITYNAME: filterEntityName,
+        FILTERS: filterData
+      }, filterId]);
+      return;
+    }
+    addFilter({
+      ID: -1,
+      ENTITYNAME: filterEntityName,
+      FILTERS: filterData
+    });
+  }, [filterData]);
+
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
 
@@ -122,7 +167,7 @@ export default function Contacts() {
   };
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'contacts': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
@@ -210,7 +255,7 @@ export default function Contacts() {
               </ToggleButton>
             </ToggleButtonGroup>
             <SearchBar
-              disabled={isLoading}
+              disabled={isLoading || filtersIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
@@ -244,7 +289,7 @@ export default function Contacts() {
             <Box display="inline-flex" alignSelf="center">
               <IconButton
                 onClick={filterHandlers.filterClick}
-                disabled={personsIsFetching}
+                disabled={personsIsFetching || filtersIsLoading || filtersIsFetching}
                 size ="small"
               >
                 <Tooltip
