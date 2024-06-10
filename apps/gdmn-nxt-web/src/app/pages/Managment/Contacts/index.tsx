@@ -52,7 +52,7 @@ export default function Contacts() {
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
 
-  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, filterData);
+  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
 
   const [upsertContact, setUpsertContact] = useState<{
     addContact?: boolean;
@@ -155,6 +155,7 @@ export default function Contacts() {
       setOpenFilters(true);
     }, []),
     filterClose: async () => {
+      save();
       setOpenFilters(false);
     },
   };

@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../filters/filtersApi';
 import { IFilteringData } from '@gsbelarus/util-api-types';
-import { saveFilterData } from '../../store/filtersSlice';
-import { useDispatch } from 'react-redux';
+import { saveFilterData, setLoadFilter } from '../../store/filtersSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import { useDebounce } from './useDebunce';
+import { RootState } from '../../store';
 
-export function useFilterStore(filterEntityName: string, filterData: IFilteringData): any {
+export function useFilterStore(filterEntityName: string): any {
+  const filter = useSelector((state: RootState) => state.filtersStorage);
   const { data: filters, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetFilterByEntityNameQuery(filterEntityName);
-  const [addFilter] = useAddFilterMutation();
-  const [deleteFilter] = useDeleteFilterMutation();
-  const [updateFilter] = useUpdateFilterMutation();
+  const [addFilter, { isLoading: addIsLoading }] = useAddFilterMutation();
+  const [deleteFilter, { isLoading: deleteIsLoading }] = useDeleteFilterMutation();
+  const [updateFilter, { isLoading: updateIsLoading }] = useUpdateFilterMutation();
   const [lastFilter, setLastFilter] = useState<IFilteringData | null>(null);
   const [filterId, setFilterId] = useState<number | null>(null);
   const [pendingRequest, setPendingRequest] = useState<string | null>(null);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!updateIsLoading && !deleteIsLoading && !addIsLoading && !filtersIsLoading && !filtersIsFetching) {
+      setPendingRequest(null);
+    }
+  }, [pendingRequest]);
 
   useEffect(() => {
     setFilterId(filters?.ID || null);
@@ -35,18 +43,19 @@ export function useFilterStore(filterEntityName: string, filterData: IFilteringD
   }, [filters]);
 
   useEffect(() => {
-    if (filters === undefined) return;
+    if (filters === undefined || filter.loadFilters?.[`${filterEntityName}`] === true) return;
     setFilterId(filters?.ID || null);
     dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
+    dispatch(setLoadFilter({ [`${filterEntityName}`]: true }));
   }, [filtersIsLoading]);
 
-  const debouncedFilterData = useDebounce(filterData, 1000 * 10);
+  const debouncedFilterData = useDebounce(filter.filterData?.[`${filterEntityName}`], (1000 * 10));
 
-  useEffect(() => {
-    if (!debouncedFilterData && !filterId) return;
-    setLastFilter(debouncedFilterData || {});
+  const save = (filterData: IFilteringData) => {
+    if (!filterData && !filterId) return;
+    setLastFilter(filterData || {});
     if (!lastFilter) return;
-    if (Object.keys(debouncedFilterData || {}).length < 1) {
+    if (Object.keys(filterData || {}).length < 1) {
       if (!filterId) {
         setPendingRequest('delete');
         return;
@@ -63,7 +72,7 @@ export function useFilterStore(filterEntityName: string, filterData: IFilteringD
       updateFilter({
         ID: filterId,
         ENTITYNAME: filterEntityName,
-        FILTERS: debouncedFilterData
+        FILTERS: filterData
       });
       return;
     }
@@ -74,8 +83,15 @@ export function useFilterStore(filterEntityName: string, filterData: IFilteringD
     addFilter({
       ID: -1,
       ENTITYNAME: filterEntityName,
-      FILTERS: debouncedFilterData
+      FILTERS: filterData
     });
+  };
+
+  useEffect(() => {
+    save(debouncedFilterData);
   }, [debouncedFilterData]);
-  return [filtersIsLoading, filtersIsFetching];
+
+  const handleSave = () => save(filter.filterData?.[`${filterEntityName}`]);
+
+  return [filtersIsLoading, filtersIsFetching, handleSave];
 }
