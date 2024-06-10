@@ -45,6 +45,7 @@ export function useFilterStore(filterEntityName: string): any {
   useEffect(() => {
     if (filters === undefined || filter.loadFilters?.[`${filterEntityName}`] === true) return;
     setFilterId(filters?.ID || null);
+    setLastFilter(filters?.FILTERS || {});
     dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
     dispatch(setLoadFilter({ [`${filterEntityName}`]: true }));
   }, [filtersIsLoading]);
@@ -53,9 +54,9 @@ export function useFilterStore(filterEntityName: string): any {
 
   const save = (filterData: IFilteringData | undefined) => {
     if (!filterData === undefined && !filterId) return;
-    setLastFilter(filterData || {});
-    if (!lastFilter) return;
+    if (lastFilter === null) return;
     if (Object.keys(filterData || {}).length < 1) {
+      setLastFilter(filterData || {});
       if (!filterId) {
         setPendingRequest('delete');
         return;
@@ -65,6 +66,7 @@ export function useFilterStore(filterEntityName: string): any {
       return;
     }
     if (Object.keys(lastFilter).length > 0) {
+      setLastFilter(filterData || {});
       if (!filterId) {
         setPendingRequest('update');
         return;
@@ -76,6 +78,7 @@ export function useFilterStore(filterEntityName: string): any {
       });
       return;
     }
+    setLastFilter(filterData || {});
     if (pendingRequest) {
       setPendingRequest('update');
       return;
@@ -91,7 +94,7 @@ export function useFilterStore(filterEntityName: string): any {
     save(debouncedFilterData);
   }, [debouncedFilterData]);
 
-  const handleSave = () => save(filter.filterData?.[`${filterEntityName}`] || {});
+  const handleSave = (data: IFilteringData | undefined) => save(data || filter.filterData?.[`${filterEntityName}`] || {});
 
   return [filtersIsLoading, filtersIsFetching, handleSave];
 }

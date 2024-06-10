@@ -16,7 +16,7 @@ import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
 import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list';
 import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
@@ -158,6 +158,11 @@ export default function Contacts() {
       save();
       setOpenFilters(false);
     },
+    filterClear: () => {
+      save({});
+      setOpenFilters(false);
+      dispatch(clearFilterData(filterEntityName));
+    }
   };
 
   const handleSortChange = useCallback((sortModel: ISortingData | null) => setSortingData(sortModel), []);
@@ -185,6 +190,7 @@ export default function Contacts() {
       onClose={filterHandlers.filterClose}
       filteringData={filterData}
       onFilteringDataChange={handleFilteringDataChange}
+      filterClear={filterHandlers.filterClear}
     />,
   [openFilters, filterData]);
 
