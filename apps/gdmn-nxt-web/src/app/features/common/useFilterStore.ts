@@ -43,7 +43,10 @@ export function useFilterStore(filterEntityName: string): any {
   }, [filters]);
 
   useEffect(() => {
-    if (filters === undefined || filter.loadFilters?.[`${filterEntityName}`] === true) return;
+    if (filters === undefined || filter.loadFilters?.[`${filterEntityName}`] === true) {
+      setLastFilter(filter.filterData?.[`${filterEntityName}`] || {});
+      return;
+    }
     setFilterId(filters?.ID || null);
     setLastFilter(filters?.FILTERS || {});
     dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
