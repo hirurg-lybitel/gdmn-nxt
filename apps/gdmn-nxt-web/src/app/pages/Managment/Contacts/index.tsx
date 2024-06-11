@@ -154,15 +154,15 @@ export default function Contacts() {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async () => {
+    filterClose: useCallback(() => {
       save();
       setOpenFilters(false);
-    },
-    filterClear: () => {
+    }, [save]),
+    filterClear: useCallback(() => {
       save({});
       setOpenFilters(false);
       dispatch(clearFilterData(filterEntityName));
-    }
+    }, [save, dispatch])
   };
 
   const handleSortChange = useCallback((sortModel: ISortingData | null) => setSortingData(sortModel), []);
@@ -192,7 +192,7 @@ export default function Contacts() {
       onFilteringDataChange={handleFilteringDataChange}
       filterClear={filterHandlers.filterClear}
     />,
-  [openFilters, filterData]);
+  [openFilters, filterData, filterHandlers]);
 
   return (
     <CustomizedCard style={{ flex: 1 }}>

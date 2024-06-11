@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../filters/filtersApi';
 import { IFilteringData } from '@gsbelarus/util-api-types';
-import { IFiltersState, saveFilterData, setLoadFilter } from '../../store/filtersSlice';
+import { saveFilterData, setLoadFilter } from '../../store/filtersSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDebounce } from './useDebunce';
 import { RootState } from '../../store';
@@ -55,8 +55,8 @@ export function useFilterStore(filterEntityName: string): any {
 
   const debouncedFilterData = useDebounce(filter.filterData?.[`${filterEntityName}`], (1000 * 10));
 
-  const save = (filterData: IFilteringData | undefined) => {
-    if (!filterData === undefined && !filterId) return;
+  const save = useCallback((filterData: IFilteringData | undefined) => {
+    if (filterData === undefined && !filterId) return;
     if (lastFilter === null) return;
     if (Object.keys(filterData || {}).length < 1) {
       setLastFilter(filterData || {});
@@ -91,13 +91,14 @@ export function useFilterStore(filterEntityName: string): any {
       ENTITYNAME: filterEntityName,
       FILTERS: filterData || {}
     });
-  };
+  }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter]);
 
   useEffect(() => {
     save(debouncedFilterData);
   }, [debouncedFilterData]);
 
-  const handleSave = (data: IFilteringData | undefined) => save(data || filter.filterData?.[`${filterEntityName}`] || {});
+  const handleSave = useCallback((data: IFilteringData | undefined) => save(data || filter.filterData?.[`${filterEntityName}`] || {})
+    , [filterEntityName, filter.filterData, save]);
 
   return [filtersIsLoading, filtersIsFetching, handleSave];
 }
