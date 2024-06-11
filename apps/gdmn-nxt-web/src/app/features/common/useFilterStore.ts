@@ -58,6 +58,7 @@ export function useFilterStore(filterEntityName: string): any {
 
   const save = useCallback((filterData: IFilteringData | undefined) => {
     if (filterData === undefined && !filterId) return;
+    if (JSON.stringify(filterData) === JSON.stringify(filters?.filters)) return;
     if (lastFilter === null) return;
     if (Object.keys(filterData || {}).length < 1) {
       setLastFilter(filterData || {});
@@ -92,7 +93,7 @@ export function useFilterStore(filterEntityName: string): any {
       entityName: filterEntityName,
       filters: filterData || {}
     });
-  }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter]);
+  }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter, filters?.filters]);
 
   useEffect(() => {
     save(debouncedFilterData);
