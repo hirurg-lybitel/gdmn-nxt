@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../filters/filtersApi';
+import { useAddFilterMutation, useDeleteFilterMutation, useGetAllFiltersQuery, useUpdateFilterMutation } from '../filters/filtersApi';
 import { IFilteringData } from '@gsbelarus/util-api-types';
 import { saveFilterData, setLoadFilter } from '../../store/filtersSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,7 +8,8 @@ import { RootState } from '../../store';
 
 export function useFilterStore(filterEntityName: string): any {
   const filter = useSelector((state: RootState) => state.filtersStorage);
-  const { data: filters, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetFilterByEntityNameQuery(filterEntityName);
+  const { data: filtersData, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetAllFiltersQuery();
+  const filters = filtersData?.find(filterData => filterData.entityName === filterEntityName);
   const [addFilter, { isLoading: addIsLoading }] = useAddFilterMutation();
   const [deleteFilter, { isLoading: deleteIsLoading }] = useDeleteFilterMutation();
   const [updateFilter, { isLoading: updateIsLoading }] = useUpdateFilterMutation();

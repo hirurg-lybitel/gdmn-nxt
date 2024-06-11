@@ -60,7 +60,7 @@ const updateById: RequestHandler = async (req, res) => {
     );
 
     const result: IRequestResult = {
-      queries: { segments: [updatedFIlter] },
+      queries: { filters: [updatedFIlter] },
       _params: [{ id }],
       _schema: {}
     };

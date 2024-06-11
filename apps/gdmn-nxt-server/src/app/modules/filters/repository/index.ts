@@ -112,7 +112,7 @@ const save: SaveHandler<IFilterSave> = async (
   const { entityName, filters, userId } = metadata;
 
   try {
-    const segment = await fetchAsSingletonObject<IFilterSave>(
+    const filter = await fetchAsSingletonObject<IFilterSave>(
       `INSERT INTO USR$CRM_FILTERS(USR$ENTITYNAME,USR$FILTERS,USR$USERKEY)
       VALUES(:ENTITYNAME,:FILTERS,:USERKEY)
       RETURNING ID`,
@@ -125,7 +125,7 @@ const save: SaveHandler<IFilterSave> = async (
 
     await releaseTransaction();
 
-    return segment;
+    return filter;
   } catch (error) {
     await releaseTransaction(false);
     throw new Error(error);
