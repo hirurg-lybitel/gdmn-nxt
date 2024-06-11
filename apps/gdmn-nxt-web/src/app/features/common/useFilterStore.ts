@@ -35,8 +35,8 @@ export function useFilterStore(filterEntityName: string): any {
       if (pendingRequest === 'update') {
         updateFilter({
           ID: filters?.ID,
-          ENTITYNAME: filterEntityName,
-          FILTERS: debouncedFilterData
+          entityName: filterEntityName,
+          filters: debouncedFilterData
         });
       }
     }
@@ -48,8 +48,8 @@ export function useFilterStore(filterEntityName: string): any {
       return;
     }
     setFilterId(filters?.ID || null);
-    setLastFilter(filters?.FILTERS || {});
-    dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.FILTERS || {} }));
+    setLastFilter(filters?.filters || {});
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filters?.filters || {} }));
     dispatch(setLoadFilter({ [`${filterEntityName}`]: true }));
   }, [filtersIsLoading]);
 
@@ -76,8 +76,8 @@ export function useFilterStore(filterEntityName: string): any {
       }
       updateFilter({
         ID: filterId,
-        ENTITYNAME: filterEntityName,
-        FILTERS: filterData || {}
+        entityName: filterEntityName,
+        filters: filterData || {}
       });
       return;
     }
@@ -88,8 +88,8 @@ export function useFilterStore(filterEntityName: string): any {
     }
     addFilter({
       ID: -1,
-      ENTITYNAME: filterEntityName,
-      FILTERS: filterData || {}
+      entityName: filterEntityName,
+      filters: filterData || {}
     });
   }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter]);
 

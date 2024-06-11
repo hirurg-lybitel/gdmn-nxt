@@ -30,18 +30,18 @@ const find: FindHandler<IFilter> = async (
     const sql = `
       SELECT
         ID,
-        USR$ENTITYNAME as entityName,
-        USR$FILTERS as filters
+        USR$ENTITYNAME,
+        USR$FILTERS
       FROM
         USR$CRM_FILTERS f
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
     const filters = await fetchAsObject<any> (sql, params);
 
-    await forEachAsync(filters, async f => {
-      const filter = await blob2String(f['FILTERS']);
-
-      f['FILTERS'] = JSON.parse(filter);
+    await forEachAsync<IFilter>(filters, async f => {
+      const filter = await blob2String(f['USR$FILTERS']);
+      f.filters = JSON.parse(filter);
+      f.entityName = f['USR$ENTITYNAME'];
     });
 
     return filters;
@@ -71,8 +71,8 @@ const update: UpdateHandler<IFilter> = async (
     const ID = id;
 
     const {
-      FILTERS,
-      ENTITYNAME
+      filters,
+      entityName
     } = metadata;
 
     const updatedFilter = await fetchAsSingletonObject<IFilter>(
@@ -85,8 +85,8 @@ const update: UpdateHandler<IFilter> = async (
       RETURNING ID`,
       {
         ID,
-        ENTITYNAME: ENTITYNAME,
-        FILTERS: await string2Blob(JSON.stringify(FILTERS)),
+        ENTITYNAME: entityName,
+        FILTERS: await string2Blob(JSON.stringify(filters)),
       }
     );
 
@@ -109,16 +109,16 @@ const save: SaveHandler<IFilterSave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
 
-  const { ENTITYNAME, FILTERS, userId } = metadata;
+  const { entityName, filters, userId } = metadata;
 
   try {
-    const segment = await fetchAsSingletonObject<any>(
+    const segment = await fetchAsSingletonObject<IFilterSave>(
       `INSERT INTO USR$CRM_FILTERS(USR$ENTITYNAME,USR$FILTERS,USR$USERKEY)
       VALUES(:ENTITYNAME,:FILTERS,:USERKEY)
       RETURNING ID`,
       {
-        ENTITYNAME: ENTITYNAME,
-        FILTERS: await string2Blob(JSON.stringify(FILTERS)),
+        ENTITYNAME: entityName,
+        FILTERS: await string2Blob(JSON.stringify(filters)),
         USERKEY: userId
       }
     );

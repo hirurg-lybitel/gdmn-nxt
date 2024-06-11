@@ -151,8 +151,8 @@ export interface IFilteringData {
 }
 
 export interface IFilter extends IWithID {
-  ENTITYNAME: string;
-  FILTERS: IFilteringData
+  entityName: string;
+  filters: IFilteringData
 }
 
 export interface IQueryOptions {
