@@ -10,7 +10,7 @@ import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IMailing, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Chip, ChipOwnProps, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useLaunchMailingMutation, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -44,21 +44,22 @@ const StatusChip = ({
 export default function Mailing() {
   const userPermissions = usePermissions();
 
-  const { data: {
-    mailings,
-    count
-  } = {
-    count: 0,
-    mailings: []
-  },
-  isLoading,
-  isFetching,
-  refetch
+  const {
+    data: {
+      mailings,
+      count
+    } = {
+      count: 0,
+      mailings: []
+    },
+    isLoading,
+    isFetching,
+    refetch
   } = useGetAllMailingQuery();
 
   const [addMailing] = useAddMailingMutation();
   const [deleteMailing] = useDeleteMailingMutation();
-  const [updateMailing] = useUpdateMailingMutation();
+  const [updateMailing, { isSuccess: updateMailingSuccess, data: updateMailingResponse }] = useUpdateMailingMutation();
   const [launchMailing] = useLaunchMailingMutation();
 
   const launch = useCallback((id: number) => () => launchMailing(id), []);
@@ -108,7 +109,11 @@ export default function Mailing() {
                 icon={<CircularProgress size={14} color="primary" />}
               />);
           case MailingStatus.launchNow:
-            return 'Запускается';
+            return (
+              <StatusChip
+                label="Запускается"
+                icon={<CircularProgress size={14} color="primary" />}
+              />);
           default:
             return 'Неизвестно';
         }
@@ -200,7 +205,15 @@ export default function Mailing() {
     }
 
     if (mailing.ID > 0) {
-      updateMailing(mailing);
+      updateMailing(mailing)
+        .then(async (result) => {
+          if (!('data' in result)) return;
+
+          const status = result.data.STATUS;
+          if (status !== MailingStatus.launchNow) return;
+
+          await launchMailing(mailing.ID);
+        });
       return;
     }
 
@@ -274,7 +287,7 @@ export default function Mailing() {
       <Divider />
       <CardContent style={{ padding: 0 }}>
         <StyledGrid
-          loading={isFetching}
+          loading={isLoading}
           columns={columns}
           rows={mailings}
           paginationMode="server"

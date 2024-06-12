@@ -17,7 +17,7 @@ export const mailingApi = createApi({
 
         const lastOptions: Partial<IQueryOptions> = { ...options };
 
-        if (!cachedOptions.includes(lastOptions)) {
+        if (!cachedOptions.some(item => JSON.stringify(item) === JSON.stringify(lastOptions))) {
           cachedOptions.push(lastOptions);
         }
 
@@ -67,6 +67,7 @@ export const mailingApi = createApi({
           body,
         };
       },
+      transformResponse: (response: IMailingRequestResult) => response.queries.mailings[0],
       invalidatesTags: (result, e, { ID }) =>
         result
           ? [{ type: 'mailing', id: ID }, { type: 'mailing', id: 'LIST' }]
@@ -92,9 +93,7 @@ export const mailingApi = createApi({
         method: 'POST'
       }),
       invalidatesTags: (result, e, id) =>
-        result
-          ? [{ type: 'mailing', id }, { type: 'mailing', id: 'LIST' }]
-          : [{ type: 'mailing', id: 'LIST' }],
+        [{ type: 'mailing', id: 'LIST' }],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
         cachedOptions?.forEach(async opt => {
           const options = Object.keys(opt).length > 0 ? opt : undefined;

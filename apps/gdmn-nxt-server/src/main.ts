@@ -3,7 +3,7 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { IsNotNull, IsNull, Permissions } from '@gsbelarus/util-api-types';
+import { IsNotNull, IsNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
@@ -94,31 +94,31 @@ setInterval(() => cachedRequets.init(cacheManager), 20 * 60 * 1000);
 /** Создать планировщик для запуска отложенных email рассылок
  * Запуск отложен на минуту, чтобы успели инициализироваться все необходимые данные
 */
-// setTimeout(
-//   () => {
-//     createScheduler({
-//       name: 'mailer',
-//       dataGetter: async () => {
-//         const mailings = await mailingService.findAll('scheduler', {
-//           USR$LAUNCHDATE: IsNotNull(),
-//           USR$STATUS: 0
-//         });
-//         const tasks = mailings.mailings.map(m => ({
-//           startDate: m.LAUNCHDATE,
-//           action: async() => {
-//             try {
-//               await mailingService.launchMailing('scheduler', m.ID);
-//             } catch (error) {
-//               console.error('[ Delayed mailing error ]', error);
-//             }
-//           }
-//         }));
+setTimeout(
+  () => {
+    createScheduler({
+      name: 'mailer',
+      dataGetter: async () => {
+        const mailings = await mailingService.findAll('scheduler', {
+          USR$LAUNCHDATE: IsNotNull(),
+          USR$STATUS: MailingStatus.delayed
+        });
+        const tasks = mailings.mailings.map(m => ({
+          startDate: m.LAUNCHDATE,
+          action: async() => {
+            try {
+              await mailingService.launchMailing('scheduler', m.ID);
+            } catch (error) {
+              console.error('[ Delayed mailing error ]', error);
+            }
+          }
+        }));
 
-//         return tasks;
-//       }
-//     });
-//   },
-//   60000);
+        return tasks;
+      }
+    });
+  },
+  60000);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MemoryStore = require('memorystore')(session);

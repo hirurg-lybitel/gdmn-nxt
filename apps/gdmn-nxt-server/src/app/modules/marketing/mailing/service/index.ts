@@ -65,18 +65,21 @@ const findAll = async (
   query?: { [key: string]: any }
 ) => {
   try {
-    const pageSize = query?.pageSize;
-    const pageNo = query?.pageNo;
-    const name = query?.name;
-
-    const sortField = query.field ?? 'NAME';
-    const sortMode = query.sort ?? 'ASC';
+    const {
+      pageSize,
+      pageNo,
+      sortField = 'NAME',
+      sortMode = 'ASC',
+      name,
+      ...where
+    } = query;
 
 
     const mailings = await mailingRepository.find(
       sessionID,
       {
         ...(name && { USR$NAME: Like(name) }),
+        ...where
       },
       {
         [sortField]: sortMode

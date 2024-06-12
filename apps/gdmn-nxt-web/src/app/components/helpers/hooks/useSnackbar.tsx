@@ -34,6 +34,7 @@ export const useSnackbar = () => {
       ...options
     }: Options
   ) => enqueueSnackbar(message, {
+    style: { whiteSpace: 'pre-line' },
     ...options,
     action: closeAction(onClose),
     onClose: () => onClose && onClose()

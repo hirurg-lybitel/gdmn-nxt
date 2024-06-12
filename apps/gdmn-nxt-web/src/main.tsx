@@ -100,7 +100,8 @@ const Main = () => {
                 dateTimePickerToolbarTitle: 'Укажите дату и время',
                 openNextView: 'следующее окно',
                 openPreviousView: 'предыдущее окно',
-                cancelButtonLabel: 'Отмена'
+                cancelButtonLabel: 'Отмена',
+                todayButtonLabel: 'Сегодня'
               }}
               adapterLocale={ruLocale}
             >
