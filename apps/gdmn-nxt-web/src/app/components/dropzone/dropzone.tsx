@@ -78,8 +78,6 @@ export function Dropzone({
     rejectedFiles,
     evt
   ) => {
-    console.log('handleDropRejected', rejectedFiles);
-
     rejectedFiles.forEach(({ file: { name: fileName }, errors }) => {
       const message = errors.reduce((msg, { code }) => {
         switch (code) {
