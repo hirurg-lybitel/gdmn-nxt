@@ -33,10 +33,6 @@ export function LabelListItem(props: LabelListItemProps) {
     setOpenEditForm(true);
   }, []);
 
-  const handleDeleteClick = useCallback(() => {
-    setConfirmOpen(true);
-  }, []);
-
   const handleOnSubmit = (label: ILabel) => {
     setOpenEditForm(false);
 
@@ -50,14 +46,10 @@ export function LabelListItem(props: LabelListItemProps) {
     setOpenEditForm(false);
   }, []);
 
-  const handleConfirmOkClick = useCallback(() => {
+  const handleDelete = useCallback(() => {
     setConfirmOpen(false);
     onDelete && onDelete(ID);
   }, [ID]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
 
   function hexToRGB(h: any) {
     let r = 0, g = 0, b = 0;
@@ -161,7 +153,7 @@ export function LabelListItem(props: LabelListItemProps) {
               <ItemButtonDelete
                 button
                 disabled={editIsLoading || deleteIsLoading}
-                onClick={handleDeleteClick}
+                onClick={handleDelete}
               />
             </PermissionsGate>
           </Box>
@@ -172,14 +164,6 @@ export function LabelListItem(props: LabelListItemProps) {
         label={data}
         onSubmit={handleOnSubmit}
         onCancelClick={handleCancelClick}
-      />
-      <ConfirmDialog
-        open={confirmOpen}
-        title="Удаление метки"
-        text="Вы уверены, что хотите продолжить?"
-        dangerous
-        confirmClick={handleConfirmOkClick}
-        cancelClick={handleConfirmCancelClick}
       />
     </Box>
   );
