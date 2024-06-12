@@ -1,0 +1,47 @@
+.container {
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: dashed;
+  border-color: var(--color-borders);
+  border-radius: var(--border-radius);
+  min-height: 250px;
+  width: 100%;
+  position: relative;
+  padding: 0 8px;
+}
+
+.textContainer {
+  text-align: center;
+}
+
+.text {
+  margin-top: 24px !important;
+  margin-bottom: 24px !important;
+}
+
+.icon {
+  height: 50px !important;
+  width: 50px !important;
+}
+
+.active {
+  animation: progress 2s linear infinite !important;
+  background-image: repeating-linear-gradient(-45deg, var(--color-card-bg), var(--color-card-bg)  25px, var(--color-paper-bg) 25px, var(--color-paper-bg) 50px);
+  background-size: 150% 100%;
+  border: solid;
+}
+
+.invalid {
+  background-image: repeating-linear-gradient(-45deg, #e57373, #e57373 25px, #d32f2f 25px, #d32f2f 50px);
+  border-color: var(--color-error);
+}
+
+@keyframes progress {
+  0% {
+    background-position: 0 0,
+  }
+  100% {
+    background-position: -70px 0,
+  }
+}

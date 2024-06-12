@@ -12,7 +12,7 @@ import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { MobileDateTimePicker } from '@mui/x-date-pickers-pro';
+import { DesktopDateTimePicker, MobileDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -23,6 +23,7 @@ import { useLaunchTestMailingMutation } from '../../../features/Marketing/mailin
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import { LoadingButton } from '@mui/lab';
 import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 
 const sendTypes = [
   {
@@ -111,7 +112,10 @@ export function MailingUpsert({
         });
       }
 
-      onSubmit(values, false);
+      onSubmit({
+        ...values,
+        ...(mailing?.STATUS !== values.STATUS ? { STATUS_DESCRIPTION: '' } : {})
+      }, false);
     },
     onReset: (values) => {
       setSelectedSendType(sendTypes[1]);
@@ -150,12 +154,16 @@ export function MailingUpsert({
       return;
     }
 
+
     switch (formik.values.STATUS) {
       case MailingStatus.delayed:
         setSelectedSendType(sendTypes[2]);
         break;
       case MailingStatus.manual:
         setSelectedSendType(sendTypes[1]);
+        break;
+      case MailingStatus.launchNow:
+        setSelectedSendType(sendTypes[0]);
         break;
       default:
         setSelectedSendType(null);
@@ -205,6 +213,10 @@ export function MailingUpsert({
       subject: NAME,
       template: TEMPLATE
     });
+  };
+
+  const attachmentsChange = (files: File[]) => {
+    console.log('attachmentsChange', files);
   };
 
   return (
@@ -378,15 +390,6 @@ export function MailingUpsert({
                     >
                       Отправить
                     </LoadingButton>
-                    {/* <Button
-                      size="small"
-                      variant="contained"
-                      startIcon={<ForwardToInboxIcon />}
-                      disabled={!formik.values.testingEmails || Array.isArray(formik.values.testingEmails) && formik.values.testingEmails.length === 0}
-                      onClick={testLaunch}
-                    >
-                      Отправить
-                    </Button > */}
                   </Box>
                 </Tooltip>
               </Stack>
@@ -414,16 +417,20 @@ export function MailingUpsert({
                   ))}
                 </TextField>
                 {selectedSendType?.id === 3 &&
-                <MobileDateTimePicker
+                <DesktopDateTimePicker
                   name="LAUNCHDATE"
                   label="Дата запуска"
                   value={formik.values.LAUNCHDATE ? new Date(formik.values.LAUNCHDATE) : null}
                   onChange={(value) => formik.setFieldValue('LAUNCHDATE', value, true)}
                   slotProps={{
+                    actionBar: {
+                      actions: ['today', 'cancel', 'accept']
+                    },
                     textField: {
                       style: {
-                        minWidth: '170px'
+                        minWidth: '180px'
                       },
+                      required: true,
                       error: Boolean(getIn(formik.errors, 'LAUNCHDATE')),
                       helperText: getIn(formik.errors, 'LAUNCHDATE'),
                     },
@@ -431,10 +438,13 @@ export function MailingUpsert({
                 />
                 }
               </Stack>
-              {/* <Dropzone
-                acceptedFiles={['image/*']}
+              <Dropzone
+                // acceptedFiles={['image/*']}
                 maxFileSize={5000000}
-              /> */}
+                filesLimit={3}
+                showPreviews
+                onChange={attachmentsChange}
+              />
             </Stack>
           </Form>
         </FormikProvider>
