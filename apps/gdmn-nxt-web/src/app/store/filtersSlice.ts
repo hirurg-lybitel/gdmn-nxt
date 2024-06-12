@@ -5,6 +5,7 @@ import { IFilteringData } from '../customers/customers-filter/customers-filter';
 export interface IFiltersState {
   filterModels: { [key: string]: GridFilterModel | undefined };
   filterData: { [key: string]: IFilteringData };
+  loadFilters: { [key: string]: boolean };
 };
 
 export interface IDateFilter {
@@ -15,6 +16,7 @@ export interface IDateFilter {
 const initialState: IFiltersState = {
   filterModels: {},
   filterData: {},
+  loadFilters: {}
 };
 
 export const filtersSlice = createSlice({
@@ -31,9 +33,12 @@ export const filtersSlice = createSlice({
       /** Никогда не удаляем deals.deadline  */
       const deadline = [...(state.filterData[action.payload]?.deadline || [])];
       const { [action.payload]: deletedData, ...clearedFilterData } = state.filterData;
-      const newFilterData = { ...clearedFilterData, ...(deadline.length > 0 ? { [action.payload]: { deadline }} : {}) };
+      const newFilterData = { ...clearedFilterData, ...(deadline.length > 0 ? { [action.payload]: { deadline } } : {}) };
 
       return { ...state, filterData: newFilterData };
+    },
+    setLoadFilter: (state, action: PayloadAction<{ [key: string]: boolean }>) => {
+      return { ...state, loadFilters: { ...state.loadFilters, ...action.payload } };
     },
   }
 });
@@ -42,6 +47,7 @@ export const {
   saveFilterData,
   saveFilterModel,
   clearFilterData,
+  setLoadFilter
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;
