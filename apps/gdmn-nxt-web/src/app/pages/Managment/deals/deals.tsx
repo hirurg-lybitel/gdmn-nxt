@@ -20,6 +20,7 @@ import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-but
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import KanbanEditCard from '@gdmn-nxt/components/Kanban/kanban-edit-card/kanban-edit-card';
+import { useFilterStore } from '../../../features/common/useFilterStore';
 
 export interface IChanges {
   id: number;
@@ -38,8 +39,12 @@ export function Deals(props: DealsProps) {
   const userPermissions = usePermissions();
 
   const dispatch = useDispatch();
+  const filterEntityName = 'deals';
   const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+  const filterData = filtersStorage.filterData?.[`${filterEntityName}`];
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
+
+  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
 
   const { data: cardDateFilter = [], isFetching: cardDateFilterFetching } = useGetFiltersDeadlineQuery();
   const { data: lastCardDateFilter, isFetching: lastCardDateFilterFetching, isLoading: lastCardDateFilterLoading } = useGetLastUsedFilterDeadlineQuery(userId);
@@ -49,7 +54,7 @@ export function Deals(props: DealsProps) {
 
   useEffect(() => {
     if (lastCardDateFilterLoading) return;
-    if (filtersStorage.filterData.deals?.deadline) return;
+    if (filterData?.deadline) return;
 
     const currentDeadline = (() => {
       /** по умолчанию Все сделки */
@@ -57,9 +62,9 @@ export function Deals(props: DealsProps) {
       if (!lastCardDateFilter) return deadlineDefault;
       return lastCardDateFilter;
     })();
-    if (filtersStorage.filterData.deals?.deadline?.ID === currentDeadline?.ID) return;
+    if (filterData?.deadline?.ID === currentDeadline?.ID) return;
 
-    saveFilters({ ...filtersStorage.filterData.deals, deadline: [currentDeadline] });
+    saveFilters({ ...filterData, deadline: [currentDeadline] });
   }, [lastCardDateFilterLoading]);
 
   const {
@@ -70,15 +75,15 @@ export function Deals(props: DealsProps) {
     refetch
   } = useGetKanbanDealsQuery({
     userId,
-    ...(Object.keys(filtersStorage.filterData.deals || {}).length > 0 ? { filter: filtersStorage.filterData.deals } : {}),
+    ...(Object.keys(filterData || {}).length > 0 ? { filter: filterData } : {}),
   }, {
-    skip: Object.keys(filtersStorage.filterData.deals || {}).length === 0
+    skip: Object.keys(filterData || {}).length === 0
   });
 
   const [addCard] = useAddCardMutation();
 
   const saveFilters = (filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'deals': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   };
 
   const refreshBoard = useCallback(() => refetch(), []);
@@ -87,23 +92,25 @@ export function Deals(props: DealsProps) {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async (event: any) => {
+    filterClose: useCallback((event: any) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
       ) {
         return;
       }
+      save();
       setOpenFilters(false);
-    },
-    filterClear: () => {
-      dispatch(clearFilterData('deals'));
-    },
+    }, [save]),
+    filterClear: useCallback(() => {
+      save({});
+      dispatch(clearFilterData(filterEntityName));
+    }, [save, dispatch]),
     filteringDataChange: async(newValue: IFilteringData) => {
       saveFilters(newValue);
     },
     filterDeadlineChange: (e: SyntheticEvent<Element, Event>, value: IKanbanFilterDeadline) => {
-      saveFilters({ ...filtersStorage.filterData.deals, deadline: [value] });
+      saveFilters({ ...filterData, deadline: [value] });
 
       postLastUsedFilter({
         filter: value,
@@ -111,7 +118,7 @@ export function Deals(props: DealsProps) {
       });
     },
     requestSearch: async (value: string) => {
-      const newObject = { ...filtersStorage.filterData.deals };
+      const newObject = { ...filterData };
       delete newObject.name;
       saveFilters({
         ...newObject,
@@ -119,7 +126,7 @@ export function Deals(props: DealsProps) {
       });
     },
     cancelSearch: async () => {
-      const newObject = { ...filtersStorage.filterData.deals };
+      const newObject = { ...filterData };
       delete newObject.name;
       saveFilters(newObject);
     }
@@ -138,14 +145,14 @@ export function Deals(props: DealsProps) {
   const DealsFilterMemo = useMemo(() =>
     <DealsFilter
       open={openFilters}
-      filteringData={filtersStorage.filterData.deals}
+      filteringData={filterData}
       onClose={filterHandlers.filterClose}
       onFilteringDataChange={filterHandlers.filteringDataChange}
       onFilterClear={filterHandlers.filterClear}
     />,
-  [openFilters, filtersStorage.filterData.deals]);
+  [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, filterHandlers.filteringDataChange]);
 
-  const componentIsFetching = isLoading || Object.keys(filtersStorage.filterData.deals || {}).length === 0;
+  const componentIsFetching = isLoading || Object.keys(filterData || {}).length === 0;
 
   const addDealClick = () => setUpsertCard(true);
 
@@ -191,7 +198,7 @@ export function Deals(props: DealsProps) {
               disableClearable
               getOptionLabel={option => option.NAME}
               isOptionEqualToValue={(option, value) => option.ID === value.ID}
-              value={filtersStorage.filterData.deals?.deadline?.length > 0 ? filtersStorage.filterData.deals.deadline[0] : null}
+              value={filterData?.deadline?.length > 0 ? filterData.deadline[0] : null}
               onChange={filterHandlers.filterDeadlineChange}
               renderOption={(props, option, { selected }) => (
                 <li {...props} key={option.ID}>
@@ -220,8 +227,8 @@ export function Deals(props: DealsProps) {
               placeholder="Поиск сделки"
               iconPosition="start"
               value={
-                filtersStorage.filterData.deals && filtersStorage.filterData.deals.name
-                  ? filtersStorage.filterData.deals.name[0]
+                filterData && filterData.name
+                  ? filterData.name[0]
                   : undefined
               }
             />
@@ -245,11 +252,11 @@ export function Deals(props: DealsProps) {
               />
               <IconButton
                 onClick={filterHandlers.filterClick}
-                disabled={columnsIsFetching}
+                disabled={columnsIsFetching || filtersIsLoading || filtersIsFetching}
                 size="small"
               >
                 <Tooltip
-                  title={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
+                  title={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
                     ? 'У вас есть активные фильтры'
                     : 'Выбрать фильтры'
                   }
@@ -257,7 +264,7 @@ export function Deals(props: DealsProps) {
                 >
                   <Badge
                     color="error"
-                    variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
+                    variant={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
                       ? 'dot'
                       : 'standard'}
                   >
@@ -271,7 +278,7 @@ export function Deals(props: DealsProps) {
       </>
     );
   }
-  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching]);
+  , [tabNo, filterData, columnsIsFetching]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
