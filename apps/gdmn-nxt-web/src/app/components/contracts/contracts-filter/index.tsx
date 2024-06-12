@@ -1,29 +1,28 @@
 import { ICustomer, IFilteringData } from '@gsbelarus/util-api-types';
-import { Fragment, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { clearFilterData } from '../../../store/filtersSlice';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import { Box, Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField } from '@mui/material';
+import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { DateRangePicker, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
+import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { DateRange } from '@mui/lab';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 export interface ContractsFilterProps {
   open: boolean;
   filteringData: IFilteringData;
   onClose: () => void;
   onFilteringDataChange: (arg: IFilteringData) => void;
+  onClear: () => void
 }
 
 export function ContractsFilter({
   open,
   filteringData,
   onClose,
-  onFilteringDataChange
+  onFilteringDataChange,
+  onClear
 }: ContractsFilterProps) {
-  const dispatch = useDispatch();
-
   const [period, setPeriod] = useState<DateRange<Date>>([filteringData?.dateBegin ?? null, filteringData?.dateEnd ?? null]);
 
   const handleOnChange = (entity: string, value: any) => {
@@ -44,9 +43,9 @@ export function ContractsFilter({
   };
 
   const filterClear = useCallback(() => {
-    dispatch(clearFilterData('contracts'));
+    onClear();
     setPeriod([null, null]);
-  }, []);
+  }, [onClear]);
 
 
   const dateRangePickerChange = async (newValue: DateRange<Date>) => {

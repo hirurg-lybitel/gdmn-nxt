@@ -14,10 +14,11 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import { GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import DetailContent from './detail-content';
 import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
 import { ContractsFilter } from '@gdmn-nxt/components/contracts/contracts-filter';
+import { useFilterStore } from '../../../features/common/useFilterStore';
 
 export interface ContractsProps {}
 
@@ -27,9 +28,11 @@ interface Pagination {
 }
 
 export function Contracts(props: ContractsProps) {
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contracts);
+  const filterEntityName = 'contracts';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
+  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
 
   const [pagination, setPagination] = useState<Pagination>({
     pageNo: 0,
@@ -70,7 +73,7 @@ export function Contracts(props: ContractsProps) {
   []);
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'contracts': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleSortModelChange = useCallback((sortModel: GridSortModel) => {
@@ -98,9 +101,14 @@ export function Contracts(props: ContractsProps) {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async () => {
+    filterClose: useCallback(() => {
+      save();
       setOpenFilters(false);
-    },
+    }, [save, setOpenFilters]),
+    filterClear: useCallback(() => {
+      save({});
+      dispatch(clearFilterData(filterEntityName));
+    }, [save, dispatch]),
   };
 
   const getDetailPanelContent = useCallback(({ row }: GridRowParams<IContract>) => <DetailContent row={row} />, []);
@@ -111,8 +119,10 @@ export function Contracts(props: ContractsProps) {
       onClose={filterHandlers.filterClose}
       filteringData={filterData}
       onFilteringDataChange={handleFilteringDataChange}
+      onClear={filterHandlers.filterClear}
+
     />,
-  [openFilters, filterData]);
+  [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
@@ -135,12 +145,12 @@ export function Contracts(props: ContractsProps) {
             />
             <Box display="inline-flex" alignSelf="center">
               {/* <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}> */}
-                <CustomAddButton
-                  // disabled={contractsIsFetching}
-                  disabled
-                  label="Создать договор"
-                  // onClick={() => setUpsertContact({ addContact: true })}
-                />
+              <CustomAddButton
+                // disabled={contractsIsFetching}
+                disabled
+                label="Создать договор"
+                // onClick={() => setUpsertContact({ addContact: true })}
+              />
               {/* </PermissionsGate> */}
             </Box>
             <Box display="inline-flex" alignSelf="center">

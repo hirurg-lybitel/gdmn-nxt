@@ -1,6 +1,6 @@
-import { GridColDef, GridFilterModel, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
+import { GridColDef, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
-import React, { ForwardedRef, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, Tooltip } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -8,10 +8,8 @@ import CustomerEdit from './customer-edit/customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { IContactWithID, ICustomer, ICustomerContract, ILabel, IWorkType } from '@gsbelarus/util-api-types';
-import { clearError } from '../features/error-slice/error-slice';
 import { useTheme } from '@mui/material';
 import CustomizedCard from '../components/Styled/customized-card/customized-card';
-import { Link } from 'react-router-dom';
 import CustomersFilter, {
   IFilteringData
 } from './customers-filter/customers-filter';
@@ -31,6 +29,7 @@ import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import { useFilterStore } from '../features/common/useFilterStore';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -83,11 +82,15 @@ export interface CustomersProps {}
 export function Customers(props: CustomersProps) {
   const classes = useStyles();
   const userPermissions = usePermissions();
+  const filterEntityName = 'customers';
+  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openFilters, setOpenFilters] = useState(false);
-  const [filterModel, setFilterModel] = useState<GridFilterModel>();
-  const [filteringData, setFilteringData] = useState<IFilteringData>({});
+  const filtersStorage = useSelector(
+    (state: RootState) => state.filtersStorage
+  );
+  const filteringData = filtersStorage.filterData?.[`${filterEntityName}`];
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
     pageSize: 20
@@ -95,18 +98,13 @@ export function Customers(props: CustomersProps) {
   const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
 
+  const setFilteringData = (newFilter: IFilteringData) => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: newFilter }));
+  };
+
   useEffect(() => {
     setDataChanged(false);
   }, [filteringData]);
-
-  const filtersStorage = useSelector(
-    (state: RootState) => state.filtersStorage
-  );
-
-  useEffect(() => {
-    setFilterModel(filtersStorage.filterModels.customers);
-    setFilteringData(filtersStorage.filterData.customers);
-  }, []);
 
   const { data: customersCross } = useGetCustomersCrossQuery();
   const {
@@ -276,18 +274,18 @@ export function Customers(props: CustomersProps) {
       renderCell: (params) => {
         const customerId = Number(params.id);
 
-        const detailsComponent = {
-          // eslint-disable-next-line react/display-name
-          component: forwardRef((props, ref: ForwardedRef<any>) => (
-            <Link
-              ref={ref}
-              {...props}
-              to={`details/${customerId}`}
-              target="_self"
-              onClick={SaveFilters}
-            />
-          ))
-        };
+        // const detailsComponent = {
+        //   // eslint-disable-next-line react/display-name
+        //   component: forwardRef((props, ref: ForwardedRef<any>) => (
+        //     <Link
+        //       ref={ref}
+        //       {...props}
+        //       to={`details/${customerId}`}
+        //       target="_self"
+        //       onClick={SaveFilters}
+        //     />
+        //   ))
+        // };
 
         return (
           <Box>
@@ -303,15 +301,6 @@ export function Customers(props: CustomersProps) {
       }
     }
   ];
-
-  useEffect(() => {
-    SaveFilters();
-  }, [filterModel, filteringData]);
-
-  const SaveFilters = () => {
-    dispatch(saveFilterData({ customers: filteringData }));
-    dispatch(saveFilterModel({ customers: filterModel }));
-  };
 
   /** Cancel organization change */
   const handleOrganiztionEditCancelClick = () => {
@@ -362,35 +351,22 @@ export function Customers(props: CustomersProps) {
       setFilteringData(newObject);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
-      const filterModels: any[] = [];
-
-      for (const [key, arr] of Object.entries(newValue)) {
-        filterModels.push({
-          id: 2,
-          columnField: key,
-          value: arr,
-          operatorValue: 'includes'
-        });
-      }
-
-      setFilterModel({ items: filterModels });
       setFilteringData(newValue);
     },
-    handleFilterClose: async (event: any) => {
+    handleFilterClose: useCallback((event: any) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
       ) {
         return;
       }
+      save();
       setOpenFilters(false);
-    },
-    handleFilterClear: async () => {
-      dispatch(clearFilterData('customers'));
-
-      setFilterModel({ items: [] });
-      setFilteringData({});
-    }
+    }, [save]),
+    handleFilterClear: useCallback(() => {
+      save({});
+      dispatch(clearFilterData(filterEntityName));
+    }, [save, dispatch])
   };
 
   const lineDoubleClick: GridEventListener<'rowDoubleClick'> = (
@@ -426,7 +402,7 @@ export function Customers(props: CustomersProps) {
   const memoSearchBar = useMemo(
     () => (
       <SearchBar
-        disabled={customerIsLoading}
+        disabled={customerIsLoading || filtersIsLoading}
         onCancelSearch={filterHandlers.handleCancelSearch}
         onRequestSearch={filterHandlers.handleRequestSearch}
         cancelOnEscape
@@ -438,7 +414,7 @@ export function Customers(props: CustomersProps) {
         }
       />
     ),
-    [customerFetching, filteringData]
+    [customerFetching, filteringData, filtersIsLoading]
   );
 
   const memoFilter = useMemo(
@@ -451,7 +427,7 @@ export function Customers(props: CustomersProps) {
         onFilterClear={filterHandlers.handleFilterClear}
       />
     ),
-    [openFilters, filteringData]
+    [openFilters, filteringData, filterHandlers.handleFilterClear, filterHandlers.handleFilterClose, filterHandlers.handleFilteringData]
   );
 
   const handleOnChange = (entity: string, value: any) => {
@@ -467,6 +443,13 @@ export function Customers(props: CustomersProps) {
     }
     filterHandlers.handleFilteringData(Object.assign(newObject));
   };
+
+  const haveFilter = useMemo(() => {
+    const filters: IFilteringData = { ...filteringData };
+    delete filters.METHODS;
+    delete filters.NAME;
+    return Object.keys(filters || {}).length > 0;
+  }, [filteringData]);
 
   return (
     <CustomizedCard
@@ -513,11 +496,11 @@ export function Customers(props: CustomersProps) {
             <Box display="inline-flex" alignSelf="center">
               <IconButton
                 onClick={filterHandlers.handleFilter}
-                disabled={customerFetching}
+                disabled={customerFetching || filtersIsLoading || filtersIsFetching}
                 size="small"
               >
                 <Tooltip
-                  title={Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                  title={haveFilter
                     ? 'У вас есть активные фильтры'
                     : 'Выбрать фильтры'
                   }
@@ -526,7 +509,7 @@ export function Customers(props: CustomersProps) {
                   <Badge
                     color="error"
                     variant={
-                      Object.keys(filteringData || {}).length > 0 && (Object.keys(filteringData || {}).length === 1 ? !filteringData.NAME : true)
+                      haveFilter
                         ? 'dot'
                         : 'standard'
                     }
@@ -551,7 +534,7 @@ export function Customers(props: CustomersProps) {
         }}
       >
         <Stack flex={1}>
-          {Object.keys(filteringData || {}).length !== 0 &&
+          {haveFilter &&
             <Stack
               className={style.bodySelectedDataContainer}
               direction="row"
