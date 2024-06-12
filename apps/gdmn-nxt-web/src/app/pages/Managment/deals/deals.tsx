@@ -103,9 +103,9 @@ export function Deals(props: DealsProps) {
       setOpenFilters(false);
     }, [save]),
     filterClear: useCallback(() => {
-      save({});
+      save({ deadline: filterData?.deadline });
       dispatch(clearFilterData(filterEntityName));
-    }, [save, dispatch]),
+    }, [save, dispatch, filterData]),
     filteringDataChange: async(newValue: IFilteringData) => {
       saveFilters(newValue);
     },

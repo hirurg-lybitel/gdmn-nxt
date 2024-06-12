@@ -18,7 +18,7 @@ export const filtersApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: IFilterRequestResult) => response.queries?.filters,
+      transformResponse: (response: IFilterRequestResult) => response.queries?.filters || null,
       providesTags: ['filters']
     }),
     getFilterByEntityName: builder.query<IFilter, string>({
