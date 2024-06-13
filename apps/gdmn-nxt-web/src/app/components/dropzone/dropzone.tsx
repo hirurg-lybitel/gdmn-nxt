@@ -18,6 +18,7 @@ const getFileRemovedMessage = (fileName: string) =>
   `Файл ${fileName} удалён.`;
 
 export interface DropzoneProps {
+  disabled?: boolean;
   acceptedFiles?: string[];
   filesLimit?: number;
   showPreviews?: boolean;
@@ -29,6 +30,7 @@ export interface DropzoneProps {
 
 export function Dropzone({
   acceptedFiles = [],
+  disabled = false,
   filesLimit = 3,
   maxFileSize,
   showPreviews,
@@ -40,8 +42,31 @@ export function Dropzone({
   const [fileObjects, setFileObjects] = useState<FileObject[]>([]);
 
   useEffect(() => {
+    if (!initialFiles) {
+      setFileObjects([]);
+      return;
+    }
+    const getFiles = async () => {
+      const res = await Promise.all(
+        initialFiles?.map(async (file) => {
+          const data = await readFile(file);
+          return {
+            file,
+            data,
+          };
+        })
+      );
+      setFileObjects(res);
+    };
+
+    getFiles();
+  }, [initialFiles]);
+
+  useEffect(() => {
+    if (disabled) return;
+
     onChange(fileObjects.map(({ file }) => file));
-  }, [onChange, fileObjects]);
+  }, [onChange, fileObjects, disabled]);
 
 
   const acceptFiles = acceptedFiles.reduce((obj, item) => {
@@ -115,6 +140,7 @@ export function Dropzone({
       multiple={isMultiple}
       maxSize={maxFileSize}
       maxFiles={filesLimit}
+      disabled={disabled}
     >
       {({ getRootProps, getInputProps, isDragActive, isDragReject }) => {
         const isActive = isDragActive;
@@ -126,6 +152,7 @@ export function Dropzone({
                 ${styles['container']}
                 ${isActive ? styles['active'] : ''}
                 ${isInvalid ? styles['invalid'] : ''}
+                ${disabled ? styles['disabled'] : ''}
                 `}
             {...getRootProps()}
           >

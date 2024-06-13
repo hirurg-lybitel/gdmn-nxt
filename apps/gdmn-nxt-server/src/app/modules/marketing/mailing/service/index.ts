@@ -2,6 +2,7 @@ import {
   IMailing,
   InternalServerErrorException,
   Like,
+  MailAttachment,
   MailingStatus,
   NotFoundException,
   UnprocessableEntityException
@@ -24,12 +25,13 @@ function extractImgSrc(htmlString: string) {
   return imgTags.map(tag => tag.match(/src="([^"]*)"/)[1]);
 }
 
-async function createTempImageFile(base64String: string, filename: string) {
+async function createTempFile(base64String: string, filename: string) {
   const tempImagePath = path.join(__dirname, filename);
-  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = base64String.split(',')[1];
   await fs.writeFile(tempImagePath, base64Data, 'base64');
   return tempImagePath;
 }
+
 
 async function getHtmlWithAttachments(html: string) {
   const imgSrcArray = extractImgSrc(html);
@@ -37,11 +39,9 @@ async function getHtmlWithAttachments(html: string) {
   const attachments: IAttachment[] = [];
   let modifiedHtml = html;
   await forEachAsync(imgSrcArray, async (item, idx) => {
-    const base64Data = item.replace(/^data:image\/png;base64,/, '');
-
     const filename = `image${idx}.png`;
     const cid = `image${idx}@cid`;
-    const filePath = await createTempImageFile(base64Data, filename);
+    const filePath = await createTempFile(item, filename);
 
     modifiedHtml = modifiedHtml.replace(item, `cid:${cid}`);
 
@@ -284,6 +284,7 @@ const testLaunchMailing = async (
   emails: string[],
   template: string,
   subject = 'Тестовая рассылка',
+  attachments: MailAttachment[] = [],
 ) => {
   if (emails.length === 0) {
     throw UnprocessableEntityException('Не указаны адреса для рассылок');
@@ -297,12 +298,20 @@ const testLaunchMailing = async (
     throw UnprocessableEntityException('Не указан шаблон письма');
   }
 
-  const { html, attachments } = await getHtmlWithAttachments(originalHtml);
+  const { html, attachments: imagesAttachments } = await getHtmlWithAttachments(originalHtml);
 
   const response = {
     accepted: [],
     rejected: []
   };
+
+  const attachmentsSummaryPromise = attachments.map(async ({ fileName, content }, idx): Promise<IAttachment> => ({
+    filename: fileName,
+    path: await createTempFile(content, fileName),
+    cid: `file${idx}@cid`
+  }));
+
+  const attachmentsSummary = (await Promise.all([...attachmentsSummaryPromise])).concat(imagesAttachments);
 
   await forEachAsync(emails, async (email) => {
     const view = {
@@ -318,7 +327,7 @@ const testLaunchMailing = async (
       subject,
       '',
       renderedHtml,
-      attachments);
+      attachmentsSummary);
 
     response.accepted.push(...accepted);
     response.rejected.push(...rejected);

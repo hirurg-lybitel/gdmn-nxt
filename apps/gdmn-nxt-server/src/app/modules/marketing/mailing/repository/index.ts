@@ -1,5 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, MailingStatus, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, MailAttachment, MailingStatus, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
@@ -51,32 +51,40 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
 
     sql = `
       SELECT
+        l.USR$MASTERKEY,
         l.USR$INCLUDE_SEGMENT,
         l.USR$EXCLUDE_SEGMENT
       FROM USR$CRM_MARKETING_MAILING_LINE l
       JOIN USR$CRM_MARKETING_SEGMENTS s ON s.ID = l.USR$INCLUDE_SEGMENT OR s.ID = l.USR$EXCLUDE_SEGMENT
-      WHERE l.USR$MASTERKEY = :masterKey`;
+      ORDER BY l.USR$MASTERKEY`;
 
+    const segmentRows = await fetchAsObject(sql);
+
+    const segmentIds = new Map<number, { includeSegmentsIds: number[], excludeSegmentsIds: number[] }>();
+    segmentRows.forEach(s => {
+      const mailingId = s['USR$MASTERKEY'];
+      segmentIds.set(mailingId, {
+        includeSegmentsIds: [...segmentIds.get(mailingId)?.includeSegmentsIds ?? [], ...(s['USR$INCLUDE_SEGMENT'] ? [s['USR$INCLUDE_SEGMENT']] : [])],
+        excludeSegmentsIds: [...segmentIds.get(mailingId)?.excludeSegmentsIds ?? [], ...(s['USR$EXCLUDE_SEGMENT'] ? [s['USR$EXCLUDE_SEGMENT']] : [])],
+      });
+    });
 
     const result: IMailing[] = [];
 
-    // TODO: переписть для скорости
-
     await forEachAsync(mailing, async (m) => {
-      const segmentIds = await fetchAsObject(sql, { masterKey: m.ID });
+      const segments = segmentIds.get(m.ID);
 
       const includeSegments: ISegment[] = [];
       const excludeSegments: ISegment[] = [];
 
-      await forEachAsync(segmentIds, async s => {
-        if (s['USR$INCLUDE_SEGMENT'] > 0) {
-          const fullSegment = await segmentsRepository.findOne(sessionID, { ID: s['USR$INCLUDE_SEGMENT'] });
-          includeSegments.push(fullSegment);
-        }
-        if (s['USR$EXCLUDE_SEGMENT'] > 0) {
-          const fullSegment = await segmentsRepository.findOne(sessionID, { ID: s['USR$EXCLUDE_SEGMENT'] });
-          excludeSegments.push(fullSegment);
-        }
+      await forEachAsync(segments?.includeSegmentsIds ?? [], async segmentId => {
+        const fullSegment = await segmentsRepository.findOne(sessionID, { ID: segmentId });
+        includeSegments.push(fullSegment);
+      });
+
+      await forEachAsync(segments?.excludeSegmentsIds ?? [], async segmentId => {
+        const fullSegment = await segmentsRepository.findOne(sessionID, { ID: segmentId });
+        includeSegments.push(fullSegment);
       });
 
       const convertedTemplate = await blob2String(m['TEMPLATE_BLOB']);
@@ -107,7 +115,37 @@ const findOne: FindOneHandler<IMailing> = async (sessionID, clause = {}) => {
     return Promise.resolve(undefined);
   }
 
-  return mailing[0];
+  const result = mailing[0];
+
+  /** Получаем список вложений (не для всех, т.к. слишком большой размер ответа) */
+  const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
+  try {
+    const sql = `
+    SELECT
+      l.USR$NAME,
+      l.USR$CONTENT
+    FROM USR$CRM_MARKETING_MAILING_FILES l
+    WHERE l.USR$MASTERKEY = :masterKey`;
+
+    const fileRows = await fetchAsObject(sql, { masterKey: result.ID });
+
+    const files: MailAttachment[] = [];
+    await forEachAsync(fileRows, async file => {
+      const content = await blob2String(file['USR$CONTENT']);
+      files.push({
+        fileName: file['USR$NAME'],
+        content
+      });
+    });
+
+    result.attachments = [...files];
+
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  } finally {
+    releaseReadTransaction();
+  }
 };
 
 const update: UpdateHandler<IMailing> = async (
@@ -115,7 +153,12 @@ const update: UpdateHandler<IMailing> = async (
   id,
   metadata
 ) => {
-  const { fetchAsSingletonObject, executeSingleton, releaseTransaction, string2Blob } = await startTransaction(sessionID);
+  const {
+    fetchAsSingletonObject,
+    executeSingleton,
+    releaseTransaction,
+    string2Blob
+  } = await startTransaction(sessionID);
 
   try {
     const mailing = await findOne(sessionID, { id });
@@ -132,7 +175,8 @@ const update: UpdateHandler<IMailing> = async (
       TEMPLATE = mailing.TEMPLATE,
       includeSegments = mailing.includeSegments,
       excludeSegments = mailing.excludeSegments,
-      testingEmails = mailing.testingEmails
+      testingEmails = mailing.testingEmails,
+      attachments = mailing.attachments
     } = metadata;
 
     const result = await fetchAsSingletonObject<IMailing>(
@@ -169,7 +213,7 @@ const update: UpdateHandler<IMailing> = async (
         MASTERKEY: id
       });
 
-    const sql = `
+    let sql = `
       INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$INCLUDE_SEGMENT, USR$EXCLUDE_SEGMENT)
       VALUES(:MASTERKEY, :INCLUDE_SEGMENTKEY, :EXCLUDE_SEGMENTKEY)
       RETURNING ID`;
@@ -190,7 +234,33 @@ const update: UpdateHandler<IMailing> = async (
       });
     });
 
-    await Promise.all([deleteSegments, ...insertIncludeSegments, ...insertExcludeSegments]);
+    const deleteAttachments = executeSingleton(
+      `DELETE FROM USR$CRM_MARKETING_MAILING_FILES
+      WHERE USR$MASTERKEY = :MASTERKEY`,
+      {
+        MASTERKEY: id
+      });
+
+    sql = `
+      INSERT INTO USR$CRM_MARKETING_MAILING_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
+      VALUES(:MASTERKEY, :CONTENT, :NAME)
+      RETURNING ID` ;
+
+    const insertAttachments = attachments.map(async ({ content, fileName }) => {
+      return fetchAsSingletonObject(sql, {
+        MASTERKEY: mailing.ID,
+        CONTENT: await string2Blob(content),
+        NAME: fileName
+      });
+    });
+
+    await Promise.all([
+      deleteSegments,
+      ...insertIncludeSegments,
+      ...insertExcludeSegments,
+      deleteAttachments,
+      ...insertAttachments
+    ]);
 
     await releaseTransaction();
 

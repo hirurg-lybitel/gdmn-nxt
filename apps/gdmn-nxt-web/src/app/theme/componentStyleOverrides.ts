@@ -18,6 +18,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-borders': theme.mainContent.borderColor,
           '--color-hihglight-bg': 'yellow',
           '--color-error': 'rgb(143, 64, 64)',
+          '--color-disabled': 'rgba(255, 255, 255, 0.3)',
           '--border-radius': theme.mainContent.borderRadius,
           '--label-border-radius': '2em',
           '--menu-width': `${theme.drawerWidth}px`,

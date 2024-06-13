@@ -1,5 +1,5 @@
 import { baseUrlApi } from '@gdmn/constants/client';
-import { IMailing, IQueryOptions, IRequestResult, MailingStatus, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { IMailing, IQueryOptions, IRequestResult, MailAttachment, MailingStatus, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export type IMailingRequestResult = IRequestResult<{mailings: IMailing[], count: number}>;
@@ -80,7 +80,7 @@ export const mailingApi = createApi({
       }),
       invalidatesTags: ['mailing']
     }),
-    launchTestMailing: builder.mutation<any, { emails: string[], subject: string, template: string }>({
+    launchTestMailing: builder.mutation<any, { emails: string[], subject: string, template: string, attachments?: MailAttachment[] }>({
       query: (body) => ({
         url: '/launch-test',
         body: body,

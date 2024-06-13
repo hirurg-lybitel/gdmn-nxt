@@ -2,7 +2,7 @@ import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/cust
 import styles from './mailing-upsert.module.less';
 import EmailTemplate from '@gdmn-nxt/components/email-template/email-template';
 import { ArrayElement, IMailing, ISegment, MailingStatus } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
@@ -11,16 +11,14 @@ import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { DesktopDateTimePicker, MobileDateTimePicker } from '@mui/x-date-pickers-pro';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import InfoIcon from '@mui/icons-material/Info';
-// import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
-import { useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import { useGetMailingByIdQuery, useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';
 import { LoadingButton } from '@mui/lab';
 import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
@@ -55,6 +53,12 @@ export function MailingUpsert({
 }: MailingUpsertProps) {
   const userPermissions = usePermissions();
 
+  const id = mailing?.ID ?? -1;
+  const {
+    data: { attachments = [] } = { attachments: [] },
+    isFetching: attachmentsFetching
+  } = useGetMailingByIdQuery(id, { skip: !open || id <= 0, refetchOnMountOrArgChange: true });
+
   const { data: { segments } = {
     count: 0,
     segments: [] },
@@ -82,7 +86,8 @@ export function MailingUpsert({
     includeSegments: [],
     excludeSegments: [],
     STATUS: MailingStatus.manual,
-    testingEmails: []
+    testingEmails: [],
+    attachments: []
   };
 
   const formik = useFormik<IMailing>({
@@ -96,12 +101,6 @@ export function MailingUpsert({
       NAME: yup.string()
         .required('Не указано наименование')
         .max(40, 'Слишком длинное наименование'),
-      // LAUNCHDATE: yup
-      //   .date()
-      //   .required('Не указана дата запуска')
-      // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
-      // EMAILS: yup.array().of(emailsValidation()),
-      // PHONES: yup.array().of(phonesValidation())
     }),
     onSubmit: (values) => {
       if (saveTemplate) {
@@ -154,7 +153,6 @@ export function MailingUpsert({
       return;
     }
 
-
     switch (formik.values.STATUS) {
       case MailingStatus.delayed:
         setSelectedSendType(sendTypes[2]);
@@ -206,18 +204,70 @@ export function MailingUpsert({
   };
 
   const testLaunch = async () => {
-    const { NAME, TEMPLATE = '', testingEmails = [] } = formik.values;
+    const {
+      NAME,
+      TEMPLATE = '',
+      testingEmails = [],
+      attachments = []
+    } = formik.values;
 
     testLaunching({
       emails: testingEmails,
       subject: NAME,
-      template: TEMPLATE
+      template: TEMPLATE,
+      attachments
     });
   };
 
-  const attachmentsChange = (files: File[]) => {
-    console.log('attachmentsChange', files);
-  };
+  const attachmentsChange = useCallback(async (files: File[]) => {
+    const promises = files.map(file => {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.readAsDataURL(file);
+        reader.onerror = () => {
+          reader.abort();
+          reject(new DOMException('Problem parsing input file.'));
+        };
+        reader.onloadend = (e) => {
+          const stringFile = reader.result?.toString() ?? '';
+          resolve({
+            fileName: file.name,
+            content: stringFile
+          });
+        };
+      });
+    });
+
+    const attachments = await Promise.all(promises);
+    if (JSON.stringify(formik.values.attachments) === JSON.stringify(attachments)) {
+      return;
+    }
+    formik.setFieldValue('attachments', attachments);
+  }, []);
+
+
+  const initialAttachments = useMemo(() => {
+    return attachments.reduce((res, { fileName, content }) => {
+      if (!content) {
+        return res;
+      }
+
+      const arr = content.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+
+      const binarystr = window.atob(arr[1]);
+      let n = binarystr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = binarystr.charCodeAt(n);
+      };
+
+      const file = new File([u8arr], fileName, { type: mime });
+      return [...res, file];
+    }, [] as File[]);
+  }, [attachments]);
+
 
   return (
     <CustomizedDialog
@@ -443,7 +493,9 @@ export function MailingUpsert({
                 maxFileSize={5000000}
                 filesLimit={3}
                 showPreviews
+                initialFiles={initialAttachments}
                 onChange={attachmentsChange}
+                disabled={attachmentsFetching}
               />
             </Stack>
           </Form>

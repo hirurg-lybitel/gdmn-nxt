@@ -399,18 +399,23 @@ export enum MailingStatus {
   launchNow = 5
 }
 
+export interface MailAttachment {
+  fileName: string;
+  content: string;
+}
+
 export interface IMailing extends IWithID {
   NAME: string;
   LAUNCHDATE?: Date;
   STARTDATE?: Date;
   FINISHDATE?: Date;
-  // STATUS?: 0 | 1 | 2 | 3 | 4 | 5; // 0 - delayed, 1 - completed, 2 - error, 3 - manual, 4 - in progress, 5 - launch now
   STATUS?: MailingStatus;
   STATUS_DESCRIPTION?: string;
   TEMPLATE?: string;
   includeSegments?: ISegment[],
   excludeSegments?: ISegment[],
   testingEmails?: string[];
+  attachments?: MailAttachment[];
 }
 
 export interface ITemplate extends IWithID {

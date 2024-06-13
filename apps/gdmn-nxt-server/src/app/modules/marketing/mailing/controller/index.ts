@@ -130,13 +130,15 @@ const testLaunchMailing: RequestHandler = async (req, res) => {
   const {
     emails = [],
     template,
-    subject
+    subject,
+    attachments
   } = req.body;
   try {
     const response = await mailingService.testLaunchMailing(
       emails,
       template,
-      subject
+      subject,
+      attachments
     );
 
     return res.status(200).send(response);
