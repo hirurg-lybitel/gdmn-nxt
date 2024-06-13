@@ -38,6 +38,7 @@ import { updatesApi } from '../features/updates';
 import { systemSettingsApi } from '../features/systemSettings';
 import { templateApi } from '../features/Marketing/templates/templateApi';
 import { segmentApi } from '../features/Marketing/segments/segmentsApi';
+import { filtersApi } from '../features/filters/filtersApi';
 import { mailingApi } from '../features/Marketing/mailing';
 
 const reducers = combineReducers({
@@ -78,6 +79,7 @@ const reducers = combineReducers({
   [systemSettingsApi.reducerPath]: systemSettingsApi.reducer,
   [templateApi.reducerPath]: templateApi.reducer,
   [segmentApi.reducerPath]: segmentApi.reducer,
+  [filtersApi.reducerPath]: filtersApi.reducer,
   [mailingApi.reducerPath]: mailingApi.reducer
 });
 
@@ -126,6 +128,7 @@ export const store = configureStore({
     .concat(systemSettingsApi.middleware)
     .concat(templateApi.middleware)
     .concat(segmentApi.middleware)
+    .concat(filtersApi.middleware)
     .concat(mailingApi.middleware)
 });
 

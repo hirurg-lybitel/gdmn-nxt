@@ -365,6 +365,10 @@ router.use(systemSettingsRouter);
 /** Marketing */
 router.use(marketingRouter);
 
+/** Filters */
+router.use(filtersRouter);
+
+
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;
   res.json(erModelNoAdapters);
