@@ -2381,8 +2381,18 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"includeSegments\": [\r\n        {\r\n            \"ID\": 949744944,\r\n            \"NAME\": \"Потенциальные клиенты\",\r\n            \"FIELDS\": [\r\n                {\r\n                    \"NAME\": \"BUSINESSPROCESSES\",\r\n                    \"VALUE\": \"949740254\"\r\n                },\r\n                {\r\n                    \"NAME\": \"LABELS\",\r\n                    \"VALUE\": \"949740115\"\r\n                }\r\n            ],\r\n            \"QUANTITY\": 0\r\n        },\r\n        {\r\n            \"ID\": 949746387,\r\n            \"NAME\": \"Премиум + Пример\",\r\n            \"FIELDS\": [\r\n                {\r\n                    \"NAME\": \"LABELS\",\r\n                    \"VALUE\": \"949740113,949743543\"\r\n                }\r\n            ],\r\n            \"QUANTITY\": 3\r\n        }\r\n    ],\r\n    \"excludeSegments\": [\r\n        {\r\n            \"ID\": 949746386,\r\n            \"NAME\": \"Сомнительные\",\r\n            \"FIELDS\": [\r\n                {\r\n                    \"NAME\": \"LABELS\",\r\n                    \"VALUE\": \"949746862\"\r\n                }\r\n            ],\r\n            \"QUANTITY\": 2\r\n        },\r\n        {\r\n            \"ID\": 949744642,\r\n            \"NAME\": \"Стоп-лист \",\r\n            \"FIELDS\": [\r\n                {\r\n                    \"NAME\": \"LABELS\",\r\n                    \"VALUE\": \"949740114\"\r\n                }\r\n            ],\r\n            \"QUANTITY\": 2\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/marketing/segments/calc"
 							},
 							"response": []
 						}
