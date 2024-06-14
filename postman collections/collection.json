@@ -3293,20 +3293,20 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/marketing/mailing/launch/:id",
+									"raw": "{{baseUrl}}/marketing/mailings/launch/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
-										"mailing",
+										"mailings",
 										"launch",
 										":id"
 									],
 									"variable": [
 										{
 											"key": "id",
-											"value": "949744288"
+											"value": "949747611"
 										}
 									]
 								}
