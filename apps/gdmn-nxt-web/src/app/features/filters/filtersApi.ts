@@ -1,6 +1,6 @@
+import { baseUrlApi } from '@gdmn/constants/client';
 import { IQueryOptions, IRequestResult, IFilter, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
 
 export type IFilterRequestResult = IRequestResult<{filters: IFilter[]}>;
 
