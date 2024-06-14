@@ -84,6 +84,7 @@ export function UserGroupEdit(props: UserGroupEditProps) {
     <CustomizedDialog
       open={open}
       onClose={onClose}
+      confirmation={formik.dirty}
     >
       <DialogTitle>
         {userGroup ? `Редактирование: ${userGroup.NAME}` : 'Добавление группы'}
