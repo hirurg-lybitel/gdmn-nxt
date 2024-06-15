@@ -1,6 +1,6 @@
 import styles from './dropzone.module.less';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DropzoneBase, { DropEvent, DropzoneProps as DropzoneBaseProps, ErrorCode, FileRejection } from 'react-dropzone';
+import DropzoneBase, { DropzoneProps as DropzoneBaseProps, ErrorCode } from 'react-dropzone';
 import { Box, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { FileObject } from './types';
@@ -78,10 +78,11 @@ export function Dropzone({
   const previewsVisible = showPreviews && fileObjects.length > 0;
 
   const handleDropAccepted: DropzoneBaseProps['onDropAccepted'] = async (
-    files: any[], event: DropEvent
+    files,
+    evt
   ) => {
     const acceptedFileObjects = await Promise.all(
-      files.map(async (file: any) => {
+      files.map(async (file) => {
         const data = await readFile(file);
         return {
           file,
@@ -99,7 +100,8 @@ export function Dropzone({
   };
 
   const handleDropRejected: DropzoneBaseProps['onDropRejected'] = async (
-    rejectedFiles: FileRejection[], event: DropEvent
+    rejectedFiles,
+    evt
   ) => {
     rejectedFiles.forEach(({ file: { name: fileName }, errors }) => {
       const message = errors.reduce((msg, { code }) => {

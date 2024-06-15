@@ -49,7 +49,6 @@ import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
 import dayjs from 'dayjs';
 import ru from 'dayjs/locale/ru';
-import { filtersRouter } from './app/routes/filtersRouter';
 
 dayjs.locale(ru);
 
