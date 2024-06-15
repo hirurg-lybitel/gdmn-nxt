@@ -84,7 +84,7 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
 
       await forEachAsync(segments?.excludeSegmentsIds ?? [], async segmentId => {
         const fullSegment = await segmentsRepository.findOne(sessionID, { ID: segmentId });
-        includeSegments.push(fullSegment);
+        excludeSegments.push(fullSegment);
       });
 
       const convertedTemplate = await blob2String(m['TEMPLATE_BLOB']);
@@ -206,7 +206,7 @@ const update: UpdateHandler<IMailing> = async (
       }
     );
 
-    const deleteSegments = executeSingleton(
+    const deleteSegments = await executeSingleton(
       `DELETE FROM USR$CRM_MARKETING_MAILING_LINE
       WHERE USR$MASTERKEY = :MASTERKEY`,
       {
@@ -219,7 +219,7 @@ const update: UpdateHandler<IMailing> = async (
       RETURNING ID`;
 
     const insertIncludeSegments = includeSegments.map(async s => {
-      return fetchAsSingletonObject(sql, {
+      return await fetchAsSingletonObject(sql, {
         MASTERKEY: mailing.ID,
         INCLUDE_SEGMENTKEY: s.ID,
         EXCLUDE_SEGMENTKEY: null
@@ -227,14 +227,14 @@ const update: UpdateHandler<IMailing> = async (
     });
 
     const insertExcludeSegments = excludeSegments.map(async s => {
-      return fetchAsSingletonObject(sql, {
+      return await fetchAsSingletonObject(sql, {
         MASTERKEY: mailing.ID,
         INCLUDE_SEGMENTKEY: null,
         EXCLUDE_SEGMENTKEY: s.ID
       });
     });
 
-    const deleteAttachments = executeSingleton(
+    const deleteAttachments = await executeSingleton(
       `DELETE FROM USR$CRM_MARKETING_MAILING_FILES
       WHERE USR$MASTERKEY = :MASTERKEY`,
       {
@@ -247,7 +247,7 @@ const update: UpdateHandler<IMailing> = async (
       RETURNING ID` ;
 
     const insertAttachments = attachments.map(async ({ content, fileName }) => {
-      return fetchAsSingletonObject(sql, {
+      return await fetchAsSingletonObject(sql, {
         MASTERKEY: mailing.ID,
         CONTENT: await string2Blob(content),
         NAME: fileName
@@ -284,12 +284,14 @@ const save: SaveHandler<IMailing> = async (
     excludeSegments,
     LAUNCHDATE,
     testingEmails = [],
-    STATUS
+    STATUS,
+    attachments = [],
   } = metadata;
 
   try {
     const mailing = await fetchAsSingletonObject<IMailing>(
-      `INSERT INTO USR$CRM_MARKETING_MAILING(USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE, USR$TESTING_EMAILS, USR$STATUS_DESCRIPTION)
+      `INSERT INTO USR$CRM_MARKETING_MAILING(
+        USR$NAME, USR$TEMPLATE, USR$STATUS, USR$LAUNCHDATE, USR$TESTING_EMAILS, USR$STATUS_DESCRIPTION)
       VALUES(:NAME, :TEMPLATE, :STATUS, :LAUNCHDATE, :TESTING_EMAILS, :STATUS_DESCRIPTION)
       RETURNING ID`,
       {
@@ -302,7 +304,7 @@ const save: SaveHandler<IMailing> = async (
       }
     );
 
-    const sql = `
+    let sql = `
       INSERT INTO USR$CRM_MARKETING_MAILING_LINE(USR$MASTERKEY, USR$INCLUDE_SEGMENT, USR$EXCLUDE_SEGMENT)
       VALUES(:MASTERKEY, :INCLUDE_SEGMENTKEY, :EXCLUDE_SEGMENTKEY)
       RETURNING ID`;
@@ -323,7 +325,20 @@ const save: SaveHandler<IMailing> = async (
       });
     });
 
-    await Promise.all([...insertIncludeSegments, ...insertExcludeSegments]);
+    sql = `
+      INSERT INTO USR$CRM_MARKETING_MAILING_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
+      VALUES(:MASTERKEY, :CONTENT, :NAME)
+      RETURNING ID` ;
+
+    const insertAttachments = attachments.map(async ({ content, fileName }) => {
+      return fetchAsSingletonObject(sql, {
+        MASTERKEY: mailing.ID,
+        CONTENT: await string2Blob(content),
+        NAME: fileName
+      });
+    });
+
+    await Promise.all([...insertIncludeSegments, ...insertExcludeSegments, ...insertAttachments]);
 
     await releaseTransaction();
 

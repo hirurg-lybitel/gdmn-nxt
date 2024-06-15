@@ -1,4 +1,4 @@
-import { ISegment, InternalServerErrorException, Like, NotFoundException } from '@gsbelarus/util-api-types';
+import { ICustomer, ISegment, InternalServerErrorException, Like, NotFoundException } from '@gsbelarus/util-api-types';
 import { segmentsRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { forEachAsync } from '@gsbelarus/util-helpers';
@@ -116,29 +116,23 @@ const calcCustomersCount = async (
   includeSegments: ISegment[],
   excludeSegments: ISegment[]
 ) => {
-  // includeSegments.forEach(s => {
-  //   console.log('s.FIELDS', s.FIELDS);
-  // });
-
-  // await timersPromises.setTimeout(10000);
-
   const customersMap = new Map();
 
   await forEachAsync(includeSegments, async (s) => {
     const fields = [...s.FIELDS];
 
-    // console.log('fields', fields);
-
     const LABELS = fields.find(f => f.NAME === 'LABELS');
     const DEPARTMENTS = fields.find(f => f.NAME === 'DEPARTMENTS');
     const BUSINESSPROCESSES = fields.find(f => f.NAME === 'BUSINESSPROCESSES');
-
-    // console.log('LABELS', LABELS);
+    const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
+    const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
     const customers = await customersRepository.find('', {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
+      CONTRACTS: CONTRACTS?.VALUE ?? '',
+      WORKTYPES: WORKTYPES?.VALUE ?? '',
     });
 
     customers.forEach(({ ID, ...c }) => {
@@ -152,18 +146,18 @@ const calcCustomersCount = async (
   await forEachAsync(excludeSegments, async (s) => {
     const fields = [...s.FIELDS];
 
-    // console.log('fields', fields);
-
     const LABELS = fields.find(f => f.NAME === 'LABELS');
     const DEPARTMENTS = fields.find(f => f.NAME === 'DEPARTMENTS');
     const BUSINESSPROCESSES = fields.find(f => f.NAME === 'BUSINESSPROCESSES');
-
-    // console.log('LABELS', LABELS);
+    const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
+    const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
     const customers = await customersRepository.find('', {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
+      CONTRACTS: CONTRACTS?.VALUE ?? '',
+      WORKTYPES: WORKTYPES?.VALUE ?? '',
     });
 
     customers.forEach(({ ID, ...c }) => {
@@ -175,9 +169,69 @@ const calcCustomersCount = async (
     });
   });
 
-  // console.log('customersMap', customersMap);
-
   return customersMap.size;
+};
+
+const getSegmentsCustomers = async (
+  sessionID: string,
+  includeSegments: ISegment[],
+  excludeSegments: ISegment[]
+) => {
+  const customersMap = new Map<number, string>();
+  const customersArray: ICustomer[] = [];
+
+  await forEachAsync(includeSegments, async (s) => {
+    const fields = [...s.FIELDS];
+
+    const LABELS = fields.find(f => f.NAME === 'LABELS');
+    const DEPARTMENTS = fields.find(f => f.NAME === 'DEPARTMENTS');
+    const BUSINESSPROCESSES = fields.find(f => f.NAME === 'BUSINESSPROCESSES');
+    const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
+    const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
+
+    const customers = await customersRepository.find('', {
+      LABELS: LABELS?.VALUE ?? '',
+      DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
+      BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
+      CONTRACTS: CONTRACTS?.VALUE ?? '',
+      WORKTYPES: WORKTYPES?.VALUE ?? '',
+    });
+
+    customers.forEach((c) => {
+      const findIndex = customersArray.findIndex(({ ID }) => ID === c.ID);
+      if (findIndex >= 0) return;
+
+      customersArray.push(c);
+    });
+  });
+
+  await forEachAsync(excludeSegments, async (s) => {
+    const fields = [...s.FIELDS];
+
+    const LABELS = fields.find(f => f.NAME === 'LABELS');
+    const DEPARTMENTS = fields.find(f => f.NAME === 'DEPARTMENTS');
+    const BUSINESSPROCESSES = fields.find(f => f.NAME === 'BUSINESSPROCESSES');
+    const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
+    const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
+
+    const customers = await customersRepository.find('', {
+      LABELS: LABELS?.VALUE ?? '',
+      DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
+      BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
+      CONTRACTS: CONTRACTS?.VALUE ?? '',
+      WORKTYPES: WORKTYPES?.VALUE ?? '',
+    });
+
+    customers.forEach((c) => {
+      const findIndex = customersArray.findIndex(({ ID }) => ID === c.ID);
+      if (findIndex < 0) return;
+
+      customersArray.splice(findIndex, 1);
+    });
+  });
+
+  // return customersMap;
+  return customersArray;
 };
 
 export const segmentsService = {
@@ -186,5 +240,6 @@ export const segmentsService = {
   createSegment,
   updateById,
   removeById,
-  calcCustomersCount
+  calcCustomersCount,
+  getSegmentsCustomers
 };

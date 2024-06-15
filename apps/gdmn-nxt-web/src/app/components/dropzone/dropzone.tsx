@@ -2,7 +2,7 @@ import styles from './dropzone.module.less';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DropzoneBase, { DropzoneProps as DropzoneBaseProps, ErrorCode } from 'react-dropzone';
 import { Box, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { FileObject } from './types';
 import { convertBytesToMbsOrKbs, readFile } from './helpers';
 import { useSnackbar } from '../helpers/hooks/useSnackbar';
@@ -40,12 +40,17 @@ export function Dropzone({
 }: DropzoneProps) {
   const { addSnackbar } = useSnackbar();
   const [fileObjects, setFileObjects] = useState<FileObject[]>([]);
+  const [initialized, toggleInitialized] = useReducer((v: boolean) => !v, false);
 
   useEffect(() => {
+    if (initialized) return;
+    if (disabled) return;
+
     if (!initialFiles) {
       setFileObjects([]);
       return;
     }
+
     const getFiles = async () => {
       const res = await Promise.all(
         initialFiles?.map(async (file) => {
@@ -56,11 +61,12 @@ export function Dropzone({
           };
         })
       );
+      toggleInitialized();
       setFileObjects(res);
     };
 
     getFiles();
-  }, [initialFiles]);
+  }, [initialFiles, disabled]);
 
   useEffect(() => {
     if (disabled) return;

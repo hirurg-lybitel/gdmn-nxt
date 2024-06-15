@@ -55,7 +55,7 @@ export default function Mailing() {
     isLoading,
     isFetching,
     refetch
-  } = useGetAllMailingQuery();
+  } = useGetAllMailingQuery(undefined, { pollingInterval: 1000 * 60 });
 
   const [addMailing] = useAddMailingMutation();
   const [deleteMailing] = useDeleteMailingMutation();

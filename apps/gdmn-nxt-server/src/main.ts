@@ -47,6 +47,7 @@ import systemSettingsRouter from './app/routes/settings/systemSettings';
 import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
+import { filtersRouter } from './app/routes/filtersRouter';
 import dayjs from 'dayjs';
 import ru from 'dayjs/locale/ru';
 

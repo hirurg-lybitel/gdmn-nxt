@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 import { mailingRepository } from '../repository';
 import fs from 'fs/promises';
 import path from 'path';
+import { segmentsService } from '../../segments/service';
 
 function extractImgSrc(htmlString: string) {
   const imgTags = htmlString.match(/<img [^>]*src="[^"]*"/g);
@@ -102,7 +103,7 @@ const findAll = async (
       count
     };
   } catch (error) {
-    throw InternalServerErrorException(error.message);
+    throw error;
   }
 };
 
@@ -113,12 +114,12 @@ const findOne = async (
   try {
     const mailing = await mailingRepository.findOne(sessionID, { ID: id });
     if (!mailing?.ID) {
-      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND);
+      throw NotFoundException(`Не найдена рассылка с id=${id}`);
     }
 
     return mailing;
   } catch (error) {
-    throw InternalServerErrorException(error.message);
+    throw error;
   }
 };
 
@@ -130,6 +131,10 @@ const launchMailing = async (
     const mailing = await findOne(sessionID, id);
     if (!mailing?.ID) {
       throw NotFoundException(`Не найдена рассылка с id=${id}`);
+    }
+
+    if (mailing.STATUS === MailingStatus.completed) {
+      throw UnprocessableEntityException('Рассылка уже выполнена');
     }
 
     await updateById(
@@ -144,12 +149,19 @@ const launchMailing = async (
       return resultDescription('Нет получателей');
     }
 
-    const customersClause = new Map();
-    mailing.includeSegments.forEach(({ FIELDS }) => {
-      FIELDS.forEach(({ NAME, VALUE }) => customersClause.set(NAME, VALUE));
-    });
+    // const customersClause = new Map();
+    // mailing.includeSegments.forEach(({ FIELDS }) => {
+    //   FIELDS.forEach(({ NAME, VALUE }) => customersClause.set(NAME, VALUE));
+    // });
 
-    const customers = await customersRepository.find(sessionID, { ...Object.fromEntries(customersClause.entries()) });
+    // const customers = await customersRepository.find(sessionID, { ...Object.fromEntries(customersClause.entries()) });
+
+
+    const customers = await segmentsService.getSegmentsCustomers(
+      sessionID,
+      mailing.includeSegments,
+      mailing.excludeSegments
+    );
 
     if (customers.length === 0) {
       await updateStatus(sessionID, id, MailingStatus.error, 'Нет получателей');
@@ -159,27 +171,54 @@ const launchMailing = async (
     const subject = mailing.NAME;
     const from = `Belgiss <${process.env.SMTP_USER}>`;
 
-    const html = mailing.TEMPLATE.replaceAll('#NAME#', '{{ NAME }}') ?? '';
+    const originalHtml = mailing.TEMPLATE.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
-    if (html === '') {
+    if (originalHtml === '') {
       await updateStatus(sessionID, id, MailingStatus.error, 'Не найден шаблон письма');
       throw InternalServerErrorException('Не найден шаблон письма');
     }
 
-    await forEachAsync(customers, async ({ NAME, EMAIL }) => {
+    const { html, attachments: imagesAttachments } = await getHtmlWithAttachments(originalHtml);
+
+    const attachmentsSummaryPromise = mailing.attachments?.map(async ({ fileName, content }, idx): Promise<IAttachment> => ({
+      filename: fileName,
+      path: await createTempFile(content, fileName),
+      cid: `file${idx}@cid`
+    })) ?? [];
+
+    const attachmentsSummary = (await Promise.all([...attachmentsSummaryPromise])).concat(imagesAttachments);
+
+    const response = {
+      accepted: [],
+      rejected: []
+    };
+
+    await forEachAsync(customers, async ({ ID, NAME, EMAIL }) => {
       const view = {
         NAME
       };
 
+      if (!EMAIL) {
+        response.rejected.push({ [ID]: 'Не указан emal' });
+        return;
+      };
+
       const renderedHtml = Mustache.render(html, view);
 
-      // TODO: вернуть sendEmail
-      await sendEmailByTestAccount(
+      const { accepted, rejected } = await sendEmail(
         from,
         EMAIL,
         subject,
         '',
-        renderedHtml);
+        renderedHtml,
+        attachmentsSummary);
+
+      if (accepted.length > 0) {
+        response.accepted.push({ [ID]: accepted.toString() });
+      }
+      if (rejected.length > 0) {
+        response.rejected.push({ [ID]: 'Не доставлено' });
+      }
     });
 
     await updateById(
@@ -190,9 +229,13 @@ const launchMailing = async (
       });
 
     await updateStatus(sessionID, id, MailingStatus.completed, 'Рассылка выполнена');
-    return resultDescription('Рассылка выполнена');
+    // return resultDescription('Рассылка выполнена');
+    return {
+      ...resultDescription('Тестовая рассылка выполнена'),
+      ...response
+    };
   } catch (error) {
-    throw InternalServerErrorException(error.message);
+    throw error;
   }
 };
 
@@ -201,8 +244,8 @@ const createMailing = async (
   body: Omit<IMailing, 'ID'>
 ) => {
   try {
-    const { FINISHDATE, ...newMailingModel } = body;
-    newMailingModel.STATUS = 0;
+    const { STARTDATE, FINISHDATE, ...newMailingModel } = body;
+    newMailingModel.STATUS = newMailingModel.STATUS ?? MailingStatus.manual;
 
     if (newMailingModel.LAUNCHDATE) {
       if (!dayjs(newMailingModel.LAUNCHDATE).isValid()) {
@@ -220,7 +263,7 @@ const createMailing = async (
 
     return mailing;
   } catch (error) {
-    throw InternalServerErrorException(error.message);
+    throw error;
   }
 };
 
@@ -230,6 +273,11 @@ const updateById = async (
   body: Partial<Omit<IMailing, 'ID'>>
 ) => {
   try {
+    const mailing = await findOne(sessionID, id);
+    if (!mailing?.ID) {
+      throw NotFoundException(`Не найдена рассылка с id=${id}`);
+    }
+
     const updatedMailing = await mailingRepository.update(
       sessionID,
       id,
@@ -238,11 +286,11 @@ const updateById = async (
     if (!updatedMailing?.ID) {
       throw NotFoundException(`Не найдена рассылка с id=${id}`);
     }
-    const mailing = await findOne(sessionID, id);
+    const response = await findOne(sessionID, id);
 
-    return mailing;
+    return response;
   } catch (error) {
-    throw InternalServerErrorException(error.message);
+    throw error;
   }
 };
 
@@ -255,7 +303,7 @@ const removeById = async (
 
     return await mailingRepository.remove(sessionID, id);
   } catch (error) {
-    throw InternalServerErrorException(error.message);
+    throw error;
   }
 };
 
@@ -320,8 +368,7 @@ const testLaunchMailing = async (
 
     const renderedHtml = Mustache.render(html, view);
 
-    // TODO: вернуть sendEmail
-    const { accepted, rejected } = await sendEmailByTestAccount(
+    const { accepted, rejected } = await sendEmail(
       from,
       email,
       subject,

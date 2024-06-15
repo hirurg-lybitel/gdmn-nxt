@@ -38,6 +38,8 @@ const sendTypes = [
   }
 ];
 
+const maxFileSize = 5000000; // in bytes
+
 export interface MailingUpsertProps {
   mailing: IMailing | null;
   open: boolean;
@@ -53,6 +55,7 @@ export function MailingUpsert({
 }: MailingUpsertProps) {
   const userPermissions = usePermissions();
 
+  // uwc-debug-below
   const id = mailing?.ID ?? -1;
   const {
     data: { attachments = [] } = { attachments: [] },
@@ -407,7 +410,8 @@ export function MailingUpsert({
                   label="Добавить в сохранённые шаблоны"
                   style={{
                     position: 'absolute',
-                    right: 30
+                    right: 620,
+                    top: 2
                   }}
                 />
                 <EmailTemplate
@@ -490,7 +494,7 @@ export function MailingUpsert({
               </Stack>
               <Dropzone
                 // acceptedFiles={['image/*']}
-                maxFileSize={5000000}
+                maxFileSize={maxFileSize}
                 filesLimit={3}
                 showPreviews
                 initialFiles={initialAttachments}

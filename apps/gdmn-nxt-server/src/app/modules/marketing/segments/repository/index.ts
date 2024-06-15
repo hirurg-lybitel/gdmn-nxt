@@ -59,15 +59,18 @@ const find: FindHandler<ISegment> = async (
         flatSegmentDetails.set(s.NAME, s.VALUE);
       });
 
-      // TODO: добавить остальные поля
       const LABELS = flatSegmentDetails.get('LABELS') ?? '';
       const DEPARTMENTS = flatSegmentDetails.get('DEPARTMENTS') ?? '';
       const BUSINESSPROCESSES = flatSegmentDetails.get('BUSINESSPROCESSES') ?? '';
+      const CONTRACTS = flatSegmentDetails.get('CUSTOMERCONTRACTS') ?? '';
+      const WORKTYPES = flatSegmentDetails.get('WORKTYPES') ?? '';
 
       const customers = await customersRepository.find('', {
         LABELS,
         DEPARTMENTS,
-        BUSINESSPROCESSES
+        BUSINESSPROCESSES,
+        CONTRACTS,
+        WORKTYPES
       });
 
       const newSegment: ArrayElement<typeof result> = {
@@ -125,7 +128,7 @@ const update: UpdateHandler<ISegment> = async (
       }
     );
 
-    const deleteSegmentLines = executeSingleton(
+    const deleteSegmentLines = await executeSingleton(
       `DELETE FROM USR$CRM_MARKETING_SEGMENTS_LINE
       WHERE USR$MASTERKEY = :MASTERKEY`,
       {
