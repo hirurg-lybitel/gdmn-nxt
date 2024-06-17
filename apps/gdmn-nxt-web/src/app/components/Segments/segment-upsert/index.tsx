@@ -192,6 +192,8 @@ export function SegmentUpsert({
     onClose();
   };
 
+  const handleAutocompleteChange = useCallback((fieldName: string) => (e: any, value: any) => formik.setFieldValue(fieldName, value), []);
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
@@ -225,14 +227,16 @@ export function SegmentUpsert({
                 >
                   <TextField
                     label="Имя"
+                    name="NAME"
                     value={formik.values.NAME}
-                    onChange={(e) => formik.setFieldValue('NAME', e.target.value)}
+                    onChange={formik.handleChange}
                   />
                 </ErrorTooltip>
                 <Accordion
                   sx={{
                     '& .MuiButtonBase-root': {
-                      padding: 0
+                      padding: 0,
+                      marginLeft: '12px',
                     },
                     '& .MuiAccordionDetails-root': {
                       paddingRight: 0, paddingLeft: 0
@@ -254,7 +258,7 @@ export function SegmentUpsert({
                           limitTags={2}
                           disableCloseOnSelect
                           options={departments || []}
-                          onChange={(e, value) => formik.setFieldValue('DEPARTMENTS', value)}
+                          onChange={handleAutocompleteChange('DEPARTMENTS')}
                           value={
                             departments?.filter(department => formik.values.DEPARTMENTS && formik.values.DEPARTMENTS.find(el => el.ID === department.ID))
                           }
@@ -287,7 +291,7 @@ export function SegmentUpsert({
                           limitTags={2}
                           disableCloseOnSelect
                           options={contracts || []}
-                          onChange={(e, value) => formik.setFieldValue('CUSTOMERCONTRACTS', value)}
+                          onChange={handleAutocompleteChange('CUSTOMERCONTRACTS')}
                           value={
                             contracts?.filter(contract => formik.values.CUSTOMERCONTRACTS && formik.values.CUSTOMERCONTRACTS.find(el => el.ID === contract.ID))
                           }
@@ -319,9 +323,8 @@ export function SegmentUpsert({
                           multiple
                           limitTags={2}
                           disableCloseOnSelect
-                          // filterOptions={filterOptions(30, 'USR$NAME')}
                           options={workTypes || []}
-                          onChange={(e, value) => formik.setFieldValue('WORKTYPES', value)}
+                          onChange={handleAutocompleteChange('WORKTYPES')}
                           value={
                             workTypes?.filter(wt => formik.values.WORKTYPES && formik.values.WORKTYPES.find(el => el.ID === wt.ID))
                           }
@@ -353,7 +356,7 @@ export function SegmentUpsert({
                         limitTags={2}
                         disableCloseOnSelect
                         options={labels || []}
-                        onChange={(e, value) => formik.setFieldValue('LABELS', value)}
+                        onChange={handleAutocompleteChange('LABELS')}
                         value={
                           labels?.filter(label => formik.values.LABELS && formik.values.LABELS.find(el => el.ID === label.ID))
                         }
@@ -409,7 +412,7 @@ export function SegmentUpsert({
                         limitTags={2}
                         disableCloseOnSelect
                         options={businessProcesses}
-                        onChange={(e, value) => formik.setFieldValue('BUSINESSPROCESSES', value)}
+                        onChange={handleAutocompleteChange('BUSINESSPROCESSES')}
                         value={
                           businessProcesses?.filter(businessProcess => formik.values.BUSINESSPROCESSES && formik.values.BUSINESSPROCESSES.find(el => el.ID === businessProcess.ID))
                         }
@@ -438,9 +441,8 @@ export function SegmentUpsert({
                   </AccordionDetails>
                 </Accordion>
                 <Autocomplete
-                  disabled
                   options={customers}
-                  onChange={(e, value) => formik.setFieldValue('CUSTOMERS', value)}
+                  onChange={handleAutocompleteChange('CUSTOMERS')}
                   value={
                     customers?.filter(customer => formik.values.CUSTOMERS && formik.values.CUSTOMERS.find((el: any) => el.ID === customer.ID))
                   }

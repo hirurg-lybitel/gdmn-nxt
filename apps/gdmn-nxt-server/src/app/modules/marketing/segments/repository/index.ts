@@ -45,6 +45,19 @@ const find: FindHandler<ISegment> = async (
       FROM USR$CRM_MARKETING_SEGMENTS_LINE l
       WHERE l.USR$MASTERKEY = :masterKey`;
 
+    const customersRows = await fetchAsObject(
+      `SELECT
+        USR$MASTERKEY MASTERKEY, USR$CUSTOMERKEY CUSTOMERKEY
+      FROM USR$CRM_MARKETING_SEGMENTS_CUST
+      ORDER BY USR$MASTERKEY`);
+
+
+    const customersMap = new Map<number, number[]>();
+    customersRows.forEach(c => {
+      const customerIds = customersMap.get(c['MASTERKEY']) ?? [];
+
+      customersMap.set(c['MASTERKEY'], [...customerIds, c['CUSTOMERKEY']]);
+    });
 
     const result: ISegment[] = [];
 
@@ -73,10 +86,13 @@ const find: FindHandler<ISegment> = async (
         WORKTYPES
       });
 
+      const directCustomersIds = customersMap.get(s.ID) ?? [];
+
       const newSegment: ArrayElement<typeof result> = {
         ...s,
         FIELDS: [...segmentDetails],
-        QUANTITY: customers.length
+        QUANTITY: directCustomersIds.length > 0 ? directCustomersIds.length : customers.length,
+        CUSTOMERS: directCustomersIds
       };
 
       result.push(newSegment);
@@ -113,6 +129,7 @@ const update: UpdateHandler<ISegment> = async (
     const {
       NAME = segment.NAME,
       FIELDS = segment.FIELDS,
+      CUSTOMERS = segment.CUSTOMERS
     } = metadata;
 
     const updatedSegment = await fetchAsSingletonObject<ISegment>(
@@ -140,14 +157,31 @@ const update: UpdateHandler<ISegment> = async (
       VALUES(:MASTERKEY, :FIELDNAME, :VALUE)`;
 
     const insertSegmentLines = FIELDS.map(async ({ NAME, VALUE }) =>
-      executeSingleton(sql, {
+      await executeSingleton(sql, {
         MASTERKEY: id,
         FIELDNAME: NAME,
         VALUE
       })
     );
 
-    await Promise.all([deleteSegmentLines, ...insertSegmentLines]);
+    const deleteSegmentCustomers = await executeSingleton(
+      `DELETE FROM USR$CRM_MARKETING_SEGMENTS_CUST
+      WHERE USR$MASTERKEY = :MASTERKEY`,
+      {
+        MASTERKEY: id
+      });
+
+    const insertSegmentCustomers = CUSTOMERS?.map(async (customerId) =>
+      await executeSingleton(
+        `INSERT INTO USR$CRM_MARKETING_SEGMENTS_CUST (USR$MASTERKEY, USR$CUSTOMERKEY)
+        VALUES(:MASTERKEY, :CUSTOMERKEY)`,
+        {
+          MASTERKEY: id,
+          CUSTOMERKEY: customerId
+        })
+    );
+
+    await Promise.all([deleteSegmentLines, ...insertSegmentLines, deleteSegmentCustomers, ...insertSegmentCustomers]);
 
     await releaseTransaction();
 
@@ -162,11 +196,12 @@ const save: SaveHandler<ISegment> = async (
   sessionID,
   metadata
 ) => {
-  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+  const { fetchAsSingletonObject, releaseTransaction, executeSingleton } = await startTransaction(sessionID);
 
   const {
     NAME,
-    FIELDS
+    FIELDS,
+    CUSTOMERS
   } = metadata;
 
   try {
@@ -192,7 +227,17 @@ const save: SaveHandler<ISegment> = async (
       })
     );
 
-    await Promise.all(insertSegmentLines);
+    const insertSegmentCustomers = CUSTOMERS?.map(async (customerId) =>
+      await executeSingleton(
+        `INSERT INTO USR$CRM_MARKETING_SEGMENTS_CUST (USR$MASTERKEY, USR$CUSTOMERKEY)
+        VALUES(:MASTERKEY, :CUSTOMERKEY)`,
+        {
+          MASTERKEY: segment.ID,
+          CUSTOMERKEY: customerId
+        })
+    );
+
+    await Promise.all([...insertSegmentLines, ...insertSegmentCustomers]);
 
     await releaseTransaction();
 
