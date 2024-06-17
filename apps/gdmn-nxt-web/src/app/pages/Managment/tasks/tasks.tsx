@@ -33,7 +33,7 @@ export function Tasks(props: TasksProps) {
     userId, ...filterData
   });
 
-  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
 
   const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
   const [addTaskForm, setAddTaskForm] = useState(false);
@@ -56,14 +56,12 @@ export function Tasks(props: TasksProps) {
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
 
   const filterClear = useCallback(() => {
-    save({});
     dispatch(clearFilterData(filterEntityName));
-  }, [save, dispatch]);
+  }, [dispatch]);
 
   const filterClose = useCallback((event: any) => {
-    save();
     setOpenFilters(false);
-  }, [save]);
+  }, []);
 
   const filterClick = useCallback(() => {
     setOpenFilters(true);

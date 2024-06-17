@@ -44,7 +44,7 @@ export function Deals(props: DealsProps) {
   const filterData = filtersStorage.filterData?.[`${filterEntityName}`];
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
-  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
 
   const { data: cardDateFilter = [], isFetching: cardDateFilterFetching } = useGetFiltersDeadlineQuery();
   const { data: lastCardDateFilter, isFetching: lastCardDateFilterFetching, isLoading: lastCardDateFilterLoading } = useGetLastUsedFilterDeadlineQuery(userId);
@@ -99,13 +99,11 @@ export function Deals(props: DealsProps) {
       ) {
         return;
       }
-      save();
       setOpenFilters(false);
-    }, [save]),
+    }, []),
     filterClear: useCallback(() => {
-      save({ deadline: filterData?.deadline });
       dispatch(clearFilterData(filterEntityName));
-    }, [save, dispatch, filterData]),
+    }, [dispatch]),
     filteringDataChange: async(newValue: IFilteringData) => {
       saveFilters(newValue);
     },

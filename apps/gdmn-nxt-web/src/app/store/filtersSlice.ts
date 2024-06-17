@@ -6,6 +6,7 @@ export interface IFiltersState {
   filterModels: { [key: string]: GridFilterModel | undefined };
   filterData: { [key: string]: IFilteringData };
   loadFilters: { [key: string]: boolean };
+  filterDebounce: { [key: string]: NodeJS.Timeout };
 };
 
 export interface IDateFilter {
@@ -16,7 +17,8 @@ export interface IDateFilter {
 const initialState: IFiltersState = {
   filterModels: {},
   filterData: {},
-  loadFilters: {}
+  loadFilters: {},
+  filterDebounce: {}
 };
 
 export const filtersSlice = createSlice({
@@ -40,6 +42,11 @@ export const filtersSlice = createSlice({
     setLoadFilter: (state, action: PayloadAction<{ [key: string]: boolean }>) => {
       return { ...state, loadFilters: { ...state.loadFilters, ...action.payload } };
     },
+    setDebounce: (state, action: PayloadAction<{ name: string, callBack: () => void, time: number }>) => {
+      clearTimeout(state.filterDebounce[`${action.payload.name}`]);
+      const timeout = setTimeout(action.payload.callBack, action.payload.time);
+      return { ...state, filterDebounce: { ...state.filterDebounce, [`${action.payload.name}`]: timeout } };
+    },
   }
 });
 
@@ -47,7 +54,8 @@ export const {
   saveFilterData,
   saveFilterModel,
   clearFilterData,
-  setLoadFilter
+  setLoadFilter,
+  setDebounce
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

@@ -32,7 +32,7 @@ export function Contracts(props: ContractsProps) {
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
-  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
 
   const [pagination, setPagination] = useState<Pagination>({
     pageNo: 0,
@@ -102,13 +102,11 @@ export function Contracts(props: ContractsProps) {
       setOpenFilters(true);
     }, []),
     filterClose: useCallback(() => {
-      save();
       setOpenFilters(false);
-    }, [save, setOpenFilters]),
+    }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      save({});
       dispatch(clearFilterData(filterEntityName));
-    }, [save, dispatch]),
+    }, [dispatch]),
   };
 
   const getDetailPanelContent = useCallback(({ row }: GridRowParams<IContract>) => <DetailContent row={row} />, []);

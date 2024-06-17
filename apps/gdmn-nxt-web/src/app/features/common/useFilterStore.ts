@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAddFilterMutation, useDeleteFilterMutation, useGetAllFiltersQuery, useUpdateFilterMutation } from '../filters/filtersApi';
 import { IFilteringData } from '@gsbelarus/util-api-types';
-import { saveFilterData, setLoadFilter } from '../../store/filtersSlice';
+import { saveFilterData, setDebounce, setLoadFilter } from '../../store/filtersSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useDebounce } from './useDebunce';
 import { RootState } from '../../store';
 
 export function useFilterStore(filterEntityName: string): any {
   const filter = useSelector((state: RootState) => state.filtersStorage);
+  const debounceTime = 1000 * 10;
   const { data: filtersData, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetAllFiltersQuery();
   const filters = filtersData?.find(filterData => filterData.entityName === filterEntityName);
   const [addFilter, { isLoading: addIsLoading }] = useAddFilterMutation();
@@ -37,7 +37,7 @@ export function useFilterStore(filterEntityName: string): any {
         updateFilter({
           ID: filters?.ID,
           entityName: filterEntityName,
-          filters: debouncedFilterData
+          filters: currentFilterData
         });
       }
     }
@@ -54,7 +54,7 @@ export function useFilterStore(filterEntityName: string): any {
     dispatch(setLoadFilter({ [`${filterEntityName}`]: true }));
   }, [filtersIsLoading]);
 
-  const debouncedFilterData = useDebounce(filter.filterData?.[`${filterEntityName}`], (1000 * 10));
+  const currentFilterData = filter.filterData?.[`${filterEntityName}`];
 
   const save = useCallback((filterData: IFilteringData | undefined) => {
     if (filterData === undefined && !filterId) return;
@@ -96,11 +96,8 @@ export function useFilterStore(filterEntityName: string): any {
   }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter, filters?.filters]);
 
   useEffect(() => {
-    save(debouncedFilterData);
-  }, [debouncedFilterData]);
+    dispatch(setDebounce({ name: filterEntityName, callBack: () => save(currentFilterData), time: debounceTime }));
+  }, [currentFilterData]);
 
-  const handleSave = useCallback((data: IFilteringData | undefined) => save(data || filter.filterData?.[`${filterEntityName}`] || {})
-    , [filterEntityName, filter.filterData, save]);
-
-  return [filtersIsLoading, filtersIsFetching, handleSave];
+  return [filtersIsLoading, filtersIsFetching];
 }

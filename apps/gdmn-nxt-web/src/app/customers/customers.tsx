@@ -83,7 +83,7 @@ export function Customers(props: CustomersProps) {
   const classes = useStyles();
   const userPermissions = usePermissions();
   const filterEntityName = 'customers';
-  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
   const [currentOrganization, setCurrentOrganization] = useState(0);
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openFilters, setOpenFilters] = useState(false);
@@ -360,13 +360,11 @@ export function Customers(props: CustomersProps) {
       ) {
         return;
       }
-      save();
       setOpenFilters(false);
-    }, [save]),
+    }, []),
     handleFilterClear: useCallback(() => {
-      save({});
       dispatch(clearFilterData(filterEntityName));
-    }, [save, dispatch])
+    }, [dispatch])
   };
 
   const lineDoubleClick: GridEventListener<'rowDoubleClick'> = (
