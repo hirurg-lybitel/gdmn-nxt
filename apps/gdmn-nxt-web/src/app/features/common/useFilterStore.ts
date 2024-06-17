@@ -67,7 +67,6 @@ export function useFilterStore(filterEntityName: string): any {
         return;
       }
       deleteFilter(filterId);
-      setFilterId(null);
       return;
     }
     if (Object.keys(lastFilter).length > 0) {
