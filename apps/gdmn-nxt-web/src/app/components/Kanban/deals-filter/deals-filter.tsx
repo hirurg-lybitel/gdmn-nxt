@@ -42,7 +42,7 @@ export function DealsFilter(props: DealsFilterProps) {
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
     delete newObject[entity];
-    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 ? { [entity]: value } : {}) });
+    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 && value !== false ? { [entity]: value } : {}) });
   };
 
   const [dealNumber, setDealNumber] = useState<string>(filteringData?.dealNumber);
