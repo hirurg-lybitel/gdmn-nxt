@@ -149,6 +149,12 @@ export interface IPaginationData {
 export interface IFilteringData {
   [name: string]: any;
 }
+
+export interface IFilter extends IWithID {
+  entityName: string;
+  filters: IFilteringData
+}
+
 export interface IQueryOptions {
   pagination?: IPaginationData;
   filter?: IFilteringData;

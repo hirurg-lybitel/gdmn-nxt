@@ -1,6 +1,6 @@
 import { IUser, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 type UsersResponse = IUser[];
 type IUsersRequestResult = IRequestResult<{ users: IUser[] }>;

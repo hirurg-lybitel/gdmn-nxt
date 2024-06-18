@@ -113,10 +113,10 @@ export default function StyledGrid(props: IStyledGridProps) {
           localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
           onStateChange={() => disableLicenseError()}
           getRowId={row => row.ID}
-          components={{
-            LoadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,
-            NoRowsOverlay: CustomNoRowsOverlay,
-            NoResultsOverlay: CustomNoRowsOverlay,
+          slots={{
+            loadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,
+            noRowsOverlay: CustomNoRowsOverlay,
+            noResultsOverlay: CustomNoRowsOverlay,
           }}
           columnHeaderHeight={hideColumnHeaders ? 0 : 50}
           getRowClassName={(params) => autoHeightForFields?.some((field) => !!params.row[field]) ? 'cell-with-auto-height' : ''}

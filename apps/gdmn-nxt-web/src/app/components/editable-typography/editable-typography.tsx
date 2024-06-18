@@ -16,7 +16,7 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   container?: (value: Value) => React.ReactNode;
   error?: boolean;
   helperText?: string;
-  closeOnBlur?:boolean
+  closeOnBlur?: boolean
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -81,8 +81,9 @@ const EditableTypography = <Value extends React.ReactNode>({
         open={!!helperText}
         title={helperText}
       >
-        {editText
-          ? clonedElement ??
+        <div style={{ width: '100%' }}>
+          {editText
+            ? clonedElement ??
           <TextField
             variant="standard"
             value={value}
@@ -91,16 +92,16 @@ const EditableTypography = <Value extends React.ReactNode>({
             onChange={onChange}
             onBlur={onClose}
           />
-          :
-          <Typography
-            {...props}
-            className={styles['title']}
-            autoFocus
-          >
-            {container ? container(value) : value}
-          </Typography>
-
-        }
+            :
+            <Typography
+              {...props}
+              className={styles['title']}
+              autoFocus
+            >
+              {container ? container(value) : value}
+            </Typography>
+          }
+        </div>
       </ErrorTooltip>
       <div
         className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}

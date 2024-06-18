@@ -2,7 +2,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { CssBaseline, GlobalStyles } from '@mui/material';
+import { Button, CssBaseline, GlobalStyles } from '@mui/material';
 import { StrictMode, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RootState, store } from './app/store';
@@ -55,9 +55,12 @@ import OurContacts from './app/pages/Managment/ourContacts';
 import Mailing from './app/pages/Marketing/mailing';
 import CustomersSegments from './app/pages/Marketing/segments';
 import Templates from './app/pages/Marketing/templates';
-import { NameTextFieldTest } from '@gdmn-nxt/components/Styled/nameTextField/nameTextField';
+import dayjs from 'dayjs';
+import ru from 'dayjs/locale/ru';
+dayjs.locale(ru);
 
 registerMUI();
+
 
 const Main = () => {
   const customization = useSelector(
@@ -91,7 +94,15 @@ const Main = () => {
             <CssBaseline />
             <LocalizationProvider
               dateAdapter={AdapterDateFns}
-              localeText={{ start: 'Начало периода', end: 'Конец периода' }}
+              localeText={{
+                start: 'Начало периода',
+                end: 'Конец периода',
+                dateTimePickerToolbarTitle: 'Укажите дату и время',
+                openNextView: 'следующее окно',
+                openPreviousView: 'предыдущее окно',
+                cancelButtonLabel: 'Отмена',
+                todayButtonLabel: 'Сегодня'
+              }}
               adapterLocale={ruLocale}
             >
               <SnackbarProvider maxSnack={3}>

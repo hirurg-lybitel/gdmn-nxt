@@ -78,10 +78,6 @@ export function KanbanTasksBoard(props: KanbanTasksBoardProps) {
               </Box>
             </Box>
           ))}
-          {/** TODO: проверить права */}
-          {/* <Box>
-            <Button startIcon={<AddIcon/>}>Этап</Button>
-          </Box> */}
         </Stack>
 
       </Box>

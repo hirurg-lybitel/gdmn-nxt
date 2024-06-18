@@ -1,7 +1,7 @@
 import express from 'express';
-import { segmentsController } from '@gdmn-nxt/controllers/segments';
-import { mailingController } from '@gdmn-nxt/controllers/mailing';
 import { templatesController } from '@gdmn-nxt/modules/marketing/templates/controller';
+import { segmentsController } from '@gdmn-nxt/modules/marketing/segments/controller';
+import { mailingController } from '@gdmn-nxt/modules/marketing/mailing/controller';
 
 const router = express.Router();
 const parentRouter = express.Router();
@@ -12,13 +12,15 @@ router.get('/segments/:id', segmentsController.findOne);
 router.post('/segments', segmentsController.createSegment);
 router.put('/segments/:id', segmentsController.updateById);
 router.delete('/segments/:id', segmentsController.removeById);
+router.post('/segments/calc', segmentsController.calcCustomersCount);
 
-router.get('/mailing', mailingController.findAll);
-router.get('/mailing/:id', mailingController.findOne);
-router.post('/mailing', mailingController.createMailing);
-router.put('/mailing/:id', mailingController.updateById);
-router.post('/mailing/launch/:id', mailingController.launchMailing);
-router.delete('/mailing/:id', mailingController.removeById);
+router.get('/mailings', mailingController.findAll);
+router.get('/mailings/:id', mailingController.findOne);
+router.post('/mailings', mailingController.createMailing);
+router.put('/mailings/:id', mailingController.updateById);
+router.post('/mailings/launch/:id', mailingController.launchMailing);
+router.delete('/mailings/:id', mailingController.removeById);
+router.post('/mailings/launch-test', mailingController.testLaunchMailing);
 
 router.get('/templates', templatesController.findAll);
 router.get('/templates/:id', templatesController.findOne);

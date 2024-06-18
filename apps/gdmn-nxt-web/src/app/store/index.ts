@@ -36,8 +36,10 @@ import { kanbanFiltersApi } from '../features/kanban/kanbanFiltersApi';
 import { authApi } from '../features/auth/authApi';
 import { updatesApi } from '../features/updates';
 import { systemSettingsApi } from '../features/systemSettings';
-import { templateApi } from '../features/managment/templateApi';
-import { segmentApi } from '../features/managment/segmentsApi';
+import { templateApi } from '../features/Marketing/templates/templateApi';
+import { segmentApi } from '../features/Marketing/segments/segmentsApi';
+import { filtersApi } from '../features/filters/filtersApi';
+import { mailingApi } from '../features/Marketing/mailing';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -76,7 +78,9 @@ const reducers = combineReducers({
   [authApi.reducerPath]: authApi.reducer,
   [systemSettingsApi.reducerPath]: systemSettingsApi.reducer,
   [templateApi.reducerPath]: templateApi.reducer,
-  [segmentApi.reducerPath]: segmentApi.reducer
+  [segmentApi.reducerPath]: segmentApi.reducer,
+  [filtersApi.reducerPath]: filtersApi.reducer,
+  [mailingApi.reducerPath]: mailingApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
@@ -124,6 +128,8 @@ export const store = configureStore({
     .concat(systemSettingsApi.middleware)
     .concat(templateApi.middleware)
     .concat(segmentApi.middleware)
+    .concat(filtersApi.middleware)
+    .concat(mailingApi.middleware)
 });
 
 setupListeners(store.dispatch);
