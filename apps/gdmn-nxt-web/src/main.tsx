@@ -111,7 +111,6 @@ const Main = () => {
                     {loginStage === 'EMPLOYEE' ? (
                       <Routes>
                         <Route path="/employee" element={<MainLayout />}>
-                          <Route path="text" element={<NameTextFieldTest/>} />
                           <Route path="" element={<Navigate to="dashboard/overview" />} />
                           <Route path="dashboard">
                             <Route path="" element={<Navigate to="overview" />} />
