@@ -1,23 +1,27 @@
 import { RequestHandler } from 'express';
-import { resultError } from '../../responseMessages';
-import { segmentsRepository } from '@gdmn-nxt/repositories/segments';
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { ERROR_MESSAGES } from '@gdmn/constants/server';
+import { segmentsService } from '../service';
+import { resultError } from '@gsbelarus/util-helpers';
 
 const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const segments = await segmentsRepository.find(sessionID);
+    const response = await segmentsService.findAll(
+      sessionID,
+      {
+        ...req.query
+      }
+    );
 
     const result: IRequestResult = {
-      queries: { segments },
+      queries: { ...response },
       _schema: {}
     };
 
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -32,26 +36,23 @@ const findOne: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const segment = await segmentsRepository.findOne(sessionID, { ID: id });
-    if (!segment?.ID) {
-      return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
-    }
+    const segment = await segmentsService.findOne(sessionID, id);
 
     const result: IRequestResult = {
       queries: { segments: [segment] },
+      _params: [{ id }],
       _schema: {}
     };
 
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
 const createSegment: RequestHandler = async (req, res) => {
   try {
-    const newSegment = await segmentsRepository.save(req.sessionID, req.body);
-    const segment = await segmentsRepository.findOne(req.sessionID, { id: newSegment.ID });
+    const segment = await segmentsService.createSegment(req.sessionID, req.body);
 
     const result: IRequestResult = {
       queries: { segments: [segment] },
@@ -60,7 +61,7 @@ const createSegment: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -73,20 +74,20 @@ const updateById: RequestHandler = async (req, res) => {
   }
 
   try {
-    const updatedSegment = await segmentsRepository.update(req.sessionID, id, req.body);
-    if (!updatedSegment?.ID) {
-      return res.sendStatus(404);
-    }
-    const segment = await segmentsRepository.findOne(req.sessionID, { id: updatedSegment.ID });
+    const updatedSegment = await segmentsService.updateById(
+      req.sessionID,
+      id,
+      req.body
+    );
 
     const result: IRequestResult = {
-      queries: { segments: [segment] },
+      queries: { segments: [updatedSegment] },
       _params: [{ id }],
       _schema: {}
     };
     return res.status(200).json(result);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -99,16 +100,29 @@ const removeById: RequestHandler = async (req, res) => {
   }
 
   try {
-    const checkSegment = await segmentsRepository.findOne(req.sessionID, { ID: id });
-    if (!checkSegment?.ID) {
-      return res.status(404).json(resultError(ERROR_MESSAGES.DATA_NOT_FOUND));
-    }
-
-    await segmentsRepository.remove(req.sessionID, id);
-
+    const isDeleted = await segmentsService.removeById(req.sessionID, id);
     res.sendStatus(200);
   } catch (error) {
-    res.status(500).send(resultError(error.message));
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const calcCustomersCount: RequestHandler = async (
+  req,
+  res
+) => {
+  const { includeSegments = [], excludeSegments = [] } = req.body;
+
+  try {
+    const count = await segmentsService.calcCustomersCount(
+      req.sessionID,
+      includeSegments,
+      excludeSegments
+    );
+
+    res.status(200).json({ count });
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
@@ -117,5 +131,6 @@ export const segmentsController = {
   findOne,
   createSegment,
   updateById,
-  removeById
+  removeById,
+  calcCustomersCount
 };

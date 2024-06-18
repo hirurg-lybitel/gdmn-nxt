@@ -2,7 +2,7 @@ import { Box, Button, DialogActions, DialogContent, DialogTitle, TextField, Tool
 import styles from './email-template-list-item-edit.module.less';
 import EmailTemplate, { ITemplateEdit } from '@gdmn-nxt/components/email-template/email-template';
 import { useEffect, useMemo, useState } from 'react';
-import { htmlToTemplateObject } from '@gdmn-nxt/components/email-template/html-to-object';
+import { htmlToTemplateObject, objectToHtml } from '@gdmn-nxt/components/email-template/html-to-object';
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
@@ -20,10 +20,9 @@ interface EmailTemplateListItemEditProps {
 const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
   const { template: templateOld, open, onClose, onSumbit } = props;
 
-  const [template, setTemplate] = useState<ITemplateEdit | undefined>();
+  const [template, setTemplate] = useState<string>();
   const [templateName, setTemplateName] = useState('');
   const [error, setError] = useState<string | undefined>();
-  const [isDelete, setIsDelete] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [firstRender, setFirstRender] = useState(true);
 
@@ -40,6 +39,27 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     return true;
   };
 
+  const handleClose = () => {
+    setError(undefined);
+    setConfirmOpen(false);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    if ((!templateOld
+      && (template === objectToHtml(htmlToTemplateObject('')) || !template)
+      && templateName === ''
+    )) {
+      handleClose();
+      return;
+    }
+    if (templateOld?.HTML === template && templateOld?.NAME === templateName) {
+      handleClose();
+      return;
+    }
+    setConfirmOpen(true);
+  };
+
   useEffect(() => {
     if (!templateOld) {
       setTemplate(undefined);
@@ -47,7 +67,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
       return;
     }
     if (firstRender) setFirstRender(false);
-    setTemplate({ content: htmlToTemplateObject(templateOld?.HTML), html: '' });
+    setTemplate(templateOld?.HTML);
     setTemplateName(templateOld?.NAME);
   }, [templateOld, firstRender, open]);
 
@@ -56,9 +76,8 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     setTemplateName('');
   };
 
-  const handleConfirmOkClick = () => {
-    setConfirmOpen(false);
-    onClose();
+  const handeSubmit = (isDelete: boolean) => {
+    handleClose();
     if (isDelete) {
       onSumbit(templateOld, true);
       !templateOld && clear();
@@ -67,57 +86,48 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
     onSumbit({
       ID: templateOld?.ID || -1,
       NAME: templateName,
-      HTML: template?.html || ''
+      HTML: template || ''
     });
     !templateOld && clear();
   };
 
   const handleConfirmCancelClick = () => {
-    setIsDelete(false);
     setConfirmOpen(false);
   };
 
-  const handleSubmit = () => {
-    console.log(error);
+  const handleSubmitClick = () => {
     if (!checkValidName(templateName)) {
       return;
     }
-    setConfirmOpen(true);
-    setIsDelete(false);
-  };
-
-  const handlDelete = () => {
-    setConfirmOpen(true);
-    setIsDelete(true);
+    handeSubmit(false);
   };
 
   const handleTemplateNameChange = (e: any) => {
     const value = e.target.value.replace(/\s+/g, ' ');
-    checkValidName(value);
+    error && checkValidName(value);
     setTemplateName(value);
   };
 
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      dangerous={isDelete}
-      title={isDelete ? 'Удаление шаблона' : 'Сохранение шаблона'}
-      text="Вы уверены, что хотите продолжить?"
-      confirmClick={handleConfirmOkClick}
+      title={'Внимание'}
+      text="Изменения будут утеряны. Продолжить?"
+      confirmClick={handleClose}
       cancelClick={handleConfirmCancelClick}
     />,
-  [confirmOpen, isDelete]);
+  [confirmOpen]);
 
   return (
     <>
       <CustomizedDialog
         open={open}
-        onClose={onClose}
+        onClose={handleCancel}
         disableEscape
         width="calc(100% - var(--menu-width))"
       >
         <DialogTitle style={{ display: 'flex' }}>
-          {!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateName}
+          {!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateOld.NAME}
         </DialogTitle>
         <DialogContent dividers>
           <ErrorTooltip
@@ -126,7 +136,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           >
             <TextField
               fullWidth
-              label="Имя"
+              label="Наименование"
               style={{ marginBottom: '20px' }}
               value={templateName}
               onChange={handleTemplateNameChange}
@@ -135,30 +145,29 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
           <div style={{ height: 'calc(100% - 60px)' }}>
             <EmailTemplate
               value={template}
-              onChange={(value) => {
-                setTemplate(value);
-              }}
+              onChange={setTemplate}
             />
           </div>
         </DialogContent>
         <DialogActions>
           {templateOld &&
           <ItemButtonDelete
-            confirmation={false}
             button
-            onClick={handlDelete}
+            onClick={() => handeSubmit(true)}
           />}
           <Box flex={1}/>
           <Button
-            onClick={onClose}
+            onClick={handleCancel}
             variant="outlined"
             color="primary"
+            className="DialogButton"
           >
              Отменить
           </Button>
           <Button
             variant="contained"
-            onClick={handleSubmit}
+            onClick={handleSubmitClick}
+            className="DialogButton"
           >
             Сохранить
           </Button>

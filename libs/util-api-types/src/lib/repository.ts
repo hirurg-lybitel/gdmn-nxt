@@ -4,7 +4,7 @@
  * @param sessionID Session identifier
  * @param clause The find clause object
  */
-export type FindHandler<T = object> = (sessionID: string, clause?: object) => Promise<T[]>;
+export type FindHandler<T = object> = (sessionID: string, clause?: object, order?: { [key: string]: 'ASC' | 'DESC'}) => Promise<T[]>;
 
 /**
  * Finds first entity that match given find clause.

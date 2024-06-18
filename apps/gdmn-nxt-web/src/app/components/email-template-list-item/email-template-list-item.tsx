@@ -1,21 +1,28 @@
-import { Box, IconButton, Skeleton, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import ReactHtmlParser from 'react-html-parser';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import styles from './email-template-list-item.module.less';
 import { ITemplate } from '@gsbelarus/util-api-types';
 
 interface EmailTemplateListItemProps {
   template: ITemplate,
-  onOpen: (template: ITemplate) => void,
-  templates: ITemplate[]
+  onOpen?: (template: ITemplate) => void,
+  editable?: boolean
 }
 
 const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
-  const { template, onOpen, templates } = props;
-  const ref = useRef(null);
+  const {
+    template,
+    onOpen,
+    editable = true
+  } = props;
 
   const [show, setShow] = useState(false);
+
+  const editClick = (template: ITemplate) => () => {
+    onOpen && onOpen(template);
+  };
 
   return (
     <div
@@ -30,9 +37,11 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
           </Typography>
         </div>
         <Box flex={1}/>
-        <div style={{ position: 'absolute', right: 5, top: 5, visibility: show ? 'visible' : 'hidden' }}>
-          <IconButton onClick={() => onOpen(template)} size="small"><EditIcon /></IconButton>
-        </div>
+        {editable &&
+          <div style={{ position: 'absolute', right: 5, top: 5, visibility: show ? 'visible' : 'hidden' }}>
+            <IconButton onClick={editClick(template)} size="small"><EditIcon /></IconButton>
+          </div>
+        }
 
       </div>
       <Box

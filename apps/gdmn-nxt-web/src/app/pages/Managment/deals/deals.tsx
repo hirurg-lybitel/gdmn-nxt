@@ -201,8 +201,8 @@ export function Deals(props: DealsProps) {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  InputProps={{
-                    style: {
+                  sx={{
+                    '& .MuiInputBase-root': {
                       height: '38px'
                     }
                   }}

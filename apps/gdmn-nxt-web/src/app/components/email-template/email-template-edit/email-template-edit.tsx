@@ -1,8 +1,8 @@
 import style from './email-template-edit.module.less';
-import { Box, Button, CardActions, CardContent, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, styled, useTheme } from '@mui/material';
+import { Box, Button, CardContent, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, Switch, TextField, Typography, useTheme } from '@mui/material';
 import { IComponent, IComponentPosition } from '../email-template';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { ChangeEvent, forwardRef, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import AlignHorizontalCenterIcon from '@mui/icons-material/AlignHorizontalCenter';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import AlignHorizontalRightIcon from '@mui/icons-material/AlignHorizontalRight';
@@ -10,19 +10,18 @@ import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 import { fontSize, fonts } from './font';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import Draft from '../draft/draft';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 
 export interface EmailTemplateEditProps {
   editedIndex: number,
-  close: () => void,
   setValue: (stringIndex: string, newValue: any) => void,
-  removeEl: (index: number) => void;
-  copy: (index: number) => void,
-  component: IComponent,
-  length: number
+  component: IComponent
 }
 
 const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
-  const { editedIndex, close, setValue, removeEl, component, length } = props;
+  const { editedIndex, setValue, component } = props;
   const theme = useTheme();
 
   const sizeSettings = () => {
@@ -37,7 +36,7 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
       },
     ];
 
-    const handleWidthChange = (event: Event, value: number | number[], activeThumb: number) => {
+    const handleWidthChange = (event: Event, value: number | number[]) => {
       setValue(`${editedIndex}.width.value`, value as number);
     };
 
@@ -47,9 +46,19 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
     return (
       <div>
-        <Typography>
-          {'Ширина:'}
-        </Typography>
+        <div className={style.widthHeader}>
+          <Typography>
+            Ширина:
+          </Typography>
+          {!(component.type === 'divider' || component.type === 'image') &&
+            <FormControlLabel
+              sx={{ marginLeft: '0px', marginRight: 0 }}
+              onClick={handleWidthAutoChange}
+              control={<Switch checked={component.width?.auto} />}
+              label="Автоматически"
+            />
+          }
+        </div>
         <div style={{ padding: '0 20px 0 15px' }}>
           <Slider
             disabled={component.width?.auto}
@@ -62,14 +71,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             valueLabelDisplay="auto"
           />
         </div>
-        {!(component.type === 'divider' || component.type === 'image') &&
-            <FormControlLabel
-              sx={{ marginLeft: '0px', marginRight: 0 }}
-              onClick={handleWidthAutoChange}
-              control={<Switch checked={component.width?.auto} />}
-              label="Автоматически"
-            />
-        }
       </div>
     );
   };
@@ -107,43 +108,40 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         </div>
         {component[`${paddingType}`]?.isCommon
           ? <TextField
-            style={{ minWidth: '100px', marginTop: '10px' }}
+            style={{ width: '75px', marginTop: '10px' }}
             value={component[`${paddingType}`]?.common + ''}
             onChange={handleChange('common')}
             label="Общий"
             type="number"
-            />
-          : <><div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <TextField
-              style={{ marginRight: '10px', width: '80px', marginTop: '10px' }}
-              value={component[`${paddingType}`]?.top + ''}
-              onChange={handleChange('top')}
-              label="Верх"
-              type="number"
-            />
-            <TextField
-              style={{ marginRight: '10px', width: '80px', marginTop: '10px' }}
-              value={component[`${paddingType}`]?.bottom + ''}
-              onChange={handleChange('bottom')}
-              label="Низ"
-              type="number"
-            />
-            <TextField
-              style={{ marginRight: '10px', width: '80px', marginTop: '10px' }}
-              value={component[`${paddingType}`]?.left + ''}
-              onChange={handleChange('left')}
-              label="Лево"
-              type="number"
-            />
-            <TextField
-              style={{ width: '80px', marginTop: '10px' }}
-              value={component[`${paddingType}`]?.right + ''}
-              onChange={handleChange('right')}
-              label="Право"
-              type="number"
-            />
-          </div>
-          </>
+          />
+          : (
+            <div style={{ display: 'flex', columnGap: 10, marginTop: 10 }}>
+              <TextField
+                value={component[`${paddingType}`]?.top + ''}
+                onChange={handleChange('top')}
+                label="Сверху"
+                type="number"
+              />
+              <TextField
+                value={component[`${paddingType}`]?.bottom + ''}
+                onChange={handleChange('bottom')}
+                label="Снизу"
+                type="number"
+              />
+              <TextField
+                value={component[`${paddingType}`]?.left + ''}
+                onChange={handleChange('left')}
+                label="Слева"
+                type="number"
+              />
+              <TextField
+                value={component[`${paddingType}`]?.right + ''}
+                onChange={handleChange('right')}
+                label="Справа"
+                type="number"
+              />
+            </div>
+          )
         }
       </>
     );
@@ -185,6 +183,10 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     );
   };
 
+  const [urlValue, setUrlValue] = useState<{value: string, error: string|null}>({ value: component?.url || '', error: null });
+
+  useEffect(() => setUrlValue({ ...urlValue, value: component?.url || '' }), [component?.url]);
+
   const ButtonComponent = () => {
     const handleTextColorChange = (color: string) => {
       setValue(`${editedIndex}.color.text`, color);
@@ -207,6 +209,13 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     };
 
     const handleUrlChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = e.target?.value;
+
+      if (value.indexOf('https://') === -1 && value.indexOf('http://') === -1 && value !== '') {
+        setUrlValue({ ...urlValue, value, error: 'Некорректный URL' });
+        return;
+      }
+      setUrlValue({ ...urlValue, value, error: null });
       setValue(`${editedIndex}.url`, e.target?.value);
     };
 
@@ -220,9 +229,9 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             onChange={handleTextChange}
             label="Текст кнопки"
           />
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '5px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: '5px', justifyContent: 'space-between' }}>
             <ColorEdit
-              label={'цвет текста'}
+              label={'Цвет текста'}
               sx={{ marginTop: '10px' }}
               value={component.color?.text}
               onChange={handleTextColorChange}
@@ -242,13 +251,19 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
               onChange={handleButtonColorChange}
             />
           </div>
-          <TextField
-            sx={{ marginTop: '15px' }}
-            fullWidth
-            value={component.url}
-            onChange={handleUrlChange}
-            label="Ссылка"
-          />
+          <ErrorTooltip
+            open={!!urlValue.error}
+            title={urlValue.error}
+          >
+
+            <TextField
+              sx={{ marginTop: '15px' }}
+              fullWidth
+              value={urlValue.value}
+              onChange={handleUrlChange}
+              label="Ссылка"
+            />
+          </ErrorTooltip>
           <div style={{ display: 'flex' }}>
             <FormControl sx={{ marginTop: '15px', marginRight: '10px' }} fullWidth>
               <InputLabel sx={{ background: theme.palette.background.paper, padding: '0px 5px' }} >Шрифт</InputLabel>
@@ -287,10 +302,23 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [error, setError] = useState<string | null>(null);
+
   const ImageComponent = () => {
     const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files || e.target.files.length === 0) return;
       const file = e.target.files[0] || undefined;
+      if (file.size > 1000000) {
+        setError('Максимальный размер файла 1Mb');
+        setTimeout(() => {
+          setError(null);
+        }, 1000 * 10);
+        if (inputRef.current) {
+          inputRef.current.value = '';
+        }
+        return;
+      }
+      setError(null);
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = (e) => {
@@ -309,8 +337,8 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
         <Typography>
             Изображение:
         </Typography>
-        <div style={{ marginTop: '10px', display: 'flex' }}>
-          <div style={{ position: 'relative' }}>
+        <div style={{ marginTop: '10px', display: 'flex', columnGap: 20 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
             <input
               id="input-file"
               hidden
@@ -319,17 +347,32 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
               onChange={handleUploadImage}
               ref={inputRef}
             />
-            <Button size="medium" variant="contained" >
-              <label className={style.upload} htmlFor="input-file" />
+            <ErrorTooltip
+              open={!!error}
+              title={error}
+            >
+              <Button
+                size="medium"
+                fullWidth
+                variant="contained"
+                startIcon={<UploadFileIcon />}
+              >
+                <label className={style.upload} htmlFor="input-file"/>
               Загрузить
+              </Button>
+            </ErrorTooltip>
+          </div>
+          <div style={{ flex: 1 }}>
+            <Button
+              size="medium"
+              fullWidth
+              startIcon={<DeleteForeverIcon />}
+              variant={'outlined'}
+              onClick={handleDeleteImage}
+            >
+              <label>Очистить</label>
             </Button>
           </div>
-          <Button
-            size="medium"
-            style={{ marginLeft: '20px' }}
-            color="error"
-            onClick={handleDeleteImage}
-          >Удалить</Button>
         </div>
 
       </div>
@@ -344,7 +387,6 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
             {baseComponent()}
             <div style={{ paddingTop: '10px' }}>
               <Draft
-                length={length}
                 setValue={setValue}
                 editedIndex={editedIndex}
                 component={component}
@@ -365,15 +407,17 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
   };
 
   return (
-    <CustomizedCard style={{ height: '100%', background: 'none' }}>
-      <CardContent sx={{ paddingRight: 0, paddingLeft: '0', paddingTop: '10px' }}>
-        <CustomizedScrollBox options={{ suppressScrollX: true }} style={{ paddingLeft: '25px', paddingRight: '25px' }}>
-          <div>
-            {mainContent()}
-          </div>
-        </CustomizedScrollBox>
-      </CardContent>
-    </CustomizedCard>
+    <>
+      <CustomizedCard style={{ height: '100%', background: 'none' }}>
+        <CardContent sx={{ paddingRight: 0, paddingLeft: '0', paddingTop: '20px' }}>
+          <CustomizedScrollBox options={{ suppressScrollX: true }} style={{ paddingLeft: '25px', paddingRight: '25px' }}>
+            <div>
+              {mainContent()}
+            </div>
+          </CustomizedScrollBox>
+        </CardContent>
+      </CustomizedCard>
+    </>
   );
 };
 
