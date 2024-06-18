@@ -119,6 +119,19 @@ const calcCustomersCount = async (
   const customersMap = new Map();
 
   await forEachAsync(includeSegments, async (s) => {
+    const customersIds = s.CUSTOMERS ?? [];
+
+    customersIds.forEach(id => {
+      if (customersMap.has(id)) {
+        return;
+      };
+      customersMap.set(id, id);
+    });
+
+    if (customersIds.length > 0) {
+      return;
+    }
+
     const fields = [...s.FIELDS];
 
     const LABELS = fields.find(f => f.NAME === 'LABELS');
@@ -144,6 +157,19 @@ const calcCustomersCount = async (
   });
 
   await forEachAsync(excludeSegments, async (s) => {
+    const customersIds = s.CUSTOMERS ?? [];
+
+    customersIds.forEach(id => {
+      if (!customersMap.has(id)) {
+        return;
+      };
+      customersMap.delete(id);
+    });
+
+    if (customersIds.length > 0) {
+      return;
+    }
+
     const fields = [...s.FIELDS];
 
     const LABELS = fields.find(f => f.NAME === 'LABELS');
@@ -173,14 +199,27 @@ const calcCustomersCount = async (
 };
 
 const getSegmentsCustomers = async (
-  sessionID: string,
+  sessionID = 'getSegmentsCustomers',
   includeSegments: ISegment[],
   excludeSegments: ISegment[]
 ) => {
-  const customersMap = new Map<number, string>();
   const customersArray: ICustomer[] = [];
 
   await forEachAsync(includeSegments, async (s) => {
+    const customersIds = s.CUSTOMERS ?? [];
+
+    await forEachAsync(customersIds, async id => {
+      const findIndex = customersArray.findIndex(({ ID }) => ID === id);
+      if (findIndex >= 0) return;
+
+      const customer = await customersRepository.findOne(sessionID, id);
+      customersArray.push(customer);
+    });
+
+    if (customersIds.length > 0) {
+      return;
+    }
+
     const fields = [...s.FIELDS];
 
     const LABELS = fields.find(f => f.NAME === 'LABELS');
@@ -189,7 +228,7 @@ const getSegmentsCustomers = async (
     const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
     const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
-    const customers = await customersRepository.find('', {
+    const customers = await customersRepository.find(sessionID, {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
@@ -206,6 +245,19 @@ const getSegmentsCustomers = async (
   });
 
   await forEachAsync(excludeSegments, async (s) => {
+    const customersIds = s.CUSTOMERS ?? [];
+
+    await forEachAsync(customersIds, async id => {
+      const findIndex = customersArray.findIndex(({ ID }) => ID === id);
+      if (findIndex < 0) return;
+
+      customersArray.splice(findIndex, 1);
+    });
+
+    if (customersIds.length > 0) {
+      return;
+    }
+
     const fields = [...s.FIELDS];
 
     const LABELS = fields.find(f => f.NAME === 'LABELS');

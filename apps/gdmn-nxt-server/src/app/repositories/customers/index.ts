@@ -4,6 +4,7 @@ import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '../../uti
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
   const {
+    ID,
     DEPARTMENTS = '',
     CONTRACTS = '',
     WORKTYPES = '',
@@ -73,6 +74,10 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
       .reduce((filteredArray, c) => {
         let checkConditions = true;
 
+        if (ID) {
+          checkConditions = checkConditions && (c.ID === ID);
+        }
+
         if (LABELS) {
           checkConditions = checkConditions && !!labels[c.ID]?.some(l => labelIds.includes(l.ID));
         }
@@ -116,7 +121,19 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
   }
 };
 
+const findOne = async (
+  sessionID,
+  id: number
+): Promise<ICustomer> => {
+  const customers = await find(sessionID, { ID: id });
+  if (customers.length === 0) {
+    return Promise.resolve(undefined);
+  }
+  return customers[0];
+};
+
 
 export const customersRepository = {
-  find
+  find,
+  findOne
 };

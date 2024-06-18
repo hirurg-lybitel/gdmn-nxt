@@ -72,6 +72,26 @@ export const mailingApi = createApi({
         result
           ? [{ type: 'mailing', id: ID }, { type: 'mailing', id: 'LIST' }]
           : [{ type: 'mailing', id: 'LIST' }],
+      async onQueryStarted(newMailing, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            mailingApi.util.updateQueryData('getAllMailing', options, (draft) => {
+              if (Array.isArray(draft?.mailings)) {
+                const findIndex = draft.mailings?.findIndex(({ ID }) => ID === newMailing.ID);
+                if (findIndex >= 0) {
+                  draft.mailings[findIndex] = { ...draft.mailings[findIndex], ...newMailing };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     deleteMailing: builder.mutation<void, number>({
       query: (id) => ({

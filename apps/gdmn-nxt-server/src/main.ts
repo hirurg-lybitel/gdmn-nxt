@@ -89,6 +89,7 @@ cacheManager.init({ useClones: false });
 
 /** Cache all necessary data */
 cachedRequets.init(cacheManager);
+
 /** Refresh cache every 20 minutes */
 setInterval(() => cachedRequets.init(cacheManager), 20 * 60 * 1000);
 

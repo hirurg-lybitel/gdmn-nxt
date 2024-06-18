@@ -137,25 +137,16 @@ const launchMailing = async (
       throw UnprocessableEntityException('Рассылка уже выполнена');
     }
 
-    await updateById(
-      sessionID,
-      id,
-      {
-        STARTDATE: new Date()
-      });
+    if (mailing.STATUS === MailingStatus.inProgress) {
+      throw UnprocessableEntityException('Рассылка уже выполняется');
+    }
+
+    await updateStatus(sessionID, id, MailingStatus.inProgress);
 
     if (mailing.includeSegments.length === 0) {
       await updateStatus(sessionID, id, MailingStatus.error, 'Нет получателей');
       return resultDescription('Нет получателей');
     }
-
-    // const customersClause = new Map();
-    // mailing.includeSegments.forEach(({ FIELDS }) => {
-    //   FIELDS.forEach(({ NAME, VALUE }) => customersClause.set(NAME, VALUE));
-    // });
-
-    // const customers = await customersRepository.find(sessionID, { ...Object.fromEntries(customersClause.entries()) });
-
 
     const customers = await segmentsService.getSegmentsCustomers(
       sessionID,
@@ -221,15 +212,8 @@ const launchMailing = async (
       }
     });
 
-    await updateById(
-      sessionID,
-      id,
-      {
-        FINISHDATE: new Date()
-      });
-
     await updateStatus(sessionID, id, MailingStatus.completed, 'Рассылка выполнена');
-    // return resultDescription('Рассылка выполнена');
+
     return {
       ...resultDescription('Тестовая рассылка выполнена'),
       ...response
@@ -311,7 +295,7 @@ const updateStatus = async (
   sessionID: string,
   id: number,
   status: MailingStatus,
-  description: string
+  description = ''
 ) => {
   const mailing = await findOne(sessionID, id);
 
@@ -324,7 +308,9 @@ const updateStatus = async (
     id,
     {
       STATUS: status,
-      STATUS_DESCRIPTION: description
+      STATUS_DESCRIPTION: description,
+      ...(status === MailingStatus.inProgress && { STARTDATE: new Date() }),
+      ...(status === MailingStatus.completed && { FINISHDATE: new Date() })
     });
 };
 
