@@ -108,10 +108,12 @@ export function SegmentUpsert({
     CUSTOMERS: ICustomer[]
   }
 
+  const fake = [339618017, 168576374];
+
   const initValue = {
     NAME: segment?.NAME || '',
     ...getFields(),
-    CUSTOMERS: []
+    CUSTOMERS: customers?.filter(customer => segment?.CUSTOMERS && segment?.CUSTOMERS.find((el: number) => el === customer.ID))
   };
 
   const formik = useFormik<IFormikValues>({
@@ -142,6 +144,7 @@ export function SegmentUpsert({
     formik.resetForm();
   };
   const fieldsParse = (NAME: fieldNames): ISegmnentField[] => {
+    if (formik.values[`${NAME}`].length === 0) return [];
     const values = [{ NAME: NAME + '', VALUE: formik.values[`${NAME}`].map((value: any) => value.ID + '').toString() }];
     return values;
   };
@@ -150,29 +153,21 @@ export function SegmentUpsert({
     return {
       ID: segment?.ID || -1,
       NAME: formik.values.NAME,
-      FIELDS: fieldsParse('CUSTOMERCONTRACTS')
-        .concat(fieldsParse('BUSINESSPROCESSES'))
-        .concat(fieldsParse('WORKTYPES'))
-        .concat(fieldsParse('LABELS'))
-        .concat(fieldsParse('DEPARTMENTS')),
       QUANTITY: segment?.QUANTITY || 0,
-      CUSTOMERS: formik.values.CUSTOMERS.map(el => el.ID).toString()
+      FIELDS: [
+        ...fieldsParse('BUSINESSPROCESSES'),
+        ...fieldsParse('LABELS'),
+        ...fieldsParse('CUSTOMERCONTRACTS'),
+        ...fieldsParse('DEPARTMENTS'),
+        ...fieldsParse('WORKTYPES')
+      ],
+      CUSTOMERS: formik.values.CUSTOMERS?.map(customer => customer.ID) || []
     };
   }, [formik.values, segment]);
 
   const handleSubmit = (isDelete: boolean) => {
     setConfirmOpen(false);
-    const values: ISegment = {
-      ID: segment?.ID || -1,
-      NAME: formik.values.NAME,
-      QUANTITY: segment?.QUANTITY || 0,
-      FIELDS: fieldsParse('BUSINESSPROCESSES')
-        .concat(fieldsParse('CUSTOMERCONTRACTS'))
-        .concat(fieldsParse('DEPARTMENTS'))
-        .concat(fieldsParse('LABELS'))
-        .concat(fieldsParse('WORKTYPES')),
-      CUSTOMERS: formik.values.CUSTOMERS.map(el => el.ID).toString()
-    };
+    const values: ISegment = getNewValues();
     formik.resetForm();
     onSubmit(values, isDelete);
   };
@@ -190,26 +185,21 @@ export function SegmentUpsert({
   };
 
   const handleCancelClick = () => {
-    const segmentValues = {
-      ID: segment?.ID || -1,
-      NAME: segment?.NAME,
-      QUANTITY: segment?.QUANTITY || 0,
-      FIELDS: segment?.FIELDS || '',
-      CUSTOMERS: segment?.CUSTOMERS || ''
-    };
-    if (JSON.stringify(getNewValues()) !== JSON.stringify(segmentValues)) {
+    if (formik.dirty) {
       setConfirmOpen(true);
       return;
     }
     onClose();
   };
 
+  const handleAutocompleteChange = useCallback((fieldName: string) => (e: any, value: any) => formik.setFieldValue(fieldName, value), []);
+
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={'Сохранение клиента'}
-      text={'Вы действительно хотите отменить изменения?'}
-      confirmClick={() => onClose()}
+      title={'Внимание'}
+      text={'Изменения будут утеряны. Продолжить?'}
+      confirmClick={onClose}
       cancelClick={handleCancel}
     />,
   [confirmOpen, handleCancel]);
@@ -223,7 +213,7 @@ export function SegmentUpsert({
         >
           <CustomizedDialog
             open={open}
-            onClose={onClose}
+            onClose={handleCancelClick}
             width="calc(100% - var(--menu-width))"
           >
             <DialogTitle>
@@ -237,18 +227,21 @@ export function SegmentUpsert({
                 >
                   <TextField
                     label="Имя"
+                    name="NAME"
                     value={formik.values.NAME}
-                    onChange={(e) => formik.setFieldValue('NAME', e.target.value)}
+                    onChange={formik.handleChange}
                   />
                 </ErrorTooltip>
                 <Accordion
                   sx={{
                     '& .MuiButtonBase-root': {
-                      padding: 0
+                      padding: 0,
+                      marginLeft: '12px',
                     },
                     '& .MuiAccordionDetails-root': {
                       paddingRight: 0, paddingLeft: 0
-                    }
+                    },
+                    '&:before': { height: '0px' }
                   }}
                   defaultExpanded
                 >
@@ -265,7 +258,7 @@ export function SegmentUpsert({
                           limitTags={2}
                           disableCloseOnSelect
                           options={departments || []}
-                          onChange={(e, value) => formik.setFieldValue('DEPARTMENTS', value)}
+                          onChange={handleAutocompleteChange('DEPARTMENTS')}
                           value={
                             departments?.filter(department => formik.values.DEPARTMENTS && formik.values.DEPARTMENTS.find(el => el.ID === department.ID))
                           }
@@ -298,7 +291,7 @@ export function SegmentUpsert({
                           limitTags={2}
                           disableCloseOnSelect
                           options={contracts || []}
-                          onChange={(e, value) => formik.setFieldValue('CUSTOMERCONTRACTS', value)}
+                          onChange={handleAutocompleteChange('CUSTOMERCONTRACTS')}
                           value={
                             contracts?.filter(contract => formik.values.CUSTOMERCONTRACTS && formik.values.CUSTOMERCONTRACTS.find(el => el.ID === contract.ID))
                           }
@@ -330,9 +323,8 @@ export function SegmentUpsert({
                           multiple
                           limitTags={2}
                           disableCloseOnSelect
-                          // filterOptions={filterOptions(30, 'USR$NAME')}
                           options={workTypes || []}
-                          onChange={(e, value) => formik.setFieldValue(' WORKTYPES', value)}
+                          onChange={handleAutocompleteChange('WORKTYPES')}
                           value={
                             workTypes?.filter(wt => formik.values.WORKTYPES && formik.values.WORKTYPES.find(el => el.ID === wt.ID))
                           }
@@ -364,7 +356,7 @@ export function SegmentUpsert({
                         limitTags={2}
                         disableCloseOnSelect
                         options={labels || []}
-                        onChange={(e, value) => formik.setFieldValue('LABELS', value)}
+                        onChange={handleAutocompleteChange('LABELS')}
                         value={
                           labels?.filter(label => formik.values.LABELS && formik.values.LABELS.find(el => el.ID === label.ID))
                         }
@@ -420,7 +412,7 @@ export function SegmentUpsert({
                         limitTags={2}
                         disableCloseOnSelect
                         options={businessProcesses}
-                        onChange={(e, value) => formik.setFieldValue('BUSINESSPROCESSES', value)}
+                        onChange={handleAutocompleteChange('BUSINESSPROCESSES')}
                         value={
                           businessProcesses?.filter(businessProcess => formik.values.BUSINESSPROCESSES && formik.values.BUSINESSPROCESSES.find(el => el.ID === businessProcess.ID))
                         }
@@ -449,12 +441,12 @@ export function SegmentUpsert({
                   </AccordionDetails>
                 </Accordion>
                 <Autocomplete
-                  disabled
                   options={customers}
-                  onChange={(e, value) => formik.setFieldValue('CUSTOMERS', value)}
+                  onChange={handleAutocompleteChange('CUSTOMERS')}
                   value={
                     customers?.filter(customer => formik.values.CUSTOMERS && formik.values.CUSTOMERS.find((el: any) => el.ID === customer.ID))
                   }
+                  disableCloseOnSelect
                   multiple
                   limitTags={2}
                   filterOptions={filterOptions(50, 'NAME')}
@@ -486,7 +478,7 @@ export function SegmentUpsert({
               {segment && <ItemButtonDelete onClick={handleDeleteClick} button />}
               <Box flex={1}/>
               <Button
-                // className={styles.button}
+                className="DialogButton"
                 onClick={handleCancelClick}
                 variant="outlined"
                 color="primary"
@@ -499,7 +491,7 @@ export function SegmentUpsert({
                 form="segmentForm"
                 type="submit"
                 onClick={handleSubmitClick}
-                // disabled={!userPermissions?.customers?.PUT}
+                className="DialogButton"
               >
                 Сохранить
               </Button>

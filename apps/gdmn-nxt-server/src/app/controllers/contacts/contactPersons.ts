@@ -138,13 +138,13 @@ const getAll: RequestHandler = async (req, res) => {
       });
 
     const rowCount = persons.length;
-    const personsWitPagination = persons.slice(fromRecord, toRecord);
+    const personsWithPagination = persons.slice(fromRecord, toRecord);
 
     res
       .status(200)
       .json({
         queries: {
-          persons: personsWitPagination,
+          persons: personsWithPagination,
           rowCount
         }
       });

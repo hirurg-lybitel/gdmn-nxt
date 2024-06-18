@@ -1,4 +1,4 @@
-import { Alert, Avatar, Box, IconButton, InputBase, Snackbar } from '@mui/material';
+import { Avatar, Box, IconButton, InputBase } from '@mui/material';
 import { styled, ThemeProvider } from '@mui/styles';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -12,6 +12,7 @@ import { clearError } from '../features/error-slice/error-slice';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import { useTheme } from '@mui/material/styles';
 import styles from './base-form.module.less';
+import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 /* eslint-disable-next-line */
 export interface BaseFormProps {};
 
@@ -173,7 +174,17 @@ export function BaseForm(props: BaseFormProps) {
   const errorMessage = useSelector<RootState, string>(state => state.error.errorMessage);
   const dispatch = useDispatch();
 
-  const onCloseAlert = useCallback(() => dispatch(clearError()), []);
+  const { addSnackbar } = useSnackbar();
+
+  const onClose = useCallback(() => {
+    dispatch(clearError());
+  }, []);
+
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    addSnackbar(errorMessage, { variant: 'error', onClose });
+  }, [errorMessage, onClose]);
 
   return (
     <ThemeProvider theme={gdmnTheme}>
@@ -233,12 +244,6 @@ export function BaseForm(props: BaseFormProps) {
               )
             }
           </FooterTabs>
-          {
-            errorMessage &&
-            <Snackbar open autoHideDuration={5000} onClose={onCloseAlert}>
-              <Alert variant="filled" severity="error">{errorMessage}</Alert>
-            </Snackbar>
-          }
           <FooterBottom>
             {'erModel: ' + (erModel ? erModel.fullDbName : 'not loaded...')}
           </FooterBottom>

@@ -326,6 +326,7 @@ export type ActionName =
   'stages' |
   'contacts' |
   'system' |
+  'mailings' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -386,7 +387,21 @@ export interface ISegment extends IWithID {
   NAME: string;
   QUANTITY: number;
   FIELDS: ISegmnentField[]
-  CUSTOMERS?: string
+  CUSTOMERS?: number[]
+}
+
+export enum MailingStatus {
+  delayed = 0,
+  completed = 1,
+  error = 2,
+  manual = 3,
+  inProgress = 4,
+  launchNow = 5
+}
+
+export interface MailAttachment {
+  fileName: string;
+  content: string;
 }
 
 export interface IMailing extends IWithID {
@@ -394,10 +409,13 @@ export interface IMailing extends IWithID {
   LAUNCHDATE?: Date;
   STARTDATE?: Date;
   FINISHDATE?: Date;
-  STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
+  STATUS?: MailingStatus;
   STATUS_DESCRIPTION?: string;
-  segments: ISegment[];
   TEMPLATE?: string;
+  includeSegments?: ISegment[],
+  excludeSegments?: ISegment[],
+  testingEmails?: string[];
+  attachments?: MailAttachment[];
 }
 
 export interface ITemplate extends IWithID {

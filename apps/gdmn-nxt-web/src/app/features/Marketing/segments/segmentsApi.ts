@@ -1,6 +1,6 @@
-import { IPaginationData, IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { baseUrlApi } from '@gdmn/constants/client';
+import { IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
 
 export type ISegmentRequestResult = IRequestResult<{segments: ISegment[], count: number}>;
 
@@ -58,7 +58,14 @@ export const segmentApi = createApi({
         method: 'DELETE',
       }),
       invalidatesTags: ['segment']
-    })
+    }),
+    getCustomersCount: builder.mutation<{ count: number }, { includeSegments: ISegment[], excludeSegments: ISegment[]}>({
+      query: (body) => ({
+        url: 'segments/calc',
+        body: body,
+        method: 'POST'
+      }),
+    }),
   }),
 });
 
@@ -68,4 +75,5 @@ export const {
   useAddSegmentMutation,
   useDeleteSegmentMutation,
   useUpdateSegmentMutation,
+  useGetCustomersCountMutation
 } = segmentApi;

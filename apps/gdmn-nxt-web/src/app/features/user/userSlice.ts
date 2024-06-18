@@ -1,7 +1,7 @@
 import { IUserProfile } from '@gsbelarus/util-api-types';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { baseUrl, baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 export const logoutUser = createAsyncThunk(
   'user/logout',

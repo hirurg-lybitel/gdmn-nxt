@@ -1,7 +1,7 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Divider, FormControlLabel, IconButton, Switch, Tab, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Box, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
 import EmailTemplateItem from './email-template-item/email-template-item';
@@ -10,7 +10,6 @@ import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import ComputerIcon from '@mui/icons-material/Computer';
 import TabletIcon from '@mui/icons-material/Tablet';
 import ColorEdit from '../Styled/colorEdit/colorEdit';
-import { renderToStaticMarkup } from 'react-dom/server';
 import ReactHtmlParser from 'react-html-parser';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
@@ -19,13 +18,13 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import ImageIcon from '@mui/icons-material/Image';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import CloseIcon from '@mui/icons-material/Close';
-import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName } from './html-to-object';
+import { hexToRGB, htmlToTemplateObject, objectToHtml } from './html-to-object';
 
 export type componentTypes = 'text' | 'image' | 'button' | 'divider'
 
 export type IComponentPosition = 'start' | 'center' | 'end'
 
-interface baseComponentSettings {
+interface BaseComponentSettings {
   width: {
     auto: boolean,
     value: number
@@ -41,24 +40,24 @@ interface baseComponentSettings {
   position: IComponentPosition
 }
 
-export interface baseComponent extends baseComponentSettings {
+export interface BaseComponent extends BaseComponentSettings {
   id: number,
   title: string,
   type: componentTypes,
 }
 
-export interface ITextComponent extends baseComponent {
+export interface ITextComponent extends BaseComponent {
   text?: string
 }
 
-export interface IImageComponent extends baseComponent {
+export interface IImageComponent extends BaseComponent {
   image?: string
 }
 
-export interface IDeviderComponent extends baseComponent {
+export interface IDeviderComponent extends BaseComponent {
 }
 
-export interface IButtonComponent extends baseComponent {
+export interface IButtonComponent extends BaseComponent {
   text?: string,
   url?: string,
   color?: {
@@ -82,48 +81,38 @@ export interface IButtonComponent extends baseComponent {
 
 export interface IComponent extends ITextComponent, IImageComponent, IDeviderComponent, IButtonComponent {}
 
-export interface EmailTemplate {
-  [key: string]: IComponent
-}
-
 export interface ITemplateEdit {
-  content: {
-    components: IComponent[],
-    background: {
-      value: string,
-      isView: boolean
-    }
-  },
-  html: string
+  components: IComponent[],
+  background: {
+    value: string,
+    isView: boolean
+  }
 }
 
 interface EmailTemplateProps {
-  value?: ITemplateEdit,
-  onChange: (value: ITemplateEdit) => void,
+  value?: string,
+  onChange: (value: string) => void,
   // defaultValues?: {
-  //   text?: baseComponentSettings,
-  //   image?: baseComponentSettings,
-  //   button: baseComponentSettings & IButtonComponent,
-  //   divider: baseComponentSettings
+  //   text?: BaseComponentSettings,
+  //   image?: BaseComponentSettings,
+  //   button: BaseComponentSettings & IButtonComponent,
+  //   divider: BaseComponentSettings
   // }
 }
+
 
 const EmailTemplate = (props: EmailTemplateProps) => {
   const theme = useTheme();
   const {
-    value: anyTemplates = {
-      content: {
-        components: [],
-        background: {
-          value: theme.palette.background.paper,
-          isView: false
-        }
-      },
-      html: '',
-    },
+    value = '',
     onChange
   } = props;
+  const handleChange = (value: ITemplateEdit) => {
+    onChange(objectToHtml(value));
+  };
 
+
+  const template = useMemo(() => htmlToTemplateObject(value), [value]);
   const settings = useSelector((state: RootState) => state.settings);
 
   const components: IComponent[] = [
@@ -181,10 +170,10 @@ const EmailTemplate = (props: EmailTemplateProps) => {
         common: 10
       },
       padding: {
-        top: 5,
-        right: 6,
-        bottom: 5,
-        left: 6,
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10,
         common: 10,
         isCommon: false
       },
@@ -220,41 +209,25 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     },
   ];
 
-  const backgroundChange = (newBackground: string) => {
-    onChange({ ...anyTemplates, content: { ...anyTemplates.content, background: { ...anyTemplates.content.background, value: newBackground } } });
-  };
-  const backgroundViewChange = () => {
-    onChange({ ...anyTemplates, content: { ...anyTemplates.content, background: { ...anyTemplates.content.background, isView: !anyTemplates.content.background.isView } } });
-  };
+  const backgroundChange = useCallback((newBackground: string) => {
+    handleChange({ ...template, background: { ...template.background, value: newBackground } });
+  }, [template, handleChange]);
 
-  const [length, setLenght] = useState<number>(0);
-
-  useEffect(() => {
-    if (anyTemplates.html === previeComponent) {
-      return;
-    }
-    if (length !== anyTemplates.content.components.length) {
-      setLenght(anyTemplates.content.components.length);
-    }
-    onChange({ ...anyTemplates, html: previeComponent });
-  }, [anyTemplates]);
-
-  const getBiggestId = () => {
+  const getBiggestId = useCallback(() => {
     let id = 10;
-    const components = anyTemplates.content.components;
-    for (let i = 0;i < components.length;i++) {
-      if (components[i].id > id) {
-        id = components[i].id;
+    const components = template.components;
+    for (const component of components) {
+      if (component.id > id) {
+        id = component.id;
       }
     }
-
     return id + 1;
-  };
+  }, [template.components]);
 
-  const valueChange = (stringIndex: string, newValue: any) => {
+  const valueChange = useCallback((stringIndex: string, newValue: any) => {
     const masIndex = stringIndex.split('.');
-    const newValues: any = { ...anyTemplates };
-    let val: any = newValues.content.components[Number(masIndex[0])];
+    const newValues = { ...template };
+    let val: any = newValues.components[Number(masIndex[0])];
     if (val === undefined) return;
     for (let i = 1; i < masIndex.length; i++) {
       if (i + 1 === masIndex.length) {
@@ -263,75 +236,69 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       }
       val = val?.[masIndex[i]];
     }
-    onChange(newValues);
-  };
+    handleChange(newValues);
+  }, [template, handleChange]);
 
-  const handleEditUnFocus = () => {
-    setEditIsFocus(false);
-  };
-
-  const [editIsFocus, setEditIsFocus] = useState<boolean>(false);
-
-  const removeEl = (index: number) => {
-    const copyTamplate = [...anyTemplates.content.components];
+  const removeEl = useCallback((index: number) => {
+    const copyTemplate = [...template.components];
     closeEditForm();
-    if (copyTamplate.length === 1) {
-      onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [] } });
+    if (copyTemplate.length === 1) {
+      handleChange({ ...template, components: [] });
     } else {
-      copyTamplate.splice(index, 1);
-      onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTamplate } });
+      copyTemplate.splice(index, 1);
+      handleChange({ ...template, components: copyTemplate });
     }
-  };
+  }, [template, handleChange]);
 
-  const copyEl = (index: number) => {
-    const component = [...anyTemplates.content.components][index];
+  const copyEl = useCallback((index: number) => {
+    const component = [...template.components][index];
     const endIndex = index + 1 || 0;
     const componentCopy = structuredClone(component);
     componentCopy.id = getBiggestId();
-    const copyTamplate = [...anyTemplates.content.components];
-    copyTamplate.splice(endIndex, 0, componentCopy);
-    copyTamplate[endIndex].text = copyTamplate[endIndex].text ? copyTamplate[endIndex].text + ' ' : undefined;
-    onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTamplate } });
-  };
+    const copyTemplate = [...template.components];
+    copyTemplate.splice(endIndex, 0, componentCopy);
+    copyTemplate[endIndex].text = copyTemplate[endIndex].text ? copyTemplate[endIndex].text + ' ' : undefined;
+    handleChange({ ...template, components: copyTemplate });
+  }, [template, getBiggestId, handleChange]);
 
-  const handleDragEnd = (result: DropResult) => {
+  const [editedIndex, setEditedIndex] = useState<number | null>(null);
+
+  const handleDragEnd = useCallback((result: DropResult) => {
     setDraggedId(-1);
     // setAllowChangePrimary(true);
     if (!result.destination) return;
     if (result.source.droppableId === 'compotents') {
-      if (result.destination.droppableId === 'tamplate') {
+      if (result.destination.droppableId === 'template') {
         const startIndex = result.source.index;
         const copyComponents = [...components];
         const component = { ...copyComponents[startIndex] };
         component.id = getBiggestId();
-        const copyTamplate = [...anyTemplates.content.components];
-        if (copyTamplate.length === 0) {
-          onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: [component] } });
+        const copyTemplate = [...template.components];
+        if (copyTemplate.length === 0) {
+          handleChange({ ...template, components: [component] });
         } else {
           const endIndex = result.destination.index;
-          copyTamplate.splice(endIndex, 0, component);
-          onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTamplate } });
+          copyTemplate.splice(endIndex, 0, component);
+          handleChange({ ...template, components: copyTemplate });
         }
       }
     }
-    if (result.source.droppableId === 'tamplate') {
+    if (result.source.droppableId === 'template') {
       if (result.destination.droppableId === 'compotents') return;
       const startIndex = result.source.index;
       const endIndex = result.destination.index;
-      const copyTamplate = [...anyTemplates.content.components];
-      const [reorderTodo] = copyTamplate.splice(startIndex, 1);
-      copyTamplate.splice(endIndex, 0, reorderTodo);
+      const copyTemplate = [...template.components];
+      const [reorderTodo] = copyTemplate.splice(startIndex, 1);
+      copyTemplate.splice(endIndex, 0, reorderTodo);
       if (editedIndex === startIndex) {
         openEditForm(endIndex);
       }
-      onChange({ ...anyTemplates, content: { ...anyTemplates.content, components: copyTamplate } });
+      handleChange({ ...template, components: copyTemplate });
     }
-  };
+  }, [components, editedIndex, getBiggestId, handleChange, template]);
 
-  const [editedIndex, setEditedIndex] = useState<number | null>(null);
 
   const openEditForm = (index: number) => {
-    setEditIsFocus(true);
     setEditedIndex(index);
   };
 
@@ -341,7 +308,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   const closeEditForm = () => {
-    setEditIsFocus(false);
     setEditedIndex(null);
   };
 
@@ -377,6 +343,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const [primaryDrag, setPrimaryDrag] = useState('');
   const [allowChangePrimary, setAllowChangePrimary] = useState(true);
+
   const handleChangeAllowChangePrimary = (value: boolean) => () => {
     setAllowChangePrimary(value);
   };
@@ -402,28 +369,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     };
   };
 
-
-  const previeComponent = renderToStaticMarkup(
-    <div
-      style={{
-        height: '100%',
-        width: '100%',
-        background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent'
-      }}
-    >
-      <div>
-        {anyTemplates.content.components.map((component: IComponent, index: number) => (
-          <EmailTemplateItem
-            key={index}
-            index={index}
-            isPreview={true}
-            component={component}
-          />
-        ))}
-      </div>
-    </div>
-  );
-
   const getComponentIcon = (type: componentTypes) => {
     switch (type) {
       case 'text':return <TextIncreaseIcon sx={{ color: theme.mainContent.buttonPrimaryColor, fontSize: '50px' }} />;
@@ -433,16 +378,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     }
   };
 
-  const paperBoxShadow = '0px 0px 10px ' + (
-    settings.customization.colorMode !== 'dark'
-      ? 'rgba(0,0,0,0.1)'
-      : 'rgba(250, 250, 250, 0.1)'
-  );
+  const workspaceWidth = 375;
 
-  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
-  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
-
-  const workspaceWidth = matchDownLg ? 350 : 450;
+  const workspaceTextColor = useCallback(() => {
+    const rgb = hexToRGB(template.background.value);
+    return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black';
+  }, [template.background.value]);
 
   return (
     <div
@@ -455,7 +396,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <TabContext value={tabIndex} >
           <div style={{ width: '100%' }}>
-            <div onMouseDown={handleEditUnFocus} style={{ display: 'flex', alignItems: 'center' }} >
+            <div style={{ display: 'flex', alignItems: 'center' }} >
               <TabList
                 onChange={handleTabsChange}
                 centered
@@ -523,18 +464,17 @@ const EmailTemplate = (props: EmailTemplateProps) => {
               <TabPanel value="1" style={{ height: '100%', width: `calc(100% - ${workspaceWidth}px)`, padding: '0' }} >
                 <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
                   <div style={{ width: '100% ', transition: '0.5s' }}>
-                    <Droppable droppableId="tamplate" >
+                    <Droppable droppableId="template" >
                       {(droppableProvider) => (
                         <div
                           style={{
-                            background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent',
-                            boxShadow: paperBoxShadow
+                            backgroundColor: template.background.value,
                           }}
                           className={style.templateBody}
                           ref={droppableProvider.innerRef}
                           {...droppableProvider.droppableProps}
                         >
-                          {anyTemplates.content.components.map((component: IComponent, index: number) => (
+                          {template.components.map((component: IComponent, index: number) => (
                             <Draggable
                               index={index}
                               key={component.id}
@@ -552,14 +492,12 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                     <EmailTemplateItem
                                       copy={copyEl}
                                       removeEl={handleDelete}
-                                      setEditIsFocus={setEditIsFocus}
                                       editedIndex={editedIndex}
                                       index={index}
-                                      editIsFocus={editIsFocus}
                                       component={component}
                                       setValue={valueChange}
                                       setDrag={(arg: boolean) => setDrag(arg)}
-                                      drag={drag}
+                                      background={template.background.value}
                                     />
                                   </div>
                                 );
@@ -581,12 +519,11 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     style={{
                       maxWidth: previewMode,
                       width: '100%', transition: '0.5s',
-                      background: anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent',
-                      boxShadow: paperBoxShadow,
+                      background: template.background.value,
                     }}
                   >
                     <CustomizedScrollBox options={{ suppressScrollX: true }}>
-                      {ReactHtmlParser(previeComponent)}
+                      {ReactHtmlParser(value)}
                     </CustomizedScrollBox>
                   </div>
                 </div>
@@ -615,20 +552,22 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   ? <Box
                     sx={{
                       '& .jodit-workplace': {
-                        background: (anyTemplates.content.background.isView ? anyTemplates.content.background.value : 'transparent') + '!important'
+                        background: (template.background.isView ? template.background.value : 'transparent') + '!important',
+                      },
+                      '& .jodit-wysiwyg p': {
+                        color: workspaceTextColor()
+                      },
+                      '& .jodit-placeholder': {
+                        color: workspaceTextColor(),
+                        opacity: '0.5'
                       }
                     }}
                     style={{ height: '100%', minWidth: '300px' }}
-                    onMouseDown={handleEditUnFocus}
-                    >
+                  >
                     <EmailTemplateEdit
-                      copy={copyEl}
-                      removeEl={removeEl}
                       editedIndex={editedIndex as number}
-                      close={closeEditForm}
-                      component={anyTemplates.content.components[editedIndex]}
+                      component={template.components[editedIndex]}
                       setValue={valueChange}
-                      length={length}
                     />
                   </Box>
                   : (
@@ -644,7 +583,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                 display: 'flex',
                                 flexWrap: 'wrap',
                                 width: '100%',
-                                paddingBottom: '20px'
+                                paddingBottom: '20px',
+                                gap: '10px'
                               }}
                             >
                               {components.map((component: IComponent, index: number) => (
@@ -666,9 +606,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                         style={{
                                           width: '110px',
                                           height: '110px',
-                                          marginRight: '10px',
+                                          // marginRight: '10px',
                                           cursor: 'pointer',
-                                          marginBottom: '10px'
+                                          // marginBottom: '10px'
                                         }}
                                       >
                                         <div
@@ -689,14 +629,14 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                             <Box
                                               sx={{
                                                 userSelect: 'none',
-                                                background: theme.palette.mode === 'dark' ? 'rgb(67 67 67)' : '#f4f4f4',
+                                                backgroundColor: 'var(--color-card-bg)',
                                                 width: '105px',
                                                 height: '105px',
                                                 padding: '5px',
                                                 display: 'flex',
                                                 justifyContent: 'center',
                                                 alignItems: 'center',
-                                                borderRadius: '20px',
+                                                borderRadius: 'var(--border-radius)',
                                                 flexDirection: 'column',
                                               }}
                                             >
@@ -714,23 +654,16 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'start', alignItems: 'center', marginTop: '5px', flexWrap: 'wrap' }}>
                               <ColorEdit
-                                label={'цвет фона'}
-                                value={anyTemplates.content.background.value}
+                                label={'Цвет фона'}
+                                value={template.background.value}
                                 onChange={backgroundChange}
-                              />
-                              <FormControlLabel
-                                sx={{ marginLeft: '0px' }}
-                                onClick={backgroundViewChange}
-                                control={<Switch checked={!anyTemplates.content.background.isView} />}
-                                label="Прозрачный"
                               />
                             </div>
                           </div>
                         )}
                       </Droppable>
                     </CustomizedScrollBox>
-                  )
-                }
+                  )}
               </div>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { IContactWithID, IDenyReason, IKanbanCard, IKanbanCardStatus, IKanbanCol
 import { createEntityAdapter } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { io } from 'socket.io-client';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 import { getTaskStage } from '@gsbelarus/util-useful';
 
 interface IKanban{

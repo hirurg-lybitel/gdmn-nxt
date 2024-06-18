@@ -1,6 +1,6 @@
+import { baseUrlApi } from '@gdmn/constants/client';
 import { IBankStatement, IRequestResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '../../const';;
 
 interface IBankStatements{
     bankStatements: IBankStatement[];
