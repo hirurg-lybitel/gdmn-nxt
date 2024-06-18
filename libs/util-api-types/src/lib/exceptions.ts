@@ -16,3 +16,8 @@ export const InternalServerErrorException = (message = ''): Exception => ({
   code: 500,
   message
 });
+
+export const UnprocessableEntityException = (message = ''): Exception => ({
+  code: 422,
+  message
+});

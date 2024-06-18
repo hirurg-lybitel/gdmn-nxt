@@ -3,7 +3,7 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { validPassword } from '@gsbelarus/util-helpers';
-import { IsNotNull, IsNull, Permissions } from '@gsbelarus/util-api-types';
+import { IsNotNull, IsNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
@@ -46,8 +46,12 @@ import https, { ServerOptions } from 'https';
 import systemSettingsRouter from './app/routes/settings/systemSettings';
 import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
-import { mailingRepository } from '@gdmn-nxt/repositories/mailing';
-import { mailingService } from './app/services/mailing';
+import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
+import { filtersRouter } from './app/routes/filtersRouter';
+import dayjs from 'dayjs';
+import ru from 'dayjs/locale/ru';
+
+dayjs.locale(ru);
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -85,6 +89,7 @@ cacheManager.init({ useClones: false });
 
 /** Cache all necessary data */
 cachedRequets.init(cacheManager);
+
 /** Refresh cache every 20 minutes */
 setInterval(() => cachedRequets.init(cacheManager), 20 * 60 * 1000);
 
@@ -96,11 +101,11 @@ setTimeout(
     createScheduler({
       name: 'mailer',
       dataGetter: async () => {
-        const mailings = await mailingRepository.find('scheduler', {
+        const mailings = await mailingService.findAll('scheduler', {
           USR$LAUNCHDATE: IsNotNull(),
-          USR$STATUS: 0
+          USR$STATUS: MailingStatus.delayed
         });
-        const tasks = mailings.map(m => ({
+        const tasks = mailings.mailings.map(m => ({
           startDate: m.LAUNCHDATE,
           action: async() => {
             try {
@@ -360,6 +365,10 @@ router.use(systemSettingsRouter);
 
 /** Marketing */
 router.use(marketingRouter);
+
+/** Filters */
+router.use(filtersRouter);
+
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;

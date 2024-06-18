@@ -1,5 +1,5 @@
 import { IContactWithID, IContactWithLabels } from '@gsbelarus/util-api-types';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 const _headers = {
   Accept: 'application/json',

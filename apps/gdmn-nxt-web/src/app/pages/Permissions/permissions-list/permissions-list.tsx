@@ -1,6 +1,6 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
-import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridSortModel, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridRowId, GridSortModel, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
@@ -16,9 +16,7 @@ const initialStateDataGrid: GridInitialStatePro = {
   pinnedColumns: { left: [GRID_TREE_DATA_GROUPING_FIELD] }
 };
 
-export function PermissionsList(props: PermissionsListProps) {
-  const { data: actions, isFetching: actionsFetching, isLoading: actionsLoading } = useGetActionsQuery();
-  const { data: userGroups, isFetching: userGroupsFetching, isLoading: userGroupsLoading } = useGetUserGroupsQuery();
+const GridItem = ({ id, row, ug }: { id: GridRowId, row: IPermissionsAction, ug: IUserGroup }) => {
   const { data: matrix, isFetching: matrixFetching, isLoading: matrixLoading } = useGetMatrixQuery();
   const [updateMatrix] = useUpdateMatrixMutation();
 
@@ -30,6 +28,21 @@ export function PermissionsList(props: PermissionsListProps) {
       MODE: +checked
     });
   };
+  if (Object.keys(row).length === 0) return <></>;
+  const actionID = id;
+  const matrixNode = matrix?.filter(c => c.ACTION.ID === actionID).find(f => f.USERGROUP.ID === ug.ID);
+  const checked = matrixNode?.MODE === 1 || false;
+
+  return <Checkbox
+    disabled={matrixFetching || matrixLoading}
+    checked={checked}
+    onChange={CheckBoxOnChange(matrixNode?.ID, row, ug)}
+  />;
+};
+
+export function PermissionsList(props: PermissionsListProps) {
+  const { data: actions, isFetching: actionsFetching, isLoading: actionsLoading } = useGetActionsQuery();
+  const { data: userGroups, isFetching: userGroupsFetching, isLoading: userGroupsLoading } = useGetUserGroupsQuery();
 
   const columns: GridColDef[] = userGroups?.map(ug => ({
     field: 'USERGROUP_' + ug.ID,
@@ -39,17 +52,14 @@ export function PermissionsList(props: PermissionsListProps) {
     editable: false,
     type: 'boolean',
     minWidth: 150,
-    renderCell: ({ row, id }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => {
-      if (Object.keys(row).length === 0) return <></>;
-      const actionID = id;
-      const matrixNode = matrix?.filter(c => c.ACTION.ID === actionID).find(f => f.USERGROUP.ID === ug.ID);
-      const checked = matrixNode?.MODE === 1 || false;
-
-      return <Checkbox
-        disabled={matrixFetching}
-        checked={checked}
-        onChange={CheckBoxOnChange(matrixNode?.ID, row, ug)}
-      />;
+    renderCell: ({ row, id }: GridRenderCellParams<IPermissionsAction, any, any, GridTreeNodeWithRender>) => {
+      return (
+        <GridItem
+          id={id}
+          row={row}
+          ug={ug}
+        />
+      );
     },
   })) || [];
 
@@ -80,7 +90,7 @@ export function PermissionsList(props: PermissionsListProps) {
     width: 300,
     minWidth: 250,
     flex: 1,
-    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<any, any, any, GridGroupNode>} />,
+    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<IPermissionsAction, any, any, GridGroupNode>} />,
   };
 
   return (
@@ -108,7 +118,7 @@ export function PermissionsList(props: PermissionsListProps) {
             groupingColDef={groupingColDef}
             columns={columns}
             rows={rows || []}
-            loading={actionsLoading || userGroupsLoading || matrixLoading}
+            loading={actionsLoading || userGroupsLoading}
             getRowId={row => row.ID}
             hideFooter
             disableColumnReorder

@@ -68,6 +68,7 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
+      confirmation={formik.dirty}
       width={500}
     >
       <DialogTitle>

@@ -25,11 +25,11 @@ const findAll = async (
       toRecord = fromRecord + Number(pageSize);
     };
 
-    const templatesWitPagination = templates.slice(fromRecord, toRecord);
+    const templatesWithPagination = templates.slice(fromRecord, toRecord);
     const count = templates.length;
 
     return {
-      templates: templatesWitPagination,
+      templates: templatesWithPagination,
       count
     };
   } catch (error) {

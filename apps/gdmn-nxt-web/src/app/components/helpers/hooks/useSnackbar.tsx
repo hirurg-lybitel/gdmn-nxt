@@ -1,30 +1,44 @@
 import { IconButton } from '@mui/material';
 import { SnackbarKey, useSnackbar as useSourceSnackbar, VariantType } from 'notistack';
-import { Fragment, useCallback } from 'react';
+import { useCallback } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface Options {
   variant: VariantType;
+  onClose?: () => void;
 }
 
 export const useSnackbar = () => {
   const { enqueueSnackbar, closeSnackbar } = useSourceSnackbar();
 
-  const handleCloseAlert = useCallback((snackbarId: SnackbarKey) => () => closeSnackbar(snackbarId), []);
+  const handleCloseAlert = useCallback((snackbarId: SnackbarKey, callback = () => {}) => () => {
+    callback();
+    closeSnackbar(snackbarId);
+  }, [closeSnackbar]);
 
-  const closeAction = useCallback((snackbarId: SnackbarKey) => (
-    <Fragment>
-      <IconButton
-        size="small"
-        color="inherit"
-        onClick={handleCloseAlert(snackbarId)}
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Fragment>
+  // eslint-disable-next-line react/display-name
+  const closeAction = useCallback((callback?: () => void) => (snackbarId: SnackbarKey) => (
+    <IconButton
+      size="small"
+      color="inherit"
+      onClick={handleCloseAlert(snackbarId, callback)}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
   ), [handleCloseAlert]);
 
-  const addSnackbar = useCallback((message: string, options: Options) => enqueueSnackbar(message, { ...options, action: closeAction }), []);
+  const addSnackbar = useCallback((
+    message: string,
+    {
+      onClose,
+      ...options
+    }: Options
+  ) => enqueueSnackbar(message, {
+    style: { whiteSpace: 'pre-line' },
+    ...options,
+    action: closeAction(onClose),
+    onClose: () => onClose && onClose()
+  }), [closeAction, enqueueSnackbar]);
 
   return { addSnackbar };
 };

@@ -1,13 +1,9 @@
 import TagIcon from '@mui/icons-material/Tag';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import styles from './contacts-filter.module.less';
-import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { Button, CardActions, CardContent, Checkbox, FormControlLabel, InputAdornment, Stack } from '@mui/material';
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import { IContactPerson, ICustomer, IFilteringData, ILabel } from '@gsbelarus/util-api-types';
-import { useDispatch } from 'react-redux';
-import { clearFilterData } from '../../../store/filtersSlice';
-import { useCallback, useState } from 'react';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { ContactSelect } from '../contact-select';
 
@@ -16,15 +12,16 @@ export interface ContactsFilterProps {
   onClose: () => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
+  filterClear: () => void
 }
 
 export function ContactsFilter({
   open,
   onClose,
   filteringData,
-  onFilteringDataChange
+  onFilteringDataChange,
+  filterClear
 }: ContactsFilterProps) {
-  const dispatch = useDispatch();
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
     delete newObject[entity];
@@ -41,10 +38,6 @@ export function ContactsFilter({
 
     onFilteringDataChange({ ...newObject, ...newValue });
   };
-
-  const filterClear = useCallback(() => {
-    dispatch(clearFilterData('contacts'));
-  }, []);
 
   return (
     <CustomizedDialog
@@ -103,10 +96,7 @@ export function ContactsFilter({
         <Button
           variant="contained"
           fullWidth
-          onClick={() => {
-            filterClear();
-            onClose();
-          }}
+          onClick={filterClear}
         >
             Очистить
         </Button>

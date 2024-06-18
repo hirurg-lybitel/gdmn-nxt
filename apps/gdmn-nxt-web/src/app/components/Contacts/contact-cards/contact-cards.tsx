@@ -19,6 +19,7 @@ import { saveFilterData } from '../../../store/filtersSlice';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { styled } from '@mui/styles';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 
 interface CardItemProps {
   contact: IContactPerson;
@@ -222,7 +223,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 <a
                   className={`${styles.link} ${!socialMediaLinks[contact.MESSENGERS[0]?.CODE] ? styles.linkDisabled : ''}`}
                   onClick={handleStopPropagation}
-                  href={`${socialMediaLinks[contact.MESSENGERS[0]?.CODE]}${contact.MESSENGERS[0]?.USERNAME}`}
+                  href={parseToMessengerLink(contact.MESSENGERS[0]?.CODE, contact.MESSENGERS[0]?.USERNAME)}
                   rel="noreferrer"
                   target="_blank"
                 >
@@ -375,7 +376,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   <a
                     className={`${styles.link} ${!socialMediaLinks[mes.CODE] ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
-                    href={`${socialMediaLinks[mes.CODE]}${mes.USERNAME}`}
+                    href={parseToMessengerLink(mes.CODE, mes.USERNAME)}
                     rel="noreferrer"
                     target="_blank"
                   >

@@ -78,19 +78,26 @@ const managment: IMenuItem = {
         },
       ]
     },
+    // {
+    //   id: 'customers',
+    //   title: 'Клиенты',
+    //   type: 'collapse',
+    //   icon: <PeopleAltIcon color="secondary" />,
+    //   children: [
+    //     {
+    //       id: 'customers-list',
+    //       title: 'Список клиентов',
+    //       type: 'item',
+    //       url: 'managment/customers/list'
+    //     },
+    //   ]
+    // },
     {
       id: 'customers',
       title: 'Клиенты',
-      type: 'collapse',
+      type: 'item',
       icon: <PeopleAltIcon color="secondary" />,
-      children: [
-        {
-          id: 'customers-list',
-          title: 'Список клиентов',
-          type: 'item',
-          url: 'managment/customers/list'
-        },
-      ]
+      url: 'managment/customers/list'
     },
     {
       id: 'contracts',

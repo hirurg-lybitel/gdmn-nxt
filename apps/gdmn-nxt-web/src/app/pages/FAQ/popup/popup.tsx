@@ -1,4 +1,3 @@
-import { useForm } from 'react-hook-form';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card, CardActions } from '@mui/material';
 import style from './popup.module.less';
@@ -9,67 +8,62 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { fullFaq } from '../../../features/FAQ/faqApi';
+import { Form, FormikProvider, useFormik } from 'formik';
+import * as yup from 'yup';
 
 interface PopupProps {
   close: () => void
   isOpened: boolean
   isAddPopup: boolean
   faq?: fullFaq,
-  addFaq?: (question: string, answer: string) => void,
-  editFaq?: (question: string, answer: string, id: number) => void,
+  addFaq?: (values: fullFaq) => void,
+  editFaq?: (values: fullFaq) => void,
 }
 
 interface IShippingFields {
-  question: string,
-  answer: string
+  ID: number,
+  USR$QUESTION: string,
+  USR$ANSWER: string
 }
 
 export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq }: PopupProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
-  const {
-    handleSubmit,
-    register,
-    formState: { errors },
-    setValue,
-    reset,
-    getValues,
-    clearErrors,
-    setError
-  } = useForm<IShippingFields>({
-    mode: 'onSubmit'
+  const formik = useFormik<IShippingFields>({
+    enableReinitialize: true,
+    validateOnBlur: false,
+    validateOnChange: false,
+    initialValues: {
+      ID: faq?.ID || -1,
+      USR$QUESTION: faq?.USR$QUESTION || '',
+      USR$ANSWER: faq?.USR$ANSWER || ''
+    },
+    validationSchema: yup.object().shape({
+      USR$QUESTION: yup.string().required('Не указан вопрос'),
+      USR$ANSWER: yup.string().required('Не указан вопрос'),
+    }),
+    onSubmit: (values) => {
+    },
+    onReset: (values) => {
+    }
   });
 
   const closePopup = useCallback(() => {
+    setConfirmOpen(false);
     setTabIndex('1');
     close();
-    clearErrors();
-  }, []);
-
-  const editFaqHandler = useCallback(async () => {
-    if (faq) {
-      handleConfirmCancelClick();
-      closePopup();
-      editFaq && editFaq(getValues('question'), getValues('answer'), faq.ID);
-    }
-  }, [faq]);
-
-  const addFaqHandler = useCallback(async () => {
-    handleConfirmCancelClick();
-    closePopup();
-    addFaq && addFaq(getValues('question'), getValues('answer'));
-    reset();
+    formik.resetForm();
   }, []);
 
   const handleTabsChange = useCallback((event: any, newindex: string) => {
     setTabIndex(newindex);
   }, [faq]);
 
-  const escPressed = useCallback((event: KeyboardEvent) => {
+  const escPressed = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      closePopup();
+      handleClose();
     }
-  }, []);
+  };
 
   useEffect(() => {
     document.addEventListener('keydown', escPressed);
@@ -78,78 +72,52 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     };
   }, [escPressed]);
 
-  const clearAndClosePopup = useCallback(() => {
-    closePopup();
-    if (isAddPopup) {
-      reset();
-    } else {
-      if (faq) {
-        setValue('question', faq.USR$QUESTION);
-        setValue('answer', faq.USR$ANSWER);
-      }
+  const handleClose = () => {
+    if (formik.dirty) {
+      setConfirmOpen(true);
+      return;
     }
-  }, []);
+    closePopup();
+  };
 
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const handleSaveClick = useCallback(() => {
-    if ((getValues('answer').trim()).length !== 0) {
-      if ((getValues('question').trim()).length !== 0) {
-        setConfirmOpen(true);
-      } else {
-        setError('question', { message: 'Обязательное поле' });
-      }
-    } else {
-      setError('answer', { message: 'Обязательное поле' });
-    }
-  }, []);
-
-  const handleAddClick = useCallback(() => {
-    if ((getValues('answer').trim()).length !== 0) {
-      if ((getValues('question').trim()).length !== 0) {
-        setConfirmOpen(true);
-      } else {
-        setError('question', { message: 'Обязательное поле' });
-      }
-    } else {
-      setError('answer', { message: 'Обязательное поле' });
-    }
-  }, []);
 
   const handleConfirmCancelClick = useCallback(() => {
     setConfirmOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (faq) {
-      setValue('question', faq.USR$QUESTION);
-      setValue('answer', faq.USR$ANSWER);
-    }
-  }, [faq]);
-
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
       open={confirmOpen}
-      title={isAddPopup
-        ? 'Добавление нового вопроса с ответом'
-        : 'Сохранение изменений'
-      }
-      text="Вы уверены, что хотите продолжить?"
-      confirmClick={isAddPopup
-        ? addFaqHandler
-        : editFaqHandler
-      }
+      title={'Внимание'}
+      text="Изменения будут утеряны. Продолжить?"
+      confirmClick={closePopup}
       cancelClick={handleConfirmCancelClick}
     />
-  , [confirmOpen, isAddPopup, addFaqHandler, editFaqHandler, handleConfirmCancelClick]);
+  , [confirmOpen]);
 
-  const onSubmitClick = () => {
-    if ((getValues('answer').trim()).length === 0) {
-      setError('answer', { message: 'Обязательное поле' });
+  const handleSubmit = () => {
+    handleConfirmCancelClick();
+    closePopup();
+    if (isAddPopup) {
+      addFaq && addFaq(formik.values);
+      return;
     }
-    if ((getValues('question').trim()).length === 0) {
-      setError('question', { message: 'Обязательное поле' });
-    }
+    editFaq && editFaq(formik.values);
+  };
+
+  const onSubmitClick = async () => {
+    formik.validateForm();
+    const errors = await formik.validateForm(formik.values);
+    if (Object.keys(errors).length !== 0) return;
+    handleSubmit();
+  };
+
+  const handleValueChange = async (name: string, value: string) => {
+    await formik.setFieldValue(name, value);
+    if ((formik.errors as any)[name]) {
+      await formik.validateField(name);
+    };
   };
 
   return (
@@ -157,7 +125,7 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
       {memoConfirmDialog}
       <div
         className={isOpened ? style.background : `${style.background} ${style.unactiveBackground}`}
-        onClick={closePopup}
+        onClick={handleClose}
       />
       <div className={style.newQuestionBody}>
         <div
@@ -167,108 +135,104 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
               : `${style.NewQuestionContainer} ${style.inactiveNewQuestionContainer}`
           }
         >
-          <form
-            onSubmit={isAddPopup ? handleSubmit(handleAddClick) : handleSubmit(handleSaveClick)}
-            className={style.questionForm}
-          >
-            <Card className={style.card}>
-              <CardHeader
-                title={<Typography variant="h6">{
-                  isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
-                }</Typography>}
-              />
-              <Divider/>
-              <CardContent style={{ flex: 1 }} >
-                <div className={style.inputContainer}>
-                  <TextField
-                    rows={4}
-                    className={style.textArea}
-                    id="outlined-textarea"
-                    placeholder="Вопрос"
-                    multiline
-                    {...register('question', {
-                      required: 'Обязательное поле'
-                    })}
-                    onChange={() => {
-                      clearErrors('question');
-                    }}
-                  />
-                  {
-                    errors.question
-                  && <div className={style.errorMessage}>{errors.question.message}</div>
-                  }
-                </div>
-                <TabContext value={tabIndex}>
-                  <Box>
-                    <TabList onChange={handleTabsChange}>
-                      <Tab label="Изменить" value="1" />
-                      <Tab label="Просмотреть" value="2" />
-                    </TabList>
-                  </Box>
-                  <TabPanel value="1" className={style.tab}>
-                    <div className={style.inputContainer}>
-                      <TextField
-                        rows={12}
-                        className={style.textArea}
-                        id="outlined-textarea"
-                        placeholder="Ответ"
-                        multiline
-                        {...register('answer', {
-                          required: 'Обязательное поле'
-                        })}
-                        onChange={() => {
-                          clearErrors('answer');
-                        }}
-                      />
-                      {
-                        errors.answer
-                        && <div className={style.errorMessage}>{errors.answer.message}</div>
-                      }
-                    </div>
-                  </TabPanel>
-                  <TabPanel value="2" className={style.tab}>
-                    <div className={style.inputContainer}>
-                      <div className={style.previewBackground}>
-                        <PerfectScrollbar className={style.preview}>
-                          <div className={style.previewContent}>
-                            <ReactMarkdown className={style.markdown}>
-                              {
-                                getValues('answer')
-                              }
-                            </ReactMarkdown>
-                          </div>
-                        </PerfectScrollbar>
+          <FormikProvider value={formik}>
+            <Form
+              onSubmit={formik.handleSubmit}
+              className={style.USR$QUESTIONForm}
+              id={'FAQForm'}
+            >
+              <Card className={style.card}>
+                <CardHeader
+                  title={<Typography variant="h6">{
+                    isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
+                  }</Typography>}
+                />
+                <Divider/>
+                <CardContent style={{ flex: 1 }} >
+                  <div className={style.inputContainer}>
+                    <TextField
+                      rows={4}
+                      className={style.textArea}
+                      id="outlined-textarea"
+                      placeholder="Вопрос"
+                      multiline
+                      value={formik.values.USR$QUESTION}
+                      onChange={(e) => handleValueChange('USR$QUESTION', e.target.value)}
+                    />
+                    {
+                      formik.errors.USR$QUESTION
+                  && <div className={style.errorMessage}>{formik.errors.USR$QUESTION}</div>
+                    }
+                  </div>
+                  <TabContext value={tabIndex}>
+                    <Box>
+                      <TabList onChange={handleTabsChange}>
+                        <Tab label="Изменить" value="1" />
+                        <Tab label="Просмотреть" value="2" />
+                      </TabList>
+                    </Box>
+                    <TabPanel value="1" className={style.tab}>
+                      <div className={style.inputContainer}>
+                        <TextField
+                          rows={12}
+                          className={style.textArea}
+                          id="outlined-textarea"
+                          placeholder="Ответ"
+                          multiline
+                          value={formik.values.USR$ANSWER}
+                          onChange={(e) => handleValueChange('USR$ANSWER', e.target.value)}
+                        />
+                        {
+                          formik.errors.USR$ANSWER
+                        && <div className={style.errorMessage}>{formik.errors.USR$ANSWER}</div>
+                        }
                       </div>
-                      {
-                        errors.answer
-                        && <div className={style.errorMessage}>{errors.answer.message}</div>
-                      }
-                    </div>
-                  </TabPanel>
-                </TabContext>
-              </CardContent>
-              <Divider/>
-              <CardActions className={style.buttonsContainer}>
-                <Box flex={1} />
-                <div>
-                  <Button
-                    type="button"
-                    variant="outlined"
-                    onClick={clearAndClosePopup}
-                    className={style.button}
-                  >Отменить</Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    onClick={onSubmitClick}
-                    className={`${style.saveButton} ${style.button}`}
-                  >
-                    {isAddPopup ? 'Добавить' : 'Сохранить'}
-                  </Button>
-                </div>
-              </CardActions>
-            </Card>
-          </form>
+                    </TabPanel>
+                    <TabPanel value="2" className={style.tab}>
+                      <div className={style.inputContainer}>
+                        <div className={style.previewBackground}>
+                          <PerfectScrollbar className={style.preview}>
+                            <div className={style.previewContent}>
+                              <ReactMarkdown className={style.markdown}>
+                                {
+                                  formik.values.USR$ANSWER
+                                }
+                              </ReactMarkdown>
+                            </div>
+                          </PerfectScrollbar>
+                        </div>
+                        {
+                          formik.errors.USR$ANSWER
+                        && <div className={style.errorMessage}>{formik.errors.USR$ANSWER}</div>
+                        }
+                      </div>
+                    </TabPanel>
+                  </TabContext>
+                </CardContent>
+                <Divider/>
+                <CardActions className={style.buttonsContainer}>
+                  <Box flex={1} />
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      onClick={handleClose}
+                      className={style.button}
+                    >Отменить</Button>
+                    <Button
+                      type="submit"
+                      form={'FAQForm'}
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      className={`${style.saveButton} ${style.button}`}
+                    >
+                      Сохранить
+                    </Button>
+                  </div>
+                </CardActions>
+              </Card>
+            </Form>
+          </FormikProvider>
         </div>
       </div>
     </>

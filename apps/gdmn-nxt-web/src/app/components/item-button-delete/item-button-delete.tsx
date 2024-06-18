@@ -11,7 +11,8 @@ export interface ItemButtonDeleteProps extends IconButtonProps {
   onClick?: () => void;
   title?: string;
   text?: string;
-}
+  hint?: string;
+};
 
 export function ItemButtonDelete({
   button = false,
@@ -20,6 +21,7 @@ export function ItemButtonDelete({
   onClick = () => {},
   title = 'Удаление',
   text = 'Вы уверены, что хотите продолжить?',
+  hint = 'Удалить',
   ...rest
 }: ItemButtonDeleteProps) {
   const Container = useMemo(() =>
@@ -39,25 +41,9 @@ export function ItemButtonDelete({
     };
   }
 
-  // return (
-  //   <Container size="small">
-  //     <Tooltip title="Удалить" arrow>
-  //       <Stack
-  //         direction="row"
-  //         alignItems="center"
-  //         spacing={1}
-  //       >
-  //         <DeleteForeverIcon fontSize="small" />
-  //         {label && <span>{label}</span>}
-  //       </Stack>
-  //     </Tooltip>
-  //   </Container>
-  // );
-
-
   const RootElement = (
     <Container size="small">
-      <Tooltip title="Удалить" arrow>
+      <Tooltip title={hint} arrow>
         <Stack
           direction="row"
           alignItems="center"

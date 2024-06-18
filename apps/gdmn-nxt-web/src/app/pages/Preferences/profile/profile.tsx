@@ -73,7 +73,7 @@ export function Profile(props: ProfileProps) {
               label="Система"
               value="system"
               href="/employee/system/settings/system"
-              className={!userPermissions?.system?.forGroup ? styles.tabHeaderHide : ''}
+              className={!userPermissions?.system?.PUT ? styles.tabHeaderHide : ''}
               icon={<SettingsSuggestIcon />}
               iconPosition="start"
             />
