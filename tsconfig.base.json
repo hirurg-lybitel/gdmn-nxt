@@ -23,10 +23,10 @@
       "@gdmn-nxt/config": ["libs/config/src/index.ts"],
       "@gdmn-nxt/controllers/*": ["apps/gdmn-nxt-server/src/app/controllers/*"],
       "@gdmn-nxt/db-connection": ["libs/db-connection/src/index.ts"],
+      "@gdmn-nxt/modules/*": ["apps/gdmn-nxt-server/src/app/modules/*"],
       "@gdmn-nxt/repositories/*": [
         "apps/gdmn-nxt-server/src/app/repositories/*"
       ],
-      "@gdmn-nxt/modules/*": ["apps/gdmn-nxt-server/src/app/modules/*"],
       "@gdmn-nxt/scheduler": ["libs/scheduler/src/index.ts"],
       "@gdmn-nxt/socket": ["libs/socket/src/index.ts"],
       "@gdmn-nxt/ui-assets": ["libs/ui-assets/src/index.ts"],

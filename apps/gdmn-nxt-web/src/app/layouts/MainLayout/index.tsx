@@ -1,5 +1,5 @@
 import { Alert, Box, MenuItem, Snackbar, SvgIconTypeMap, useMediaQuery } from '@mui/material';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { Outlet } from 'react-router-dom';
@@ -12,6 +12,7 @@ import UpdatesInfo from '../../components/updates/updates-info/updates-info';
 import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { useIdleTimer } from 'react-idle-timer';
 import { LOGOUT_TIMEOUT } from '@gdmn/constants/client';
+import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -96,26 +97,23 @@ export const MainLayout = (props: MainLayoutProps) => {
     ],
   });
 
-  useEffect(() => {
-    if (errorMessage) {
-      setOpenSnackBar(true);
-    };
-  }, [errorMessage, errorStatus]);
+  const { addSnackbar } = useSnackbar();
 
-  const handleDrawerToggle = () => {
-    dispatch(toggleMenu(!menuOpened));
-  };
-
-  const handleSnackBarClose = (event: SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    };
+  const onClose = useCallback(() => {
     dispatch(clearError());
-    setOpenSnackBar(false);
-
     if (errorStatus === 401) {
       dispatch(logoutUser());
     };
+  }, [dispatch, errorStatus]);
+
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    addSnackbar(errorMessage, { variant: 'error', onClose });
+  }, [errorMessage, onClose]);
+
+  const handleDrawerToggle = () => {
+    dispatch(toggleMenu(!menuOpened));
   };
 
   return (
@@ -129,25 +127,6 @@ export const MainLayout = (props: MainLayoutProps) => {
         <Main menuOpened={!matchDownMd} style={{ display: 'flex' }}>
           <Outlet />
         </Main>
-        <Snackbar
-          open={openSnackBar}
-          autoHideDuration={5000}
-          onClose={handleSnackBarClose}
-          sx={{
-            '& .MuiAlert-icon, .MuiAlert-action': {
-              alignItems: 'center',
-            }
-          }}
-        >
-          <Alert
-            onClose={handleSnackBarClose}
-            variant="filled"
-            severity="error"
-            style={{
-              fontSize: '1.2em'
-            }}
-          >{errorMessage}</Alert>
-        </Snackbar>
       </Box>
     </>
   );

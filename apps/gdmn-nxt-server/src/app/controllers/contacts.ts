@@ -139,11 +139,11 @@ export const getContacts: RequestHandler = async (req, res) => {
       });
 
     const rowCount = contacts.length;
-    const contactsWitPagination = contacts.slice(fromRecord, toRecord);
+    const contactsWithPagination = contacts.slice(fromRecord, toRecord);
 
     const result: IRequestResult = {
       queries: {
-        contacts: contactsWitPagination,
+        contacts: contactsWithPagination,
         rowCount
       },
       _schema

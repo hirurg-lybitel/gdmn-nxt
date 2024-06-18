@@ -1,15 +1,30 @@
+import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { ArrayElement, FindHandler, FindOneHandler, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { customersRepository } from '@gdmn-nxt/repositories/customers';
+import { ArrayElement, FindHandler, FindOneHandler, FindOperator, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
-import { customersRepository } from '../customers';
 
-const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
+const find: FindHandler<ISegment> = async (
+  sessionID,
+  clause = {},
+  order = { NAME: 'ASC' }
+) => {
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
   try {
     const clauseString = Object
       .keys({ ...clause })
-      .map(f => ` s.${f} = :${f}`)
+      .map(f => {
+        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
+          const expression = clause[f] as FindOperator;
+          switch (expression.operator) {
+            case 'LIKE':
+              return ` UPPER(s.${f}) ${expression.value} `;
+          }
+        }
+
+        return ` s.${f} = :${adjustRelationName(f)}`;
+      })
       .join(' AND ');
 
     let sql = `
@@ -18,7 +33,8 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
         USR$NAME NAME
       FROM
         USR$CRM_MARKETING_SEGMENTS s
-      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
+      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
+      ${order ? ` ORDER BY ${Object.keys(order)[0]} ${Object.values(order)[0]}` : ''}`;
 
     const segments = await fetchAsObject<Pick<ISegment, 'ID' | 'NAME'>>(sql, { ...clause });
 
@@ -29,8 +45,23 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
       FROM USR$CRM_MARKETING_SEGMENTS_LINE l
       WHERE l.USR$MASTERKEY = :masterKey`;
 
+    const customersRows = await fetchAsObject(
+      `SELECT
+        USR$MASTERKEY MASTERKEY, USR$CUSTOMERKEY CUSTOMERKEY
+      FROM USR$CRM_MARKETING_SEGMENTS_CUST
+      ORDER BY USR$MASTERKEY`);
+
+
+    const customersMap = new Map<number, number[]>();
+    customersRows.forEach(c => {
+      const customerIds = customersMap.get(c['MASTERKEY']) ?? [];
+
+      customersMap.set(c['MASTERKEY'], [...customerIds, c['CUSTOMERKEY']]);
+    });
 
     const result: ISegment[] = [];
+
+    // TODO: ускорить/переписать
 
     await forEachAsync(segments, async (s) => {
       const segmentDetails = await fetchAsObject<ISegmnentField>(sql, { masterKey: s.ID });
@@ -43,16 +74,25 @@ const find: FindHandler<ISegment> = async (sessionID, clause = {}) => {
 
       const LABELS = flatSegmentDetails.get('LABELS') ?? '';
       const DEPARTMENTS = flatSegmentDetails.get('DEPARTMENTS') ?? '';
+      const BUSINESSPROCESSES = flatSegmentDetails.get('BUSINESSPROCESSES') ?? '';
+      const CONTRACTS = flatSegmentDetails.get('CUSTOMERCONTRACTS') ?? '';
+      const WORKTYPES = flatSegmentDetails.get('WORKTYPES') ?? '';
 
       const customers = await customersRepository.find('', {
         LABELS,
-        DEPARTMENTS
+        DEPARTMENTS,
+        BUSINESSPROCESSES,
+        CONTRACTS,
+        WORKTYPES
       });
+
+      const directCustomersIds = customersMap.get(s.ID) ?? [];
 
       const newSegment: ArrayElement<typeof result> = {
         ...s,
         FIELDS: [...segmentDetails],
-        QUANTITY: customers.length
+        QUANTITY: directCustomersIds.length > 0 ? directCustomersIds.length : customers.length,
+        CUSTOMERS: directCustomersIds
       };
 
       result.push(newSegment);
@@ -89,6 +129,7 @@ const update: UpdateHandler<ISegment> = async (
     const {
       NAME = segment.NAME,
       FIELDS = segment.FIELDS,
+      CUSTOMERS = segment.CUSTOMERS
     } = metadata;
 
     const updatedSegment = await fetchAsSingletonObject<ISegment>(
@@ -104,7 +145,7 @@ const update: UpdateHandler<ISegment> = async (
       }
     );
 
-    const deleteSegmentLines = executeSingleton(
+    const deleteSegmentLines = await executeSingleton(
       `DELETE FROM USR$CRM_MARKETING_SEGMENTS_LINE
       WHERE USR$MASTERKEY = :MASTERKEY`,
       {
@@ -116,14 +157,31 @@ const update: UpdateHandler<ISegment> = async (
       VALUES(:MASTERKEY, :FIELDNAME, :VALUE)`;
 
     const insertSegmentLines = FIELDS.map(async ({ NAME, VALUE }) =>
-      executeSingleton(sql, {
+      await executeSingleton(sql, {
         MASTERKEY: id,
         FIELDNAME: NAME,
         VALUE
       })
     );
 
-    await Promise.all([deleteSegmentLines, ...insertSegmentLines]);
+    const deleteSegmentCustomers = await executeSingleton(
+      `DELETE FROM USR$CRM_MARKETING_SEGMENTS_CUST
+      WHERE USR$MASTERKEY = :MASTERKEY`,
+      {
+        MASTERKEY: id
+      });
+
+    const insertSegmentCustomers = CUSTOMERS?.map(async (customerId) =>
+      await executeSingleton(
+        `INSERT INTO USR$CRM_MARKETING_SEGMENTS_CUST (USR$MASTERKEY, USR$CUSTOMERKEY)
+        VALUES(:MASTERKEY, :CUSTOMERKEY)`,
+        {
+          MASTERKEY: id,
+          CUSTOMERKEY: customerId
+        })
+    );
+
+    await Promise.all([deleteSegmentLines, ...insertSegmentLines, deleteSegmentCustomers, ...insertSegmentCustomers]);
 
     await releaseTransaction();
 
@@ -138,11 +196,12 @@ const save: SaveHandler<ISegment> = async (
   sessionID,
   metadata
 ) => {
-  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+  const { fetchAsSingletonObject, releaseTransaction, executeSingleton } = await startTransaction(sessionID);
 
   const {
     NAME,
-    FIELDS
+    FIELDS,
+    CUSTOMERS
   } = metadata;
 
   try {
@@ -168,7 +227,17 @@ const save: SaveHandler<ISegment> = async (
       })
     );
 
-    await Promise.all(insertSegmentLines);
+    const insertSegmentCustomers = CUSTOMERS?.map(async (customerId) =>
+      await executeSingleton(
+        `INSERT INTO USR$CRM_MARKETING_SEGMENTS_CUST (USR$MASTERKEY, USR$CUSTOMERKEY)
+        VALUES(:MASTERKEY, :CUSTOMERKEY)`,
+        {
+          MASTERKEY: segment.ID,
+          CUSTOMERKEY: customerId
+        })
+    );
+
+    await Promise.all([...insertSegmentLines, ...insertSegmentCustomers]);
 
     await releaseTransaction();
 

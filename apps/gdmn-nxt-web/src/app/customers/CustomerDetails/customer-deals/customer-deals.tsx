@@ -46,7 +46,6 @@ export function CustomerDeals(props: CustomerDealsProps) {
     {
       field: 'USR$DEADLINE',
       headerName: 'Статус',
-      type: 'date',
       headerAlign: 'center',
       align: 'center',
       width: 200,
