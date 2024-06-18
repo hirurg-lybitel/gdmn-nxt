@@ -192,7 +192,28 @@ export function SegmentUpsert({
     onClose();
   };
 
-  const handleAutocompleteChange = useCallback((fieldName: string) => (e: any, value: any) => formik.setFieldValue(fieldName, value), []);
+  const handleAutocompleteChange = useCallback((fieldName: string) => (e: any, value: any) => {
+    let newValues: IFormikValues;
+    if (fieldName === 'CUSTOMERS') {
+      newValues = {
+        ...formik.values,
+        BUSINESSPROCESSES: [],
+        CUSTOMERCONTRACTS: [],
+        CUSTOMERS: value,
+        DEPARTMENTS: [],
+        LABELS: [],
+        WORKTYPES: []
+      };
+    } else {
+      newValues = {
+        ...formik.values,
+        CUSTOMERS: [],
+        [`${fieldName}`]: value
+      };
+    }
+
+    formik.setValues(newValues);
+  }, [formik.values]);
 
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
