@@ -5,7 +5,7 @@ import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
 import dayjs from 'dayjs';
 
-const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
+const find: FindHandler<IMailing> = async (sessionID, clause = {}, order) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
@@ -41,7 +41,8 @@ const find: FindHandler<IMailing> = async (sessionID, clause = {}) => {
         USR$TEMPLATE TEMPLATE_BLOB,
         USR$TESTING_EMAILS TESTING_EMAILS
       FROM USR$CRM_MARKETING_MAILING m
-      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
+      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
+      ${order ? ` ORDER BY ${Object.keys(order)[0]} ${Object.values(order)[0]}` : ''}`;
 
     const mailing = await fetchAsObject<Omit<IMailing, 'includeSegments' | 'excludeSegments'>>(sql, { ...whereClause });
 
