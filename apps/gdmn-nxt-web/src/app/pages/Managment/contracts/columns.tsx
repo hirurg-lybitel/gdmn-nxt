@@ -10,9 +10,8 @@ interface ArrowProps {
 }
 
 const Arrow = ({ id, formattedValue }: ArrowProps) => {
-  const { data = [], isLoading } = useGetContractDetailsQuery(id);
   return (
-    <IconButton size="small" disabled={data.length === 0 || isLoading}>
+    <IconButton size="small">
       <ExpandMoreIcon style={{ transition: '0.1s', transform: formattedValue ? 'rotate(-90deg)' : 'none' }}/>
     </IconButton>
   );
@@ -28,7 +27,9 @@ export const columns: Columns<IContract> = {
       ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
       renderCell: (params) => {
         return (
-          <Arrow id={params.row.ID} formattedValue={params.formattedValue}/>
+          <IconButton size="small">
+            <ExpandMoreIcon style={{ transition: '0.1s', transform: params.formattedValue ? 'rotate(-90deg)' : 'none' }}/>
+          </IconButton>
         );
       },
       align: 'center',
