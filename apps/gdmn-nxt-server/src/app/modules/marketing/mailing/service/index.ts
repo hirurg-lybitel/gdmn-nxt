@@ -196,7 +196,7 @@ const launchMailing = async (
 
       const renderedHtml = Mustache.render(html, view);
 
-      const { accepted, rejected } = await sendEmailByTestAccount(
+      const { accepted, rejected } = await sendEmail(
         from,
         EMAIL,
         subject,
@@ -354,7 +354,7 @@ const testLaunchMailing = async (
 
     const renderedHtml = Mustache.render(html, view);
 
-    const { accepted, rejected } = await sendEmailByTestAccount(
+    const { accepted, rejected } = await sendEmail(
       from,
       email,
       subject,
