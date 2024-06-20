@@ -236,8 +236,6 @@ export const objectToHtml = (template: ITemplateEdit) => {
     <div
       className={emailTemplateContainerName}
       style={{
-        height: '100%',
-        width: '100%',
         background: template.background.isView ? template.background.value : 'transparent'
       }}
     >
