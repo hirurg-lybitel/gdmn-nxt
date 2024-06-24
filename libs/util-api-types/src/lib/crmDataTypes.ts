@@ -222,6 +222,7 @@ export interface IContract extends IWithID {
   DATEBEGIN: Date;
   DATEEND: Date;
   customer: ICustomer;
+  withDetails: boolean;
 };
 
 export interface IContractDetail extends IWithID {
