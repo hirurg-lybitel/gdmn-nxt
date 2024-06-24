@@ -52,8 +52,6 @@ export function useFilterStore(filterEntityName: string): any {
 
   const currentFilterData = filter.filterData?.[`${filterEntityName}`];
 
-  const [skip, setSkip] = useState(true);
-
   const save = useCallback((filterData: IFilteringData | undefined) => {
     if (filterData === undefined && !filterId) return;
     if (lastFilter === undefined) return;
@@ -92,10 +90,6 @@ export function useFilterStore(filterEntityName: string): any {
   }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter, dispatch]);
 
   useEffect(() => {
-    if (skip) {
-      setSkip(false);
-      return;
-    }
     dispatch(setDebounce({ name: filterEntityName, callBack: () => save(currentFilterData), time: debounceTime }));
   }, [currentFilterData]);
 
