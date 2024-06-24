@@ -198,7 +198,7 @@ export function MailingUpsert({
   const templateChange = (value: string) => formik.setFieldValue('TEMPLATE', value);
   const saveTemplateChange = (event: ChangeEvent<HTMLInputElement>, checked: boolean) => setSaveTemplate(checked);
   const testingEmailsChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const value = e.target.value.split(',');
+    const value = e.target.value.split(',').map(s => s.trim());
     if (value.length > 0 && value[0].length === 0) {
       formik.setFieldValue('testingEmails', []);
       return;
@@ -410,7 +410,7 @@ export function MailingUpsert({
                   label="Добавить в сохранённые шаблоны"
                   style={{
                     position: 'absolute',
-                    right: 620,
+                    left: 280,
                     top: 2
                   }}
                 />

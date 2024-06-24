@@ -196,6 +196,7 @@ const launchMailing = async (
 
       const renderedHtml = Mustache.render(html, view);
 
+
       const { accepted, rejected } = await sendEmail(
         from,
         EMAIL,
@@ -203,6 +204,8 @@ const launchMailing = async (
         '',
         renderedHtml,
         attachmentsSummary);
+
+
 
       if (accepted.length > 0) {
         response.accepted.push({ [ID]: accepted.toString() });
@@ -219,6 +222,7 @@ const launchMailing = async (
       ...response
     };
   } catch (error) {
+    console.log(' [ MY ERRROR ]');
     throw error;
   }
 };
@@ -320,56 +324,64 @@ const testLaunchMailing = async (
   subject = 'Тестовая рассылка',
   attachments: MailAttachment[] = [],
 ) => {
-  if (emails.length === 0) {
-    throw UnprocessableEntityException('Не указаны адреса для рассылок');
-  }
+  try {
+    if (emails.length === 0) {
+      throw UnprocessableEntityException('Не указаны адреса для рассылок');
+    }
 
-  const from = `Belgiss <${process.env.SMTP_USER}>`;
+    const from = `Belgiss <${process.env.SMTP_USER}>`;
 
-  const originalHtml = template.replaceAll('#NAME#', '{{ NAME }}') ?? '';
+    const originalHtml = template.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
-  if (originalHtml === '') {
-    throw UnprocessableEntityException('Не указан шаблон письма');
-  }
+    if (originalHtml === '') {
+      throw UnprocessableEntityException('Не указан шаблон письма');
+    }
 
-  const { html, attachments: imagesAttachments } = await getHtmlWithAttachments(originalHtml);
+    const { html, attachments: imagesAttachments } = await getHtmlWithAttachments(originalHtml);
 
-  const response = {
-    accepted: [],
-    rejected: []
-  };
-
-  const attachmentsSummaryPromise = attachments.map(async ({ fileName, content }, idx): Promise<IAttachment> => ({
-    filename: fileName,
-    path: await createTempFile(content, fileName),
-    cid: `file${idx}@cid`
-  }));
-
-  const attachmentsSummary = (await Promise.all([...attachmentsSummaryPromise])).concat(imagesAttachments);
-
-  await forEachAsync(emails, async (email) => {
-    const view = {
-      NAME: '<наименование клиента>'
+    const response = {
+      accepted: [],
+      rejected: []
     };
 
-    const renderedHtml = Mustache.render(html, view);
+    const attachmentsSummaryPromise = attachments.map(async ({ fileName, content }, idx): Promise<IAttachment> => ({
+      filename: fileName,
+      path: await createTempFile(content, fileName),
+      cid: `file${idx}@cid`
+    }));
 
-    const { accepted, rejected } = await sendEmail(
-      from,
-      email,
-      subject,
-      '',
-      renderedHtml,
-      attachmentsSummary);
+    const attachmentsSummary = (await Promise.all([...attachmentsSummaryPromise])).concat(imagesAttachments);
 
-    response.accepted.push(...accepted);
-    response.rejected.push(...rejected);
-  });
+    await forEachAsync(emails, async (email) => {
+      const view = {
+        NAME: '<наименование клиента>'
+      };
 
-  return {
-    ...resultDescription('Тестовая рассылка выполнена'),
-    ...response
-  };
+      const renderedHtml = Mustache.render(html, view);
+
+      try {
+        const { accepted, rejected } = await sendEmail(
+          from,
+          email,
+          subject,
+          '',
+          renderedHtml,
+          attachmentsSummary);
+
+        response.accepted.push(...accepted);
+        response.rejected.push(...rejected);
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    });
+
+    return {
+      ...resultDescription('Тестовая рассылка выполнена'),
+      ...response
+    };
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const mailingService = {
