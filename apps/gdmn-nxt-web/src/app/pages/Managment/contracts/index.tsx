@@ -18,7 +18,7 @@ import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import DetailContent from './detail-content';
 import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
 import { ContractsFilter } from '@gdmn-nxt/components/contracts/contracts-filter';
-import { useFilterStore } from '../../../features/common/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export interface ContractsProps {}
 

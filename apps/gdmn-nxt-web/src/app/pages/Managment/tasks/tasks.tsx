@@ -20,7 +20,7 @@ import { RootState } from '../../../store';
 import TasksFilter, { IFilteringData } from '../../../components/Kanban/tasks-filter/tasks-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { useFilterStore } from '../../../features/common/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export interface TasksProps {}
 

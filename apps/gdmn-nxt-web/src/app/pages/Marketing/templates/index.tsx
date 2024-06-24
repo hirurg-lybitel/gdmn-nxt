@@ -14,7 +14,7 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import { useFilterStore } from '../../../features/common/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 interface EmailTemplateListProps {
 
 }

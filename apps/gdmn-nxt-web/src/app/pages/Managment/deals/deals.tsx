@@ -20,7 +20,7 @@ import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-but
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import KanbanEditCard from '@gdmn-nxt/components/Kanban/kanban-edit-card/kanban-edit-card';
-import { useFilterStore } from '../../../features/common/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export interface IChanges {
   id: number;

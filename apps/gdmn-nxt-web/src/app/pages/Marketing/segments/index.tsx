@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/Marketing/segments/segmentsApi';
-import { useFilterStore } from '../../../features/common/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export default function CustomersSegments() {
   const [paginationData, setPaginationData] = useState<IPaginationData>({
