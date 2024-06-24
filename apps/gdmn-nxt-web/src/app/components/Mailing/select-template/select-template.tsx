@@ -104,10 +104,12 @@ export function SelectTemplate({
                 className={styles['card-item']}
                 onClick={onTemplateSelect(template)}
               >
-                <EmailTemplateListItem
-                  template={template}
-                  editable={false}
-                />
+                <div style={{ pointerEvents: 'none' }}>
+                  <EmailTemplateListItem
+                    template={template}
+                    editable={false}
+                  />
+                </div>
               </CustomizedCard>
             </Grid>
           ))}

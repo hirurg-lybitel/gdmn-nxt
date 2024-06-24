@@ -7,9 +7,9 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { IMailing, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
+import { IFilteringData, IMailing, IPaginationData, ISortingData, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Chip, ChipOwnProps, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
-import { GridColDef } from '@mui/x-data-grid-pro';
+import { GridColDef, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useLaunchMailingMutation, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
@@ -21,6 +21,9 @@ import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import SendIcon from '@mui/icons-material/Send';
 import PendingIcon from '@mui/icons-material/Pending';
 import dayjs from 'dayjs';
+import { RootState } from '../../../store';
+import { useDispatch, useSelector } from 'react-redux';
+import { saveFilterData } from '../../../store/filtersSlice';
 interface StatusChipProps extends ChipOwnProps {
   onClick?: () => void;
 }
@@ -44,10 +47,21 @@ const StatusChip = ({
 export default function Mailing() {
   const userPermissions = usePermissions();
 
+  const [paginationData, setPaginationData] = useState<IPaginationData>({
+    pageNo: 0,
+    pageSize: 20,
+  });
+
+  const [sortingData, setSortingData] = useState<ISortingData | null>();
+
+  const filterEntityName = 'mailing';
+
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+
   const {
     data: {
       mailings,
-      count
+      count = 0,
     } = {
       count: 0,
       mailings: []
@@ -55,7 +69,11 @@ export default function Mailing() {
     isLoading,
     isFetching,
     refetch
-  } = useGetAllMailingQuery(undefined, { pollingInterval: 1000 * 60 });
+  } = useGetAllMailingQuery({
+    pagination: paginationData,
+    ...(filterData && { filter: filterData }),
+    ...(sortingData ? { sort: sortingData } : {})
+  }, { pollingInterval: 1000 * 60 });
 
   const [addMailing] = useAddMailingMutation();
   const [deleteMailing] = useDeleteMailingMutation();
@@ -63,6 +81,39 @@ export default function Mailing() {
   const [launchMailing] = useLaunchMailingMutation();
 
   const launch = useCallback((id: number) => () => launchMailing(id), []);
+
+  const rowPerPage = 20;
+
+  const pageOptions = [
+    rowPerPage,
+    rowPerPage * 2,
+    rowPerPage * 5,
+    rowPerPage * 10
+  ];
+
+  const dispatch = useDispatch();
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
+  }, []);
+
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+    setPaginationData(prev => ({ ...prev, pageNo: 0 }));
+  }, [filterData]);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
+  }, [filterData]);
 
   const columns: GridColDef<IMailing>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
@@ -253,16 +304,16 @@ export default function Mailing() {
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
             <SearchBar
-              // disabled={personsIsFetching}
-              // onCancelSearch={cancelSearch}
-              // onRequestSearch={requestSearch}
+              disabled={isLoading}
+              onCancelSearch={cancelSearch}
+              onRequestSearch={requestSearch}
               fullWidth
               cancelOnEscape
-              // value={
-              //   filterData?.name
-              //     ? filterData.name[0]
-              //     : undefined
-              // }
+              value={
+                filterData?.name
+                  ? filterData.name[0]
+                  : undefined
+              }
             />
             <Box display="inline-flex" alignSelf="center">
               <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
@@ -290,10 +341,20 @@ export default function Mailing() {
           loading={isLoading}
           columns={columns}
           rows={mailings}
+          pagination
+          pageSizeOptions={pageOptions}
+          paginationModel={{ page: paginationData.pageNo, pageSize: paginationData?.pageSize }}
+          onSortModelChange={(sortModel: GridSortModel) => setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null)}
+          onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+            setPaginationData({
+              ...paginationData,
+              pageSize: data.pageSize,
+              pageNo: data.page
+            });
+          }}
+          rowCount={count}
           paginationMode="server"
           sortingMode="server"
-          pagination
-          rowCount={count}
         />
       </CardContent>
       {memoSelectTemplate}
