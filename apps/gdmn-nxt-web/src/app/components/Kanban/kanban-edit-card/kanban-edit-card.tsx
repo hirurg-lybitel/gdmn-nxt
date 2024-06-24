@@ -392,6 +392,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     <CustomizedDialog
       open={open}
       onClose={handleOnClose}
+      confirmation={formik.dirty}
       minWidth={400}
       width="calc(100% - var(--menu-width))"
     >

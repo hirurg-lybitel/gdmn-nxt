@@ -119,6 +119,7 @@ export function CustomerEdit({
     <CustomizedDialog
       open={open}
       onClose={onCancel}
+      confirmation={formik.dirty}
       width="calc(100% - var(--menu-width))"
     >
       <DialogTitle>

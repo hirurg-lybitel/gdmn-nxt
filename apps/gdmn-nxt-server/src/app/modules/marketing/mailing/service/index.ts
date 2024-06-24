@@ -69,8 +69,8 @@ const findAll = async (
     const {
       pageSize,
       pageNo,
-      sortField = 'NAME',
-      sortMode = 'ASC',
+      field: sortField = 'NAME',
+      sort: sortMode = 'ASC',
       name,
       ...where
     } = query;

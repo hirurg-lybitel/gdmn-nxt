@@ -1,7 +1,7 @@
 import { IContract, IContractDetail } from '@gsbelarus/util-api-types';
 import { useGetContractDetailsQuery } from '../../../features/contracts-list/contractsListApi';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { GridColDef, GridValueFormatterParams } from '@mui/x-data-grid-pro';
+import { GridColDef } from '@mui/x-data-grid-pro';
 import { useCallback } from 'react';
 
 interface Prop {
@@ -14,16 +14,16 @@ export default function DetailContent({
   const { data = [], isLoading } = useGetContractDetailsQuery(row.ID);
 
   const columns: GridColDef<IContractDetail>[] = [
-    { field: '', headerName: '', width: 50, resizable: false },
+    { field: '', headerName: '', width: 50, resizable: false, disableColumnMenu: true },
     { field: 'NAME', headerName: 'Услуга', sortable: false, resizable: false, disableColumnMenu: true, flex: 1 },
     { field: 'QUANTITY', headerName: 'Количество', sortable: false, resizable: false, disableColumnMenu: true, minWidth: 130 },
     {
       field: 'PRICE', headerName: 'Цена', sortable: false, resizable: false, disableColumnMenu: true,
-      valueFormatter: ({ value }: GridValueFormatterParams<any>) => value?.toLocaleString()
+      valueFormatter: ({ value }) => value?.toLocaleString()
     },
     {
       field: 'AMOUNT', headerName: 'Сумма', sortable: false, resizable: false, disableColumnMenu: true,
-      valueFormatter: ({ value }: GridValueFormatterParams<any>) => value?.toLocaleString()
+      valueFormatter: ({ value }) => value?.toLocaleString()
     }
   ];
 

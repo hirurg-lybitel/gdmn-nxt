@@ -404,6 +404,7 @@ export function EditContact({
     <CustomizedDialog
       open={open}
       onClose={onClose}
+      confirmation={formik.dirty}
       disableEscape
       width="calc(100% - var(--menu-width))"
     >

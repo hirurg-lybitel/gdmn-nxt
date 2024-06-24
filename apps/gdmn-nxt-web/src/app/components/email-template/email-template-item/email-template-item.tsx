@@ -105,6 +105,7 @@ export const FindComponent = (props: IFindComponentProps) => {
           style={{
             minWidth: 'min-content',
             display: 'inline-block',
+            boxSizing: 'border-box',
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
