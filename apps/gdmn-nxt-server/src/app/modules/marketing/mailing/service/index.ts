@@ -197,21 +197,23 @@ const launchMailing = async (
       const renderedHtml = Mustache.render(html, view);
 
 
-      const { accepted, rejected } = await sendEmail(
-        from,
-        EMAIL,
-        subject,
-        '',
-        renderedHtml,
-        attachmentsSummary);
+      try {
+        const { accepted, rejected } = await sendEmail(
+          from,
+          EMAIL,
+          subject,
+          '',
+          renderedHtml,
+          attachmentsSummary);
 
-
-
-      if (accepted.length > 0) {
-        response.accepted.push({ [ID]: accepted.toString() });
-      }
-      if (rejected.length > 0) {
-        response.rejected.push({ [ID]: 'Не доставлено' });
+        if (accepted.length > 0) {
+          response.accepted.push({ [ID]: accepted.toString() });
+        }
+        if (rejected.length > 0) {
+          response.rejected.push({ [ID]: 'Не доставлено' });
+        }
+      } catch (error) {
+        throw new Error(error.message);
       }
     });
 
@@ -222,7 +224,6 @@ const launchMailing = async (
       ...response
     };
   } catch (error) {
-    console.log(' [ MY ERRROR ]');
     throw error;
   }
 };
