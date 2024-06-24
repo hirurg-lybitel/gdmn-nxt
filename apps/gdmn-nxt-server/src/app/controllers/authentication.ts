@@ -227,13 +227,13 @@ const startCreate2fa: RequestHandler = async (req, res) => {
     if (!codeSent) {
       return res.json(authResult(
         'ERROR',
-        ERROR_MESSAGES.SEND_EMAL_ERROR,
+        ERROR_MESSAGES.SEND_EMAIL_ERROR,
       ));
     };
   } catch ({ message }) {
     return res.json(authResult(
       'ERROR',
-      `${ERROR_MESSAGES.SEND_EMAL_ERROR} ${message}`,
+      `${ERROR_MESSAGES.SEND_EMAIL_ERROR} ${message}`,
     ));
   }
 

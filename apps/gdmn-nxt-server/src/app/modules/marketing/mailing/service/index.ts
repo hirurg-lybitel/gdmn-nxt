@@ -190,7 +190,7 @@ const launchMailing = async (
       };
 
       if (!EMAIL) {
-        response.rejected.push({ [ID]: 'Не указан emal' });
+        response.rejected.push({ [ID]: 'Не указан email' });
         return;
       };
 
