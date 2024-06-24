@@ -5,7 +5,11 @@ import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
 import dayjs from 'dayjs';
 
-const find: FindHandler<IMailing> = async (sessionID, clause = {}, order) => {
+const find: FindHandler<IMailing> = async (
+  sessionID,
+  clause = {},
+  order = { NAME: 'ASC' }
+) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
