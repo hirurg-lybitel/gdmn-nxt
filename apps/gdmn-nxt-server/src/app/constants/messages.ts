@@ -11,7 +11,7 @@ export const ERROR_MESSAGES = {
   TFA_CODE_INVALID: 'Код 2FA неверен или просрочен.',
   REQUEST_TOO_LARGE: `Слишком большой объём данных. Максимальный размер: ${bodySize.toUpperCase()}`,
   REQUEST_MISSED_PARAMS: 'Поле не указано или неверного типа',
-  SEND_EMAL_ERROR: 'Код подтверждения не может быть отправлен на указанный email.',
+  SEND_EMAIL_ERROR: 'Код подтверждения не может быть отправлен на указанный email.',
   CAPTCHA_INVALID: 'Неверный код.',
   DATA_NOT_FOUND: 'Данные не найдены'
 };

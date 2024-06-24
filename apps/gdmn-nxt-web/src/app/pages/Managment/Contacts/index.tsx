@@ -23,8 +23,8 @@ import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contac
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../../../features/filters/filtersApi';
-import { useDebounce } from '../../../features/common/useDebunce';
-import { useFilterStore } from '../../../features/common/useFilterStore';
+import { useDebounce } from '../../../components/helpers/hooks/useDebunce';
+import { useFilterStore } from '../../../components/helpers/hooks/useFilterStore';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
