@@ -3651,7 +3651,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/contracts-list/contractType/:contractType",
+							"raw": "{{baseUrl}}/contracts-list/contractType/:contractType?pageNo=1&pageSize=2",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -3659,6 +3659,16 @@
 								"contracts-list",
 								"contractType",
 								":contractType"
+							],
+							"query": [
+								{
+									"key": "pageNo",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "2"
+								}
 							],
 							"variable": [
 								{
@@ -3670,13 +3680,13 @@
 					},
 					"response": [
 						{
-							"id": "d69048af-e705-49b8-885a-11df69498638",
+							"id": "7c2cbbe2-3ea7-41ea-bcb3-9a69b23b02b9",
 							"name": "200",
 							"originalRequest": {
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/contracts-list/contractType/:contractType",
+									"raw": "{{baseUrl}}/contracts-list/contractType/:contractType?pageNo=1&pageSize=2",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -3684,6 +3694,16 @@
 										"contracts-list",
 										"contractType",
 										":contractType"
+									],
+									"query": [
+										{
+											"key": "pageNo",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "2"
+										}
 									],
 									"variable": [
 										{
@@ -3723,11 +3743,11 @@
 								},
 								{
 									"key": "Date",
-									"value": "Thu, 23 May 2024 19:39:58 GMT"
+									"value": "Mon, 24 Jun 2024 17:03:38 GMT"
 								},
 								{
 									"key": "X-RateLimit-Reset",
-									"value": "1716493254"
+									"value": "1719248671"
 								},
 								{
 									"key": "Content-Type",
@@ -3735,11 +3755,11 @@
 								},
 								{
 									"key": "Content-Length",
-									"value": "777"
+									"value": "778"
 								},
 								{
 									"key": "ETag",
-									"value": "W/\"309-zVTwzhQFeNlAWR4gJfepinIMz6Q\""
+									"value": "W/\"30a-hSEz16ocVfurtsf2hIg/UW99JZM\""
 								},
 								{
 									"key": "Connection",
@@ -3752,7 +3772,7 @@
 							],
 							"cookie": [],
 							"responseTime": null,
-							"body": "{\n    \"queries\": {\n        \"contracts\": [\n            {\n                \"ID\": 943297144,\n                \"DOCUMENTDATE\": \"2022-11-20T21:00:00.000Z\",\n                \"NUMBER\": \"89-10/21 ДС 1\",\n                \"ISACTIVE\": 0,\n                \"ISBUDGET\": 0,\n                \"DATEBEGIN\": \"2022-11-30T21:00:00.000Z\",\n                \"DATEEND\": \"2023-11-29T21:00:00.000Z\",\n                \"DOCTYPENAME\": \"Договор на абонентское\",\n                \"DEPT_NAME\": \"\",\n                \"JOB_NUMBER\": 0,\n                \"SUMNCU\": 64,\n                \"SUMCURNCU\": 0,\n                \"customer\": {\n                    \"ID\": 668353079,\n                    \"NAME\": \"Компания Атлантик ООО\"\n                }\n            },\n            {\n                \"ID\": 948397906,\n                \"DOCUMENTDATE\": \"2022-11-14T21:00:00.000Z\",\n                \"NUMBER\": \"18/22-К\",\n                \"ISACTIVE\": 0,\n                \"ISBUDGET\": 0,\n                \"DATEBEGIN\": \"2022-11-14T21:00:00.000Z\",\n                \"DATEEND\": \"2022-11-14T21:00:00.000Z\",\n                \"DOCTYPENAME\": \"Накладная\",\n                \"DEPT_NAME\": \"\",\n                \"JOB_NUMBER\": 0,\n                \"SUMNCU\": 1422,\n                \"SUMCURNCU\": 0,\n                \"customer\": {\n                    \"ID\": 154850311,\n                    \"NAME\": \"ККС ООО\"\n                }\n            }\n        ],\n        \"rowCount\": 2\n    },\n    \"_params\": [\n        {\n            \"contractType\": 1\n        }\n    ]\n}"
+							"body": "{\n    \"queries\": {\n        \"contracts\": [\n            {\n                \"ID\": 945827425,\n                \"DOCUMENTDATE\": \"2022-11-08T21:00:00.000Z\",\n                \"NUMBER\": \"30\",\n                \"ISACTIVE\": 0,\n                \"ISBUDGET\": 0,\n                \"DATEBEGIN\": \"2022-11-08T21:00:00.000Z\",\n                \"DATEEND\": \"2022-11-08T21:00:00.000Z\",\n                \"DOCTYPENAME\": \"Разовые выезды\",\n                \"DEPT_NAME\": \"\",\n                \"JOB_NUMBER\": 0,\n                \"SUMNCU\": 1500,\n                \"SUMCURNCU\": 0,\n                \"customer\": {\n                    \"ID\": 153589537,\n                    \"NAME\": \"Технолог-М ОДО\"\n                },\n                \"withDetails\": true\n            },\n            {\n                \"ID\": 945348353,\n                \"DOCUMENTDATE\": \"2022-11-02T21:00:00.000Z\",\n                \"NUMBER\": \"17/22-К\",\n                \"ISACTIVE\": 0,\n                \"ISBUDGET\": 0,\n                \"DATEBEGIN\": \"2022-11-02T21:00:00.000Z\",\n                \"DATEEND\": \"2022-11-02T21:00:00.000Z\",\n                \"DOCTYPENAME\": \"Накладная\",\n                \"DEPT_NAME\": \"\",\n                \"JOB_NUMBER\": 0,\n                \"SUMNCU\": 1426,\n                \"SUMCURNCU\": 0,\n                \"customer\": {\n                    \"ID\": 154850311,\n                    \"NAME\": \"ККС ООО\"\n                },\n                \"withDetails\": true\n            }\n        ],\n        \"rowCount\": 2252\n    },\n    \"_params\": [\n        {\n            \"contractType\": 1\n        }\n    ]\n}"
 						}
 					]
 				},

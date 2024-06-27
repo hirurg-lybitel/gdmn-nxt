@@ -74,7 +74,7 @@ const get: RequestHandler = async (req, res) => {
         res = ` AND creator.ID = ${contactKey} `;
       };
       if (Number(isPerformer) === 1) {
-        res = res ? ' OR ' : ' AND ';
+        res = res + (res ? ' OR ' : ' AND ');
         res = res + ` (performer.ID IN (${contactKey}) OR secondPerformer.ID IN (${contactKey})) `;
       }
       return res;
@@ -616,7 +616,7 @@ const getTasks: RequestHandler = async (req, res) => {
         res = ` AND creator.ID = ${contactKey} `;
       };
       if (Number(isPerformer) === 1) {
-        res = res ? ' OR ' : ' AND ';
+        res = res + (res ? ' OR ' : ' AND ');
         res = res + ` performer.ID = (${contactKey}) `;
       }
       return res;
