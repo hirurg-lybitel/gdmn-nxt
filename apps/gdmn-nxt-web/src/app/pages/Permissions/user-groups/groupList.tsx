@@ -6,10 +6,11 @@ import EditIcon from '@mui/icons-material/Edit';
 
 const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
-    borderRadius: '4px',
+    borderRadius: 0,
     '&:hover': {
       backgroundColor: theme.color.grey[300],
       color: 'initial',
+      borderRadius: '4px',
     },
     '&:hover .actions': {
       display: 'inline',
@@ -21,6 +22,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItemSelected: {
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.secondary.main,
+    borderRadius: '4px',
     '& .caption': {
       color: theme.palette.secondary.main,
     },
