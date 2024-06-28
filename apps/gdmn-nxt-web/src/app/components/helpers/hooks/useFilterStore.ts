@@ -45,10 +45,10 @@ export function useFilterStore(filterEntityName: string): any {
 
   useEffect(() => {
     if (filtersData === undefined || filter.lastFilter?.[`${filterEntityName}`] !== undefined) return;
-    const data = { [`${filterEntityName}`]: { ...(filters?.filters || filter.filterData?.[`${filterEntityName}`] || {}), ...filter.filterData?.[`${filterEntityName}`] } };
+    const data = { ...(filters?.filters || filter.filterData?.[`${filterEntityName}`] || {}), ...filter.filterData?.[`${filterEntityName}`] };
     dispatch(setFilterId({ [`${filterEntityName}`]: (filters?.ID || null) }));
-    dispatch(setLastFilter(data));
-    dispatch(saveFilterData(data));
+    dispatch(setLastFilter({ [`${filterEntityName}`]: Object.keys(filters?.filters || {}).length < 1 ? {} : { ...data } }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: { ...data } }));
   }, [filtersIsLoading]);
 
   const currentFilterData = filter.filterData?.[`${filterEntityName}`];
