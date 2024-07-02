@@ -3311,7 +3311,94 @@
 									]
 								}
 							},
-							"response": []
+							"response": [
+								{
+									"id": "970628f2-5a93-426b-b63b-cb8a73a4adbb",
+									"name": "200",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/mailings/launch/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"mailings",
+												"launch",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744298"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Tue, 02 Jul 2024 12:13:36 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1719922470"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "131"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"83-mI3BhUi+WSsSNkUBd9bfrKeoozs\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"message\": \"Тестовая рассылка выполнена\",\n    \"accepted\": [\n        {\n            \"147330167\": \"yurashoihet@gmail.com\"\n        }\n    ],\n    \"rejected\": []\n}"
+								}
+							]
 						},
 						{
 							"name": "TestLaunch",
