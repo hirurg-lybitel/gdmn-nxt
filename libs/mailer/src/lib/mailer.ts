@@ -23,13 +23,19 @@ export const sendEmail = (
   text?: string,
   html?: string,
   attachments?: IAttachment[]
-) => transporter.sendMail({
-  from,
-  to,
-  subject,
-  text,
-  html,
-  attachments });
+) => {
+  try {
+    return transporter.sendMail({
+      from,
+      to,
+      subject,
+      text,
+      html,
+      attachments });
+  } catch (error) {
+    console.error('sendEmail_error', error);
+  }
+};
 
 export const sendEmailByTestAccount = async (
   from: string,
