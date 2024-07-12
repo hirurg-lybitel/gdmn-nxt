@@ -572,6 +572,9 @@ const getTasks: RequestHandler = async (req, res) => {
         USR$DEADLINE: {
           type: 'date'
         },
+        USR$DATECLOSE: {
+          type: 'date'
+        },
         USR$CLOSED: {
           type: 'boolean'
         },
@@ -786,7 +789,7 @@ const getTasks: RequestHandler = async (req, res) => {
           USR$NUMBER: el['USR$NUMBER'],
           USR$INPROGRESS: el['USR$INPROGRESS'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$DATECLOSE: el['USR$CLOSED'] ? new Date() : null,
+          USR$DATECLOSE: el['USR$CLOSED'] ? el['USR$DATECLOSE'] : null,
           USR$CARDKEY: el['CARD_ID'],
           ...(el['CREATOR_ID'] && {
             CREATOR: {

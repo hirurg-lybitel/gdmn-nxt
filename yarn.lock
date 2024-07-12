@@ -3989,6 +3989,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@testing-library/user-event@npm:^14.5.2":
+  version: 14.5.2
+  resolution: "@testing-library/user-event@npm:14.5.2"
+  peerDependencies:
+    "@testing-library/dom": ">=7.21.4"
+  checksum: d76937dffcf0082fbf3bb89eb2b81a31bf5448048dd61c33928c5f10e33a58e035321d39145cefd469bb5a499c68a5b4086b22f1a44e3e7c7e817dc5f6782867
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:1":
   version: 1.1.2
   resolution: "@tootallnate/once@npm:1.1.2"
@@ -9779,6 +9788,7 @@ __metadata:
     "@simbathesailor/use-what-changed": ^2.0.0
     "@svgr/webpack": ^6.1.2
     "@testing-library/react": 13.4.0
+    "@testing-library/user-event": ^14.5.2
     "@types/connect-flash": ^0.0.38
     "@types/cookie-parser": ^1.4.2
     "@types/cron": ^2.0.1
