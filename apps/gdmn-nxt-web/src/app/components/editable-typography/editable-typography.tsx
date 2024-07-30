@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyProps, tooltipClasses } from '@mui/material';
+import { ClickAwayListener, IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyProps, tooltipClasses } from '@mui/material';
 import styles from './editable-typography.module.less';
 import { KeyboardEvent, cloneElement, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
@@ -16,7 +16,8 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   container?: (value: Value) => React.ReactNode;
   error?: boolean;
   helperText?: string;
-  closeOnBlur?: boolean
+  closeOnBlur?: boolean,
+  closeOnBlurType?: 'inputBlur' | 'clickAwayFromComponent'
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -30,6 +31,7 @@ const EditableTypography = <Value extends React.ReactNode>({
   error = false,
   helperText,
   closeOnBlur = true,
+  closeOnBlurType = 'inputBlur',
   ...props
 }: EditableTypographyProps<Value>) => {
   const [editText, setEditText] = useState(!value);
@@ -40,7 +42,7 @@ const EditableTypography = <Value extends React.ReactNode>({
         e.preventDefault();
       },
       onBlur: (e: any) => {
-        closeOnBlur && onClose(e);
+        closeOnBlur && closeOnBlurType === 'inputBlur' && onClose(e);
       },
       style: {
         flex: 1
@@ -54,8 +56,8 @@ const EditableTypography = <Value extends React.ReactNode>({
     setEditText(true);
   };
 
-  const onClose = (e: any) => {
-    e.preventDefault();
+  const onClose = (e?: any) => {
+    e?.preventDefault();
     if (!value?.toString().trim()) {
       onDelete && onDelete();
     }
@@ -71,19 +73,24 @@ const EditableTypography = <Value extends React.ReactNode>({
     e.key === 'Escape' && onClose(e);
   };
 
+  const clickAway = () => {
+    closeOnBlur && closeOnBlurType === 'clickAwayFromComponent' && onClose();
+  };
+
   return (
-    <div
-      aria-label="editable-typography"
-      className={styles['container']}
-      onKeyDown={onKeyDown}
-    >
-      <ErrorTooltip
-        open={!!helperText}
-        title={helperText}
+    <ClickAwayListener onClickAway={clickAway}>
+      <div
+        aria-label="editable-typography"
+        className={styles['container']}
+        onKeyDown={onKeyDown}
       >
-        <div style={{ width: '100%' }}>
-          {editText
-            ? clonedElement ??
+        <ErrorTooltip
+          open={!!helperText}
+          title={helperText}
+        >
+          <div style={{ width: '100%' }}>
+            {editText
+              ? clonedElement ??
           <TextField
             variant="standard"
             value={value}
@@ -92,41 +99,42 @@ const EditableTypography = <Value extends React.ReactNode>({
             onChange={onChange}
             onBlur={onClose}
           />
-            :
-            <Typography
-              {...props}
-              className={styles['title']}
-              autoFocus
-            >
-              {container ? container(value) : value}
-            </Typography>
+              :
+              <Typography
+                {...props}
+                className={styles['title']}
+                autoFocus
+              >
+                {container ? container(value) : value}
+              </Typography>
+            }
+          </div>
+        </ErrorTooltip>
+        <div
+          className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
+        >
+          {editText
+            ? <Tooltip arrow title="Закрыть окно редактирования">
+              <IconButton size="small" onClick={onClose}>
+                <CloseIcon fontSize="small" color="primary" />
+              </IconButton >
+            </Tooltip>
+            : <Tooltip arrow title="Редактировать">
+              <IconButton size="small" onClick={handleEdit}>
+                <EditIcon fontSize="small" color="primary" />
+              </IconButton >
+            </Tooltip>
           }
-        </div>
-      </ErrorTooltip>
-      <div
-        className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
-      >
-        {editText
-          ? <Tooltip arrow title="Закрыть окно редактирования">
-            <IconButton size="small" onClick={onClose}>
-              <CloseIcon fontSize="small" color="primary" />
-            </IconButton >
-          </Tooltip>
-          : <Tooltip arrow title="Редактировать">
-            <IconButton size="small" onClick={handleEdit}>
-              <EditIcon fontSize="small" color="primary" />
-            </IconButton >
-          </Tooltip>
-        }
-        {deleteable &&
+          {deleteable &&
           <Tooltip arrow title="Удалить">
             <IconButton size="small" onClick={handleDelete}>
               <DeleteIcon fontSize="small" color="primary" />
             </IconButton >
           </Tooltip>
-        }
+          }
+        </div>
       </div>
-    </div>
+    </ClickAwayListener>
   );
 };
 
