@@ -5,7 +5,8 @@ import { saveFilterData, setDebounce, setFilterId, setLastFilter } from '../../.
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 
-export function useFilterStore(filterEntityName: string): any {
+export function useFilterStore(filterEntityName: string, defaultFilters?: {[x: string]: any} | null): any {
+  // Если defaultFilters надо подгружать с сервера передавать null пока грузятся
   const filter = useSelector((state: RootState) => state.filtersStorage);
   const debounceTime = 1000 * 10;
   const { data: filtersData, isLoading: filtersIsLoading, isFetching: filtersIsFetching } = useGetAllFiltersQuery();
@@ -44,12 +45,12 @@ export function useFilterStore(filterEntityName: string): any {
   }, [filters]);
 
   useEffect(() => {
-    if (filtersData === undefined || filter.lastFilter?.[`${filterEntityName}`] !== undefined) return;
-    const data = { ...(filters?.filters || filter.filterData?.[`${filterEntityName}`] || {}), ...filter.filterData?.[`${filterEntityName}`] };
+    if (filtersData === undefined || filter.lastFilter?.[`${filterEntityName}`] !== undefined || defaultFilters === null) return;
+    const data = { ...defaultFilters, ...(filters?.filters || filter.filterData?.[`${filterEntityName}`] || {}), ...filter.filterData?.[`${filterEntityName}`] };
     dispatch(setFilterId({ [`${filterEntityName}`]: (filters?.ID || null) }));
     dispatch(setLastFilter({ [`${filterEntityName}`]: Object.keys(filters?.filters || {}).length < 1 ? {} : { ...data } }));
     dispatch(saveFilterData({ [`${filterEntityName}`]: { ...data } }));
-  }, [filtersIsLoading]);
+  }, [filtersIsLoading, defaultFilters]);
 
   const currentFilterData = filter.filterData?.[`${filterEntityName}`];
 
