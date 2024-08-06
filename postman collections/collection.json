@@ -3992,6 +3992,24 @@
 				}
 			],
 			"id": "40966b64-35b7-4d8e-a750-57bf81b4f8f6"
+		},
+		{
+			"name": "Feedback",
+			"item": [
+				{
+					"name": "By customer ID",
+					"id": "35ef6c59-901b-45ec-a1d8-feb9ea33531d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "ff974277-8dc3-425c-b514-3c62b8c8078f"
 		}
 	],
 	"auth": {
