@@ -4004,7 +4004,24 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/feedback/customerId/:customerId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								"customerId",
+								":customerId"
+							],
+							"variable": [
+								{
+									"key": "customerId",
+									"value": "147330167"
+								}
+							]
+						}
 					},
 					"response": []
 				}
