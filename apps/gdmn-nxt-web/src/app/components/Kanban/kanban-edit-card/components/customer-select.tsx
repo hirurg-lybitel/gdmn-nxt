@@ -35,6 +35,7 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   value?: Value<Multiple>;
   onChange?: (value: Value<Multiple> | undefined | null) => void;
   multiple?: Multiple;
+  disableCreation?: boolean;
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
@@ -42,6 +43,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     value,
     onChange,
     multiple = false,
+    disableCreation = false,
     ...rest
   } = props;
 
@@ -91,12 +93,16 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const memoPaperFooter = useMemo(() =>
     <div>
-      <Button
-        startIcon={<AddCircleRoundedIcon />}
-        onClick={handleAddCustomer}
-      >Создать клиента</Button>
+      {disableCreation
+        ? <></>
+        : <Button
+          startIcon={<AddCircleRoundedIcon />}
+          onClick={handleAddCustomer}
+        >
+          Создать клиента
+        </Button>}
     </div>,
-  []);
+  [disableCreation]);
 
   const memoCustomerUpsert = useMemo(() =>
     <CustomerEdit
