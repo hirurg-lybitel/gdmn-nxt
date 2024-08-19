@@ -4026,7 +4026,7 @@
 					"response": []
 				},
 				{
-					"name": "Обновить",
+					"name": "Update",
 					"id": "6fab3114-8dc3-43f0-8f58-c1741c113381",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -4043,7 +4043,22 @@
 								}
 							}
 						},
-						"url": "{{baseUrl}}/feedback/949748998"
+						"url": {
+							"raw": "{{baseUrl}}/feedback/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "949748998"
+								}
+							]
+						}
 					},
 					"response": []
 				}
