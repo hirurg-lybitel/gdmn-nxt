@@ -7,6 +7,7 @@ const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
+    const whereClause = {};
     const clauseString = Object
       .keys({ ...clause })
       .map(f => {
@@ -18,6 +19,7 @@ const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
           }
         }
 
+        whereClause[adjustRelationName(f)] = clause[f];
         return ` s.${f} = :${adjustRelationName(f)}`;
       })
       .join(' AND ');
@@ -30,7 +32,7 @@ const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
       FROM
         USR$CRM_MARKETING_TEMPLATES s
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`,
-      { ...clause });
+      { ...whereClause });
 
     await forEachAsync(templates, async t => {
       t.HTML = await blob2String(t['HTML_BLOB']);

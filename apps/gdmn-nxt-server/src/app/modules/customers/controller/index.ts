@@ -1,9 +1,9 @@
-import { IBusinessProcess, IContactPerson, IDataSchema, ILabel, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactPerson, IDataSchema, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { genId, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { resultError } from '../responseMessages';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../utils/cached requests';
+import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../../../utils/cachedRequests';
+import { resultError } from '@gsbelarus/util-helpers';
 
 export const getContacts: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
@@ -525,4 +525,15 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
   } catch (error) {
     console.error('upsertBusinessProcesses', error);
   };
+};
+
+
+export const customerController = {
+  upsertBusinessProcesses,
+  getCustomersCross,
+  upsertLabels,
+  getContactHierarchy,
+  deleteContact,
+  upsertContact,
+  getContacts
 };

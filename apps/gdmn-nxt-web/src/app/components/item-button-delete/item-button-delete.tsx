@@ -42,7 +42,7 @@ export function ItemButtonDelete({
   }
 
   const RootElement = (
-    <Container size="small">
+    <Container size="small" className="StyledDeleteButton">
       <Tooltip title={hint} arrow>
         <Stack
           direction="row"
