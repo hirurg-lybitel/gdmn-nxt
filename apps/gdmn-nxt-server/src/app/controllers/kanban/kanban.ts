@@ -609,7 +609,16 @@ const getTasks: RequestHandler = async (req, res) => {
 
     const userId = parseInt(req.query.userId as string);
     const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
-    const { taskNumber, performers, creators, period, isPerformer, isCreator, name } = req.query;
+    const {
+      taskNumber,
+      performers,
+      creators,
+      period,
+      isPerformer,
+      isCreator,
+      name,
+      customers
+    } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
@@ -638,6 +647,7 @@ const getTasks: RequestHandler = async (req, res) => {
           ) `
         : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
+      ${customers ? ` AND con.ID IN (${customers})` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
       ${creators ? ` OR creator.ID IN (${creators}) ` : ''}
       ${performerOrCreator}

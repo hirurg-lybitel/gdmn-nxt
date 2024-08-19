@@ -4061,6 +4061,43 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete",
+					"id": "2596efcc-4c65-406f-aff2-46db93865d6d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"response\": \"NOOOOOOO\",\r\n    \"toDo\": \"we\",\r\n    \"type\": 5,\r\n    \"creationDate\": \"2024-08-15T12:01:35.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 147330167,\r\n        \"NAME\": \"\\\"432\\\" Главный военный клинический госпиталь\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/feedback/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "949748998"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "ff974277-8dc3-425c-b514-3c62b8c8078f"
