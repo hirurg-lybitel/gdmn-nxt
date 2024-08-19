@@ -2,7 +2,7 @@ import { IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { resultError } from '../../responseMessages';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
-import { cachedRequets } from '../../utils/cached requests';
+import { cachedRequets } from '../../utils/cachedRequests';
 
 const getAll: RequestHandler = async (req, res) => {
   try {

@@ -25,7 +25,6 @@ import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/teleph
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import CustomerInfo from '../CustomerDetails/customer-info/customer-info';
 import ActCompletion from '../CustomerDetails/act-completion/act-completion';
@@ -36,6 +35,8 @@ import { emailValidation } from '@gdmn-nxt/components/helpers/validators';
 import { CustomerContacts } from '../CustomerDetails/customer-contacts';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import { CustomerFeedback } from '../CustomerDetails/customer-feedback/customer-feedback';
+import { CustomerTasks } from '../CustomerDetails/customer-tasks/customer-tasks';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -56,20 +57,20 @@ export function CustomerEdit({
 
   const userPermissions = usePermissions();
 
-  const [tabIndex, setTabIndex] = useState('1');
+  const [tabIndex, setTabIndex] = useState('8');
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
   };
 
   const initValue: ICustomer = {
-    ID: customer?.ID || 0,
-    NAME: customer?.NAME || '',
-    PHONE: customer?.PHONE || '',
-    EMAIL: customer?.EMAIL || '',
+    ID: customer?.ID ?? 0,
+    NAME: customer?.NAME ?? '',
+    PHONE: customer?.PHONE ?? '',
+    EMAIL: customer?.EMAIL ?? '',
     LABELS: customer?.LABELS || [],
-    ADDRESS: customer?.ADDRESS || '',
-    TAXID: customer?.TAXID || ''
+    ADDRESS: customer?.ADDRESS ?? '',
+    TAXID: customer?.TAXID ?? ''
   };
 
   const formik = useFormik<ICustomer>({
@@ -234,53 +235,70 @@ export function CustomerEdit({
                   >
                     <Tab
                       className={styles.tabHeader}
-                      label="Контакты"
+                      label="Общение"
                       value="1"
                     />
                     <Tab
                       className={styles.tabHeader}
-                      label="Реквизиты"
+                      label="Контакты"
                       value="2"
                     />
                     <Tab
                       className={styles.tabHeader}
-                      label="Акты выполненных работ"
+                      label="Реквизиты"
                       value="3"
                     />
                     <Tab
                       className={styles.tabHeader}
-                      label="Выписки по р/с"
+                      label="Акты выполненных работ"
                       value="4"
                     />
                     <Tab
                       className={styles.tabHeader}
-                      label="Договоры"
+                      label="Выписки по р/с"
                       value="5"
                     />
                     <Tab
                       className={styles.tabHeader}
-                      label="Сделки"
+                      label="Договоры"
                       value="6"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Сделки"
+                      value="7"
+                    />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Задачи"
+                      value="8"
+                      disabled
                     />
                   </TabList>
                   <Divider />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
-                    <CustomerContacts customerId={Number(customer?.ID)} />
+                    <CustomerFeedback customerId={Number(customer?.ID)} />
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
+                    <CustomerContacts customerId={Number(customer?.ID)} />
+                  </TabPanel>
+                  <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''} >
                     <CustomerInfo customerId={Number(customer?.ID)} />
                   </TabPanel>
-                  <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
+                  <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''}>
                     <ActCompletion customerId={Number(customer?.ID)} />
                   </TabPanel>
-                  <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''} >
+                  <TabPanel value="5" className={tabIndex === '5' ? styles.tabPanel : ''} >
                     <BankStatement companyId={Number(customer?.ID)} />
                   </TabPanel>
-                  <TabPanel value="5" className={tabIndex === '5' ? styles.tabPanel : ''} >
+                  <TabPanel value="6" className={tabIndex === '6' ? styles.tabPanel : ''} >
                     <ContractsList companyId={Number(customer?.ID)} />
                   </TabPanel>
-                  <TabPanel value="6" className={tabIndex === '6' ? styles.tabPanel : ''} >
+                  <TabPanel value="7" className={tabIndex === '7' ? styles.tabPanel : ''} >
                     <CustomerDeals customerId={Number(customer?.ID)} />
+                  </TabPanel>
+                  <TabPanel value="8" className={tabIndex === '8' ? styles.tabPanel : ''} >
+                    <CustomerTasks customerId={Number(customer?.ID)} />
                   </TabPanel>
                 </TabContext>
               </Stack>

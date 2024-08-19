@@ -1,4 +1,5 @@
 import {
+  CustomerFeedbackType,
   IMailing,
   InternalServerErrorException,
   Like,
@@ -7,16 +8,15 @@ import {
   NotFoundException,
   UnprocessableEntityException
 } from '@gsbelarus/util-api-types';
-import { customersRepository } from '@gdmn-nxt/repositories/customers';
 import { IAttachment, sendEmail, sendEmailByTestAccount } from '@gdmn/mailer';
 import { forEachAsync, resultDescription } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
-import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import dayjs from 'dayjs';
 import { mailingRepository } from '../repository';
 import fs from 'fs/promises';
 import path from 'path';
 import { segmentsService } from '../../segments/service';
+import { feedbackService } from '@gdmn-nxt/modules/feedback/service';
 
 function extractImgSrc(htmlString: string) {
   const imgTags = htmlString.match(/<img [^>]*src="[^"]*"/g);
@@ -218,6 +218,23 @@ const launchMailing = async (
     });
 
     await updateStatus(sessionID, id, MailingStatus.completed, 'Рассылка выполнена');
+
+    try {
+      await forEachAsync(response.accepted, async r => {
+        const customerId = Object.keys(r).length > 0 ? Number(Object.keys(r)[0]) : -1;
+        await feedbackService.createFeedback(sessionID, {
+          type: CustomerFeedbackType.email,
+          customer: {
+            ID: customerId,
+            NAME: ''
+          },
+          mailing
+        });
+      });
+    } catch (error) {
+      console.error('Error while creating email feedback');
+      throw error;
+    }
 
     return {
       ...resultDescription('Тестовая рассылка выполнена'),

@@ -3992,6 +3992,78 @@
 				}
 			],
 			"id": "40966b64-35b7-4d8e-a750-57bf81b4f8f6"
+		},
+		{
+			"name": "Feedback",
+			"item": [
+				{
+					"name": "By customer ID",
+					"id": "35ef6c59-901b-45ec-a1d8-feb9ea33531d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/feedback/customerId/:customerId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								"customerId",
+								":customerId"
+							],
+							"variable": [
+								{
+									"key": "customerId",
+									"value": "147330167"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"id": "6fab3114-8dc3-43f0-8f58-c1741c113381",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"response\": \"NOOOOOOO\",\r\n    \"toDo\": \"we\",\r\n    \"type\": 5,\r\n    \"creationDate\": \"2024-08-15T12:01:35.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 147330167,\r\n        \"NAME\": \"\\\"432\\\" Главный военный клинический госпиталь\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/feedback/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "949748998"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "ff974277-8dc3-425c-b514-3c62b8c8078f"
 		}
 	],
 	"auth": {

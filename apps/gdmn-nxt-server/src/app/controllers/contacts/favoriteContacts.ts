@@ -3,7 +3,7 @@ import { resultError } from '../../responseMessages';
 import { IFavoriteContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { favoriteContactsRepository } from '@gdmn-nxt/repositories/contacts/favoriteContacts';
-import { cachedRequets } from '../../utils/cached requests';
+import { cachedRequets } from '../../utils/cachedRequests';
 
 const getAll: RequestHandler = async (req, res) => {
   try {

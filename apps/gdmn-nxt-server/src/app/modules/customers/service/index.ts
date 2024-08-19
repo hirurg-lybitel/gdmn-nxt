@@ -1,6 +1,6 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { FindHandler, ICustomer } from '@gsbelarus/util-api-types';
-import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '../../utils/cached requests';
+import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
   const {
@@ -132,8 +132,7 @@ const findOne = async (
   return customers[0];
 };
 
-
-export const customersRepository = {
+export const customersService = {
   find,
   findOne
 };
