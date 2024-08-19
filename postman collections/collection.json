@@ -4024,6 +4024,28 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Обновить",
+					"id": "6fab3114-8dc3-43f0-8f58-c1741c113381",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"response\": \"NOOOOOOO\",\r\n    \"toDo\": \"we\",\r\n    \"type\": 5,\r\n    \"creationDate\": \"2024-08-15T12:01:35.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 147330167,\r\n        \"NAME\": \"\\\"432\\\" Главный военный клинический госпиталь\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/feedback/949748998"
+					},
+					"response": []
 				}
 			],
 			"id": "ff974277-8dc3-425c-b514-3c62b8c8078f"
