@@ -328,6 +328,7 @@ export type ActionName =
   'contacts' |
   'system' |
   'mailings' |
+  'feedback' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -422,4 +423,30 @@ export interface IMailing extends IWithID {
 export interface ITemplate extends IWithID {
   NAME: string;
   HTML: string;
+}
+
+// TODO: change to ICustomerFeedback
+export interface IMailingFeedback extends IWithID {
+  customer: ICustomer;
+  mailing: IMailing;
+  response?: string;
+  toDo?: string;
+}
+
+export enum CustomerFeedbackType {
+  email = 0,
+  visit = 1,
+  chat = 2,
+  request = 3,
+  letter = 4,
+  call = 5
+
+}
+export interface ICustomerFeedback extends IWithID {
+  type: CustomerFeedbackType;
+  customer: ICustomer;
+  mailing?: IMailing;
+  response?: string;
+  toDo?: string;
+  creationDate?: Date;
 }

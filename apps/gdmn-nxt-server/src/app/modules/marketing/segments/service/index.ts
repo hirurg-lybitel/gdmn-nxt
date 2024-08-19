@@ -2,8 +2,8 @@ import { ICustomer, ISegment, InternalServerErrorException, Like, NotFoundExcept
 import { segmentsRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { forEachAsync } from '@gsbelarus/util-helpers';
-import { customersRepository } from '@gdmn-nxt/repositories/customers';
 import timersPromises from 'timers/promises';
+import { customersService } from '@gdmn-nxt/modules/customers/service';
 
 const findAll = async (
   sessionID: string,
@@ -140,7 +140,7 @@ const calcCustomersCount = async (
     const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
     const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
-    const customers = await customersRepository.find('', {
+    const customers = await customersService.find('', {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
@@ -178,7 +178,7 @@ const calcCustomersCount = async (
     const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
     const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
-    const customers = await customersRepository.find('', {
+    const customers = await customersService.find('', {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
@@ -212,7 +212,7 @@ const getSegmentsCustomers = async (
       const findIndex = customersArray.findIndex(({ ID }) => ID === id);
       if (findIndex >= 0) return;
 
-      const customer = await customersRepository.findOne(sessionID, id);
+      const customer = await customersService.findOne(sessionID, id);
       customersArray.push(customer);
     });
 
@@ -228,7 +228,7 @@ const getSegmentsCustomers = async (
     const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
     const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
-    const customers = await customersRepository.find(sessionID, {
+    const customers = await customersService.find(sessionID, {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',
@@ -266,7 +266,7 @@ const getSegmentsCustomers = async (
     const CONTRACTS = fields.find(f => f.NAME === 'CONTRACTS');
     const WORKTYPES = fields.find(f => f.NAME === 'WORKTYPES');
 
-    const customers = await customersRepository.find('', {
+    const customers = await customersService.find('', {
       LABELS: LABELS?.VALUE ?? '',
       DEPARTMENTS: DEPARTMENTS?.VALUE ?? '',
       BUSINESSPROCESSES: BUSINESSPROCESSES?.VALUE ?? '',

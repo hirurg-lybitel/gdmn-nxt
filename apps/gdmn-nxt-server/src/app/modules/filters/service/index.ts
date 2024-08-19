@@ -1,8 +1,6 @@
-import { IFilter, ISegment, InternalServerErrorException, Like, NotFoundException } from '@gsbelarus/util-api-types';
+import { IFilter, InternalServerErrorException, NotFoundException } from '@gsbelarus/util-api-types';
 import { filtersRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
-import { forEachAsync } from '@gsbelarus/util-helpers';
-import { customersRepository } from '@gdmn-nxt/repositories/customers';
 
 const findAll = async (
   sessionID: string,

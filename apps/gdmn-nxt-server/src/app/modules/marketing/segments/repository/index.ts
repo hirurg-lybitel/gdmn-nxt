@@ -1,6 +1,6 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { customersRepository } from '@gdmn-nxt/repositories/customers';
+import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { ArrayElement, FindHandler, FindOneHandler, FindOperator, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
@@ -78,7 +78,7 @@ const find: FindHandler<ISegment> = async (
       const CONTRACTS = flatSegmentDetails.get('CUSTOMERCONTRACTS') ?? '';
       const WORKTYPES = flatSegmentDetails.get('WORKTYPES') ?? '';
 
-      const customers = await customersRepository.find('', {
+      const customers = await customersService.find('', {
         LABELS,
         DEPARTMENTS,
         BUSINESSPROCESSES,
