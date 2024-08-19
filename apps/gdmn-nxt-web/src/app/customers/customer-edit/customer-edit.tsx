@@ -272,7 +272,6 @@ export function CustomerEdit({
                       className={styles.tabHeader}
                       label="Задачи"
                       value="8"
-                      disabled
                     />
                   </TabList>
                   <Divider />
