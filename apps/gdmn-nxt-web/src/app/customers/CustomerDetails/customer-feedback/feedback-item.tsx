@@ -190,7 +190,7 @@ export const FeedbackItem = ({
                   }
                 })()}
               </Typography>
-              <PermissionsGate actionAllowed={userPermissions?.contacts?.DELETE}>
+              <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
                 <div onClick={handleStopPropagation}>
                   <ItemButtonDelete button onClick={onDelete} />
                 </div>
