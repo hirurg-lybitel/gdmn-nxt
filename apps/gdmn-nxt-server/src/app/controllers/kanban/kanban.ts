@@ -719,9 +719,9 @@ const getTasks: RequestHandler = async (req, res) => {
             con.NAME as CONTACT_NAME,
             performer.NAME AS PERFORMER_NAME
           FROM USR$CRM_KANBAN_CARD_TASKS task
-          JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
-          JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
-          JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
+          LEFT JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
+          LEFT JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+          LEFT JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
           LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
           LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
