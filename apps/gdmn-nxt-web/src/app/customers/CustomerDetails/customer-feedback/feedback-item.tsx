@@ -52,10 +52,7 @@ const AccordionSummary = styled((props: AccordionSummaryProps) => (
     {...props}
   />
 ))(({ theme }) => ({
-  // backgroundColor:
-  //   theme.palette.mode === 'dark'
-  //     ? 'rgba(255, 255, 255, .05)'
-  //     : 'rgba(0, 0, 0, .03)',
+  backgroundColor: 'var(--color-card-bg)',
   flexDirection: 'row-reverse',
   '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
     transform: 'rotate(90deg)',
@@ -76,7 +73,7 @@ const AccordionSummary = styled((props: AccordionSummaryProps) => (
 }));
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
-  // padding: theme.spacing(2),
+  padding: theme.spacing(2),
   // borderTop: '1px solid rgba(0, 0, 0, .125)',
 }));
 
