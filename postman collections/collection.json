@@ -4101,6 +4101,38 @@
 				}
 			],
 			"id": "ff974277-8dc3-425c-b514-3c62b8c8078f"
+		},
+		{
+			"name": "Time Tracking",
+			"item": [
+				{
+					"name": "By group",
+					"id": "5ef995a6-d810-4bcb-b222-212d78fa0363",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/time-tracking/group"
+					},
+					"response": []
+				},
+				{
+					"name": "Time tracking",
+					"id": "7c3170f0-a9f2-4ce7-a0a9-b6fda42ffec3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/time-tracking/group"
+					},
+					"response": []
+				}
+			],
+			"id": "b7f70b4c-c3ad-4c8e-a652-a6b1d1c8d409"
 		}
 	],
 	"auth": {
