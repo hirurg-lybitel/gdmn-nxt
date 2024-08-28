@@ -4127,7 +4127,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{baseUrl}}/time-tracking/group"
+						"url": "{{baseUrl}}/time-tracking"
 					},
 					"response": []
 				}
