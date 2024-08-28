@@ -36,6 +36,8 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   onChange?: (value: Value<Multiple> | undefined | null) => void;
   multiple?: Multiple;
   disableCreation?: boolean;
+  disableEdition?: boolean;
+  disableCaption?: boolean;
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
@@ -44,6 +46,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     onChange,
     multiple = false,
     disableCreation = false,
+    disableEdition = false,
+    disableCaption = false,
+    style,
     ...rest
   } = props;
 
@@ -124,6 +129,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     <>
       <Autocomplete
         className={classes.root}
+        style={style}
         fullWidth
         multiple={multiple}
         limitTags={2}
@@ -164,17 +170,19 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                   <div style={{ flex: 1 }}>
                     {option.NAME}
                   </div>
-                  <IconButton size="small" onClick={handleEditCustomer(option)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
+                  {!disableEdition &&
+                    <IconButton size="small" onClick={handleEditCustomer(option)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  }
                 </div>
-                {option.TAXID
+                {!disableCaption && option.TAXID
                   ? <Typography variant="caption">{`УНП: ${option.TAXID}`}</Typography>
                   : <></>}
               </Box>
             </li>
           );
-        }, [])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
@@ -186,7 +194,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...rest.InputProps,
               endAdornment: (
                 <>
-                  {(value && (!Array.isArray(value))) &&
+                  {(value && (!Array.isArray(value))) && !disableEdition &&
                     <IconButton
                       className="editIcon"
                       title="Изменить"
@@ -199,7 +207,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 </>)
             }}
           />
-        ), [value])}
+        ), [insertCustomerIsLoading, rest, value, disableEdition, handleEditCustomer, customers])}
       />
       {memoCustomerUpsert}
     </>

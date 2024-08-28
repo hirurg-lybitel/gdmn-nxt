@@ -263,9 +263,9 @@ export interface IUserGroup extends IWithID {
 
 export interface IUser extends IWithID {
   NAME: string;
-  FULLNAME: string;
-  CONTACT: IContactWithID;
-  DISABLED: boolean;
+  FULLNAME?: string;
+  CONTACT?: IContactWithID;
+  DISABLED?: boolean;
   isActivated?: boolean;
   AVATAR?: string;
 };
@@ -440,8 +440,8 @@ export enum CustomerFeedbackType {
   request = 3,
   letter = 4,
   call = 5
-
 }
+
 export interface ICustomerFeedback extends IWithID {
   type: CustomerFeedbackType;
   customer: ICustomer;
@@ -449,4 +449,33 @@ export interface ICustomerFeedback extends IWithID {
   response?: string;
   toDo?: string;
   creationDate?: Date;
+}
+
+export enum WorkProjectStatus {
+  active = 0,
+  suspended = 1,
+  completed = 2
+}
+export interface IWorkProject extends IWithID {
+  NAME: string;
+  STATUS?: WorkProjectStatus
+}
+
+export interface ITimeTrack extends IWithID {
+  date: Date;
+  startTime?: Date | null;
+  endTime?: Date | null;
+  duration?: string;
+  customer?: ICustomer | null;
+  // task?: IKanbanTask;
+  description: string;
+  inProgress?: boolean;
+  workProject?: IWorkProject;
+  user?: IUser;
+}
+
+export interface ITimeTrackGroup {
+  date: Date,
+  duration: string;
+  items: ITimeTrack[];
 }

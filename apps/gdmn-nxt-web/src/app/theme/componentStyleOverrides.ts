@@ -208,6 +208,18 @@ export default function componentStyleOverrides(theme: Theme): Components {
           fontSize: '0.75rem'
         }
       }
+    },
+    MuiIconButton: {
+      defaultProps: {
+        size: 'small'
+      },
+    },
+    MuiInputBase: {
+      defaultProps: {
+        style: {
+          paddingRight: 8
+        }
+      }
     }
   };
 }

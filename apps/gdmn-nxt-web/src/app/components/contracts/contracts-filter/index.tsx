@@ -1,13 +1,13 @@
 import { ICustomer, IFilteringData } from '@gsbelarus/util-api-types';
-import { Fragment, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { clearFilterData } from '../../../store/filtersSlice';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import { Box, Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField } from '@mui/material';
+import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { DateRangePicker, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
+import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { DateRange } from '@mui/lab';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 
 export interface ContractsFilterProps {
   open: boolean;
