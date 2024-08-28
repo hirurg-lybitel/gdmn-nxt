@@ -6,7 +6,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { ColorMode } from '@gsbelarus/util-api-types';
 import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
 import { useMemo } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from '@gdmn-nxt/dayjs';
 import { DateRange } from '@mui/x-date-pickers-pro';
 
 interface TaskCardProps {

@@ -11,7 +11,7 @@ import {
 import { IAttachment, sendEmail, sendEmailByTestAccount } from '@gdmn/mailer';
 import { forEachAsync, resultDescription } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
-import dayjs from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 import { mailingRepository } from '../repository';
 import fs from 'fs/promises';
 import path from 'path';

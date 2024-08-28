@@ -1,11 +1,9 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { ContractType, IContract, InternalServerErrorException } from '@gsbelarus/util-api-types';
-import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween';
+import dayjs from '@gdmn-nxt/dayjs';
 import { contractDetailRepository } from '../repository/contractDetails';
 import { contractsRepository } from '../repository';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
-dayjs.extend(isBetween);
 
 const findAll = async (
   sessionID: string,

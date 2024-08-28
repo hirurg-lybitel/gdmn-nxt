@@ -13,7 +13,10 @@ export const ERROR_MESSAGES = {
   REQUEST_MISSED_PARAMS: 'Поле не указано или неверного типа',
   SEND_EMAIL_ERROR: 'Код подтверждения не может быть отправлен на указанный email.',
   CAPTCHA_INVALID: 'Неверный код.',
-  DATA_NOT_FOUND: 'Данные не найдены'
+  DATA_NOT_FOUND: 'Данные не найдены',
+  DATA_NOT_FOUND_WITH_ID: (id: number) => `Не найдена запись с id=${id}`,
+  UPDATE_FAILED: 'Ошибка при обновлении записи',
+  DELETE_FAILED: 'Ошибка при удалении записи',
 };
 
 export const SUCCESS_MESSAGES = {

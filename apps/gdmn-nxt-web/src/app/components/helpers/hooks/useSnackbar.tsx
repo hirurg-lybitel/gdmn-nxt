@@ -37,7 +37,7 @@ export const useSnackbar = () => {
     style: {
       whiteSpace: 'pre-line',
       ...(options.variant === 'error' && {
-        backgroundColor: 'var(--color-error);',
+        backgroundColor: 'var(--color-error)',
       })
     },
     ...options,

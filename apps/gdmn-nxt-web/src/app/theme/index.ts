@@ -74,7 +74,7 @@ export const theme = (customization: ICustomization) => {
       padding: '20px',
       marginTop: '10px',
       marginRight: '20px',
-      borderRadius: '12px',
+      borderRadius: '8px',
       borderColor: themeOptionDefault.borderColor,
       buttonTextColor: themeOptionDefault.buttonTextColor,
       buttonPrimaryColor: themeOptionDefault.buttonPrimaryColor,
