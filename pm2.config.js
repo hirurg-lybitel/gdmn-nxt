@@ -4,7 +4,7 @@ module.exports = {
       name: 'gdmn-crm',
       script: 'dist/apps/gdmn-nxt-server/main.js',
       watch: true,
-      ignore_watch: ['node_modules'],
+      ignore_watch: ['node_modules', 'assets'],
       env: {
         NODE_ENV: 'production',
         NX_SERVER_HOST: '0.0.0.0',
