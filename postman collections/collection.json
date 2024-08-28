@@ -4165,6 +4165,28 @@
 						"url": "{{baseUrl}}/time-tracking"
 					},
 					"response": []
+				},
+				{
+					"name": "Time tracking",
+					"id": "c90e7178-0678-4500-80ba-ce3b7acbdfb4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ID\": 949749797,\r\n    \"date\": \"2024-08-27T21:00:00.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 153589290,\r\n        \"NAME\": \"\\\"Агалайт\\\"\"\r\n    },\r\n    \"startTime\": \"2024-08-28T14:41:58.000Z\",\r\n    \"endTime\": \"2024-08-28T17:02:50.159Z\",\r\n    \"description\": \"My description\",\r\n    \"inProgress\": false,\r\n    \"duration\": \"PT2H20M52.159S\",\r\n    \"workProject\": {\r\n        \"ID\": 949749353,\r\n        \"NAME\": \"Telegram чат-бот\"\r\n    },\r\n    \"user\": {\r\n        \"ID\": 150001,\r\n        \"NAME\": \"Administrator\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/time-tracking"
+					},
+					"response": []
 				}
 			],
 			"id": "b7f70b4c-c3ad-4c8e-a652-a6b1d1c8d409"
