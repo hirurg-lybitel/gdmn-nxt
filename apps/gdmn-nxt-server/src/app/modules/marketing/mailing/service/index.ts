@@ -27,7 +27,7 @@ function extractImgSrc(htmlString: string) {
 }
 
 async function createTempFile(base64String: string, filename: string) {
-  const tempImagePath = path.join(__dirname, filename);
+  const tempImagePath = path.join(__dirname, 'assets/images', filename);
   const base64Data = base64String.split(',')[1];
   await fs.writeFile(tempImagePath, base64Data, 'base64');
   return tempImagePath;
