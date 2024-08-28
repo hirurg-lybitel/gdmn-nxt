@@ -14,7 +14,7 @@ import {
   styled,
   AccordionSummaryProps,
 } from '@mui/material';
-import dayjs from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { SyntheticEvent, useRef, useState } from 'react';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';

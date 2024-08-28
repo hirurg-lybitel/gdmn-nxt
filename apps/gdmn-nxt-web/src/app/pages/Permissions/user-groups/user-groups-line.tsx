@@ -112,7 +112,7 @@ export function Users(props: IUsersProps) {
             <ItemButtonDelete
               key="delete"
               label="Удалить"
-              text={`Вы действительно хотите удалить пользователя ${USER?.CONTACT.NAME} из группы ${USERGROUP?.NAME}?`}
+              text={`Вы действительно хотите удалить пользователя ${USER?.CONTACT?.NAME} из группы ${USERGROUP?.NAME}?`}
               onClick={onDelete(Number(id))}
             />
           ]}

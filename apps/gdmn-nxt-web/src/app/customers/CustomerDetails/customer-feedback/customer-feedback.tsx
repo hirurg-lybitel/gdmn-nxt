@@ -35,7 +35,8 @@ export function CustomerFeedback({
   } = useGetFeedbackByCustomerQuery(
     customerId,
     {
-      refetchOnMountOrArgChange: true
+      refetchOnMountOrArgChange: true,
+      skip: customerId <= 0 || isNaN(customerId)
     });
 
   const [addFeedback] = useAddFeedbackMutation();
@@ -150,7 +151,6 @@ export function CustomerFeedback({
                   <TextField
                     {...params}
                     placeholder="Тип"
-                    required
                     inputRef={typeRef}
                   />
                 )}

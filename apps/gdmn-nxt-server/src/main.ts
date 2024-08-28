@@ -49,10 +49,8 @@ import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
 import { filtersRouter } from './app/routes/filtersRouter';
 import { feedbackRouter } from './app/routes/feedbackRouter';
-import dayjs from 'dayjs';
-import ru from 'dayjs/locale/ru';
-
-dayjs.locale(ru);
+import { workProjectsRouter } from './app/routes/workProject';
+import { timeTrackingRouter } from './app/routes/timeTracking';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -371,6 +369,8 @@ router.use(marketingRouter);
 router.use(filtersRouter);
 
 router.use(feedbackRouter);
+router.use(workProjectsRouter);
+router.use(timeTrackingRouter);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;

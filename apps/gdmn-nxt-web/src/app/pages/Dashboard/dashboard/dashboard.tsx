@@ -7,13 +7,12 @@ import './dashboard.module.less';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { DealsSummarize } from './deals-summarize';
 import { TasksSummarize } from './tasks-summarize';
-import { Fragment, KeyboardEvent, useRef, useState } from 'react';
-import { DateRange, DateRangeCalendar, StaticDateRangePicker } from '@mui/x-date-pickers-pro';
-import dayjs, { Dayjs } from 'dayjs';
+import { KeyboardEvent, useRef, useState } from 'react';
+import { DateRange, DateRangeCalendar } from '@mui/x-date-pickers-pro';
+import dayjs, { Dayjs } from '@gdmn-nxt/dayjs';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
-dayjs.extend(customParseFormat);
 const dateFormat = 'DD.MM.YYYY';
 
 /* eslint-disable-next-line */
@@ -89,7 +88,7 @@ export function Dashboard(props: DashboardProps) {
         >
           <ToggleButtonGroup
             style={{
-              borderRadius: '12px',
+              borderRadius: 'var(--border-radius)',
               height: '50px',
             }}
             color="primary"
