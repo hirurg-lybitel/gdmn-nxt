@@ -296,7 +296,7 @@ export function TimeTracker() {
                               <Typography>{`${workProject?.NAME}: ${description}`}</Typography>
                             </Stack>
                             <Divider orientation="vertical" flexItem />
-                            <Typography>{`${dayjs(startTime).format('HH:mm')} - ${dayjs(endTime).format('HH:mm')}`}</Typography>
+                            <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
                             <Typography fontWeight={600} width={60}>
                               {duration
