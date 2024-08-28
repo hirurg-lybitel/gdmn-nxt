@@ -57,7 +57,7 @@ export function CustomerEdit({
 
   const userPermissions = usePermissions();
 
-  const [tabIndex, setTabIndex] = useState('8');
+  const [tabIndex, setTabIndex] = useState('1');
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -101,7 +101,13 @@ export function CustomerEdit({
     if (!open) {
       formik.resetForm();
       if (tabIndex !== '1') setTabIndex('1');
+      return;
     };
+    if (!customer) {
+      setTabIndex('2');
+    } else {
+      setTabIndex('1');
+    }
   }, [open]);
 
   const handleDeleteClick = () => {
@@ -237,6 +243,7 @@ export function CustomerEdit({
                       className={styles.tabHeader}
                       label="Общение"
                       value="1"
+                      disabled={!customer?.ID}
                     />
                     <Tab
                       className={styles.tabHeader}
