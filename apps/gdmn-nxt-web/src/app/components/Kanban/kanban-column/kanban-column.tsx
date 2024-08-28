@@ -224,7 +224,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         ? <Skeleton
           variant="rectangular"
           height={'100%'}
-          style={{ borderRadius: '12px' }}
+          style={{ borderRadius: 'var(--border-radius)' }}
         />
         : <>
           <CustomizedCard

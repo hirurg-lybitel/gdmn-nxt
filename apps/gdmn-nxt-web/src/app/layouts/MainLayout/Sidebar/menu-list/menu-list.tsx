@@ -17,7 +17,7 @@ const useStyles = makeStyles(() => ({
     paddingLeft: '16px',
     paddingRight: '16px',
     '& .ps__rail-y': {
-      borderRadius: '12px',
+      borderRadius: 'var(--border-radius)',
       opacity: 0.5,
     },
     '& .ps__thumb-y ': {
