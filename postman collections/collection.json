@@ -4155,7 +4155,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"ID\": -1,\r\n    \"date\": \"2024-08-20T12:22:26.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 153677549,\r\n        \"NAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"PHONE\": \"+375 17 211 47 57\",\r\n        \"EMAIL\": \"\",\r\n        \"TAXID\": \"\",\r\n        \"ADDRESS\": \"\",\r\n        \"FULLNAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"FAX\": null,\r\n        \"POSTADDRESS\": null,\r\n        \"LABELS\": [\r\n            {\r\n                \"ID\": 949746862,\r\n                \"USR$NAME\": \"Сомнительные\",\r\n                \"USR$COLOR\": \"#6e9931\",\r\n                \"USR$ICON\": \"\",\r\n                \"USR$DESCRIPTION\": \"\",\r\n                \"USR$CONTACTKEY\": 153677549\r\n            }\r\n        ],\r\n        \"BUSINESSPROCESSES\": null\r\n    },\r\n    \"startTime\": \"2024-08-28T07:00:00.000Z\",\r\n    \"endTime\": \"2024-08-28T11:22:00.000Z\",\r\n    \"description\": \"\",\r\n    \"inProgress\": false,\r\n    \"workProject\": {\r\n        \"ID\": 949749345,\r\n        \"NAME\": \"Autotask\",\r\n        \"STATUS\": 0\r\n    },\r\n    \"duration\": \"PT4H22M\"\r\n}",
+							"raw": "{\r\n    \"ID\": -1,\r\n    \"date\": \"2024-08-20T12:22:26.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 153677549,\r\n        \"NAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"PHONE\": \"+375 17 211 47 57\",\r\n        \"EMAIL\": \"\",\r\n        \"TAXID\": \"\",\r\n        \"ADDRESS\": \"\",\r\n        \"FULLNAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"FAX\": null,\r\n        \"POSTADDRESS\": null,\r\n        \"LABELS\": [\r\n            {\r\n                \"ID\": 949746862,\r\n                \"USR$NAME\": \"Сомнительные\",\r\n                \"USR$COLOR\": \"#6e9931\",\r\n                \"USR$ICON\": \"\",\r\n                \"USR$DESCRIPTION\": \"\",\r\n                \"USR$CONTACTKEY\": 153677549\r\n            }\r\n        ],\r\n        \"BUSINESSPROCESSES\": null\r\n    },\r\n    \"startTime\": \"2024-08-28T07:00:00.000Z\",\r\n    \"endTime\": \"2024-08-28T11:22:00.000Z\",\r\n    \"description\": \"My Long Description\",\r\n    \"inProgress\": false,\r\n    \"workProject\": {\r\n        \"ID\": 949749345,\r\n        \"NAME\": \"Autotask\",\r\n        \"STATUS\": 0\r\n    },\r\n    \"duration\": \"PT4H22M\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4163,18 +4163,6 @@
 							}
 						},
 						"url": "{{baseUrl}}/time-tracking"
-					},
-					"response": []
-				},
-				{
-					"name": "New Request",
-					"id": "24df2a76-33ff-4f87-b3ff-34284d42ff36",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": []
 					},
 					"response": []
 				}
