@@ -33,6 +33,10 @@ async function createTempFile(base64String: string, filename: string) {
   return tempImagePath;
 }
 
+async function removeTempFile(path: string) {
+  return await fs.rm(path);
+}
+
 
 async function getHtmlWithAttachments(html: string) {
   const imgSrcArray = extractImgSrc(html);
@@ -236,8 +240,10 @@ const launchMailing = async (
       throw error;
     }
 
+    await forEachAsync(attachmentsSummary, async a => await removeTempFile(a.path as string));
+
     return {
-      ...resultDescription('Тестовая рассылка выполнена'),
+      ...resultDescription('Рассылка выполнена'),
       ...response
     };
   } catch (error) {
@@ -325,7 +331,7 @@ const updateStatus = async (
     throw NotFoundException(`Не найдена рассылка с id=${id}`);
   }
 
-  updateById(
+  await updateById(
     sessionID,
     id,
     {

@@ -175,6 +175,7 @@ export default function Mailing() {
       field: 'ACTIONS',
       headerName: '',
       resizable: false,
+      sortable: false,
       align: 'center',
 
       // renderCell: ({ id, row, api }) =>
