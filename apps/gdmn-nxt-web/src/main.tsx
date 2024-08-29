@@ -123,6 +123,7 @@ const Main = () => {
                           </Route>
                           <Route path="managment">
                             <Route path="" element={<Navigate to="contacts" />} />
+                            <Route path="labels" element={<Labels />} />
                             <Route path="contacts" element={<Contacts />} />
                             <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="deals">
