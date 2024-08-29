@@ -1,15 +1,16 @@
-import { IContactWithID, ICustomer, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteProps, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
+import { ICustomer } from '@gsbelarus/util-api-types';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
-import { useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
-import { FormikProps, getIn } from 'formik';
-import { HTMLAttributes, useCallback, useEffect, useMemo, useState } from 'react';
+import { customerApi, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
+import { HTMLAttributes, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { makeStyles } from '@mui/styles';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
+import { GroupHeader, GroupItems } from './group';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -38,6 +39,7 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   disableCreation?: boolean;
   disableEdition?: boolean;
   disableCaption?: boolean;
+  disableFavorite?: boolean;
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
@@ -48,6 +50,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     disableCreation = false,
     disableEdition = false,
     disableCaption = false,
+    disableFavorite = true,
     style,
     ...rest
   } = props;
@@ -62,6 +65,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const [insertCustomer, { isSuccess: insertCustomerIsSuccess, isLoading: insertCustomerIsLoading, data: newCustomer }] = useAddCustomerMutation();
   const [updateCustomer] = useUpdateCustomerMutation();
+
+  const [addFavorite] = customerApi.useAddFavoriteMutation();
+  const [deleteFavorite] = customerApi.useDeleteFavoriteMutation();
 
   const [addCustomer, setAddCustomer] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<ICustomer | null>(null);
@@ -125,6 +131,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
   });
 
+  const handleFavoriteClick = useCallback((customer: ICustomer) => (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    customer.isFavorite
+      ? deleteFavorite(customer.ID)
+      : addFavorite(customer.ID);
+  }, []);
+
   return (
     <>
       <Autocomplete
@@ -136,6 +149,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
+        {
+          ...(!disableFavorite && {
+            groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
+          })
+        }
         loading={customersIsFetching || insertCustomerIsLoading}
         {...(insertCustomerIsLoading
           ? {
@@ -175,6 +193,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                       <EditIcon fontSize="small" />
                     </IconButton>
                   }
+                  {!disableFavorite &&
+                    <SwitchStar selected={!!option.isFavorite} onClick={handleFavoriteClick(option)} />}
                 </div>
                 {!disableCaption && option.TAXID
                   ? <Typography variant="caption">{`УНП: ${option.TAXID}`}</Typography>
@@ -182,7 +202,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               </Box>
             </li>
           );
-        }, [disableCaption, disableEdition, handleEditCustomer, multiple])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
@@ -208,6 +228,14 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             }}
           />
         ), [insertCustomerIsLoading, rest, value, disableEdition, handleEditCustomer, customers])}
+        renderGroup={(params) => (
+          <li key={params.key}>
+            <GroupHeader>
+              <Typography variant="subtitle1">{params.group}</Typography>
+            </GroupHeader>
+            <GroupItems>{params.children}</GroupItems>
+          </li>
+        )}
       />
       {memoCustomerUpsert}
     </>

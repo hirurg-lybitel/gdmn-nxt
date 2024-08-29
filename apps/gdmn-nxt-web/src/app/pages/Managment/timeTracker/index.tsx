@@ -17,7 +17,7 @@ import { useMemo } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { ITimeTrack } from '@gsbelarus/util-api-types';
-import dayjs from '@gdmn-nxt/dayjs';
+import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
 import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTrackingByDateQuery, useGetTimeTrackingInProgressQuery, useUpdateTimeTrackingMutation } from '../../../features/time-tracking';
@@ -265,12 +265,7 @@ export function TimeTracker() {
                           Итого:
                         </Typography>
                         <Typography fontWeight={600} width={60}>
-                          {duration
-                            ? dayjs
-                              .duration(duration)
-                              .format('HH:mm:ss')
-                              .split('.')[0]
-                            : '00:00:00'}
+                          {durationFormat(duration)}
                         </Typography>
                       </Stack>
                     </AccordionSummary>
@@ -299,12 +294,7 @@ export function TimeTracker() {
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
                             <Typography fontWeight={600} width={60}>
-                              {duration
-                                ? dayjs
-                                  .duration(duration)
-                                  .format('HH:mm:ss')
-                                  .split('.')[0]
-                                : '00:00:00'}
+                              {durationFormat(duration)}
                             </Typography>
                             <MenuBurger
                               items={[
