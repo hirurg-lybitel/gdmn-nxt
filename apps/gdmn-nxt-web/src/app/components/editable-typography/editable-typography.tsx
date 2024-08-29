@@ -16,8 +16,7 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   container?: (value: Value) => React.ReactNode;
   error?: boolean;
   helperText?: string;
-  closeOnBlur?: boolean,
-  closeOnBlurType?: 'inputBlur' | 'clickAwayFromComponent'
+  closeOnBlur?: boolean;
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -31,7 +30,6 @@ const EditableTypography = <Value extends React.ReactNode>({
   error = false,
   helperText,
   closeOnBlur = true,
-  closeOnBlurType = 'inputBlur',
   ...props
 }: EditableTypographyProps<Value>) => {
   const [editText, setEditText] = useState(!value);
@@ -42,7 +40,7 @@ const EditableTypography = <Value extends React.ReactNode>({
         e.preventDefault();
       },
       onBlur: (e: any) => {
-        closeOnBlur && closeOnBlurType === 'inputBlur' && onClose(e);
+        closeOnBlur && onClose(e);
       },
       style: {
         flex: 1
@@ -73,24 +71,19 @@ const EditableTypography = <Value extends React.ReactNode>({
     e.key === 'Escape' && onClose(e);
   };
 
-  const clickAway = () => {
-    closeOnBlur && closeOnBlurType === 'clickAwayFromComponent' && onClose();
-  };
-
   return (
-    <ClickAwayListener onClickAway={clickAway}>
-      <div
-        aria-label="editable-typography"
-        className={styles['container']}
-        onKeyDown={onKeyDown}
+    <div
+      aria-label="editable-typography"
+      className={styles['container']}
+      onKeyDown={onKeyDown}
+    >
+      <ErrorTooltip
+        open={!!helperText}
+        title={helperText}
       >
-        <ErrorTooltip
-          open={!!helperText}
-          title={helperText}
-        >
-          <div style={{ width: '100%' }}>
-            {editText
-              ? clonedElement ??
+        <div style={{ width: '100%' }}>
+          {editText
+            ? clonedElement ??
           <TextField
             variant="standard"
             value={value}
@@ -99,42 +92,41 @@ const EditableTypography = <Value extends React.ReactNode>({
             onChange={onChange}
             onBlur={onClose}
           />
-              :
-              <Typography
-                {...props}
-                className={styles['title']}
-                autoFocus
-              >
-                {container ? container(value) : value}
-              </Typography>
-            }
-          </div>
-        </ErrorTooltip>
-        <div
-          className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
-        >
-          {editText
-            ? <Tooltip arrow title="Закрыть окно редактирования">
-              <IconButton size="small" onClick={onClose}>
-                <CloseIcon fontSize="small" color="primary" />
-              </IconButton >
-            </Tooltip>
-            : <Tooltip arrow title="Редактировать">
-              <IconButton size="small" onClick={handleEdit}>
-                <EditIcon fontSize="small" color="primary" />
-              </IconButton >
-            </Tooltip>
+            :
+            <Typography
+              {...props}
+              className={styles['title']}
+              autoFocus
+            >
+              {container ? container(value) : value}
+            </Typography>
           }
-          {deleteable &&
+        </div>
+      </ErrorTooltip>
+      <div
+        className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
+      >
+        {editText
+          ? <Tooltip arrow title="Закрыть окно редактирования">
+            <IconButton size="small" onClick={onClose}>
+              <CloseIcon fontSize="small" color="primary" />
+            </IconButton >
+          </Tooltip>
+          : <Tooltip arrow title="Редактировать">
+            <IconButton size="small" onClick={handleEdit}>
+              <EditIcon fontSize="small" color="primary" />
+            </IconButton >
+          </Tooltip>
+        }
+        {deleteable &&
           <Tooltip arrow title="Удалить">
             <IconButton size="small" onClick={handleDelete}>
               <DeleteIcon fontSize="small" color="primary" />
             </IconButton >
           </Tooltip>
-          }
-        </div>
+        }
       </div>
-    </ClickAwayListener>
+    </div>
   );
 };
 

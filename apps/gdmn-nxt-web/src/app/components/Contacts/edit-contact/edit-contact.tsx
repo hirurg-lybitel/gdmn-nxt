@@ -234,7 +234,6 @@ export function EditContact({
             direction="row"
             alignItems="center"
             spacing={2}
-            height={32}
           >
             <PhoneAndroidIcon fontSize="small" color="primary" />
             <EditableTypography
@@ -251,7 +250,6 @@ export function EditContact({
               onDelete={() => handleDeletePhone(index)}
               helperText={error}
               error={isTouched && Boolean(error)}
-              closeOnBlurType={'clickAwayFromComponent'}
               closeOnBlur={!firstElement}
               editComponent={
                 <TelephoneInput
