@@ -90,7 +90,7 @@ export function MailingUpsert({
     excludeSegments: [],
     STATUS: MailingStatus.manual,
     testingEmails: [],
-    attachments: []
+    attachments: attachments
   };
 
   const formik = useFormik<IMailing>({
@@ -270,7 +270,6 @@ export function MailingUpsert({
       return [...res, file];
     }, [] as File[]);
   }, [attachments]);
-
 
   return (
     <CustomizedDialog

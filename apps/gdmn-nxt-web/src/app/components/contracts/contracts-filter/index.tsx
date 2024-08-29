@@ -6,7 +6,7 @@ import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, Te
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { DateRange } from '@mui/lab';
-import dayjs from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 
 export interface ContractsFilterProps {
   open: boolean;

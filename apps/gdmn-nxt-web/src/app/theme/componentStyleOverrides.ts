@@ -196,7 +196,9 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiTab: {
       styleOverrides: {
         root: {
-          minHeight: 'var(--tabs-height)'
+          minHeight: 'var(--tabs-height)',
+          textTransform: 'none',
+          fontSize: '0.9375rem'
         }
       }
     },
@@ -206,6 +208,11 @@ export default function componentStyleOverrides(theme: Theme): Components {
           fontSize: '0.75rem'
         }
       }
-    }
+    },
+    MuiIconButton: {
+      defaultProps: {
+        size: 'small'
+      },
+    },
   };
 }

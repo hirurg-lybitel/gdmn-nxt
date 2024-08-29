@@ -1,4 +1,5 @@
 import {
+  CustomerFeedbackType,
   IMailing,
   InternalServerErrorException,
   Like,
@@ -7,16 +8,15 @@ import {
   NotFoundException,
   UnprocessableEntityException
 } from '@gsbelarus/util-api-types';
-import { customersRepository } from '@gdmn-nxt/repositories/customers';
 import { IAttachment, sendEmail, sendEmailByTestAccount } from '@gdmn/mailer';
 import { forEachAsync, resultDescription } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
-import { ERROR_MESSAGES } from '@gdmn/constants/server';
-import dayjs from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 import { mailingRepository } from '../repository';
 import fs from 'fs/promises';
 import path from 'path';
 import { segmentsService } from '../../segments/service';
+import { feedbackService } from '@gdmn-nxt/modules/feedback/service';
 
 function extractImgSrc(htmlString: string) {
   const imgTags = htmlString.match(/<img [^>]*src="[^"]*"/g);
@@ -27,10 +27,14 @@ function extractImgSrc(htmlString: string) {
 }
 
 async function createTempFile(base64String: string, filename: string) {
-  const tempImagePath = path.join(__dirname, filename);
+  const tempImagePath = path.join(__dirname, 'assets/images', filename);
   const base64Data = base64String.split(',')[1];
   await fs.writeFile(tempImagePath, base64Data, 'base64');
   return tempImagePath;
+}
+
+async function removeTempFile(path: string) {
+  return await fs.rm(path);
 }
 
 
@@ -219,8 +223,27 @@ const launchMailing = async (
 
     await updateStatus(sessionID, id, MailingStatus.completed, 'Рассылка выполнена');
 
+    try {
+      await forEachAsync(response.accepted, async r => {
+        const customerId = Object.keys(r).length > 0 ? Number(Object.keys(r)[0]) : -1;
+        await feedbackService.createFeedback(sessionID, {
+          type: CustomerFeedbackType.email,
+          customer: {
+            ID: customerId,
+            NAME: ''
+          },
+          mailing
+        });
+      });
+    } catch (error) {
+      console.error('Error while creating email feedback');
+      throw error;
+    }
+
+    await forEachAsync(attachmentsSummary, async a => await removeTempFile(a.path as string));
+
     return {
-      ...resultDescription('Тестовая рассылка выполнена'),
+      ...resultDescription('Рассылка выполнена'),
       ...response
     };
   } catch (error) {
@@ -308,7 +331,7 @@ const updateStatus = async (
     throw NotFoundException(`Не найдена рассылка с id=${id}`);
   }
 
-  updateById(
+  await updateById(
     sessionID,
     id,
     {

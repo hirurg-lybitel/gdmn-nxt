@@ -1,16 +1,22 @@
-import { IBusinessProcess, IContactPerson, IDataSchema, ILabel, ILabelsContact, IRequestResult } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactPerson, IDataSchema, ILabelsContact, IRequestResult, SortMode } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { genId, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { resultError } from '../responseMessages';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../utils/cached requests';
+import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../../../utils/cachedRequests';
+import { resultError } from '@gsbelarus/util-helpers';
+import { customersService } from '../service';
 
 export const getContacts: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
+  const userId = req.user['id'];
 
   const { pageSize, pageNo } = req.query;
-  const { DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME } = req.query;
-  const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
+  const { DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME, isFavorite } = req.query;
+
+  const sortField = (req.query.field ?? 'NAME') as string;
+  const sortMode = (req.query.sort ?? 'ASC') as SortMode;
+
+  const _schema = {};
 
   let fromRecord = 0;
   let toRecord: number;
@@ -20,123 +26,17 @@ export const getContacts: RequestHandler = async (req, res) => {
     toRecord = fromRecord + Number(pageSize);
   };
 
-  const _schema: IDataSchema = {
-    contacts: {
-      CONTRACTS: {
-        type: 'array'
-      },
-      DEPARTMENTS: {
-        type: 'array'
-      }
-    }
-  };
-
-
   try {
-    const labels = new Map();
-    const businessProcesses = new Map();
-    const customerInfo = new Map();
-
-    (await cacheManager.getKey<ContactLabel[]>('customerLabels'))
-      ?.forEach(l => {
-        if (labels[l.USR$CONTACTKEY]) {
-          if (!labels[l.USR$CONTACTKEY].includes(l.ID)) {
-            labels[l.USR$CONTACTKEY].push({ ...l });
-          }
-        } else {
-          labels[l.USR$CONTACTKEY] = [{ ...l }];
-        };
-      });
-
-
-    (await cacheManager.getKey<ContactBusiness[]>('businessProcesses'))
-      ?.forEach(bp => {
-        const { CONTACTKEY, ...restBusinessProc } = bp;
-        if (businessProcesses[CONTACTKEY]) {
-          if (!businessProcesses[CONTACTKEY].includes(restBusinessProc.ID)) {
-            businessProcesses[CONTACTKEY].push({ ...restBusinessProc });
-          }
-        } else {
-          businessProcesses[CONTACTKEY] = [{ ...restBusinessProc }];
-        };
-      });
-
-    (await cacheManager.getKey<CustomerInfo[]>('customerInfo'))
-      ?.forEach(ci => {
-        if (customerInfo[ci.USR$CUSTOMERKEY]) {
-          if (!customerInfo[ci.USR$CUSTOMERKEY].JOBS.includes(ci.USR$JOBKEY)) {
-            customerInfo[ci.USR$CUSTOMERKEY].JOBS.push(ci.USR$JOBKEY);
-          }
-          if (!customerInfo[ci.USR$CUSTOMERKEY].DEPOTS.includes(ci.USR$DEPOTKEY)) {
-            customerInfo[ci.USR$CUSTOMERKEY].DEPOTS.push(ci.USR$DEPOTKEY);
-          }
-          if (!customerInfo[ci.USR$CUSTOMERKEY].JOBWORKS.includes(ci.USR$JOBWORKKEY)) {
-            customerInfo[ci.USR$CUSTOMERKEY].JOBWORKS.push(ci.USR$JOBWORKKEY);
-          }
-        } else {
-          customerInfo[ci.USR$CUSTOMERKEY] = {
-            JOBS: [ci.USR$JOBKEY],
-            DEPOTS: [ci.USR$DEPOTKEY],
-            JOBWORKS: [ci.USR$JOBWORKKEY]
-          };
-        };
-      });
-
-    const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
-    const depotIds = DEPARTMENTS ? (DEPARTMENTS as string).split(',').map(Number) ?? [] : [];
-    const contractIds = CONTRACTS ? (CONTRACTS as string).split(',').map(Number) ?? [] : [];
-    const worktypeIds = WORKTYPES ? (WORKTYPES as string).split(',').map(Number) ?? [] : [];
-    const buisnessProcessIds = BUSINESSPROCESSES ? (BUSINESSPROCESSES as string).split(',').map(Number) ?? [] : [];
-
-    const cachedContacts = (await cacheManager.getKey<Customer[]>('customers')) ?? [];
-    const contacts = cachedContacts
-      .reduce((filteredArray, c) => {
-        let checkConditions = true;
-
-        if (LABELS) {
-          checkConditions = checkConditions && !!labels[c.ID]?.some(l => labelIds.includes(l.ID));
-        }
-        if (DEPARTMENTS) {
-          checkConditions = checkConditions && !!customerInfo[c.ID]?.DEPOTS.some(d => depotIds.includes(d));
-        }
-        if (CONTRACTS) {
-          checkConditions = checkConditions && !!customerInfo[c.ID]?.JOBS.some(j => contractIds.includes(j));
-        }
-        if (WORKTYPES) {
-          checkConditions = checkConditions && !!customerInfo[c.ID]?.JOBWORKS.some(jw => worktypeIds.includes(jw));
-        }
-        if (BUSINESSPROCESSES) {
-          checkConditions = checkConditions && !!businessProcesses[c.ID]?.some(bp => buisnessProcessIds.includes(bp.PROCKEY));
-        }
-        if (NAME) {
-          checkConditions = checkConditions && (
-            c.NAME?.toLowerCase().includes(String(NAME).toLowerCase()) ||
-              c.TAXID?.toLowerCase().includes(String(NAME).toLowerCase())
-          );
-        }
-        if (customerId > 0) {
-          checkConditions = checkConditions && c.ID === customerId;
-        }
-        if (checkConditions) {
-          const customerLabels = labels[c.ID] ?? null;
-          const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
-          filteredArray.push({
-            ...c,
-            NAME: c.NAME || '<не указано>',
-            LABELS: customerLabels,
-            BUSINESSPROCESSES,
-          });
-        }
-        return filteredArray;
-      }, [])
-      .sort((a, b) => {
-        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
-        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
-
-        return String(sortMode).toUpperCase() === 'ASC'
-          ? nameA.localeCompare(nameB)
-          : nameB.localeCompare(nameA);
-      });
+    const contacts = await customersService.find(
+      req.sessionID,
+      {
+        DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME,
+        customerId, isFavorite, userId
+      },
+      {
+        [sortField]: sortMode
+      }
+    );
 
     const rowCount = contacts.length;
     const contactsWithPagination = contacts.slice(fromRecord, toRecord);
@@ -525,4 +425,15 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
   } catch (error) {
     console.error('upsertBusinessProcesses', error);
   };
+};
+
+
+export const customerController = {
+  upsertBusinessProcesses,
+  getCustomersCross,
+  upsertLabels,
+  getContactHierarchy,
+  deleteContact,
+  upsertContact,
+  getContacts
 };

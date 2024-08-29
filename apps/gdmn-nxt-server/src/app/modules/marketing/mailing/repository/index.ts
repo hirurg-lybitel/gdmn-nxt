@@ -3,7 +3,7 @@ import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNul
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
-import dayjs from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 
 const find: FindHandler<IMailing> = async (
   sessionID,

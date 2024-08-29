@@ -20,7 +20,7 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
       <>
         <Button
           {...buttonProps}
-          style={{ borderRadius: '12px' }}
+          style={{ borderRadius: 'var(--border-radius)' }}
           color="inherit"
           disabled
         >
@@ -46,7 +46,7 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
     <>
       <Button
         {...buttonProps}
-        style={{ borderRadius: '12px', minWidth: 40 }}
+        style={{ borderRadius: 'var(--border-radius)', minWidth: 40 }}
         color="inherit"
       >
         {socialMediaIcons[socialName]

@@ -1,8 +1,8 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, ICustomer } from '@gsbelarus/util-api-types';
-import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '../../utils/cached requests';
+import { FindHandler, ICustomer, IFavoriteContact } from '@gsbelarus/util-api-types';
+import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 
-const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
+const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
     ID,
     DEPARTMENTS = '',
@@ -10,8 +10,14 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
     WORKTYPES = '',
     LABELS = '',
     BUSINESSPROCESSES = '',
-    NAME = ''
+    NAME = '',
+    customerId,
+    isFavorite,
+    userId = -1
   } = clause as any;
+
+  const sortField = Object.keys(order)[0] ?? 'NAME';
+  const sortMode = order[sortField] ?? 'ASC';
 
   try {
     const labels = new Map();
@@ -62,11 +68,25 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
         };
       });
 
+    const favoritesMap: Record<string, number[]> = {};
+    const favorites = await cacheManager.getKey<IFavoriteContact[]>('favoriteContacts') ?? [];
+    favorites.forEach(f => {
+      if (f.USER !== userId) {
+        return;
+      }
+      if (favoritesMap[f.USER]) {
+        favoritesMap[f.USER].push(f.CONTACT.ID);
+      } else {
+        favoritesMap[f.USER] = [f.CONTACT.ID];
+      }
+    });
+
     const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
     const depotIds = DEPARTMENTS ? (DEPARTMENTS as string).split(',').map(Number) ?? [] : [];
     const contractIds = CONTRACTS ? (CONTRACTS as string).split(',').map(Number) ?? [] : [];
     const worktypeIds = WORKTYPES ? (WORKTYPES as string).split(',').map(Number) ?? [] : [];
     const buisnessProcessIds = BUSINESSPROCESSES ? (BUSINESSPROCESSES as string).split(',').map(Number) ?? [] : [];
+    const favoriteOnly = (isFavorite as string)?.toLowerCase() === 'true';
 
     const cachedContacts = (await cacheManager.getKey<Customer[]>('customers')) ?? [];
 
@@ -99,9 +119,16 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
               c.TAXID?.toLowerCase().includes(String(NAME).toLowerCase())
           );
         }
-        // if (customerId > 0) {
-        //   checkConditions = checkConditions && c.ID === customerId;
-        // }
+        if (customerId > 0) {
+          checkConditions = checkConditions && c.ID === customerId;
+        }
+
+        const isFavorite = !!favoritesMap[userId]?.some(f => f === c.ID);
+        if (favoriteOnly) {
+          checkConditions = checkConditions &&
+            isFavorite && favoriteOnly;
+        }
+
         if (checkConditions) {
           const customerLabels = labels[c.ID] ?? null;
           const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
@@ -110,10 +137,21 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}) => {
             NAME: c.NAME || '<не указано>',
             LABELS: customerLabels,
             BUSINESSPROCESSES,
+            isFavorite
           });
         }
         return filteredArray;
-      }, []);
+      }, [])
+      .sort((a, b) => {
+        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        if (a.isFavorite === b.isFavorite) {
+          return String(sortMode).toUpperCase() === 'ASC'
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        }
+        return a.isFavorite ? -1 : 1;
+      });
 
     return contacts;
   } finally {
@@ -132,8 +170,7 @@ const findOne = async (
   return customers[0];
 };
 
-
-export const customersRepository = {
+export const customersService = {
   find,
   findOne
 };

@@ -78,7 +78,7 @@ const get: RequestHandler = async (req, res) => {
           tt.ID AS TYPE_ID,
           tt.USR$NAME AS TYPE_NAME
         FROM USR$CRM_KANBAN_CARD_TASKS task
-        JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
+        LEFT JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
         LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
         LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
         LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
@@ -160,7 +160,7 @@ const upsert: RequestHandler = async (req, res) => {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
-        USR$CARDKEY: cardId,
+        USR$CARDKEY: cardId > 0 ? cardId : null,
         USR$DESCRIPTION: `Постановщик задачи "${task.USR$NAME}"`,
         USR$OLD_VALUE: oldTaskRecord.CONTACT_NAME,
         USR$NEW_VALUE: task.CREATOR.NAME,
@@ -171,7 +171,7 @@ const upsert: RequestHandler = async (req, res) => {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
-        USR$CARDKEY: cardId,
+        USR$CARDKEY: cardId > 0 ? cardId : null,
         USR$DESCRIPTION: `Исполнитель задачи "${task.USR$NAME}"`,
         USR$OLD_VALUE: oldTaskRecord.PERMORMER_NAME,
         USR$NEW_VALUE: task.PERFORMER.NAME,
@@ -182,7 +182,7 @@ const upsert: RequestHandler = async (req, res) => {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
-        USR$CARDKEY: cardId,
+        USR$CARDKEY: cardId > 0 ? cardId : null,
         USR$DESCRIPTION: 'Описание задачи',
         USR$OLD_VALUE: oldTaskRecord?.USR$NAME,
         USR$NEW_VALUE: task.USR$NAME,
@@ -193,7 +193,7 @@ const upsert: RequestHandler = async (req, res) => {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
-        USR$CARDKEY: cardId,
+        USR$CARDKEY: cardId > 0 ? cardId : null,
         USR$DESCRIPTION: `Срок выполнения задачи "${task.USR$NAME}"`,
         USR$OLD_VALUE: oldTaskRecord?.USR$DEADLINE ? new Date(oldTaskRecord?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
         USR$NEW_VALUE: task?.USR$DEADLINE ? new Date(task?.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
@@ -204,7 +204,7 @@ const upsert: RequestHandler = async (req, res) => {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
-        USR$CARDKEY: cardId,
+        USR$CARDKEY: cardId > 0 ? cardId : null,
         USR$DESCRIPTION: `Задача "${task.USR$NAME}"`,
         USR$OLD_VALUE: oldTaskRecord.USR$CLOSED === 1 ? 'Выполнена' : 'Не выполнена',
         USR$NEW_VALUE: task.USR$CLOSED ? 'Выполнена' : 'Не выполнена',
@@ -257,7 +257,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     const paramsValues = [
       taskId,
-      task.USR$CARDKEY,
+      task.USR$CARDKEY > 0 ? task.USR$CARDKEY : null,
       task.USR$NAME,
       Number(task.USR$CLOSED),
       task.USR$DEADLINE ? new Date(task.USR$DEADLINE) : null,
@@ -334,7 +334,7 @@ const remove: RequestHandler = async(req, res) => {
     changes.push({
       ID: -1,
       USR$TYPE: '3',
-      USR$CARDKEY: oldTaskRecord.USR$CARDKEY,
+      USR$CARDKEY: oldTaskRecord.USR$CARDKEY > 0 ? oldTaskRecord.USR$CARDKEY : null,
       USR$DESCRIPTION: 'Задача',
       USR$OLD_VALUE: oldTaskRecord.USR$NAME || '',
       USR$NEW_VALUE: oldTaskRecord.USR$NAME || '',

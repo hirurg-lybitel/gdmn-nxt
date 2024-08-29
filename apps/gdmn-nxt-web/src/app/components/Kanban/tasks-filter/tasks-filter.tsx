@@ -2,11 +2,12 @@ import { Autocomplete, Button, CardActions, CardContent, Checkbox, FormControlLa
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './tasks-filter.module.less';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import filterOptions from '../../helpers/filter-options';
+import { CustomerSelect } from '../kanban-edit-card/components/customer-select';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -32,7 +33,6 @@ export function TasksFilter(props: TasksFilterProps) {
   } = props;
 
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
-
   const [taskNumber, setTaskNumber] = useState<string>(filteringData?.taskNumber);
 
   const handleOnChange = (entity: string, value: any) => {
@@ -109,6 +109,14 @@ export function TasksFilter(props: TasksFilterProps) {
               )}
               loading={employeesIsFetching}
               loadingText="Загрузка данных..."
+            />
+            <CustomerSelect
+              label="Клиенты"
+              placeholder="Выберите клиента"
+              multiple
+              disableCreation
+              onChange={(value) => handleOnChange('customers', value)}
+              value={filteringData?.customers ? filteringData.customers : []}
             />
             <FormControlLabel
               control={

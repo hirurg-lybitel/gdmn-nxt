@@ -20,7 +20,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import SendIcon from '@mui/icons-material/Send';
 import PendingIcon from '@mui/icons-material/Pending';
-import dayjs from 'dayjs';
+import dayjs from '@gdmn-nxt/dayjs';
 import { RootState } from '../../../store';
 import { useDispatch, useSelector } from 'react-redux';
 import { saveFilterData } from '../../../store/filtersSlice';
@@ -175,6 +175,7 @@ export default function Mailing() {
       field: 'ACTIONS',
       headerName: '',
       resizable: false,
+      sortable: false,
       align: 'center',
 
       // renderCell: ({ id, row, api }) =>

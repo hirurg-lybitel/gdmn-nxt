@@ -55,9 +55,7 @@ import OurContacts from './app/pages/Managment/ourContacts';
 import Mailing from './app/pages/Marketing/mailing';
 import CustomersSegments from './app/pages/Marketing/segments';
 import Templates from './app/pages/Marketing/templates';
-import dayjs from 'dayjs';
-import ru from 'dayjs/locale/ru';
-dayjs.locale(ru);
+import { TimeTracker } from './app/pages/Managment/timeTracker';
 
 registerMUI();
 
@@ -101,7 +99,13 @@ const Main = () => {
                 openNextView: 'следующее окно',
                 openPreviousView: 'предыдущее окно',
                 cancelButtonLabel: 'Отмена',
-                todayButtonLabel: 'Сегодня'
+                todayButtonLabel: 'Сегодня',
+                fieldDayPlaceholder: ({ format }) => 'д'.repeat(format.length),
+                fieldMonthPlaceholder: ({ format }) => 'м'.repeat(format.length),
+                fieldYearPlaceholder: ({ format }) => 'гггг',
+                fieldHoursPlaceholder: ({ format }) => 'ч'.repeat(format.length),
+                fieldMinutesPlaceholder: ({ format }) => 'м'.repeat(format.length),
+                fieldSecondsPlaceholder: ({ format }) => 'с'.repeat(format.length)
               }}
               adapterLocale={ruLocale}
             >
@@ -138,7 +142,7 @@ const Main = () => {
                               {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
                             </Route>
                             <Route path="contracts" element={<Contracts />} />
-                            <Route path="labels" element={<Labels />} />
+                            <Route path="time-tracker" element={<TimeTracker />} />
                           </Route>
                           <Route path="marketing">
                             <Route path="" element={<Navigate to="mailing" />} />

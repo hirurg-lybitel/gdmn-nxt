@@ -142,7 +142,7 @@ export default function SecurityTab() {
         direction="column"
         justifyContent="center"
         alignContent="center"
-        sx={{ maxWidth: '440px', margin: 3 }}
+        sx={{ maxWidth: '440px', margin: '20px' }}
       >
         <CreateCode
           user={user}

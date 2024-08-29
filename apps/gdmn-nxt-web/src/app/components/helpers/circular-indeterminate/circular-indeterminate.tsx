@@ -3,6 +3,9 @@ import { Box, CircularProgress } from '@mui/material';
 
 export interface CircularIndeterminateProps {
   open: boolean;
+    /**
+   * @default 40
+   */
   size?: number | string;
 }
 

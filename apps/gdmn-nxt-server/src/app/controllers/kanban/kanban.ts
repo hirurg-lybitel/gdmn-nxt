@@ -572,6 +572,9 @@ const getTasks: RequestHandler = async (req, res) => {
         USR$DEADLINE: {
           type: 'date'
         },
+        USR$DATECLOSE: {
+          type: 'date'
+        },
         USR$CLOSED: {
           type: 'boolean'
         },
@@ -606,7 +609,16 @@ const getTasks: RequestHandler = async (req, res) => {
 
     const userId = parseInt(req.query.userId as string);
     const contactKey = 'contactkey' in req.user ? req.user?.contactkey : -1;
-    const { taskNumber, performers, creators, period, isPerformer, isCreator, name } = req.query;
+    const {
+      taskNumber,
+      performers,
+      creators,
+      period,
+      isPerformer,
+      isCreator,
+      name,
+      customers
+    } = req.query;
 
     const periods = period ? (period as string)?.split(',') : [];
 
@@ -635,6 +647,7 @@ const getTasks: RequestHandler = async (req, res) => {
           ) `
         : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
+      ${customers ? ` AND con.ID IN (${customers})` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
       ${creators ? ` OR creator.ID IN (${creators}) ` : ''}
       ${performerOrCreator}
@@ -706,9 +719,9 @@ const getTasks: RequestHandler = async (req, res) => {
             con.NAME as CONTACT_NAME,
             performer.NAME AS PERFORMER_NAME
           FROM USR$CRM_KANBAN_CARD_TASKS task
-          JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
-          JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
-          JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
+          LEFT JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
+          LEFT JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+          LEFT JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
           LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
           LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
@@ -786,7 +799,7 @@ const getTasks: RequestHandler = async (req, res) => {
           USR$NUMBER: el['USR$NUMBER'],
           USR$INPROGRESS: el['USR$INPROGRESS'],
           USR$DEADLINE: el['USR$DEADLINE'],
-          USR$DATECLOSE: el['USR$CLOSED'] ? new Date() : null,
+          USR$DATECLOSE: el['USR$CLOSED'] ? el['USR$DATECLOSE'] : null,
           USR$CARDKEY: el['CARD_ID'],
           ...(el['CREATOR_ID'] && {
             CREATOR: {

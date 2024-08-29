@@ -40,7 +40,7 @@ import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
 import { bodySize } from './app/constants/params';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { cachedRequets } from './app/utils/cached requests';
+import { cachedRequets } from './app/utils/cachedRequests';
 import fs from 'fs';
 import https, { ServerOptions } from 'https';
 import systemSettingsRouter from './app/routes/settings/systemSettings';
@@ -48,10 +48,9 @@ import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
 import { filtersRouter } from './app/routes/filtersRouter';
-import dayjs from 'dayjs';
-import ru from 'dayjs/locale/ru';
-
-dayjs.locale(ru);
+import { feedbackRouter } from './app/routes/feedbackRouter';
+import { workProjectsRouter } from './app/routes/workProject';
+import { timeTrackingRouter } from './app/routes/timeTracking';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -264,7 +263,6 @@ const appMiddlewares = [
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       secure: true
-      // process.env.NODE_ENV === 'production'
     },
   }),
   cookieParser(),
@@ -370,6 +368,9 @@ router.use(marketingRouter);
 /** Filters */
 router.use(filtersRouter);
 
+router.use(feedbackRouter);
+router.use(workProjectsRouter);
+router.use(timeTrackingRouter);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;

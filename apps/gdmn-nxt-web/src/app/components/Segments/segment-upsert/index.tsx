@@ -368,7 +368,7 @@ export function SegmentUpsert({
                                   sx={{
                                     width: 14,
                                     height: 14,
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--border-radius)',
                                     mr: 1,
                                     alignSelf: 'center',
                                     backgroundColor: option.USR$COLOR

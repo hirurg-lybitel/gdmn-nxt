@@ -1,6 +1,6 @@
 import { GridColDef, GridSortModel, GridEventListener } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ForwardedRef, forwardRef, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, List, ListItemButton, IconButton, useMediaQuery, Theme, CardHeader, Typography, Divider, CardContent, Badge, Tooltip } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -15,7 +15,7 @@ import CustomersFilter, {
 } from './customers-filter/customers-filter';
 import SearchBar from '../components/search-bar/search-bar';
 import { makeStyles } from '@mui/styles';
-import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation, useGetCustomersCrossQuery, ISortingData } from '../features/customer/customerApi_new';
+import { useGetCustomersQuery, useUpdateCustomerMutation, useAddCustomerMutation, IPaginationData, useDeleteCustomerMutation, useGetCustomersCrossQuery, ISortingData, useAddFavoriteMutation, useDeleteFavoriteMutation } from '../features/customer/customerApi_new';
 import { clearFilterData, saveFilterData, saveFilterModel } from '../store/filtersSlice';
 import LabelMarker from '../components/Labels/label-marker/label-marker';
 import { useGetWorkTypesQuery } from '../features/work-types/workTypesApi';
@@ -29,6 +29,7 @@ import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -182,6 +183,9 @@ export function Customers(props: CustomersProps) {
   const [addCustomer] = useAddCustomerMutation();
   const [deleteCustomer] = useDeleteCustomerMutation();
 
+  const [addFavorite] = useAddFavoriteMutation();
+  const [deleteFavorite] = useDeleteFavoriteMutation();
+
   const dispatch = useDispatch();
 
   const theme = useTheme();
@@ -200,7 +204,22 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(true);
   };
 
-  const columns: GridColDef[] = [
+  const handleFavoriteClick = useCallback((customer: ICustomer) => (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    customer.isFavorite
+      ? deleteFavorite(customer.ID)
+      : addFavorite(customer.ID);
+  }, []);
+
+  const columns: GridColDef<ICustomer>[] = [
+    {
+      field: 'isFavorite',
+      headerName: '',
+      sortable: false,
+      width: 50,
+      cellClassName: style.starCell,
+      renderCell: ({ value, row }) => (<SwitchStar selected={value} onClick={handleFavoriteClick(row)} />)
+    },
     {
       field: 'NAME',
       headerName: 'Наименование',

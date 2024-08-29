@@ -3311,7 +3311,94 @@
 									]
 								}
 							},
-							"response": []
+							"response": [
+								{
+									"id": "970628f2-5a93-426b-b63b-cb8a73a4adbb",
+									"name": "200",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/marketing/mailings/launch/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"marketing",
+												"mailings",
+												"launch",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "949744298"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Powered-By",
+											"value": "Express"
+										},
+										{
+											"key": "Access-Control-Allow-Origin",
+											"value": "https://localhost:4201"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "X-RateLimit-Limit",
+											"value": "100"
+										},
+										{
+											"key": "X-RateLimit-Remaining",
+											"value": "99"
+										},
+										{
+											"key": "Date",
+											"value": "Tue, 02 Jul 2024 12:13:36 GMT"
+										},
+										{
+											"key": "X-RateLimit-Reset",
+											"value": "1719922470"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Content-Length",
+											"value": "131"
+										},
+										{
+											"key": "ETag",
+											"value": "W/\"83-mI3BhUi+WSsSNkUBd9bfrKeoozs\""
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Keep-Alive",
+											"value": "timeout=5"
+										}
+									],
+									"cookie": [],
+									"responseTime": null,
+									"body": "{\n    \"message\": \"Тестовая рассылка выполнена\",\n    \"accepted\": [\n        {\n            \"147330167\": \"yurashoihet@gmail.com\"\n        }\n    ],\n    \"rejected\": []\n}"
+								}
+							]
 						},
 						{
 							"name": "TestLaunch",
@@ -3905,6 +3992,219 @@
 				}
 			],
 			"id": "40966b64-35b7-4d8e-a750-57bf81b4f8f6"
+		},
+		{
+			"name": "Feedback",
+			"item": [
+				{
+					"name": "By customer ID",
+					"id": "35ef6c59-901b-45ec-a1d8-feb9ea33531d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/feedback/customerId/:customerId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								"customerId",
+								":customerId"
+							],
+							"variable": [
+								{
+									"key": "customerId",
+									"value": "147330167"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"id": "6fab3114-8dc3-43f0-8f58-c1741c113381",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"response\": \"NOOOOOOO\",\r\n    \"toDo\": \"we\",\r\n    \"type\": 5,\r\n    \"creationDate\": \"2024-08-15T12:01:35.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 147330167,\r\n        \"NAME\": \"\\\"432\\\" Главный военный клинический госпиталь\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/feedback/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "949748998"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"id": "2596efcc-4c65-406f-aff2-46db93865d6d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"response\": \"NOOOOOOO\",\r\n    \"toDo\": \"we\",\r\n    \"type\": 5,\r\n    \"creationDate\": \"2024-08-15T12:01:35.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 147330167,\r\n        \"NAME\": \"\\\"432\\\" Главный военный клинический госпиталь\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/feedback/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedback",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "949748998"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "ff974277-8dc3-425c-b514-3c62b8c8078f"
+		},
+		{
+			"name": "Time Tracking",
+			"item": [
+				{
+					"name": "By group",
+					"id": "5ef995a6-d810-4bcb-b222-212d78fa0363",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/time-tracking/group"
+					},
+					"response": []
+				},
+				{
+					"name": "In progress",
+					"id": "95b5ed84-4695-4677-97c4-4c73020fbafa",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/time-tracking/in-progress"
+					},
+					"response": []
+				},
+				{
+					"name": "Time tracking",
+					"id": "7c3170f0-a9f2-4ce7-a0a9-b6fda42ffec3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/time-tracking"
+					},
+					"response": []
+				},
+				{
+					"name": "Time tracking",
+					"id": "1768c06f-8951-4fc3-8ee8-bc75ae4d6693",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ID\": -1,\r\n    \"date\": \"2024-08-20T12:22:26.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 153677549,\r\n        \"NAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"PHONE\": \"+375 17 211 47 57\",\r\n        \"EMAIL\": \"\",\r\n        \"TAXID\": \"\",\r\n        \"ADDRESS\": \"\",\r\n        \"FULLNAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"FAX\": null,\r\n        \"POSTADDRESS\": null,\r\n        \"LABELS\": [\r\n            {\r\n                \"ID\": 949746862,\r\n                \"USR$NAME\": \"Сомнительные\",\r\n                \"USR$COLOR\": \"#6e9931\",\r\n                \"USR$ICON\": \"\",\r\n                \"USR$DESCRIPTION\": \"\",\r\n                \"USR$CONTACTKEY\": 153677549\r\n            }\r\n        ],\r\n        \"BUSINESSPROCESSES\": null\r\n    },\r\n    \"startTime\": \"2024-08-28T07:00:00.000Z\",\r\n    \"endTime\": \"2024-08-28T11:22:00.000Z\",\r\n    \"description\": \"My Long Description\",\r\n    \"inProgress\": false,\r\n    \"workProject\": {\r\n        \"ID\": 949749345,\r\n        \"NAME\": \"Autotask\",\r\n        \"STATUS\": 0\r\n    },\r\n    \"duration\": \"PT4H22M\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/time-tracking"
+					},
+					"response": []
+				},
+				{
+					"name": "Time tracking",
+					"id": "c90e7178-0678-4500-80ba-ce3b7acbdfb4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ID\": 949749797,\r\n    \"date\": \"2024-08-27T21:00:00.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 153589290,\r\n        \"NAME\": \"\\\"Агалайт\\\"\"\r\n    },\r\n    \"startTime\": \"2024-08-28T14:41:58.000Z\",\r\n    \"endTime\": \"2024-08-28T17:02:50.159Z\",\r\n    \"description\": \"My description\",\r\n    \"inProgress\": false,\r\n    \"duration\": \"PT2H20M52.159S\",\r\n    \"workProject\": {\r\n        \"ID\": 949749353,\r\n        \"NAME\": \"Telegram чат-бот\"\r\n    },\r\n    \"user\": {\r\n        \"ID\": 150001,\r\n        \"NAME\": \"Administrator\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/time-tracking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"time-tracking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "949749797"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "b7f70b4c-c3ad-4c8e-a652-a6b1d1c8d409"
 		}
 	],
 	"auth": {

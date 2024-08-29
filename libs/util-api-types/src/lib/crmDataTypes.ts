@@ -39,6 +39,7 @@ export interface ICustomer extends IContactWithID {
   FULLNAME?: string;
   POSTADDRESS?: string;
   BUSINESSPROCESSES?: IBusinessProcess[];
+  isFavorite?: boolean;
 };
 
 interface IMapOfArrays {
@@ -263,9 +264,9 @@ export interface IUserGroup extends IWithID {
 
 export interface IUser extends IWithID {
   NAME: string;
-  FULLNAME: string;
-  CONTACT: IContactWithID;
-  DISABLED: boolean;
+  FULLNAME?: string;
+  CONTACT?: IContactWithID;
+  DISABLED?: boolean;
   isActivated?: boolean;
   AVATAR?: string;
 };
@@ -328,6 +329,7 @@ export type ActionName =
   'contacts' |
   'system' |
   'mailings' |
+  'feedback' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -422,4 +424,59 @@ export interface IMailing extends IWithID {
 export interface ITemplate extends IWithID {
   NAME: string;
   HTML: string;
+}
+
+// TODO: change to ICustomerFeedback
+export interface IMailingFeedback extends IWithID {
+  customer: ICustomer;
+  mailing: IMailing;
+  response?: string;
+  toDo?: string;
+}
+
+export enum CustomerFeedbackType {
+  email = 0,
+  visit = 1,
+  chat = 2,
+  request = 3,
+  letter = 4,
+  call = 5
+}
+
+export interface ICustomerFeedback extends IWithID {
+  type: CustomerFeedbackType;
+  customer: ICustomer;
+  mailing?: IMailing;
+  response?: string;
+  toDo?: string;
+  creationDate?: Date;
+}
+
+export enum WorkProjectStatus {
+  active = 0,
+  suspended = 1,
+  completed = 2
+}
+export interface IWorkProject extends IWithID {
+  NAME: string;
+  STATUS?: WorkProjectStatus
+}
+
+export interface ITimeTrack extends IWithID {
+  date: Date;
+  startTime?: Date | null;
+  endTime?: Date | null;
+  duration?: string;
+  customer?: ICustomer | null;
+  // task?: IKanbanTask;
+  description: string;
+  inProgress?: boolean;
+  workProject?: IWorkProject;
+  user?: IUser;
+}
+
+export interface ITimeTrackGroup {
+  date: Date,
+  duration: string;
+  items: ITimeTrack[];
 }
