@@ -122,7 +122,9 @@ const Main = () => {
                             <Route path="analytics" element={<Analytics />} />
                           </Route>
                           <Route path="managment">
-                            <Route path="" element={<Navigate to="deals/list" />} />
+                            <Route path="" element={<Navigate to="contacts" />} />
+                            <Route path="contacts" element={<Contacts />} />
+                            <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="deals">
                               <Route path="" element={<Navigate to="list" />} />
                               <Route path="list" element={<Deals />} />
@@ -139,9 +141,6 @@ const Main = () => {
                               <Route path="list" element={<CustomersList />} />
                               {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
                             </Route>
-                            <Route path="labels" element={<Labels />} />
-                            <Route path="contacts" element={<Contacts />} />
-                            <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="contracts" element={<Contracts />} />
                             <Route path="time-tracker" element={<TimeTracker />} />
                           </Route>

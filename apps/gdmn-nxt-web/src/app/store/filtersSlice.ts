@@ -5,7 +5,9 @@ import { IFilteringData } from '../customers/customers-filter/customers-filter';
 export interface IFiltersState {
   filterModels: { [key: string]: GridFilterModel | undefined };
   filterData: { [key: string]: IFilteringData };
-  loadFilters: { [key: string]: boolean };
+  filterDebounce: { [key: string]: NodeJS.Timeout };
+  lastFilter: { [key: string]: IFilteringData };
+  filterId: { [key: string]: number | null }
 };
 
 export interface IDateFilter {
@@ -16,7 +18,9 @@ export interface IDateFilter {
 const initialState: IFiltersState = {
   filterModels: {},
   filterData: {},
-  loadFilters: {}
+  filterDebounce: {},
+  lastFilter: {},
+  filterId: {}
 };
 
 export const filtersSlice = createSlice({
@@ -37,8 +41,16 @@ export const filtersSlice = createSlice({
 
       return { ...state, filterData: newFilterData };
     },
-    setLoadFilter: (state, action: PayloadAction<{ [key: string]: boolean }>) => {
-      return { ...state, loadFilters: { ...state.loadFilters, ...action.payload } };
+    setDebounce: (state, action: PayloadAction<{ name: string, callBack: () => void, time: number }>) => {
+      clearTimeout(state.filterDebounce[`${action.payload.name}`]);
+      const timeout = setTimeout(action.payload.callBack, action.payload.time);
+      return { ...state, filterDebounce: { ...state.filterDebounce, [`${action.payload.name}`]: timeout } };
+    },
+    setLastFilter: (state, action: PayloadAction<{ [key: string]: IFilteringData }>) => {
+      return { ...state, lastFilter: { ...state.lastFilter, ...action.payload } };
+    },
+    setFilterId: (state, action: PayloadAction<{ [key: string]: number | null }>) => {
+      return { ...state, filterId: { ...state.filterId, ...action.payload } };
     },
   }
 });
@@ -47,7 +59,9 @@ export const {
   saveFilterData,
   saveFilterModel,
   clearFilterData,
-  setLoadFilter
+  setDebounce,
+  setLastFilter,
+  setFilterId
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

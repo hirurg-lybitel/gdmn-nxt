@@ -14,6 +14,7 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 interface EmailTemplateListProps {
 
 }
@@ -29,11 +30,14 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     pageSize: matchUpUW ? 16 : 9,
   });
 
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.template);
+  const filterEntityName = 'template';
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
+
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
 
   const dispatch = useDispatch();
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'template': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
@@ -153,7 +157,7 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
             <Stack direction="row" spacing={1}>
               <Box paddingX={'4px'} />
               <SearchBar
-                disabled={isLoading}
+                disabled={isLoading || filtersIsLoading}
                 onRequestSearch={requestSearch}
                 onCancelSearch={cancelSearch}
                 fullWidth

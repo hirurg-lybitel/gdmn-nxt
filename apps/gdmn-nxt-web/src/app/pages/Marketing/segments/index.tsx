@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/Marketing/segments/segmentsApi';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export default function CustomersSegments() {
   const [paginationData, setPaginationData] = useState<IPaginationData>({
@@ -21,11 +22,14 @@ export default function CustomersSegments() {
     pageSize: 20,
   });
 
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.segments);
+  const filterEntityName = 'segments';
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
+
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
 
   const dispatch = useDispatch();
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'segments': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
@@ -158,7 +162,7 @@ export default function CustomersSegments() {
           <Stack direction="row" spacing={1}>
             <Box paddingX={'4px'} />
             <SearchBar
-              disabled={segmentsIsLoading}
+              disabled={segmentsIsLoading || filtersIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
