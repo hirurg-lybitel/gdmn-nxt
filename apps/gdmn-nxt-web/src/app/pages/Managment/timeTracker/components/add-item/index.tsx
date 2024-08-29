@@ -241,6 +241,7 @@ export const AddItem = ({
               <CustomerSelect
                 disableEdition
                 disableCaption
+                disableFavorite={false}
                 required
                 value={formik.values.customer}
                 onChange={handleCustomerChange}

@@ -39,6 +39,7 @@ export interface ICustomer extends IContactWithID {
   FULLNAME?: string;
   POSTADDRESS?: string;
   BUSINESSPROCESSES?: IBusinessProcess[];
+  isFavorite?: boolean;
 };
 
 interface IMapOfArrays {

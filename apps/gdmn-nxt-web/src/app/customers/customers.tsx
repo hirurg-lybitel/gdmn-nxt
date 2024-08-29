@@ -31,6 +31,7 @@ import usePermissions from '../components/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -202,7 +203,15 @@ export function Customers(props: CustomersProps) {
     setOpenEditForm(true);
   };
 
-  const columns: GridColDef[] = [
+  const columns: GridColDef<ICustomer>[] = [
+    {
+      field: 'isFavorite',
+      headerName: '',
+      sortable: false,
+      width: 50,
+      cellClassName: style.starCell,
+      renderCell: ({ value }) => (<SwitchStar selected={value} onClick={() => {}} />)
+    },
     {
       field: 'NAME',
       headerName: 'Наименование',
