@@ -20,16 +20,20 @@ import { RootState } from '../../../store';
 import TasksFilter, { IFilteringData } from '../../../components/Kanban/tasks-filter/tasks-filter';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export interface TasksProps {}
 
 export function Tasks(props: TasksProps) {
   const [tabNo, setTabNo] = useState('0');
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.tasks);
+  const filterEntityName = 'tasks';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const { data: columns = [], isFetching: columnsIsFetching, isLoading, refetch } = useGetKanbanTasksQuery({
     userId, ...filterData
   });
+
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
 
   const [addTask, { isSuccess: addedTaskSuccess, data: addedTask }] = useAddTaskMutation();
   const [addTaskForm, setAddTaskForm] = useState(false);
@@ -41,7 +45,7 @@ export function Tasks(props: TasksProps) {
   const dispatch = useDispatch();
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'tasks': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleAddTaskFormOnSubmit = useCallback((newTask: IKanbanTask) => {
@@ -51,9 +55,13 @@ export function Tasks(props: TasksProps) {
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
 
-  const filterClear = useCallback(() => dispatch(clearFilterData('tasks')), []);
+  const filterClear = useCallback(() => {
+    dispatch(clearFilterData(filterEntityName));
+  }, [dispatch]);
 
-  const filterClose = useCallback((event: any) => setOpenFilters(false), []);
+  const filterClose = useCallback((event: any) => {
+    setOpenFilters(false);
+  }, []);
 
   const filterClick = useCallback(() => {
     setOpenFilters(true);
@@ -93,7 +101,7 @@ export function Tasks(props: TasksProps) {
       onFilteringDataChange={handleFilteringDataChange}
       onFilterClear={filterClear}
     />,
-  [openFilters, filterData]);
+  [openFilters, filterData, filterClose]);
 
 
   const Header = useMemo(() => {

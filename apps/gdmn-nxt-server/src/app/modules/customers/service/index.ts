@@ -3,7 +3,6 @@ import { FindHandler, ICustomer, IFavoriteContact } from '@gsbelarus/util-api-ty
 import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
-  console.log('customers_find');
   const {
     ID,
     DEPARTMENTS = '',

@@ -38,7 +38,7 @@ export function TasksFilter(props: TasksFilterProps) {
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
     delete newObject[entity];
-    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 ? { [entity]: value } : {}) });
+    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 && !!value ? { [entity]: value } : {}) });
   };
 
   useEffect(() => {

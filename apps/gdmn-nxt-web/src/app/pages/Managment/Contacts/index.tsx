@@ -52,7 +52,7 @@ export default function Contacts() {
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
 
-  const [filtersIsLoading, filtersIsFetching, save] = useFilterStore(filterEntityName);
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
 
   const [upsertContact, setUpsertContact] = useState<{
     addContact?: boolean;
@@ -155,14 +155,12 @@ export default function Contacts() {
       setOpenFilters(true);
     }, []),
     filterClose: useCallback(() => {
-      save();
       setOpenFilters(false);
-    }, [save]),
+    }, []),
     filterClear: useCallback(() => {
-      save({});
       setOpenFilters(false);
       dispatch(clearFilterData(filterEntityName));
-    }, [save, dispatch])
+    }, [dispatch])
   };
 
   const handleSortChange = useCallback((sortModel: ISortingData | null) => setSortingData(sortModel), []);
