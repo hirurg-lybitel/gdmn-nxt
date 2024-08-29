@@ -11,8 +11,20 @@ import StopIcon from '@mui/icons-material/Stop';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
 import { ICustomer, ITimeTrack, IWorkProject } from '@gsbelarus/util-api-types';
-import dayjs from '@gdmn-nxt/dayjs';
+import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
+import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
+
+const durationMask = [
+  /[0-9]/,
+  /[0-9]/,
+  ':',
+  /[0-5]/,
+  /[0-9]/,
+  ':',
+  /[0-5]/,
+  /[0-9]/
+];
 
 type CalcMode = 'calc' | 'manual';
 type SubmitMode = 'add' | 'update';
@@ -51,7 +63,7 @@ export const AddItem = ({
       ID: -1,
       date: currentDate,
       customer: null,
-      startTime: null,
+      startTime: currentDate,
       endTime: null,
       description: '',
       inProgress: false,
@@ -162,6 +174,22 @@ export const AddItem = ({
 
   const timePickerOnError = (e: TimeValidationError, v: Date | null) => toggleValidTimers(!e);
 
+  const durationOnChange = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const [hours, minutes, seconds] = e.target.value
+      .replaceAll('_', '0')
+      .split(':')
+      .map(Number);
+
+    const newDuration = dayjs.duration({ hours, minutes, seconds });
+    const isoDuration = newDuration.toISOString();
+    formik.setFieldValue('duration', isoDuration);
+
+    const startTime = dayjs(formik.values.startTime);
+    formik.setFieldValue('endTime', startTime.add(newDuration).toDate());
+  };
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -183,59 +211,6 @@ export const AddItem = ({
                 InputProps={{
                   startAdornment:
                   <InputAdornment position="start">
-                    {/* <Autocomplete
-                      fullWidth
-                      style={{
-                        // width: '250px',
-                        // width: workProjects[0].NAME.length * 17
-                        // width: 'fit-content'
-                        minWidth: 200
-                      }}
-                      componentsProps={{
-                        // popper: { style: { width: 'fit-content' } },
-                        // paper: { style: { width: 'fit-content' } }
-                        }}
-                      sx={{
-                        // minWidth: '200px',
-                        '& .MuiInputBase-root::before': {
-                          borderBottom: 'none'
-                        },
-                      }}
-                      value={workProjects.length > 1 ? workProjects[0] : undefined}
-                      onChange={(e, value) => console.log('onChange', value)}
-                      loading={workProjectsFetching}
-                      disableClearable
-                      options={workProjects}
-                      getOptionLabel={option => option.NAME}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.ID}>
-                          {option.NAME}
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          // inputProps={{
-                          //   style: {
-                          //     borderBottomColor: 'green'
-                          //   }
-                          // }}
-                          // InputProps={{
-                          //   style: {
-                          //     borderBottom: 'none'
-                          //   }
-                          //   // disableUnderline: true,
-                          // }}
-                          variant="standard"
-                          placeholder="Выбор клиента и задачи (опционально)"
-                        />
-                      )}
-                    /> */}
-                    {/* <TextField
-                      name="workProject"
-                      value={workProjectsFetching ? 'Загрузка...' : (JSON.stringify(formik.values.workProject) ?? '')}
-                      onChange={handleWorkProjectChange}
-                    /> */}
                     <TextField
                       select
                       InputProps={{
@@ -385,18 +360,15 @@ export const AddItem = ({
                 alignItems="center"
                 spacing={1}
               >
-                <Box flex={1} />
-                <Typography variant="caption">
-                  Длительность:
-                </Typography>
-                <Typography fontWeight={600} width={60}>
-                  {formik.values.duration
-                    ? dayjs
-                      .duration(formik.values.duration)
-                      .format('HH:mm:ss')
-                      .split('.')[0]
-                    : '00:00:00'}
-                </Typography>
+                <TextFieldMasked
+                  label="Длительность"
+                  style={{
+                    maxWidth: 159
+                  }}
+                  mask={durationMask}
+                  value={durationFormat(formik.values.duration)}
+                  onChange={durationOnChange}
+                />
               </Stack>
             </Stack>
           </Stack>
