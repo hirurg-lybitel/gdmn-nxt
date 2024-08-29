@@ -214,12 +214,5 @@ export default function componentStyleOverrides(theme: Theme): Components {
         size: 'small'
       },
     },
-    MuiInputBase: {
-      defaultProps: {
-        style: {
-          paddingRight: 8
-        }
-      }
-    }
   };
 }

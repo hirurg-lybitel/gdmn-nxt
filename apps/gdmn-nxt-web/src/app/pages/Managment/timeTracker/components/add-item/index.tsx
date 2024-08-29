@@ -279,6 +279,11 @@ export const AddItem = ({
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
                   value={formik.values.date}
                   onChange={handleDateTimeChange('date')}
+                  sx={{
+                    '& .MuiInputBase-root': {
+                      paddingRight: 1,
+                    }
+                  }}
                 />
                 <Stack
                   direction="row"
@@ -287,6 +292,15 @@ export const AddItem = ({
                 >
                   <TimePicker
                     className={styles.selectTime}
+                    slotProps={{
+                      textField: {
+                        sx: {
+                          '& .MuiInputBase-root': {
+                            paddingRight: 1,
+                          }
+                        }
+                      },
+                    }}
                     name="startTime"
                     value={formik.values.startTime}
                     onChange={handleDateTimeChange('startTime')}
@@ -295,6 +309,15 @@ export const AddItem = ({
                   <div>-</div>
                   <TimePicker
                     className={styles.selectTime}
+                    slotProps={{
+                      textField: {
+                        sx: {
+                          '& .MuiInputBase-root': {
+                            paddingRight: 1,
+                          }
+                        }
+                      },
+                    }}
                     name="endTime"
                     minTime={formik.values.startTime ?? undefined}
                     value={formik.values.endTime}
