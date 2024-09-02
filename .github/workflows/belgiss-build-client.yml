@@ -1,5 +1,5 @@
 name: Build Belgiss Client Image
-run-name: ${{ github.actor }} triggered Docker client building
+run-name: ${{ github.actor }} triggered Docker client 🖥️ deploying 🐳
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
     paths:
       - 'apps/gdmn-nxt-web/**'
       - 'libs/**'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
