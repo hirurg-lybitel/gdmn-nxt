@@ -154,8 +154,6 @@ export const FeedbackItem = ({
                 return <ChatIcon />;
               case CustomerFeedbackType.request:
                 return <InstallDesktopIcon />;
-              case CustomerFeedbackType.letter:
-                return <FeedIcon />;
               default:
                 return <MessageIcon />;
             }
@@ -177,11 +175,9 @@ export const FeedbackItem = ({
                     case CustomerFeedbackType.call:
                       return 'Звонок';
                     case CustomerFeedbackType.chat:
-                      return 'Переписка';
+                      return 'Эл. письмо';
                     case CustomerFeedbackType.request:
                       return 'Заявка с сайта';
-                    case CustomerFeedbackType.letter:
-                      return 'Бумажное письмо';
                     default:
                       return '';
                   }

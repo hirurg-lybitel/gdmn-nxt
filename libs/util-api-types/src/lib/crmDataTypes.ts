@@ -439,7 +439,6 @@ export enum CustomerFeedbackType {
   visit = 1,
   chat = 2,
   request = 3,
-  letter = 4,
   call = 5
 }
 

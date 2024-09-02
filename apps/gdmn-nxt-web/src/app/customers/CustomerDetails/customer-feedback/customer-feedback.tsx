@@ -61,12 +61,10 @@ export function CustomerFeedback({
           return CustomerFeedbackType.visit;
         case 'Звонок':
           return CustomerFeedbackType.call;
-        case 'Переписка':
+        case 'Эл. письмо':
           return CustomerFeedbackType.chat;
         case 'Заявка':
           return CustomerFeedbackType.request;
-        case 'Письмо':
-          return CustomerFeedbackType.letter;
         default:
           return CustomerFeedbackType.chat;
       }
