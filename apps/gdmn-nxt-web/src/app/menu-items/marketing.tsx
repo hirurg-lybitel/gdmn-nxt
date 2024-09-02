@@ -8,20 +8,20 @@ const marketing: IMenuItem = {
   title: 'Маркетинг',
   type: 'group',
   children: [
-    // {
-    //   id: 'mailing',
-    //   title: 'Email рассылка',
-    //   type: 'item',
-    //   url: 'marketing/mailing',
-    //   icon: <ForwardToInboxIcon color="secondary" />
-    // },
-    // {
-    //   id: 'segments',
-    //   title: 'Сегменты',
-    //   type: 'item',
-    //   url: 'marketing/segments',
-    //   icon: <SegmentIcon color="secondary" />
-    // },
+    {
+      id: 'mailing',
+      title: 'Email рассылка',
+      type: 'item',
+      url: 'marketing/mailing',
+      icon: <ForwardToInboxIcon color="secondary" />
+    },
+    {
+      id: 'segments',
+      title: 'Сегменты',
+      type: 'item',
+      url: 'marketing/segments',
+      icon: <SegmentIcon color="secondary" />
+    },
     {
       id: 'templates',
       title: 'Шаблоны',

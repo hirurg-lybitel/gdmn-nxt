@@ -7,7 +7,8 @@ import ImageIcon from '@mui/icons-material/Image';
 import ReactHtmlParser from 'react-html-parser';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateTextName } from '../html-to-object';
+import { emailTemplateButtonName, emailTemplateDividerName, emailTemplateImageName, emailTemplateMarginAuto, emailTemplatePaddingAuto, emailTemplateTextColor, emailTemplateTextName, emailTemplateURL, emailTemplateWidth, hexToRGB } from '../html-to-object';
+import { useMemo } from 'react';
 
 const useStyles = makeStyles((theme: Theme) => ({
   templateItem: {
@@ -35,71 +36,83 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-interface findComponentProps {
+interface IFindComponentProps {
   component: IComponent,
   isPreview?: boolean,
-  editedIndex?: number | null,
   index: number,
-  editIsFocus?: boolean,
-  setValue?: (stringIndex: string, newValue: any) => void,
-  setDrag?: (arg: boolean) => void,
-  drag?: boolean,
+  background: string
 }
 
-export const FindComponent = (props: findComponentProps) => {
-  const { component, isPreview, editedIndex, index, editIsFocus, setValue, setDrag, drag } = props;
+export const FindComponent = (props: IFindComponentProps) => {
+  const { component, isPreview, index, background } = props;
   const theme = useTheme();
+
   switch (component.type) {
-    case 'text':
+    case 'text': {
+      const rgb = hexToRGB(background);
       return (
         <div
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateWidth + component.width?.value)
+          }
           id={index + ''}
           style={{
+            display: 'inline-block',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             maxWidth: '100%',
-            color: 'hsla(0, 5%, 70%, 1)',
-            wordWrap: 'break-word'
+            color: (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black',
+            wordWrap: 'break-word',
+            opacity: !(component.text?.trim() === '<p style="margin:0px"><br></p>' || !component.text) ? 1 : 0.5
           }}
         >
           {ReactHtmlParser(
-            !(component.text === '<p style="margin:0px"><br></p>' || !component.text || component.text === '')
+            !(component.text?.trim() === '<p style="margin:0px"><br></p>' || !component.text)
               ? component.text
               : (isPreview ? '' : '<p>Напишите что-либо</p>')
           )}
         </div>
       );
-    case 'image':
+    }
+    case 'image': {
+      if (!component.image && !isPreview) return <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />;
       return (
-        <>
-          {component.image
-            ? (
-              <img
-                id={index + ''}
-                style={{ width: `${component.width?.value}%` }}
-                src={component.image}
-              />
-            )
-            : isPreview ? (<img
-              id={index + ''}
-              style={{ width: `${component.width?.value}%` }}
-            />)
-              : <ImageIcon sx={{ color: theme.mainContent?.buttonPrimaryColor }} fontSize="large" />
+        <img
+          loading="lazy"
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateWidth + component.width?.value)
           }
-        </>
+          id={index + ''}
+          style={{ display: 'inline-block', width: `${component.width?.value}%` }}
+          src={component.image ? component.image : undefined}
+        />
       );
-    case 'button':
+    }
+    case 'button': {
+      const rgb = hexToRGB(component.color?.button);
       return (
         <a
           id={index + ''}
           href={(!component.url || component.url?.length < 0 || !isPreview) ? undefined : component.url}
           target="_blank"
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateTextColor + component.color?.text)
+            + (' ' + emailTemplateURL + (component.url || ''))
+            + (' ' + emailTemplateWidth + component.width?.value)
+          }
           style={{
+            minWidth: 'min-content',
+            display: 'inline-block',
+            boxSizing: 'border-box',
             textDecoration: 'none',
             width: component.width.auto ? 'auto' : component.width?.value + '%',
             backgroundColor: component.color?.button,
-            color: component.color?.textAuto ? 'hsla(0, 5%, 81%, 1)' : component.color?.text,
+            color: component.color?.textAuto ? ((0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black') : component.color?.text,
             padding: component.padding?.isCommon ? component.padding?.common + 'px' : `${component.padding?.top}px ${component.padding?.right}px ${component.padding?.bottom}px ${component.padding?.left}px`,
-            font: `${component.font?.size}px ${component.font?.value}`,
+            fontSize: `${component.font?.size}px`,
+            fontFamily: component.font?.value,
             fontWeight: '600',
             borderRadius: '10px',
             cursor: (!component.url || (component.url?.length || 0) < 1) ? 'auto' : 'pointer',
@@ -111,11 +124,16 @@ export const FindComponent = (props: findComponentProps) => {
           {component.text}
         </a>
       );
+    }
     case 'divider':
       return (
         <div
+          className={
+            (component.padding?.isCommon ? emailTemplatePaddingAuto : '')
+            + (' ' + emailTemplateWidth + component.width?.value)
+          }
           id={index + ''}
-          style={{ paddingTop: '5px', paddingBottom: '5px',
+          style={{ display: 'inline-block', paddingTop: '5px', paddingBottom: '5px',
             width: component.width.auto ? 'auto' : `${component.width?.value}%`
           }}
         >
@@ -128,15 +146,14 @@ export const FindComponent = (props: findComponentProps) => {
 interface EmailTemplateItemProps{
   editedIndex?: number | null,
   index: number,
-  editIsFocus?: boolean,
   setValue?: (stringIndex: string, newValue: any) => void,
   setEditIsFocus?: (value: React.SetStateAction<boolean>) => void,
   isPreview?: boolean,
   component: IComponent,
   setDrag?: (arg: boolean) => void,
-  drag?: boolean,
   removeEl?: (index: number) => void;
   copy?: (index: number) => void
+  background: string
 }
 
 const idByType = (type: componentTypes) => {
@@ -151,24 +168,44 @@ const idByType = (type: componentTypes) => {
 
 const EmailTemplateItem = (props: EmailTemplateItemProps) => {
   const theme = useTheme();
-  const { editedIndex, index, editIsFocus, setValue, setEditIsFocus, isPreview, component, setDrag, drag, copy, removeEl } = props;
+  const { editedIndex, index, setValue, setEditIsFocus, isPreview, component, setDrag, copy, removeEl, background } = props;
 
   const classes = useStyles();
+
+
+  const viewedComponent = useMemo(() => (
+    <div
+      style={{
+        textAlign: component.position,
+        width: '100%',
+        height: '100%'
+      }}
+      onMouseDown={() => {
+        setEditIsFocus && setEditIsFocus(true);
+      }}
+    >
+      <FindComponent
+        component={component}
+        isPreview={isPreview}
+        index={index}
+        background={background}
+      />
+    </div>), [background, JSON.stringify(component), index, isPreview, setEditIsFocus]);
 
   if (isPreview || !setValue) {
     if (!component) return <div />;
     return (
       <div
-        className={idByType(component.type)}
+        className={idByType(component.type) + (component.margin.isCommon ? ' ' + emailTemplateMarginAuto : '')}
         id={(component.id + '')}
         style={{
-          display: 'flex', justifyContent: component.position,
+          textAlign: component.position,
           padding: component.margin.isCommon ? component.margin.common + 'px'
             : `${component.margin.top}px ${component.margin.right}px ${component.margin.bottom}px ${component.margin.left}px`,
           border: '1px solid transparent'
         }}
       >
-        <FindComponent {...{ isPreview: true, component, index }}/>
+        <FindComponent {...{ isPreview: true, component, index, background }}/>
       </div>
     );
   }
@@ -245,19 +282,7 @@ const EmailTemplateItem = (props: EmailTemplateItemProps) => {
           </IconButton>
         </div>
       </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: component.position,
-          width: '100%',
-          height: '100%'
-        }}
-        onMouseDown={() => {
-          setEditIsFocus && setEditIsFocus(true);
-        }}
-      >
-        <FindComponent {...{ component, isPreview: false, editedIndex, index, editIsFocus, setValue, setDrag, drag }}/>
-      </div>
+      {viewedComponent}
     </div>
   );
 };

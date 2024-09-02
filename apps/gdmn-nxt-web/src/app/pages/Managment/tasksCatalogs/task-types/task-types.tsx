@@ -21,7 +21,7 @@ interface ValidationShema {
   [key: string]: (value: string) => string;
 }
 
-type ConfirmationMode = 'additing' | 'deleting' | 'editing';
+type ConfirmationMode = 'deleting' | 'cancel';
 
 const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip
@@ -73,26 +73,35 @@ export function TaskTypes(props: TaskTypesProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [titleAndMethod, setTitleAndMethod] = useState<{
     title: string,
+    text: string,
     mode: ConfirmationMode,
     method: () => void
       }>({
-        title: '', mode: 'additing', method: () => {}
+        title: '', text: '', mode: 'cancel', method: () => {}
       });
   const [_, forceUpdate] = useReducer((x) => x + 1, 0);
   const handleSetTitleAndMethod = (mode: ConfirmationMode, method: () => void) => {
     const title = (() => {
       switch (mode) {
-        case 'additing':
-          return 'Сохранение нового типа задач';
-        case 'editing':
-          return 'Редактирование типа задач';
+        case 'cancel':
+          return 'Внимание';
         case 'deleting':
           return 'Удаление типа задач';
         default:
           return 'Сохранение нового типа задач';
       }
     })();
-    setTitleAndMethod({ title, mode, method });
+    const text = (() => {
+      switch (mode) {
+        case 'cancel':
+          return 'Изменения будут утеряны. Продолжить?';
+        case 'deleting':
+          return 'Вы уверены, что хотите продолжить?';
+        default:
+          return 'Вы уверены, что хотите продолжить?';
+      }
+    })();
+    setTitleAndMethod({ title, text, mode, method });
   };
 
   const handleSubmit = useCallback((taskType: ITaskType) => {
@@ -126,22 +135,9 @@ export function TaskTypes(props: TaskTypesProps) {
       api.current.startRowEditMode({ id });
     };
 
-    const handleConfirmSave = (event: MouseEvent<HTMLButtonElement>) => {
-      forceUpdate();
-      event.stopPropagation();
-      const row = api.current.getRow(id);
-      if (row?.ID === 0) {
-        handleSetTitleAndMethod('additing', handleSaveClick);
-      } else {
-        handleSetTitleAndMethod('editing', handleSaveClick);
-      }
-      setConfirmOpen(true);
-    };
-
-    const handleSaveClick = () => {
+    const handleSave = (event: MouseEvent<HTMLButtonElement>) => {
       setConfirmOpen(false);
       api.current.stopRowEditMode({ id });
-      const row = { ...api.current.getRow(id) };
       forceUpdate();
     };
 
@@ -156,7 +152,22 @@ export function TaskTypes(props: TaskTypesProps) {
       deleteTaskType(Number(id));
     };
 
+    const handleConfirmCancelClick = () => {
+      function removeEmpty(obj: any) {
+        return Object.fromEntries(Object.entries(obj).filter(([_, v]) => (v !== null && v !== '' && v !== undefined)));
+      }
+      if (JSON.stringify(api.current.getRow(id)) !== JSON.stringify(removeEmpty(api.current.getRowWithUpdatedValues(id, '')))) {
+        handleSetTitleAndMethod('cancel', handleCancelClick);
+        setConfirmOpen(true);
+      } else {
+        handleCancelClick();
+      }
+
+      forceUpdate();
+    };
+
     const handleCancelClick = () => {
+      setConfirmOpen(false);
       api.current.stopRowEditMode({ id, ignoreModifications: true });
       if (api.current.getRow(id)!.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
       forceUpdate();
@@ -170,7 +181,7 @@ export function TaskTypes(props: TaskTypesProps) {
             role="menuitem"
             color="primary"
             size="small"
-            onClick={handleConfirmSave}
+            onClick={handleSave}
           >
             <SaveIcon fontSize="small" />
           </IconButton>
@@ -178,7 +189,7 @@ export function TaskTypes(props: TaskTypesProps) {
             role="menuitem"
             color="primary"
             size="small"
-            onClick={handleCancelClick}
+            onClick={handleConfirmCancelClick}
           >
             <CancelIcon fontSize="small" />
           </IconButton>
@@ -266,6 +277,7 @@ export function TaskTypes(props: TaskTypesProps) {
   };;
 
   const handleAddSource = () => {
+    if (apiRef.current.getRow(0)) return;
     const id = 0;
     apiRef.current.updateRows([{ ID: id }]);
     apiRef.current.setRowIndex(id, 0);
@@ -280,12 +292,10 @@ export function TaskTypes(props: TaskTypesProps) {
     <ConfirmDialog
       open={confirmOpen}
       title={titleAndMethod.title}
-      text="Вы уверены, что хотите продолжить?"
+      text={titleAndMethod.text}
       dangerous={titleAndMethod.mode === 'deleting'}
       confirmClick={titleAndMethod.method}
-      cancelClick={() => {
-        setConfirmOpen(false);
-      }}
+      cancelClick={() => setConfirmOpen(false)}
     />
   , [confirmOpen, titleAndMethod]);
 

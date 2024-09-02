@@ -2,7 +2,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { CssBaseline, GlobalStyles } from '@mui/material';
+import { Button, CssBaseline, GlobalStyles } from '@mui/material';
 import { StrictMode, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RootState, store } from './app/store';
@@ -55,8 +55,10 @@ import OurContacts from './app/pages/Managment/ourContacts';
 import Mailing from './app/pages/Marketing/mailing';
 import CustomersSegments from './app/pages/Marketing/segments';
 import Templates from './app/pages/Marketing/templates';
+import { TimeTracker } from './app/pages/Managment/timeTracker';
 
 registerMUI();
+
 
 const Main = () => {
   const customization = useSelector(
@@ -90,7 +92,21 @@ const Main = () => {
             <CssBaseline />
             <LocalizationProvider
               dateAdapter={AdapterDateFns}
-              localeText={{ start: 'Начало периода', end: 'Конец периода' }}
+              localeText={{
+                start: 'Начало периода',
+                end: 'Конец периода',
+                dateTimePickerToolbarTitle: 'Укажите дату и время',
+                openNextView: 'следующее окно',
+                openPreviousView: 'предыдущее окно',
+                cancelButtonLabel: 'Отмена',
+                todayButtonLabel: 'Сегодня',
+                fieldDayPlaceholder: ({ format }) => 'д'.repeat(format.length),
+                fieldMonthPlaceholder: ({ format }) => 'м'.repeat(format.length),
+                fieldYearPlaceholder: ({ format }) => 'гггг',
+                fieldHoursPlaceholder: ({ format }) => 'ч'.repeat(format.length),
+                fieldMinutesPlaceholder: ({ format }) => 'м'.repeat(format.length),
+                fieldSecondsPlaceholder: ({ format }) => 'с'.repeat(format.length)
+              }}
               adapterLocale={ruLocale}
             >
               <SnackbarProvider maxSnack={3}>
@@ -106,7 +122,10 @@ const Main = () => {
                             <Route path="analytics" element={<Analytics />} />
                           </Route>
                           <Route path="managment">
-                            <Route path="" element={<Navigate to="deals/list" />} />
+                            <Route path="" element={<Navigate to="contacts" />} />
+                            <Route path="labels" element={<Labels />} />
+                            <Route path="contacts" element={<Contacts />} />
+                            <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="deals">
                               <Route path="" element={<Navigate to="list" />} />
                               <Route path="list" element={<Deals />} />
@@ -123,10 +142,8 @@ const Main = () => {
                               <Route path="list" element={<CustomersList />} />
                               {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
                             </Route>
-                            <Route path="labels" element={<Labels />} />
-                            <Route path="contacts" element={<Contacts />} />
-                            <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="contracts" element={<Contracts />} />
+                            <Route path="time-tracker" element={<TimeTracker />} />
                           </Route>
                           <Route path="marketing">
                             <Route path="" element={<Navigate to="mailing" />} />

@@ -128,7 +128,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
                           backgroundColor: option.USR$COLOR,
                           width: 14,
                           height: 14,
-                          borderRadius: '12px',
+                          borderRadius: 'var(--border-radius)',
                         }}
                       />
                     }

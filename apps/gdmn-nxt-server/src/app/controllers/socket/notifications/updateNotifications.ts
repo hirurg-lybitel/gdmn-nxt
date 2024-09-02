@@ -127,7 +127,7 @@ export const updateNotifications = async (sessionId: string) => {
             END
           FROM USR$CRM_DEALS d
           JOIN USR$CRM_KANBAN_CARDS card ON card.USR$DEALKEY = d.ID
-          JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
+          LEFT JOIN USR$CRM_KANBAN_CARD_TASKS task ON task.USR$CARDKEY = card.ID
           LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES taskType ON taskType.ID = task.USR$TASKTYPEKEY
           LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
           LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER

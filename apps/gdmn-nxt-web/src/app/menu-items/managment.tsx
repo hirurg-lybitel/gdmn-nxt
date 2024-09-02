@@ -4,6 +4,7 @@ import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
+import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import { IMenuItem } from '.';
 
 
@@ -12,6 +13,13 @@ const managment: IMenuItem = {
   title: 'Управление',
   type: 'group',
   children: [
+    {
+      id: 'timeTracker',
+      title: 'Учёт времени',
+      url: 'managment/time-tracker',
+      type: 'item',
+      icon: <AccessTimeFilledIcon color="secondary" />,
+    },
     {
       id: 'contactsGroup',
       title: 'Контакты',
@@ -78,19 +86,26 @@ const managment: IMenuItem = {
         },
       ]
     },
+    // {
+    //   id: 'customers',
+    //   title: 'Клиенты',
+    //   type: 'collapse',
+    //   icon: <PeopleAltIcon color="secondary" />,
+    //   children: [
+    //     {
+    //       id: 'customers-list',
+    //       title: 'Список клиентов',
+    //       type: 'item',
+    //       url: 'managment/customers/list'
+    //     },
+    //   ]
+    // },
     {
       id: 'customers',
       title: 'Клиенты',
-      type: 'collapse',
+      type: 'item',
       icon: <PeopleAltIcon color="secondary" />,
-      children: [
-        {
-          id: 'customers-list',
-          title: 'Список клиентов',
-          type: 'item',
-          url: 'managment/customers/list'
-        },
-      ]
+      url: 'managment/customers/list'
     },
     {
       id: 'contracts',

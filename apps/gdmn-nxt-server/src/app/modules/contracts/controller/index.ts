@@ -1,9 +1,6 @@
 import { RequestHandler } from 'express';
-import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween';
 import { resultError } from '@gsbelarus/util-helpers';
 import { contractsService } from '../service';
-dayjs.extend(isBetween);
 
 export const getAll: RequestHandler = async (req, res) => {
   const contractType = parseInt(req.params.contractType);

@@ -23,12 +23,10 @@ import {
   StepButton,
   LinearProgress
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -305,6 +303,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         flex={1}
         spacing={2}
         paddingTop={1}
+        maxWidth={600}
       >
         <TextField
           label="Продукция"
@@ -392,6 +391,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
     <CustomizedDialog
       open={open}
       onClose={handleOnClose}
+      confirmation={formik.dirty}
       minWidth={400}
       width="calc(100% - var(--menu-width))"
     >
@@ -454,7 +454,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </Step>)}
                 </Stepper>}
               <TabContext value={tabIndex}>
-                <Box style={{ width: `calc(${windowWidth} - 5vw)` }}>
+                <Box style={{ width: `calc(${windowWidth} - 5vw)`, alignSelf: 'center' }}>
                   <TabList
                     onChange={handleTabsChange}
                     scrollButtons="auto"
@@ -476,381 +476,398 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 <Divider style={{ margin: 0 }} />
                 <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
                   <CustomizedScrollBox container={{ className: classes.scrollContainer }} className={classes.scrollBox}>
-                    <Stack
-                      flex={1}
-                      spacing={2}
-                      paddingTop={1}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center'
+                      }}
                     >
-                      <TextField
-                        label="Наименование"
-                        type="text"
-                        multiline
-                        minRows={1}
-                        required
-                        fullWidth
-                        autoFocus
-                        name="DEAL.USR$NAME"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          formik.setFieldValue(
-                            'DEAL',
-                            { ...formik.values.DEAL, USR$NAME: value ? value : null }
-                          );
-                        }}
-                        value={formik.values.DEAL?.USR$NAME || ''}
-                        error={getIn(formik.touched, 'DEAL.USR$NAME') && Boolean(getIn(formik.errors, 'DEAL.USR$NAME'))}
-                        helperText={getIn(formik.touched, 'DEAL.USR$NAME') && getIn(formik.errors, 'DEAL.USR$NAME')}
-                      />
-                      <Stack direction={matchDownLg ? 'column' : 'row'} spacing={2}>
-                        <Stack
-                          direction="column"
-                          spacing={2}
-                          flex={1}
-                        >
-                          <CustomerSelect
-                            value={formik.values.DEAL?.CONTACT}
-                            onChange={(value) => formik.setFieldValue('DEAL.CONTACT', value)}
-                            required
-                            name="DEAL.CONTACT"
-                            error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
-                            helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
-                          />
-                          <DealSourcesSelect formik={formik} />
-                        </Stack>
-                        <Stack
-                          spacing={2}
-                          {...(matchDownLg
-                            ? {
-                              direction: 'row',
-                              flex: 1
-                            }
-                            : {
-                              width: 150
-                            })
-                          }
-                        >
-                          <TextField
-                            label="Сумма"
-                            type="number"
-                            name="DEAL.USR$AMOUNT"
-                            fullWidth
-                            InputProps={{
-                              startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
-                            }}
-                            value={formik.values.DEAL?.USR$AMOUNT || ''}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              formik.setFieldValue(
-                                'DEAL',
-                                { ...formik.values.DEAL, USR$AMOUNT: value ? value : null }
-                              );
-                            }}
-                            placeholder="0.00"
-                            error={getIn(formik.touched, 'DEAL.USR$AMOUNT') && Boolean(getIn(formik.errors, 'DEAL.USR$AMOUNT'))}
-                            helperText={getIn(formik.touched, 'DEAL.USR$AMOUNT') && getIn(formik.errors, 'DEAL.USR$AMOUNT')}
-                          />
-                          <DesktopDatePicker
-                            label="Срок"
-                            value={formik.values.DEAL?.USR$DEADLINE ? new Date(formik.values.DEAL?.USR$DEADLINE) : null}
-                            format="dd.MM.yyyy"
-                            onChange={(value) => {
-                              formik.setFieldValue(
-                                'DEAL',
-                                { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
-                              );
-                            }}
-                            slotProps={{ textField: { variant: 'outlined' } }}
-                          />
-
-                        </Stack>
-                      </Stack>
-                      <Divider variant="middle" />
-                      <Stack direction={'column'} spacing={2}>
-                        <Autocomplete
-                          fullWidth
-                          options={employees || []}
-                          getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions(50, 'NAME')}
-                          value={employees?.find(el => el.ID === formik.values.DEAL?.CREATOR?.ID) || null}
-                          loading={employeesIsFetching}
-                          loadingText="Загрузка данных..."
-                          onChange={(event, value) => {
-                            formik.setFieldValue('DEAL.CREATOR', value);
-                          }}
-                          renderOption={(props, option) => {
-                            return (
-                              <li {...props} key={option.ID}>
-                                {option.NAME}
-                              </li>
-                            );
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Создал"
-
-                              required
-                              placeholder="Выберите сотрудника"
-                              error={getIn(formik.touched, 'DEAL.CREATOR') && Boolean(getIn(formik.errors, 'DEAL.CREATOR'))}
-                              helperText={getIn(formik.touched, 'DEAL.CREATOR') && getIn(formik.errors, 'DEAL.CREATOR')}
-                            />
-                          )}
-                        />
-                        <Autocomplete
-                          fullWidth
-                          options={departments || []}
-                          getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions(50, 'NAME')}
-                          value={departments?.find(el => el.ID === formik.values.DEAL?.DEPARTMENT?.ID) || null}
-                          loading={departmentsIsFetching}
-                          loadingText="Загрузка данных..."
-                          // onOpen={formik.handleBlur}
-                          onChange={(event, value) => {
-                            formik.setFieldValue(
-                              'DEAL',
-                              { ...formik.values.DEAL, DEPARTMENT: value ? value : null }
-                            );
-                          }}
-                          renderOption={(props, option) => {
-                            return (
-                              <li {...props} key={option.ID}>
-                                {option.NAME}
-                              </li>
-                            );
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Отдел"
-                              required
-                              placeholder="Выберите отдел"
-                              name="DEAL.DEPARTMENT"
-                              error={getIn(formik.touched, 'DEAL.DEPARTMENT') && Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))}
-                              helperText={getIn(formik.touched, 'DEAL.DEPARTMENT') && getIn(formik.errors, 'DEAL.DEPARTMENT')}
-                            />
-                          )}
-                        />
-                        <Autocomplete
-                          fullWidth
-                          options={employees?.filter(
-                            empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[1]?.ID) || []}
-                          getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions(50, 'NAME')}
-                          readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0]?.ID) || null}
-                          loading={employeesIsFetching}
-                          loadingText="Загрузка данных..."
-                          onChange={(event, value) => {
-                            const secondPerformer = formik.values.DEAL?.PERFORMERS?.[1];
-                            const newPerformers = []
-                              .concat(value ? value : [])
-                              .concat(secondPerformer ? secondPerformer as any : []);
-
-                            formik.setFieldValue(
-                              'DEAL',
-                              {
-                                ...formik.values.DEAL,
-                                PERFORMERS: newPerformers
-                              }
-                            );
-
-                            if (!value && newPerformers.length === 0) {
-                              formik.setFieldValue('USR$MASTERKEY', stages[0].ID);
-                              return;
-                            }
-                            formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
-                          }}
-                          renderOption={(props, option) => {
-                            return (
-                              <li {...props} key={option.ID}>
-                                {option.NAME}
-                              </li>
-                            );
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Исполнитель"
-                              disabled={formik.values.DEAL?.USR$READYTOWORK || false}
-                              placeholder="Выберите сотрудника"
-                            />
-                          )}
-                        />
-                        <Autocomplete
-                          fullWidth
-                          disabled={(formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
-                          options={employees?.filter(empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID) || []}
-                          getOptionLabel={option => option.NAME}
-                          filterOptions={filterOptions(50, 'NAME')}
-                          readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                          value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1]?.ID) || null}
-                          loading={employeesIsFetching}
-                          loadingText="Загрузка данных..."
-                          onChange={(event, value) => {
-                            const firstPerformer = formik.values.DEAL?.PERFORMERS?.[0];
-                            const newPerformers = []
-                              .concat(firstPerformer ? firstPerformer as any : [])
-                              .concat(value ? value : []);
-
-                            formik.setFieldValue(
-                              'DEAL',
-                              {
-                                ...formik.values.DEAL,
-                                PERFORMERS: newPerformers
-                              }
-                            );
-                            if (!value && newPerformers.length === 0) {
-                              formik.setFieldValue('USR$MASTERKEY', stages[0].ID);
-                              return;
-                            }
-                            formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
-                          }}
-                          renderOption={(props, option) => {
-                            return (
-                              <li {...props} key={option.ID}>
-                                {option.NAME}
-                              </li>
-                            );
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Второй исполнитель"
-                              disabled={formik.values.DEAL?.USR$READYTOWORK || false}
-                              placeholder="Выберите сотрудника"
-                            />
-                          )}
-                        />
-                      </Stack>
                       <Stack
-                        direction="row"
+                        flex={1}
                         spacing={2}
-                        alignItems="center"
+                        paddingTop={1}
+                        maxWidth={600}
                       >
-                        <Stack flex={1}>
-                          <Stack direction="column" spacing={1}>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    name="DEAL.PREPAID"
-                                    checked={formik.values.DEAL?.PREPAID}
-                                    onChange={formik.handleChange}
-                                  />
-                                }
-                                label="Оплачено"
+                        <TextField
+                          label="Наименование"
+                          type="text"
+                          multiline
+                          minRows={1}
+                          required
+                          fullWidth
+                          autoFocus
+                          name="DEAL.USR$NAME"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            formik.setFieldValue(
+                              'DEAL',
+                              { ...formik.values.DEAL, USR$NAME: value ? value : null }
+                            );
+                          }}
+                          value={formik.values.DEAL?.USR$NAME || ''}
+                          error={getIn(formik.touched, 'DEAL.USR$NAME') && Boolean(getIn(formik.errors, 'DEAL.USR$NAME'))}
+                          helperText={getIn(formik.touched, 'DEAL.USR$NAME') && getIn(formik.errors, 'DEAL.USR$NAME')}
+                        />
+                        <Stack direction={matchDownLg ? 'column' : 'row'} spacing={2}>
+                          <Stack
+                            direction="column"
+                            spacing={2}
+                            flex={1}
+                          >
+                            <CustomerSelect
+                              value={formik.values.DEAL?.CONTACT}
+                              onChange={(value) => formik.setFieldValue('DEAL.CONTACT', value)}
+                              required
+                              name="DEAL.CONTACT"
+                              error={getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))}
+                              helperText={getIn(formik.touched, 'DEAL.CONTACT') && getIn(formik.errors, 'DEAL.CONTACT')}
+                            />
+                            <DealSourcesSelect formik={formik} />
+                          </Stack>
+                          <Stack
+                            spacing={2}
+                            {...(matchDownLg
+                              ? {
+                                direction: 'row',
+                                flex: 1
+                              }
+                              : {
+                                width: 150
+                              })
+                            }
+                          >
+                            <TextField
+                              label="Сумма"
+                              type="number"
+                              name="DEAL.USR$AMOUNT"
+                              fullWidth
+                              InputProps={{
+                                startAdornment: <InputAdornment position="start">BYN</InputAdornment>,
+                              }}
+                              value={formik.values.DEAL?.USR$AMOUNT || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                formik.setFieldValue(
+                                  'DEAL',
+                                  { ...formik.values.DEAL, USR$AMOUNT: value ? value : null }
+                                );
+                              }}
+                              placeholder="0.00"
+                              error={getIn(formik.touched, 'DEAL.USR$AMOUNT') && Boolean(getIn(formik.errors, 'DEAL.USR$AMOUNT'))}
+                              helperText={getIn(formik.touched, 'DEAL.USR$AMOUNT') && getIn(formik.errors, 'DEAL.USR$AMOUNT')}
+                            />
+                            <DesktopDatePicker
+                              label="Срок"
+                              value={formik.values.DEAL?.USR$DEADLINE ? new Date(formik.values.DEAL?.USR$DEADLINE) : null}
+                              format="dd.MM.yyyy"
+                              onChange={(value) => {
+                                formik.setFieldValue(
+                                  'DEAL',
+                                  { ...formik.values.DEAL, USR$DEADLINE: value ? value : null }
+                                );
+                              }}
+                              slotProps={{ textField: { variant: 'outlined' } }}
+                            />
+
+                          </Stack>
+                        </Stack>
+                        <Divider variant="middle" />
+                        <Stack direction={'column'} spacing={2}>
+                          <Autocomplete
+                            fullWidth
+                            options={departments || []}
+                            getOptionLabel={option => option.NAME}
+                            filterOptions={filterOptions(50, 'NAME')}
+                            value={departments?.find(el => el.ID === formik.values.DEAL?.DEPARTMENT?.ID) || null}
+                            loading={departmentsIsFetching}
+                            loadingText="Загрузка данных..."
+                            // onOpen={formik.handleBlur}
+                            onChange={(event, value) => {
+                              formik.setFieldValue(
+                                'DEAL',
+                                { ...formik.values.DEAL, DEPARTMENT: value ? value : null }
+                              );
+                            }}
+                            renderOption={(props, option) => {
+                              return (
+                                <li {...props} key={option.ID}>
+                                  {option.NAME}
+                                </li>
+                              );
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Отдел"
+                                required
+                                placeholder="Выберите отдел"
+                                name="DEAL.DEPARTMENT"
+                                error={getIn(formik.touched, 'DEAL.DEPARTMENT') && Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))}
+                                helperText={getIn(formik.touched, 'DEAL.DEPARTMENT') && getIn(formik.errors, 'DEAL.DEPARTMENT')}
                               />
-                              {/* {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ? */}
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={formik.values.DEAL?.USR$READYTOWORK || false}
-                                    onChange={(e) => {
-                                      const value = e.target.checked;
-                                      formik.setFieldValue(
-                                        'DEAL',
-                                        { ...formik.values.DEAL, USR$READYTOWORK: value }
-                                      );
-                                      // formik.setFieldValue(
-                                      //   'USR$MASTERKEY',
-                                      //   value ? stages[2].ID : stages[1].ID
-                                      // );
-                                    }}
-                                  />
+                            )}
+                          />
+                          <Stack direction="column" spacing={2}>
+                            <Autocomplete
+                              fullWidth
+                              options={employees || []}
+                              getOptionLabel={option => option.NAME}
+                              filterOptions={filterOptions(50, 'NAME')}
+                              value={employees?.find(el => el.ID === formik.values.DEAL?.CREATOR?.ID) || null}
+                              loading={employeesIsFetching}
+                              loadingText="Загрузка данных..."
+                              onChange={(event, value) => {
+                                formik.setFieldValue('DEAL.CREATOR', value);
+                              }}
+                              renderOption={(props, option) => {
+                                return (
+                                  <li {...props} key={option.ID}>
+                                    {option.NAME}
+                                  </li>
+                                );
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Создал"
+
+                                  required
+                                  placeholder="Выберите сотрудника"
+                                  error={getIn(formik.touched, 'DEAL.CREATOR') && Boolean(getIn(formik.errors, 'DEAL.CREATOR'))}
+                                  helperText={getIn(formik.touched, 'DEAL.CREATOR') && getIn(formik.errors, 'DEAL.CREATOR')}
+                                />
+                              )}
+                            />
+                            <Autocomplete
+                              fullWidth
+                              options={employees?.filter(
+                                empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[1]?.ID) || []}
+                              getOptionLabel={option => option.NAME}
+                              filterOptions={filterOptions(50, 'NAME')}
+                              readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
+                              value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0]?.ID) || null}
+                              loading={employeesIsFetching}
+                              loadingText="Загрузка данных..."
+                              onChange={(event, value) => {
+                                const secondPerformer = formik.values.DEAL?.PERFORMERS?.[1];
+                                const newPerformers = []
+                                  .concat(value ? value : [])
+                                  .concat(secondPerformer ? secondPerformer as any : []);
+
+                                formik.setFieldValue(
+                                  'DEAL',
+                                  {
+                                    ...formik.values.DEAL,
+                                    PERFORMERS: newPerformers
+                                  }
+                                );
+
+                                if (!value && newPerformers.length === 0) {
+                                  formik.setFieldValue('USR$MASTERKEY', stages[0].ID);
+                                  return;
                                 }
-                                label="В работе"
-                              />
-                              {/* : <></>} */}
-                              {/* {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
-                                  formik.values.USR$MASTERKEY === stages[3]?.ID ||
-                                  formik.values.DEAL?.USR$DONE)
-                                  ?  */}
-                              <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
+                                formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
+                              }}
+                              renderOption={(props, option) => {
+                                return (
+                                  <li {...props} key={option.ID}>
+                                    {option.NAME}
+                                  </li>
+                                );
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Исполнитель"
+                                  disabled={formik.values.DEAL?.USR$READYTOWORK || false}
+                                  placeholder="Выберите сотрудника"
+                                />
+                              )}
+                            />
+                            <Autocomplete
+                              fullWidth
+                              disabled={(formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
+                              options={employees?.filter(empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID) || []}
+                              getOptionLabel={option => option.NAME}
+                              filterOptions={filterOptions(50, 'NAME')}
+                              readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
+                              value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1]?.ID) || null}
+                              loading={employeesIsFetching}
+                              loadingText="Загрузка данных..."
+                              onChange={(event, value) => {
+                                const firstPerformer = formik.values.DEAL?.PERFORMERS?.[0];
+                                const newPerformers = []
+                                  .concat(firstPerformer ? firstPerformer as any : [])
+                                  .concat(value ? value : []);
+
+                                formik.setFieldValue(
+                                  'DEAL',
+                                  {
+                                    ...formik.values.DEAL,
+                                    PERFORMERS: newPerformers
+                                  }
+                                );
+                                if (!value && newPerformers.length === 0) {
+                                  formik.setFieldValue('USR$MASTERKEY', stages[0].ID);
+                                  return;
+                                }
+                                formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
+                              }}
+                              renderOption={(props, option) => {
+                                return (
+                                  <li {...props} key={option.ID}>
+                                    {option.NAME}
+                                  </li>
+                                );
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Второй исполнитель"
+                                  disabled={formik.values.DEAL?.USR$READYTOWORK || false}
+                                  placeholder="Выберите сотрудника"
+                                />
+                              )}
+                            />
+                          </Stack>
+                        </Stack>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                        >
+                          <Stack flex={1}>
+                            <Stack direction="column" spacing={1}>
+                              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }}>
                                 <FormControlLabel
-                                  disabled={checkDoneAndTasks}
                                   control={
                                     <Checkbox
-                                      checked={formik.values.DEAL?.USR$DONE || false}
+                                      name="DEAL.PREPAID"
+                                      checked={formik.values.DEAL?.PREPAID}
+                                      onChange={formik.handleChange}
+                                    />
+                                  }
+                                  label="Оплачено"
+                                />
+                                {/* {(formik.values.USR$MASTERKEY === stages[1]?.ID || formik.values.USR$MASTERKEY === stages[2]?.ID) ? */}
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={formik.values.DEAL?.USR$READYTOWORK || false}
                                       onChange={(e) => {
                                         const value = e.target.checked;
                                         formik.setFieldValue(
                                           'DEAL',
-                                          { ...formik.values.DEAL, USR$DONE: value }
+                                          { ...formik.values.DEAL, USR$READYTOWORK: value }
                                         );
                                         // formik.setFieldValue(
                                         //   'USR$MASTERKEY',
-                                        //   value ? stages[3].ID : stages[2].ID
+                                        //   value ? stages[2].ID : stages[1].ID
                                         // );
                                       }}
                                     />
                                   }
-                                  label="Исполнено"
+                                  label="В работе"
                                 />
-                              </Tooltip>
-                            </Stack>
-                            {/* : <></> */}
-                            {/* } */}
-                            {/* {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ? */}
-                            <Stack direction="row" spacing={2}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={formik.values.DEAL?.DENIED || false}
-                                    onChange={(e) => {
-                                      const checked = e.target.checked;
-                                      formik.setFieldValue(
-                                        'DEAL',
-                                        { ...formik.values.DEAL, DENIED: checked }
-                                      );
-                                      // const newMasterKey = (() => {
-                                      //   if (checked) return stages[4].ID;
-                                      //   if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
-                                      //   if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
-                                      //   if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
-                                      //   return stages[0].ID;
-                                      // })();
-                                      // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
-                                      if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
-                                      if (checked) {
-                                        formik.setFieldValue('DEAL.USR$DONE', false);
-                                        formik.setFieldValue('USR$MASTERKEY', stages[9].ID);
-                                      }
-                                    }}
+                                {/* : <></>} */}
+                                {/* {(formik.values.USR$MASTERKEY === stages[2]?.ID ||
+                                    formik.values.USR$MASTERKEY === stages[3]?.ID ||
+                                    formik.values.DEAL?.USR$DONE)
+                                    ?  */}
+                                <Tooltip title={checkDoneAndTasks ? 'Есть незакрытые задачи' : ''} arrow>
+                                  <FormControlLabel
+                                    disabled={checkDoneAndTasks}
+                                    control={
+                                      <Checkbox
+                                        checked={formik.values.DEAL?.USR$DONE || false}
+                                        onChange={(e) => {
+                                          const value = e.target.checked;
+                                          formik.setFieldValue(
+                                            'DEAL',
+                                            { ...formik.values.DEAL, USR$DONE: value }
+                                          );
+                                          // formik.setFieldValue(
+                                          //   'USR$MASTERKEY',
+                                          //   value ? stages[3].ID : stages[2].ID
+                                          // );
+                                        }}
+                                      />
+                                    }
+                                    label="Исполнено"
                                   />
-                                }
-                                label="Отказ"
-                              />
-                              {formik.values.DEAL?.DENIED &&
-                                  <Stack flex={1} spacing={2}>
-                                    <DenyReasonsSelect formik={formik} />
-                                  </Stack>}
+                                </Tooltip>
+                              </Stack>
+                              {/* : <></> */}
+                              {/* } */}
+                              {/* {card?.DEAL?.ID && (card?.DEAL?.ID > 0) ? */}
+                              <Stack direction="row" spacing={2}>
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={formik.values.DEAL?.DENIED || false}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        formik.setFieldValue(
+                                          'DEAL',
+                                          { ...formik.values.DEAL, DENIED: checked }
+                                        );
+                                        // const newMasterKey = (() => {
+                                        //   if (checked) return stages[4].ID;
+                                        //   if (formik.values.DEAL?.USR$DONE) return stages[3].ID;
+                                        //   if (formik.values.DEAL?.USR$READYTOWORK) return stages[2].ID;
+                                        //   if (formik.values.DEAL?.PERFORMERS) return stages[1].ID;
+                                        //   return stages[0].ID;
+                                        // })();
+                                        // formik.setFieldValue('USR$MASTERKEY', newMasterKey);
+                                        if (!checked) formik.setFieldValue('DEAL.DENYREASON', null);
+                                        if (checked) {
+                                          formik.setFieldValue('DEAL.USR$DONE', false);
+                                          formik.setFieldValue('USR$MASTERKEY', stages[9].ID);
+                                        }
+                                      }}
+                                    />
+                                  }
+                                  label="Отказ"
+                                />
+                                {formik.values.DEAL?.DENIED &&
+                                    <Stack flex={1} spacing={2}>
+                                      <DenyReasonsSelect formik={formik} />
+                                    </Stack>}
+                              </Stack>
+                              {/* : <></> */}
+                              {/* } */}
                             </Stack>
-                            {/* : <></> */}
-                            {/* } */}
+                            <Box flex={1} />
                           </Stack>
-                          <Box flex={1} />
                         </Stack>
+                        {(formik.values.DEAL?.DENIED || formik.values.DEAL?.USR$DONE) &&
+                            <TextField
+                              label="Комментарий"
+                              ref={refComment}
+                              type="text"
+                              name="COMMENT"
+                              multiline
+                              minRows={4}
+                              onChange={(e) => {
+                                formik.setFieldValue('DEAL.COMMENT', e.target.value);
+                              }}
+                              value={formik.values.DEAL?.COMMENT}
+                            />
+                        }
                       </Stack>
-                      {(formik.values.DEAL?.DENIED || formik.values.DEAL?.USR$DONE) &&
-                          <TextField
-                            label="Комментарий"
-                            ref={refComment}
-                            type="text"
-                            name="COMMENT"
-                            multiline
-                            minRows={4}
-                            onChange={(e) => {
-                              formik.setFieldValue('DEAL.COMMENT', e.target.value);
-                            }}
-                            value={formik.values.DEAL?.COMMENT}
-                          />
-                      }
-                    </Stack>
+                    </Box>
                   </CustomizedScrollBox>
                 </TabPanel>
                 <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
                   <CustomizedScrollBox container={{ className: classes.scrollContainer }} className={classes.scrollBox}>
-                    {KanbanRequestInfo}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {KanbanRequestInfo}
+                    </Box>
                   </CustomizedScrollBox>
                 </TabPanel>
                 <TabPanel value="3" className={tabIndex === '3' ? classes.tabPanel : ''}>

@@ -1,12 +1,12 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
-import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridRowId, GridSortModel, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
+import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridRowId } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery, useUpdateMatrixMutation } from '../../../features/permissions';
 import styles from './permissions-list.module.less';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 
 /* eslint-disable-next-line */
@@ -44,7 +44,7 @@ export function PermissionsList(props: PermissionsListProps) {
   const { data: actions, isFetching: actionsFetching, isLoading: actionsLoading } = useGetActionsQuery();
   const { data: userGroups, isFetching: userGroupsFetching, isLoading: userGroupsLoading } = useGetUserGroupsQuery();
 
-  const columns: GridColDef[] = userGroups?.map(ug => ({
+  const columns: GridColDef<IPermissionsAction>[] = userGroups?.map(ug => ({
     field: 'USERGROUP_' + ug.ID,
     headerName: ug.NAME,
     flex: 1,
@@ -52,7 +52,7 @@ export function PermissionsList(props: PermissionsListProps) {
     editable: false,
     type: 'boolean',
     minWidth: 150,
-    renderCell: ({ row, id }: GridRenderCellParams<IPermissionsAction, any, any, GridTreeNodeWithRender>) => {
+    renderCell: ({ row, id }) => {
       return (
         <GridItem
           id={id}
@@ -62,13 +62,6 @@ export function PermissionsList(props: PermissionsListProps) {
       );
     },
   })) || [];
-
-  // columns.unshift({
-  //   field: 'NAME',
-  //   headerName: 'Действие',
-  //   minWidth: 300,
-  //   headerAlign: 'center'
-  // });
 
   const rows = useMemo(() => actions?.map(action => {
     const hierarchy = (() => {
@@ -85,7 +78,7 @@ export function PermissionsList(props: PermissionsListProps) {
     return row?.hierarchy || [];
   };
 
-  const groupingColDef: DataGridProProps['groupingColDef'] = {
+  const groupingColDef: DataGridProProps<IPermissionsAction>['groupingColDef'] = {
     headerName: 'Действие',
     width: 300,
     minWidth: 250,

@@ -28,7 +28,7 @@ const ItemSkeleton = () => {
         variant="rectangular"
         width={60}
         height={20}
-        style={{ borderRadius: '12px' }}
+        style={{ borderRadius: 'var(--border-radius)' }}
       />
       <Skeleton
         variant="text"
@@ -49,7 +49,7 @@ const useStyles = makeStyles(() => ({
   },
   scrollBarContainer: {
     paddingBottom: '20px',
-    borderRadius: '12px',
+    borderRadius: 'var(--border-radius)',
     position: 'absolute',
     right: '1px',
     left: '1px',

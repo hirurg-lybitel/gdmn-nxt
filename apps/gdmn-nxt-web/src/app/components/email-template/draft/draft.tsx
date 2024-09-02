@@ -1,13 +1,9 @@
-import 'jodit';
 import JoditEditor from 'jodit-react';
 import { makeStyles } from '@mui/styles';
 import { IComponent } from '../email-template';
 import { Box, GlobalStyles, Theme } from '@mui/material';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from '@mui/material';
-import { popup } from 'leaflet';
-import { ClassNames } from '@emotion/react';
-import { BorderBottom } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme: Theme) => ({
   draft: (({
@@ -23,13 +19,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       width: '100%'
     },
     '& .jodit-wysiwyg': {
-      background: 'none',
-      minHeight: '0px !important',
+      minHeight: '56px !important',
+      background: 'none !important',
       padding: '0px !important',
       color: 'black'
     },
     '& .jodit-workplace': {
-      minHeight: '56px !important',
+      minHeight: '0px !important',
       cursor: 'text',
       padding: '5px'
     },
@@ -80,14 +76,15 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface draftProps {
   editedIndex: number,
   setValue: (stringIndex: string, newValue: any) => void,
-  component: IComponent,
-  length: number
+  component: IComponent
 }
 
 
-export default function Draft({ editedIndex, component, setValue, length }: draftProps) {
+export default function Draft({ editedIndex, component, setValue }: draftProps) {
   const classes = useStyles();
-  const save = () => {
+
+  const save = (value: string) => {
+    if (needDubleUpdate) return;
     const newValue = ref?.current?.value;
     let formattedValue = '';
     for (let i = 0;i < newValue.length;i++) {
@@ -102,12 +99,28 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
 
   const theme = useTheme();
 
-  const ref = useRef<any>(null);
+  const [currentValue, setCurrentValue] = useState(component.text || '<p style="margin:0px"><br></p>');
 
-  const joditEditorMemo = useMemo(() => {
-    const editorConfig = {
+  // Чтобы значение при очистке не было <p><br></p>, Иначе при вводе первого символа после очистки курсор перемещается в начало строки
+  const [isNeedRemoveVoid, setIsNeedRemoveVoid] = useState(false);
+
+  const ref = useRef<any>(null);
+  useEffect(() => {
+    if (ref?.current?.value === '<p><br></p>' || ref?.current?.value === '') {
+      if (isNeedRemoveVoid) {
+        ref?.current?.value !== '<p style="margin:0px"><br></p>' && setCurrentValue('');
+        setIsNeedRemoveVoid(false);
+        return;
+      }
+      setIsNeedRemoveVoid(true);
+      setCurrentValue('<p style="margin:0px"><br></p>');
+    }
+  }, [ref?.current?.value, currentValue, isNeedRemoveVoid]);
+
+  const editorConfig = useMemo(() => {
+    return {
       readonly: false,
-      autofocus: false,
+      autofocus: true,
       popupClassName: classes.draft,
       toolbar: true,
       addNewLine: false,
@@ -123,7 +136,7 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
         insertImageAsBase64URI: true
       },
       buttons: ['fullsize', 'undo', 'redo', 'bold', 'underline', 'italic', 'strikethrough',
-        'font', 'fontsize', 'brush', 'paragraph', 'ul', 'ol', 'link', 'spellcheck', 'eraser'],
+        'font', 'fontsize', 'brush', 'paragraph', 'ul', 'ol', 'eraser'],
       width: '100%',
       maxWidth: '100%',
       height: 'auto',
@@ -140,15 +153,23 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
         }
       }
     };
-    return (
-      <JoditEditor
-        ref={ref}
-        value={component?.text || ''}
-        config={editorConfig as any}
-        onChange={save}
-      />
-    );
-  }, [ref, component, theme, editedIndex, length]);
+  }, [theme]);
+
+  // Чтобы при переключении между текстовыми полями если начальные значения совпадают, значение поля изменилось
+  const [needDubleUpdate, setNeedDubleUpdate] = useState(false);
+  const [last, setLast] = useState(component.text || '<p style="margin:0px"><br></p>');
+
+  useEffect(() => {
+    if (ref?.current?.value === component.text) return;
+    if (last === (component.text || '<p style="margin:0px"><br></p>') && !needDubleUpdate) {
+      setNeedDubleUpdate(true);
+      setCurrentValue('<p><br></p>');
+      return;
+    }
+    setNeedDubleUpdate(false);
+    setCurrentValue(component.text || '<p style="margin:0px"><br></p>');
+    setLast(component.text || '<p style="margin:0px"><br></p>');
+  }, [component.text, needDubleUpdate]);
 
   return (
     <Box
@@ -167,10 +188,6 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
           '& .jodit-toolbar-button__trigger svg': {
             fill: theme.textColor + '!important',
             stroke: theme.textColor + '!important'
-          },
-          '& .jodit-wysiwyg p': {
-            margin: 0,
-            color: 'hsla(0, 5%, 70%, 8)'
           },
           '& .jodit-placeholder': {
             paddingLeft: '5px !important',
@@ -215,9 +232,17 @@ export default function Draft({ editedIndex, component, setValue, length }: draf
             border: `1px solid ${ theme.mainContent.borderColor} !important`,
             borderTop: 'none !important'
           },
+          '& .jodit-wysiwyg p': {
+            margin: '0px !important'
+          }
         }}
       />
-      {joditEditorMemo}
+      <JoditEditor
+        ref={ref}
+        value={currentValue}
+        config={editorConfig as any}
+        onChange={save}
+      />
     </Box>
   );
 }

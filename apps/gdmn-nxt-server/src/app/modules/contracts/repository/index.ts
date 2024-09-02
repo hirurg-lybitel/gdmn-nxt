@@ -101,6 +101,32 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
 
     const contracts = await fetchAsObject<IContract>(sql, preparedClause);
 
+    const detailsMap = new Map<number, number[]>();
+    const detailsRow = await fetchAsObject(
+      (() => {
+        switch (clause?.['contractType'] ?? ContractType.GS) {
+          case ContractType.GS:
+            return `
+              SELECT
+                MASTERKEY, DOCUMENTKEY
+              FROM USR$BNF_CONTRACTLINE
+              ORDER BY MASTERKEY`;
+          case ContractType.BG:
+            return `
+              SELECT
+                MASTERKEY, DOCUMENTKEY
+              FROM USR$BG_CONTRACTLINE
+              ORDER BY MASTERKEY`;
+        }
+      })()
+    );
+
+    detailsRow.forEach(d => {
+      detailsMap.set(
+        d['MASTERKEY'],
+        [...detailsMap.get(d['MASTERKEY']) ?? [], ...(d['DOCUMENTKEY'] ? [d['DOCUMENTKEY']] : [])]);
+    });
+
     await forEachAsync(contracts, async (c) => {
       c.customer = {
         ID: c['CUSTOMER_ID'],
@@ -108,6 +134,9 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
       };
       delete c['CUSTOMER_NAME'];
       delete c['CUSTOMER_ID'];
+
+      const details = detailsMap.get(c.ID) ?? [];
+      c.withDetails = details.length > 0;
     });
 
     return contracts;

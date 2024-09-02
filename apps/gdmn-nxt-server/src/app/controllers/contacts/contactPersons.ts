@@ -1,7 +1,7 @@
 import { IContactPerson, IFavoriteContact, IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { resultError } from '../../responseMessages';
-import { cachedRequets } from '../../utils/cached requests';
+import { cachedRequets } from '../../utils/cachedRequests';
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { forEachAsync } from '@gsbelarus/util-helpers';
@@ -138,13 +138,13 @@ const getAll: RequestHandler = async (req, res) => {
       });
 
     const rowCount = persons.length;
-    const personsWitPagination = persons.slice(fromRecord, toRecord);
+    const personsWithPagination = persons.slice(fromRecord, toRecord);
 
     res
       .status(200)
       .json({
         queries: {
-          persons: personsWitPagination,
+          persons: personsWithPagination,
           rowCount
         }
       });

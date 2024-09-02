@@ -16,12 +16,15 @@ import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
 import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list';
 import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import { useAddFilterMutation, useDeleteFilterMutation, useGetFilterByEntityNameQuery, useUpdateFilterMutation } from '../../../features/filters/filtersApi';
+import { useDebounce } from '../../../components/helpers/hooks/useDebunce';
+import { useFilterStore } from '../../../components/helpers/hooks/useFilterStore';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
@@ -43,9 +46,13 @@ const highlightFields = (searchValue: string) => {
 export default function Contacts() {
   const userPermissions = usePermissions();
   const [sortingData, setSortingData] = useState<ISortingData | null>();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.contacts);
+  const filterEntityName = 'contacts';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
+
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
 
   const [upsertContact, setUpsertContact] = useState<{
     addContact?: boolean;
@@ -122,7 +129,7 @@ export default function Contacts() {
   };
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'contacts': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
@@ -147,9 +154,13 @@ export default function Contacts() {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async () => {
+    filterClose: useCallback(() => {
       setOpenFilters(false);
-    },
+    }, []),
+    filterClear: useCallback(() => {
+      setOpenFilters(false);
+      dispatch(clearFilterData(filterEntityName));
+    }, [dispatch])
   };
 
   const handleSortChange = useCallback((sortModel: ISortingData | null) => setSortingData(sortModel), []);
@@ -177,8 +188,9 @@ export default function Contacts() {
       onClose={filterHandlers.filterClose}
       filteringData={filterData}
       onFilteringDataChange={handleFilteringDataChange}
+      filterClear={filterHandlers.filterClear}
     />,
-  [openFilters, filterData]);
+  [openFilters, filterData, filterHandlers]);
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
@@ -210,7 +222,7 @@ export default function Contacts() {
               </ToggleButton>
             </ToggleButtonGroup>
             <SearchBar
-              disabled={isLoading}
+              disabled={isLoading || filtersIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth
@@ -244,7 +256,7 @@ export default function Contacts() {
             <Box display="inline-flex" alignSelf="center">
               <IconButton
                 onClick={filterHandlers.filterClick}
-                disabled={personsIsFetching}
+                disabled={personsIsFetching || filtersIsLoading || filtersIsFetching}
                 size ="small"
               >
                 <Tooltip

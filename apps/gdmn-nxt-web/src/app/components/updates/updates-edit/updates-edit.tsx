@@ -90,6 +90,7 @@ export function UpdatesEdit(props: UpdatesEditProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
+      confirmation={formik.dirty}
       width={500}
     >
       <DialogTitle>

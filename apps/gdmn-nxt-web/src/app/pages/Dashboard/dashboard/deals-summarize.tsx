@@ -7,7 +7,7 @@ import { Box, Stack, Typography, useTheme } from '@mui/material';
 import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { DateRange } from '@mui/x-date-pickers-pro';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from '@gdmn-nxt/dayjs';
 
 interface DealsSummarizeProps {
   period: DateRange<Dayjs>

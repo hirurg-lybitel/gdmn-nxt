@@ -4,7 +4,7 @@ import { ResultSet } from 'node-firebird-driver-native';
 import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
 import { getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
-import { cachedRequets } from '../utils/cached requests';
+import { cachedRequets } from '../utils/cachedRequests';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_CRM_LABELS';
 

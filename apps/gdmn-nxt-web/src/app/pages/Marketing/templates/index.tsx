@@ -1,12 +1,12 @@
 import { Box, CardContent, CardHeader, Divider, Skeleton, Stack, TablePagination, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import EmailTemplateListItem from './email-template-list-item/email-template-list-item';
-import EmailTemplateListItemEdit from './email-template-list-item-edit/email-template-list-item-edit';
+import EmailTemplateListItem from '../../../components/email-template-list-item/email-template-list-item';
+import EmailTemplateListItemEdit from '../../../components/email-template-list-item-edit/email-template-list-item-edit';
 import { IFilteringData, IPaginationData, ITemplate } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
-import { templateApi, useAddTemplateMutation, useDeleteTemplateMutation, useUpdateTemplateMutation } from '../../../features/managment/templateApi';
+import { templateApi, useAddTemplateMutation, useDeleteTemplateMutation, useUpdateTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import styles from './email-template-list.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
@@ -14,6 +14,7 @@ import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 interface EmailTemplateListProps {
 
 }
@@ -29,11 +30,14 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     pageSize: matchUpUW ? 16 : 9,
   });
 
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.template);
+  const filterEntityName = 'template';
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
+
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
 
   const dispatch = useDispatch();
   const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'template': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   }, []);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
@@ -86,9 +90,9 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     ...(filterData && { filter: filterData })
   });
 
-  const [addTemplate] = useAddTemplateMutation();
-  const [updateTemplate] = useUpdateTemplateMutation();
-  const [deleteTemplate] = useDeleteTemplateMutation();
+  const [addTemplate, { isLoading: addIsLoading }] = useAddTemplateMutation();
+  const [updateTemplate, { isLoading: updateIsLoading }] = useUpdateTemplateMutation();
+  const [deleteTemplate, { isLoading: deleteIsLoading }] = useDeleteTemplateMutation();
 
   const [editedTemplate, setEditedTemplate] = useState<ITemplate | undefined>();
   const [isOpen, setIsOpen] = useState(false);
@@ -142,6 +146,8 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
     setIsOpen(true);
   };
 
+  const disabled = isLoading || isFetching || updateIsLoading || addIsLoading || deleteIsLoading;
+
   return (
     <>
       <CustomizedCard style={{ flex: 1 }}>
@@ -151,7 +157,7 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
             <Stack direction="row" spacing={1}>
               <Box paddingX={'4px'} />
               <SearchBar
-                disabled={isLoading}
+                disabled={isLoading || filtersIsLoading}
                 onRequestSearch={requestSearch}
                 onCancelSearch={cancelSearch}
                 fullWidth
@@ -164,14 +170,14 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
               />
               <Box display="inline-flex" alignSelf="center">
                 <CustomAddButton
-                  disabled={(isLoading || isFetching)}
+                  disabled={disabled}
                   label="Создать шаблон"
                   onClick={handleAdd}
                 />
               </Box>
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton
-                  loading={(isLoading || isFetching)}
+                  loading={disabled}
                   hint="Обновить данные"
                   onClick={templatesRefresh}
                 />
@@ -208,7 +214,6 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
                             className={styles.card}
                           >
                             <EmailTemplateListItem
-                              templates={templatesData.templates}
                               onOpen={handleOpen}
                               template={template}
                             />

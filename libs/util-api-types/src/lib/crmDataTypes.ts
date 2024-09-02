@@ -39,6 +39,7 @@ export interface ICustomer extends IContactWithID {
   FULLNAME?: string;
   POSTADDRESS?: string;
   BUSINESSPROCESSES?: IBusinessProcess[];
+  isFavorite?: boolean;
 };
 
 interface IMapOfArrays {
@@ -179,7 +180,7 @@ export interface IEmail extends IWithID {
   EMAIL: string;
 }
 
-type MessengerCode = 'facebook'
+export type MessengerCode = 'facebook'
 | 'instagram'
 | 'telegram'
 | 'viber'
@@ -222,6 +223,7 @@ export interface IContract extends IWithID {
   DATEBEGIN: Date;
   DATEEND: Date;
   customer: ICustomer;
+  withDetails: boolean;
 };
 
 export interface IContractDetail extends IWithID {
@@ -262,9 +264,9 @@ export interface IUserGroup extends IWithID {
 
 export interface IUser extends IWithID {
   NAME: string;
-  FULLNAME: string;
-  CONTACT: IContactWithID;
-  DISABLED: boolean;
+  FULLNAME?: string;
+  CONTACT?: IContactWithID;
+  DISABLED?: boolean;
   isActivated?: boolean;
   AVATAR?: string;
 };
@@ -326,6 +328,8 @@ export type ActionName =
   'stages' |
   'contacts' |
   'system' |
+  'mailings' |
+  'feedback' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -386,7 +390,21 @@ export interface ISegment extends IWithID {
   NAME: string;
   QUANTITY: number;
   FIELDS: ISegmnentField[]
-  CUSTOMERS?: string
+  CUSTOMERS?: number[]
+}
+
+export enum MailingStatus {
+  delayed = 0,
+  completed = 1,
+  error = 2,
+  manual = 3,
+  inProgress = 4,
+  launchNow = 5
+}
+
+export interface MailAttachment {
+  fileName: string;
+  content: string;
 }
 
 export interface IMailing extends IWithID {
@@ -394,13 +412,70 @@ export interface IMailing extends IWithID {
   LAUNCHDATE?: Date;
   STARTDATE?: Date;
   FINISHDATE?: Date;
-  STATUS: 0 | 1 | 2; // 0 - delayed, 1 - completed, 2 - error,
+  STATUS?: MailingStatus;
   STATUS_DESCRIPTION?: string;
-  segments: ISegment[];
   TEMPLATE?: string;
+  includeSegments?: ISegment[],
+  excludeSegments?: ISegment[],
+  testingEmails?: string[];
+  attachments?: MailAttachment[];
 }
 
 export interface ITemplate extends IWithID {
   NAME: string;
   HTML: string;
+}
+
+// TODO: change to ICustomerFeedback
+export interface IMailingFeedback extends IWithID {
+  customer: ICustomer;
+  mailing: IMailing;
+  response?: string;
+  toDo?: string;
+}
+
+export enum CustomerFeedbackType {
+  email = 0,
+  visit = 1,
+  chat = 2,
+  request = 3,
+  call = 5
+}
+
+export interface ICustomerFeedback extends IWithID {
+  type: CustomerFeedbackType;
+  customer: ICustomer;
+  mailing?: IMailing;
+  response?: string;
+  toDo?: string;
+  creationDate?: Date;
+}
+
+export enum WorkProjectStatus {
+  active = 0,
+  suspended = 1,
+  completed = 2
+}
+export interface IWorkProject extends IWithID {
+  NAME: string;
+  STATUS?: WorkProjectStatus
+}
+
+export interface ITimeTrack extends IWithID {
+  date: Date;
+  startTime?: Date | null;
+  endTime?: Date | null;
+  duration?: string;
+  customer?: ICustomer | null;
+  // task?: IKanbanTask;
+  description: string;
+  inProgress?: boolean;
+  workProject?: IWorkProject;
+  user?: IUser;
+}
+
+export interface ITimeTrackGroup {
+  date: Date,
+  duration: string;
+  items: ITimeTrack[];
 }

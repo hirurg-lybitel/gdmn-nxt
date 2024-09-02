@@ -221,6 +221,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
+      confirmation={formik.dirty}
       width={500}
     >
       <DialogTitle>
@@ -401,10 +402,12 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                         onChange={formik.handleChange}
                         slotProps={{ textField: { variant: 'outlined' } }}
                       />
-                      <DateTimePicker
+                      <TimePicker
                         label="Время"
+                        ampm={false}
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
+                        disabled={formik.values.USR$DATECLOSE ? false : true}
                         onChange={formik.handleChange}
                         slotProps={{ textField: { variant: 'outlined' } }}
                       />

@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyProps, tooltipClasses } from '@mui/material';
+import { ClickAwayListener, IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyProps, tooltipClasses } from '@mui/material';
 import styles from './editable-typography.module.less';
 import { KeyboardEvent, cloneElement, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
@@ -16,7 +16,7 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   container?: (value: Value) => React.ReactNode;
   error?: boolean;
   helperText?: string;
-  closeOnBlur?:boolean
+  closeOnBlur?: boolean;
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -54,8 +54,8 @@ const EditableTypography = <Value extends React.ReactNode>({
     setEditText(true);
   };
 
-  const onClose = (e: any) => {
-    e.preventDefault();
+  const onClose = (e?: any) => {
+    e?.preventDefault();
     if (!value?.toString().trim()) {
       onDelete && onDelete();
     }
@@ -81,8 +81,9 @@ const EditableTypography = <Value extends React.ReactNode>({
         open={!!helperText}
         title={helperText}
       >
-        {editText
-          ? clonedElement ??
+        <div style={{ width: '100%' }}>
+          {editText
+            ? clonedElement ??
           <TextField
             variant="standard"
             value={value}
@@ -91,16 +92,16 @@ const EditableTypography = <Value extends React.ReactNode>({
             onChange={onChange}
             onBlur={onClose}
           />
-          :
-          <Typography
-            {...props}
-            className={styles['title']}
-            autoFocus
-          >
-            {container ? container(value) : value}
-          </Typography>
-
-        }
+            :
+            <Typography
+              {...props}
+              className={styles['title']}
+              autoFocus
+            >
+              {container ? container(value) : value}
+            </Typography>
+          }
+        </div>
       </ErrorTooltip>
       <div
         className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}

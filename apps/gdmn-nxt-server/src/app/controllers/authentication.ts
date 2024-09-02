@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
+import { resultError } from '@gsbelarus/util-helpers';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -227,13 +228,14 @@ const startCreate2fa: RequestHandler = async (req, res) => {
     if (!codeSent) {
       return res.json(authResult(
         'ERROR',
-        ERROR_MESSAGES.SEND_EMAL_ERROR,
+        ERROR_MESSAGES.SEND_EMAIL_ERROR,
       ));
     };
   } catch ({ message }) {
+    const { errorMessage } = resultError(message);
     return res.json(authResult(
       'ERROR',
-      `${ERROR_MESSAGES.SEND_EMAL_ERROR} ${message}`,
+      `${ERROR_MESSAGES.SEND_EMAIL_ERROR}\n${errorMessage}`,
     ));
   }
 

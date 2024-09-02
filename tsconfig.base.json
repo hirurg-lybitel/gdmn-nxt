@@ -22,12 +22,14 @@
       "@gdmn-nxt/components/*": ["apps/gdmn-nxt-web/src/app/components/*"],
       "@gdmn-nxt/config": ["libs/config/src/index.ts"],
       "@gdmn-nxt/controllers/*": ["apps/gdmn-nxt-server/src/app/controllers/*"],
+      "@gdmn-nxt/dayjs-provider": ["libs/dayjs-provider/src/index.ts"],
       "@gdmn-nxt/db-connection": ["libs/db-connection/src/index.ts"],
+      "@gdmn-nxt/modules/*": ["apps/gdmn-nxt-server/src/app/modules/*"],
       "@gdmn-nxt/repositories/*": [
         "apps/gdmn-nxt-server/src/app/repositories/*"
       ],
-      "@gdmn-nxt/modules/*": ["apps/gdmn-nxt-server/src/app/modules/*"],
       "@gdmn-nxt/scheduler": ["libs/scheduler/src/index.ts"],
+      "@gdmn-nxt/server/utils/*": ["apps/gdmn-nxt-server/src/app/utils/*"],
       "@gdmn-nxt/socket": ["libs/socket/src/index.ts"],
       "@gdmn-nxt/ui-assets": ["libs/ui-assets/src/index.ts"],
       "@gdmn/2FA": ["libs/2-fa/src/index.ts"],
@@ -37,7 +39,8 @@
       "@gsbelarus/ui-common-dialogs": ["libs/ui-common-dialogs/src/index.ts"],
       "@gsbelarus/util-api-types": ["libs/util-api-types/src/index.ts"],
       "@gsbelarus/util-helpers": ["libs/util-helpers/src/index.ts"],
-      "@gsbelarus/util-useful": ["libs/util-useful/src/index.ts"]
+      "@gsbelarus/util-useful": ["libs/util-useful/src/index.ts"],
+      "@gdmn-nxt/dayjs": ["libs/dayjs-provider/src/index.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]

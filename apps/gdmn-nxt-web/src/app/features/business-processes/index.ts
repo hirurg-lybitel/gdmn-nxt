@@ -1,6 +1,6 @@
-import { IWorkType, IRequestResult, IBusinessProcess } from '@gsbelarus/util-api-types';
+import { IRequestResult, IBusinessProcess } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 interface IBusinessProcesses{
   businessProcesses: IBusinessProcess[];
