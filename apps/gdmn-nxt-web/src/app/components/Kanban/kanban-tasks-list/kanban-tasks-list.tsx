@@ -102,7 +102,7 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
     {
       field: 'DEAL',
       headerName: 'Сделка',
-      width: 250,
+      minWidth: 200,
       resizable: false,
       sortComparator: (a, b) => ('' + a?.USR$NAME || '').localeCompare(b?.USR$NAME || ''),
       renderCell: (params) => renderCellExpand(params, params.value?.USR$NAME),

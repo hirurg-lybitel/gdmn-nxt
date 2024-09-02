@@ -186,6 +186,8 @@ export function KanbanCard(props: KanbanCardProps) {
   const deadLine = useMemo(() => {
     if (!card.DEAL?.USR$DEADLINE) return null;
     const deadline = Number(Math.ceil((new Date(card.DEAL?.USR$DEADLINE).getTime() - new Date().valueOf()) / (1000 * 60 * 60 * 24)) + '');
+    const isLastColumn = card.USR$MASTERKEY === columns.at(-1)?.ID;
+
     return (
       <Stack direction="row" spacing={0.5}>
         <Typography variant="body2">
@@ -194,16 +196,22 @@ export function KanbanCard(props: KanbanCardProps) {
             ? (new Date(card.DEAL.USR$DEADLINE)).toLocaleString('default', { day: '2-digit', month: 'short', year: '2-digit' })
             : '-/-'}
         </Typography>
-        <Box flex={1} />
-        <Typography
-          variant="body2"
-          style={{ color: dayColor(deadline) }}
-        >
-          {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
-        </Typography>
-        <Tooltip title={deadline >= 0 ? 'Дней осталось' : 'Дней просрочено'} arrow>
-          <AccessTimeIcon />
-        </Tooltip>
+        {isLastColumn ?
+          <></> :
+          <>
+            <Box flex={1} />
+            <Typography
+              variant="body2"
+              style={{ color: dayColor(deadline) }}
+            >
+              {deadline === 0 ? 'Сегодня' : Math.abs(deadline) + ' ' + dayCalc(deadline)}
+            </Typography>
+            <Tooltip title={deadline >= 0 ? 'Дней осталось' : 'Дней просрочено'} arrow>
+              <AccessTimeIcon />
+            </Tooltip>
+          </>
+        }
+
       </Stack>
     );
   }, [card, colorModeIsLight]);

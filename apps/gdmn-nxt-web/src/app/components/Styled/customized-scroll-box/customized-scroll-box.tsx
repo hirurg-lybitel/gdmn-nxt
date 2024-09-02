@@ -50,6 +50,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     <div
       aria-label="CustomizedScrollBox"
       className={`${styles.container} ${container?.className}`}
+      style={container?.style}
     >
       <div
         aria-label="scroller-top"

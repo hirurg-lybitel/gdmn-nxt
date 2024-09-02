@@ -1,6 +1,6 @@
 import { IPermissionByUser, IPermissionsAction, IPermissionsView, IRequestResult, IUser, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 type MatrixResponse = IPermissionsView[];
 type IMatrixRequestResult = IRequestResult<{ cross: IPermissionsView[]}>;

@@ -9,6 +9,8 @@ import { useGetBusinessProcessesQuery } from '../features/business-processes';
 import { useGetAllUpdatesQuery } from '../features/updates';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery } from '../features/kanban/kanbanFiltersApi';
 import { useGetSystemSettingsQuery } from '../features/systemSettings';
+import { useGetAllFiltersQuery } from '../features/filters/filtersApi';
+import { useGetAllSegmentsQuery } from '../features/Marketing/segments/segmentsApi';
 
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
@@ -25,4 +27,6 @@ export function InitData() {
   const { } = useGetCustomerContractsQuery(undefined, { skip });
   const { } = useGetBusinessProcessesQuery(undefined, { skip });
   const { } = useGetCustomersQuery(undefined, { skip });
+  const { } = useGetAllFiltersQuery(undefined, { skip });
+  const { } = useGetAllSegmentsQuery(undefined, { skip });
 };

@@ -311,6 +311,7 @@ export function AddContact({
     <CustomizedDialog
       open={open}
       onClose={onClose}
+      confirmation={formik.dirty}
     >
       <DialogTitle>
         Добавление контакта

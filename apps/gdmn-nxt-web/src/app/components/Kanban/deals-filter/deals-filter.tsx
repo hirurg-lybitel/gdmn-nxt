@@ -42,10 +42,11 @@ export function DealsFilter(props: DealsFilterProps) {
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
     delete newObject[entity];
-    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 ? { [entity]: value } : {}) });
+    onFilteringDataChange({ ...newObject, ...(value?.toString().length > 0 && !!value ? { [entity]: value } : {}) });
   };
 
   const [dealNumber, setDealNumber] = useState<string>(filteringData?.dealNumber);
+  const [requestNumber, setRequestNumber] = useState<string>(filteringData?.requestNumber);
 
   useEffect(() => {
     setDealNumber(filteringData?.dealNumber || '');
@@ -61,6 +62,21 @@ export function DealsFilter(props: DealsFilterProps) {
 
     return () => clearTimeout(sendRequestNumber);
   }, [dealNumber]);
+
+  useEffect(() => {
+    setRequestNumber(filteringData?.requestNumber || '');
+  }, [filteringData?.requestNumber]);
+
+  /** Debouncing enter request number */
+  useEffect(() => {
+    if (!open) return;
+
+    const sendRequestNumber = setTimeout(() => {
+      handleOnChange('requestNumber', requestNumber);
+    }, 2000);
+
+    return () => clearTimeout(sendRequestNumber);
+  }, [requestNumber]);
 
   return (
     <CustomizedDialog
@@ -81,8 +97,8 @@ export function DealsFilter(props: DealsFilterProps) {
           <Stack spacing={2}>
             <TextField
               label="Номер заявки"
-              value={filteringData?.requestNumber || ''}
-              onChange={(e) => handleOnChange('requestNumber', e.target.value)}
+              value={requestNumber || ''}
+              onChange={(e) => setRequestNumber(e.target.value)}
             />
             <TextField
               label="Номер сделки"

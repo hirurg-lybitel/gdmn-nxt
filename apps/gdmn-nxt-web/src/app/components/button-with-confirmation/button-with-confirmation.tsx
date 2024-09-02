@@ -5,7 +5,7 @@ import { ReactNode, useCallback } from 'react';
 
 export interface ButtonWithConfirmationProps extends ButtonProps {
   children: ReactNode;
-  title: string;
+  title?: string;
   text?: string;
   dangerous?: boolean;
   confirmation?: boolean;
@@ -14,7 +14,7 @@ export interface ButtonWithConfirmationProps extends ButtonProps {
 
 export function ButtonWithConfirmation({
   children,
-  title,
+  title = 'Внимание',
   text = 'Вы уверены, что хотите продолжить?',
   confirmation = true,
   dangerous,

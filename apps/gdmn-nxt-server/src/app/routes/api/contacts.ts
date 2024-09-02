@@ -1,21 +1,21 @@
 import express from 'express';
-import { deleteContact, getContactHierarchy, getContacts, getCustomersCross, upsertContact } from '../../controllers/contacts';
 import { addLabelsContact, deleteLabelsContact, getLabelsContact } from '../../controllers/labelsContact';
 import { contactPersonsController } from '../../controllers/contacts/contactPersons';
 import contactEmployees from '../../controllers/contactEmployees';
 import { favoriteContactsController } from '@gdmn-nxt/controllers/contacts/favoriteContacts';
+import { customerController } from '@gdmn-nxt/modules/customers/controller';
 
 const router = express.Router();
 
-router.get('/', getContacts);
-router.get('/customerId/:customerId', getContacts);
-router.get('/taxId/:taxId', getContacts);
-router.get('/rootId/:rootId', getContacts);
-router.put('/:id', upsertContact);
-router.post('/', upsertContact);
+router.get('/', customerController.getContacts);
+router.get('/customerId/:customerId', customerController.getContacts);
+router.get('/taxId/:taxId', customerController.getContacts);
+router.get('/rootId/:rootId', customerController.getContacts);
+router.put('/:id', customerController.upsertContact);
+router.post('/', customerController.upsertContact);
 
-router.delete('/:id', deleteContact);
-router.get('/hierarchy', getContactHierarchy);
+router.delete('/:id', customerController.deleteContact);
+router.get('/hierarchy', customerController.getContactHierarchy);
 router.get('/labels/:contactId', getLabelsContact);
 router.get('/labels', getLabelsContact);
 router.post('/labels', addLabelsContact);
@@ -31,7 +31,7 @@ router.delete('/persons/:id', contactPersonsController.removeById);
 router.get('/employees/:id', contactEmployees.get);
 router.get('/employees', contactEmployees.get);
 
-router.get('/customerscross', getCustomersCross);
+router.get('/customerscross', customerController.getCustomersCross);
 
 router.post('/favorites/:contactId', favoriteContactsController.createFavorite);
 router.delete('/favorites/:contactId', favoriteContactsController.removeByContact);

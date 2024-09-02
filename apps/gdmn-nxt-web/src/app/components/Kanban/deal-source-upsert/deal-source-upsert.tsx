@@ -69,6 +69,7 @@ export function DealSourceUpsert(props: DealSourceUpsertProps) {
     <CustomizedDialog
       open={open}
       onClose={handleClose}
+      confirmation={formik.dirty}
       width={500}
     >
       <DialogTitle>

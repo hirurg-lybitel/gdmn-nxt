@@ -1,6 +1,6 @@
-import { ICustomer, ICustomerCross, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { ICustomer, ICustomerCross, IFavoriteContact, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '../../const';
+import { baseUrlApi } from '@gdmn/constants/client';
 
 export interface ISortingData {
   field: string;
@@ -31,6 +31,7 @@ type ICustomerRequestResult = IRequestResult<{ contact: ICustomer }>;
 type ICustomersCrossRequestResult = IRequestResult<{ cross: ICustomerCross[] }>;
 
 let lastOptions: Partial<IQueryOptions>;
+const cachedOptions: Partial<IQueryOptions>[] = [];
 
 export const customerApi = createApi({
   reducerPath: 'customer',
@@ -49,6 +50,12 @@ export const customerApi = createApi({
     getCustomers: builder.query<{data: ICustomer[], count?: number}, Partial<IQueryOptions> | void>({
       query(options) {
         lastOptions = { ...options };
+
+        // const lastOptions: Partial<IQueryOptions> = { ...options };
+
+        if (!cachedOptions.some(item => JSON.stringify(item) === JSON.stringify(lastOptions))) {
+          cachedOptions.push(lastOptions);
+        }
 
         const params = queryOptionsToParamsString(options);
 
@@ -78,23 +85,25 @@ export const customerApi = createApi({
         };
       },
       transformResponse: (response: ICustomerRequestResult) => response.queries?.contact,
-      async onQueryStarted(newCustomer, { dispatch, queryFulfilled, getState, extra }) {
-        const options = Object.keys(lastOptions).length > 0 ? lastOptions : undefined;
-        const patchResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', options, (draft) => {
-            if (Array.isArray(draft.data)) {
-              const findIndex = draft.data?.findIndex(c => c.ID === newCustomer.ID);
-              if (findIndex >= 0) {
-                draft.data[findIndex] = { ...draft.data[findIndex], ...newCustomer };
+      async onQueryStarted(newCustomer, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft.data?.findIndex(c => c.ID === newCustomer.ID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], ...newCustomer };
+                }
               }
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
       },
     }),
     addCustomer: builder.mutation<ICustomer, Partial<ICustomer>>({
@@ -125,25 +134,26 @@ export const customerApi = createApi({
         method: 'DELETE'
       }),
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
-        const options = Object.keys(lastOptions).length > 0 ? lastOptions : undefined;
-        const deleteResult = dispatch(
-          customerApi.util.updateQueryData('getCustomers', options, (draft) => {
-            if (Array.isArray(draft.data)) {
-              const findIndex = draft.data.findIndex(d => d.ID === id);
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const deleteResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data.findIndex(d => d.ID === id);
 
-              if (findIndex >= 0) {
-                draft.data.splice(findIndex, 1);
-                if (draft.count) draft.count -= 1;
+                if (findIndex >= 0) {
+                  draft?.data.splice(findIndex, 1);
+                  if (draft.count) draft.count -= 1;
+                }
               }
-            }
-          })
-        );
-
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          deleteResult.undo();
-        }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch (error) {
+            deleteResult.undo();
+          }
+        });
       },
     }),
     getCustomersCross: builder.query<ICustomerCross, void>({
@@ -154,6 +164,60 @@ export const customerApi = createApi({
         };
       },
       transformResponse: (response: ICustomersCrossRequestResult) => response.queries.cross[0] || [],
+    }),
+    addFavorite: builder.mutation<IFavoriteContact, number>({
+      query: (contactID) => ({
+        url: `contacts/favorites/${contactID}`,
+        method: 'POST'
+      }),
+      invalidatesTags: [{ type: 'Customers', id: 'LIST' }],
+      async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data?.findIndex(c => c.ID === contactID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], isFavorite: true };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
+    }),
+    deleteFavorite: builder.mutation<IFavoriteContact, number>({
+      query: (contactID) => ({
+        url: `contacts/favorites/${contactID}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Customers', id: 'LIST' }],
+      async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data?.findIndex(c => c.ID === contactID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], isFavorite: false };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     })
   }),
 });
@@ -164,5 +228,7 @@ export const {
   useUpdateCustomerMutation,
   useAddCustomerMutation,
   useDeleteCustomerMutation,
-  useGetCustomersCrossQuery
+  useGetCustomersCrossQuery,
+  useAddFavoriteMutation,
+  useDeleteFavoriteMutation
 } = customerApi;

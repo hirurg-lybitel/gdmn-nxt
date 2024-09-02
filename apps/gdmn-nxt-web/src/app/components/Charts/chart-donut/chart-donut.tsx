@@ -7,7 +7,7 @@ import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import ChartSkeleton from './chart-skeleton';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { DateRange } from '@mui/x-date-pickers-pro';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from '@gdmn-nxt/dayjs';
 import { makeStyles } from '@mui/styles';
 
 export interface ChartDonutProps {

@@ -12,14 +12,17 @@
 
 .tabHeader {
   min-height: 0 !important;
-  // padding: 0 16px 4px 16px !important;
 }
 
 .tabHeaderRoot {
   min-height: 30px !important;
-  margin-top: -12px;
+  margin-top: -16px;
+  max-width: calc(100vw - 591px); // костыль из-за горизонтального скрола на маленьких экранах
 }
 
+.editPanel {
+  width: 250px
+}
 
 @media (min-width: 1366px) {
   .editPanel {

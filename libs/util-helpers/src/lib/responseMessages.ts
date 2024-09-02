@@ -3,7 +3,9 @@ import { IResultDescription, IResultError } from '@gsbelarus/util-api-types';
 const localizations = {
   'Foreign key reference target does not exist': 'Нарушение ссылочной целостности',
   'violation of FOREIGN KEY': 'Запись нельзя удалить, так как она используется в другом документе',
-  'lock conflict on no wait transaction': 'Документ уже изменяется другим пользователем'
+  'lock conflict on no wait transaction': 'Документ уже изменяется другим пользователем',
+  'No recipients defined': 'Получатели письма не определены',
+  'Invalid login: 535 (515) incorrect password or account name': 'Неверный пароль или имя учетной записи smtp сервера'
 };
 
 export const resultError = (message: string): IResultError => {

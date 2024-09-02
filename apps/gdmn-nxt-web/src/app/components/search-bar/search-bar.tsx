@@ -1,7 +1,7 @@
 import './search-bar.module.less';
 import { ChangeEvent, cloneElement, CSSProperties, ReactElement, useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
-import { IconButton, Input, Theme } from '@mui/material';
+import { Box, IconButton, Input, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import CustomizedCard from '../Styled/customized-card/customized-card';
@@ -27,6 +27,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
       duration: theme.transitions.duration.shorter,
       easing: theme.transitions.easing.easeInOut,
     }),
+    margin: '0 5px'
   },
   iconButtonHidden: {
     transform: 'scale(0, 0)',
@@ -47,7 +48,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
     width: '100%',
   },
   searchContainer: {
-    margin: 'auto 16px',
+    margin: 'auto 8px',
     width: '100%',
   },
   mouseOnFocus: {
@@ -168,31 +169,37 @@ export function SearchBar(props: SearchBarProps) {
 
   const icons =
     <>
-      <IconButton
-        onClick={handleRequestSearch}
-        className={`
-          ${classes.iconButton}
-          ${classes.searchIconButton}
-          ${searchValue !== '' ? classes.iconButtonHidden : ''}
-        `}
-        disabled={disabled}
-      >
-        {cloneElement(searchIcon, {
-          classes: { root: classes.icon },
-        })}
-      </IconButton>
-      <IconButton
-        onClick={handleCancel}
-        className={`
-          ${classes.iconButton}
-          ${searchValue === '' ? classes.iconButtonHidden : ''}
-        `}
-        disabled={disabled}
-      >
-        {cloneElement(closeIcon, {
-          classes: { root: classes.icon },
-        })}
-      </IconButton>
+      <Box display="inline-flex" alignSelf="center">
+        <IconButton
+          onClick={handleRequestSearch}
+          className={`
+            ${classes.iconButton}
+            ${classes.searchIconButton}
+            ${searchValue !== '' ? classes.iconButtonHidden : ''}
+          `}
+          disabled={disabled}
+          size="small"
+        >
+          {cloneElement(searchIcon, {
+            classes: { root: classes.icon },
+          })}
+        </IconButton>
+      </Box>
+      <Box display="inline-flex" alignSelf="center">
+        <IconButton
+          onClick={handleCancel}
+          className={`
+            ${classes.iconButton}
+            ${searchValue === '' ? classes.iconButtonHidden : ''}
+          `}
+          disabled={disabled}
+          size="small"
+        >
+          {cloneElement(closeIcon, {
+            classes: { root: classes.icon },
+          })}
+        </IconButton>
+      </Box>
     </>;
 
   return (

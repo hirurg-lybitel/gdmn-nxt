@@ -12,11 +12,13 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-input-text': theme.textColor,
           '--color-btn-primary-bg': theme.mainContent.buttonPrimaryColor,
           '--color-primary-bg': theme.palette.primary.main,
-          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#5a5a5a' : '#f5f5f5',
+          '--color-card-bg': theme.palette?.mode === ColorMode.Dark ? '#434343' : '#f5f5f5',
           '--color-main-bg': theme.palette.background.default,
           '--color-paper-bg': theme.palette.background.paper,
           '--color-borders': theme.mainContent.borderColor,
           '--color-hihglight-bg': 'yellow',
+          '--color-error': 'rgb(143, 64, 64)',
+          '--color-disabled': 'rgba(255, 255, 255, 0.3)',
           '--border-radius': theme.mainContent.borderRadius,
           '--label-border-radius': '2em',
           '--menu-width': `${theme.drawerWidth}px`,
@@ -194,9 +196,23 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiTab: {
       styleOverrides: {
         root: {
-          minHeight: 'var(--tabs-height)'
+          minHeight: 'var(--tabs-height)',
+          textTransform: 'none',
+          fontSize: '0.9375rem'
         }
       }
-    }
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontSize: '0.75rem'
+        }
+      }
+    },
+    MuiIconButton: {
+      defaultProps: {
+        size: 'small'
+      },
+    },
   };
 }

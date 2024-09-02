@@ -20,6 +20,7 @@ import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-but
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import KanbanEditCard from '@gdmn-nxt/components/Kanban/kanban-edit-card/kanban-edit-card';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 export interface IChanges {
   id: number;
@@ -38,29 +39,33 @@ export function Deals(props: DealsProps) {
   const userPermissions = usePermissions();
 
   const dispatch = useDispatch();
+  const filterEntityName = 'deals';
   const filtersStorage = useSelector((state: RootState) => state.filtersStorage);
+  const { data: cardDateFilter = [], isFetching: cardDateFilterFetching } = useGetFiltersDeadlineQuery();
+  const deadlineDefault = cardDateFilter?.find(f => f.CODE === 6);
+  const filterData = filtersStorage.filterData?.[`${filterEntityName}`];
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id || -1);
 
-  const { data: cardDateFilter = [], isFetching: cardDateFilterFetching } = useGetFiltersDeadlineQuery();
-  const { data: lastCardDateFilter, isFetching: lastCardDateFilterFetching, isLoading: lastCardDateFilterLoading } = useGetLastUsedFilterDeadlineQuery(userId);
-  const [postLastUsedFilter] = usePostLastUsedFilterDeadlineMutation();
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, deadlineDefault ? { deadline: [deadlineDefault] } : null);
+
+  // const { data: lastCardDateFilter, isFetching: lastCardDateFilterFetching, isLoading: lastCardDateFilterLoading } = useGetLastUsedFilterDeadlineQuery(userId);
+  // const [postLastUsedFilter] = usePostLastUsedFilterDeadlineMutation();
 
   const [upsertCard, setUpsertCard] = useState(false);
 
-  useEffect(() => {
-    if (lastCardDateFilterLoading) return;
-    if (filtersStorage.filterData.deals?.deadline) return;
+  // useEffect(() => {
+  //   if (lastCardDateFilterLoading) return;
+  //   if (filterData?.deadline) return;
 
-    const currentDeadline = (() => {
-      /** по умолчанию Все сделки */
-      const deadlineDefault = cardDateFilter?.find(f => f.CODE === 6);
-      if (!lastCardDateFilter) return deadlineDefault;
-      return lastCardDateFilter;
-    })();
-    if (filtersStorage.filterData.deals?.deadline?.ID === currentDeadline?.ID) return;
+  //   const currentDeadline = (() => {
+  //     /** по умолчанию Все сделки */
+  //     if (!lastCardDateFilter) return deadlineDefault;
+  //     return lastCardDateFilter;
+  //   })();
+  //   if (filterData?.deadline?.ID === currentDeadline?.ID) return;
 
-    saveFilters({ ...filtersStorage.filterData.deals, deadline: [currentDeadline] });
-  }, [lastCardDateFilterLoading]);
+  //   saveFilters({ ...filterData, deadline: [currentDeadline] });
+  // }, [lastCardDateFilterLoading]);
 
   const {
     data: nonCachedData,
@@ -70,15 +75,15 @@ export function Deals(props: DealsProps) {
     refetch
   } = useGetKanbanDealsQuery({
     userId,
-    ...(Object.keys(filtersStorage.filterData.deals || {}).length > 0 ? { filter: filtersStorage.filterData.deals } : {}),
+    ...(Object.keys(filterData || {}).length > 0 ? { filter: filterData } : {}),
   }, {
-    skip: Object.keys(filtersStorage.filterData.deals || {}).length === 0
+    skip: Object.keys(filterData || {}).length === 0
   });
 
   const [addCard] = useAddCardMutation();
 
   const saveFilters = (filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ 'deals': filteringData }));
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
   };
 
   const refreshBoard = useCallback(() => refetch(), []);
@@ -87,7 +92,7 @@ export function Deals(props: DealsProps) {
     filterClick: useCallback(() => {
       setOpenFilters(true);
     }, []),
-    filterClose: async (event: any) => {
+    filterClose: useCallback((event: any) => {
       if (
         event?.type === 'keydown' &&
         (event?.key === 'Tab' || event?.key === 'Shift')
@@ -95,23 +100,23 @@ export function Deals(props: DealsProps) {
         return;
       }
       setOpenFilters(false);
-    },
-    filterClear: () => {
-      dispatch(clearFilterData('deals'));
-    },
+    }, []),
+    filterClear: useCallback(() => {
+      dispatch(clearFilterData(filterEntityName));
+    }, [dispatch]),
     filteringDataChange: async(newValue: IFilteringData) => {
       saveFilters(newValue);
     },
     filterDeadlineChange: (e: SyntheticEvent<Element, Event>, value: IKanbanFilterDeadline) => {
-      saveFilters({ ...filtersStorage.filterData.deals, deadline: [value] });
+      saveFilters({ ...filterData, deadline: [value] });
 
-      postLastUsedFilter({
-        filter: value,
-        userId
-      });
+      // postLastUsedFilter({
+      //   filter: value,
+      //   userId
+      // });
     },
     requestSearch: async (value: string) => {
-      const newObject = { ...filtersStorage.filterData.deals };
+      const newObject = { ...filterData };
       delete newObject.name;
       saveFilters({
         ...newObject,
@@ -119,7 +124,7 @@ export function Deals(props: DealsProps) {
       });
     },
     cancelSearch: async () => {
-      const newObject = { ...filtersStorage.filterData.deals };
+      const newObject = { ...filterData };
       delete newObject.name;
       saveFilters(newObject);
     }
@@ -138,140 +143,138 @@ export function Deals(props: DealsProps) {
   const DealsFilterMemo = useMemo(() =>
     <DealsFilter
       open={openFilters}
-      filteringData={filtersStorage.filterData.deals}
+      filteringData={filterData}
       onClose={filterHandlers.filterClose}
       onFilteringDataChange={filterHandlers.filteringDataChange}
       onFilterClear={filterHandlers.filterClear}
     />,
-  [openFilters, filtersStorage.filterData.deals]);
+  [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, filterHandlers.filteringDataChange]);
 
-  const componentIsFetching = isLoading || Object.keys(filtersStorage.filterData.deals || {}).length === 0;
+  const componentIsFetching = isLoading || Object.keys(filterData || {}).length === 0;
 
   const addDealClick = () => setUpsertCard(true);
 
   const Header = useMemo(() => {
     return (
-      <>
-        <CustomizedCard
+      <CustomizedCard
+        direction="row"
+        className={styles.headerCard}
+      >
+        <Stack
           direction="row"
-          className={styles.headerCard}
+          spacing={2}
+          flex={1}
         >
-          <Stack
-            direction="row"
-            spacing={2}
-            flex={1}
+          <ToggleButtonGroup
+            color="primary"
+            value={tabNo}
+            exclusive
+            size="small"
+            onChange={(e, value) => {
+              if (!value) return;
+              setTabNo(value);
+            }}
           >
-            <ToggleButtonGroup
-              color="primary"
-              value={tabNo}
-              exclusive
-              size="small"
-              onChange={(e, value) => {
-                if (!value) return;
-                setTabNo(value);
-              }}
-            >
-              <ToggleButton value="0" className={styles.toggleButton}>
-                <Tooltip title="Доска" arrow>
-                  <ViewWeekIcon />
-                </Tooltip>
-              </ToggleButton>
-              <ToggleButton value="1" className={styles.toggleButton}>
-                <Tooltip title="Список" arrow>
-                  <ViewStreamIcon />
-                </Tooltip>
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <Autocomplete
-              style={{
-                width: '210px',
-                minWidth: '210px'
-              }}
-              options={cardDateFilter}
-              disableClearable
-              getOptionLabel={option => option.NAME}
-              isOptionEqualToValue={(option, value) => option.ID === value.ID}
-              value={filtersStorage.filterData.deals?.deadline?.length > 0 ? filtersStorage.filterData.deals.deadline[0] : null}
-              onChange={filterHandlers.filterDeadlineChange}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  InputProps={{
-                    style: {
-                      height: '38px'
-                    }
-                  }}
-                  size="small"
-                  placeholder="Фильтр по сроку"
-                />
-              )}
-            />
-            <SearchBar
-              // disabled={columnsIsFetching}
-              onCancelSearch={filterHandlers.cancelSearch}
-              onRequestSearch={filterHandlers.requestSearch}
-              cancelOnEscape
-              fullWidth
-              placeholder="Поиск сделки"
-              iconPosition="start"
-              value={
-                filtersStorage.filterData.deals && filtersStorage.filterData.deals.name
-                  ? filtersStorage.filterData.deals.name[0]
-                  : undefined
-              }
-            />
-            <Stack direction="row" alignItems="center">
-              <PermissionsGate actionAllowed={userPermissions?.deals?.POST}>
-                <IconButton
-                  disabled={columnsIsFetching}
-                  onClick={addDealClick}
-                  color="primary"
-                  size="small"
-                >
-                  <Tooltip title="Добавить новую сделку" arrow>
-                    <AddCircleIcon />
-                  </Tooltip>
-                </IconButton>
-              </PermissionsGate>
-              <CustomLoadingButton
-                hint="Обновить данные"
-                loading={columnsIsFetching}
-                onClick={refreshBoard}
+            <ToggleButton value="0" className={styles.toggleButton}>
+              <Tooltip title="Доска" arrow>
+                <ViewWeekIcon />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="1" className={styles.toggleButton}>
+              <Tooltip title="Список" arrow>
+                <ViewStreamIcon />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <Autocomplete
+            style={{
+              width: '210px',
+              minWidth: '210px'
+            }}
+            options={cardDateFilter}
+            disableClearable
+            getOptionLabel={option => option.NAME}
+            isOptionEqualToValue={(option, value) => option.ID === value.ID}
+            value={filterData?.deadline?.length > 0 ? filterData.deadline[0] : null}
+            onChange={filterHandlers.filterDeadlineChange}
+            renderOption={(props, option, { selected }) => (
+              <li {...props} key={option.ID}>
+                {option.NAME}
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    height: '38px'
+                  }
+                }}
+                size="small"
+                placeholder="Фильтр по сроку"
               />
+            )}
+          />
+          <SearchBar
+            // disabled={columnsIsFetching}
+            onCancelSearch={filterHandlers.cancelSearch}
+            onRequestSearch={filterHandlers.requestSearch}
+            cancelOnEscape
+            fullWidth
+            placeholder="Поиск сделки"
+            iconPosition="start"
+            value={
+              filterData && filterData.name
+                ? filterData.name[0]
+                : undefined
+            }
+          />
+          <Stack direction="row" alignItems="center">
+            <PermissionsGate actionAllowed={userPermissions?.deals?.POST}>
               <IconButton
-                onClick={filterHandlers.filterClick}
                 disabled={columnsIsFetching}
+                onClick={addDealClick}
+                color="primary"
                 size="small"
               >
-                <Tooltip
-                  title={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
-                    ? 'У вас есть активные фильтры'
-                    : 'Выбрать фильтры'
-                  }
-                  arrow
-                >
-                  <Badge
-                    color="error"
-                    variant={Object.keys(filtersStorage.filterData.deals || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
-                      ? 'dot'
-                      : 'standard'}
-                  >
-                    <FilterListIcon color="primary" />
-                  </Badge>
+                <Tooltip title="Добавить новую сделку" arrow>
+                  <AddCircleIcon />
                 </Tooltip>
               </IconButton>
-            </Stack>
+            </PermissionsGate>
+            <CustomLoadingButton
+              hint="Обновить данные"
+              loading={columnsIsFetching}
+              onClick={refreshBoard}
+            />
+            <IconButton
+              onClick={filterHandlers.filterClick}
+              disabled={columnsIsFetching || filtersIsLoading || filtersIsFetching}
+              size="small"
+            >
+              <Tooltip
+                title={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
+                  ? 'У вас есть активные фильтры'
+                  : 'Выбрать фильтры'
+                }
+                arrow
+              >
+                <Badge
+                  color="error"
+                  variant={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
+                    ? 'dot'
+                    : 'standard'}
+                >
+                  <FilterListIcon color="primary" />
+                </Badge>
+              </Tooltip>
+            </IconButton>
           </Stack>
-        </CustomizedCard>
-      </>
+        </Stack>
+      </CustomizedCard>
     );
   }
-  , [tabNo, filtersStorage.filterData.deals, columnsIsFetching]);
+  , [tabNo, filterData, columnsIsFetching]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 
