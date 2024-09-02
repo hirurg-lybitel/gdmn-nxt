@@ -69,6 +69,8 @@ export default function SystemTab() {
           <CustomerSelect
             name="OURCOMPANY"
             label="Рабочая оранизация"
+            disableEdition
+            disableCreation
             placeholder="Укажите вашу рабочую оранизацию"
             value={formik.values.OURCOMPANY}
             onChange={handleCustomerChange}
