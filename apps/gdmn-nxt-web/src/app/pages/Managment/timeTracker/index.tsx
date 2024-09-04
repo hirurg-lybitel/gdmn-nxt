@@ -13,10 +13,10 @@ import {
   styled,
   Divider
 } from '@mui/material';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import { ITimeTrack } from '@gsbelarus/util-api-types';
+import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
@@ -24,6 +24,10 @@ import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTr
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { saveFilterData } from '../../../store/filtersSlice';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -170,12 +174,19 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 //   )
 // };
 export function TimeTracker() {
+  const dispatch = useDispatch();
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
+
+  console.log('filterData', filterData);
+
   const {
     data: timeTrackGroup = [],
     isFetching,
     isLoading,
     refetch
-  } = useGetTimeTrackingByDateQuery();
+  } = useGetTimeTrackingByDateQuery({
+    ...(filterData && { filter: filterData }),
+  });
   const {
     data: activeTimeTrack,
     refetch: refetchTimeTrackingInProgress
@@ -183,6 +194,30 @@ export function TimeTracker() {
   const [addTimeTrack] = useAddTimeTrackingMutation();
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
   const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
+
+  const [] = useFilterStore('timeTracking');
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ timeTracking: filteringData }));
+  }, []);
+
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+    // setPaginationData(prev => ({ ...prev, pageNo: 0 }));
+  }, [filterData]);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
+  }, [filterData]);
 
   const Header = useMemo(() => {
     return (
@@ -196,19 +231,16 @@ export function TimeTracker() {
           pr={1}
         >
           <SearchBar
-            disabled
-            // disabled={isLoading}
-            // onCancelSearch={cancelSearch}
-            // onRequestSearch={requestSearch}
+            disabled={isLoading}
+            onCancelSearch={cancelSearch}
+            onRequestSearch={requestSearch}
             cancelOnEscape
-            // fullWidth
             placeholder="Поиск"
-            // iconPosition="start"
-          // value={
-          //   filterData && filterData.name
-          //     ? filterData.name[0]
-          //     : undefined
-          // }
+            value={
+              filterData && filterData.name
+                ? filterData.name[0]
+                : undefined
+            }
           />
         </Box>
         <CustomLoadingButton

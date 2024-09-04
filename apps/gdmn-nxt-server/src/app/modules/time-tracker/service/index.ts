@@ -53,6 +53,8 @@ const findAllByGroup = async (
   filter?: { [key: string]: any }
 ) => {
   const userId = filter.userId;
+  const name = filter.name;
+
   try {
     const timeTracking = await timeTrackingRepository.find(sessionID, {
       ...(userId && {
@@ -60,7 +62,26 @@ const findAllByGroup = async (
         'USR$INPROGRESS': 0
       }),
     });
-    return groupByDate(timeTracking);
+
+    const filteredTimeTracking = timeTracking.reduce<ITimeTrack[]>((filteredArray, timeTrack) => {
+      let checkConditions = true;
+      if (name) {
+        const lowerName = String(name).toLowerCase();
+        checkConditions = checkConditions && (
+          timeTrack.description?.toLowerCase().includes(lowerName) ||
+          timeTrack.customer?.NAME?.toLowerCase().includes(lowerName) ||
+          timeTrack.workProject.NAME?.toLowerCase().includes(lowerName)
+        );
+      }
+      if (checkConditions) {
+        filteredArray.push({
+          ...timeTrack
+        });
+      }
+      return filteredArray;
+    }, []);
+
+    return groupByDate(filteredTimeTracking);
   } catch (error) {
     throw error;
   }
