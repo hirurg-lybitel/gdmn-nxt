@@ -1,9 +1,11 @@
-import { IRequestResult, ITimeTrack, ITimeTrackGroup } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
 type ITimeTrackingRequestResult = IRequestResult<{ timeTracking: ITimeTrack[] }>;
 type ITimeTrackingGroupRequestResult = IRequestResult<{ timeTracking: ITimeTrackGroup[] }>;
+
+const cachedOptions: Partial<IQueryOptions>[] = [];
 
 export const timeTrackingApi = createApi({
   reducerPath: 'timeTracking',
@@ -21,8 +23,22 @@ export const timeTrackingApi = createApi({
           ]
           : [{ type: 'TimeTrack', id: 'LIST' }],
     }),
-    getTimeTrackingByDate: builder.query<ITimeTrackGroup[], void>({
-      query: () => '/group',
+    getTimeTrackingByDate: builder.query<ITimeTrackGroup[], Partial<IQueryOptions> | void>({
+      query: (options) => {
+        /** Сохраняем параметры запроса */
+        const lastOptions: Partial<IQueryOptions> = { ...options };
+
+        if (!cachedOptions.includes(lastOptions)) {
+          cachedOptions.push(lastOptions);
+        }
+
+        const params = queryOptionsToParamsString(options);
+
+        return {
+          url: `/group${params ? `?${params}` : ''}`,
+          method: 'GET'
+        };
+      },
       transformResponse: (response: ITimeTrackingGroupRequestResult) => response.queries?.timeTracking || [],
       providesTags: (result) => {
         if (!result) {
