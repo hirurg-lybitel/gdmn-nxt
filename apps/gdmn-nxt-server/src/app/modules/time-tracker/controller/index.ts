@@ -10,7 +10,8 @@ const findAll: RequestHandler = async (req, res) => {
     const response = await timeTrackingService.findAll(
       sessionID,
       {
-        userId
+        userId,
+        ...req.query
       }
     );
 
@@ -32,7 +33,8 @@ const findAllByGroup: RequestHandler = async (req, res) => {
     const response = await timeTrackingService.findAllByGroup(
       sessionID,
       {
-        userId
+        userId,
+        ...req.query
       }
     );
 
