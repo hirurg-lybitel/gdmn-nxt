@@ -54,6 +54,8 @@ const findAllByGroup = async (
 ) => {
   const userId = filter.userId;
   const name = filter.name;
+  const dateRange = filter.period;
+  const period = dateRange ? (dateRange as string).split(',').map(date => dayjs(+date)) : [];
 
   try {
     const timeTracking = await timeTrackingRepository.find(sessionID, {
@@ -65,6 +67,12 @@ const findAllByGroup = async (
 
     const filteredTimeTracking = timeTracking.reduce<ITimeTrack[]>((filteredArray, timeTrack) => {
       let checkConditions = true;
+
+      if (period.length > 0) {
+        checkConditions = checkConditions &&
+          dayjs(timeTrack.date).isBetween(period[0], period[1], 'day', '[]');
+      }
+
       if (name) {
         const lowerName = String(name).toLowerCase();
         checkConditions = checkConditions && (

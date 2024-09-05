@@ -13,10 +13,10 @@ import {
   styled,
   Divider
 } from '@mui/material';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
+import { IFilteringData, ITimeTrack, ITimeTrackGroup } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
@@ -28,6 +28,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -68,116 +70,9 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 
-//   type CalcMode = 'calc' | 'manual';
-//   const [calcMode, setCalcMode] = useState<CalcMode>('calc');
-
-//   const calcModeChange = (
-//     event: MouseEvent<HTMLElement>,
-//     newAlignment: CalcMode | null,
-//   ) => {
-//     newAlignment && setCalcMode(newAlignment);
-//   };
-
-//   const formik = useFormik({
-//     enableReinitialize: true,
-//     initialValues: {},
-//     onSubmit: (values) => {
-
-//     }
-//   });
-
-//   return (
-//     <CustomizedCard className={styles.itemCard}>
-//       <FormikProvider value={formik}>
-//         <Form id="contactForm" onSubmit={formik.handleSubmit}>
-//           <Stack
-//             direction="row"
-//             spacing={2}
-//             alignItems="center"
-//           >
-//             <TextField
-//               label="Над чем вы работали?"
-//               style={{
-//                 flex: 1
-//               }}
-//               InputProps={{
-//                 startAdornment:
-//                 <InputAdornment position="start">
-//                   <TextField
-//                     select
-//                     InputProps={{
-//                       disableUnderline: true
-//                     }}
-//                     variant="standard"
-//                     defaultValue={'Консультация'}
-//                   >
-//                     {['Консультация', 'Доработка', 'Внедрение'].map((option) => (
-//                       <MenuItem key={option} value={option}>
-//                         {option}
-//                       </MenuItem>
-//                     ))}
-//                   </TextField>
-//                 </InputAdornment>,
-//               }}
-//             />
-//             {/* <CustomerSelect
-//               style={{
-//                 maxWidth: '300px'
-//               }}
-//             /> */}
-//             <div>Select_customer_and_task</div>
-//             <DatePicker
-//               className={styles.selectDate}
-//               // label="Сегодня"
-//               // format="DD.MM.YY"
-//               slotProps={{ textField: { placeholder: 'Сегодня' } }}
-
-//             />
-//             <Stack direction="row" alignItems="center" spacing={0.5}>
-//               <TimePicker className={styles.selectTime} />
-//               <div>-</div>
-//               <TimePicker className={styles.selectTime} slotProps={{ openPickerButton: { size: 'small' } }} />
-//             </Stack>
-//             <Box display="inline-flex" alignSelf="center">
-//               <Button
-//                 variant="contained"
-//                 startIcon={<PlayCircleFilledWhiteIcon />}
-//               >
-//               Начать
-//               </Button>
-//             </Box>
-//             {/* <Box display="inline-flex" alignSelf="center"> */}
-//             <ToggleButtonGroup
-//             // orientation="vertical"
-
-//               exclusive
-//               size="small"
-//               value={calcMode}
-//               onChange={calcModeChange}
-//             >
-//               <Tooltip arrow title="Таймер">
-//                 <ToggleButton value="calc" style={{ padding: 5 }}>
-//                   <AccessTimeFilledIcon />
-//                 </ToggleButton>
-//               </Tooltip>
-//               <Tooltip arrow title="Вручную">
-//                 <ToggleButton value="manual" style={{ padding: 5 }}>
-//                   <EditNoteIcon />
-//                 </ToggleButton>
-//               </Tooltip>
-//             </ToggleButtonGroup>
-//             {/* </Box> */}
-//           </Stack>
-//         </Form>
-//       </FormikProvider>
-//     </CustomizedCard>
-//   )
-// };
 export function TimeTracker() {
   const dispatch = useDispatch();
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
-
-  console.log('filterData', filterData);
 
   const {
     data: timeTrackGroup = [],
@@ -274,6 +169,21 @@ export function TimeTracker() {
         initial={activeTimeTrack}
         onSubmit={handleSubmit}
       />
+      <ButtonDateRangePicker
+        value={filterData?.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
+        onChange={(value) => {
+          const newPeriod = [
+            value[0]?.getTime() ?? null,
+            value[1]?.getTime() ?? null
+          ];
+          const newObject = { ...filterData };
+          delete newObject.period;
+          handleFilteringDataChange({
+            ...newObject,
+            ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
+          });
+        }}
+      />
       {isLoading ?
         <CircularIndeterminate open size={70} /> :
         <CustomizedScrollBox container={{ style: { marginRight: '-16px' } }}>
@@ -348,7 +258,6 @@ export function TimeTracker() {
             })}
           </Stack>
         </CustomizedScrollBox>}
-
     </Stack>
   );
 };
