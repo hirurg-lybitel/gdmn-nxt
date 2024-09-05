@@ -179,6 +179,9 @@ export function queryOptionsToParamsString(options?: IQueryOptions | void) {
               if (typeof subKeyNested === 'string') {
                 subParams.push(subKeyNested);
               };
+              if (typeof subKeyNested === 'number') {
+                subParams.push(subKeyNested);
+              };
             }
           } else {
             subParams.push(subKey);

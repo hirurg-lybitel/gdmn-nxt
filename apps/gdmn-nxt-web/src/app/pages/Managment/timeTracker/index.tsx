@@ -13,10 +13,10 @@ import {
   styled,
   Divider
 } from '@mui/material';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import { ITimeTrack } from '@gsbelarus/util-api-types';
+import { IFilteringData, ITimeTrack, ITimeTrackGroup } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
@@ -24,6 +24,12 @@ import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTr
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { saveFilterData } from '../../../store/filtersSlice';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
+import { DateRange } from '@mui/x-date-pickers-pro';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -64,118 +70,18 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 
-//   type CalcMode = 'calc' | 'manual';
-//   const [calcMode, setCalcMode] = useState<CalcMode>('calc');
-
-//   const calcModeChange = (
-//     event: MouseEvent<HTMLElement>,
-//     newAlignment: CalcMode | null,
-//   ) => {
-//     newAlignment && setCalcMode(newAlignment);
-//   };
-
-//   const formik = useFormik({
-//     enableReinitialize: true,
-//     initialValues: {},
-//     onSubmit: (values) => {
-
-//     }
-//   });
-
-//   return (
-//     <CustomizedCard className={styles.itemCard}>
-//       <FormikProvider value={formik}>
-//         <Form id="contactForm" onSubmit={formik.handleSubmit}>
-//           <Stack
-//             direction="row"
-//             spacing={2}
-//             alignItems="center"
-//           >
-//             <TextField
-//               label="Над чем вы работали?"
-//               style={{
-//                 flex: 1
-//               }}
-//               InputProps={{
-//                 startAdornment:
-//                 <InputAdornment position="start">
-//                   <TextField
-//                     select
-//                     InputProps={{
-//                       disableUnderline: true
-//                     }}
-//                     variant="standard"
-//                     defaultValue={'Консультация'}
-//                   >
-//                     {['Консультация', 'Доработка', 'Внедрение'].map((option) => (
-//                       <MenuItem key={option} value={option}>
-//                         {option}
-//                       </MenuItem>
-//                     ))}
-//                   </TextField>
-//                 </InputAdornment>,
-//               }}
-//             />
-//             {/* <CustomerSelect
-//               style={{
-//                 maxWidth: '300px'
-//               }}
-//             /> */}
-//             <div>Select_customer_and_task</div>
-//             <DatePicker
-//               className={styles.selectDate}
-//               // label="Сегодня"
-//               // format="DD.MM.YY"
-//               slotProps={{ textField: { placeholder: 'Сегодня' } }}
-
-//             />
-//             <Stack direction="row" alignItems="center" spacing={0.5}>
-//               <TimePicker className={styles.selectTime} />
-//               <div>-</div>
-//               <TimePicker className={styles.selectTime} slotProps={{ openPickerButton: { size: 'small' } }} />
-//             </Stack>
-//             <Box display="inline-flex" alignSelf="center">
-//               <Button
-//                 variant="contained"
-//                 startIcon={<PlayCircleFilledWhiteIcon />}
-//               >
-//               Начать
-//               </Button>
-//             </Box>
-//             {/* <Box display="inline-flex" alignSelf="center"> */}
-//             <ToggleButtonGroup
-//             // orientation="vertical"
-
-//               exclusive
-//               size="small"
-//               value={calcMode}
-//               onChange={calcModeChange}
-//             >
-//               <Tooltip arrow title="Таймер">
-//                 <ToggleButton value="calc" style={{ padding: 5 }}>
-//                   <AccessTimeFilledIcon />
-//                 </ToggleButton>
-//               </Tooltip>
-//               <Tooltip arrow title="Вручную">
-//                 <ToggleButton value="manual" style={{ padding: 5 }}>
-//                   <EditNoteIcon />
-//                 </ToggleButton>
-//               </Tooltip>
-//             </ToggleButtonGroup>
-//             {/* </Box> */}
-//           </Stack>
-//         </Form>
-//       </FormikProvider>
-//     </CustomizedCard>
-//   )
-// };
 export function TimeTracker() {
+  const dispatch = useDispatch();
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
+
   const {
     data: timeTrackGroup = [],
     isFetching,
     isLoading,
     refetch
-  } = useGetTimeTrackingByDateQuery();
+  } = useGetTimeTrackingByDateQuery({
+    ...(filterData && { filter: filterData }),
+  });
   const {
     data: activeTimeTrack,
     refetch: refetchTimeTrackingInProgress
@@ -183,6 +89,30 @@ export function TimeTracker() {
   const [addTimeTrack] = useAddTimeTrackingMutation();
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
   const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
+
+  const [] = useFilterStore('timeTracking');
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ timeTracking: filteringData }));
+  }, []);
+
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+    // setPaginationData(prev => ({ ...prev, pageNo: 0 }));
+  }, [filterData]);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
+  }, [filterData]);
 
   const Header = useMemo(() => {
     return (
@@ -196,19 +126,16 @@ export function TimeTracker() {
           pr={1}
         >
           <SearchBar
-            disabled
-            // disabled={isLoading}
-            // onCancelSearch={cancelSearch}
-            // onRequestSearch={requestSearch}
+            disabled={isLoading}
+            onCancelSearch={cancelSearch}
+            onRequestSearch={requestSearch}
             cancelOnEscape
-            // fullWidth
             placeholder="Поиск"
-            // iconPosition="start"
-          // value={
-          //   filterData && filterData.name
-          //     ? filterData.name[0]
-          //     : undefined
-          // }
+            value={
+              filterData && filterData.name
+                ? filterData.name[0]
+                : undefined
+            }
           />
         </Box>
         <CustomLoadingButton
@@ -241,6 +168,21 @@ export function TimeTracker() {
       <AddItem
         initial={activeTimeTrack}
         onSubmit={handleSubmit}
+      />
+      <ButtonDateRangePicker
+        value={filterData?.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
+        onChange={(value) => {
+          const newPeriod = [
+            value[0]?.getTime() ?? null,
+            value[1]?.getTime() ?? null
+          ];
+          const newObject = { ...filterData };
+          delete newObject.period;
+          handleFilteringDataChange({
+            ...newObject,
+            ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
+          });
+        }}
       />
       {isLoading ?
         <CircularIndeterminate open size={70} /> :
@@ -316,7 +258,6 @@ export function TimeTracker() {
             })}
           </Stack>
         </CustomizedScrollBox>}
-
     </Stack>
   );
 };
