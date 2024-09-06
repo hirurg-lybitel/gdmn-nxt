@@ -13,6 +13,7 @@ router.post('/segments', segmentsController.createSegment);
 router.put('/segments/:id', segmentsController.updateById);
 router.delete('/segments/:id', segmentsController.removeById);
 router.post('/segments/calc', segmentsController.calcCustomersCount);
+router.post('/segments/customers', segmentsController.findCustomersBySegment);
 
 router.get('/mailings', mailingController.findAll);
 router.get('/mailings/:id', mailingController.findOne);
