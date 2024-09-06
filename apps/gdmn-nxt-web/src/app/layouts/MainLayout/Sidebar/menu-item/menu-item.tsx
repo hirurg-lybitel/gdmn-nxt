@@ -26,12 +26,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-interface actionCheck {
-  name: ActionName;
-  method: ActionMethod;
-}
-
-
 export interface MenuItemProps {
   item: IMenuItem;
   level?: number;

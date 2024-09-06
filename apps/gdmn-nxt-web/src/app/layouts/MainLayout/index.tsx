@@ -1,8 +1,8 @@
-import { Alert, Box, MenuItem, Snackbar, SvgIconTypeMap, useMediaQuery } from '@mui/material';
-import { SyntheticEvent, useCallback, useEffect, useState } from 'react';
+import { Box, MenuItem, SvgIconTypeMap, useMediaQuery } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
 import { toggleMenu } from '../../store/settingsSlice';
 import { styled, useTheme } from '@mui/material/styles';
@@ -13,6 +13,8 @@ import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { useIdleTimer } from 'react-idle-timer';
 import { LOGOUT_TIMEOUT } from '@gdmn/constants/client';
 import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import { saveFilterData } from '../../store/filtersSlice';
+import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -115,6 +117,33 @@ export const MainLayout = (props: MainLayoutProps) => {
   const handleDrawerToggle = () => {
     dispatch(toggleMenu(!menuOpened));
   };
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [] = useFilterStore('menu');
+
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.menu);
+  useEffect(() => {
+    const savedPathname = filterData?.path;
+    const currentPathname = location.pathname;
+
+
+    if (!savedPathname) {
+      return;
+    }
+    if (currentPathname === savedPathname) {
+      return;
+    }
+
+    navigate(savedPathname);
+  }, [filterData?.path]);
+
+
+  useEffect(() => {
+    // сохранение последнего открытого пути
+    dispatch(saveFilterData({ menu: { path: location.pathname } }));
+  }, [location]);
 
   return (
     <>
