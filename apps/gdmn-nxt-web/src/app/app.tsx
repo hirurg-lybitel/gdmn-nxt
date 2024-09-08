@@ -14,6 +14,7 @@ import { CircularIndeterminate } from './components/helpers/circular-indetermina
 import { InitData } from './store/initData';
 import { setColorMode } from './store/settingsSlice';
 import { baseUrlApi } from './constants';
+import { saveFilterData } from './store/filtersSlice';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -46,6 +47,7 @@ export default function App(props: AppProps) {
   const [captchaImage, setCaptchaImage] = useState('');
 
   const navigate = useNavigate();
+
 
   const pathName: string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
@@ -82,6 +84,15 @@ export default function App(props: AppProps) {
           }
 
           setUser(data.user);
+
+          /** Получение последнего url клиента */
+          const res = await fetch(`${baseUrlApi}filters/menu`, { method: 'GET', credentials: 'include' });
+          if (res.ok) {
+            const pathnameData = await res.json();
+
+            const pathname = Array.isArray(pathnameData.queries?.filters) ? pathnameData.queries.filters[0]?.filters?.path : '';
+            dispatch(saveFilterData({ menu: { path: pathname } }));
+          }
 
           const colorMode = data.user.colorMode ?? ColorMode.Dark;
           switch (colorMode) {

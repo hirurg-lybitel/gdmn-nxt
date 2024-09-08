@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { IRequestResult } from '@gsbelarus/util-api-types';
+import { IRequestResult, UnprocessableEntityException } from '@gsbelarus/util-api-types';
 import { segmentsService } from '../service';
 import { resultError } from '@gsbelarus/util-helpers';
 
@@ -126,11 +126,35 @@ const calcCustomersCount: RequestHandler = async (
   }
 };
 
+const findCustomersBySegment: RequestHandler = async (
+  req,
+  res) => {
+  try {
+    const { includeSegments = [], excludeSegments = [] } = req.body;
+
+    const customers = await segmentsService.getSegmentsCustomers(
+      req.sessionID,
+      includeSegments,
+      excludeSegments
+    );
+
+    const result: IRequestResult = {
+      queries: { customers },
+      _schema: {}
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const segmentsController = {
   findAll,
   findOne,
   createSegment,
   updateById,
   removeById,
-  calcCustomersCount
+  calcCustomersCount,
+  findCustomersBySegment
 };
