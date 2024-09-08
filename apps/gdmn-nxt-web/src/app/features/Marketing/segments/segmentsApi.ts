@@ -1,8 +1,10 @@
 import { baseUrlApi } from '@gdmn/constants/client';
-import { IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { ICustomer, IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export type ISegmentRequestResult = IRequestResult<{segments: ISegment[], count: number}>;
+
+type ISegmentCustomersRequestResult = IRequestResult<{customers: ICustomer[]}>;
 
 export const segmentApi = createApi({
   reducerPath: 'segment',
@@ -66,6 +68,14 @@ export const segmentApi = createApi({
         method: 'POST'
       }),
     }),
+    getCustomersBySegment: builder.mutation<ICustomer[], { includeSegments: ISegment[], excludeSegments: ISegment[]}>({
+      query: (body) => ({
+        url: 'segments/customers',
+        body: body,
+        method: 'POST'
+      }),
+      transformResponse: (response: ISegmentCustomersRequestResult) => response.queries.customers ?? []
+    }),
   }),
 });
 
@@ -75,5 +85,6 @@ export const {
   useAddSegmentMutation,
   useDeleteSegmentMutation,
   useUpdateSegmentMutation,
-  useGetCustomersCountMutation
+  useGetCustomersCountMutation,
+  useGetCustomersBySegmentMutation
 } = segmentApi;
