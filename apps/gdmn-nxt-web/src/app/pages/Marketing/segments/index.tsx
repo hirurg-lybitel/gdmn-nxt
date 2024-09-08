@@ -3,11 +3,10 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IFilteringData, IPaginationData, ISegment, ISortingData } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
-import { GridColDef, GridRenderCellParams, GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
+import { GridColDef, GridRenderCellParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,6 +14,7 @@ import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/Marketing/segments/segmentsApi';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import SegmentCustomers from '../components/segment-customers';
 
 export default function CustomersSegments() {
   const [paginationData, setPaginationData] = useState<IPaginationData>({
@@ -97,14 +97,22 @@ export default function CustomersSegments() {
     setUpsertSegment({ addSegment: false, editSegment: true, segment });
   };
 
-  const columns: GridColDef<any>[] = [
+  const columns: GridColDef<ISegment>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
-    { field: 'QUANTITY', headerName: 'Получатели', width: 150, sortable: false, },
+    { field: 'QUANTITY', headerName: 'Получатели', flex: 1, sortable: false, type: 'number',
+      renderCell: ({ value, row }) => (
+        !value ?
+          <div style={{ width: 31 }}>{0}</div> :
+          <SegmentCustomers
+            segment={row}
+            label={value}
+          />
+      )
+    },
     {
       field: 'actions',
       type: 'actions',
       resizable: false,
-      // width: 50,
       renderCell: ({ value, row }: GridRenderCellParams) => {
         return (
           <IconButton

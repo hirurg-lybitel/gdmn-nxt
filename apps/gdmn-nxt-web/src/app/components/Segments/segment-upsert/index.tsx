@@ -217,7 +217,7 @@ export function SegmentUpsert({
               <Stack spacing={2}>
                 <TextField
                   autoFocus
-                  label="Имя"
+                  label="Наименование"
                   name="NAME"
                   value={formik.values.NAME}
                   onChange={formik.handleChange}
