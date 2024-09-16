@@ -26,6 +26,13 @@ export function ContactsFilter({
     const newObject = { ...filteringData };
     delete newObject[entity];
 
+    if (entity === 'isOur' && value) {
+      delete newObject['COMPANY'];
+    }
+    if (entity === 'COMPANY' && value?.toString().length > 0) {
+      delete newObject['isOur'];
+    }
+
     const newValue = (() => {
       if (typeof value === 'boolean' && !value) {
         return {};

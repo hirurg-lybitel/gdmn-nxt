@@ -40,7 +40,14 @@ export function ContactSelect({
       getOptionLabel={option => option.NAME}
       filterOptions={filterOptions(50, 'NAME')}
       renderOption={(props, option, { selected }) => (
-        <li {...props} key={option.ID}>
+        <li
+          {...props}
+          key={option.ID}
+          style={{
+            paddingTop: 0,
+            paddingBottom: 0
+          }}
+        >
           <Checkbox
             icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
             checkedIcon={<CheckBoxIcon fontSize="small" />}

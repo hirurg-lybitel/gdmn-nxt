@@ -10,17 +10,17 @@ import styles from './add-contact.module.less';
 import TelephoneInput from '../../telephone-input';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { IContactName, IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
+import { useEffect, useMemo, useState } from 'react';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
 import filterOptions from '../../helpers/filter-options';
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
 import SocialMediaInput, { ISocialMedia } from '../../social-media-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
 
 export interface AddContactProps {
   open: boolean;
@@ -46,6 +46,10 @@ export function AddContact({
     MESSENGERS: [{ ID: -1, CODE: 'telegram', USERNAME: '' }],
     LABELS: [],
     COMPANY: contact?.COMPANY,
+    nameInfo: {
+      lastName: '',
+      nickName: ''
+    }
   };
 
   const formik = useFormik<IContactPerson>({
@@ -55,12 +59,21 @@ export function AddContact({
       ...initValue
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string()
-        .required('Не указано имя')
-        .max(40, 'Слишком длинное имя'),
+      // NAME: yup.string()
+      //   .required('Не указано имя')
+      //   .max(40, 'Слишком длинное имя'),
       USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       EMAILS: yup.array().of(emailsValidation()),
-      PHONES: yup.array().of(phonesValidation())
+      PHONES: yup.array().of(phonesValidation()),
+      nameInfo: yup.object({
+        lastName: yup.string()
+          .required('Не указана фамилия')
+          .max(20, 'Слишком длинная фамилия'),
+        firstName: yup.string()
+          .max(20, 'Слишком длинное имя'),
+        middleName: yup.string()
+          .max(20, 'Слишком длинное отчество'),
+      })
     }),
     onSubmit: (values) => {
       const newPhones = values.PHONES?.filter(phone => !!phone.USR$PHONENUMBER);
@@ -163,6 +176,10 @@ export function AddContact({
 
   const handleCustomerChange = (customer: ICustomer | null | undefined) => {
     formik.setFieldValue('COMPANY', { ID: customer?.ID, NAME: customer?.NAME });
+  };
+
+  const handleNameInfoChange = (value: IContactName) => {
+    formik.setFieldValue('nameInfo', value);
   };
 
   const emailOptions = useMemo(() =>
@@ -320,22 +337,17 @@ export function AddContact({
         <FormikProvider value={formik}>
           <Form id="contactForm" onSubmit={formik.handleSubmit}>
             <Stack spacing={2}>
-              <TextField
-                label="Имя"
-                name="NAME"
+              <ContactName
+                value={formik.values.nameInfo}
+                onChange={handleNameInfoChange}
+                label="ФИО"
                 autoFocus
-                required
-                value={formik.values.NAME}
-                onChange={formik.handleChange}
-                helperText={formik.touched.NAME && formik.errors.NAME}
-                error={formik.touched.NAME && Boolean(formik.errors.NAME)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                }}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <PersonIcon />
+                  </InputAdornment>}
+                helperText={formik.touched.nameInfo ? Object.values(formik.errors.nameInfo ?? {})[0] : ''}
+                error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
               />
               {emailOptions}
               {phoneOptions}
