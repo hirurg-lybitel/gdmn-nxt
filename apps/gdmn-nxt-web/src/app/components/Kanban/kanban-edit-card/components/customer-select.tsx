@@ -1,5 +1,5 @@
 import { ICustomer } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, ListItem, TextField, TextFieldProps, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { customerApi, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { HTMLAttributes, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -11,6 +11,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { makeStyles } from '@mui/styles';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { GroupHeader, GroupItems } from './group';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -83,7 +84,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setAddCustomer(true);
   }, []);
 
-  const handleEditCustomer = useCallback((customer: ICustomer | undefined) => () => {
+  const handleEditCustomer = useCallback((customer: ICustomer | undefined) => (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+
     if (!customer) return;
     setEditingCustomer(customer);
     setAddCustomer(true);
@@ -171,10 +174,16 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         onChange={handleChange}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected }: AutocompleteRenderOptionState) => {
           return (
-            <li
+            <ListItem
               {...props}
               key={option.ID}
-              style={{ display: 'flex' }}
+              disablePadding
+              sx={{
+                py: '0 !important',
+                '&:hover .action': {
+                  display: 'block !important',
+                }
+              }}
             >
               {multiple &&
                 <Checkbox
@@ -184,23 +193,32 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                   checked={selected}
                 />}
               <Box flex={1}>
-                <div style={{ flex: 1, display: 'flex' }}>
-                  <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
                     {option.NAME}
+                    {!disableCaption && option.TAXID
+                      ? <Typography variant="caption">{`УНП: ${option.TAXID}`}</Typography>
+                      : <></>}
                   </div>
                   {!disableEdition &&
-                    <IconButton size="small" onClick={handleEditCustomer(option)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
+                    <div
+                      className="action"
+                      style={{
+                        display: 'none',
+                      }}
+                    >
+                      <ItemButtonEdit
+                        color="primary"
+                        onClick={handleEditCustomer(option)}
+                      />
+                    </div>
                   }
                   {!disableFavorite &&
                     <SwitchStar selected={!!option.isFavorite} onClick={handleFavoriteClick(option)} />}
                 </div>
-                {!disableCaption && option.TAXID
-                  ? <Typography variant="caption">{`УНП: ${option.TAXID}`}</Typography>
-                  : <></>}
+
               </Box>
-            </li>
+            </ListItem>
           );
         }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite])}
         renderInput={useCallback((params) => (
