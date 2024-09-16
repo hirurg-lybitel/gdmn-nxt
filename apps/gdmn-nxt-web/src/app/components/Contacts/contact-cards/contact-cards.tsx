@@ -110,9 +110,9 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   fontWeight={600}
                   className={styles.contactName}
                   data-searchable={true}
-                  onClick={handleClickWithClipboard('name', contact.NAME)}
+                  onClick={handleClickWithClipboard('name', contact.nameInfo?.nickName ?? '')}
                 >
-                  {contact.NAME}
+                  {contact.nameInfo?.nickName ?? ''}
                 </Typography>
               </StyledToolTip>
               <StyledToolTip

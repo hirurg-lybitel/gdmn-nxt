@@ -209,6 +209,7 @@ export interface IContactPerson extends IContactWithID {
   PHOTO?: string;
   COMPANY?: IContactWithID | null;
   isFavorite?: boolean;
+  nameInfo?: IContactName;
 };
 
 export interface IContract extends IWithID {
@@ -478,4 +479,11 @@ export interface ITimeTrackGroup {
   date: Date,
   duration: string;
   items: ITimeTrack[];
+}
+
+export interface IContactName {
+  lastName: string;
+  firstName?: string;
+  middleName?: string;
+  nickName: string;
 }

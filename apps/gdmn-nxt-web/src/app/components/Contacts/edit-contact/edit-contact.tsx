@@ -8,7 +8,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import { Autocomplete, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
-import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
+import { IContactName, IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useEffect, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
@@ -31,6 +31,7 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
+import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -60,6 +61,10 @@ export function EditContact({
     LABELS: [],
     ADDRESS: '',
     RANK: '',
+    nameInfo: {
+      lastName: '',
+      nickName: ''
+    }
   };
 
   const formik = useFormik<IContactPerson>({
@@ -67,19 +72,29 @@ export function EditContact({
     validateOnBlur: false,
     initialValues: {
       ...initValue,
-      ...{ ...contact,
+      ...{
+        ...contact,
         PHONES: (contact?.PHONES && contact?.PHONES?.length > 0) ? contact?.PHONES : [voidPhoneValue],
         EMAILS: (contact?.EMAILS && contact?.EMAILS?.length > 0) ? contact?.EMAILS : [voidEmailValue],
         MESSENGERS: (contact?.MESSENGERS && contact?.MESSENGERS?.length > 0) ? contact?.MESSENGERS : [voidMessengerValue]
       }
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string()
-        .required('Не указано имя')
-        .max(40, 'Слишком длинное имя'),
+      // NAME: yup.string()
+      //   .required('Не указано имя')
+      //   .max(40, 'Слишком длинное имя'),
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       EMAILS: yup.array().of(emailsValidation()),
-      PHONES: yup.array().of(phonesValidation())
+      PHONES: yup.array().of(phonesValidation()),
+      nameInfo: yup.object({
+        lastName: yup.string()
+          .required('Не указана фамилия')
+          .max(20, 'Слишком длинная фамилия'),
+        firstName: yup.string()
+          .max(20, 'Слишком длинное имя'),
+        middleName: yup.string()
+          .max(20, 'Слишком длинное отчество'),
+      })
     }),
     onSubmit: (values) => {
       onSubmit(validValues(), false);
@@ -399,6 +414,10 @@ export function EditContact({
     formik.setFieldValue('PHOTO', newAvatar);
   };
 
+  const handleNameInfoChange = (value: IContactName) => {
+    formik.setFieldValue('nameInfo', value);
+  };
+
   return (
     <CustomizedDialog
       open={open}
@@ -428,10 +447,12 @@ export function EditContact({
                       alignItems="center"
                     >
                       <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
-                      <EditableTypography
-                        name="NAME"
-                        value={formik.values.NAME}
-                        onChange={formik.handleChange}
+                      <ContactName
+                        value={formik.values.nameInfo}
+                        onChange={handleNameInfoChange}
+                        required
+                        fullWidth
+                        error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
                       />
                     </Stack>
                     {phoneOptions}
