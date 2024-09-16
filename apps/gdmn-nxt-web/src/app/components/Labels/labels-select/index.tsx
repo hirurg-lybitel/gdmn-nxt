@@ -1,5 +1,5 @@
 import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
-import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, InputAdornment, Stack, TextField, TextFieldProps, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography } from '@mui/material';
 import { MouseEvent, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../../features/labels';
@@ -28,6 +28,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
   }>({
     open: false
   });
+
 
   const isFetching = useMemo(() =>
     editIsLoading || addIsLoading || labelsFetching || labelsLoading,
@@ -109,7 +110,17 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
         loadingText="Загрузка данных..."
         getOptionLabel={opt => opt.USR$NAME}
         renderOption={(props, option, { selected }) => (
-          <li {...props} key={option.ID}>
+          <ListItem
+            {...props}
+            key={option.ID}
+            disablePadding
+            sx={{
+              py: '0 !important',
+              '&:hover .action': {
+                display: 'inline-flex !important',
+              }
+            }}
+          >
             <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
               <Checkbox
                 icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
@@ -140,12 +151,19 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
                 <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
               </Stack>
             </div>
-            <ItemButtonEdit
-              disabled={isFetching}
-              color="primary"
-              onClick={handleOpenLabelEdit(option)}
-            />
-          </li>
+            <div
+              className="action"
+              style={{
+                display: 'none'
+              }}
+            >
+              <ItemButtonEdit
+                disabled={isFetching}
+                color="primary"
+                onClick={handleOpenLabelEdit(option)}
+              />
+            </div>
+          </ListItem>
         )}
         renderInput={(params) => (
           <TextField

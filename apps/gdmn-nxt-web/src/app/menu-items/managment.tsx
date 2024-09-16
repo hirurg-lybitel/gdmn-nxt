@@ -21,24 +21,25 @@ const managment: IMenuItem = {
       icon: <AccessTimeFilledIcon color="secondary" />,
     },
     {
-      id: 'contactsGroup',
+      id: 'contacts',
       title: 'Контакты',
-      type: 'collapse',
+      type: 'item',
       icon: <ContactPhoneIcon color="secondary" />,
-      children: [
-        {
-          id: 'contacts',
-          title: 'Все',
-          type: 'item',
-          url: 'managment/contacts',
-        },
-        {
-          id: 'ourContacts',
-          title: 'Только наши',
-          type: 'item',
-          url: 'managment/ourContacts',
-        },
-      ]
+      url: 'managment/contacts',
+      // children: [
+      //   {
+      //     id: 'contacts',
+      //     title: 'Все',
+      //     type: 'item',
+      //     url: 'managment/contacts',
+      //   },
+      //   {
+      //     id: 'ourContacts',
+      //     title: 'Только наши',
+      //     type: 'item',
+      //     url: 'managment/ourContacts',
+      //   },
+      // ]
     },
     {
       id: 'dealsGroup',
