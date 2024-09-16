@@ -115,7 +115,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
             key={option.ID}
             disablePadding
             sx={{
-              py: '0 !important',
+              py: '2px !important',
               '&:hover .action': {
                 display: 'inline-flex !important',
               }

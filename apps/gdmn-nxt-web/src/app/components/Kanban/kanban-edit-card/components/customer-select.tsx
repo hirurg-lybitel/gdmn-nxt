@@ -179,7 +179,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               key={option.ID}
               disablePadding
               sx={{
-                py: '0 !important',
+                py: '2px !important',
                 '&:hover .action': {
                   display: 'block !important',
                 }
