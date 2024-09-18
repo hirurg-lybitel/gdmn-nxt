@@ -112,7 +112,11 @@ export interface IProfileSettings {
 
 export interface ISystemSettings extends IWithID{
   CONTRACTTYPE: ContractType;
-  OURCOMPANY?: ICustomer
+  OURCOMPANY?: ICustomer;
+  smtpHost?: string;
+  smtpUser?: string;
+  smtpPassword?: string;
+  smtpPort?: number;
 }
 
 export enum ColorMode {

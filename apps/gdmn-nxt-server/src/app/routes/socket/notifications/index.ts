@@ -8,12 +8,14 @@ import { updateNotifications } from '../../../controllers/socket/notifications//
 import { getMessagesByUser } from '../../../controllers/socket/notifications//getMessagesByUser';
 import { insertNotification } from '../../../controllers/socket/notifications//insertNotification';
 import { getEmailUsers } from '../../../controllers/socket/notifications/getEmailUsers';
-import { sendEmail } from '../../../utils/mail';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { marked } from 'marked';
 import cron from 'cron';
 import { readFileSync } from 'fs';
 import { createServer } from 'https';
 import path from 'path';
+import { forEachAsync } from '@gsbelarus/util-helpers';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 marked.use({
   mangle: false,
@@ -135,7 +137,22 @@ export function Notifications({ router }: NotificationsProps) {
       const users = await getEmailUsers(sessionId);
       const notifications = await getNotifications(sessionId);
 
-      users.forEach(user => {
+      const {
+        smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPassword,
+        OURCOMPANY: { NAME: ourCompanyName }
+      } = await systemSettingsRepository.findOne(sessionId);
+
+      const smtpOpt: SmtpOptions = {
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser,
+        password: smtpPassword
+      };
+
+      await forEachAsync(users, async user => {
         const { EMAIL, NAME } = user;
         const userNotifications: INotification[] = notifications[user.ID];
 
@@ -171,14 +188,15 @@ export function Notifications({ router }: NotificationsProps) {
             <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="https://${config.host}/">CRM системе</a>.</p>
           </div>`;
 
-        const from = `CRM система БелГИСС <${process.env.SMTP_USER}>`;
+        const from = `CRM система ${ourCompanyName} <${smtpOpt.user}>`;
 
-        const result = sendEmail(
+        await sendEmail({
           from,
-          EMAIL,
-          `У вас ${userNotifications.length} активных уведомлений`,
-          '',
-          messageText);
+          to: EMAIL,
+          subject: `У вас ${userNotifications.length} активных уведомлений`,
+          html: messageText,
+          options: { ...smtpOpt }
+        });
       });
     } catch (error) {
       console.error(error);
