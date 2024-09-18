@@ -5,9 +5,11 @@ import { resultError } from '@gsbelarus/util-helpers';
 
 const findAll: RequestHandler = async (req, res) => {
   const { id: sessionID } = req.session;
+  const userId = req.user['id'];
   try {
     const response = await workProjectsService.findAll(
-      sessionID
+      sessionID,
+      userId
     );
 
     const result: IRequestResult = {
@@ -74,9 +76,46 @@ const remove: RequestHandler = async (req, res) => {
   }
 };
 
+const addToFavorites: RequestHandler = async (req, res) => {
+  try {
+    const workProjectId = parseInt(req.params.id);
+    if (isNaN(workProjectId)) {
+      throw UnprocessableEntityException('Field workProjectId is not defined or is not numeric');
+    }
+
+    const { id: sessionID } = req.session;
+    const userId = req.user['id'];
+
+    await workProjectsService.addToFavorites(sessionID, userId, workProjectId);
+
+    return res.sendStatus(200);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const removeFromFavorites: RequestHandler = async (req, res) => {
+  try {
+    const workProjectId = parseInt(req.params.id);
+    if (isNaN(workProjectId)) {
+      throw UnprocessableEntityException('Field workProjectId is not defined or is not numeric');
+    }
+
+    const { id: sessionID } = req.session;
+    const userId = req.user['id'];
+
+    const isDeleted = await workProjectsService.removeFromFavorites(sessionID, userId, workProjectId);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const workProjectsController = {
   findAll,
   create,
   update,
   remove,
+  addToFavorites,
+  removeFromFavorites
 };

@@ -459,7 +459,13 @@ export enum WorkProjectStatus {
 }
 export interface IWorkProject extends IWithID {
   NAME: string;
-  STATUS?: WorkProjectStatus
+  STATUS?: WorkProjectStatus;
+  isFavorite?: boolean;
+}
+
+export interface IFavoriteWorkProject extends IWithID {
+  user?: number;
+  workProject?: IWorkProject;
 }
 
 export interface ITimeTrack extends IWithID {
