@@ -4106,6 +4106,24 @@
 			"name": "Time Tracking",
 			"item": [
 				{
+					"name": "Типы работ",
+					"item": [
+						{
+							"name": "Work Projects",
+							"id": "aa8b7b8e-bb83-4218-aa0d-83d1041be595",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					],
+					"id": "43315a6b-e72b-4376-8bba-72e4ff382f5c"
+				},
+				{
 					"name": "By group",
 					"id": "5ef995a6-d810-4bcb-b222-212d78fa0363",
 					"protocolProfileBehavior": {
