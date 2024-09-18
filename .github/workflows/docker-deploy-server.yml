@@ -8,6 +8,7 @@ on:
     paths:
       - 'apps/gdmn-nxt-server/**'
       - 'libs/**'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
