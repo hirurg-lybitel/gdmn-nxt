@@ -4116,7 +4116,37 @@
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": "{{baseUrl}}/work-projects"
+							},
+							"response": []
+						},
+						{
+							"name": "To Favorites",
+							"id": "d3e95bb1-949e-46c1-89ab-0ede852de455",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/work-projects/favorites/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"work-projects",
+										"favorites",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949749238"
+										}
+									]
+								}
 							},
 							"response": []
 						}
