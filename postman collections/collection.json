@@ -4106,6 +4106,54 @@
 			"name": "Time Tracking",
 			"item": [
 				{
+					"name": "Типы работ",
+					"item": [
+						{
+							"name": "Work Projects",
+							"id": "aa8b7b8e-bb83-4218-aa0d-83d1041be595",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/work-projects"
+							},
+							"response": []
+						},
+						{
+							"name": "To Favorites",
+							"id": "d3e95bb1-949e-46c1-89ab-0ede852de455",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/work-projects/favorites/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"work-projects",
+										"favorites",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949749238"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "43315a6b-e72b-4376-8bba-72e4ff382f5c"
+				},
+				{
 					"name": "By group",
 					"id": "5ef995a6-d810-4bcb-b222-212d78fa0363",
 					"protocolProfileBehavior": {

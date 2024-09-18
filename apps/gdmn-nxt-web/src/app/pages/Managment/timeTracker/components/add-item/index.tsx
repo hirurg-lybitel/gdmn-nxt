@@ -9,11 +9,14 @@ import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import StopIcon from '@mui/icons-material/Stop';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
+import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
 import { ICustomer, ITimeTrack, IWorkProject } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
+import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 
 const durationMask = [
   /[0-9]/,
@@ -38,6 +41,9 @@ export const AddItem = ({
   initial,
   onSubmit
 }: AddItemProps) => {
+  const [addFavorite] = useAddFavoriteMutation();
+  const [deleteFavorite] = useDeleteFavoriteMutation();
+
   const [calcMode, setCalcMode] = useState<CalcMode>('calc');
   const [submitMode, setSubmitMode] = useState<SubmitMode>('add');
   const [isValidTimers, toggleValidTimers] = useState(true);
@@ -45,7 +51,8 @@ export const AddItem = ({
 
   const {
     data: workProjects = [],
-    isFetching: workProjectsFetching
+    isFetching: workProjectsFetching,
+    isLoading: workProjectsLoading
   } = useGetWorkProjectsQuery();
 
   const calcModeChange = (
@@ -168,10 +175,6 @@ export const AddItem = ({
     formik.submitForm();
   };
 
-  const handleWorkProjectChange = (e: ChangeEvent<HTMLInputElement>) => {
-    formik.setFieldValue('workProject', JSON.parse(e.target.value));
-  };
-
   const timePickerOnError = (e: TimeValidationError, v: Date | null) => toggleValidTimers(!e);
 
   const durationOnChange = (
@@ -189,6 +192,15 @@ export const AddItem = ({
     const startTime = dayjs(formik.values.startTime);
     formik.setFieldValue('endTime', startTime.add(newDuration).toDate());
   };
+
+  const handleWorkProjectChange = (e: any, value: IWorkProject | null) => formik.setFieldValue('workProject', value);;
+
+  const handleFavoriteClick = useCallback((workProject: IWorkProject) => (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    workProject.isFavorite
+      ? deleteFavorite(workProject.ID)
+      : addFavorite(workProject.ID);
+  }, []);
 
   return (
     <CustomizedCard className={styles.itemCard}>
@@ -211,30 +223,68 @@ export const AddItem = ({
                 InputProps={{
                   startAdornment:
                   <InputAdornment position="start">
-                    <TextField
-                      select
-                      InputProps={{
-                        disableUnderline: true
-                      }}
-                      variant="standard"
-                      disabled={workProjectsFetching}
-                      name="workProject"
-                      value={workProjectsFetching ? 'Загрузка...' : (JSON.stringify(formik.values.workProject ?? defaultWorkProject) ?? '')}
-                      onChange={handleWorkProjectChange}
-                    >
-                      {workProjectsFetching
-                        ? <MenuItem value={'Загрузка...'}>
-                          Загрузка...
-                        </MenuItem>
-                        : workProjects.map(({ STATUS, ...w }) => (
-                          <MenuItem
-                            key={w.ID}
-                            value={JSON.stringify(w)}
+                    <div style={{ position: 'relative', color: 'transparent' }}>
+                      {/* Костыль для автоширины Autocomplete */}
+                      <Stack direction={'row'}>
+                        {workProjectsLoading
+                          ? 'Загрузка'
+                          : formik.values.workProject?.NAME ?? defaultWorkProject.NAME}
+                        <Box width={34} />
+                      </Stack>
+                      <Autocomplete
+                        disableClearable
+                        options={workProjects}
+                        loading={workProjectsFetching}
+                        loadingText="Загрузка данных..."
+                        value={formik.values.workProject ?? defaultWorkProject}
+                        filterOptions={filterOptions(100, 'NAME')}
+                        getOptionLabel={option => option?.NAME ?? ''}
+                        onChange={handleWorkProjectChange}
+                        sx={{
+                          position: 'absolute',
+                          top: -2,
+                          width: '100%',
+                          '& .MuiInput-root::before': { borderBottom: 0 }
+                        }}
+
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            variant="standard"
+                          />
+                        )}
+                        slotProps={{
+                          paper: {
+                            style: {
+                              width: 'max-content'
+                            }
+                          }
+                        }}
+                        renderOption={(props, option) => (
+                          <li
+                            {...props}
+                            key={option.ID}
+                            style={{
+                              paddingTop: 2,
+                              paddingBottom: 2
+                            }}
                           >
-                            {w.NAME}
-                          </MenuItem>
-                        ))}
-                    </TextField>
+                            {option.NAME}
+                            <Box flex={1} minWidth={12} />
+                            <SwitchStar selected={!!option.isFavorite} onClick={handleFavoriteClick(option)} />
+                          </li>
+                        )}
+                        groupBy={({ isFavorite }: IWorkProject) => isFavorite ? 'Избранные' : 'Остальные'}
+                        renderGroup={(params) => (
+                          <li key={params.key}>
+                            <GroupHeader>
+                              <Typography variant="subtitle1">{params.group}</Typography>
+                            </GroupHeader>
+                            <GroupItems>{params.children}</GroupItems>
+                          </li>
+                        )}
+                      />
+                    </div>
                   </InputAdornment>,
                 }}
               />

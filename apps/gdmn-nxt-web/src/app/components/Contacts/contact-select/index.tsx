@@ -44,8 +44,8 @@ export function ContactSelect({
           {...props}
           key={option.ID}
           style={{
-            paddingTop: 0,
-            paddingBottom: 0
+            paddingTop: 2,
+            paddingBottom: 2
           }}
         >
           <Checkbox
