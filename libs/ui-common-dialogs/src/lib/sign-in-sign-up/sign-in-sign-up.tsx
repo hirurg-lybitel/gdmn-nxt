@@ -261,7 +261,6 @@ export function SignInSignUp({
             size="medium"
             sx={{ input: { color: 'black' } }}
             type={passwordVisible ? 'text' : 'password'}
-            value={password}
             error={authResult?.result === 'INVALID_PASSWORD'}
             helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
             disabled={waiting}

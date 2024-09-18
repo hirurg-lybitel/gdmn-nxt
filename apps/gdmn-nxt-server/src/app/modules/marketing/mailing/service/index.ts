@@ -8,7 +8,7 @@ import {
   NotFoundException,
   UnprocessableEntityException
 } from '@gsbelarus/util-api-types';
-import { IAttachment, sendEmail, sendEmailByTestAccount } from '@gdmn/mailer';
+import { IAttachment, sendEmail, sendEmailByTestAccount, SmtpOptions } from '@gdmn/mailer';
 import { forEachAsync, resultDescription } from '@gsbelarus/util-helpers';
 import Mustache from 'mustache';
 import dayjs from '@gdmn-nxt/dayjs';
@@ -17,6 +17,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { segmentsService } from '../../segments/service';
 import { feedbackService } from '@gdmn-nxt/modules/feedback/service';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 function extractImgSrc(htmlString: string) {
   const imgTags = htmlString.match(/<img [^>]*src="[^"]*"/g);
@@ -163,8 +164,23 @@ const launchMailing = async (
       return resultDescription('Нет получателей');
     }
 
+    const {
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPassword,
+      OURCOMPANY: { NAME: ourCompanyName }
+    } = await systemSettingsRepository.findOne(sessionID);
+
+    const smtpOpt: SmtpOptions = {
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      password: smtpPassword
+    };
+
     const subject = mailing.NAME;
-    const from = `Belgiss <${process.env.SMTP_USER}>`;
+    const from = `${ourCompanyName} <${smtpOpt.user}>`;
 
     const originalHtml = mailing.TEMPLATE.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
@@ -202,13 +218,14 @@ const launchMailing = async (
 
 
       try {
-        const { accepted, rejected } = await sendEmail(
+        const { accepted, rejected } = await sendEmail({
           from,
-          EMAIL,
+          to: EMAIL,
           subject,
-          '',
-          renderedHtml,
-          attachmentsSummary);
+          html: renderedHtml,
+          attachments: attachmentsSummary,
+          options: { ...smtpOpt }
+        });
 
         if (accepted.length > 0) {
           response.accepted.push({ [ID]: accepted.toString() });
@@ -353,7 +370,22 @@ const testLaunchMailing = async (
       throw UnprocessableEntityException('Не указаны адреса для рассылок');
     }
 
-    const from = `Belgiss <${process.env.SMTP_USER}>`;
+    const {
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPassword,
+      OURCOMPANY: { NAME: ourCompanyName }
+    } = await systemSettingsRepository.findOne('testMailing');
+
+    const smtpOpt: SmtpOptions = {
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      password: smtpPassword
+    };
+
+    const from = `${ourCompanyName} <${smtpOpt.user}>`;
 
     const originalHtml = template.replaceAll('#NAME#', '{{ NAME }}') ?? '';
 
@@ -384,13 +416,14 @@ const testLaunchMailing = async (
       const renderedHtml = Mustache.render(html, view);
 
       try {
-        const { accepted, rejected } = await sendEmail(
+        const { accepted, rejected } = await sendEmail({
           from,
-          email,
+          to: email,
           subject,
-          '',
-          renderedHtml,
-          attachmentsSummary);
+          html: renderedHtml,
+          attachments: attachmentsSummary,
+          options: { ...smtpOpt }
+        });
 
         response.accepted.push(...accepted);
         response.rejected.push(...rejected);

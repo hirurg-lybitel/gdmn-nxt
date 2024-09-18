@@ -7,7 +7,7 @@ import { config } from '@gdmn-nxt/config';
 import jwt from 'jsonwebtoken';
 import { jwtExpirationTime } from '../constants/params';
 import { generateSecret, verifyCode } from '@gdmn/2FA';
-import { sendEmail } from '@gdmn/mailer';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { confirmationsRepository } from '@gdmn-nxt/repositories/confirmations';
 import { randomFixedNumber } from '@gsbelarus/util-useful';
 import fs from 'fs';
@@ -15,6 +15,7 @@ import path from 'path';
 import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
 import { resultError } from '@gsbelarus/util-helpers';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -52,12 +53,22 @@ const sendEmailConfirmation = async (userId: number, email: string, info?: Info)
 
   const renderedHtml = Mustache.render(confirmationCodeHtml, view);
 
-  await sendEmail(
+  const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne('mailer');
+
+  const smtpOpt: SmtpOptions = {
+    host: smtpHost,
+    port: smtpPort,
+    user: smtpUser,
+    password: smtpPassword
+  };
+
+  await sendEmail({
     from,
-    email,
+    to: email,
     subject,
-    '',
-    renderedHtml);
+    html: renderedHtml,
+    options: { ...smtpOpt }
+  });
 
   return true;
 };
