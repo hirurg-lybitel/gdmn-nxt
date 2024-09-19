@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, InputAdornment, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, IconButton, InputAdornment, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,6 +8,8 @@ import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import StopIcon from '@mui/icons-material/Stop';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
 import { ICustomer, ITimeTrack, IWorkProject } from '@gsbelarus/util-api-types';
@@ -75,6 +77,7 @@ export const AddItem = ({
       description: '',
       inProgress: false,
       workProject: Object.keys(defaultWorkProject).length > 0 ? defaultWorkProject : undefined,
+      billable: true,
       ...initial
     },
     validationSchema: yup.object().shape({
@@ -201,6 +204,13 @@ export const AddItem = ({
       ? deleteFavorite(workProject.ID)
       : addFavorite(workProject.ID);
   }, []);
+
+  const billableChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => {
+    formik.setFieldValue('billable', checked);
+  };
 
   return (
     <CustomizedCard className={styles.itemCard}>
@@ -414,12 +424,28 @@ export const AddItem = ({
                 <TextFieldMasked
                   label="Длительность"
                   style={{
-                    maxWidth: 159
+                    maxWidth: 117
                   }}
                   mask={durationMask}
                   value={durationFormat(formik.values.duration)}
                   onChange={durationOnChange}
                 />
+                <Tooltip title={formik.values.billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
+                  <Checkbox
+                    size="small"
+                    icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
+                    checkedIcon={<MonetizationOnIcon fontSize="medium" />}
+                    sx={{
+                      height: 34,
+                      width: 34,
+                    }}
+                    checked={formik.values.billable}
+                    onChange={billableChange}
+                  />
+                </Tooltip>
+                {/* <IconButton>
+                  <MonetizationOnIcon fontSize="medium" />
+                </IconButton> */}
               </Stack>
             </Stack>
           </Stack>
