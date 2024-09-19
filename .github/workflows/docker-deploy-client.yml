@@ -15,6 +15,7 @@ env:
   ENV_SERVER_HOST: ${{ vars.ENV_SERVER_HOST }}
   ENV_SOCKET_NOTIFICATIONS_PORT: ${{ vars.ENV_SOCKET_NOTIFICATIONS_PORT}}
   ENV_SOCKET_STREAMING_UPDATE_PORT: ${{ vars.ENV_SOCKET_STREAMING_UPDATE_PORT }}
+  ENV_MUI_LICENSE: ${{ secrets.MUI_LICENSE }}
 
 jobs:
   build:
@@ -53,6 +54,7 @@ jobs:
             "NX_SERVER_HOST=${{ env.ENV_SERVER_HOST }}"
             "NX_SOCKET_NOTIFICATIONS_PORT=${{ env.ENV_SOCKET_NOTIFICATIONS_PORT }}"
             "NX_SOCKET_STREAMING_UPDATE_PORT=${{ env.ENV_SOCKET_STREAMING_UPDATE_PORT }}"
+            "NX_MUI_LICENSE=${{ env.ENV_MUI_LICENSE }}"
           target: client
           push: true
           tags: ${{ steps.meta.outputs.tags }}
