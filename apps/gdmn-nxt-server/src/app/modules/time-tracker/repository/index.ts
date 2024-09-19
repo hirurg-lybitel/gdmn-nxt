@@ -47,7 +47,8 @@ const find: FindHandler<ITimeTrack> = async (
         con.ID CON_ID,
         con.NAME CON_NAME,
         u.ID USER_ID,
-        u.NAME USER_NAME
+        u.NAME USER_NAME,
+        z.USR$BILLABLE BILLABLE
       FROM USR$CRM_TIMETRACKER z
       JOIN USR$CRM_TIMETRACKER_TYPES tt ON tt.ID = z.USR$WORKTYPEKEY
       LEFT JOIN GD_CONTACT con ON con.ID = z.USR$CUSTOMERKEY
@@ -64,6 +65,7 @@ const find: FindHandler<ITimeTrack> = async (
       endTime: r['ENDTIME'],
       duration: r['DURATION'] ?? '',
       inProgress: r['INPROGRESS'] === 1,
+      billable: r['BILLABLE'] === 1,
       description: await blob2String(r['DESCRIPTION_BLOB']),
       ...(r['WORK_ID'] && {
         workProject: {
@@ -82,7 +84,7 @@ const find: FindHandler<ITimeTrack> = async (
           ID: r['USER_ID'],
           NAME: r['USER_NAME']
         }
-      }),
+      })
     })));
 
     return timeTracking;
@@ -128,6 +130,7 @@ const update: UpdateHandler<ITimeTrack> = async (
       inProgress = timeTrack.inProgress,
       user = timeTrack.user,
       workProject = timeTrack.workProject,
+      billable = timeTrack.billable ?? true,
     } = metadata;
 
     const updatedTimeTrack = await fetchAsSingletonObject<ITimeTrack>(
@@ -141,7 +144,8 @@ const update: UpdateHandler<ITimeTrack> = async (
         z.USR$CUSTOMERKEY = :customerKey,
         z.USR$WORKTYPEKEY = :workTypeKey,
         z.USR$USERKEY = :userKey,
-        z.USR$DESCRIPTION = :description
+        z.USR$DESCRIPTION = :description,
+        z.USR$BILLABLE = :billable
       WHERE
         ID = :id
       RETURNING ID`,
@@ -156,6 +160,7 @@ const update: UpdateHandler<ITimeTrack> = async (
         customerKey: customer.ID ?? null,
         workTypeKey: workProject.ID ?? null,
         userKey: user.ID ?? null,
+        billable: Number(billable)
       }
     );
     await releaseTransaction();
@@ -187,13 +192,14 @@ const save: SaveHandler<ITimeTrack> = async (
     inProgress,
     user,
     workProject,
+    billable = true
   } = metadata;
 
   try {
     const newTimeTrack = await fetchAsSingletonObject<ITimeTrack>(
       `INSERT INTO USR$CRM_TIMETRACKER(USR$DATE, USR$STARTTIME, USR$ENDTIME, USR$DURATION,
-        USR$INPROGRESS, USR$DESCRIPTION, USR$CUSTOMERKEY, USR$USERKEY, USR$WORKTYPEKEY)
-      VALUES(:date, :startTime, :endTime, :duration, :inProgress, :description, :customerKey, :userKey, :workTypeKey)
+        USR$INPROGRESS, USR$DESCRIPTION, USR$CUSTOMERKEY, USR$USERKEY, USR$WORKTYPEKEY, USR$BILLABLE)
+      VALUES(:date, :startTime, :endTime, :duration, :inProgress, :description, :customerKey, :userKey, :workTypeKey, :billable)
       RETURNING ID`,
       {
         date: new Date(date),
@@ -204,7 +210,8 @@ const save: SaveHandler<ITimeTrack> = async (
         description: await string2Blob(description),
         customerKey: customer.ID ?? null,
         userKey: user.ID ?? null,
-        workTypeKey: workProject.ID ?? null
+        workTypeKey: workProject.ID ?? null,
+        billable: Number(billable)
       }
     );
 

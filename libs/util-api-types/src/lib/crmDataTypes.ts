@@ -479,6 +479,7 @@ export interface ITimeTrack extends IWithID {
   inProgress?: boolean;
   workProject?: IWorkProject;
   user?: IUser;
+  billable?: boolean;
 }
 
 export interface ITimeTrackGroup {

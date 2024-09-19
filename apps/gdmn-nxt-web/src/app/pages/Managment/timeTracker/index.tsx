@@ -11,12 +11,14 @@ import {
   AccordionProps,
   AccordionSummaryProps,
   styled,
-  Divider
+  Divider,
+  Checkbox,
+  Tooltip
 } from '@mui/material';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import { IFilteringData, ITimeTrack, ITimeTrackGroup } from '@gsbelarus/util-api-types';
+import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
@@ -29,7 +31,8 @@ import { RootState } from '../../../store';
 import { saveFilterData } from '../../../store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
-import { DateRange } from '@mui/x-date-pickers-pro';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -212,7 +215,7 @@ export function TimeTracker() {
                       </Stack>
                     </AccordionSummary>
                     <AccordionDetails style={{ padding: '0 16px' }}>
-                      {items.map(({ ID, customer, workProject, description, startTime, endTime, duration }) => {
+                      {items.map(({ ID, customer, workProject, description, startTime, endTime, duration, billable = true }) => {
                         return (
                           <Stack
                             key={ID}
@@ -232,6 +235,19 @@ export function TimeTracker() {
                               <Typography variant={'caption'}>{customer?.NAME}</Typography>
                               <Typography>{`${workProject?.NAME}: ${description}`}</Typography>
                             </Stack>
+                            <Divider orientation="vertical" flexItem />
+                            <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
+                              <Checkbox
+                                size="small"
+                                icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
+                                checkedIcon={<MonetizationOnIcon fontSize="medium" />}
+                                sx={{
+                                  height: 34,
+                                  width: 34,
+                                }}
+                                checked={billable}
+                              />
+                            </Tooltip>
                             <Divider orientation="vertical" flexItem />
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
