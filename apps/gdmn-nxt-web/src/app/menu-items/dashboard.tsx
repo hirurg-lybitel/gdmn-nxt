@@ -3,6 +3,9 @@ import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import MapIcon from '@mui/icons-material/Map';
 import { IMenuItem } from '.';
 
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
+
 const dashboard: IMenuItem = {
   id: 'dashboard',
   title: 'Общее',
@@ -13,14 +16,16 @@ const dashboard: IMenuItem = {
       title: 'Обзор',
       type: 'item',
       url: 'dashboard/overview',
-      icon: <HomeIcon color="secondary" />
+      icon: <HomeOutlinedIcon color="secondary" />,
+      selectedIcon: <HomeIcon color="secondary" />,
     },
     {
       id: 'analytics',
       title: 'Аналитика',
       type: 'item',
       url: 'dashboard/analytics',
-      icon: <LeaderboardRoundedIcon color="secondary" />
+      icon: <LeaderboardOutlinedIcon color="secondary" />,
+      selectedIcon: <LeaderboardRoundedIcon color="secondary" />,
     },
     // {
     //   id: 'map',
