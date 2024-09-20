@@ -234,6 +234,7 @@ const launchMailing = async (
           response.rejected.push({ [ID]: 'Не доставлено' });
         }
       } catch (error) {
+        await updateStatus(sessionID, id, MailingStatus.error, error.message);
         throw new Error(error.message);
       }
     });
@@ -254,7 +255,7 @@ const launchMailing = async (
       });
     } catch (error) {
       console.error('Error while creating email feedback');
-      throw error;
+      // throw error;
     }
 
     await forEachAsync(attachmentsSummary, async a => await removeTempFile(a.path as string));

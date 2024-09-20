@@ -158,7 +158,7 @@ export function UserGroups(props: UserGroupsProps) {
             />
             <PerfectScrollbar
               style={{
-                maxHeight: 'calc(100vh - 355px)',
+                maxHeight: 'calc(100vh - 230px)',
                 marginRight: -15,
                 paddingRight: 15
               }}
