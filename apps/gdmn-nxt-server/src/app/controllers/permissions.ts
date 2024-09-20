@@ -594,7 +594,7 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
     // if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
   };
 
-  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
@@ -622,6 +622,16 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
       return [name, data];
     };
 
+    const body: Array<any> = req.body;
+    const userGroup = await fetchAsSingletonObject(
+      `SELECT
+        USR$REQUIRED_2FA REQUIRED_2FA
+      FROM USR$CRM_PERMISSIONS_USERGROUPS
+      WHERE ID = :ID`,
+      {
+        ID: body[0].USERGROUP?.ID
+      });
+
     const { erModel } = await importedModels;
     const allFields = [...new Set(erModel.entities['TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_UG_LINES'].attributes.map(attr => attr.name))];
 
@@ -644,7 +654,7 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
       const paramsValues = actualFields.map(field => {
         switch (field) {
           case 'USR$REQUIRED_2FA':
-            return REQUIRED_2FA;
+            return userGroup['REQUIRED_2FA'] === 1 ? userGroup['REQUIRED_2FA'] : REQUIRED_2FA;
           case 'USR$USERKEY':
             return USER.ID;
           case 'USR$GROUPKEY':
