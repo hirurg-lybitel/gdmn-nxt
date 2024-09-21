@@ -1,5 +1,5 @@
 import styles from './tasks.module.less';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAddTaskMutation, useGetKanbanTasksQuery } from '../../../features/kanban/kanbanApi';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { Autocomplete, Badge, BottomNavigation, BottomNavigationAction, Box, CircularProgress, Divider, IconButton, Skeleton, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
@@ -200,8 +200,25 @@ export function Tasks(props: TasksProps) {
 
   const KanbanListMemo = useMemo(() => <KanbanTasksList columns={columns} isLoading={isLoading} />, [columns, isLoading]);
 
+  const refContainer = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    /** Для изменения общего внешнего контейнера */
+    const parent = refContainer.current?.parentElement;
+    if (!parent) {
+      return;
+    }
+    const oldMaxWidth = parent.style.maxWidth;
+    parent.style.maxWidth = '100%';
+
+    return () => {
+      parent.style.maxWidth = oldMaxWidth;
+    };
+  }, []);
+
   return (
     <Stack
+      ref={refContainer}
       spacing={2}
       style={{
         width: '100%'

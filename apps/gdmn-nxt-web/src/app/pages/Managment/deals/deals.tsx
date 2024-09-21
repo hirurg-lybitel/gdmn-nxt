@@ -1,7 +1,7 @@
 import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
-import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAddCardMutation, useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { RootState } from '../../../store';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
@@ -294,8 +294,25 @@ export function Deals(props: DealsProps) {
     />,
   [upsertCard, columns]);
 
+  const refContainer = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    /** Для изменения общего внешнего контейнера */
+    const parent = refContainer.current?.parentElement;
+    if (!parent) {
+      return;
+    }
+    const oldMaxWidth = parent.style.maxWidth;
+    parent.style.maxWidth = '100%';
+
+    return () => {
+      parent.style.maxWidth = oldMaxWidth;
+    };
+  }, []);
+
   return (
     <Stack
+      ref={refContainer}
       spacing={2}
       style={{
         width: '100%'
