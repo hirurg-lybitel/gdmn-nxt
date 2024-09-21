@@ -15,6 +15,7 @@ import { LOGOUT_TIMEOUT } from '@gdmn/constants/client';
 import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
 import { saveFilterData } from '../../store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import ContentContainer from '@gdmn-nxt/components/content-container/content-container';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
@@ -154,7 +155,9 @@ export const MainLayout = (props: MainLayoutProps) => {
           onToogle={handleDrawerToggle}
         />
         <Main menuOpened={!matchDownMd} style={{ display: 'flex' }}>
-          <Outlet />
+          <ContentContainer>
+            <Outlet />
+          </ContentContainer>
         </Main>
       </Box>
     </>
