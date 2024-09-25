@@ -4165,7 +4165,22 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{baseUrl}}/time-tracking/projects"
+								"url": {
+									"raw": "{{baseUrl}}/time-tracking/projects?customerId=1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"time-tracking",
+										"projects"
+									],
+									"query": [
+										{
+											"key": "customerId",
+											"value": "1"
+										}
+									]
+								}
 							},
 							"response": []
 						}
