@@ -4183,6 +4183,35 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Задачи",
+							"id": "18b51b3b-5465-4510-b724-280798409f5d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/time-tracking/tasks",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"time-tracking",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "customerId",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"id": "8dbbd55d-3b63-46e8-9e59-07ba4adf7b24"
