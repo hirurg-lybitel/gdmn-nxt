@@ -4154,6 +4154,25 @@
 					"id": "43315a6b-e72b-4376-8bba-72e4ff382f5c"
 				},
 				{
+					"name": "Проекты",
+					"item": [
+						{
+							"name": "Проекты",
+							"id": "d76713de-a1ce-4684-8ceb-ec2715b1a5b1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/time-tracking/projects"
+							},
+							"response": []
+						}
+					],
+					"id": "8dbbd55d-3b63-46e8-9e59-07ba4adf7b24"
+				},
+				{
 					"name": "By group",
 					"id": "5ef995a6-d810-4bcb-b222-212d78fa0363",
 					"protocolProfileBehavior": {
