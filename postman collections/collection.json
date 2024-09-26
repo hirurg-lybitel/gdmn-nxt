@@ -240,7 +240,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10",
+									"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10&withTasks=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -308,6 +308,10 @@
 											"description": "Метод сортировки asc | desc",
 											"type": "text",
 											"disabled": true
+										},
+										{
+											"key": "withTasks",
+											"value": "true"
 										}
 									]
 								}
@@ -4166,7 +4170,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/time-tracking/projects?customerId=1",
+									"raw": "{{baseUrl}}/time-tracking/projects",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -4177,7 +4181,8 @@
 									"query": [
 										{
 											"key": "customerId",
-											"value": "1"
+											"value": "1",
+											"disabled": true
 										}
 									]
 								}
@@ -4194,7 +4199,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/time-tracking/tasks",
+									"raw": "{{baseUrl}}/time-tracking/tasks?customerId=147350759",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -4205,8 +4210,7 @@
 									"query": [
 										{
 											"key": "customerId",
-											"value": "1",
-											"disabled": true
+											"value": "147350759"
 										}
 									]
 								}
