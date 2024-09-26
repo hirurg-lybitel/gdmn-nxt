@@ -4223,19 +4223,19 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/time-tracking/tasks",
+									"raw": "{{baseUrl}}/time-tracking/tasks/:id",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"time-tracking",
-										"tasks"
+										"tasks",
+										":id"
 									],
-									"query": [
+									"variable": [
 										{
-											"key": "customerId",
-											"value": "1",
-											"disabled": true
+											"key": "id",
+											"value": "949758753"
 										}
 									]
 								}
