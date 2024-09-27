@@ -55,7 +55,7 @@ export default function AccountTab() {
               <Stack direction="row" spacing={2}>
                 <TextField
                   label="Имя"
-                  value={userProfile?.userName || ''}
+                  value={userProfile?.fullName || ''}
                   disabled
                   fullWidth
                   inputProps={{
