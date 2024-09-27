@@ -16,6 +16,7 @@ export interface ChartDonutProps {
 
 const useStyles = makeStyles((theme: Theme) => ({
   donut: {
+    maxHeight: '323px',
     '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
       background: 'var(--color-scroll-thumb)'
     },
