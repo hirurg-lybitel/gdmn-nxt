@@ -1,6 +1,8 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, ICustomer, IFavoriteContact } from '@gsbelarus/util-api-types';
+import { FindHandler, ICustomer, IFavoriteContact, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
+import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
+import task from '@gdmn-nxt/controllers/kanban/task';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
@@ -13,7 +15,8 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     NAME = '',
     customerId,
     isFavorite,
-    userId = -1
+    userId = -1,
+    withTasks
   } = clause as any;
 
   const sortField = Object.keys(order)[0] ?? 'NAME';
@@ -67,6 +70,23 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
           };
         };
       });
+
+    const tasks = new Map<number, ITimeTrackTask[]>();
+    const withTasksBool = (withTasks as string)?.toLowerCase() === 'true';
+
+    if (withTasksBool) {
+      (await timeTrackerTasksService.findAll(sessionID))
+        ?.forEach(({ project, ...task }) => {
+          const customerId = project.customer.ID;
+          if (tasks.has(customerId)) {
+            if (tasks.get(customerId)?.findIndex(({ ID }) => ID === task.ID) < 0) {
+              tasks.get(customerId)?.push(task);
+            }
+          } else {
+            tasks.set(customerId, [task]);
+          };
+        });
+    }
 
     const favoritesMap: Record<string, number[]> = {};
     const favorites = await cacheManager.getKey<IFavoriteContact[]>('favoriteContacts') ?? [];
@@ -137,7 +157,11 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             NAME: c.NAME || '<не указано>',
             LABELS: customerLabels,
             BUSINESSPROCESSES,
-            isFavorite
+            isFavorite,
+            ...(withTasksBool ? {
+              taskCount: tasks.get(c.ID)?.length ?? 0,
+              tasks: tasks.get(c.ID) ?? []
+            } : {})
           });
         }
         return filteredArray;

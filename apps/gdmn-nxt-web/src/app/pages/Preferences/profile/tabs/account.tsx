@@ -58,6 +58,11 @@ export default function AccountTab() {
                   value={userProfile?.userName || ''}
                   disabled
                   fullWidth
+                  inputProps={{
+                    style: {
+                      textTransform: 'capitalize'
+                    }
+                  }}
                 />
                 <TextField
                   label="Должность"

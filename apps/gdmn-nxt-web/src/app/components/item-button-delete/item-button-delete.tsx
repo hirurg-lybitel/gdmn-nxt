@@ -43,7 +43,7 @@ export function ItemButtonDelete({
 
   const RootElement = (
     <Container size="small" className="StyledDeleteButton">
-      <Tooltip title={hint} arrow>
+      <Tooltip title={label ? '' : hint} arrow>
         <Stack
           direction="row"
           alignItems="center"

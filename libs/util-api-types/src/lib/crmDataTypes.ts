@@ -40,6 +40,8 @@ export interface ICustomer extends IContactWithID {
   POSTADDRESS?: string;
   BUSINESSPROCESSES?: IBusinessProcess[];
   isFavorite?: boolean;
+  taskCount?: number;
+  tasks?: ITimeTrackTask[]
 };
 
 interface IMapOfArrays {
@@ -474,18 +476,30 @@ export interface ITimeTrack extends IWithID {
   endTime?: Date | null;
   duration?: string;
   customer?: ICustomer | null;
-  // task?: IKanbanTask;
   description: string;
   inProgress?: boolean;
   workProject?: IWorkProject;
   user?: IUser;
   billable?: boolean;
+  // task?: IKanbanTask;
+  task?: ITimeTrackTask;
 }
 
 export interface ITimeTrackGroup {
   date: Date,
   duration: string;
   items: ITimeTrack[];
+}
+
+export interface ITimeTrackProject extends IWithID {
+  name: string;
+  customer?: ICustomer;
+  tasks?: ITimeTrackTask[];
+}
+
+export interface ITimeTrackTask extends IWithID {
+  name: string;
+  project?: ITimeTrackProject;
 }
 
 export interface IContactName {
