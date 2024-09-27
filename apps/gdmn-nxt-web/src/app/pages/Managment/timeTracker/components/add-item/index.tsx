@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, Checkbox, IconButton, InputAdornment, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -12,13 +12,14 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
-import { ICustomer, ITimeTrack, IWorkProject } from '@gsbelarus/util-api-types';
+import { ICustomer, ITimeTrack, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
+import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 
 const durationMask = [
   /[0-9]/,
@@ -78,6 +79,7 @@ export const AddItem = ({
       inProgress: false,
       workProject: Object.keys(defaultWorkProject).length > 0 ? defaultWorkProject : undefined,
       billable: true,
+      task: undefined,
       ...initial
     },
     validationSchema: yup.object().shape({
@@ -212,6 +214,27 @@ export const AddItem = ({
     formik.setFieldValue('billable', checked);
   };
 
+  const [selectedTask, setSelectedTask] = useState<ITimeTrackTask | null>(null);
+  const { data: selectedTaskInfo } = useGetTaskQuery(selectedTask?.ID ?? -1, { skip: !selectedTask });
+
+  const handleTaskSelected = async (task: ITimeTrackTask | null) => {
+    setSelectedTask(task);
+    formik.setFieldValue('task', task);
+  };
+
+  useEffect(() => {
+    if (!selectedTaskInfo) {
+      return;
+    }
+
+    const workProjectIndex = workProjects.findIndex(p => p.NAME === selectedTaskInfo.project?.name);
+    if (workProjectIndex < 0) {
+      return;
+    }
+
+    formik.setFieldValue('workProject', workProjects[workProjectIndex]);
+  }, [selectedTaskInfo, workProjects]);
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -238,7 +261,8 @@ export const AddItem = ({
                       <Stack direction={'row'}>
                         {workProjectsLoading
                           ? 'Загрузка'
-                          : formik.values.workProject?.NAME ?? defaultWorkProject.NAME}
+                          : `${formik.values.workProject?.NAME ?? defaultWorkProject.NAME}`
+                        }
                         <Box width={34} />
                       </Stack>
                       <Autocomplete
@@ -302,9 +326,12 @@ export const AddItem = ({
                 disableEdition
                 disableCaption
                 disableFavorite={false}
+                withTasks
                 required
                 value={formik.values.customer}
                 onChange={handleCustomerChange}
+                task={formik.values.task}
+                onTaskSelected={handleTaskSelected}
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
@@ -443,9 +470,6 @@ export const AddItem = ({
                     onChange={billableChange}
                   />
                 </Tooltip>
-                {/* <IconButton>
-                  <MonetizationOnIcon fontSize="medium" />
-                </IconButton> */}
               </Stack>
             </Stack>
           </Stack>

@@ -111,7 +111,7 @@ export default function StyledGrid(props: IStyledGridProps) {
       <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}>
         <DataGridPro
           localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-          onStateChange={() => disableLicenseError()}
+          // onStateChange={() => disableLicenseError()}
           getRowId={row => row.ID}
           slots={{
             loadingOverlay: loadingMode === 'linear' ? CustomLinearLoadingOverlay : CustomCircularLoadingOverlay,

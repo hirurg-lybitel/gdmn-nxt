@@ -1,4 +1,4 @@
-import { ICustomer, ICustomerCross, IFavoriteContact, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { ICustomer, ICustomerCross, IFavoriteContact, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -11,16 +11,6 @@ export interface IPaginationData {
   pageNo: number;
   pageSize: number;
 };
-
-interface IFilteringData {
-  [name: string]: any[];
-}
-export interface IQueryOptions {
-  pagination?: IPaginationData;
-  filter?: IFilteringData;
-  sort?: ISortingData;
-};
-
 interface ICustomers {
   contacts: ICustomer[];
 };

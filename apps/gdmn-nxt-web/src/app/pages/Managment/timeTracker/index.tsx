@@ -33,6 +33,7 @@ import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStor
 import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -215,7 +216,17 @@ export function TimeTracker() {
                       </Stack>
                     </AccordionSummary>
                     <AccordionDetails style={{ padding: '0 16px' }}>
-                      {items.map(({ ID, customer, workProject, description, startTime, endTime, duration, billable = true }) => {
+                      {items.map(({
+                        ID,
+                        customer,
+                        workProject,
+                        description = '',
+                        startTime,
+                        endTime,
+                        duration,
+                        billable = true,
+                        task
+                      }) => {
                         return (
                           <Stack
                             key={ID}
@@ -232,8 +243,8 @@ export function TimeTracker() {
                             }}
                           >
                             <Stack flex={1}>
-                              <Typography variant={'caption'}>{customer?.NAME}</Typography>
-                              <Typography>{`${workProject?.NAME}: ${description}`}</Typography>
+                              <Typography variant={'caption'}>{`${customer?.NAME} → ${workProject?.NAME}${task ? ` → ${task.name}` : ''}`}</Typography>
+                              <Typography>{description}</Typography>
                             </Stack>
                             <Divider orientation="vertical" flexItem />
                             <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
