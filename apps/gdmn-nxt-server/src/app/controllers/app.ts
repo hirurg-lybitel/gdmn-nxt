@@ -71,7 +71,8 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
       u.name,
       u.contactkey,
       w.NAME as RANK,
-      ps.USR$MODE as ColorMode
+      ps.USR$MODE as ColorMode,
+      c.NAME as FullName
     FROM
       gd_user u
       JOIN gd_contact c ON c.id = u.contactkey
@@ -94,6 +95,7 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
           contactkey: data[0]['CONTACTKEY'],
           rank: data[0]['RANK'],
           colorMode: data[0]['COLORMODE'] ?? ColorMode.Dark,
+          fullName: data[0]['FULLNAME'],
         };
       } else if (!data.length) {
         return undefined;

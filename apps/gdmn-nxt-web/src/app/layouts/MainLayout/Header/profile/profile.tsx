@@ -166,7 +166,7 @@ export function Profile(props: ProfileProps) {
                         <Stack direction="row" spacing={0.5}>
                           <Typography variant="subtitle1">{welcomeText()}</Typography>
                           <Typography variant="body1" textTransform={'capitalize'}>
-                            {user.userProfile?.userName ?? 'Неизвестный пользователь'}
+                            {user.userProfile?.fullName ?? 'Неизвестный пользователь'}
                           </Typography>
                         </Stack>
                         <Typography variant="caption">{user.userProfile?.rank || ''}</Typography>

@@ -129,7 +129,8 @@ export type GedeminUser = {
   userName: string;
   contactkey: number;
   rank?: string;
-  colorMode?: ColorMode
+  colorMode?: ColorMode;
+  fullName?: string;
 }
 
 export interface IChanges {
