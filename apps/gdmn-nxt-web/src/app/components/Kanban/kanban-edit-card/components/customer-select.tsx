@@ -433,11 +433,11 @@ const CustomerTasks = ({
   return (
     <CustomizedCard
       style={{
-        height: open ? projects.length * rowHeight : '1px',
+        height: open ? (projects.length === 1 ? (projects[0].tasks ?? []).length : projects.length) * rowHeight : '1px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
-        backgroundColor: 'var(--color-main-bg)'
+        backgroundColor: 'var(--color-main-bg)',
       }}
     >
       <List
