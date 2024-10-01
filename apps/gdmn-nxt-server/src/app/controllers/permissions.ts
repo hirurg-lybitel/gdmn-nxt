@@ -599,23 +599,6 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    // if (isInsertMode) {
-    //   const userExistsQuery = `
-    //     SELECT
-    //       ug.USR$NAME NAME
-    //     FROM USR$CRM_PERMISSIONS_UG_LINES ul
-    //     JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = ul.USR$GROUPKEY
-    //     WHERE
-    //       ul.USR$GROUPKEY != :groupId
-    //       AND ul.USR$USERKEY = :userId`;
-
-    //   const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID'] });
-
-    //   if (userExists.length) {
-    //     return res.status(409).json(resultError(`Пользователь уже добавлен в группу ${userExists[0]['NAME']}`));
-    //   }
-    // };
-
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
@@ -704,6 +687,7 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
+    setPermissonsCache();
   };
 };
 
