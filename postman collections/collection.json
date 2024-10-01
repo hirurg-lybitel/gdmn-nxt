@@ -4354,14 +4354,15 @@
 			"name": "Фильтры",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "Фильтры пользователя",
 					"id": "70d83cd7-c79e-4eb0-b3fe-c9e0acccbb2c",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": "{{baseUrl}}/filters"
 					},
 					"response": []
 				}
