@@ -4349,6 +4349,24 @@
 				}
 			],
 			"id": "b7f70b4c-c3ad-4c8e-a652-a6b1d1c8d409"
+		},
+		{
+			"name": "Фильтры",
+			"item": [
+				{
+					"name": "New Request",
+					"id": "70d83cd7-c79e-4eb0-b3fe-c9e0acccbb2c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "fae59c26-9fa2-41bd-bae0-965343568664"
 		}
 	],
 	"auth": {
