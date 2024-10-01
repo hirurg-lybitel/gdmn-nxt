@@ -38,7 +38,7 @@ const find: FindHandler<IFilter> = async (
 
     await forEachAsync<IFilter>(filters, async f => {
       const filter = await blob2String(f['USR$FILTERS']);
-      f.filters = JSON.parse(filter);
+      f.filters = filter ? JSON.parse(filter) : {};
       f.entityName = f['USR$ENTITYNAME'];
 
       delete f['USR$ENTITYNAME'];
