@@ -3742,14 +3742,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/contracts-list/contractType/:contractType?pageNo=1&pageSize=2",
+							"raw": "{{baseUrl}}/contracts-list/documentType/:documentType?pageNo=1&pageSize=2",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"contracts-list",
-								"contractType",
-								":contractType"
+								"documentType",
+								":documentType"
 							],
 							"query": [
 								{
@@ -3763,7 +3763,7 @@
 							],
 							"variable": [
 								{
-									"key": "contractType",
+									"key": "documentType",
 									"value": "1"
 								}
 							]
@@ -3777,14 +3777,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/contracts-list/contractType/:contractType?pageNo=1&pageSize=2",
+									"raw": "{{baseUrl}}/contracts-list/documentType/:documentType?pageNo=1&pageSize=2",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"contracts-list",
-										"contractType",
-										":contractType"
+										"documentType",
+										":documentType"
 									],
 									"query": [
 										{
@@ -3798,7 +3798,7 @@
 									],
 									"variable": [
 										{
-											"key": "contractType",
+											"key": "documentType",
 											"value": "1"
 										}
 									]
@@ -3877,20 +3877,20 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/contracts-list/contractType/:contractType/details/:contractId",
+							"raw": "{{baseUrl}}/contracts-list/documentType/:documentType/details/:contractId",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"contracts-list",
-								"contractType",
-								":contractType",
+								"documentType",
+								":documentType",
 								"details",
 								":contractId"
 							],
 							"variable": [
 								{
-									"key": "contractType",
+									"key": "documentType",
 									"value": "1"
 								},
 								{
@@ -3908,20 +3908,20 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/contracts-list/contractType/:contractType/details/:contractId",
+									"raw": "{{baseUrl}}/contracts-list/documentType/:documentType/details/:contractId",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"contracts-list",
-										"contractType",
-										":contractType",
+										"documentType",
+										":documentType",
 										"details",
 										":contractId"
 									],
 									"variable": [
 										{
-											"key": "contractType",
+											"key": "documentType",
 											"value": "1"
 										},
 										{

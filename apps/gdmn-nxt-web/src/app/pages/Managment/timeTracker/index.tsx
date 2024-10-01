@@ -14,7 +14,6 @@ import {
   Divider,
   Checkbox,
   Tooltip,
-  Button
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
@@ -227,7 +226,7 @@ export function TimeTracker() {
                         duration,
                         billable = true,
                         task
-                      }, idx, arr) => {
+                      }) => {
                         return (
                           <Stack
                             key={ID}
@@ -273,10 +272,7 @@ export function TimeTracker() {
                                   label="Удалить"
                                   text={'Вы действительно хотите удалить запись ?'}
                                   onClick={onDelete(ID)}
-                                />,
-                                <label key="refresh" onClick={() => updateTimeTrack(arr[idx])}>
-                                  Refresh
-                                </label>
+                                />
                               ]}
                             />
                           </Stack>
