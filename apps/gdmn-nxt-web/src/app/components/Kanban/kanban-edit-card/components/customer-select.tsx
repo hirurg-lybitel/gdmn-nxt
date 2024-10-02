@@ -213,9 +213,12 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         }
         loadingText="Загрузка данных..."
         onChange={handleChange}
-        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected }: AutocompleteRenderOptionState) => {
+        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index }: AutocompleteRenderOptionState) => {
           const handleCustomerSelect = (e: MouseEvent<HTMLDivElement>, customer: ICustomer) => {
+            /** Need to pass some attributes for event */
+            e.currentTarget.setAttribute('data-option-index', index.toString());
             props.onClick && props.onClick(e as unknown as MouseEvent<HTMLLIElement>);
+
             setSelectedTask(null);
             onTaskSelected && onTaskSelected(null);
           };
