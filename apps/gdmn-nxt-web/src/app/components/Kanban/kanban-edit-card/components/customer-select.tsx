@@ -46,8 +46,10 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   disableEdition?: boolean;
   disableCaption?: boolean;
   disableFavorite?: boolean;
+  disableCloseOnSelect?: boolean;
   withTasks?: boolean;
   task?: ITimeTrackTask;
+  limitTags?: number;
   onTaskSelected?: (task: ITimeTrackTask | null) => void;
 };
 
@@ -60,7 +62,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     disableEdition = false,
     disableCaption = false,
     disableFavorite = true,
+    disableCloseOnSelect = false,
     withTasks = false,
+    limitTags = 2,
     style,
     task,
     onTaskSelected,
@@ -189,7 +193,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         style={style}
         fullWidth
         multiple={multiple}
-        limitTags={2}
+        disableCloseOnSelect={disableCloseOnSelect}
+        limitTags={limitTags}
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
@@ -345,7 +350,7 @@ const CustomerItem = ({
         flex={1}
         direction="row"
         alignItems="center"
-        spacing={2}
+        spacing={1}
       >
         {multiple &&
           <Checkbox

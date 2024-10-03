@@ -50,7 +50,7 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
       return names[1].trim();
     })();
     return (
-      <Box sx={{ ml: rowNode.depth === 0 ? '34px' : rowNode.depth * 6 }}>
+      <Box sx={{ ml: rowNode.depth === 0 ? '38px' : rowNode.depth * 6 }}>
         {renderCellExpand(props, title)}
       </Box>
     );
@@ -58,28 +58,30 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
 
   return (
     <Box sx={{ ml: rowNode.depth * 4 }}>
-      <div>
-        <Stack direction="row" alignItems="center">
-          <IconButton
-            onClick={handleClick}
-            onKeyDown={handleKeyDown}
-            size="small"
-          >
-            {rowNode.childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
-          </IconButton>
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={2}
-            mt={0.5}
-          >
-            <Box>
-              {value}
-            </Box>
-            <Chip label={filteredDescendantCount} size="small" />
-          </Stack>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+      >
+        <IconButton
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+          size="small"
+        >
+          {rowNode.childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+        </IconButton>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1}
+          mt={0.5}
+        >
+          <Box>
+            {value}
+          </Box>
+          <Chip label={filteredDescendantCount} size="small" />
         </Stack>
-      </div>
+      </Stack>
     </Box>
   );
 };

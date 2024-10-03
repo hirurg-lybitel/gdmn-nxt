@@ -15,7 +15,7 @@ import {
   Checkbox,
   Tooltip,
 } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
@@ -28,12 +28,14 @@ import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
 import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
+import FilterPanel from './components/filter-panel';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -73,10 +75,14 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   // backgroundColor: 'var(--color-card-bg)',
 }));
 
+const filterEntityName = 'timeTracking';
 
 export function TimeTracker() {
   const dispatch = useDispatch();
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
+  const [openFilters, setOpenFilters] = useState(false);
+
+  const userPermissions = usePermissions();
 
   const {
     data: timeTrackGroup = [],
@@ -86,6 +92,7 @@ export function TimeTracker() {
   } = useGetTimeTrackingByDateQuery({
     ...(filterData && { filter: filterData }),
   });
+
   const {
     data: activeTimeTrack,
     refetch: refetchTimeTrackingInProgress
@@ -94,7 +101,7 @@ export function TimeTracker() {
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
   const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
 
-  const [] = useFilterStore('timeTracking');
+  const [] = useFilterStore(filterEntityName);
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ timeTracking: filteringData }));
@@ -117,6 +124,18 @@ export function TimeTracker() {
     delete newObject.name;
     handleFilteringDataChange(newObject);
   }, [filterData]);
+
+  const filterHandlers = {
+    filterClick: useCallback(() => {
+      setOpenFilters(true);
+    }, []),
+    filterClose: useCallback(() => {
+      setOpenFilters(false);
+    }, [setOpenFilters]),
+    filterClear: useCallback(() => {
+      dispatch(clearFilterData(filterEntityName));
+    }, [dispatch]),
+  };
 
   const Header = useMemo(() => {
     return (
@@ -150,9 +169,25 @@ export function TimeTracker() {
             refetchTimeTrackingInProgress();
           }}
         />
+        {userPermissions?.timeTracking.ALL &&
+          <Box display="inline-flex" alignSelf="center">
+            <CustomFilterButton
+              onClick={filterHandlers.filterClick}
+              disabled={isFetching}
+              hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
+            />
+          </Box>
+        }
       </CustomizedCard>
     );
-  }, [isFetching, refetch, refetchTimeTrackingInProgress]);
+  }, [
+    isFetching,
+    isLoading,
+    refetch,
+    refetchTimeTrackingInProgress,
+    userPermissions?.timeTracking.ALL,
+    filterData
+  ]);
 
   const handleSubmit = (value: ITimeTrack, mode: 'add' | 'update') => {
     if (mode === 'update') {
@@ -166,28 +201,66 @@ export function TimeTracker() {
     deleteTimeTrack(id);
   };
 
+  const memoFilter = useMemo(() =>
+    <FilterPanel
+      open={openFilters}
+      onClose={filterHandlers.filterClose}
+      filteringData={filterData}
+      onFilteringDataChange={handleFilteringDataChange}
+      onClear={filterHandlers.filterClear}
+
+    />,
+  [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
+
+  // console.log('filterData', filterData);
+
   return (
     <Stack flex={1} spacing={3}>
+      {memoFilter}
       {Header}
       <AddItem
         initial={activeTimeTrack}
         onSubmit={handleSubmit}
       />
-      <ButtonDateRangePicker
-        value={filterData?.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-        onChange={(value) => {
-          const newPeriod = [
-            value[0]?.getTime() ?? null,
-            value[1]?.getTime() ?? null
-          ];
-          const newObject = { ...filterData };
-          delete newObject.period;
-          handleFilteringDataChange({
-            ...newObject,
-            ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
-          });
-        }}
-      />
+      <Stack direction="row">
+        <ButtonDateRangePicker
+          value={filterData?.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
+          onChange={(value) => {
+            const newPeriod = [
+              value[0]?.getTime() ?? null,
+              value[1]?.getTime() ?? null
+            ];
+            const newObject = { ...filterData };
+            delete newObject.period;
+            handleFilteringDataChange({
+              ...newObject,
+              ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
+            });
+          }}
+        />
+        <Box flex={1} />
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          mr={'16px'}
+        >
+          <Typography variant="caption">
+            Итого за период:
+          </Typography>
+          <Typography fontWeight={600} width={60}>
+            {durationFormat(timeTrackGroup.reduce((total, { duration }) =>
+              dayjs
+                .duration(total.length === 0 ? Object.assign({}) : total)
+                .add(
+                  dayjs
+                    .duration(duration)
+                )
+                .toISOString()
+            , ''))}
+          </Typography>
+        </Stack>
+      </Stack>
       {isLoading ?
         <CircularIndeterminate open size={70} /> :
         <CustomizedScrollBox container={{ style: { marginRight: '-16px' } }}>

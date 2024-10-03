@@ -1,4 +1,4 @@
-import { InternalServerErrorException, ITimeTrack, ITimeTrackGroup, NotFoundException } from '@gsbelarus/util-api-types';
+import { In, InternalServerErrorException, ITimeTrack, ITimeTrackGroup, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackingRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import dayjs from '@gdmn-nxt/dayjs';
@@ -56,13 +56,27 @@ const findAllByGroup = async (
   const name = filter.name;
   const dateRange = filter.period;
   const period = dateRange ? (dateRange as string).split(',').map(date => dayjs(+date)) : [];
+  const employees: string = filter.employees;
+  const customers: string = filter.customers;
+  const billableOnly = (filter.billableOnly as string)?.toLowerCase() === 'true';
 
   try {
     const timeTracking = await timeTrackingRepository.find(sessionID, {
-      ...(userId && {
-        'USR$USERKEY': userId,
-        'USR$INPROGRESS': 0
+      'USR$INPROGRESS': 0,
+      ...(employees
+        ? {
+          'USR$USERKEY': In(employees.split(','))
+        }
+        : userId && {
+          'USR$USERKEY': userId,
+        }
+      ),
+      ...(customers && {
+        'USR$CUSTOMERKEY': In(customers.split(','))
       }),
+      ...(billableOnly && {
+        'USR$BILLABLE': 1
+      })
     });
 
     const filteredTimeTracking = timeTracking.reduce<ITimeTrack[]>((filteredArray, timeTrack) => {
