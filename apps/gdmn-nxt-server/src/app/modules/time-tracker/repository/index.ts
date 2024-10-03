@@ -23,6 +23,8 @@ const find: FindHandler<ITimeTrack> = async (
           switch (expression.operator) {
             case 'LIKE':
               return ` UPPER(z.${f}) ${expression.value} `;
+            case 'IN':
+              return ` UPPER(z.${f}) ${expression.value} `;
           }
         }
 
