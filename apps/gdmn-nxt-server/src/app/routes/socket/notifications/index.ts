@@ -16,6 +16,7 @@ import { createServer } from 'https';
 import path from 'path';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { deleteAllNotifications } from '@gdmn-nxt/controllers/socket/notifications/deleteAllNotifications';
 
 marked.use({
   mangle: false,
@@ -59,6 +60,11 @@ export function Notifications({ router }: NotificationsProps) {
 
     socket.on('delete', async (notificationId) => {
       await deleteNotification(sessionId, notificationId);
+      await sendMessages();
+    });
+
+    socket.on('deleteAll', async (userId) => {
+      await deleteAllNotifications(sessionId, userId);
       await sendMessages();
     });
 

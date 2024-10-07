@@ -32,6 +32,8 @@ import { config } from '@gdmn-nxt/config';
 import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
+import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
+import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -212,6 +214,11 @@ export function Notification(props: NotificationProps) {
     });
   };
 
+  const deleteAllNotifications = () => {
+    socketClient?.emit('deleteAll', userId);
+    setMessages([]);
+  };
+
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);
     setOpen(!open);
@@ -225,6 +232,7 @@ export function Notification(props: NotificationProps) {
   const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery();
 
   const dispatch = useDispatch();
+
   const handleClickNotification = (action?: NotificationAction, actionContent?: string) => {
     if (!actionContent) return;
     switch (Number(action)) {
@@ -309,6 +317,14 @@ export function Notification(props: NotificationProps) {
                       <Typography variant="subtitle1">
                         Уведомления
                       </Typography>
+                      <Box flex={1} />
+                      <IconButton
+                        color="primary"
+                        title="Отметить все как прочитанные"
+                        onClick={deleteAllNotifications}
+                      >
+                        <MarkEmailReadIcon />
+                      </IconButton>
                     </Stack>
                     <Divider />
                     {messages.length > 0
