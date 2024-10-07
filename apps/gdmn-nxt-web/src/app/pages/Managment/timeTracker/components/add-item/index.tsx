@@ -36,7 +36,7 @@ type CalcMode = 'calc' | 'manual';
 type SubmitMode = 'add' | 'update';
 
 interface AddItemProps {
-  initial?: ITimeTrack;
+  initial?: Partial<ITimeTrack>;
   onSubmit: (value: ITimeTrack, mode: SubmitMode) => void
 }
 
@@ -85,7 +85,16 @@ export const AddItem = ({
     enableReinitialize: true,
     initialValues: {
       ...initialValues,
-      ...initial
+      ...initial,
+      ...(initial?.date && {
+        date: dayjs(initial.date).toDate()
+      }),
+      ...(initial?.startTime && {
+        startTime: dayjs(initial.startTime).toDate()
+      }),
+      ...(initial?.endTime && {
+        endTime: dayjs(initial.endTime).toDate()
+      }),
     },
     validationSchema: yup.object().shape({
       date: yup.date().required('Не указана дата')
@@ -186,6 +195,8 @@ export const AddItem = ({
 
     const duration = dayjs.duration(endTime.diff(startTime));
     formik.setFieldValue('duration', duration.toISOString());
+
+    toggleValidTimers(true);
 
     formik.submitForm();
   };

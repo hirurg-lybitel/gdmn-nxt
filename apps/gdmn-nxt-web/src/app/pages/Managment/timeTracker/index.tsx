@@ -15,7 +15,7 @@ import {
   Checkbox,
   Tooltip,
 } from '@mui/material';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
@@ -201,6 +201,23 @@ export function TimeTracker() {
     deleteTimeTrack(id);
   };
 
+  const handleStopPropagation = (e: any) => {
+    e.stopPropagation();
+  };
+
+  const [addTimeTrackInitial, setAddTimeTrackInitial] = useState<Partial<ITimeTrack> | undefined>();
+
+  useEffect(() => {
+    setAddTimeTrackInitial(activeTimeTrack);
+  }, [activeTimeTrack]);
+
+  const setInitial = (
+    value: any
+  ) => (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
+    handleStopPropagation(e);
+    setAddTimeTrackInitial({ ...value });
+  };
+
   const memoFilter = useMemo(() =>
     <FilterPanel
       open={openFilters}
@@ -212,14 +229,12 @@ export function TimeTracker() {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  // console.log('filterData', filterData);
-
   return (
     <Stack flex={1} spacing={3}>
       {memoFilter}
       {Header}
       <AddItem
-        initial={activeTimeTrack}
+        initial={addTimeTrackInitial}
         onSubmit={handleSubmit}
       />
       <Stack direction="row">
@@ -316,7 +331,35 @@ export function TimeTracker() {
                             }}
                           >
                             <Stack flex={1}>
-                              <Typography variant={'caption'}>{`${customer?.NAME} → ${workProject?.NAME}${task ? ` → ${task.name}` : ''}`}</Typography>
+                              <Stack direction="row" spacing={0.5}>
+                                <Typography
+                                  variant={'caption'}
+                                  onClick={setInitial({ customer, task: {} })}
+                                  style={{
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {customer?.NAME}
+                                </Typography>
+                                <Typography
+                                  variant={'caption'}
+                                  onClick={setInitial({ customer, workProject, task: {} })}
+                                  style={{
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {`→ ${workProject?.NAME}`}
+                                </Typography>
+                                <Typography
+                                  variant={'caption'}
+                                  onClick={setInitial({ customer, workProject, task })}
+                                  style={{
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {task ? `→ ${task.name}` : ''}
+                                </Typography>
+                              </Stack>
                               <Typography>{description}</Typography>
                             </Stack>
                             <Divider orientation="vertical" flexItem />

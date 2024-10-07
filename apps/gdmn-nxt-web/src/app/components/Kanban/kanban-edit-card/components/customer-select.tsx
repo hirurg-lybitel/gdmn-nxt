@@ -267,7 +267,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...rest.InputProps,
               startAdornment: (
                 <>
-                  {selectedTask && <InputAdornment position="end">{selectedTask?.name}</InputAdornment>}
+                  {!!selectedTask?.name && <InputAdornment position="end">{selectedTask?.name}</InputAdornment>}
                   {params.InputProps.startAdornment}
                 </>
               ),
