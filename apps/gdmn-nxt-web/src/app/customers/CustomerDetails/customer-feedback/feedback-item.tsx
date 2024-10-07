@@ -179,7 +179,7 @@ export const FeedbackItem = ({
                     case CustomerFeedbackType.request:
                       return 'Заявка с сайта';
                     default:
-                      return '';
+                      return 'Иное';
                   }
                 })()}
               </Typography>

@@ -162,7 +162,7 @@ export function CustomerFeedback({
                     onClick={sendFeedback}
                     disabled={sendDisabled}
                   >
-                    Отправить
+                    Добавить
                   </Button>
                 </Box>
               </Tooltip>
