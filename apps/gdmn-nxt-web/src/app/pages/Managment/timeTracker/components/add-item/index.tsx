@@ -47,10 +47,11 @@ export const AddItem = ({
   const [addFavorite] = useAddFavoriteMutation();
   const [deleteFavorite] = useDeleteFavoriteMutation();
 
-  const [calcMode, setCalcMode] = useState<CalcMode>('calc');
+  const [calcMode, setCalcMode] = useState<CalcMode>(initial?.inProgress ? 'calc' : 'manual');
   const [submitMode, setSubmitMode] = useState<SubmitMode>('add');
   const [isValidTimers, toggleValidTimers] = useState(true);
   const currentDate = useMemo(() => dayjs().toDate(), []);
+  const [onDate, setOnDate] = useState<Date>(currentDate);
 
   const {
     data: workProjects = [],
@@ -67,19 +68,23 @@ export const AddItem = ({
 
   const { STATUS, ...defaultWorkProject } = workProjects.length > 0 ? workProjects[0] : { } as IWorkProject;
 
+  const initialValues = {
+    ID: -1,
+    date: onDate,
+    customer: null,
+    startTime: currentDate,
+    endTime: null,
+    description: '',
+    inProgress: false,
+    workProject: Object.keys(defaultWorkProject).length > 0 ? defaultWorkProject : undefined,
+    billable: true,
+    task: undefined,
+  };
+
   const formik = useFormik<ITimeTrack>({
     enableReinitialize: true,
     initialValues: {
-      ID: -1,
-      date: currentDate,
-      customer: null,
-      startTime: currentDate,
-      endTime: null,
-      description: '',
-      inProgress: false,
-      workProject: Object.keys(defaultWorkProject).length > 0 ? defaultWorkProject : undefined,
-      billable: true,
-      task: undefined,
+      ...initialValues,
       ...initial
     },
     validationSchema: yup.object().shape({
@@ -89,8 +94,12 @@ export const AddItem = ({
       if (!isValidTimers) {
         return;
       }
+
       onSubmit(values, submitMode);
       resetForm();
+
+      /** Запоминаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
+      setOnDate(values.date);
     }
   });
 
@@ -98,6 +107,8 @@ export const AddItem = ({
     if (!formik.values.inProgress) {
       return;
     }
+
+    setCalcMode('calc');
 
     const clockId = setInterval(() => {
       const startTime = dayjs(formik.values.startTime);
@@ -150,10 +161,14 @@ export const AddItem = ({
     }
 
     formik.setFieldValue(fieldName, value);
+    if (value) {
+      setOnDate(value);
+    }
   };
 
   const startClick = () => {
     setSubmitMode('add');
+    formik.setFieldValue('date', dayjs().toDate());
     formik.setFieldValue('startTime', dayjs().toDate());
     formik.setFieldValue('endTime', null);
     formik.setFieldValue('inProgress', true);
@@ -340,7 +355,7 @@ export const AddItem = ({
               <Stack spacing={1} width={216}>
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
-                  value={formik.values.date}
+                  value={onDate}
                   onChange={handleDateTimeChange('date')}
                   sx={{
                     '& .MuiInputBase-root': {
@@ -418,7 +433,7 @@ export const AddItem = ({
                       className={styles.startButton}
                       variant="contained"
                       onClick={addClick}
-                      disabled={!formik.values.customer}
+                      disabled={!formik.values.customer || !formik.values.duration}
                     >
                       Добавить
                     </Button>}
