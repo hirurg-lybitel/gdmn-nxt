@@ -220,6 +220,14 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         onChange={handleChange}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index }: AutocompleteRenderOptionState) => {
           const handleCustomerSelect = (e: MouseEvent<HTMLDivElement>, customer: ICustomer) => {
+            console.log('handleCustomerSelect', customer.taskCount);
+            /** Don't select directly customer with tasks. Only the task */
+            if ((customer.taskCount ?? 0) > 0) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+
             /** Need to pass some attributes for event */
             e.currentTarget.setAttribute('data-option-index', index.toString());
             props.onClick && props.onClick(e as unknown as MouseEvent<HTMLLIElement>);
@@ -267,7 +275,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...rest.InputProps,
               startAdornment: (
                 <>
-                  {selectedTask && <InputAdornment position="end">{selectedTask?.name}</InputAdornment>}
+                  {!!selectedTask?.name && <InputAdornment position="end">{selectedTask?.name}</InputAdornment>}
                   {params.InputProps.startAdornment}
                 </>
               ),

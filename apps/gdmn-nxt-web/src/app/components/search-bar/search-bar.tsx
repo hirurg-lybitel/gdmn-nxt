@@ -114,6 +114,12 @@ export function SearchBar(props: SearchBarProps) {
     setOnFocus(Boolean(value));
   }, [value]);
 
+  useEffect(() => {
+    if (searchValue === '') {
+      handleRequestSearch();
+    }
+  }, [searchValue]);
+
 
   const propsStyle: StyleProps = {
     isFocus: onFocus

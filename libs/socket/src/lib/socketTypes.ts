@@ -11,6 +11,7 @@ export interface ServerToClientEvents extends InterServerEvents, KanbanEvents {
 
 export interface ClientToServerEvents extends InterServerEvents, KanbanEvents {
   delete: (notificationId: number) => void;
+  deleteAll: (userId: number) => void;
   messagesByUser_request: (userId: number) => void;
   sendMessageToUsers_request: (message: string, userIDs: number[]) => void;
 }
