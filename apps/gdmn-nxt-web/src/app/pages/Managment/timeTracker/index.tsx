@@ -392,7 +392,8 @@ export function TimeTracker() {
                                 <ItemButtonDelete
                                   key="delete"
                                   label="Удалить"
-                                  text={'Вы действительно хотите удалить запись ?'}
+                                  title="Удалить запись?"
+                                  text={'Данные невозможно будет восстановить'}
                                   onClick={onDelete(ID)}
                                 />
                               ]}

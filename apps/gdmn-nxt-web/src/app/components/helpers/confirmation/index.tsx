@@ -7,6 +7,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
   dangerous?: boolean;
   title?: string;
   text?: string;
+  actions?: [string, string];
 }
 export default function Confirmation({
   children,
@@ -14,6 +15,7 @@ export default function Confirmation({
   dangerous = false,
   text = 'Вы уверены, что хотите продолжить?',
   title = 'Внимание',
+  actions = ['Нет', 'Да'],
   ...props
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -36,10 +38,11 @@ export default function Confirmation({
       dangerous={dangerous}
       title={title}
       text={text}
+      actions={actions}
       confirmClick={handleConfirm}
       cancelClick={handleCancel}
     />,
-  [confirmOpen, dangerous, handleCancel, handleConfirm, text, title]);
+  [actions, confirmOpen, dangerous, handleCancel, handleConfirm, text, title]);
 
   return (
     <>
