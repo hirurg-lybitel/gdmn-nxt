@@ -5,6 +5,7 @@ import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack } f
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { useCallback } from 'react';
 import UserSelect from '@gdmn-nxt/components/user-select';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
 export interface FilterPanelProps {
   open: boolean;
@@ -42,6 +43,8 @@ export function FilterPanel({
     onClear();
   }, [onClear]);
 
+  const userPermissions = usePermissions();
+
   return (
     <CustomizedDialog
       open={open}
@@ -59,12 +62,14 @@ export function FilterPanel({
             value={filteringData?.customers as ICustomer[] ?? []}
             onChange={(value) => handleOnChange('customers', value)}
           />
-          <UserSelect
-            multiple
-            disableCloseOnSelect
-            value={filteringData?.employees as IUser[] ?? []}
-            onChange={(e, value) => handleOnChange('employees', value)}
-          />
+          {userPermissions?.timeTracking.ALL &&
+            <UserSelect
+              multiple
+              disableCloseOnSelect
+              value={filteringData?.employees as IUser[] ?? []}
+              onChange={(e, value) => handleOnChange('employees', value)}
+            />
+          }
           <FormControlLabel
             control={
               <Checkbox

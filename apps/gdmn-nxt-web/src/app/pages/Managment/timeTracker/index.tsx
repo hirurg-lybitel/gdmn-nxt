@@ -82,8 +82,6 @@ export function TimeTracker() {
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
   const [openFilters, setOpenFilters] = useState(false);
 
-  const userPermissions = usePermissions();
-
   const {
     data: timeTrackGroup = [],
     isFetching,
@@ -169,15 +167,13 @@ export function TimeTracker() {
             refetchTimeTrackingInProgress();
           }}
         />
-        {userPermissions?.timeTracking.ALL &&
-          <Box display="inline-flex" alignSelf="center">
-            <CustomFilterButton
-              onClick={filterHandlers.filterClick}
-              disabled={isFetching}
-              hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
-            />
-          </Box>
-        }
+        <Box display="inline-flex" alignSelf="center">
+          <CustomFilterButton
+            onClick={filterHandlers.filterClick}
+            disabled={isFetching}
+            hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
+          />
+        </Box>
       </CustomizedCard>
     );
   }, [
@@ -185,7 +181,6 @@ export function TimeTracker() {
     isLoading,
     refetch,
     refetchTimeTrackingInProgress,
-    userPermissions?.timeTracking.ALL,
     filterData
   ]);
 
