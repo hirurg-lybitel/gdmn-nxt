@@ -195,6 +195,10 @@ export function TimeTracker() {
       return;
     }
     addTimeTrack(value);
+
+    setAddTimeTrackInitial({
+      date: value.date
+    });
   };
 
   const onDelete = (id: number) => () => {
