@@ -6,10 +6,11 @@ import { HTMLAttributes, ReactElement } from 'react';
 import styles from './custom-paper-component.module.less';
 
 interface CustomPaperComponentProps {
+  header?: ReactElement;
   footer?: ReactElement;
 }
 
-const CustomPaperComponent = ({ footer }: CustomPaperComponentProps) => (props: HTMLAttributes<HTMLElement>) => {
+const CustomPaperComponent = ({ header, footer }: CustomPaperComponentProps) => (props: HTMLAttributes<HTMLElement>) => {
   const { children, ...rest } = props;
 
   return (
@@ -21,6 +22,7 @@ const CustomPaperComponent = ({ footer }: CustomPaperComponentProps) => (props: 
         event.preventDefault();
       }}
     >
+      {header && <div>{header}</div>}
       {children}
       {footer && <div className={styles.footer}>{footer}</div>}
     </Paper>

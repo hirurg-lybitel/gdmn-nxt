@@ -59,6 +59,7 @@ const findAllByGroup = async (
   const employees: string = filter.employees;
   const customers: string = filter.customers;
   const billableOnly = (filter.billableOnly as string)?.toLowerCase() === 'true';
+  const allEmployees = (filter.allEmployees as string)?.toLowerCase() === 'true';
 
   try {
     const timeTracking = await timeTrackingRepository.find(sessionID, {
@@ -67,7 +68,7 @@ const findAllByGroup = async (
         ? {
           'USR$USERKEY': In(employees.split(','))
         }
-        : userId && {
+        : (!allEmployees && userId) && {
           'USR$USERKEY': userId,
         }
       ),

@@ -109,7 +109,7 @@ export const AddItem = ({
 
       /** Запоминаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
       setOnDate(values.date);
-    }
+    },
   });
 
   useEffect(() => {
@@ -153,6 +153,7 @@ export const AddItem = ({
     if (!endTime || !startTime) {
       return;
     }
+
     const dStartTime = dayjs(startTime);
     const dEndTime = dayjs(endTime);
 
@@ -170,9 +171,10 @@ export const AddItem = ({
     }
 
     formik.setFieldValue(fieldName, value);
-    if (value) {
-      setOnDate(value);
-    }
+
+    formik.values.date?.setSeconds(0, 0);
+    formik.values.startTime?.setSeconds(0, 0);
+    formik.values.endTime?.setSeconds(0, 0);
   };
 
   const startClick = () => {
@@ -390,6 +392,7 @@ export const AddItem = ({
                         }
                       },
                     }}
+                    views={['hours', 'minutes']}
                     name="startTime"
                     value={formik.values.startTime}
                     onChange={handleDateTimeChange('startTime')}
@@ -407,6 +410,7 @@ export const AddItem = ({
                         }
                       },
                     }}
+                    views={['hours', 'minutes']}
                     name="endTime"
                     minTime={formik.values.startTime ?? undefined}
                     value={formik.values.endTime}
