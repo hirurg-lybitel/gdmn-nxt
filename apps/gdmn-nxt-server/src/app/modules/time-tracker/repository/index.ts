@@ -50,6 +50,8 @@ const find: FindHandler<ITimeTrack> = async (
         con.NAME CON_NAME,
         u.ID USER_ID,
         u.NAME USER_NAME,
+        uc.ID as USER_CONTACT_ID,
+        uc.NAME as USER_CONTACT_NAME,
         z.USR$BILLABLE BILLABLE,
         task.ID TASK_ID,
         task.USR$NAME TASK_NAME
@@ -57,11 +59,11 @@ const find: FindHandler<ITimeTrack> = async (
       JOIN USR$CRM_TIMETRACKER_TYPES tt ON tt.ID = z.USR$WORKTYPEKEY
       LEFT JOIN GD_CONTACT con ON con.ID = z.USR$CUSTOMERKEY
       LEFT JOIN GD_USER u ON u.ID = z.USR$USERKEY
+      LEFT JOIN GD_CONTACT uc ON uc.ID = u.CONTACTKEY
       LEFT JOIN USR$CRM_TIMETRACKER_TASKS task ON task.ID = z.USR$TASK
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
       ORDER BY z.USR$DATE DESC, z.USR$ENDTIME DESC`,
       { ...whereClause });
-
 
     const timeTracking: ITimeTrack[] = await Promise.all(rows.map(async r => ({
       ID: r['ID'],
@@ -87,7 +89,11 @@ const find: FindHandler<ITimeTrack> = async (
       ...(r['USER_ID'] && {
         user: {
           ID: r['USER_ID'],
-          NAME: r['USER_NAME']
+          NAME: r['USER_NAME'],
+          CONTACT: {
+            ID: r['USER_CONTACT_ID'],
+            NAME: r['USER_CONTACT_NAME'],
+          }
         }
       }),
       ...(r['TASK_ID'] && {
