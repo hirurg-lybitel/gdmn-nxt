@@ -5,7 +5,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     dialogTitle: {
       paddingTop: '12px',
-      paddingBottom: '12px'
+      paddingBottom: '12px',
+      backgroundColor: 'var(--color-card-bg)'
     },
     dialogAction: {
       display: 'flex',
@@ -13,7 +14,12 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '12px 24px',
     },
     button: {
-      width: '50%',
+      minWidth: '100px'
+    },
+    closeButton: {
+      position: 'absolute',
+      top: '10px',
+      right: '10px'
     }
   }),
 );

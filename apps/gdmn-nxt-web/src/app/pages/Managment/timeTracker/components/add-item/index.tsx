@@ -109,7 +109,7 @@ export const AddItem = ({
 
       /** Запоминаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
       setOnDate(values.date);
-    }
+    },
   });
 
   useEffect(() => {
@@ -153,6 +153,7 @@ export const AddItem = ({
     if (!endTime || !startTime) {
       return;
     }
+
     const dStartTime = dayjs(startTime);
     const dEndTime = dayjs(endTime);
 
@@ -170,9 +171,10 @@ export const AddItem = ({
     }
 
     formik.setFieldValue(fieldName, value);
-    if (value) {
-      setOnDate(value);
-    }
+
+    formik.values.date?.setSeconds(0, 0);
+    formik.values.startTime?.setSeconds(0, 0);
+    formik.values.endTime?.setSeconds(0, 0);
   };
 
   const startClick = () => {
@@ -261,6 +263,8 @@ export const AddItem = ({
     formik.setFieldValue('workProject', workProjects[workProjectIndex]);
   }, [selectedTaskInfo, workProjects]);
 
+  const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -284,16 +288,25 @@ export const AddItem = ({
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
-              <TextField
-                placeholder="Над чем вы работали?"
-                name="description"
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                style={{
-                  flex: 1
-                }}
-                InputProps={{
-                  startAdornment:
+              <div style={{ height: '40px', width: '100%', position: 'relative' }}>
+                <TextField
+                  placeholder="Над чем вы работали?"
+                  name="description"
+                  multiline
+                  minRows={1}
+                  {...(!descriptionOnFocus && { rows: 1 })}
+                  fullWidth
+                  value={formik.values.description}
+                  onChange={formik.handleChange}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'var(--color-paper-bg)',
+                    zIndex: 2
+                  }}
+                  onFocus={() => setDescriptionOnFocus(true)}
+                  onBlur={() => setDescriptionOnFocus(false)}
+                  InputProps={{
+                    startAdornment:
                   <InputAdornment position="start">
                     <div style={{ position: 'relative', color: 'transparent' }}>
                       {/* Костыль для автоширины Autocomplete */}
@@ -359,8 +372,9 @@ export const AddItem = ({
                       />
                     </div>
                   </InputAdornment>,
-                }}
-              />
+                  }}
+                />
+              </div>
             </Stack>
             {calcMode === 'manual' &&
               <Stack spacing={1} width={216}>
@@ -390,6 +404,7 @@ export const AddItem = ({
                         }
                       },
                     }}
+                    views={['hours', 'minutes']}
                     name="startTime"
                     value={formik.values.startTime}
                     onChange={handleDateTimeChange('startTime')}
@@ -407,6 +422,7 @@ export const AddItem = ({
                         }
                       },
                     }}
+                    views={['hours', 'minutes']}
                     name="endTime"
                     minTime={formik.values.startTime ?? undefined}
                     value={formik.values.endTime}
