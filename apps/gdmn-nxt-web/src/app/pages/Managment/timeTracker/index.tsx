@@ -312,7 +312,8 @@ export function TimeTracker() {
                         endTime,
                         duration,
                         billable = true,
-                        task
+                        task,
+                        user
                       }) => {
                         return (
                           <Stack
@@ -330,6 +331,7 @@ export function TimeTracker() {
                             }}
                           >
                             <Stack flex={1}>
+                              {(filterData.allEmployees || (filterData.employees?.length ?? 0) > 0) && <Typography variant={'caption'}>{user?.CONTACT?.NAME}</Typography>}
                               <Stack direction="row" spacing={0.5}>
                                 <Typography
                                   variant={'caption'}
@@ -385,7 +387,8 @@ export function TimeTracker() {
                                 <ItemButtonDelete
                                   key="delete"
                                   label="Удалить"
-                                  text={'Вы действительно хотите удалить запись ?'}
+                                  title="Удалить запись?"
+                                  text={'Данные невозможно будет восстановить'}
                                   onClick={onDelete(ID)}
                                 />
                               ]}

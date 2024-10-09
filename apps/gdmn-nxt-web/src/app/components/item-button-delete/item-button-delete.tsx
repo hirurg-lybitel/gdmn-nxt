@@ -63,6 +63,10 @@ export function ItemButtonDelete({
         text={text}
         dangerous
         onConfirm={onClick}
+        actions={[
+          'Отменить',
+          'Удалить'
+        ]}
       >
         {RootElement}
       </Confirmation>

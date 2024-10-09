@@ -22,21 +22,26 @@ export function FilterPanel({
   onClear,
   onFilteringDataChange
 }: FilterPanelProps) {
-  const handleOnChange = (entity: string, value: any) => {
+  const handleOnChange = (entities: string[], values: any[]) => {
     const newObject = { ...filteringData };
-    delete newObject[entity];
 
-    const newValue = (() => {
-      if (typeof value === 'boolean' && !value) {
+    const newEntities = {};
+    entities.forEach((entity, idx) => {
+      delete newObject[entity];
+      const newValue = (() => {
+        if (typeof values[idx] === 'boolean' && !values[idx]) {
+          return {};
+        }
+        if (values[idx]?.toString().length > 0) {
+          return { [entity]: values[idx] };
+        }
         return {};
-      }
-      if (value?.toString().length > 0) {
-        return { [entity]: value };
-      }
-      return {};
-    })();
+      })();
 
-    onFilteringDataChange({ ...newObject, ...newValue });
+      Object.assign(newEntities, newValue);
+    });
+
+    onFilteringDataChange({ ...newObject, ...newEntities });
   };
 
   const filterClear = useCallback(() => {
@@ -60,21 +65,21 @@ export function FilterPanel({
             disableCloseOnSelect
             limitTags={-1}
             value={filteringData?.customers as ICustomer[] ?? []}
-            onChange={(value) => handleOnChange('customers', value)}
+            onChange={(value) => handleOnChange(['customers'], [value])}
           />
-          {userPermissions?.timeTracking.ALL &&
-            <UserSelect
-              multiple
-              disableCloseOnSelect
-              value={filteringData?.employees as IUser[] ?? []}
-              onChange={(e, value) => handleOnChange('employees', value)}
-            />
-          }
+          <UserSelect
+            multiple
+            disableCloseOnSelect
+            // open
+            value={filteringData?.employees as IUser[] ?? []}
+            allSelected={filteringData?.allEmployees ?? false}
+            onChange={(e, value, allSelected) => handleOnChange(['employees', 'allEmployees'], [value, allSelected])}
+          />
           <FormControlLabel
             control={
               <Checkbox
                 checked={filteringData?.billableOnly ?? false}
-                onChange={(e) => handleOnChange('billableOnly', e.target.checked)}
+                onChange={(e) => handleOnChange(['billableOnly'], [e.target.checked])}
               />
             }
             label="Только оплачиваемые"

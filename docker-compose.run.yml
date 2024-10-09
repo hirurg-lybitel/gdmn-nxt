@@ -27,6 +27,8 @@ services:
     env_file:
       - ./.env
       - ./.env.prod
+    environment:
+      - TZ=Europe/Minsk
     networks:
       - proxy_network
 
