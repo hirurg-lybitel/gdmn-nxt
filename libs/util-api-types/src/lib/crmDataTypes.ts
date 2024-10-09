@@ -90,6 +90,7 @@ export interface IDeal extends IWithID {
   DESCRIPTION?: string;
   USR$NUMBER?: number;
   PREPAID?: boolean;
+  ATTACHMENTS?: MailAttachment[]
 };
 
 export interface IKanbanCard extends IWithID {
