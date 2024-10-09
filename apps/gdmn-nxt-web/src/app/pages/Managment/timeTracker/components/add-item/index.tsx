@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useTheme } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -263,6 +263,10 @@ export const AddItem = ({
     formik.setFieldValue('workProject', workProjects[workProjectIndex]);
   }, [selectedTaskInfo, workProjects]);
 
+  const theme = useTheme();
+
+  const [workInfoFieldOpen, setWorkInfoFieldOpen] = useState(false);
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -273,83 +277,101 @@ export const AddItem = ({
             alignItems="center"
           >
             <Stack spacing={1} flex={1}>
-              <TextField
-                placeholder="Над чем вы работали?"
-                name="description"
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                style={{
-                  flex: 1
-                }}
-                InputProps={{
-                  startAdornment:
-                  <InputAdornment position="start">
-                    <div style={{ position: 'relative', color: 'transparent' }}>
-                      {/* Костыль для автоширины Autocomplete */}
-                      <Stack direction={'row'}>
-                        {workProjectsLoading
-                          ? 'Загрузка'
-                          : `${formik.values.workProject?.NAME ?? defaultWorkProject.NAME}`
-                        }
-                        <Box width={34} />
-                      </Stack>
-                      <Autocomplete
-                        disableClearable
-                        options={workProjects}
-                        loading={workProjectsFetching}
-                        loadingText="Загрузка данных..."
-                        value={formik.values.workProject ?? defaultWorkProject}
-                        filterOptions={filterOptions(100, 'NAME')}
-                        getOptionLabel={option => option?.NAME ?? ''}
-                        onChange={handleWorkProjectChange}
-                        sx={{
-                          position: 'absolute',
-                          top: -2,
-                          width: '100%',
-                          '& .MuiInput-root::before': { borderBottom: 0 }
-                        }}
 
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            variant="standard"
-                          />
-                        )}
-                        slotProps={{
-                          paper: {
-                            style: {
-                              width: 'max-content'
-                            }
+              <div style={{ height: '40px', width: '100%', position: 'relative' }}>
+                <TextField
+                  onFocus={() => {
+                    setWorkInfoFieldOpen(true);
+                  }}
+                  onBlur={() => {
+                    setWorkInfoFieldOpen(false);
+                  }}
+
+                  placeholder="Над чем вы работали?"
+                  name="description"
+                  value={formik.values.description.replaceAll('\n', '')}
+                  onChange={formik.handleChange}
+                  style={{
+                    flex: 1,
+                    position: 'absolute',
+                    width: '100%',
+                    background: theme.palette.background.paper,
+                    zIndex: 2
+                  }}
+                  sx={{ '& .MuiTextField-root.MuiFormControl-fullWidth': { width: '100vw', maxWidth: '100%' } }}
+                  InputProps={{
+                    rows: workInfoFieldOpen ? 5 : 1,
+                    multiline: true,
+                    inputComponent: 'textarea',
+                    startAdornment:
+                <InputAdornment position="start">
+                  <div style={{ position: 'relative', color: 'transparent' }}>
+                    {/* Костыль для автоширины Autocomplete */}
+                    <Stack direction={'row'}>
+                      {workProjectsLoading
+                        ? 'Загрузка'
+                        : `${formik.values.workProject?.NAME ?? defaultWorkProject.NAME}`
+                      }
+                      <Box width={34} />
+                    </Stack>
+                    <Autocomplete
+                      disableClearable
+                      options={workProjects}
+                      loading={workProjectsFetching}
+                      loadingText="Загрузка данных..."
+                      value={formik.values.workProject ?? defaultWorkProject}
+                      filterOptions={filterOptions(100, 'NAME')}
+                      getOptionLabel={option => option?.NAME ?? ''}
+                      onChange={handleWorkProjectChange}
+                      sx={{
+                        position: 'absolute',
+                        top: -2,
+                        width: '100%',
+                        '& .MuiInput-root::before': { borderBottom: 0 }
+                      }}
+
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                        />
+                      )}
+                      slotProps={{
+                        paper: {
+                          style: {
+                            width: 'max-content'
                           }
-                        }}
-                        renderOption={(props, option) => (
-                          <li
-                            {...props}
-                            key={option.ID}
-                            style={{
-                              paddingTop: 2,
-                              paddingBottom: 2
-                            }}
-                          >
-                            {option.NAME}
-                            <Box flex={1} minWidth={12} />
-                            <SwitchStar selected={!!option.isFavorite} onClick={handleFavoriteClick(option)} />
-                          </li>
-                        )}
-                        groupBy={({ isFavorite }: IWorkProject) => isFavorite ? 'Избранные' : 'Остальные'}
-                        renderGroup={(params) => (
-                          <li key={params.key}>
-                            <GroupHeader>
-                              <Typography variant="subtitle1">{params.group}</Typography>
-                            </GroupHeader>
-                            <GroupItems>{params.children}</GroupItems>
-                          </li>
-                        )}
-                      />
-                    </div>
-                  </InputAdornment>,
-                }}
-              />
+                        }
+                      }}
+                      renderOption={(props, option) => (
+                        <li
+                          {...props}
+                          key={option.ID}
+                          style={{
+                            paddingTop: 2,
+                            paddingBottom: 2
+                          }}
+                        >
+                          {option.NAME}
+                          <Box flex={1} minWidth={12} />
+                          <SwitchStar selected={!!option.isFavorite} onClick={handleFavoriteClick(option)} />
+                        </li>
+                      )}
+                      groupBy={({ isFavorite }: IWorkProject) => isFavorite ? 'Избранные' : 'Остальные'}
+                      renderGroup={(params) => (
+                        <li key={params.key}>
+                          <GroupHeader>
+                            <Typography variant="subtitle1">{params.group}</Typography>
+                          </GroupHeader>
+                          <GroupItems>{params.children}</GroupItems>
+                        </li>
+                      )}
+                    />
+                  </div>
+                </InputAdornment>,
+                  }}
+                />
+              </div>
               <CustomerSelect
                 disableEdition
                 disableCaption
