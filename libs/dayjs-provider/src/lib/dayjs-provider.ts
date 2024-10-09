@@ -16,7 +16,7 @@ export const durationFormat = (duration?: string) => {
     return '00:00:00';
   }
 
-  const hours = dayjs.duration(duration).asHours()
+  const hours = dayjs.duration(duration).hours()
     .toString()
     .split('.')[0]
     .padStart(2, '0');
