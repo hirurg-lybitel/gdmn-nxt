@@ -445,6 +445,23 @@ const CustomerTasks = ({
     skip: !open
   });
 
+  const filterTasks = useCallback((tasks: ITimeTrackTask[]) => {
+    if (!filter || !tasks) return tasks;
+    return tasks?.filter((task) => task.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
+  }, [filter]);
+
+  const filteredprojects = useMemo(() => {
+    const filtered = [];
+    for (let i = 0;i < projects.length;i++) {
+      const tasks = filterTasks(projects[i].tasks || []) ;
+      console.log(tasks);
+      if (tasks?.length > 0) {
+        filtered.push({ ...projects[i], tasks: tasks });
+      }
+    }
+    return filtered;
+  }, [filterTasks, projects]);
+
   const taskSelect = useCallback((task: ITimeTrackTask) => () => onSelect(task), [onSelect]);
 
   const preventAction = useCallback((e: MouseEvent<HTMLLIElement>) => {
@@ -455,15 +472,11 @@ const CustomerTasks = ({
   const rowHeight = 72;
   const maxLines = 4;
 
-  const filterTasks = useCallback((tasks: ITimeTrackTask[] | undefined) => {
-    if (!filter || !tasks) return tasks;
-    return tasks?.filter((task) => task.name.includes(filter));
-  }, [filter]);
 
   return (
     <CustomizedCard
       style={{
-        height: open ? (projects.length === 1 ? (filterTasks(projects[0].tasks) ?? []).length : projects.length) * rowHeight : '1px',
+        height: open ? (filteredprojects.length === 1 ? (filteredprojects[0].tasks ?? []).length : filteredprojects.length) * rowHeight : '1px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
@@ -482,7 +495,7 @@ const CustomerTasks = ({
         dense
         disablePadding
       >
-        {projects.map(project => (
+        {filteredprojects.map(project => (
           <li key={`section-${project.ID}`}>
             <ul>
               <ListSubheader
@@ -491,7 +504,7 @@ const CustomerTasks = ({
               >
                 {project.name}
               </ListSubheader>
-              {filterTasks(project.tasks)?.map(task => {
+              {project.tasks?.map(task => {
                 return (
                   <ListItem
                     key={`item-${project.ID}-${task.ID}`}
