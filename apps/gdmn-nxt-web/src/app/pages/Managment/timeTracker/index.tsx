@@ -233,12 +233,6 @@ export function TimeTracker() {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  const formatDuration = (duration: string) => {
-    const dayjsDuration = dayjs.duration(duration);
-    if (!(dayjsDuration as any)['$ms']) return '00:00:00';
-    return `${Math.floor(dayjsDuration.asHours())}:${dayjsDuration.format('mm:ss')}`;
-  };
-
   return (
     <Stack flex={1} spacing={3}>
       {memoFilter}
@@ -274,7 +268,7 @@ export function TimeTracker() {
             Итого за период:
           </Typography>
           <Typography fontWeight={600} width={60}>
-            {formatDuration(timeTrackGroup.reduce((total, { duration }) =>
+            {durationFormat(timeTrackGroup.reduce((total, { duration }) =>
               dayjs
                 .duration(total.length === 0 ? Object.assign({}) : total)
                 .add(
@@ -309,7 +303,7 @@ export function TimeTracker() {
                           Итого:
                         </Typography>
                         <Typography fontWeight={600} width={60}>
-                          {formatDuration(duration)}
+                          {durationFormat(duration)}
                         </Typography>
                       </Stack>
                     </AccordionSummary>
