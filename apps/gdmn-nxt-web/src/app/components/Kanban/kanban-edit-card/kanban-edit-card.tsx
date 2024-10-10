@@ -415,7 +415,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       return;
     }
     formik.setFieldValue('DEAL.ATTACHMENTS', attachments);
-  }, []);
+  }, [formik.values.DEAL?.ATTACHMENTS]);
 
   const initialAttachments = useMemo(() => {
     return attachments.reduce((res, { fileName, content }) => {
