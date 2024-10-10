@@ -1,7 +1,7 @@
 import { isImage } from '../helpers';
 import { FileObject } from '../types';
 import styles from './preview.module.less';
-import { Box, Fab} from '@mui/material';
+import { Box, Fab } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { MouseEvent } from 'react';
@@ -60,6 +60,23 @@ export function PreviewList({
     onRemove && onRemove(index);
   };
 
+  const handleDownload = (file: FileObject) => (e: any) => {
+    // Create a new link
+    const anchor = document.createElement('a');
+    anchor.href = file.data as string;
+    anchor.download = file.file.name;
+
+    // Append to the DOM
+    document.body.appendChild(anchor);
+
+    // Trigger `click` event
+    anchor.click();
+
+    // Remove element from DOM
+    document.body.removeChild(anchor);
+    e.stopPropagation();
+  };
+
   return (
     <Box
       aria-label="dropzone-preview"
@@ -69,6 +86,7 @@ export function PreviewList({
         <Box
           key={idx}
           className={styles['imageContainer']}
+          onClick={handleDownload(file)}
         >
           {getPreviewIcon(file)}
           <Fab
