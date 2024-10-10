@@ -59,6 +59,7 @@ import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -111,7 +112,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const { isFetching: customerFetching } = useGetCustomersQuery();
   const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
   const { isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
-
+  const id = card?.DEAL?.ID ?? -1;
+  const { data: attachments = [], isFetching: attachmentsFetching } = useGetDealsFilesQuery(id, { skip: !open || id <= 0, refetchOnMountOrArgChange: true });
   const refComment = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -173,7 +175,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       COMMENT: card?.DEAL?.COMMENT || '',
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
       PREPAID: card?.DEAL?.PREPAID ?? false,
-      ATTACHMENTS: [] as any
+      ATTACHMENTS: attachments
     },
     TASKS: card?.TASKS || undefined,
   };
@@ -416,7 +418,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, []);
 
   const initialAttachments = useMemo(() => {
-    return formik.values.DEAL?.ATTACHMENTS?.reduce((res, { fileName, content }) => {
+    return attachments.reduce((res, { fileName, content }) => {
       if (!content) {
         return res;
       }
@@ -435,7 +437,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       const file = new File([u8arr], fileName, { type: mime });
       return [...res, file];
     }, [] as File[]);
-  }, [formik.values.DEAL?.ATTACHMENTS]);
+  }, [attachments]);
 
   const maxFileSize = 5000000; // in bytes
 
@@ -913,7 +915,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             showPreviews
                             initialFiles={initialAttachments}
                             onChange={attachmentsChange}
-                            disabled={false}
+                            disabled={attachmentsFetching}
                           />
                         </div>
                       </Stack>
