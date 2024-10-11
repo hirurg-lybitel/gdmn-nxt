@@ -221,6 +221,7 @@ export function TaskTypes(props: TaskTypesProps) {
   const validationShema: ValidationShema = {
     NAME: (value) => {
       if (value.length > 60) return 'Слишком длинное наименование';
+      if (!value) return 'Обязательное поле';
       return '';
     }
   };
