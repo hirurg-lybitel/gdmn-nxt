@@ -82,11 +82,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       USR$DESCRIPTION: yup.string().max(120, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      onSubmit(formik.values);
     }
   });
 
@@ -191,7 +187,8 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
           <Button
             className={classes.button}
             variant="contained"
-            onClick={handleConfirmOkClick}
+            form="mainForm"
+            type="submit"
           >
             Сохранить
           </Button>
