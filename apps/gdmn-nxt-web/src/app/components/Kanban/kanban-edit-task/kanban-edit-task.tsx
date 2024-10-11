@@ -361,7 +361,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       loadingText="Загрузка данных..."
                     />
                     {canOpenDeal &&
-                      <IconButton color="primary" onClick={() => setEditDeal(true)}>
+                      <IconButton
+                        disabled={!(formik.values.USR$CARDKEY > 0)}
+                        color="primary"
+                        onClick={() => setEditDeal(true)}
+                      >
                         <VisibilityIcon visibility={'none'}/>
                       </IconButton>
                     }
