@@ -167,7 +167,7 @@ const upsert: RequestHandler = async (req, res) => {
         USR$USERKEY: userId
       });
     };
-    if ((task.PERFORMER?.ID || -1) !== (oldTaskRecord?.PERMORMER_ID || -1)) {
+    if ((task.PERFORMER?.ID || -1) !== (oldTaskRecord?.PERMORMER_ID || -1) && !!task.PERFORMER) {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
