@@ -156,7 +156,7 @@ export function TaskTypes(props: TaskTypesProps) {
       function removeEmpty(obj: any) {
         return Object.fromEntries(Object.entries(obj).filter(([_, v]) => (v !== null && v !== '' && v !== undefined)));
       }
-      if (JSON.stringify(api.current.getRow(id)) !== JSON.stringify(removeEmpty(api.current.getRowWithUpdatedValues(id, '')))) {
+      if (JSON.stringify(removeEmpty(api.current.getRow(id))) !== JSON.stringify(removeEmpty(api.current.getRowWithUpdatedValues(id, '')))) {
         handleSetTitleAndMethod('cancel', handleCancelClick);
         setConfirmOpen(true);
       } else {
