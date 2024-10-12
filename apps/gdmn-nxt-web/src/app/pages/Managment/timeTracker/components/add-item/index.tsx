@@ -275,6 +275,19 @@ export const AddItem = ({
             alignItems="center"
           >
             <Stack spacing={1} flex={1}>
+              <CustomerSelect
+                disableEdition
+                disableCaption
+                disableFavorite={false}
+                withTasks
+                required
+                value={formik.values.customer}
+                onChange={handleCustomerChange}
+                task={formik.values.task}
+                onTaskSelected={handleTaskSelected}
+                error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
+                helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
+              />
               <div style={{ height: '40px', width: '100%', position: 'relative' }}>
                 <TextField
                   placeholder="Над чем вы работали?"
@@ -362,19 +375,6 @@ export const AddItem = ({
                   }}
                 />
               </div>
-              <CustomerSelect
-                disableEdition
-                disableCaption
-                disableFavorite={false}
-                withTasks
-                required
-                value={formik.values.customer}
-                onChange={handleCustomerChange}
-                task={formik.values.task}
-                onTaskSelected={handleTaskSelected}
-                error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
-                helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
-              />
             </Stack>
             {calcMode === 'manual' &&
               <Stack spacing={1} width={216}>
