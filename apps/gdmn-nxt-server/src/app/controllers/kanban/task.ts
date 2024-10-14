@@ -167,14 +167,14 @@ const upsert: RequestHandler = async (req, res) => {
         USR$USERKEY: userId
       });
     };
-    if ((task.PERFORMER?.ID || -1) !== (oldTaskRecord?.PERMORMER_ID || -1) && !!task.PERFORMER) {
+    if ((task.PERFORMER?.ID || -1) !== (oldTaskRecord?.PERMORMER_ID || -1)) {
       changes.push({
         ID: -1,
         USR$TYPE: isInsertMode ? '1' : '2',
         USR$CARDKEY: cardId > 0 ? cardId : null,
         USR$DESCRIPTION: `Исполнитель задачи "${task.USR$NAME}"`,
         USR$OLD_VALUE: oldTaskRecord.PERMORMER_NAME,
-        USR$NEW_VALUE: task.PERFORMER.NAME,
+        USR$NEW_VALUE: task?.PERFORMER?.NAME,
         USR$USERKEY: userId
       });
     };
