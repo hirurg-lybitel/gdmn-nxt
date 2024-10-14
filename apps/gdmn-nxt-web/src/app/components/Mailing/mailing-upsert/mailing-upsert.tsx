@@ -246,7 +246,7 @@ export function MailingUpsert({
       return;
     }
     formik.setFieldValue('attachments', attachments);
-  }, []);
+  }, [formik.values.attachments]);
 
 
   const initialAttachments = useMemo(() => {

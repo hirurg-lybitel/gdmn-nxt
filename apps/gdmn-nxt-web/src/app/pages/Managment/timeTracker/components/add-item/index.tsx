@@ -263,6 +263,8 @@ export const AddItem = ({
     formik.setFieldValue('workProject', workProjects[workProjectIndex]);
   }, [selectedTaskInfo, workProjects]);
 
+  const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -273,16 +275,38 @@ export const AddItem = ({
             alignItems="center"
           >
             <Stack spacing={1} flex={1}>
-              <TextField
-                placeholder="Над чем вы работали?"
-                name="description"
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                style={{
-                  flex: 1
-                }}
-                InputProps={{
-                  startAdornment:
+              <CustomerSelect
+                disableEdition
+                disableCaption
+                disableFavorite={false}
+                withTasks
+                required
+                value={formik.values.customer}
+                onChange={handleCustomerChange}
+                task={formik.values.task}
+                onTaskSelected={handleTaskSelected}
+                error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
+                helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
+              />
+              <div style={{ height: '40px', width: '100%', position: 'relative' }}>
+                <TextField
+                  placeholder="Над чем вы работали?"
+                  name="description"
+                  multiline
+                  minRows={1}
+                  {...(!descriptionOnFocus && { rows: 1 })}
+                  fullWidth
+                  value={formik.values.description}
+                  onChange={formik.handleChange}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'var(--color-paper-bg)',
+                    zIndex: 2
+                  }}
+                  onFocus={() => setDescriptionOnFocus(true)}
+                  onBlur={() => setDescriptionOnFocus(false)}
+                  InputProps={{
+                    startAdornment:
                   <InputAdornment position="start">
                     <div style={{ position: 'relative', color: 'transparent' }}>
                       {/* Костыль для автоширины Autocomplete */}
@@ -348,21 +372,9 @@ export const AddItem = ({
                       />
                     </div>
                   </InputAdornment>,
-                }}
-              />
-              <CustomerSelect
-                disableEdition
-                disableCaption
-                disableFavorite={false}
-                withTasks
-                required
-                value={formik.values.customer}
-                onChange={handleCustomerChange}
-                task={formik.values.task}
-                onTaskSelected={handleTaskSelected}
-                error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
-                helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
-              />
+                  }}
+                />
+              </div>
             </Stack>
             {calcMode === 'manual' &&
               <Stack spacing={1} width={216}>

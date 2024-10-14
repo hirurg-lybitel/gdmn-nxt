@@ -73,6 +73,7 @@ export function Profile(props: ProfileProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector<RootState, UserState>(state => state.user);
+  const debounces = useSelector((state: RootState) => state.filtersStorage.filterDebounce);
 
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
   const { data: settings } = useGetProfileSettingsQuery(userProfile?.id || -1);
@@ -126,6 +127,10 @@ export function Profile(props: ProfileProps) {
   };
 
   const logout = () => {
+    const debouncesMas = Object.values(debounces);
+    for (const element of debouncesMas) {
+      clearTimeout(element);
+    }
     dispatch(logoutUser());
   };
 

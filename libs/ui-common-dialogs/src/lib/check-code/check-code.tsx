@@ -24,6 +24,7 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
     setLoading(false);
 
     if (response.result === 'ERROR') {
+      codeRef.current?.clear();
       setError(response.message ?? '');
     }
   };
