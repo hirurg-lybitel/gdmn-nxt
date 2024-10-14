@@ -44,8 +44,8 @@ export function Captcha({ image = '', onSubmit, onCancel, regenerate }: CaptchaP
       <Stack className={styles.container} spacing={1.5}>
         <div className={styles.captchaContainer}>
           <div className={styles.captcha} dangerouslySetInnerHTML={{ __html: image }} />
-          <div>
-            <IconButton onClick={regenerate}><ReplayIcon fontSize="medium" /></IconButton>
+          <div className={styles.regenerateButton}>
+            <IconButton onClick={regenerate}><ReplayIcon /></IconButton>
           </div>
         </div>
         <Stack direction="row" spacing={1.5}>
@@ -64,7 +64,7 @@ export function Captcha({ image = '', onSubmit, onCancel, regenerate }: CaptchaP
               color="primary"
               onClick={handleSubmit}
             >
-            Проверить
+              Проверить
             </Button>
           </Box>
         </Stack>
