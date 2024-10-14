@@ -244,7 +244,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 py: '2px !important',
                 '&:hover .action': {
                   display: 'block !important',
-                }
+                },
+                padding: '0px !important'
               }}
             >
               <CustomerItem
@@ -358,6 +359,8 @@ const CustomerItem = ({
         direction="row"
         alignItems="center"
         spacing={1}
+        style={{ padding: '2px 16px' }}
+        onClick={customerClick(customer)}
       >
         {multiple &&
           <Checkbox
@@ -366,7 +369,7 @@ const CustomerItem = ({
             style={{ marginRight: 8 }}
             checked={selected}
           />}
-        <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }} onClick={customerClick(customer)}>
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
           {customer.NAME}
           {!disableCaption && customer.TAXID
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
@@ -448,7 +451,7 @@ const CustomerTasks = ({
   return (
     <CustomizedCard
       style={{
-        height: open ? (projects.length === 1 ? (projects[0].tasks ?? []).length : projects.length) * rowHeight : '1px',
+        height: open ? (projects.length === 1 ? (projects[0].tasks ?? []).length : projects.length) * rowHeight : '0px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
