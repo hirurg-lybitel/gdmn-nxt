@@ -78,11 +78,6 @@ export function DealsFilter(props: DealsFilterProps) {
     return () => clearTimeout(sendRequestNumber);
   }, [requestNumber]);
 
-  const handleDealNumberChnage = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (isNaN(Number(e.target.value))) return;
-    setDealNumber(e.target.value);
-  };
-
   return (
     <CustomizedDialog
       open={open}
@@ -108,7 +103,7 @@ export function DealsFilter(props: DealsFilterProps) {
             <TextField
               label="Номер сделки"
               value={dealNumber || ''}
-              onChange={handleDealNumberChnage}
+              onChange={(e) => setDealNumber(e.target.value)}
             />
             <Autocomplete
               options={customers}
