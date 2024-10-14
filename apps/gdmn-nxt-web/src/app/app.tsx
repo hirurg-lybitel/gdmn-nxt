@@ -48,6 +48,10 @@ export default function App(props: AppProps) {
 
   const navigate = useNavigate();
 
+  const handleRegenerateCaptcha = async () => {
+    const dataCaptcha = await get<string>('captcha');
+    setCaptchaImage(dataCaptcha);
+  };
 
   const pathName: string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
@@ -255,6 +259,7 @@ export default function App(props: AppProps) {
               onSignIn={handleSignIn}
             />
             <Captcha
+              regenerate={handleRegenerateCaptcha}
               image={captchaImage}
               onSubmit={captchaSubmit}
               onCancel={captchaCancel}
