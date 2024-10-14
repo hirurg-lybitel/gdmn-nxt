@@ -38,7 +38,7 @@ import flash from 'connect-flash';
 import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
-import { bodySize } from './app/constants/params';
+import { bodySize, rateLimit } from './app/constants/params';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cachedRequests';
 import fs from 'fs';
@@ -147,7 +147,7 @@ const apiRoot = {
 
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 200,
+  max: rateLimit,
   keyGenerator: (req) => req.session.userId?.toString() ?? req.sessionID,
   handler: (req, res) => {
     console.error('Too many requests, please try again later.', { user: req.user?.['fullName'] });
