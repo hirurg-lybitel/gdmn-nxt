@@ -282,7 +282,7 @@ export function TimeTracker() {
             {timeTrackGroup.map(({ date, duration, items }, idx) => {
               return (
                 <CustomizedCard key={idx}>
-                  <Accordion defaultExpanded={true}>
+                  <Accordion defaultExpanded={false}>
                     <AccordionSummary>
                       <Stack
                         direction="row"
