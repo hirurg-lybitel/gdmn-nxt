@@ -102,6 +102,7 @@ export function DealsFilter(props: DealsFilterProps) {
             />
             <TextField
               label="Номер сделки"
+              type="number"
               value={dealNumber || ''}
               onChange={(e) => setDealNumber(e.target.value)}
             />
