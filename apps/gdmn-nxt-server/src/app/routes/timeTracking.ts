@@ -17,5 +17,11 @@ router.get('/time-tracking/tasks/:id', timeTrackerTasksController.findById);
 router.get('/time-tracking/tasks', timeTrackerTasksController.findAll);
 router.get('/time-tracking/projects', timeTrackerProjectsController.findAll);
 
+router.post('/time-tracking/tasks/favorites/:id', timeTrackerTasksController.addToFavorites);
+router.delete('/time-tracking/tasks/favorites/:id', timeTrackerTasksController.removeFromFavorites);
+
+router.post('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.addToFavorites);
+router.delete('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.removeFromFavorites);
+
 export const timeTrackingRouter = router;
 

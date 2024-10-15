@@ -471,6 +471,16 @@ export interface IFavoriteWorkProject extends IWithID {
   workProject?: IWorkProject;
 }
 
+export interface IFavoriteTask extends IWithID {
+  user?: number;
+  task?: IWorkProject;
+}
+
+export interface IFavoriteProject extends IWithID {
+  user?: number;
+  project?: IWorkProject;
+}
+
 export interface ITimeTrack extends IWithID {
   date: Date;
   startTime?: Date | null;
@@ -496,11 +506,13 @@ export interface ITimeTrackProject extends IWithID {
   name: string;
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
+  isFavorite?: boolean
 }
 
 export interface ITimeTrackTask extends IWithID {
   name: string;
   project?: ITimeTrackProject;
+  isFavorite?: boolean;
 }
 
 export interface IContactName {
