@@ -67,7 +67,7 @@ export function FilterPanel({
             value={filteringData?.customers as ICustomer[] ?? []}
             onChange={(value) => handleOnChange(['customers'], [value])}
           />
-          {userPermissions?.timeTracking?.ALL &&
+          {userPermissions?.['time-tracking']?.ALL &&
           <UserSelect
             multiple
             disableCloseOnSelect

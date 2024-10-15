@@ -333,7 +333,7 @@ export type ActionName =
   'system' |
   'mailings' |
   'feedback' |
-  'timeTracking' |
+  'time-tracking' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
