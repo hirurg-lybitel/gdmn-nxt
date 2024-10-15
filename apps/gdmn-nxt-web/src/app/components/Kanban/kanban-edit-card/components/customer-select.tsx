@@ -185,7 +185,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
-  const [searchText, setSearchText] = useState('');
 
   return (
     <>
@@ -249,7 +248,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                tastsFilter={searchText}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -264,16 +262,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [searchText, multiple, withTasks, disableCaption, disableEdition, disableFavorite, handleEditCustomer, handleFavoriteClick, handleTaskSelect, onTaskSelected])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
-            onChange={(e) => {
-              setSearchText(e.target.value);
-            }}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
@@ -314,7 +309,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 }
 
 interface CustomerItemProps {
-  tastsFilter?: string,
   customer: ICustomer;
   selected: boolean;
   multiple?: boolean;
@@ -329,7 +323,6 @@ interface CustomerItemProps {
 };
 
 const CustomerItem = ({
-  tastsFilter,
   customer,
   selected,
   multiple = false,
@@ -417,7 +410,6 @@ const CustomerItem = ({
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
       <CustomerTasks
-        filter={tastsFilter}
         open={expandedTasks}
         customerId={customer.ID}
         onSelect={handleTaskClick}
@@ -427,14 +419,12 @@ const CustomerItem = ({
 };
 
 interface CustomerTasksProps {
-  filter?: string,
   open: boolean;
   customerId: number;
   onSelect: (task: ITimeTrackTask) => void;
 };
 
 const CustomerTasks = ({
-  filter,
   open,
   customerId,
   onSelect
@@ -455,15 +445,10 @@ const CustomerTasks = ({
   const rowHeight = 72;
   const maxLines = 4;
 
-  const filterTasks = useCallback((tasks: ITimeTrackTask[] | undefined) => {
-    if (!filter || !tasks) return tasks;
-    return tasks?.filter((task) => task.name.includes(filter));
-  }, [filter]);
-
   return (
     <CustomizedCard
       style={{
-        height: open ? (projects.length === 1 ? (filterTasks(projects[0].tasks) ?? []).length : projects.length) * rowHeight : '1px',
+        height: open ? (projects.length === 1 ? (projects[0].tasks ?? []).length : projects.length) * rowHeight : '1px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
@@ -491,19 +476,17 @@ const CustomerTasks = ({
               >
                 {project.name}
               </ListSubheader>
-              {filterTasks(project.tasks)?.map(task => {
-                return (
-                  <ListItem
-                    key={`item-${project.ID}-${task.ID}`}
-                    onClick={taskSelect(task)}
-                    disablePadding
-                  >
-                    <ListItemButton>
-                      <ListItemText inset primary={task.name} />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
+              {project.tasks?.map(task => (
+                <ListItem
+                  key={`item-${project.ID}-${task.ID}`}
+                  onClick={taskSelect(task)}
+                  disablePadding
+                >
+                  <ListItemButton>
+                    <ListItemText inset primary={task.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
             </ul>
           </li>
         ))}
