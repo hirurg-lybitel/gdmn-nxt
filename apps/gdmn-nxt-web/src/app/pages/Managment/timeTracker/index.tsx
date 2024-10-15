@@ -79,7 +79,7 @@ const filterEntityName = 'timeTracking';
 
 export function TimeTracker() {
   const dispatch = useDispatch();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking) || {};
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking) ?? {};
   const [openFilters, setOpenFilters] = useState(false);
 
   const {
