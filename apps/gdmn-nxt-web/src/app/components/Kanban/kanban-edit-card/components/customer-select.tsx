@@ -78,7 +78,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       withTasks
     }
   });
-
   const customers: ICustomer[] = useMemo(
     () => [...(customersResponse?.data ?? [])],
     [customersResponse?.data]
@@ -250,7 +249,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                tasksFilter={searchText}
+                tastsFilter={searchText}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -315,7 +314,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 }
 
 interface CustomerItemProps {
-  tasksFilter?: string,
+  tastsFilter?: string,
   customer: ICustomer;
   selected: boolean;
   multiple?: boolean;
@@ -329,13 +328,8 @@ interface CustomerItemProps {
   onTaskSelect: (task: ITimeTrackTask) => void;
 };
 
-const filterTasks = (tasks: ITimeTrackTask[], filter: string) => {
-  if (!filter || !tasks) return tasks;
-  return tasks?.filter((task) => task.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
-};
-
 const CustomerItem = ({
-  tasksFilter,
+  tastsFilter,
   customer,
   selected,
   multiple = false,
@@ -362,8 +356,6 @@ const CustomerItem = ({
     onCustomerSelect(e, customer);
   }, [onCustomerSelect]);
 
-  const taskCount = filterTasks(customer?.tasks || [], tasksFilter || '').length;
-
   return (
     <Stack
       flex={1}
@@ -387,14 +379,14 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        {withTasks && (taskCount ?? 0) > 0 &&
+        {withTasks && (customer.taskCount ?? 0) > 0 &&
           <Stack
             direction="row"
             alignItems={'center'}
             onClick={taskClick}
             spacing={0.5}
           >
-            <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
+            <Typography>{`${customer.taskCount} ${pluralize(customer.taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -425,7 +417,7 @@ const CustomerItem = ({
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
       <CustomerTasks
-        filter={tasksFilter}
+        filter={tastsFilter}
         open={expandedTasks}
         customerId={customer.ID}
         onSelect={handleTaskClick}
@@ -453,10 +445,16 @@ const CustomerTasks = ({
     skip: !open
   });
 
+  const filterTasks = useCallback((tasks: ITimeTrackTask[]) => {
+    if (!filter || !tasks) return tasks;
+    return tasks?.filter((task) => task.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
+  }, [filter]);
+
   const filteredprojects = useMemo(() => {
     const filtered = [];
     for (let i = 0;i < projects.length;i++) {
-      const tasks = filterTasks(projects[i].tasks || [], filter || '') ;
+      const tasks = filterTasks(projects[i].tasks || []) ;
+      console.log(tasks);
       if (tasks?.length > 0) {
         filtered.push({ ...projects[i], tasks: tasks });
       }
