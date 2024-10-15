@@ -9,6 +9,8 @@ type ITimeTrackerTasksRequestResult = IRequestResult<{ timeTrackerTasks: ITimeTr
 
 const cachedOptions: Partial<IQueryOptions>[] = [];
 
+const projectsCachedOptions: Partial<IQueryOptions>[] = [];
+
 export const timeTrackingApi = createApi({
   reducerPath: 'timeTracking',
   tagTypes: ['TimeTrack', 'Project', 'Task'],
@@ -99,6 +101,12 @@ export const timeTrackingApi = createApi({
     }),
     getProjects: builder.query<ITimeTrackProject[], Partial<IQueryOptions> | void>({
       query: (options) => {
+        const lastOptions: Partial<IQueryOptions> = { ...options };
+
+        if (!projectsCachedOptions.includes(lastOptions)) {
+          projectsCachedOptions.push(lastOptions);
+        }
+
         const params = queryOptionsToParamsString(options);
 
         return {
@@ -146,101 +154,131 @@ export const timeTrackingApi = createApi({
           ]
           : [{ type: 'Task', id: 'LIST' }],
     }),
-    addFavoriteTask: builder.mutation<IFavoriteTask, number>({
-      query: (taksId) => ({
-        url: `/tasks/favorites/${taksId}`,
+    addFavoriteTask: builder.mutation<IFavoriteTask, {taskId: number, projectId: number}>({
+      query: ({ taskId }) => ({
+        url: `/tasks/favorites/${taskId}`,
         method: 'POST',
       }),
       invalidatesTags: [{ type: 'Project', id: 'LIST' }],
-      // async onQueryStarted(taksId, { dispatch, queryFulfilled }) {
-      //   const patchResult = dispatch(
-      //     timeTrackingApi.util.updateQueryData('getTasks', undefined, (draft) => {
-      //       if (Array.isArray(draft)) {
-      //         const findIndex = draft?.findIndex(c => c.ID === taksId);
-      //         if (findIndex >= 0) {
-      //           draft[findIndex] = { ...draft[findIndex], isFavorite: true };
-      //         }
-      //       }
-      //     })
-      //   );
-      //   try {
-      //     await queryFulfilled;
-      //   } catch {
-      //     patchResult.undo();
-      //   }
-      // },
+      async onQueryStarted({ taskId, projectId }, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              console.log('1');
+              if (Array.isArray(draft)) {
+                const projectIndex = draft?.findIndex(c => c.ID === projectId);
+                if (projectIndex >= 0 && draft[projectIndex].tasks) {
+                  const taskIndex = draft[projectIndex].tasks?.findIndex(c => c.ID === taskId);
+                  if (taskIndex >= 0) {
+                    const newTasks = draft[projectIndex].tasks;
+                    if (newTasks) {
+                      newTasks[taskIndex].isFavorite = true;
+                      draft[projectIndex] = { ...draft[projectIndex], tasks: newTasks };
+                    }
+                  }
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
-    deleteFavoriteTask: builder.mutation<IFavoriteTask, number>({
-      query: (taksId) => ({
-        url: `/tasks/favorites/${taksId}`,
+    deleteFavoriteTask: builder.mutation<IFavoriteTask, {taskId: number, projectId: number}>({
+      query: ({ taskId }) => ({
+        url: `/tasks/favorites/${taskId}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Project', id: 'LIST' }],
-      // async onQueryStarted(taksId, { dispatch, queryFulfilled }) {
-      //   const patchResult = dispatch(
-      //     workProjectsApi.util.updateQueryData('getTasks', undefined, (draft) => {
-      //       if (Array.isArray(draft)) {
-      //         const findIndex = draft?.findIndex(c => c.ID === taksId);
-      //         if (findIndex >= 0) {
-      //           draft[findIndex] = { ...draft[findIndex], isFavorite: false };
-      //         }
-      //       }
-      //     })
-      //   );
-      //   try {
-      //     await queryFulfilled;
-      //   } catch {
-      //     patchResult.undo();
-      //   }
-      // },
+      async onQueryStarted({ taskId, projectId }, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              console.log('1');
+              if (Array.isArray(draft)) {
+                const projectIndex = draft?.findIndex(c => c.ID === projectId);
+                if (projectIndex >= 0 && draft[projectIndex].tasks) {
+                  const taskIndex = draft[projectIndex].tasks?.findIndex(c => c.ID === taskId);
+                  if (taskIndex >= 0) {
+                    const newTasks = draft[projectIndex].tasks;
+                    if (newTasks) {
+                      newTasks[taskIndex].isFavorite = false;
+                      draft[projectIndex] = { ...draft[projectIndex], tasks: newTasks };
+                    }
+                  }
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     addFavoriteProject: builder.mutation<IFavoriteProject, number>({
-      query: (taksId) => ({
-        url: `/projects/favorites/${taksId}`,
+      query: (projectId) => ({
+        url: `/projects/favorites/${projectId}`,
         method: 'POST',
       }),
       invalidatesTags: [{ type: 'Project', id: 'LIST' }],
-      // async onQueryStarted(taksId, { dispatch, queryFulfilled }) {
-      //   const patchResult = dispatch(
-      //     timeTrackingApi.util.updateQueryData('getTasks', undefined, (draft) => {
-      //       if (Array.isArray(draft)) {
-      //         const findIndex = draft?.findIndex(c => c.ID === taksId);
-      //         if (findIndex >= 0) {
-      //           draft[findIndex] = { ...draft[findIndex], isFavorite: true };
-      //         }
-      //       }
-      //     })
-      //   );
-      //   try {
-      //     await queryFulfilled;
-      //   } catch {
-      //     patchResult.undo();
-      //   }
-      // },
+      async onQueryStarted(projectId, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              if (Array.isArray(draft)) {
+                const findIndex = draft?.findIndex(c => c.ID === projectId);
+                console.log(findIndex);
+                if (findIndex >= 0) {
+                  draft[findIndex] = { ...draft[findIndex], isFavorite: true };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     deleteFavoriteProject: builder.mutation<IFavoriteProject, number>({
-      query: (taksId) => ({
-        url: `/projects/favorites/${taksId}`,
+      query: (projectId) => ({
+        url: `/projects/favorites/${projectId}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Project', id: 'LIST' }],
-      // async onQueryStarted(taksId, { dispatch, queryFulfilled }) {
-      //   const patchResult = dispatch(
-      //     workProjectsApi.util.updateQueryData('getTasks', undefined, (draft) => {
-      //       if (Array.isArray(draft)) {
-      //         const findIndex = draft?.findIndex(c => c.ID === taksId);
-      //         if (findIndex >= 0) {
-      //           draft[findIndex] = { ...draft[findIndex], isFavorite: false };
-      //         }
-      //       }
-      //     })
-      //   );
-      //   try {
-      //     await queryFulfilled;
-      //   } catch {
-      //     patchResult.undo();
-      //   }
-      // },
+      async onQueryStarted(projectId, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              if (Array.isArray(draft)) {
+                const findIndex = draft?.findIndex(c => c.ID === projectId);
+                console.log(findIndex);
+                if (findIndex >= 0) {
+                  draft[findIndex] = { ...draft[findIndex], isFavorite: false };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     })
   })
 });

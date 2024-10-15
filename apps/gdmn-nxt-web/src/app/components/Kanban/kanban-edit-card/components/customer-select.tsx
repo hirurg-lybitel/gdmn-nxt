@@ -455,12 +455,12 @@ const CustomerTasks = ({
   const [addFavoriteTask] = useAddFavoriteTaskMutation();
   const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
 
-  const handleToggleTaskFavorite = (id: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+  const handleToggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
     e.stopPropagation();
     if (favorite) {
-      deleteFavoriteTask(id);
+      deleteFavoriteTask({ taskId, projectId });
     } else {
-      addFavoriteTask(id);
+      addFavoriteTask({ taskId, projectId });
     }
   };
 
@@ -538,7 +538,7 @@ const CustomerTasks = ({
                     <ListItemText inset primary={task.name} />
                   </ListItemButton>
                   <div style={{ position: 'absolute', right: '16px' }}>
-                    <SwitchStar selected={!!task.isFavorite} onClick={handleToggleTaskFavorite(task.ID, !!task.isFavorite)} />
+                    <SwitchStar selected={!!task.isFavorite} onClick={handleToggleTaskFavorite(task.ID, project.ID, !!task.isFavorite)} />
                   </div>
                 </ListItem>
               ))}

@@ -1,7 +1,7 @@
 import { InternalServerErrorException, ITimeTrackTask, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackerProjectsRepository } from '../repository';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
-import { favoriteTimeTrackerProjectsRepository } from '../repository/favoriteTimeTrackerprojects';
+import { favoriteTimeTrackerProjectsRepository } from '../repository/favoriteTimeTrackerProjects';
 
 const findAll = async (
   sessionID: string,
