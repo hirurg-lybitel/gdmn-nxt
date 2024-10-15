@@ -33,25 +33,34 @@ const find: FindHandler<ICustomerFeedback> = async (
         m.ID MAILING_ID, M.USR$NAME MAILING_NAME,
         f.USR$FEEDBACKTYPE FEEDBACKTYPE,
         f.USR$CREATIONDATE CREATIONDATE,
-        contact.ID CREATOR_ID, contact.NAME CREATOR_NAME
+        u.ID USER_ID, u.NAME USER_NAME,
+        ucon.ID AS UCON_ID,
+        ucon.NAME AS UCON_NAME
       FROM USR$CRM_CUSTOMERS_FEEDBACK f
       JOIN GD_CONTACT con ON con.ID = f.USR$CUSTOMERKEY
-      JOIN GD_CONTACT contact ON contact.ID = f.USR$CREATOR
       LEFT JOIN USR$CRM_MARKETING_MAILING m ON m.ID = f.USR$MAILINGKEY
+      LEFT JOIN GD_USER u ON u.ID = f.USR$CREATOR
+      LEFT JOIN GD_CONTACT ucon ON ucon.ID = u.CONTACTKEY
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
       ORDER BY f.USR$CREATIONDATE DESC`,
       { ...whereClause });
 
-    const feedback: ICustomerFeedback[] = rows.map(r => ({
+    const feedback: ICustomerFeedback[] = rows.map<ICustomerFeedback>(r => ({
       ID: r['ID'],
       response: r['USR$RESPONSE'],
       toDo: r['USR$TODO'],
       type: r['FEEDBACKTYPE'],
       creationDate: r['CREATIONDATE'],
-      creator: {
-        ID: r['CREATOR_ID'],
-        NAME: r['CREATOR_NAME']
-      },
+      ...(r['USER_ID'] && {
+        creator: {
+          ID: r['USER_ID'],
+          NAME: r['USER_NAME'],
+          CONTACT: {
+            ID: r['UCON_ID'],
+            NAME: r['UCON_NAME'],
+          }
+        },
+      }),
       ...(r['CON_ID'] && { customer: { ID: r['CON_ID'], NAME: r['CON_NAME'] } }),
       ...(r['MAILING_ID'] && { mailing: { ID: r['MAILING_ID'], NAME: r['MAILING_NAME'] } })
     }));
@@ -131,13 +140,13 @@ const save: SaveHandler<ICustomerFeedback> = async (
     response,
     toDo,
     type,
-    creator: { ID: contactKey }
+    creator
   } = metadata;
 
   try {
     const newFeedback = await fetchAsSingletonObject<ICustomerFeedback>(
       `INSERT INTO USR$CRM_CUSTOMERS_FEEDBACK(USR$TODO, USR$RESPONSE, USR$MAILINGKEY, USR$CUSTOMERKEY, USR$FEEDBACKTYPE, USR$CREATOR)
-      VALUES(:toDo, :response, :mailingKey, :customerKey, :feedbackType, :contactKey)
+      VALUES(:toDo, :response, :mailingKey, :customerKey, :feedbackType, :creatorKey)
       RETURNING ID`,
       {
         toDo,
@@ -145,7 +154,7 @@ const save: SaveHandler<ICustomerFeedback> = async (
         mailingKey: mailing?.ID ?? null,
         customerKey: customer?.ID ?? null,
         feedbackType: type,
-        contactKey
+        creatorKey: creator?.ID ?? null
       }
     );
 
