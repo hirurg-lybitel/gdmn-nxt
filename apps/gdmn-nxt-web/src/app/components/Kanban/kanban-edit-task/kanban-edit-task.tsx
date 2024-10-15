@@ -331,7 +331,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     loading={employeesIsFetching}
                     loadingText="Загрузка данных..."
                   />
-                  <Stack direction="row" spacing={1}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    style={{ alignItems: 'center' }}
+                  >
                     <Autocomplete
                       options={cards}
                       fullWidth
@@ -361,9 +365,15 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                       loadingText="Загрузка данных..."
                     />
                     {canOpenDeal &&
-                      <IconButton color="primary" onClick={() => setEditDeal(true)}>
+                    <div>
+                      <IconButton
+                        disabled={!(formik.values.USR$CARDKEY > 0)}
+                        color="primary"
+                        onClick={() => setEditDeal(true)}
+                      >
                         <VisibilityIcon visibility={'none'}/>
                       </IconButton>
+                    </div>
                     }
                   </Stack>
                   <Divider textAlign="left">Срок выполнения</Divider>

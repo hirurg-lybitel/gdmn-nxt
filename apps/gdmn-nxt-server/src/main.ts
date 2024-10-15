@@ -2,7 +2,7 @@ import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
-import { validPassword } from '@gsbelarus/util-helpers';
+import { resultError, validPassword } from '@gsbelarus/util-helpers';
 import { IsNotNull, IsNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
@@ -38,7 +38,7 @@ import flash from 'connect-flash';
 import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
-import { bodySize } from './app/constants/params';
+import { bodySize, rateLimit } from './app/constants/params';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cachedRequests';
 import fs from 'fs';
@@ -147,10 +147,13 @@ const apiRoot = {
 
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 100
+  max: rateLimit,
+  keyGenerator: (req) => req.session.userId?.toString() ?? req.sessionID,
+  handler: (req, res) => {
+    console.error('Too many requests, please try again later.', { user: req.user?.['fullName'] });
+    res.status(429).json(resultError('Слишком много запросов. Повторите попытку позже.'));
+  }
 });
-app.use(limiter);
-
 
 function isIGedeminUser(u: IUser): u is IGedeminUser {
   // eslint-disable-next-line dot-notation
@@ -269,7 +272,8 @@ const appMiddlewares = [
   passport.initialize(),
   passport.session(),
   flash(),
-  errorMiddleware
+  errorMiddleware,
+  limiter
   // csrf()
 ];
 
@@ -288,6 +292,7 @@ router.use(authRouter);
 router.use(routerMiddlewares);
 
 app.use(appMiddlewares);
+
 app.use(apiVersion, router);
 
 /** Write permissions to cache when server is starting */

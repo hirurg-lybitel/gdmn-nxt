@@ -78,6 +78,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       withTasks
     }
   });
+
   const customers: ICustomer[] = useMemo(
     () => [...(customersResponse?.data ?? [])],
     [customersResponse?.data]
@@ -185,6 +186,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
+  const [searchText, setSearchText] = useState('');
 
   return (
     <>
@@ -248,6 +250,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
+                tasksFilter={searchText}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -262,13 +265,16 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
+        }, [searchText, multiple, withTasks, disableCaption, disableEdition, disableFavorite, handleEditCustomer, handleFavoriteClick, handleTaskSelect, onTaskSelected])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+            }}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
@@ -309,6 +315,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 }
 
 interface CustomerItemProps {
+  tasksFilter?: string,
   customer: ICustomer;
   selected: boolean;
   multiple?: boolean;
@@ -322,7 +329,13 @@ interface CustomerItemProps {
   onTaskSelect: (task: ITimeTrackTask) => void;
 };
 
+const filterTasks = (tasks: ITimeTrackTask[], filter: string) => {
+  if (!filter || !tasks) return tasks;
+  return tasks?.filter((task) => task.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
+};
+
 const CustomerItem = ({
+  tasksFilter,
   customer,
   selected,
   multiple = false,
@@ -349,6 +362,8 @@ const CustomerItem = ({
     onCustomerSelect(e, customer);
   }, [onCustomerSelect]);
 
+  const taskCount = filterTasks(customer?.tasks || [], tasksFilter || '').length;
+
   return (
     <Stack
       flex={1}
@@ -372,14 +387,14 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        {withTasks && (customer.taskCount ?? 0) > 0 &&
+        {withTasks && (taskCount ?? 0) > 0 &&
           <Stack
             direction="row"
             alignItems={'center'}
             onClick={taskClick}
             spacing={0.5}
           >
-            <Typography>{`${customer.taskCount} ${pluralize(customer.taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
+            <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -410,6 +425,7 @@ const CustomerItem = ({
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
       <CustomerTasks
+        filter={tasksFilter}
         open={expandedTasks}
         customerId={customer.ID}
         onSelect={handleTaskClick}
@@ -419,12 +435,14 @@ const CustomerItem = ({
 };
 
 interface CustomerTasksProps {
+  filter?: string,
   open: boolean;
   customerId: number;
   onSelect: (task: ITimeTrackTask) => void;
 };
 
 const CustomerTasks = ({
+  filter,
   open,
   customerId,
   onSelect
@@ -434,6 +452,17 @@ const CustomerTasks = ({
   }, {
     skip: !open
   });
+
+  const filteredprojects = useMemo(() => {
+    const filtered = [];
+    for (let i = 0;i < projects.length;i++) {
+      const tasks = filterTasks(projects[i].tasks || [], filter || '') ;
+      if (tasks?.length > 0) {
+        filtered.push({ ...projects[i], tasks: tasks });
+      }
+    }
+    return filtered;
+  }, [filterTasks, projects]);
 
   const taskSelect = useCallback((task: ITimeTrackTask) => () => onSelect(task), [onSelect]);
 
@@ -445,10 +474,11 @@ const CustomerTasks = ({
   const rowHeight = 72;
   const maxLines = 4;
 
+
   return (
     <CustomizedCard
       style={{
-        height: open ? (projects.length === 1 ? (projects[0].tasks ?? []).length : projects.length) * rowHeight : '1px',
+        height: open ? (filteredprojects.length === 1 ? (filteredprojects[0].tasks ?? []).length : filteredprojects.length) * rowHeight : '1px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
@@ -467,7 +497,7 @@ const CustomerTasks = ({
         dense
         disablePadding
       >
-        {projects.map(project => (
+        {filteredprojects.map(project => (
           <li key={`section-${project.ID}`}>
             <ul>
               <ListSubheader
@@ -476,17 +506,19 @@ const CustomerTasks = ({
               >
                 {project.name}
               </ListSubheader>
-              {project.tasks?.map(task => (
-                <ListItem
-                  key={`item-${project.ID}-${task.ID}`}
-                  onClick={taskSelect(task)}
-                  disablePadding
-                >
-                  <ListItemButton>
-                    <ListItemText inset primary={task.name} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
+              {project.tasks?.map(task => {
+                return (
+                  <ListItem
+                    key={`item-${project.ID}-${task.ID}`}
+                    onClick={taskSelect(task)}
+                    disablePadding
+                  >
+                    <ListItemButton>
+                      <ListItemText inset primary={task.name} />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
             </ul>
           </li>
         ))}

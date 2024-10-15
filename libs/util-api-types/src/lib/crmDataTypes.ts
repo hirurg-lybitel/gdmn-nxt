@@ -333,7 +333,7 @@ export type ActionName =
   'system' |
   'mailings' |
   'feedback' |
-  'timeTracking' |
+  'time-tracking' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -453,6 +453,7 @@ export interface ICustomerFeedback extends IWithID {
   response?: string;
   toDo?: string;
   creationDate?: Date;
+  creator?: IUser
 }
 
 export enum WorkProjectStatus {

@@ -429,7 +429,7 @@ const save = async (
         CONTACTTYPE: 2,
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
-        NOTE: await string2Blob(NOTE),
+        NOTE: NOTE ? await string2Blob(NOTE) : null,
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
@@ -456,7 +456,7 @@ const save = async (
         SURNAME: nameInfo?.lastName ?? '',
         FIRSTNAME: nameInfo?.firstName ?? '',
         MIDDLENAME: nameInfo.middleName ?? '',
-        PHOTO: await string2Blob(PHOTO)
+        PHOTO: PHOTO ? await string2Blob(PHOTO) : null
       }
     );
 
