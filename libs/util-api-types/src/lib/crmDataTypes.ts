@@ -453,6 +453,7 @@ export interface ICustomerFeedback extends IWithID {
   response?: string;
   toDo?: string;
   creationDate?: Date;
+  creator: IContactWithID
 }
 
 export enum WorkProjectStatus {

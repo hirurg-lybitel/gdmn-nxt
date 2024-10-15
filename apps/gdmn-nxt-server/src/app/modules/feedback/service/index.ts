@@ -5,10 +5,11 @@ type CustomerFeedbackDto = Omit<ICustomerFeedback, 'ID'>;
 
 const createFeedback = async (
   sessionID: string,
-  body: CustomerFeedbackDto
+  body: CustomerFeedbackDto,
+  contactKey: number
 ) => {
   try {
-    return await feedbackRepository.save(sessionID, body);
+    return await feedbackRepository.save(sessionID, { ...body, creator: { ID: contactKey } as any });
   } catch (error) {
     throw error;
   }

@@ -32,9 +32,11 @@ const find: FindHandler<ICustomerFeedback> = async (
         con.ID CON_ID, con.NAME CON_NAME,
         m.ID MAILING_ID, M.USR$NAME MAILING_NAME,
         f.USR$FEEDBACKTYPE FEEDBACKTYPE,
-        f.USR$CREATIONDATE CREATIONDATE
+        f.USR$CREATIONDATE CREATIONDATE,
+        contact.ID CREATOR_ID, contact.NAME CREATOR_NAME
       FROM USR$CRM_CUSTOMERS_FEEDBACK f
       JOIN GD_CONTACT con ON con.ID = f.USR$CUSTOMERKEY
+      JOIN GD_CONTACT contact ON contact.ID = f.USR$CREATOR
       LEFT JOIN USR$CRM_MARKETING_MAILING m ON m.ID = f.USR$MAILINGKEY
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
       ORDER BY f.USR$CREATIONDATE DESC`,
@@ -46,6 +48,10 @@ const find: FindHandler<ICustomerFeedback> = async (
       toDo: r['USR$TODO'],
       type: r['FEEDBACKTYPE'],
       creationDate: r['CREATIONDATE'],
+      creator: {
+        ID: r['CREATOR_ID'],
+        NAME: r['CREATOR_NAME']
+      },
       ...(r['CON_ID'] && { customer: { ID: r['CON_ID'], NAME: r['CON_NAME'] } }),
       ...(r['MAILING_ID'] && { mailing: { ID: r['MAILING_ID'], NAME: r['MAILING_NAME'] } })
     }));
@@ -124,20 +130,22 @@ const save: SaveHandler<ICustomerFeedback> = async (
     mailing,
     response,
     toDo,
-    type
+    type,
+    creator: { ID: contactKey }
   } = metadata;
 
   try {
     const newFeedback = await fetchAsSingletonObject<ICustomerFeedback>(
-      `INSERT INTO USR$CRM_CUSTOMERS_FEEDBACK(USR$TODO, USR$RESPONSE, USR$MAILINGKEY, USR$CUSTOMERKEY, USR$FEEDBACKTYPE)
-      VALUES(:toDo, :response, :mailingKey, :customerKey, :feedbackType)
+      `INSERT INTO USR$CRM_CUSTOMERS_FEEDBACK(USR$TODO, USR$RESPONSE, USR$MAILINGKEY, USR$CUSTOMERKEY, USR$FEEDBACKTYPE, USR$CREATOR)
+      VALUES(:toDo, :response, :mailingKey, :customerKey, :feedbackType, :contactKey)
       RETURNING ID`,
       {
         toDo,
         response,
         mailingKey: mailing?.ID ?? null,
         customerKey: customer?.ID ?? null,
-        feedbackType: type
+        feedbackType: type,
+        contactKey
       }
     );
 

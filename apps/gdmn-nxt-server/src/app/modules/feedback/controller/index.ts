@@ -29,7 +29,8 @@ const findByCustomer: RequestHandler = async (req, res) => {
 
 const createFeedback: RequestHandler = async (req, res) => {
   try {
-    const feedback = await feedbackService.createFeedback(req.sessionID, req.body);
+    const feedback = await feedbackService.createFeedback(req.sessionID, req.body, req.user['contactkey']);
+
 
     const result: IRequestResult = {
       queries: { feedback: [feedback] },
