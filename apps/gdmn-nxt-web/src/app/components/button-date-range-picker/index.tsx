@@ -108,7 +108,7 @@ DateRangeButtonField.fieldType = 'single-input';
 
 const ButtonDateRangePicker = forwardRef(
   (
-    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[], defaltShortcut?: ShortcutsLabel },
+    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[], defaultShortcut?: ShortcutsLabel },
     ref: Ref<HTMLDivElement>
   ) => {
     const [open, setOpen] = useState(false);
@@ -117,13 +117,13 @@ const ButtonDateRangePicker = forwardRef(
     const onOpen = useCallback(() => setOpen(true), []);
 
     useEffect(() => {
-      if (!props.defaltShortcut) return;
-      const shortcut = shortcutsItems[shortcutsItems.findIndex(shortcut => shortcut.label === props.defaltShortcut)];
+      if (!props.defaultShortcut) return;
+      const shortcut = shortcutsItems[shortcutsItems.findIndex(shortcut => shortcut.label === props.defaultShortcut)];
       props.onChange && props.onChange(shortcut.getValue({ isValid: () => true }), {
         validationError: [null, null],
         shortcut: shortcut
       });
-    }, []);
+    }, [props.defaultShortcut]);
 
     return (
       <DateRangePicker

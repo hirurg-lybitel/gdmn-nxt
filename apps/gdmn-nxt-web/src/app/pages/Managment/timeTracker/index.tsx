@@ -99,7 +99,13 @@ export function TimeTracker() {
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
   const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
 
-  const [] = useFilterStore(filterEntityName);
+  const defaultFilter = useMemo(() => {
+    const today = dayjs();
+    return { period: [today.subtract(7, 'day').toDate()
+      .getTime(), today.toDate().getTime()] };
+  }, []);
+
+  const [filtersIsLoading] = useFilterStore(filterEntityName, defaultFilter);
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ timeTracking: filteringData }));
@@ -228,6 +234,8 @@ export function TimeTracker() {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
+  const defaultshotcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : 'Последние 7 дней', [filtersIsLoading]);
+
   return (
     <Stack flex={1} spacing={3}>
       {memoFilter}
@@ -239,7 +247,7 @@ export function TimeTracker() {
       <Stack direction="row">
         <ButtonDateRangePicker
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-          defaltShortcut={'Последние 7 дней'}
+          defaultShortcut={defaultshotcut}
           onChange={(value, context) => {
             const newPeriod = [
               value[0]?.getTime() ?? null,
