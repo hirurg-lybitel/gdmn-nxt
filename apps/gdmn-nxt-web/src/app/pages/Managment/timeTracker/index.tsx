@@ -79,7 +79,7 @@ const filterEntityName = 'timeTracking';
 
 export function TimeTracker() {
   const dispatch = useDispatch();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking) ?? {};
   const [openFilters, setOpenFilters] = useState(false);
 
   const {
@@ -238,7 +238,7 @@ export function TimeTracker() {
       />
       <Stack direction="row">
         <ButtonDateRangePicker
-          value={filterData?.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
+          value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
           onChange={(value) => {
             const newPeriod = [
               value[0]?.getTime() ?? null,
@@ -282,7 +282,7 @@ export function TimeTracker() {
             {timeTrackGroup.map(({ date, duration, items }, idx) => {
               return (
                 <CustomizedCard key={idx}>
-                  <Accordion defaultExpanded={true}>
+                  <Accordion defaultExpanded={false}>
                     <AccordionSummary>
                       <Stack
                         direction="row"

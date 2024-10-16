@@ -183,6 +183,11 @@ export const FeedbackItem = ({
                   }
                 })()}
               </Typography>
+              <div>
+                <Typography variant="caption" style={{ marginLeft: '16px' }}>
+                  {feedback?.creator?.CONTACT?.NAME}
+                </Typography>
+              </div>
               <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
                 <div onClick={handleStopPropagation}>
                   <ItemButtonDelete button onClick={onDelete} />

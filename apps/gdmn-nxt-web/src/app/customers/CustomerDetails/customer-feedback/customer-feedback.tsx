@@ -17,6 +17,7 @@ import { FeedbackItem } from './feedback-item';
 import { useGetClientHistoryTypeQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
 
 export interface CustomerFeedbackProps {
   customerId: number
@@ -47,6 +48,8 @@ export function CustomerFeedback({
   const todoRef = useRef<HTMLTextAreaElement | null>(null);
   const typeRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const { id: userId = -1 } = useUserData();
+
   const [sendDisabled, setSendDisabled] = useReducer((_: any, d: boolean) => d, true);
 
   const sendFeedback = () => {
@@ -76,6 +79,10 @@ export function CustomerFeedback({
       toDo,
       customer: {
         ID: customerId,
+        NAME: ''
+      },
+      creator: {
+        ID: userId,
         NAME: ''
       }
     });
