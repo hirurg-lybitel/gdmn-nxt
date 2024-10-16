@@ -124,6 +124,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
   const handleChange = (e: any, newValue: ICustomer | ICustomer[] | null) => {
+    setSearchText('');
     onChange && onChange(newValue as Value<Multiple>);
     if (!newValue) {
       setSelectedTask(null);
@@ -272,9 +273,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
-            onChange={(e) => {
-              setSearchText(e.target.value);
-            }}
+            onChange={(e) => setSearchText(e.target.value)}
+            onBlur={() => setSearchText('')}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
