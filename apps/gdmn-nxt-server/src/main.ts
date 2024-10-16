@@ -258,12 +258,15 @@ passport.deserializeUser(async (user: IUser, done) => {
 
 // const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
 
-const client = new IORedis({
+const redisClient = new IORedis({
   host: '127.0.0.1',
   port: 6379,
 });
 
-const sessionStore = new RedisStore({ client, ttl: 24 * 60 * 60 });
+const sessionStore = new RedisStore({
+  client: redisClient,
+  ttl: 24 * 60 * 60
+});
 
 const appMiddlewares = [
   session({
@@ -434,6 +437,7 @@ httpsServer.on('[ error ]', console.error);
 process
   .on('exit', code => {
     disposeConnection();
+    redisClient.disconnect();
     console.log(`Process exit event with code: ${code}`);
   })
   .on('SIGINT', process.exit)
