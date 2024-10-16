@@ -239,7 +239,8 @@ export function TimeTracker() {
       <Stack direction="row">
         <ButtonDateRangePicker
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-          onChange={(value) => {
+          defaltShortcut={'Последние 7 дней'}
+          onChange={(value, context) => {
             const newPeriod = [
               value[0]?.getTime() ?? null,
               value[1]?.getTime() ?? null

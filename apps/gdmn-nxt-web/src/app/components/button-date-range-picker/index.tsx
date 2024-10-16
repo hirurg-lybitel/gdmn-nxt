@@ -1,5 +1,5 @@
 import { DateRange, DateRangePicker, DateRangePickerProps, PickersShortcutsItem, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
-import { forwardRef, Ref, RefAttributes, useCallback, useState } from 'react';
+import { forwardRef, Ref, RefAttributes, useCallback, useEffect, useState } from 'react';
 import dayjs from '@gdmn-nxt/dayjs';
 import { Button, useForkRef } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -45,7 +45,9 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
     label: shortcutsLabels[4],
     getValue: () => {
       const today = dayjs();
-      return [today.add(-1, 'M').startOf('month').toDate(), today.add(-1, 'M').endOf('month').toDate()];
+      return [today.add(-1, 'M').startOf('month')
+        .toDate(), today.add(-1, 'M').endOf('month')
+        .toDate()];
     },
   },
   // {
@@ -106,13 +108,22 @@ DateRangeButtonField.fieldType = 'single-input';
 
 const ButtonDateRangePicker = forwardRef(
   (
-    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[] },
+    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[], defaltShortcut?: ShortcutsLabel },
     ref: Ref<HTMLDivElement>
   ) => {
     const [open, setOpen] = useState(false);
     const buttonOnClick = useCallback(() => setOpen(prev => !prev), []);
     const onClose = useCallback(() => setOpen(false), []);
     const onOpen = useCallback(() => setOpen(true), []);
+
+    useEffect(() => {
+      if (!props.defaltShortcut) return;
+      const shortcut = shortcutsItems[shortcutsItems.findIndex(shortcut => shortcut.label === props.defaltShortcut)];
+      props.onChange && props.onChange(shortcut.getValue({ isValid: () => true }), {
+        validationError: [null, null],
+        shortcut: shortcut
+      });
+    }, []);
 
     return (
       <DateRangePicker
