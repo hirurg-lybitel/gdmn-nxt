@@ -51,6 +51,8 @@ import { filtersRouter } from './app/routes/filtersRouter';
 import { feedbackRouter } from './app/routes/feedbackRouter';
 import { workProjectsRouter } from './app/routes/workProject';
 import { timeTrackingRouter } from './app/routes/timeTracking';
+import RedisStore from 'connect-redis';
+import IORedis from 'ioredis';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -122,7 +124,7 @@ setTimeout(
   60000);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const MemoryStore = require('memorystore')(session);
+// const MemoryStore = require('memorystore')(session);
 
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -254,7 +256,14 @@ passport.deserializeUser(async (user: IUser, done) => {
   }
 });
 
-const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
+// const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
+
+const client = new IORedis({
+  host: '127.0.0.1',
+  port: 6379,
+});
+
+const sessionStore = new RedisStore({ client, ttl: 24 * 60 * 60 });
 
 const appMiddlewares = [
   session({
