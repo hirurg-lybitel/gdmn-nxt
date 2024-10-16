@@ -165,11 +165,11 @@ export const timeTrackingApi = createApi({
           const options = Object.keys(opt).length > 0 ? opt : undefined;
           const patchResult = dispatch(
             timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
-              console.log('1');
               if (Array.isArray(draft)) {
                 const projectIndex = draft?.findIndex(c => c.ID === projectId);
-                if (projectIndex >= 0 && draft[projectIndex].tasks) {
-                  const taskIndex = draft[projectIndex].tasks?.findIndex(c => c.ID === taskId);
+                const tasks = draft[projectIndex].tasks;
+                if (projectIndex >= 0 && tasks) {
+                  const taskIndex = tasks?.findIndex(c => c.ID === taskId);
                   if (taskIndex >= 0) {
                     const newTasks = draft[projectIndex].tasks;
                     if (newTasks) {
@@ -200,11 +200,11 @@ export const timeTrackingApi = createApi({
           const options = Object.keys(opt).length > 0 ? opt : undefined;
           const patchResult = dispatch(
             timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
-              console.log('1');
               if (Array.isArray(draft)) {
                 const projectIndex = draft?.findIndex(c => c.ID === projectId);
-                if (projectIndex >= 0 && draft[projectIndex].tasks) {
-                  const taskIndex = draft[projectIndex].tasks?.findIndex(c => c.ID === taskId);
+                const tasks = draft[projectIndex].tasks;
+                if (projectIndex >= 0 && tasks) {
+                  const taskIndex = tasks.findIndex(c => c.ID === taskId);
                   if (taskIndex >= 0) {
                     const newTasks = draft[projectIndex].tasks;
                     if (newTasks) {
@@ -237,7 +237,6 @@ export const timeTrackingApi = createApi({
             timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
               if (Array.isArray(draft)) {
                 const findIndex = draft?.findIndex(c => c.ID === projectId);
-                console.log(findIndex);
                 if (findIndex >= 0) {
                   draft[findIndex] = { ...draft[findIndex], isFavorite: true };
                 }
@@ -265,7 +264,6 @@ export const timeTrackingApi = createApi({
             timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
               if (Array.isArray(draft)) {
                 const findIndex = draft?.findIndex(c => c.ID === projectId);
-                console.log(findIndex);
                 if (findIndex >= 0) {
                   draft[findIndex] = { ...draft[findIndex], isFavorite: false };
                 }
