@@ -913,7 +913,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             maxFileSize={maxFileSize}
                             filesLimit={3}
                             showPreviews
-                            initialFiles={initialAttachments}
+                            initialFiles={id <= 0 ? undefined : initialAttachments}
                             onChange={attachmentsChange}
                             disabled={attachmentsFetching}
                           />
