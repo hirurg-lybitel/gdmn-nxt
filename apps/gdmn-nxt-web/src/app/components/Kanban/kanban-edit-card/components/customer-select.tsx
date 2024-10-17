@@ -1,4 +1,4 @@
-import { ICustomer, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { customerApi, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
@@ -15,7 +15,7 @@ import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-ed
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 
 const useStyles = makeStyles(() => ({
@@ -435,6 +435,46 @@ const CustomerTasks = ({
     skip: !open
   });
 
+  function sortByFavorite <S>(mas: any[]): S {
+    const favorites = [];
+    const other = [];
+    for (const element of mas) {
+      if (element.isFavorite) {
+        favorites.push(element);
+      } else {
+        other.push(element);
+      }
+    }
+    return [...favorites, ...other] as S;
+  };
+
+  const sortedProjects = useMemo(() => {
+    return sortByFavorite<ITimeTrackProject[]>(projects.map((project) => ({ ...project, tasks: sortByFavorite<ITimeTrackTask[]>(project.tasks || []) })));
+  }, [projects]);
+
+  const [addFavoriteTask] = useAddFavoriteTaskMutation();
+  const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
+
+  const handleToggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+    e.stopPropagation();
+    if (favorite) {
+      deleteFavoriteTask({ taskId, projectId });
+    } else {
+      addFavoriteTask({ taskId, projectId });
+    }
+  };
+
+  const [addFavoriteProject] = useAddFavoriteProjectMutation();
+  const [deleteFavoriteProject] = useDeleteFavoriteProjectMutation();
+
+  const handleToggleProjectFavorite = (id: number, favorite: boolean) => () => {
+    if (favorite) {
+      deleteFavoriteProject(id);
+    } else {
+      addFavoriteProject(id);
+    }
+  };
+
   const taskSelect = useCallback((task: ITimeTrackTask) => () => onSelect(task), [onSelect]);
 
   const preventAction = useCallback((e: MouseEvent<HTMLLIElement>) => {
@@ -448,7 +488,7 @@ const CustomerTasks = ({
   return (
     <CustomizedCard
       style={{
-        height: open ? (projects.length === 1 ? (projects[0].tasks ?? []).length : projects.length) * rowHeight : '1px',
+        height: open ? (sortedProjects.length === 1 ? (sortedProjects[0].tasks ?? []).length : sortedProjects.length) * rowHeight : '1px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
@@ -467,24 +507,39 @@ const CustomerTasks = ({
         dense
         disablePadding
       >
-        {projects.map(project => (
+        {sortedProjects.map(project => (
           <li key={`section-${project.ID}`}>
             <ul>
               <ListSubheader
                 style={{ lineHeight: '36px', cursor: 'text' }}
                 onClick={preventAction}
               >
-                {project.name}
+                <div
+                  style={{ display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  {project.name}
+                  <div>
+                    <SwitchStar selected={!!project.isFavorite} onClick={handleToggleProjectFavorite(project.ID, !!project.isFavorite)} />
+                  </div>
+                </div>
+
               </ListSubheader>
               {project.tasks?.map(task => (
                 <ListItem
                   key={`item-${project.ID}-${task.ID}`}
                   onClick={taskSelect(task)}
                   disablePadding
+                  style={{ position: 'relative' }}
                 >
                   <ListItemButton>
                     <ListItemText inset primary={task.name} />
                   </ListItemButton>
+                  <div style={{ position: 'absolute', right: '16px' }}>
+                    <SwitchStar selected={!!task.isFavorite} onClick={handleToggleTaskFavorite(task.ID, project.ID, !!task.isFavorite)} />
+                  </div>
                 </ListItem>
               ))}
             </ul>
