@@ -18,11 +18,11 @@
  - запустить redis сервер для хранения express сессий:
     * настроить сеть
      ```
-      docker:network
+      yarn docker:network
      ```
     * запустить контейнер redis
      ```
-      docker:redis
+      yarn docker:redis
      ```
  - запустить проект:
     * в режиме разработчика 
