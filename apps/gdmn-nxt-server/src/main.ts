@@ -258,8 +258,9 @@ passport.deserializeUser(async (user: IUser, done) => {
 
 // const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
 
+/** Redis контейнер должен быть запущен */
 const redisClient = new IORedis({
-  host: '127.0.0.1',
+  host: config.redisHost,
   port: 6379,
 });
 

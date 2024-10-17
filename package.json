@@ -14,7 +14,9 @@
     "pm2:stat": "pm2 status gdmn-crm",
     "init": "yarn --network-timeout 1000000 && yarn build && yarn pm2",
     "docker:build": "docker compose -f docker-compose.build.yml --env-file .env --env-file .env.prod up -d --build",
-    "docker:run": "docker compose -f docker-compose.run.yml --env-file .env --env-file .env.prod up -d"
+    "docker:run": "docker compose -f docker-compose.run.yml --env-file .env --env-file .env.prod up -d",
+    "docker:redis": "yarn docker:run redis",
+    "docker:network": "docker network create proxy_network"
   },
   "private": true,
   "dependencies": {
