@@ -168,16 +168,27 @@ export const timeTrackingApi = createApi({
               if (Array.isArray(draft)) {
                 const projectIndex = draft?.findIndex(c => c.ID === projectId);
                 const tasks = draft[projectIndex].tasks;
-                if (projectIndex >= 0 && tasks) {
-                  const taskIndex = tasks?.findIndex(c => c.ID === taskId);
-                  if (taskIndex >= 0) {
-                    const newTasks = draft[projectIndex].tasks;
-                    if (newTasks) {
-                      newTasks[taskIndex].isFavorite = true;
-                      draft[projectIndex] = { ...draft[projectIndex], tasks: newTasks };
-                    }
-                  }
+
+                if (!tasks) {
+                  return;
                 }
+
+                if (projectIndex < 0) {
+                  return;
+                }
+
+                const taskIndex = tasks?.findIndex(c => c.ID === taskId);
+                if (taskIndex < 0) {
+                  return;
+                }
+
+                const newTasks = draft[projectIndex].tasks;
+
+                if (!newTasks) {
+                  return;
+                }
+                newTasks[taskIndex].isFavorite = true;
+                draft[projectIndex] = { ...draft[projectIndex], tasks: newTasks };
               }
             })
           );
@@ -203,16 +214,31 @@ export const timeTrackingApi = createApi({
               if (Array.isArray(draft)) {
                 const projectIndex = draft?.findIndex(c => c.ID === projectId);
                 const tasks = draft[projectIndex].tasks;
-                if (projectIndex >= 0 && tasks) {
-                  const taskIndex = tasks.findIndex(c => c.ID === taskId);
-                  if (taskIndex >= 0) {
-                    const newTasks = draft[projectIndex].tasks;
-                    if (newTasks) {
-                      newTasks[taskIndex].isFavorite = false;
-                      draft[projectIndex] = { ...draft[projectIndex], tasks: newTasks };
-                    }
-                  }
+
+                if (!tasks) {
+                  return;
                 }
+
+                if (projectIndex < 0) {
+                  return;
+                }
+
+
+                const taskIndex = tasks.findIndex(c => c.ID === taskId);
+
+                if (taskIndex < 0) {
+                  return;
+                }
+
+
+                const newTasks = draft[projectIndex].tasks;
+
+                if (!newTasks) {
+                  return;
+                }
+
+                newTasks[taskIndex].isFavorite = false;
+                draft[projectIndex] = { ...draft[projectIndex], tasks: newTasks };
               }
             })
           );
