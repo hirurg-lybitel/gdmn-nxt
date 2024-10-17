@@ -23,7 +23,7 @@ import {
   StepButton,
   LinearProgress
 } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -58,6 +58,8 @@ import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/teleph
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -110,7 +112,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const { isFetching: customerFetching } = useGetCustomersQuery();
   const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
   const { isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
-
+  const id = card?.DEAL?.ID ?? -1;
+  const { data: attachments = [], isFetching: attachmentsFetching } = useGetDealsFilesQuery(id, { skip: !open || id <= 0, refetchOnMountOrArgChange: true });
   const refComment = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -172,6 +175,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       COMMENT: card?.DEAL?.COMMENT || '',
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
       PREPAID: card?.DEAL?.PREPAID ?? false,
+      ATTACHMENTS: attachments
     },
     TASKS: card?.TASKS || undefined,
   };
@@ -386,6 +390,56 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, [formik.values, formik.touched, formik.errors]);
 
   const currentStageIndex = useMemo(() => stages.findIndex(s => s.ID === formik.values.USR$MASTERKEY), [stages, formik.values.USR$MASTERKEY]);
+
+  const attachmentsChange = useCallback(async (files: File[]) => {
+    const promises = files.map(file => {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.readAsDataURL(file);
+        reader.onerror = () => {
+          reader.abort();
+          reject(new DOMException('Problem parsing input file.'));
+        };
+        reader.onloadend = (e) => {
+          const stringFile = reader.result?.toString() ?? '';
+          resolve({
+            fileName: file.name,
+            content: stringFile
+          });
+        };
+      });
+    });
+
+    const attachments = await Promise.all(promises);
+    if (JSON.stringify(formik.values.DEAL?.ATTACHMENTS) === JSON.stringify(attachments)) {
+      return;
+    }
+    formik.setFieldValue('DEAL.ATTACHMENTS', attachments);
+  }, [formik.values.DEAL?.ATTACHMENTS]);
+
+  const initialAttachments = useMemo(() => {
+    return attachments.reduce((res, { fileName, content }) => {
+      if (!content) {
+        return res;
+      }
+
+      const arr = content.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+
+      const binarystr = window.atob(arr[1]);
+      let n = binarystr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = binarystr.charCodeAt(n);
+      };
+
+      const file = new File([u8arr], fileName, { type: mime });
+      return [...res, file];
+    }, [] as File[]);
+  }, [attachments]);
+
+  const maxFileSize = 5000000; // in bytes
 
   return (
     <CustomizedDialog
@@ -854,6 +908,16 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               value={formik.values.DEAL?.COMMENT}
                             />
                         }
+                        <div>
+                          <Dropzone
+                            maxFileSize={maxFileSize}
+                            filesLimit={3}
+                            showPreviews
+                            initialFiles={id <= 0 ? undefined : initialAttachments}
+                            onChange={attachmentsChange}
+                            disabled={attachmentsFetching}
+                          />
+                        </div>
                       </Stack>
                     </Box>
                   </CustomizedScrollBox>
