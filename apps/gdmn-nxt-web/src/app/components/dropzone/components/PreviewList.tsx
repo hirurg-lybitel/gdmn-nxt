@@ -57,25 +57,11 @@ export function PreviewList({
 }: PreviewListProps) {
   const handleRemove = (index: number) => (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+    e.preventDefault();
     onRemove && onRemove(index);
   };
 
-  const handleDownload = (file: FileObject) => (e: any) => {
-    // Create a new link
-    const anchor = document.createElement('a');
-    anchor.href = file.data as string;
-    anchor.download = file.file.name;
-
-    // Append to the DOM
-    document.body.appendChild(anchor);
-
-    // Trigger `click` event
-    anchor.click();
-
-    // Remove element from DOM
-    document.body.removeChild(anchor);
-    e.stopPropagation();
-  };
+  const handleDownload = (file: File) => URL.createObjectURL(file);
 
   return (
     <Box
@@ -86,7 +72,10 @@ export function PreviewList({
         <Tooltip key={idx} title={file.file.name}>
           <Box
             className={styles['imageContainer']}
-            onClick={handleDownload(file)}
+            component="a"
+            href={handleDownload(file.file)}
+            download={file.file.name}
+            onClick={(e) => e.stopPropagation()}
           >
             {getPreviewIcon(file)}
             <Fab
