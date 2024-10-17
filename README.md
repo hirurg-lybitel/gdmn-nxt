@@ -5,6 +5,7 @@
 ## Установка и запуск
  - скачать и устанoвить [nodejs](https://nodejs.org/en/download/)
  - скачать и установить [firebird 3](https://firebirdsql.org/en/firebird-3-0/)
+ - установить Docker
  - установить yarn:
  ```
  npm install --global yarn
@@ -14,6 +15,15 @@
  yarn
  ```
  - установить настройки проекта в файлах `.env`, `.env.dev`, `.env.prod`, создав копии соответствующих файлов `.env.sample`, `.env.dev.sample`, `.env.prod.sample` с примерами
+ - запустить redis сервер для хранения express сессий
+    * настроить сеть
+      ```
+      docker:network
+      ```
+    * запустить контейнер redis
+      ```
+      docker:redis
+      ```
  - запустить проект:
     * в режиме разработчика 
      ```
