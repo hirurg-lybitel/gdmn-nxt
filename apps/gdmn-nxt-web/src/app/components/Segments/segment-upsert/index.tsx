@@ -1,6 +1,6 @@
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { useGetBusinessProcessesQuery } from '../../../features/business-processes';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
@@ -17,6 +17,8 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import TagIcon from '@mui/icons-material/Tag';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;
@@ -343,61 +345,16 @@ export function SegmentUpsert({
                           loadingText="Загрузка данных..."
                         />
                       </Box>
-                      <Autocomplete
-                        multiple
-                        limitTags={2}
-                        disableCloseOnSelect
-                        options={labels || []}
-                        onChange={handleAutocompleteChange('LABELS')}
-                        value={
-                          labels?.filter(label => formik.values.LABELS && formik.values.LABELS.find(el => el.ID === label.ID))
-                        }
-                        getOptionLabel={option => option.USR$NAME}
-                        renderOption={(props, option, { selected }) => (
-                          <li {...props} key={option.ID}>
-                            <Checkbox
-                              icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                              checkedIcon={<CheckBoxIcon fontSize="small" />}
-                              style={{ marginRight: 8 }}
-                              checked={selected}
-                            />
-                            <Stack direction="column">
-                              <Stack direction="row">
-                                <Box
-                                  component="span"
-                                  sx={{
-                                    width: 14,
-                                    height: 14,
-                                    borderRadius: 'var(--border-radius)',
-                                    mr: 1,
-                                    alignSelf: 'center',
-                                    backgroundColor: option.USR$COLOR
-                                  }}
-                                />
-                                <Box>
-                                  {option.USR$NAME}
-                                </Box>
-                              </Stack>
-                              <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
-                            </Stack>
-                          </li>
-                        )}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="Метки"
-                            placeholder="Выберите метки"
-                          />
-                        )}
-                        renderTags={(value: readonly ILabel[], getTagProps) =>
-                          value.map((option: ILabel, index: number) =>
-                            <Box key={index} pr={0.5}>
-                              <LabelMarker label={option} {...getTagProps({ index })}/>
-                            </Box>
-                          )
-                        }
-                        loading={labelsIsFetching}
-                        loadingText="Загрузка данных..."
+                      <LabelsSelect
+                        labels={formik.values.LABELS}
+                        onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="end">
+                              <TagIcon />
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                       <Autocomplete
                         multiple

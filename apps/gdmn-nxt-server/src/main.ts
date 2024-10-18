@@ -2,7 +2,7 @@ import express, { Request } from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
-import { validPassword } from '@gsbelarus/util-helpers';
+import { resultError, validPassword } from '@gsbelarus/util-helpers';
 import { IsNotNull, IsNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
@@ -38,7 +38,7 @@ import flash from 'connect-flash';
 import { errorMiddleware } from './app/middlewares/errors';
 import { jwtMiddleware } from './app/middlewares/jwt';
 import { csrf } from 'lusca';
-import { bodySize } from './app/constants/params';
+import { bodySize, rateLimit } from './app/constants/params';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { cachedRequets } from './app/utils/cachedRequests';
 import fs from 'fs';
@@ -51,6 +51,8 @@ import { filtersRouter } from './app/routes/filtersRouter';
 import { feedbackRouter } from './app/routes/feedbackRouter';
 import { workProjectsRouter } from './app/routes/workProject';
 import { timeTrackingRouter } from './app/routes/timeTracking';
+import RedisStore from 'connect-redis';
+import IORedis from 'ioredis';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -122,7 +124,7 @@ setTimeout(
   60000);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const MemoryStore = require('memorystore')(session);
+// const MemoryStore = require('memorystore')(session);
 
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -147,10 +149,13 @@ const apiRoot = {
 
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 100
+  max: rateLimit,
+  keyGenerator: (req) => req.session.userId?.toString() ?? req.sessionID,
+  handler: (req, res) => {
+    console.error('Too many requests, please try again later.', { user: req.user?.['fullName'] });
+    res.status(429).json(resultError('Слишком много запросов. Повторите попытку позже.'));
+  }
 });
-app.use(limiter);
-
 
 function isIGedeminUser(u: IUser): u is IGedeminUser {
   // eslint-disable-next-line dot-notation
@@ -251,7 +256,18 @@ passport.deserializeUser(async (user: IUser, done) => {
   }
 });
 
-const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
+// const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
+
+/** Redis контейнер должен быть запущен */
+const redisClient = new IORedis({
+  host: config.redisHost,
+  port: 6379,
+});
+
+const sessionStore = new RedisStore({
+  client: redisClient,
+  ttl: 24 * 60 * 60
+});
 
 const appMiddlewares = [
   session({
@@ -269,7 +285,8 @@ const appMiddlewares = [
   passport.initialize(),
   passport.session(),
   flash(),
-  errorMiddleware
+  errorMiddleware,
+  limiter
   // csrf()
 ];
 
@@ -288,6 +305,7 @@ router.use(authRouter);
 router.use(routerMiddlewares);
 
 app.use(appMiddlewares);
+
 app.use(apiVersion, router);
 
 /** Write permissions to cache when server is starting */
@@ -420,6 +438,7 @@ httpsServer.on('[ error ]', console.error);
 process
   .on('exit', code => {
     disposeConnection();
+    redisClient.disconnect();
     console.log(`Process exit event with code: ${code}`);
   })
   .on('SIGINT', process.exit)

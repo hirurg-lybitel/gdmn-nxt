@@ -103,7 +103,7 @@ export function DealsFilter(props: DealsFilterProps) {
             <TextField
               label="Номер сделки"
               value={dealNumber || ''}
-              onChange={(e) => setDealNumber(e.target.value)}
+              onChange={(e) => /^\d*$/.test(e.target.value) && setDealNumber(e.target.value)}
             />
             <Autocomplete
               options={customers}

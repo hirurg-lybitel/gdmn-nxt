@@ -1,4 +1,4 @@
-import { ICustomer, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { customerApi, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
@@ -15,7 +15,7 @@ import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-ed
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 
 const useStyles = makeStyles(() => ({
@@ -78,7 +78,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       withTasks
     }
   });
-
   const customers: ICustomer[] = useMemo(
     () => [...(customersResponse?.data ?? [])],
     [customersResponse?.data]
@@ -251,7 +250,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                tasksFilter={searchText}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -266,7 +264,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [searchText, multiple, withTasks, disableCaption, disableEdition, disableFavorite, handleEditCustomer, handleFavoriteClick, handleTaskSelect, onTaskSelected])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
@@ -315,7 +313,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 }
 
 interface CustomerItemProps {
-  tasksFilter?: string,
   customer: ICustomer;
   selected: boolean;
   multiple?: boolean;
@@ -335,7 +332,6 @@ const filterTasks = (tasks: ITimeTrackTask[], filter: string) => {
 };
 
 const CustomerItem = ({
-  tasksFilter,
   customer,
   selected,
   multiple = false,
@@ -362,8 +358,6 @@ const CustomerItem = ({
     onCustomerSelect(e, customer);
   }, [onCustomerSelect]);
 
-  const taskCount = filterTasks(customer?.tasks || [], tasksFilter || '').length;
-
   return (
     <Stack
       flex={1}
@@ -387,14 +381,14 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        {withTasks && (taskCount ?? 0) > 0 &&
+        {withTasks && (customer.taskCount ?? 0) > 0 &&
           <Stack
             direction="row"
             alignItems={'center'}
             onClick={taskClick}
             spacing={0.5}
           >
-            <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
+            <Typography>{`${customer.taskCount} ${pluralize(customer.taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -425,7 +419,6 @@ const CustomerItem = ({
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
       <CustomerTasks
-        filter={tasksFilter}
         open={expandedTasks}
         customerId={customer.ID}
         onSelect={handleTaskClick}
@@ -435,14 +428,12 @@ const CustomerItem = ({
 };
 
 interface CustomerTasksProps {
-  filter?: string,
   open: boolean;
   customerId: number;
   onSelect: (task: ITimeTrackTask) => void;
 };
 
 const CustomerTasks = ({
-  filter,
   open,
   customerId,
   onSelect
@@ -464,6 +455,46 @@ const CustomerTasks = ({
     return filtered;
   }, [filterTasks, projects]);
 
+  function sortByFavorite <S>(mas: any[]): S {
+    const favorites = [];
+    const other = [];
+    for (const element of mas) {
+      if (element.isFavorite) {
+        favorites.push(element);
+      } else {
+        other.push(element);
+      }
+    }
+    return [...favorites, ...other] as S;
+  };
+
+  const sortedProjects = useMemo(() => {
+    return sortByFavorite<ITimeTrackProject[]>(projects.map((project) => ({ ...project, tasks: sortByFavorite<ITimeTrackTask[]>(project.tasks || []) })));
+  }, [projects]);
+
+  const [addFavoriteTask] = useAddFavoriteTaskMutation();
+  const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
+
+  const handleToggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+    e.stopPropagation();
+    if (favorite) {
+      deleteFavoriteTask({ taskId, projectId });
+    } else {
+      addFavoriteTask({ taskId, projectId });
+    }
+  };
+
+  const [addFavoriteProject] = useAddFavoriteProjectMutation();
+  const [deleteFavoriteProject] = useDeleteFavoriteProjectMutation();
+
+  const handleToggleProjectFavorite = (id: number, favorite: boolean) => () => {
+    if (favorite) {
+      deleteFavoriteProject(id);
+    } else {
+      addFavoriteProject(id);
+    }
+  };
+
   const taskSelect = useCallback((task: ITimeTrackTask) => () => onSelect(task), [onSelect]);
 
   const preventAction = useCallback((e: MouseEvent<HTMLLIElement>) => {
@@ -474,11 +505,10 @@ const CustomerTasks = ({
   const rowHeight = 72;
   const maxLines = 4;
 
-
   return (
     <CustomizedCard
       style={{
-        height: open ? (filteredprojects.length === 1 ? (filteredprojects[0].tasks ?? []).length : filteredprojects.length) * rowHeight : '1px',
+        height: open ? (sortedProjects.length === 1 ? (sortedProjects[0].tasks ?? []).length : sortedProjects.length) * rowHeight : '1px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
@@ -497,28 +527,41 @@ const CustomerTasks = ({
         dense
         disablePadding
       >
-        {filteredprojects.map(project => (
+        {sortedProjects.map(project => (
           <li key={`section-${project.ID}`}>
             <ul>
               <ListSubheader
                 style={{ lineHeight: '36px', cursor: 'text' }}
                 onClick={preventAction}
               >
-                {project.name}
+                <div
+                  style={{ display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  {project.name}
+                  <div>
+                    <SwitchStar selected={!!project.isFavorite} onClick={handleToggleProjectFavorite(project.ID, !!project.isFavorite)} />
+                  </div>
+                </div>
+
               </ListSubheader>
-              {project.tasks?.map(task => {
-                return (
-                  <ListItem
-                    key={`item-${project.ID}-${task.ID}`}
-                    onClick={taskSelect(task)}
-                    disablePadding
-                  >
-                    <ListItemButton>
-                      <ListItemText inset primary={task.name} />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
+              {project.tasks?.map(task => (
+                <ListItem
+                  key={`item-${project.ID}-${task.ID}`}
+                  onClick={taskSelect(task)}
+                  disablePadding
+                  style={{ position: 'relative' }}
+                >
+                  <ListItemButton>
+                    <ListItemText inset primary={task.name} />
+                  </ListItemButton>
+                  <div style={{ position: 'absolute', right: '16px' }}>
+                    <SwitchStar selected={!!task.isFavorite} onClick={handleToggleTaskFavorite(task.ID, project.ID, !!task.isFavorite)} />
+                  </div>
+                </ListItem>
+              ))}
             </ul>
           </li>
         ))}

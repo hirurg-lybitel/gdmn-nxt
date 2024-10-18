@@ -27,6 +27,8 @@ router.post('/cards', cards.upsert);
 router.put('/cards/:id', cards.upsert);
 router.delete('/cards/:id', cards.remove);
 
+router.get('/cards/files/:id', cards.getFiles);
+
 // router.get('/cards/status/:id', cardStatusController.get);
 router.post('/cards/status/:id', cardStatusController.upsert);
 

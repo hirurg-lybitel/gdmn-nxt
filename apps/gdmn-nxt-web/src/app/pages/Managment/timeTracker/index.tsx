@@ -79,7 +79,7 @@ const filterEntityName = 'timeTracking';
 
 export function TimeTracker() {
   const dispatch = useDispatch();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking);
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking) ?? {};
   const [openFilters, setOpenFilters] = useState(false);
 
   const {
@@ -99,7 +99,13 @@ export function TimeTracker() {
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
   const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
 
-  const [] = useFilterStore(filterEntityName);
+  const defaultFilter = useMemo(() => {
+    const today = dayjs();
+    return { period: [today.subtract(7, 'day').toDate()
+      .getTime(), today.toDate().getTime()] };
+  }, []);
+
+  const [filtersIsLoading] = useFilterStore(filterEntityName, defaultFilter);
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ timeTracking: filteringData }));
@@ -228,6 +234,8 @@ export function TimeTracker() {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
+  const defaultshotcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : 'Последние 7 дней', [filtersIsLoading]);
+
   return (
     <Stack flex={1} spacing={3}>
       {memoFilter}
@@ -238,8 +246,9 @@ export function TimeTracker() {
       />
       <Stack direction="row">
         <ButtonDateRangePicker
-          value={filterData?.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-          onChange={(value) => {
+          value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
+          defaultShortcut={defaultshotcut}
+          onChange={(value, context) => {
             const newPeriod = [
               value[0]?.getTime() ?? null,
               value[1]?.getTime() ?? null
@@ -282,7 +291,7 @@ export function TimeTracker() {
             {timeTrackGroup.map(({ date, duration, items }, idx) => {
               return (
                 <CustomizedCard key={idx}>
-                  <Accordion defaultExpanded={true}>
+                  <Accordion defaultExpanded={false}>
                     <AccordionSummary>
                       <Stack
                         direction="row"

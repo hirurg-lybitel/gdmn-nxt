@@ -90,6 +90,7 @@ export interface IDeal extends IWithID {
   DESCRIPTION?: string;
   USR$NUMBER?: number;
   PREPAID?: boolean;
+  ATTACHMENTS?: MailAttachment[]
 };
 
 export interface IKanbanCard extends IWithID {
@@ -333,7 +334,7 @@ export type ActionName =
   'system' |
   'mailings' |
   'feedback' |
-  'timeTracking' |
+  'time-tracking' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -453,6 +454,7 @@ export interface ICustomerFeedback extends IWithID {
   response?: string;
   toDo?: string;
   creationDate?: Date;
+  creator?: IUser
 }
 
 export enum WorkProjectStatus {
@@ -469,6 +471,16 @@ export interface IWorkProject extends IWithID {
 export interface IFavoriteWorkProject extends IWithID {
   user?: number;
   workProject?: IWorkProject;
+}
+
+export interface IFavoriteTask extends IWithID {
+  user?: number;
+  task?: IWorkProject;
+}
+
+export interface IFavoriteProject extends IWithID {
+  user?: number;
+  project?: IWorkProject;
 }
 
 export interface ITimeTrack extends IWithID {
@@ -496,11 +508,13 @@ export interface ITimeTrackProject extends IWithID {
   name: string;
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
+  isFavorite?: boolean
 }
 
 export interface ITimeTrackTask extends IWithID {
   name: string;
   project?: ITimeTrackProject;
+  isFavorite?: boolean;
 }
 
 export interface IContactName {

@@ -31,6 +31,7 @@ const createFeedback: RequestHandler = async (req, res) => {
   try {
     const feedback = await feedbackService.createFeedback(req.sessionID, req.body);
 
+
     const result: IRequestResult = {
       queries: { feedback: [feedback] },
       _schema: {}
