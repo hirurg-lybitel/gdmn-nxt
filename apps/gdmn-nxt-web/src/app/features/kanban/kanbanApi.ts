@@ -1,6 +1,6 @@
 import { config } from '@gdmn-nxt/config';
 import { KanbanEvent, SocketRoom, getSocketClient, setSocketClient } from '@gdmn-nxt/socket';
-import { IContactWithID, IDenyReason, IKanbanCard, IKanbanCardStatus, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactWithID, IDenyReason, IKanbanCard, IKanbanCardStatus, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
 import { createEntityAdapter } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { io } from 'socket.io-client';
@@ -697,6 +697,10 @@ export const kanbanApi = createApi({
       },
       invalidatesTags: [{ type: 'Column', id: 'LIST' }, { type: 'Task', id: 'LIST' }]
     }),
+    getDealsFiles: builder.query< MailAttachment[], number>({
+      query: (id) => `kanban/cards/files/${id}`,
+      // transformResponse: (response: IRequestResult<{cards: MailAttachment[]}>) => response.queries?.cards,
+    }),
   })
 });
 
@@ -716,5 +720,6 @@ export const {
   useUpdateTaskMutation,
   useDeleteTaskMutation,
   useGetKanbanTasksQuery,
-  useSetCardStatusMutation
+  useSetCardStatusMutation,
+  useGetDealsFilesQuery
 } = kanbanApi;

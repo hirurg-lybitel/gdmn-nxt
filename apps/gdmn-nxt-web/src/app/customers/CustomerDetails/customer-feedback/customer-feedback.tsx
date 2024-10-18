@@ -116,31 +116,12 @@ export function CustomerFeedback({
 
   return (
     <Stack flex={1} spacing={2}>
-      <CustomizedScrollBox>
-        <Timeline
-          sx={{
-            padding: 0,
-            [`& .${timelineOppositeContentClasses.root}`]: {
-              flex: 0.1,
-            },
-          }}
-        >
-          {feedback.map((f, idx) => (
-            <FeedbackItem
-              key={idx}
-              feedback={f}
-              isLast={idx === feedback.length - 1}
-              onSave={saveFeedback}
-              onDelete={removeFeedback(f.ID)}
-            />))}
-        </Timeline>
-      </CustomizedScrollBox>
       <CustomizedCard
         borders
         boxShadows
         style={{ minHeight: 138 }}
       >
-        <CardContent>
+        <CardContent style={{ padding: 16 }}>
           <Stack spacing={2}>
             <Stack direction="row">
               <Autocomplete
@@ -198,6 +179,25 @@ export function CustomerFeedback({
           </Stack>
         </CardContent>
       </CustomizedCard>
+      <CustomizedScrollBox container={{ style: { flex: 1 }}}>
+        <Timeline
+          sx={{
+            padding: 0,
+            [`& .${timelineOppositeContentClasses.root}`]: {
+              flex: 0.1,
+            },
+          }}
+        >
+          {feedback.map((f, idx) => (
+            <FeedbackItem
+              key={idx}
+              feedback={f}
+              isLast={idx === feedback.length - 1}
+              onSave={saveFeedback}
+              onDelete={removeFeedback(f.ID)}
+            />))}
+        </Timeline>
+      </CustomizedScrollBox>
     </Stack>
   );
 }

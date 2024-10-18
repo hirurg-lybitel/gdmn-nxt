@@ -51,6 +51,8 @@ import { filtersRouter } from './app/routes/filtersRouter';
 import { feedbackRouter } from './app/routes/feedbackRouter';
 import { workProjectsRouter } from './app/routes/workProject';
 import { timeTrackingRouter } from './app/routes/timeTracking';
+import RedisStore from 'connect-redis';
+import IORedis from 'ioredis';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -122,7 +124,7 @@ setTimeout(
   60000);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const MemoryStore = require('memorystore')(session);
+// const MemoryStore = require('memorystore')(session);
 
 const app = express();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -254,7 +256,18 @@ passport.deserializeUser(async (user: IUser, done) => {
   }
 });
 
-const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
+// const sessionStore = new MemoryStore({ checkPeriod: 24 * 60 * 60 * 1000 });
+
+/** Redis контейнер должен быть запущен */
+const redisClient = new IORedis({
+  host: config.redisHost,
+  port: 6379,
+});
+
+const sessionStore = new RedisStore({
+  client: redisClient,
+  ttl: 24 * 60 * 60
+});
 
 const appMiddlewares = [
   session({
@@ -425,6 +438,7 @@ httpsServer.on('[ error ]', console.error);
 process
   .on('exit', code => {
     disposeConnection();
+    redisClient.disconnect();
     console.log(`Process exit event with code: ${code}`);
   })
   .on('SIGINT', process.exit)

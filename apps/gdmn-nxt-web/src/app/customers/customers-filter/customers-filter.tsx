@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, InputAdornment, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import { makeStyles } from '@mui/styles';
@@ -18,6 +18,8 @@ import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import filterOptions from '../../components/helpers/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import TagIcon from '@mui/icons-material/Tag';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -265,61 +267,16 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 </Tooltip>
               </Stack>
             </Box>
-            <Autocomplete
-              multiple
-              limitTags={2}
-              disableCloseOnSelect
-              options={labels || []}
-              onChange={(e, value) => handleOnChange('LABELS', value)}
-              value={
-                labels?.filter(label => filteringData && (filteringData.LABELS)?.find((el: ILabel) => el.ID === label.ID))
-              }
-              getOptionLabel={option => option.USR$NAME}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  <Stack direction="column">
-                    <Stack direction="row">
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: 'var(--border-radius)',
-                          mr: 1,
-                          alignSelf: 'center',
-                          backgroundColor: option.USR$COLOR
-                        }}
-                      />
-                      <Box>
-                        {option.USR$NAME}
-                      </Box>
-                    </Stack>
-                    <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
-                  </Stack>
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Метки"
-                  placeholder="Выберите метки"
-                />
-              )}
-              renderTags={(value: readonly ILabel[], getTagProps) =>
-                value.map((option: ILabel, index: number) =>
-                  <Box key={index} pr={0.5}>
-                    <LabelMarker label={option} {...getTagProps({ index })}/>
-                  </Box>
-                )
-              }
-              loading={labelsIsFetching}
-              loadingText="Загрузка данных..."
+            <LabelsSelect
+              onChange={(value) => handleOnChange('LABELS', value)}
+              labels={filteringData?.LABELS as ILabel[] ?? []}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="end">
+                    <TagIcon />
+                  </InputAdornment>
+                ),
+              }}
             />
             <Autocomplete
               multiple

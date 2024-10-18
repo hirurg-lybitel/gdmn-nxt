@@ -1,9 +1,10 @@
-import { IChanges, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory, IRequestResult } from '@gsbelarus/util-api-types';
+import { IChanges, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
 import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { addHistory } from './history';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -64,7 +65,7 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { releaseTransaction, executeSingletonAsObject, fetchAsObject, fetchAsSingletonObject, generateId } = await startTransaction(req.sessionID);
+  const { releaseTransaction, executeSingletonAsObject, executeSingleton, fetchAsObject, fetchAsSingletonObject, generateId, string2Blob } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -294,6 +295,31 @@ const upsert: RequestHandler = async (req, res) => {
 
     const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
+    const deleteAttachments = await executeSingleton(
+      `DELETE FROM USR$CRM_DEALS_FILES
+        WHERE USR$MASTERKEY = :MASTERKEY`,
+      {
+        MASTERKEY: dealId
+      });
+
+    sql = `
+        INSERT INTO USR$CRM_DEALS_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
+        VALUES(:MASTERKEY, :CONTENT, :NAME)
+        RETURNING ID` ;
+
+    const insertAttachments = deal['ATTACHMENTS'].map(async ({ content, fileName }) => {
+      return await fetchAsSingletonObject(sql, {
+        MASTERKEY: dealId,
+        CONTENT: await string2Blob(content),
+        NAME: fileName
+      });
+    });
+
+    await Promise.all([
+      deleteAttachments,
+      ...insertAttachments
+    ]);
+
     sql = `
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
 
@@ -414,6 +440,7 @@ const remove: RequestHandler = async(req, res) => {
         FOR SELECT USR$DEALKEY, USR$MASTERKEY FROM USR$CRM_KANBAN_CARDS WHERE ID = :ID INTO :DEAL_ID, :USR$MASTERKEY AS CURSOR curCARD
         DO
         BEGIN
+          DELETE FROM USR$CRM_DEALS_FILES WHERE USR$MASTERKEY = :DEAL_ID;
           DELETE FROM USR$CRM_NOTIFICATIONS WHERE USR$KEY = :DEAL_ID;
           DELETE FROM USR$CRM_NOTIFICATIONS n
           WHERE EXISTS(SELECT ID FROM USR$CRM_KANBAN_CARD_TASKS t WHERE n.USR$KEY = t.ID AND t.USR$CARDKEY = :ID);
@@ -443,4 +470,36 @@ const remove: RequestHandler = async(req, res) => {
   };
 };
 
-export default { get, upsert, remove };
+const getFiles: RequestHandler = async (req, res) => {
+  const { id: sessionID } = req.session;
+  const { id } = req.params;
+
+  const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
+  try {
+    const sql = `
+    SELECT
+      l.USR$NAME,
+      l.USR$CONTENT
+    FROM USR$CRM_DEALS_FILES l
+    WHERE l.USR$MASTERKEY = :masterKey`;
+
+    const fileRows = await fetchAsObject(sql, { masterKey: id });
+
+    const files: MailAttachment[] = [];
+    await forEachAsync(fileRows, async file => {
+      const content = await blob2String(file['USR$CONTENT']);
+      files.push({
+        fileName: file['USR$NAME'],
+        content
+      });
+    });
+
+    return res.status(200).json(files);
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  } finally {
+    await releaseReadTransaction();
+  };
+};
+
+export default { get, upsert, remove, getFiles };

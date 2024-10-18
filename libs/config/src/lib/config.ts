@@ -9,6 +9,7 @@ interface IConfig {
   jwtSecret: string;
   serverStaticMode: boolean;
   origin: string;
+  redisHost: string;
 }
 
 
@@ -39,6 +40,8 @@ const origin = process.env.NODE_ENV === 'production'
   ? `https://${host}`
   : `https://${host}:${appPort}`;
 
+const redisHost = process.env.NODE_ENV === 'production' ? 'session-store' : '127.0.0.1';
+
 export const config: IConfig = {
   host,
   appPort,
@@ -49,5 +52,6 @@ export const config: IConfig = {
   apiAccessToken,
   jwtSecret,
   serverStaticMode,
-  origin
+  origin,
+  redisHost
 };
