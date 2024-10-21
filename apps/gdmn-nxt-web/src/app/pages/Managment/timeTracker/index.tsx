@@ -136,9 +136,12 @@ export function TimeTracker() {
     filterClose: useCallback(() => {
       setOpenFilters(false);
     }, [setOpenFilters]),
+    // filterClear: useCallback(() => {
+    //   dispatch(clearFilterData(filterEntityName));
+    // }, [dispatch]),
     filterClear: useCallback(() => {
-      dispatch(clearFilterData(filterEntityName));
-    }, [dispatch]),
+      saveFilters({ period: filterData.period });
+    }, [filterData.period])
   };
 
   const Header = useMemo(() => {
