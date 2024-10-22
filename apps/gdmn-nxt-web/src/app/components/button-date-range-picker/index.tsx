@@ -8,7 +8,15 @@ interface DateRangeButtonFieldProps extends SingleInputDateRangeFieldProps<Date>
   onClick: () => void;
 }
 
-const shortcutsLabels = ['Эта неделя', 'Прошлая неделя', 'Последние 7 дней', 'Текущий месяц', 'Прошлый месяц', 'Следующий месяц', 'Сбросить'] as const;
+export const shortcutsLabels = [
+  'Эта неделя',
+  'Прошлая неделя',
+  'Последние 7 дней',
+  'Текущий месяц',
+  'Прошлый месяц',
+  'Следующий месяц',
+  'Сбросить'
+] as const;
 type ShortcutsLabel = typeof shortcutsLabels[number]
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
