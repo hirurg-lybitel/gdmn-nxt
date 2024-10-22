@@ -11,7 +11,7 @@ export interface TextFieldMaskedProps extends Props {
   fullWidth?: boolean;
 };
 
-export function TextFieldMasked(props: TextFieldMaskedProps) {
+export function TextFieldMasked(props: Readonly<TextFieldMaskedProps>) {
   return (
     <InputMask
       {...props}

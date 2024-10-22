@@ -14,8 +14,9 @@ import {
   Divider,
   Checkbox,
   Tooltip,
+  TextField,
 } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
@@ -35,7 +36,20 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
 import FilterPanel from './components/filter-panel';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
+import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
+import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
+
+const durationMask = [
+  /[0-9]/,
+  /[0-9]/,
+  ':',
+  /[0-5]/,
+  /[0-9]/,
+  ':',
+  /[0-5]/,
+  /[0-9]/
+];
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -98,6 +112,10 @@ export function TimeTracker() {
   const [addTimeTrack] = useAddTimeTrackingMutation();
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
   const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
+
+  const descriptionRef = useRef<HTMLInputElement>(null);
+  const billableRef = useRef<HTMLInputElement>(null);
+  const durationRef = useRef<HTMLInputElement>(null);
 
   const defaultFilter = useMemo(() => {
     const today = dayjs();
@@ -237,7 +255,56 @@ export function TimeTracker() {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  const defaultshotcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : 'Последние 7 дней', [filtersIsLoading]);
+  const defaultShortcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : 'Последние 7 дней', [filtersIsLoading]);
+
+  const dateRangeOnChange = (value: DateRange<Date>, context: PickerChangeHandlerContext<DateRangeValidationError>) => {
+    const newPeriod = [
+      value[0]?.getTime() ?? null,
+      value[1]?.getTime() ?? null
+    ];
+    const newObject = { ...filterData };
+    delete newObject.period;
+    handleFilteringDataChange({
+      ...newObject,
+      ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
+    });
+  };
+
+  const descriptionOnClose = (timeTrack: ITimeTrack) => () => {
+    const description = descriptionRef.current?.value;
+
+    updateTimeTrack({ ...timeTrack, description });
+  };
+
+  const billableOnChange = (
+    timeTrack: ITimeTrack
+  ) => (
+    e: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => {
+    updateTimeTrack({ ...timeTrack, billable: checked });
+  };
+
+  const durationOnClose = (timeTrack: ITimeTrack) => () => {
+    const value = durationRef.current?.value ?? '';
+
+    const [hours, minutes, seconds] = value
+      .replaceAll('_', '0')
+      .split(':')
+      .map(Number);
+
+    const newDuration = dayjs.duration({ hours, minutes, seconds });
+    const isoDuration = newDuration.toISOString();
+    const duration = isoDuration;
+    const startTime = dayjs(timeTrack.startTime);
+    const endTime = startTime.add(newDuration).toDate();
+
+    updateTimeTrack({
+      ...timeTrack,
+      duration,
+      endTime
+    });
+  };
 
   return (
     <Stack flex={1} spacing={3}>
@@ -250,19 +317,8 @@ export function TimeTracker() {
       <Stack direction="row">
         <ButtonDateRangePicker
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-          defaultShortcut={defaultshotcut}
-          onChange={(value, context) => {
-            const newPeriod = [
-              value[0]?.getTime() ?? null,
-              value[1]?.getTime() ?? null
-            ];
-            const newObject = { ...filterData };
-            delete newObject.period;
-            handleFilteringDataChange({
-              ...newObject,
-              ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
-            });
-          }}
+          defaultShortcut={defaultShortcut}
+          onChange={dateRangeOnChange}
         />
         <Box flex={1} />
         <Stack
@@ -315,18 +371,20 @@ export function TimeTracker() {
                       </Stack>
                     </AccordionSummary>
                     <AccordionDetails style={{ padding: '0 16px' }}>
-                      {items.map(({
-                        ID,
-                        customer,
-                        workProject,
-                        description = '',
-                        startTime,
-                        endTime,
-                        duration,
-                        billable = true,
-                        task,
-                        user
-                      }) => {
+                      {items.map(item => {
+                        const {
+                          ID,
+                          customer,
+                          workProject,
+                          description = '',
+                          startTime,
+                          endTime,
+                          duration,
+                          billable = true,
+                          task,
+                          user
+                        } = item;
+
                         return (
                           <Stack
                             key={ID}
@@ -373,11 +431,26 @@ export function TimeTracker() {
                                   {task ? `→ ${task.name}` : ''}
                                 </Typography>
                               </Stack>
-                              <Typography>{description}</Typography>
+                              <EditableTypography
+                                value={description}
+                                editEmpty={false}
+                                onClose={descriptionOnClose(item)}
+                                editComponent={
+                                  <TextField
+                                    inputRef={descriptionRef}
+                                    multiline
+                                    minRows={1}
+                                    autoFocus
+                                    defaultValue={description}
+                                    fullWidth
+                                  />
+                                }
+                              />
                             </Stack>
                             <Divider orientation="vertical" flexItem />
                             <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
                               <Checkbox
+                                inputRef={billableRef}
                                 size="small"
                                 icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
                                 checkedIcon={<MonetizationOnIcon fontSize="medium" />}
@@ -386,14 +459,30 @@ export function TimeTracker() {
                                   width: 34,
                                 }}
                                 checked={billable}
+                                onChange={billableOnChange(item)}
                               />
                             </Tooltip>
                             <Divider orientation="vertical" flexItem />
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
-                            <Typography fontWeight={600} width={60}>
-                              {durationFormat(duration)}
-                            </Typography>
+                            <EditableTypography
+                              containerStyle={{
+                                maxWidth: 128
+                              }}
+                              value={durationFormat(duration)}
+                              onClose={durationOnClose(item)}
+                              editComponent={
+                                <TextFieldMasked
+                                  style={{
+                                    maxWidth: 86
+                                  }}
+                                  inputRef={durationRef}
+                                  autoFocus
+                                  mask={durationMask}
+                                  defaultValue={durationFormat(duration)}
+                                />
+                              }
+                            />
                             <MenuBurger
                               items={[
                                 <ItemButtonDelete

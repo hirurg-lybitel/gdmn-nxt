@@ -1,9 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ClickAwayListener, IconButton, TextField, Tooltip, TooltipProps, Typography, TypographyProps, tooltipClasses } from '@mui/material';
+import { IconButton, TextField, Tooltip, Typography, TypographyProps } from '@mui/material';
 import styles from './editable-typography.module.less';
-import { KeyboardEvent, cloneElement, useMemo, useState } from 'react';
+import { CSSProperties, KeyboardEvent, cloneElement, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { ErrorTooltip } from '../Styled/error-tooltip/error-tooltip';
 
@@ -14,9 +14,19 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   deleteable?: boolean;
   onDelete?: () => void;
   container?: (value: Value) => React.ReactNode;
+  containerStyle?: CSSProperties;
   error?: boolean;
   helperText?: string;
+  /**
+   * @default true
+   */
   closeOnBlur?: boolean;
+  onClose?: () => void;
+  /**
+   *  If `true`, the edit mode will turn off when `value` is empty
+   * @default true
+   */
+  editEmpty?: boolean;
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -30,9 +40,12 @@ const EditableTypography = <Value extends React.ReactNode>({
   error = false,
   helperText,
   closeOnBlur = true,
+  onClose: handleOnClose,
+  containerStyle,
+  editEmpty = true,
   ...props
 }: EditableTypographyProps<Value>) => {
-  const [editText, setEditText] = useState(!value);
+  const [editText, setEditText] = useState(editEmpty ? !value : false);
 
   const clonedElement = useMemo(() => editComponent
     ? cloneElement(editComponent, {
@@ -59,6 +72,7 @@ const EditableTypography = <Value extends React.ReactNode>({
     if (!value?.toString().trim()) {
       onDelete && onDelete();
     }
+    handleOnClose && handleOnClose();
     setEditText(false);
   };
 
@@ -75,6 +89,7 @@ const EditableTypography = <Value extends React.ReactNode>({
     <div
       aria-label="editable-typography"
       className={styles['container']}
+      style={containerStyle}
       onKeyDown={onKeyDown}
     >
       <ErrorTooltip
