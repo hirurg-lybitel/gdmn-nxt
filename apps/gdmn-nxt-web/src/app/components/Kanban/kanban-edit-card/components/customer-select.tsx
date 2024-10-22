@@ -123,6 +123,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
   const handleChange = (e: any, newValue: ICustomer | ICustomer[] | null) => {
+    setSearchText('');
     onChange && onChange(newValue as Value<Multiple>);
     if (!newValue) {
       setSelectedTask(null);
@@ -185,6 +186,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
+  const [searchText, setSearchText] = useState('');
 
   return (
     <>
@@ -249,6 +251,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
+                tasksFilter={searchText}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -263,13 +266,15 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick, searchText])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
+            onChange={(e) => setSearchText(e.target.value)}
+            onBlur={() => setSearchText('')}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
@@ -310,6 +315,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 }
 
 interface CustomerItemProps {
+  tasksFilter?: string,
   customer: ICustomer;
   selected: boolean;
   multiple?: boolean;
@@ -323,7 +329,13 @@ interface CustomerItemProps {
   onTaskSelect: (task: ITimeTrackTask) => void;
 };
 
+const filterTasks = (tasks: ITimeTrackTask[], filter: string) => {
+  if (!filter || !tasks) return tasks;
+  return tasks?.filter((task) => task.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
+};
+
 const CustomerItem = ({
+  tasksFilter,
   customer,
   selected,
   multiple = false,
@@ -350,6 +362,12 @@ const CustomerItem = ({
     onCustomerSelect(e, customer);
   }, [onCustomerSelect]);
 
+  const taskCount = useMemo(() => filterTasks(customer?.tasks || [], tasksFilter || '').length, [customer?.tasks, tasksFilter]);
+
+  const notFoundTask = taskCount < 1;
+
+  const endTaskCount = notFoundTask ? customer.taskCount : taskCount;
+
   return (
     <Stack
       flex={1}
@@ -375,14 +393,14 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        {withTasks && (customer.taskCount ?? 0) > 0 &&
+        {withTasks && (endTaskCount ?? 0) > 0 &&
           <Stack
             direction="row"
             alignItems={'center'}
             onClick={taskClick}
             spacing={0.5}
           >
-            <Typography>{`${customer.taskCount} ${pluralize(customer.taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
+            <Typography>{`${endTaskCount} ${pluralize(endTaskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -413,6 +431,7 @@ const CustomerItem = ({
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
       <CustomerTasks
+        filter={notFoundTask ? '' : tasksFilter}
         open={expandedTasks}
         customerId={customer.ID}
         onSelect={handleTaskClick}
@@ -425,10 +444,12 @@ interface CustomerTasksProps {
   open: boolean;
   customerId: number;
   onSelect: (task: ITimeTrackTask) => void;
+  filter?: string,
 };
 
 const CustomerTasks = ({
   open,
+  filter,
   customerId,
   onSelect
 }: CustomerTasksProps) => {
@@ -437,6 +458,17 @@ const CustomerTasks = ({
   }, {
     skip: !open
   });
+
+  const filteredAndSortedProjects = useMemo(() => {
+    const filtered = [];
+    for (const element of projects) {
+      const tasks = filterTasks(element.tasks || [], filter || '') ;
+      if (tasks?.length > 0) {
+        filtered.push({ ...element, tasks: sortByFavorite<ITimeTrackTask[]>(tasks) });
+      }
+    }
+    return sortByFavorite<ITimeTrackProject[]>(filtered);
+  }, [filter, projects]);
 
   function sortByFavorite <S>(mas: any[]): S {
     const favorites = [];
@@ -450,10 +482,6 @@ const CustomerTasks = ({
     }
     return [...favorites, ...other] as S;
   };
-
-  const sortedProjects = useMemo(() => {
-    return sortByFavorite<ITimeTrackProject[]>(projects.map((project) => ({ ...project, tasks: sortByFavorite<ITimeTrackTask[]>(project.tasks || []) })));
-  }, [projects]);
 
   const [addFavoriteTask] = useAddFavoriteTaskMutation();
   const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
@@ -491,7 +519,7 @@ const CustomerTasks = ({
   return (
     <CustomizedCard
       style={{
-        height: open ? (sortedProjects.length === 1 ? (sortedProjects[0].tasks ?? []).length : sortedProjects.length) * rowHeight : '0px',
+        height: open ? (filteredAndSortedProjects.length === 1 ? (filteredAndSortedProjects[0].tasks ?? []).length : filteredAndSortedProjects.length) * rowHeight : '0px',
         visibility: open ? 'visible' : 'hidden',
         maxHeight: maxLines * rowHeight,
         transition: 'height 0.5s, visibility  0.5s',
@@ -510,7 +538,7 @@ const CustomerTasks = ({
         dense
         disablePadding
       >
-        {sortedProjects.map(project => (
+        {filteredAndSortedProjects.map(project => (
           <li key={`section-${project.ID}`}>
             <ul>
               <ListSubheader
