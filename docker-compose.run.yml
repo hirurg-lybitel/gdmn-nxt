@@ -1,4 +1,13 @@
+version: '3.8'
+
 services:
+  redis:
+    image: redis
+    container_name: session-store
+    restart: always
+    ports:
+      - "6379:6379"
+
   client:
     image: ghcr.io/hirurg-lybitel/gdmn-crm-client:latest
     container_name: crm_client
@@ -14,6 +23,9 @@ services:
 
   server:
     image: ghcr.io/hirurg-lybitel/gdmn-crm-server:latest
+    depends_on:
+      redis:
+        condition: service_started
     container_name: crm_server
     ports:
       - "${NX_SERVER_PORT}:${NX_SERVER_PORT}"

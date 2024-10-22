@@ -38,7 +38,8 @@ const findById: RequestHandler = async (req, res) => {
   try {
     const task = await timeTrackerTasksService.findOne(
       sessionID,
-      id
+      id,
+      userId
     );
 
     const result: IRequestResult = {
@@ -52,8 +53,44 @@ const findById: RequestHandler = async (req, res) => {
   }
 };
 
+const addToFavorites: RequestHandler = async (req, res) => {
+  try {
+    const taskId = parseInt(req.params.id);
+    if (isNaN(taskId)) {
+      throw UnprocessableEntityException('Field taskId is not defined or is not numeric');
+    }
+
+    const { id: sessionID } = req.session;
+    const userId = req.user['id'];
+
+    await timeTrackerTasksService.addToFavorites(sessionID, userId, taskId);
+
+    return res.sendStatus(200);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const removeFromFavorites: RequestHandler = async (req, res) => {
+  try {
+    const taskId = parseInt(req.params.id);
+    if (isNaN(taskId)) {
+      throw UnprocessableEntityException('Field taskId is not defined or is not numeric');
+    }
+
+    const { id: sessionID } = req.session;
+    const userId = req.user['id'];
+
+    const isDeleted = await timeTrackerTasksService.removeFromFavorites(sessionID, userId, taskId);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
 
 export const timeTrackerTasksController = {
   findAll,
-  findById
+  findById,
+  addToFavorites,
+  removeFromFavorites
 };

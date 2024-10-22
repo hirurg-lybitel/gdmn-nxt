@@ -4,8 +4,8 @@
   "license": "MIT",
   "scripts": {
     "prod": "set NODE_ENV=production && node dist/apps/gdmn-nxt-server/main.js",
-    "start:dev": "dotenv -c dev -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
-    "start:prod": "dotenv -c prod -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web --prod",
+    "start:dev": "yarn docker:redis && dotenv -c dev -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
+    "start:prod": "yarn docker:redis && dotenv -c prod -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web --prod",
     "build": "dotenv -c prod -- yarn nx run-many --target=build --all --parallel --prod",
     "test": "yarn nx run-many --target=test --all --parallel",
     "pm2:start": "pm2 start pm2.config.js",
@@ -14,7 +14,9 @@
     "pm2:stat": "pm2 status gdmn-crm",
     "init": "yarn --network-timeout 1000000 && yarn build && yarn pm2",
     "docker:build": "docker compose -f docker-compose.build.yml --env-file .env --env-file .env.prod up -d --build",
-    "docker:run": "docker compose -f docker-compose.run.yml --env-file .env --env-file .env.prod up -d"
+    "docker:run": "docker compose -f docker-compose.run.yml --env-file .env --env-file .env.prod up -d",
+    "docker:redis": "yarn docker:run redis",
+    "docker:network": "docker network create proxy_network"
   },
   "private": true,
   "dependencies": {
