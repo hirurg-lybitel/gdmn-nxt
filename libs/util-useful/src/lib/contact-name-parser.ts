@@ -16,7 +16,7 @@ export const parseStringToContactName = (value: string): IContactName => {
 };
 
 export const parseContactName = (value: Omit<IContactName, 'nickName'>): IContactName => {
-  const lastName = value.lastName.trim();
+  const lastName = value.lastName?.trim() ?? '';
   const firstName = value.firstName?.trim() ?? '';
   const middleName = value.middleName?.trim() ?? '';
   const nickName = `${lastName} ${firstName} ${middleName}`.replaceAll('  ', ' ');
