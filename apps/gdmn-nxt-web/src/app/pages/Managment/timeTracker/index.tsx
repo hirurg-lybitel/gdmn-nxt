@@ -467,7 +467,8 @@ export function TimeTracker() {
                             <Divider orientation="vertical" flexItem />
                             <EditableTypography
                               containerStyle={{
-                                maxWidth: 128
+                                maxWidth: 128,
+                                width: 'auto'
                               }}
                               value={durationFormat(duration)}
                               onClose={durationOnClose(item)}
