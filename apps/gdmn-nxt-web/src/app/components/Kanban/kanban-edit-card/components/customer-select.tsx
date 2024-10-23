@@ -273,7 +273,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={multiple ? undefined : (e) => setSearchText(e.target.value)}
             onBlur={() => setSearchText('')}
             InputProps={{
               ...params.InputProps,
