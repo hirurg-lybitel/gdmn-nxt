@@ -31,7 +31,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
-import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
+import ButtonDateRangePicker, { shortcutsLabels } from '@gdmn-nxt/components/button-date-range-picker';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
@@ -255,7 +255,7 @@ export function TimeTracker() {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  const defaultShortcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : 'Последние 7 дней', [filtersIsLoading]);
+  const defaultShortcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : shortcutsLabels[2], [filterData.period, filtersIsLoading]);
 
   const dateRangeOnChange = (value: DateRange<Date>, context: PickerChangeHandlerContext<DateRangeValidationError>) => {
     const newPeriod = [
@@ -467,7 +467,8 @@ export function TimeTracker() {
                             <Divider orientation="vertical" flexItem />
                             <EditableTypography
                               containerStyle={{
-                                maxWidth: 128
+                                maxWidth: 128,
+                                width: 'auto'
                               }}
                               value={durationFormat(duration)}
                               onClose={durationOnClose(item)}

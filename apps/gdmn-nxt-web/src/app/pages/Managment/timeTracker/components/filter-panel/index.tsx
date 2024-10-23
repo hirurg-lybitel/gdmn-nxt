@@ -67,7 +67,7 @@ export function FilterPanel({
             value={filteringData?.customers as ICustomer[] ?? []}
             onChange={(value) => handleOnChange(['customers'], [value])}
           />
-          {userPermissions?.['time-tracking']?.ALL &&
+          {/* {userPermissions?.['time-tracking']?.ALL && */}
           <UserSelect
             multiple
             disableCloseOnSelect
@@ -76,7 +76,7 @@ export function FilterPanel({
             allSelected={filteringData?.allEmployees ?? false}
             onChange={(e, value, allSelected) => handleOnChange(['employees', 'allEmployees'], [value, allSelected])}
           />
-          }
+          {/* } */}
           <FormControlLabel
             control={
               <Checkbox
