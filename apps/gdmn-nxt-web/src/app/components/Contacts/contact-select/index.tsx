@@ -5,7 +5,7 @@ import { useGetContactPersonsQuery } from '../../../features/contact/contactApi'
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { useCallback } from 'react';
-
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface Props {
   value: IContactPerson[];
@@ -28,17 +28,22 @@ export function ContactSelect({
 
   const handleOnChange = useCallback((e: any, value: IContactPerson[]) => onChange(value), [onChange]);
 
+  const [ref, ListboxComponent] = useAutocompleteVirtualization(42);
+
   return (
     <Autocomplete
       options={persons?.records ?? []}
       value={
         persons?.records?.filter(employee => value?.find((el) => el.ID === employee.ID)) ?? []
       }
+      open
+      ref={ref}
+      ListboxComponent={ListboxComponent}
       onChange={handleOnChange}
       multiple
       limitTags={limitTags}
       getOptionLabel={option => option.NAME}
-      filterOptions={filterOptions(50, 'NAME')}
+      // filterOptions={filterOptions(50, 'NAME')}
       renderOption={(props, option, { selected }) => (
         <li
           {...props}
