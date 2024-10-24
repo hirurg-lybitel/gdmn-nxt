@@ -123,7 +123,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
   const handleChange = (e: any, newValue: ICustomer | ICustomer[] | null) => {
-    setSearchText('');
     onChange && onChange(newValue as Value<Multiple>);
     if (!newValue) {
       setSelectedTask(null);
@@ -186,8 +185,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
-  const [searchText, setSearchText] = useState('');
-
   return (
     <>
       <Autocomplete
@@ -220,7 +217,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         }
         loadingText="Загрузка данных..."
         onChange={handleChange}
-        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index }: AutocompleteRenderOptionState) => {
+        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index, inputValue }: AutocompleteRenderOptionState) => {
           const handleCustomerSelect = (e: MouseEvent<HTMLDivElement>, customer: ICustomer) => {
             /** Don't select directly customer with tasks. Only the task */
             if ((customer.taskCount ?? 0) > 0) {
@@ -251,7 +248,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                tasksFilter={searchText}
+                tasksFilter={inputValue}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -266,15 +263,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick, searchText])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
-            onChange={(e) => setSearchText(e.target.value)}
-            onBlur={() => setSearchText('')}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
