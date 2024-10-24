@@ -28,7 +28,7 @@ export function ContactSelect({
 
   const handleOnChange = useCallback((e: any, value: IContactPerson[]) => onChange(value), [onChange]);
 
-  const [ref, ListboxComponent] = useAutocompleteVirtualization(42);
+  const [ref, ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <Autocomplete
@@ -36,7 +36,6 @@ export function ContactSelect({
       value={
         persons?.records?.filter(employee => value?.find((el) => el.ID === employee.ID)) ?? []
       }
-      open
       ref={ref}
       ListboxComponent={ListboxComponent}
       onChange={handleOnChange}
