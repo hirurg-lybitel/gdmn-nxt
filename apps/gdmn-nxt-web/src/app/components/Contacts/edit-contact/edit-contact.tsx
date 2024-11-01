@@ -16,7 +16,6 @@ import * as yup from 'yup';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
 import EditableTypography from '../../editable-typography/editable-typography';
 import TelephoneInput from '../../telephone-input';
-import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import filterOptions from '../../helpers/filter-options';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
@@ -32,6 +31,7 @@ import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
+import { ContactSelect } from '../contact-select';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -47,7 +47,6 @@ export function EditContact({
   onCancel,
 }: EditContactProps) {
   const userPermissions = usePermissions();
-  const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
   const [tabIndex, setTabIndex] = useState('2');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -459,41 +458,11 @@ export function EditContact({
                     {emailsOptions}
                     {messengersOptions}
                     <Divider flexItem />
-                    <Autocomplete
-                      fullWidth
-                      options={persons?.records ?? []}
-                      getOptionLabel={option => option.NAME}
-                      filterOptions={filterOptions(50, 'NAME')}
-                      value={persons?.records?.find(el => el.ID === formik.values.RESPONDENT?.ID) ?? null}
-                      loading={personsIsFetching}
-                      loadingText="Загрузка данных..."
-                      onChange={(event, value) => {
-                        formik.setFieldValue('RESPONDENT', value);
-                      }}
-                      renderOption={(props, option) => {
-                        return (
-                          <li {...props} key={option.ID}>
-                            {option.NAME}
-                          </li>
-                        );
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Ответственный"
-                          placeholder="Выберите ответственного"
-                          error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
-                          helperText={formik.touched.RESPONDENT && formik.errors.RESPONDENT}
-                          InputProps={{
-                            ...params.InputProps,
-                            startAdornment: (
-                              <InputAdornment position="end">
-                                <ManageAccountsIcon />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      )}
+                    <ContactSelect
+                      label="Ответственный"
+                      placeholder="Выберите ответственного"
+                      value={formik.values.RESPONDENT ?? null}
+                      onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
                     />
                     <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                     <CustomerSelect

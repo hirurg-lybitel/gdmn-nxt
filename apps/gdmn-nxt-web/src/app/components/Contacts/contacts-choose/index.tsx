@@ -31,8 +31,9 @@ export default function ContactsChoose({
     setAnchorEl(null);
   };
 
-  const handleContactsChange = (values: IContactPerson[]) => {
-    setContacts(values);
+  const handleContactsChange = (values: IContactPerson[] | IContactPerson | null) => {
+    if (!values) return;
+    setContacts(values as IContactPerson[]);
   };
 
   const handleOnSubmit = () => {
@@ -69,6 +70,7 @@ export default function ContactsChoose({
               <CustomizedCard borders boxShadows>
                 <CardContent style={{ padding: '8px' }}>
                   <ContactSelect
+                    multiple
                     value={contacts}
                     onChange={handleContactsChange}
                   />

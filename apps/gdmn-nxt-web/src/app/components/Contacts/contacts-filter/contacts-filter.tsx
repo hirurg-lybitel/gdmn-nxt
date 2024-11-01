@@ -83,6 +83,7 @@ export function ContactsFilter({
             label="Ответственный"
             placeholder="Выберите ответственного"
             limitTags={2}
+            multiple
             value={filteringData?.RESPONDENTS as IContactPerson[] ?? []}
             onChange={(value) => handleOnChange('RESPONDENTS', value)}
           />
