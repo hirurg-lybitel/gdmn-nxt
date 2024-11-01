@@ -5,8 +5,8 @@ import { VariableSizeList, ListChildComponentProps } from 'react-window';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 
-interface useAutocompleteVirtualizationProps {
-  itemSize?: number
+interface IAutocompleteVirtualizationProps {
+  itemHeight?: number
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -26,14 +26,14 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtualizationProps): any[] {
+export function useAutocompleteVirtualization({ itemHeight }: IAutocompleteVirtualizationProps): React.ComponentType<React.HTMLAttributes<HTMLElement>>[] {
   const theme = useTheme();
   const classes = useStyles();
 
   const smUp = useMediaQuery(theme.breakpoints.up('sm'), {
     noSsr: true,
   });
-  const currentItemSize = itemSize ? itemSize : smUp ? 36 : 48;
+  const currentitemHeight = itemHeight ?? (smUp ? 36 : 48);
 
   function renderRow(props: ListChildComponentProps) {
     const { data, index, style } = props;
@@ -41,20 +41,8 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
     const inlineStyle = {
       ...style,
       top: (style.top as number),
-      height: currentItemSize + 'px',
+      height: currentitemHeight + 'px',
     };
-
-    // if (dataSet.hasOwnProperty('group')) {
-    //   return (
-    //     <ListSubheader
-    //       key={dataSet.key}
-    //       component="div"
-    //       style={inlineStyle}
-    //     >
-    //       {dataSet.group}
-    //     </ListSubheader>
-    //   );
-    // }
 
     return (
       <Typography
@@ -70,9 +58,7 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
   }
 
   const OuterElementContext = React.createContext({});
-
-  // eslint-disable-next-line react/display-name
-  const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
+  const OuterElementTypeComponent = (props: {}, ref: React.ForwardedRef<HTMLDivElement>) => {
     const outerProps = React.useContext(OuterElementContext);
     return (
       <div
@@ -81,9 +67,10 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
         {...outerProps}
       />
     );
-  });
+  };
+  const OuterElementType = React.forwardRef<HTMLDivElement>(OuterElementTypeComponent);
 
-  function useResetCache(data: any) {
+  function useResetCache(data: number) {
     const ref = React.useRef<VariableSizeList>(null);
     React.useEffect(() => {
       if (ref.current != null) {
@@ -105,17 +92,9 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
 
     const itemCount = itemData.length;
 
-    const getChildSize = (child: React.ReactElement) => {
-      // if (child.hasOwnProperty('group')) {
-      //   return 48;
-      // }
-
-      return currentItemSize;
-    };
-
     const listMaxHeight = 1000;
 
-    const listHeight = Math.min(currentItemSize * (itemData.length), listMaxHeight);
+    const listHeight = Math.min(currentitemHeight * (itemData.length), listMaxHeight);
 
     const gridRef = useResetCache(itemCount);
 
@@ -129,7 +108,7 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
             ref={gridRef}
             outerElementType={OuterElementType}
             innerElementType="ul"
-            itemSize={(index: number) => getChildSize(itemData[index])}
+            itemSize={(index: number) => currentitemHeight}
             overscanCount={5}
             itemCount={itemCount}
           >
@@ -140,5 +119,5 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
     );
   });
 
-  return [ListboxComponent as React.ComponentType<React.HTMLAttributes<HTMLElement>>];
+  return [ListboxComponent];
 }
