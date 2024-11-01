@@ -1,6 +1,6 @@
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { Autocomplete, Checkbox, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, TextField, Tooltip } from '@mui/material';
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
@@ -41,7 +41,6 @@ export function ContactSelect({
       multiple
       limitTags={limitTags}
       getOptionLabel={option => option.NAME}
-      // filterOptions={filterOptions(50, 'NAME')}
       renderOption={(props, option, { selected }) => (
         <li
           {...props}
@@ -57,7 +56,11 @@ export function ContactSelect({
             style={{ marginRight: 8 }}
             checked={selected}
           />
-          {option.NAME}
+          <Tooltip title={option.NAME}>
+            <div style={{ textWrap: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {option.NAME}
+            </div>
+          </Tooltip>
         </li>
       )}
       renderInput={(params) => (
