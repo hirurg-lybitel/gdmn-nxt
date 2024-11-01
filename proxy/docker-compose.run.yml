@@ -1,0 +1,21 @@
+services:
+  proxy-server:
+    image: ghcr.io/hirurg-lybitel/gdmn-proxy-server:main
+    container_name: proxy-server
+    restart: always
+    ports:
+      - 443:443
+    volumes:
+      - type: bind
+        source: ssl
+        target: /ssl
+        read_only: true
+    env_file:
+      - ./.env
+    networks:
+      - myNetwork
+
+networks:
+  myNetwork:
+    name: proxy_network
+    driver: bridge
