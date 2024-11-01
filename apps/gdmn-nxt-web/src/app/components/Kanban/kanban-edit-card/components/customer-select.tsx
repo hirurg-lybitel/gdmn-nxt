@@ -208,8 +208,61 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     handleTaskSelect({ ...defaultTasks[0], project });
   }, [multiple, projects, projectsIsLoading]);
 
+  interface IInputAdornmentComponentProps {
+    viewed?: boolean,
+    projectsIsFetching: boolean,
+    projects: ITimeTrackProject[],
+    projectsIsLoading: boolean,
+    selectedTask: ITimeTrackTask | null,
+    handleTaskSelect: (task: ITimeTrackTask) => void
+  }
+
+  const InputAdornmentComponent = useCallback(({ viewed = false, projects, projectsIsFetching, projectsIsLoading, selectedTask, handleTaskSelect }: IInputAdornmentComponentProps) => {
+    const style = viewed ? { zIndex: 2 } : { visibility: 'hidden', pointerEvents: 'none' };
+    return (
+      <InputAdornment
+        position="start"
+        style={{
+          display: (!projectsIsFetching && projects.length === 0) ? 'none' : 'inline-flex',
+          ...style as any
+        }}
+      >
+        <div style={{ position: 'relative', color: 'transparent', paddingLeft: viewed ? 0 : 8 }}>
+          <Stack direction={'row'}>
+            {projectsIsLoading
+              ? 'Загрузка'
+              : `${selectedTask?.name ?? 'Выберите задачу'}`
+            }
+            <Box width={34} />
+          </Stack>
+          <CustomerTasks
+            projects={projects}
+            task={selectedTask}
+            onSelect={handleTaskSelect}
+          />
+        </div>
+      </InputAdornment>
+    );
+  }, []);
+
   return (
-    <>
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{ position: 'absolute',
+          left: '14px',
+          top: '9px',
+          zIndex: 99,
+          width: 'min-content' }}
+      >
+        <InputAdornmentComponent
+          viewed
+          projects={projects}
+          projectsIsFetching={projectsIsFetching}
+          projectsIsLoading={projectsIsLoading}
+          selectedTask={selectedTask}
+          handleTaskSelect={handleTaskSelect}
+        />
+      </div>
       <Autocomplete
         className={classes.root}
         style={style}
@@ -288,23 +341,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...params.InputProps,
               ...rest.InputProps,
               startAdornment: (
-                <InputAdornment position="start" style={{ display: !projectsIsFetching && projects.length === 0 ? 'none' : 'inline-flex' }}>
-                  <div style={{ position: 'relative', color: 'transparent', paddingLeft: 8 }}>
-                    <Stack direction={'row'}>
-                      {projectsIsLoading
-                        ? 'Загрузка'
-                        : `${selectedTask?.name ?? 'Выберите задачу'}`
-                      }
-                      <Box width={34} />
-                    </Stack>
-                    <CustomerTasks
-                      projects={projects}
-                      task={selectedTask}
-                      onSelect={handleTaskSelect}
-                    />
-                  </div>
-                  {params.InputProps.startAdornment}
-                </InputAdornment>
+                <InputAdornmentComponent
+                  projects={projects}
+                  projectsIsFetching={projectsIsFetching}
+                  projectsIsLoading={projectsIsLoading}
+                  selectedTask={selectedTask}
+                  handleTaskSelect={handleTaskSelect}
+                />
               ),
               endAdornment: (
                 <>
@@ -343,7 +386,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         )}
       />
       {memoCustomerUpsert}
-    </>
+    </div>
   );
 }
 
