@@ -28,7 +28,7 @@ export function ContactSelect({
 
   const handleOnChange = useCallback((e: any, value: IContactPerson[]) => onChange(value), [onChange]);
 
-  const [ListboxComponent] = useAutocompleteVirtualization(42);
+  const [ListboxComponent] = useAutocompleteVirtualization({ itemSize: 42 });
 
   return (
     <Autocomplete
