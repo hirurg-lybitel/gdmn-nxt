@@ -19,6 +19,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
   },
   item: {
+    overflow: 'hidden',
     '& .MuiListItem-root': {
       height: '100%'
     }
@@ -40,7 +41,7 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
     const inlineStyle = {
       ...style,
       top: (style.top as number),
-      Height: currentItemSize + 'px'
+      height: currentItemSize + 'px',
     };
 
     // if (dataSet.hasOwnProperty('group')) {
@@ -60,7 +61,6 @@ export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtu
         key={dataSet?.key}
         component="li"
         {...dataSet?.optionProps}
-        noWrap
         style={inlineStyle}
         className={classes.item}
       >
