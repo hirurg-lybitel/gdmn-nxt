@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, ClickAwayListener, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -511,10 +511,7 @@ const CustomerTasks = ({
     e.preventDefault();
   }, []);
 
-  const taskSelect = useCallback((task: ITimeTrackTask) => (e: any) => {
-    console.log('asd');
-    setOpen(false);
-    e.stopPropagation();
+  const taskSelect = useCallback((task: ITimeTrackTask) => () => {
     onSelect(task);
   }, [onSelect]);
 
@@ -535,128 +532,101 @@ const CustomerTasks = ({
     setSelectedProject(task?.project);
   }, [task?.project]);
 
-  const [open, setOpen] = useState(false);
-  const [focused, setFocused] = useState(false);
-
-  const handleClickAway = () => {
-    setFocused(false);
-    setOpen(false);
-  };
-
-  const handleClose = (e: SyntheticEvent<Element, Event>) => {
-    if (e.type === 'blur' || e.type === 'mousedown') return;
-    setOpen(false);
-  };
-
-  const handleOpen = () => {
-    setOpen(true);
-    setFocused(true);
-  };
-
   return (
-    <ClickAwayListener onClickAway={handleClickAway}>
-      <div >
-        <Autocomplete
-          disableClearable
-          open={open}
-          clearIcon={null}
-          onClose={handleClose}
-          onOpen={handleOpen}
-          options={projects}
-          getOptionLabel={() => task?.name ?? ''}
-          // filterOptions={filterProjects(50)}
-          onChange={projectOnChange}
-          value={selectedProject || undefined}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="standard"
-              placeholder="Выберите задачу"
-              InputProps={{
-                className: focused ? 'Mui-focused' : '',
-                ref: params.InputProps.ref,
-                endAdornment: params.InputProps.endAdornment
-              }}
-            />
-          )}
-          groupBy={({ isFavorite }: ITimeTrackProject) => isFavorite ? 'Избранные' : 'Остальные'}
-          renderGroup={(params) => (
-            <li key={params.key}>
-              <GroupHeader>
-                <Typography variant="subtitle1">{params.group}</Typography>
-              </GroupHeader>
-              <GroupItems>{params.children}</GroupItems>
-            </li>
-          )}
-          ListboxComponent={ListboxComponent}
-          renderOption={(props, { tasks, ...option }) => (
-            <li
-              {...props}
-              key={`section-${option.ID}`}
-              style={{
-                padding: 0,
-              }}
-            >
-              <ul>
-                <ListSubheader
-                  style={{
-                    lineHeight: '36px',
-                    cursor: 'text',
-                  }}
-                  onClick={preventAction}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}
-                  >
-                    {option.name}
-                    <Box flex={1} minWidth={12} />
-                    <SwitchStar
-                      selected={!!option.isFavorite}
-                      onClick={toggleProjectFavorite(option.ID, !!option.isFavorite)}
-                    />
-                  </div>
-                </ListSubheader>
-                {tasks?.map(task => (
-                  <ListItem
-                    key={`item-${option.ID}-${task.ID}`}
-                    onClick={taskSelect({ ...task, project: option })}
-                    disablePadding
-                    style={{
-                      backgroundColor: 'var(--color-main-bg)',
-                    }}
-                  >
-                    <ListItemButton>
-                      <ListItemText inset primary={task.name} />
-                      <Box flex={1} minWidth={12} />
-                      <SwitchStar
-                        selected={!!task.isFavorite}
-                        onClick={toggleTaskFavorite(task.ID, option.ID, !!task.isFavorite)}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </ul>
-            </li>
-          )}
-          sx={{
-            position: 'absolute',
-            top: -2,
-            width: '100%',
-            '& .MuiInput-root::before': { borderBottom: 0 },
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                width: 'max-content'
-              }
-            }
+    <Autocomplete
+      clearIcon={null}
+      options={projects}
+      getOptionLabel={() => task?.name ?? ''}
+      // filterOptions={filterProjects(50)}
+      onChange={projectOnChange}
+      value={selectedProject}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          variant="standard"
+          placeholder="Выберите задачу"
+          InputProps={{
+            ref: params.InputProps.ref,
+            endAdornment: params.InputProps.endAdornment
           }}
         />
-      </div>
-    </ClickAwayListener>
+      )}
+      groupBy={({ isFavorite }: ITimeTrackProject) => isFavorite ? 'Избранные' : 'Остальные'}
+      renderGroup={(params) => (
+        <li key={params.key}>
+          <GroupHeader>
+            <Typography variant="subtitle1">{params.group}</Typography>
+          </GroupHeader>
+          <GroupItems>{params.children}</GroupItems>
+        </li>
+      )}
+      ListboxComponent={ListboxComponent}
+      renderOption={(props, { tasks, ...option }) => (
+        <li
+          {...props}
+          key={`section-${option.ID}`}
+          style={{
+            padding: 0,
+          }}
+        >
+          <ul>
+            <ListSubheader
+              style={{
+                lineHeight: '36px',
+                cursor: 'text',
+              }}
+              onClick={preventAction}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                {option.name}
+                <Box flex={1} minWidth={12} />
+                <SwitchStar
+                  selected={!!option.isFavorite}
+                  onClick={toggleProjectFavorite(option.ID, !!option.isFavorite)}
+                />
+              </div>
+            </ListSubheader>
+            {tasks?.map(task => (
+              <ListItem
+                key={`item-${option.ID}-${task.ID}`}
+                onClick={taskSelect({ ...task, project: option })}
+                disablePadding
+                style={{
+                  backgroundColor: 'var(--color-main-bg)',
+                }}
+              >
+                <ListItemButton>
+                  <ListItemText inset primary={task.name} />
+                  <Box flex={1} minWidth={12} />
+                  <SwitchStar
+                    selected={!!task.isFavorite}
+                    onClick={toggleTaskFavorite(task.ID, option.ID, !!task.isFavorite)}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </ul>
+        </li>
+      )}
+      sx={{
+        position: 'absolute',
+        top: -2,
+        width: '100%',
+        '& .MuiInput-root::before': { borderBottom: 0 },
+      }}
+      slotProps={{
+        paper: {
+          style: {
+            width: 'max-content'
+          }
+        }
+      }}
+    />
   );
 };
