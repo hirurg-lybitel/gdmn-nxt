@@ -1,11 +1,34 @@
 import * as React from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, Theme } from '@mui/material/styles';
 import { VariableSizeList, ListChildComponentProps } from 'react-window';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 
-export function useAutocompleteVirtualization(itemSize?: number): any[] {
+interface useAutocompleteVirtualizationProps {
+  itemSize?: number
+}
+
+const useStyles = makeStyles((theme: Theme) => ({
+  list: {
+    '& .MuiAutocomplete-listbox': {
+      padding: 0
+    },
+    '& ul': {
+      margin: 0
+    }
+  },
+  item: {
+    '& .MuiListItem-root': {
+      height: '100%'
+    }
+  }
+}));
+
+export function useAutocompleteVirtualization({ itemSize }: useAutocompleteVirtualizationProps): any[] {
   const theme = useTheme();
+  const classes = useStyles();
+
   const smUp = useMediaQuery(theme.breakpoints.up('sm'), {
     noSsr: true,
   });
@@ -17,6 +40,7 @@ export function useAutocompleteVirtualization(itemSize?: number): any[] {
     const inlineStyle = {
       ...style,
       top: (style.top as number),
+      Height: currentItemSize + 'px'
     };
 
     // if (dataSet.hasOwnProperty('group')) {
@@ -38,6 +62,7 @@ export function useAutocompleteVirtualization(itemSize?: number): any[] {
         {...dataSet?.optionProps}
         noWrap
         style={inlineStyle}
+        className={classes.item}
       >
         {dataSet}
       </Typography>
@@ -88,13 +113,14 @@ export function useAutocompleteVirtualization(itemSize?: number): any[] {
       return currentItemSize;
     };
 
-    const listMaxHeight = 250;
-    const listHeight = Math.min(currentItemSize * itemData.length, listMaxHeight);
+    const listMaxHeight = 1000;
+
+    const listHeight = Math.min(currentItemSize * (itemData.length), listMaxHeight);
 
     const gridRef = useResetCache(itemCount);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className={classes.list} >
         <OuterElementContext.Provider value={other}>
           <VariableSizeList
             itemData={itemData}
