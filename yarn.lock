@@ -2357,6 +2357,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mona-health/react-input-mask@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "@mona-health/react-input-mask@npm:3.0.3"
+  dependencies:
+    invariant: ^2.2.4
+    prop-types: ^15.7.2
+    warning: ^4.0.3
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: 947e76cd96d73462e96b7904183351aaee486fd79647d7dab48abefba9c99efc9c7e82514ccaf50050201a18a5e08ea0ab7ed721708231265560eb9a4fdebad2
+  languageName: node
+  linkType: hard
+
 "@mui/base@npm:5.0.0-beta.40, @mui/base@npm:^5.0.0-beta.20, @mui/base@npm:^5.0.0-beta.22":
   version: 5.0.0-beta.40
   resolution: "@mui/base@npm:5.0.0-beta.40"
@@ -9682,6 +9696,7 @@ __metadata:
     "@emotion/styled": ^11.11.0
     "@fontsource/roboto": ^4.5.1
     "@hello-pangea/dnd": ^16.2.0
+    "@mona-health/react-input-mask": ^3.0.3
     "@mui/icons-material": ^5.2.5
     "@mui/lab": ^5.0.0-alpha.160
     "@mui/material": ^5.15.4
@@ -9804,7 +9819,6 @@ __metadata:
     react-dropzone: ^14.2.3
     react-html-parser: ^2.0.2
     react-idle-timer: ^5.7.2
-    react-input-mask: 3.0.0-alpha.2
     react-is: 18.2.0
     react-leaflet: ^4.0.0
     react-leaflet-markercluster: ^3.0.0-rc1
@@ -15335,20 +15349,6 @@ __metadata:
     react: ">=16"
     react-dom: ">=16"
   checksum: 6faf3cfa87c9d65ae7a87078a2d82db5b821936a45565a98d69e7341e4b4acd5610b1f26cf1a6809b5551e4c30357f2ab5ce729c4c33751f66cb9ce6072dfb02
-  languageName: node
-  linkType: hard
-
-"react-input-mask@npm:3.0.0-alpha.2":
-  version: 3.0.0-alpha.2
-  resolution: "react-input-mask@npm:3.0.0-alpha.2"
-  dependencies:
-    invariant: "npm:^2.2.4"
-    prop-types: "npm:^15.7.2"
-    warning: "npm:^4.0.3"
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: 6631cd65a31316ba129e6b6edcca5b1e8def3b9e97ad46fdc2d41d18165635f7a2cd81791473d31a58d3fd0dab5f0be0af7bdcaf3ff66a0d4d123d7cb6c69c55
   languageName: node
   linkType: hard
 
