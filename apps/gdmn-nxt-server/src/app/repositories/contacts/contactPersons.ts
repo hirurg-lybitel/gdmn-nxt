@@ -243,7 +243,7 @@ const update = async (
         NAME: nameInfo.nickName ?? '',
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
-        NOTE: await string2Blob(NOTE ?? ''),
+        NOTE: await string2Blob(NOTE),
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
