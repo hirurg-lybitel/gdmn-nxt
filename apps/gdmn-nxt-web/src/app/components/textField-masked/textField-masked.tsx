@@ -1,7 +1,7 @@
 import InputMask from '@mona-health/react-input-mask';
 import styles from './textfield-masked.module.less';
 import { TextField } from '@mui/material';
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 export interface Selection {
   start: number;
@@ -31,12 +31,11 @@ export interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
    */
   mask: string | Array<(string | RegExp)>;
   /**
-   * Character to cover unfilled editable parts of mask. Default character is "_". If set to null, unfilled parts will be empty, like in ordinary input.
+   * Placeholder to cover unfilled parts of the mask
    */
-  maskChar?: string | null | undefined;
   maskPlaceholder?: string | null | undefined;
   /**
-   * Show mask even in empty input without focus.
+   * Whether mask prefix and placeholder should be displayed when input is empty and has no focus
    */
   alwaysShowMask?: boolean | undefined;
   /**
@@ -44,15 +43,13 @@ export interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
    */
   inputRef?: React.Ref<HTMLInputElement> | undefined;
   /**
-   * In case you need to implement more complex masking behavior, you can provide
-   * beforeMaskedStateChange function to change masked value and cursor position
-   * before it will be applied to the input.
-   *
-   * * previousState: Input state before change. Only defined on change event.
-   * * currentState: Current raw input state. Not defined during component render.
-   * * nextState: Input state with applied mask. Contains value and selection fields.
+   * Function to modify value and selection before applying mask
    */
   beforeMaskedStateChange?(states: BeforeMaskedStateChangeStates): InputState;
+  /**
+   * Custom render function for integration with other input components
+   */
+  children?: ReactElement
 }
 
 /* eslint-disable-next-line */
