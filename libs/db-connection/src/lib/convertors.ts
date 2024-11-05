@@ -31,5 +31,15 @@ export const getStringFromBlob = async (attachment: Attachment, transaction: Tra
   await readStream.close();
   const blob2String = resultBuffer.toString();
 
+  // TODO: убрать после обновления всех блобов на базе
+  if (!isNaN(Number(blob2String[0]))) {
+    const array = blob2String.split(',')?.map(b => +b);
+    let result = '';
+    for (let i = 0; i < array.length; i++) {
+      result += String.fromCharCode(array[i]);
+    }
+    return result;
+  }
+
   return blob2String;
 };

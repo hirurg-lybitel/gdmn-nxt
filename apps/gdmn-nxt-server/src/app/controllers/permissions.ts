@@ -5,7 +5,7 @@ import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
+import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
@@ -487,23 +487,6 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         PHONE: user['CONTACT_PHONE']
       };
 
-      if (user['AVATAR_BLOB'] !== null && typeof user['AVATAR_BLOB'] === 'object') {
-        // eslint-disable-next-line dot-notation
-        const readStream = await attachment.openBlob(transaction, user['AVATAR_BLOB']);
-        const blobLength = await readStream?.length;
-        const resultBuffer = Buffer.alloc(blobLength);
-
-        let size = 0;
-        let n: number;
-        while (size < blobLength && (n = await readStream.read(resultBuffer.subarray(size))) > 0) size += n;
-
-        await readStream.close();
-
-        const blob2String = resultBuffer.toString();
-        // eslint-disable-next-line dot-notation
-        user['AVATAR'] = bin2String(blob2String.split(','));
-      };
-
       const USER = {
         ID: user['USER_ID'],
         NAME: user['USER_NAME'],
@@ -511,7 +494,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT },
-        AVATAR: user['AVATAR']
+        AVATAR: await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB'])
       };
 
       const USERGROUP = {
