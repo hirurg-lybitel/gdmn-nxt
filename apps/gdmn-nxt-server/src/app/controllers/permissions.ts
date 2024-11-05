@@ -478,6 +478,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
 
     const rawUsers = await Promise.resolve(execQuery(query));
 
+
     const users: IUserGroupLine[] = [];
     await forEachAsync(rawUsers, async user => {
       const CONTACT = {
@@ -485,6 +486,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['CONTACT_NAME'],
         PHONE: user['CONTACT_PHONE']
       };
+
       const USER = {
         ID: user['USER_ID'],
         NAME: user['USER_NAME'],
