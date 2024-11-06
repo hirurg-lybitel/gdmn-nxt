@@ -854,6 +854,16 @@ const getPermissionByUser: RequestHandler = async (req, res) => {
   };
 };
 
+const closeUserSessionById: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    await closeUserSession(req, id);
+    return res.status(200).json({ id });
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  }
+};
+
 export const PermissionsController = {
   getCross,
   upsertCross,
@@ -866,5 +876,6 @@ export const PermissionsController = {
   removeUserGroupLine,
   getUserGroupLine,
   getPermissionByUser,
-  upsertUsersGroupLine
+  upsertUsersGroupLine,
+  closeUserSessionById
 };

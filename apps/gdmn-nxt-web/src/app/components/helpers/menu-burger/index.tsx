@@ -1,15 +1,18 @@
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { IconButton, Menu, MenuItem } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { cloneElement, useCallback, useEffect, useState } from 'react';
+
+interface ItemsProps {
+  closeMenu: () => void
+}
 
 interface Props {
-  // children: JSX.Element;
-  items: JSX.Element[];
+  items: (props: ItemsProps) => JSX.Element[];
 }
 
 export default function MenuBurger({
   items
-}: Props) {
+}: Readonly<Props>) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -56,8 +59,12 @@ export default function MenuBurger({
           'aria-labelledby': 'basic-button',
         }}
       >
-        {items.map((item, index) => (
-          <MenuItem key={index}>{item}</MenuItem>
+        {items({
+          closeMenu: handleClose
+        }).map((item, index) => (
+          <MenuItem key={index} style={{ padding: 0 }}>
+            {cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })}
+          </MenuItem>
         ))}
       </Menu>
     </div>

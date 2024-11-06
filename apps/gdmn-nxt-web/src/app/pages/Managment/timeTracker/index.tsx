@@ -38,6 +38,7 @@ import FilterPanel from './components/filter-panel';
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 
 const durationMask = [
   /[0-9]/,
@@ -484,14 +485,20 @@ export function TimeTracker() {
                               }
                             />
                             <MenuBurger
-                              items={[
-                                <ItemButtonDelete
+                              items={({ closeMenu }) => [
+                                <Confirmation
                                   key="delete"
-                                  label="Удалить"
                                   title="Удалить запись?"
                                   text={'Данные невозможно будет восстановить'}
-                                  onClick={onDelete(ID)}
-                                />
+                                  dangerous
+                                  onConfirm={onDelete(ID)}
+                                  onClose={closeMenu}
+                                >
+                                  <ItemButtonDelete
+                                    label="Удалить"
+                                    confirmation={false}
+                                  />
+                                </Confirmation>,
                               ]}
                             />
                           </Stack>
