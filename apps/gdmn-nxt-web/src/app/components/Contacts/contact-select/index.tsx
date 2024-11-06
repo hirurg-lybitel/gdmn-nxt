@@ -4,7 +4,7 @@ import { Autocomplete, Checkbox, TextField, Tooltip } from '@mui/material';
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
-import { useCallback } from 'react';
+import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface Props {
@@ -30,7 +30,7 @@ export function ContactSelect({
 
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IContactPerson[] | IContactPerson | null) => onChange(value), [onChange]);
 
-  const [ListboxComponent] = useAutocompleteVirtualization({ itemHeight: 42 });
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   const getPersons = useCallback(() => {
     if (multiple) {
@@ -50,13 +50,12 @@ export function ContactSelect({
       limitTags={limitTags}
       getOptionLabel={option => option.NAME}
       renderOption={(props, option, { selected }) => (
-        <li
-          {...props}
+        <div
+          {...props as HTMLAttributes<HTMLElement>}
           key={option.ID}
           style={{
             paddingTop: 2,
-            paddingBottom: 2,
-            minHeight: '42px'
+            paddingBottom: 2
           }}
         >
           {multiple && (
@@ -67,12 +66,8 @@ export function ContactSelect({
               checked={selected}
             />
           )}
-          <Tooltip title={option.NAME}>
-            <div style={{ textWrap: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {option.NAME}
-            </div>
-          </Tooltip>
-        </li>
+          {option.NAME}
+        </div>
       )}
       renderInput={(params) => (
         <TextField
