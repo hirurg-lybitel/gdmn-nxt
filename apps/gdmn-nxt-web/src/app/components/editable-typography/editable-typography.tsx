@@ -70,7 +70,7 @@ const EditableTypography = <Value extends React.ReactNode>({
       },
       onChange: (e: any) => {
         editComponent.props.onChange && editComponent.props.onChange(e);
-        setNewValue(e.target.value);
+        setNewValue(e.target?.value || '');
       },
       style: {
         flex: 1
@@ -169,7 +169,7 @@ const EditableTypography = <Value extends React.ReactNode>({
           </div>
         </ErrorTooltip>
         <div
-          style={{ display: 'flex', flexDirection: buttonDirection }}
+          style={{ flexDirection: buttonDirection }}
           className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
         >
           {editText

@@ -273,7 +273,6 @@ export function TimeTracker() {
 
   const descriptionOnClose = (timeTrack: ITimeTrack) => () => {
     const description = descriptionRef.current?.value;
-    console.log(description);
 
     updateTimeTrack({ ...timeTrack, description });
   };
