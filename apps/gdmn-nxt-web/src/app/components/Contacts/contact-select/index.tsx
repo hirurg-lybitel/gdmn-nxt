@@ -1,11 +1,12 @@
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { Autocomplete, Checkbox, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Checkbox, InputAdornment, TextField, Tooltip } from '@mui/material';
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 interface Props {
   value: IContactPerson[] | IContactPerson | null;
@@ -74,6 +75,17 @@ export function ContactSelect({
           {...params}
           label={label}
           placeholder={placeholder}
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: (
+              <>
+                <InputAdornment position="end">
+                  <ManageAccountsIcon />
+                </InputAdornment>
+                {params.InputProps.startAdornment}
+              </>
+            ),
+          }}
         />
       )}
       loading={personsIsFetching}
