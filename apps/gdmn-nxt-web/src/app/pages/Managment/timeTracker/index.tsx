@@ -273,6 +273,7 @@ export function TimeTracker() {
 
   const descriptionOnClose = (timeTrack: ITimeTrack) => () => {
     const description = descriptionRef.current?.value;
+    console.log(description);
 
     updateTimeTrack({ ...timeTrack, description });
   };
@@ -448,9 +449,11 @@ export function TimeTracker() {
                                 </Typography>
                               </Stack>
                               <EditableTypography
+                                closeOnClickAway
                                 value={description}
                                 editEmpty={false}
-                                onClose={descriptionOnClose(item)}
+                                cancellable
+                                onSave={descriptionOnClose(item)}
                                 editComponent={
                                   <TextField
                                     inputRef={descriptionRef}
@@ -482,12 +485,14 @@ export function TimeTracker() {
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
                             <EditableTypography
+                              closeOnClickAway
                               containerStyle={{
-                                maxWidth: 128,
+                                maxWidth: 158,
                                 width: 'auto'
                               }}
                               value={durationFormat(duration)}
-                              onClose={durationOnClose(item)}
+                              cancellable
+                              onSave={durationOnClose(item)}
                               editComponent={
                                 <TextFieldMasked
                                   style={{
