@@ -23,6 +23,7 @@ export interface UserSelectProps<
   placeholder?: string;
   disableSelectAll?: boolean;
   allSelected?: boolean;
+  selectAllButton?: boolean
 }
 
 const selectAllObject = {
@@ -36,6 +37,7 @@ export function UserSelect({
   disableSelectAll = false,
   allSelected = false,
   onChange,
+  selectAllButton,
   ...props
 }: UserSelectProps<IUser>) {
   const {
@@ -135,7 +137,7 @@ export function UserSelect({
             label={getOptionLabel(user)}
           />
         ))}
-      PaperComponent={CustomPaperComponent({ header: memoPaperHeader })}
+      PaperComponent={CustomPaperComponent({ header: selectAllButton ? memoPaperHeader : undefined })}
       {...props}
       {...(allSelected ? {
         value: (multiple ? [selectAllObject] : selectAllObject) as unknown as IUser

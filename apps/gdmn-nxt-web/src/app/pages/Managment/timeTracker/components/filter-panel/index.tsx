@@ -71,6 +71,7 @@ export function FilterPanel({
           <UserSelect
             multiple
             disableCloseOnSelect
+            selectAllButton
             // open
             value={filteringData?.employees as IUser[] ?? []}
             allSelected={filteringData?.allEmployees ?? false}

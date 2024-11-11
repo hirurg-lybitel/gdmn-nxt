@@ -3,12 +3,13 @@ import { Autocomplete, Box, Stack, TextField } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import NotificationList from '../../../layouts/MainLayout/Header/NotificationSection/notification-list/notification-list';
 import styles from './view-user-notifications.module.less';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import CustomNoData from '../../../components/Styled/Icons/CustomNoData';
 import { Socket } from 'socket.io-client';
 import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
+import UserSelect from '@gdmn-nxt/components/user-select';
 
 /* eslint-disable-next-line */
 export interface ViewUserNotificationsProps {}
@@ -19,8 +20,8 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
   const { data: users = [], isFetching: usersIsFetching } = useGetUsersQuery();
   const [socketClient, setsocketClient] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
 
-  const handleUserChange = useCallback((e: any, value: IUser | null) => {
-    setSelectedUser(value);
+  const handleUserChange = useCallback((e: any, value: IUser | IUser[] | null) => {
+    setSelectedUser(value as IUser);
   }, []);
 
   useEffect(() => {
@@ -53,6 +54,15 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
     };
   }, [socketClient]);
 
+  const memoUserSelect = useMemo(() => (
+    <UserSelect
+      value={undefined}
+      onChange={handleUserChange}
+      label="Пользователь"
+      placeholder="Выберите пользователя"
+    />
+  ), [handleUserChange]);
+
   return (
     <CustomizedCard
       className={styles['item-card']}
@@ -65,27 +75,7 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
         flex={1}
         display="flex"
       >
-        <Autocomplete
-          options={users}
-          value={undefined}
-          onChange={handleUserChange}
-          fullWidth
-          loading={usersIsFetching}
-          loadingText="Загрузка данных..."
-          getOptionLabel={option => option?.NAME || ''}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Пользователь"
-              placeholder="Выберите пользователя"
-            />
-          )}
-          renderOption={(props, option) =>
-            <li {...props} key={option.ID}>
-              {option.NAME}
-            </li>
-          }
-        />
+        {memoUserSelect}
         <Box
           flex={1}
         >
