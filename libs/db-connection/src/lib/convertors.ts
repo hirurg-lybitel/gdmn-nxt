@@ -3,8 +3,6 @@ import { Attachment, Blob, Transaction } from 'node-firebird-driver-native';
 
 export const getBlob = async (attachment: Attachment, transaction: Transaction, value: string) => {
   const charArrayString = value !== null ? string2Bin(value).toString() : null;
-  // const blobBuffer = Buffer.alloc(charArrayString !== null ? charArrayString?.length : 0, charArrayString);
-
   const blobBuffer = Buffer.from(value, 'utf8');
 
   const blob = await attachment.createBlob(transaction);
@@ -14,7 +12,7 @@ export const getBlob = async (attachment: Attachment, transaction: Transaction, 
   return blob;
 };
 
-export const getStringFromBlob = async (attachment: Attachment, transaction: Transaction, value: Blob) => {
+export const getStringFromBlob = async (attachment: Attachment, transaction: Transaction, value: Blob): Promise<string> => {
   if (!value) return '';
 
   const readStream = await attachment.openBlob(transaction, value);
@@ -30,16 +28,6 @@ export const getStringFromBlob = async (attachment: Attachment, transaction: Tra
 
   await readStream.close();
   const blob2String = resultBuffer.toString();
-
-  // TODO: убрать после обновления всех блобов на базе
-  if (!isNaN(Number(blob2String[0]))) {
-    const array = blob2String.split(',')?.map(b => +b);
-    let result = '';
-    for (let i = 0; i < array.length; i++) {
-      result += String.fromCharCode(array[i]);
-    }
-    return result;
-  }
 
   return blob2String;
 };

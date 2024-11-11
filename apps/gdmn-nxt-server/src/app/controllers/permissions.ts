@@ -5,7 +5,7 @@ import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-import { forEachAsync } from '@gsbelarus/util-helpers';
+import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
@@ -487,6 +487,8 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         PHONE: user['CONTACT_PHONE']
       };
 
+      const avatarBlob = await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB']);
+
       const USER = {
         ID: user['USER_ID'],
         NAME: user['USER_NAME'],
@@ -494,7 +496,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT },
-        AVATAR: await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB'])
+        AVATAR: bin2String(avatarBlob.split(','))
       };
 
       const USERGROUP = {
