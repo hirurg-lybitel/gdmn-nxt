@@ -19,6 +19,7 @@ import { useGetCustomersQuery } from '../../../features/customer/customerApi_new
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;
@@ -247,36 +248,12 @@ export function SegmentUpsert({
                   <AccordionDetails>
                     <Stack spacing={2}>
                       <Box>
-                        <Autocomplete
+                        <DepartmentsSelect
                           multiple
                           limitTags={2}
+                          value={formik.values.DEPARTMENTS}
+                          onChange={(value) => handleAutocompleteChange('DEPARTMENTS')({}, value)}
                           disableCloseOnSelect
-                          options={departments || []}
-                          onChange={handleAutocompleteChange('DEPARTMENTS')}
-                          value={
-                            departments?.filter(department => formik.values.DEPARTMENTS && formik.values.DEPARTMENTS.find(el => el.ID === department.ID))
-                          }
-                          getOptionLabel={option => option.NAME}
-                          renderOption={(props, option, { selected }) => (
-                            <li {...props} key={option.ID}>
-                              <Checkbox
-                                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                                checkedIcon={<CheckBoxIcon fontSize="small" />}
-                                style={{ marginRight: 8 }}
-                                checked={selected}
-                              />
-                              {option.NAME}
-                            </li>
-                          )}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Отдел"
-                              placeholder="Выберите отделы"
-                            />
-                          )}
-                          loading={departmentsIsFetching}
-                          loadingText="Загрузка данных..."
                         />
                       </Box>
                       <Box>

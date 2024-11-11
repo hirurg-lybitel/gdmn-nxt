@@ -20,6 +20,7 @@ import { useGetBusinessProcessesQuery } from '../../features/business-processes'
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -111,36 +112,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
         <CardContent style={{ flex: 1 }}>
           <Stack spacing={2}>
             <Box>
-              <Autocomplete
+              <DepartmentsSelect
                 multiple
                 limitTags={2}
                 disableCloseOnSelect
-                options={departments || []}
-                onChange={(e, value) => handleOnChange('DEPARTMENTS', value)}
-                value={
-                  departments?.filter(department => filteringData && (filteringData.DEPARTMENTS)?.find((el: any) => el.ID === department.ID))
-                }
-                getOptionLabel={option => option.NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Отдел"
-                    placeholder="Выберите отделы"
-                  />
-                )}
-                loading={departmentsIsFetching}
-                loadingText="Загрузка данных..."
+                value={filteringData.DEPARTMENTS}
+                onChange={(value) => handleOnChange('DEPARTMENTS', value)}
               />
               <Stack
                 direction="row"

@@ -20,7 +20,7 @@ export function ContactSelect({
   value,
   onChange,
   label = 'Контакты',
-  placeholder = 'Выберите контакты',
+  placeholder,
   limitTags = -1,
   multiple = false
 }: Props) {
@@ -74,7 +74,7 @@ export function ContactSelect({
         <TextField
           {...params}
           label={label}
-          placeholder={placeholder}
+          placeholder={placeholder ?? (multiple ? 'Выберите контакты' : 'Выберите контакт')}
           InputProps={{
             ...params.InputProps,
             startAdornment: (

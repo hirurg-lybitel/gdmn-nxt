@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ICustomer } from '@gsbelarus/util-api-types';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -136,36 +137,13 @@ export function DealsFilter(props: DealsFilterProps) {
               loading={customerFetching}
               loadingText="Загрузка данных..."
             />
-            <Autocomplete
-              options={departments || []}
-              value={
-                departments?.filter(department => filteringData && (filteringData.departments)?.find((el: any) => el.ID === department.ID))
-              }
-              onChange={(e, value) => handleOnChange('departments', value)}
+            <DepartmentsSelect
               multiple
               limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Подразделение"
-                  placeholder="Выберите Подразделение"
-                />
-              )}
-              loading={departmentsFetching}
-              loadingText="Загрузка данных..."
+              value={filteringData.departments}
+              onChange={(value) => handleOnChange('departments', value)}
+              label="Подразделение"
+              placeholder="Выберите Подразделение"
             />
             <Autocomplete
               options={employees}

@@ -13,6 +13,7 @@ import LinearIndeterminate from '../../linear-indeterminate/linear-indeterminate
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import ChartSkeleton from './chart-skeleton';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 interface IPeriodType {
   id: number;
@@ -327,30 +328,12 @@ export function ChartColumn(props: ChartColumnProps) {
               }}
             >
               <Grid item xs={4}>
-                <Autocomplete
+                <DepartmentsSelect
                   multiple
-                  filterOptions={filterOptions(50, 'NAME')}
-                  loading={departmentsIsFetching}
-                  options={departments || []}
-                  onChange={(e, value) => changeChartFilter('departments', [...value])}
-                  value={chartFilter.departments || []}
-                  getOptionLabel={option => option.NAME}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        checked={selected}
-                      />
-                      {option.NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Все отделы"
-                    />
-                  )}
+                  value={chartFilter.departments}
+                  onChange={(value) => changeChartFilter('departments', (value ?? []) as IContactWithID[])}
+                  label=""
+                  placeholder="Все отделы"
                 />
               </Grid>
               <Grid item xs={4}>
