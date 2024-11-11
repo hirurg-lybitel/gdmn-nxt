@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
 import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
+import { HistoryType } from '@gdmn-nxt/components/historyType-select/historyType-select';
 
 interface ClientHistoryProps {
   card?: IKanbanCard;
@@ -71,8 +72,8 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
   const changeCreator = (value: IContactWithID | IContactWithID[] | null) => {
     setMessage(prev => ({ ...prev, creator: value as IContactWithID }));
   };
-  const changeHistoryType = (e: SyntheticEvent, value: IClientHistoryType | null) => {
-    setMessage(prev => ({ ...prev, selectedType: value }));
+  const changeHistoryType = (value: IClientHistoryType | IClientHistoryType[] | null) => {
+    setMessage(prev => ({ ...prev, selectedType: value as IClientHistoryType }));
   };
 
   return (
@@ -181,22 +182,15 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
         <CardContent>
           <Stack spacing={2}>
             <Stack direction={'row'} spacing={2}>
-              <Autocomplete
-                size="small"
+              <HistoryType
+                value={message.selectedType}
+                onChange={changeHistoryType}
                 style={{
                   width: '150px'
                 }}
-                options={historyType}
-                loading={historyTypeIsFetching}
-                getOptionLabel={(option) => option.NAME}
-                onChange={changeHistoryType}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="standard"
-                    placeholder="Тип"
-                  />
-                )}
+                textfieldVariant="standard"
+                label=""
+                placeholder="Тип"
               />
               <EmployeesSelect
                 value={message.creator}

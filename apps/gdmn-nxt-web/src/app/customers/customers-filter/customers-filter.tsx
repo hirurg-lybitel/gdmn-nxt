@@ -23,6 +23,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/businessProcesses-select/businessProcesses-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -208,35 +209,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 ),
               }}
             />
-            <Autocomplete
+            <BusinessProcessesSelect
+              value={filteringData?.BUSINESSPROCESSES}
+              onChange={value => handleOnChange('BUSINESSPROCESSES', value)}
               multiple
               limitTags={2}
               disableCloseOnSelect
-              options={businessProcesses}
-              onChange={(e, value) => handleOnChange('BUSINESSPROCESSES', value)}
-              value={
-                businessProcesses?.filter(businessProcess => filteringData && (filteringData.BUSINESSPROCESSES)?.find((el: IBusinessProcess) => el.ID === businessProcess.ID))
-              }
-              getOptionLabel={option => option.NAME}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Бизнес-процессы"
-                  placeholder="Выберите бизнес-процессы"
-                />
-              )}
-              loading={businessProcessesFetching}
-              loadingText="Загрузка данных..."
             />
           </Stack>
         </CardContent>

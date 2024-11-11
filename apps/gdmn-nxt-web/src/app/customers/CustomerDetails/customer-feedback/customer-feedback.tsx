@@ -179,7 +179,7 @@ export function CustomerFeedback({
           </Stack>
         </CardContent>
       </CustomizedCard>
-      <CustomizedScrollBox container={{ style: { flex: 1 }}}>
+      <CustomizedScrollBox container={{ style: { flex: 1 } }}>
         <Timeline
           sx={{
             padding: 0,

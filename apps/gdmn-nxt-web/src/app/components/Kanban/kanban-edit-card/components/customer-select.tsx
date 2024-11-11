@@ -51,6 +51,7 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   task?: ITimeTrackTask;
   limitTags?: number;
   onTaskSelected?: (task: ITimeTrackTask | null) => void;
+  required?: boolean
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
@@ -68,6 +69,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     style,
     task,
     onTaskSelected,
+    required,
     ...rest
   } = props;
 
@@ -270,6 +272,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
+            required={required}
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}

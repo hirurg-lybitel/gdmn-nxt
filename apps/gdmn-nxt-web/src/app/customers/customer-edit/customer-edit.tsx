@@ -37,6 +37,7 @@ import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { CustomerFeedback } from '../CustomerDetails/customer-feedback/customer-feedback';
 import { CustomerTasks } from '../CustomerDetails/customer-tasks/customer-tasks';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/businessProcesses-select/businessProcesses-select';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -194,39 +195,17 @@ export function CustomerEdit({
                   helperText={getIn(formik.touched, 'ADDRESS') && getIn(formik.errors, 'ADDRESS')}
                   error={getIn(formik.touched, 'ADDRESS') && Boolean(getIn(formik.errors, 'ADDRESS'))}
                 />
-                <Autocomplete
-                  multiple
-                  disableCloseOnSelect
-                  limitTags={2}
-                  options={businessProcesses}
-                  loading={businessProcessesFetching}
-                  getOptionLabel={option => option.NAME ?? ''}
-                  value={
-                    businessProcesses?.filter(bp => formik.values.BUSINESSPROCESSES?.find(el => el.ID === bp.ID))
-                  }
-                  onChange={(e, value) => {
+                <BusinessProcessesSelect
+                  value={formik.values.BUSINESSPROCESSES ?? null}
+                  onChange={value => {
                     formik.setFieldValue(
                       'BUSINESSPROCESSES',
                       value || initValue.BUSINESSPROCESSES
                     );
                   }}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        checked={selected}
-                      />
-                      {option.NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Бизнес-процессы"
-                      placeholder="Выберите бизнес-процессы"
-                    />
-                  )}
+                  multiple
+                  limitTags={2}
+                  disableCloseOnSelect
                 />
                 <LabelsSelect labels={formik.values.LABELS} onChange={handleLabelsChange} />
               </Stack>

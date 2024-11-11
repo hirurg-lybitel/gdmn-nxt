@@ -22,6 +22,8 @@ import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
+import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/businessProcesses-select/businessProcesses-select';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;
@@ -287,70 +289,22 @@ export function SegmentUpsert({
                           ),
                         }}
                       />
-                      <Autocomplete
+                      <BusinessProcessesSelect
+                        value={formik.values.BUSINESSPROCESSES ?? null}
+                        onChange={value => handleAutocompleteChange('BUSINESSPROCESSES')({}, value)}
                         multiple
                         limitTags={2}
                         disableCloseOnSelect
-                        options={businessProcesses}
-                        onChange={handleAutocompleteChange('BUSINESSPROCESSES')}
-                        value={
-                          businessProcesses?.filter(businessProcess => formik.values.BUSINESSPROCESSES && formik.values.BUSINESSPROCESSES.find(el => el.ID === businessProcess.ID))
-                        }
-                        getOptionLabel={option => option.NAME}
-                        renderOption={(props, option, { selected }) => (
-                          <li {...props} key={option.ID}>
-                            <Checkbox
-                              icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                              checkedIcon={<CheckBoxIcon fontSize="small" />}
-                              checked={selected}
-                            />
-                            {option.NAME}
-                          </li>
-                        )}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="Бизнес-процессы"
-                            placeholder="Выберите бизнес-процессы"
-                          />
-                        )}
-                        loading={businessProcessesFetching}
-                        loadingText="Загрузка данных..."
                       />
                     </Stack>
                   </AccordionDetails>
                 </Accordion>
-                <Autocomplete
-                  options={customers}
-                  onChange={handleAutocompleteChange('CUSTOMERS')}
-                  value={
-                    customers?.filter(customer => formik.values.CUSTOMERS && formik.values.CUSTOMERS.find((el: any) => el.ID === customer.ID))
-                  }
+                <CustomerSelect
+                  value={formik.values.CUSTOMERS}
                   disableCloseOnSelect
                   multiple
                   limitTags={2}
-                  filterOptions={filterOptions(50, 'NAME')}
-                  getOptionLabel={option => option.NAME}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        style={{ marginRight: 8 }}
-                        checked={selected}
-                      />
-                      {option.NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Клиент"
-                      placeholder="Выберите клиентов"
-                    />
-                  )}
-                  loading={customerFetching}
-                  loadingText="Загрузка данных..."
+                  onChange={value => handleAutocompleteChange('CUSTOMERS')({}, value)}
                 />
               </Stack>
             </Form>

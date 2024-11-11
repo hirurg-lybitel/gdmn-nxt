@@ -9,6 +9,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useGetUserGroupLineQuery } from '../../../features/permissions';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import UserSelect from '@gdmn-nxt/components/user-select';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -100,48 +101,16 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
             <Stack direction="column" spacing={2}>
               <div style={{ display: 'flex' }}>
                 <div style={{ width: '100%' }}>
-                  <Autocomplete
+                  <UserSelect
                     multiple
-                    options={users?.filter(user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0) ?? []}
-                    getOptionLabel={option => option.NAME}
-                    filterOptions={filterOptions}
+                    filter={user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0}
                     disableCloseOnSelect
-                    value={formik.values.USERS || undefined}
-                    loading={usersIsFetching}
-                    loadingText="Загрузка данных..."
-                    onBlur={formik.handleBlur}
+                    value={formik.values.USERS || null}
                     onChange={(event, value) => {
                       formik.setFieldValue(
                         'USERS', value
                       );
                     }}
-                    renderOption={(props, option, { selected }) => (
-                      <li {...props} key={option.ID}>
-                        <Checkbox
-                          icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                          checkedIcon={<CheckBoxIcon fontSize="small" />}
-                          style={{ marginRight: 8 }}
-                          checked={selected}
-                        />
-                        <div>
-                          {option.NAME}
-                          <div>
-                            {option.CONTACT.NAME}
-                          </div>
-                        </div>
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Пользователь"
-                        name={'USERS'}
-                        focused
-                        placeholder="Выберите пользователя"
-                        error={Boolean(formik.errors.USERS)}
-                        helperText={formik.errors.USERS as ReactNode}
-                      />
-                    )}
                   />
                   <FormControlLabel
                     control={

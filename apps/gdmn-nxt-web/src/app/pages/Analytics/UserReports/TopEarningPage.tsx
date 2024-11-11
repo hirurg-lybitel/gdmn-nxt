@@ -9,6 +9,9 @@ import { useGetCustomerContractsQuery } from '../../../features/customer-contrac
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { DateRange } from '@mui/x-date-pickers-pro';
+import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
+import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 interface IInitState {
   cutomerId: number | null;
@@ -96,40 +99,18 @@ export default function TopEarningPage() {
                 direction={{ sm: 'column', md: 'row' }}
               >
                 <Grid item xs={4}>
-                  <Autocomplete
-                    options={departments || []}
-                    getOptionLabel={option => option.NAME}
-                    renderOption={renderOption('NAME')}
-                    loading={departmentsFetching}
+                  <DepartmentsSelect
                     value={selectedDep}
-                    onChange={(e, value) => setSelectedDep(value)}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Подразделение"
-                        placeholder="Выберите подразделение"
-                      />
-                    )}
+                    onChange={value => setSelectedDep(value as IContactWithID)}
                   />
                 </Grid>
                 <Grid item xs={4}>
-                  <Autocomplete
-                    options={contracts || []}
-                    getOptionLabel={option => option.USR$NUMBER || ''}
-                    renderOption={renderOption('USR$NUMBER')}
-                    loading={contractsFetching}
+                  <ContractsSelect
                     value={selectedConstract || null}
-                    onChange={(e, value) => {
-                      setSelectedConstract(value);
+                    onChange={(value) => {
+                      setSelectedConstract(value as ICustomerContract);
                       setSelectedWorkType(null);
                     }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Заказ"
-                        placeholder="Выберите заказ"
-                      />
-                    )}
                   />
                 </Grid>
                 <Grid item xs={4}>

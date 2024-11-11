@@ -23,7 +23,8 @@ export interface UserSelectProps<
   placeholder?: string;
   disableSelectAll?: boolean;
   allSelected?: boolean;
-  selectAllButton?: boolean
+  selectAllButton?: boolean;
+  filter?: (user: IUser) => boolean
 }
 
 const selectAllObject = {
@@ -38,6 +39,7 @@ export function UserSelect({
   allSelected = false,
   onChange,
   selectAllButton,
+  filter,
   ...props
 }: UserSelectProps<IUser>) {
   const {
@@ -93,7 +95,7 @@ export function UserSelect({
       multiple={multiple}
       loading={isFetching}
       loadingText="Загрузка данных..."
-      options={users}
+      options={filter ? users.filter(user => filter(user)) : users}
       onChange={handleChange}
       getOptionLabel={option => option.CONTACT?.NAME ?? option.NAME}
       filterOptions={filterOptions}
