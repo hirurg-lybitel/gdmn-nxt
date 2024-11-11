@@ -11,6 +11,7 @@ import { ICustomer } from '@gsbelarus/util-api-types';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { CustomerSelect } from '../kanban-edit-card/components/customer-select';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -106,41 +107,16 @@ export function DealsFilter(props: DealsFilterProps) {
               value={dealNumber || ''}
               onChange={(e) => /^\d*$/.test(e.target.value) && setDealNumber(e.target.value)}
             />
-            <Autocomplete
-              options={customers}
-              value={
-                customers?.filter(customer => filteringData && (filteringData.customers)?.find((el: any) => el.ID === customer.ID))
-              }
-              onChange={(e, value) => handleOnChange('customers', value)}
+            <CustomerSelect
               multiple
               limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Клиент"
-                  placeholder="Выберите клиентов"
-                />
-              )}
-              loading={customerFetching}
-              loadingText="Загрузка данных..."
+              value={filteringData?.customers ?? []}
+              onChange={(value) => handleOnChange('customers', value)}
             />
             <DepartmentsSelect
               multiple
               limitTags={2}
-              value={filteringData.departments}
+              value={filteringData?.departments}
               onChange={(value) => handleOnChange('departments', value)}
               label="Подразделение"
               placeholder="Выберите Подразделение"

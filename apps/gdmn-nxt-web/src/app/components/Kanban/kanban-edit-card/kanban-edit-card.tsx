@@ -60,6 +60,7 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -627,39 +628,14 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         </Stack>
                         <Divider variant="middle" />
                         <Stack direction={'column'} spacing={2}>
-                          <Autocomplete
-                            fullWidth
-                            options={departments || []}
-                            getOptionLabel={option => option.NAME}
-                            filterOptions={filterOptions(50, 'NAME')}
-                            value={departments?.find(el => el.ID === formik.values.DEAL?.DEPARTMENT?.ID) || null}
-                            loading={departmentsIsFetching}
-                            loadingText="Загрузка данных..."
-                            // onOpen={formik.handleBlur}
-                            onChange={(event, value) => {
+                          <DepartmentsSelect
+                            value={formik.values.DEAL?.DEPARTMENT ?? null}
+                            onChange={(value) => {
                               formik.setFieldValue(
                                 'DEAL',
                                 { ...formik.values.DEAL, DEPARTMENT: value ? value : null }
                               );
                             }}
-                            renderOption={(props, option) => {
-                              return (
-                                <li {...props} key={option.ID}>
-                                  {option.NAME}
-                                </li>
-                              );
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label="Отдел"
-                                required
-                                placeholder="Выберите отдел"
-                                name="DEAL.DEPARTMENT"
-                                error={getIn(formik.touched, 'DEAL.DEPARTMENT') && Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))}
-                                helperText={getIn(formik.touched, 'DEAL.DEPARTMENT') && getIn(formik.errors, 'DEAL.DEPARTMENT')}
-                              />
-                            )}
                           />
                           <Stack direction="column" spacing={2}>
                             <Autocomplete

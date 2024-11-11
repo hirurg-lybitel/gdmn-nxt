@@ -21,6 +21,7 @@ import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
+import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;
@@ -258,36 +259,12 @@ export function SegmentUpsert({
                         />
                       </Box>
                       <Box>
-                        <Autocomplete
+                        <ContractsSelect
                           multiple
                           limitTags={2}
                           disableCloseOnSelect
-                          options={contracts || []}
-                          onChange={handleAutocompleteChange('CUSTOMERCONTRACTS')}
-                          value={
-                            contracts?.filter(contract => formik.values.CUSTOMERCONTRACTS && formik.values.CUSTOMERCONTRACTS.find(el => el.ID === contract.ID))
-                          }
-                          getOptionLabel={option => option.USR$NUMBER}
-                          renderOption={(props, option, { selected }) => (
-                            <li {...props} key={option.ID}>
-                              <Checkbox
-                                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                                checkedIcon={<CheckBoxIcon fontSize="small" />}
-                                style={{ marginRight: 8 }}
-                                checked={selected}
-                              />
-                              {option.USR$NUMBER}
-                            </li>
-                          )}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Заказы"
-                              placeholder="Выберите заказы"
-                            />
-                          )}
-                          loading={customerContractsIsFetching}
-                          loadingText="Загрузка данных..."
+                          onChange={(value) => handleAutocompleteChange('CUSTOMERCONTRACTS')({}, value)}
+                          value={formik.values.CUSTOMERCONTRACTS}
                         />
                       </Box>
                       <Box>

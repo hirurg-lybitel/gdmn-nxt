@@ -10,7 +10,7 @@ import styles from './add-contact.module.less';
 import TelephoneInput from '../../telephone-input';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { IContactName, IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
+import { IContactName, IContactPerson, IContactWithID, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { useEffect, useMemo, useState } from 'react';
 import { LabelsSelect } from '../../Labels/labels-select';
 import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
@@ -21,6 +21,7 @@ import SocialMediaInput, { ISocialMedia } from '../../social-media-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
 import { ContactSelect } from '../contact-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 
 export interface AddContactProps {
   open: boolean;
@@ -403,35 +404,15 @@ export function AddContact({
                 onChange={formik.handleChange}
                 value={formik.values.USR$LETTER_OF_AUTHORITY}
               />
-              <Autocomplete
-                options={departments || []}
+              <DepartmentsSelect
                 value={departments?.find(el => el.ID === formik.values.USR$BG_OTDEL?.ID) || null}
-                onChange={(e, value) => {
+                onChange={(value) => {
+                  const department = value as IContactWithID;
                   formik.setFieldValue(
                     'USR$BG_OTDEL',
-                    value ? { ID: value.ID, NAME: value.NAME } : undefined
+                    value ? { ID: department.ID, NAME: department.NAME } : undefined
                   );
                 }}
-                getOptionLabel={option => option.NAME}
-                renderOption={(props, option) => (
-                  <li {...props} key={option.ID}>
-                    {option.NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Отдел"
-                    type="text"
-                    name="USR$BG_OTDEL"
-                    onChange={formik.handleChange}
-                    value={formik.values.USR$BG_OTDEL}
-                    helperText={formik.errors.USR$BG_OTDEL}
-                    placeholder="Выберите отдел"
-                  />
-                )}
-                loading={departmentsIsFetching}
-                loadingText="Загрузка данных..."
               />
               <TextField
                 label="Комментарий"

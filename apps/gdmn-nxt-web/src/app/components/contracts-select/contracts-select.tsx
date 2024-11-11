@@ -15,7 +15,7 @@ interface Props{
   multiple?: boolean,
   disableCloseOnSelect?: boolean
 }
-export function ContactsSelect({
+export function ContractsSelect({
   value,
   onChange,
   label = 'Заказы',

@@ -21,7 +21,7 @@ import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/com
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
-import { ContactsSelect } from '@gdmn-nxt/components/contacts-select/contacts-select';
+import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -142,7 +142,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
               </Stack>
             </Box>
             <Box>
-              <ContactsSelect
+              <ContractsSelect
                 multiple
                 limitTags={2}
                 value={filteringData.CONTRACTS}

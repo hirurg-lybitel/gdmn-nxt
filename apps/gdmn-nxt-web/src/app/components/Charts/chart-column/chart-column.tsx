@@ -14,7 +14,7 @@ import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi'
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import ChartSkeleton from './chart-skeleton';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
-import { ContactsSelect } from '@gdmn-nxt/components/contacts-select/contacts-select';
+import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 interface IPeriodType {
@@ -339,7 +339,7 @@ export function ChartColumn(props: ChartColumnProps) {
                 />
               </Grid>
               <Grid item xs={4}>
-                <ContactsSelect
+                <ContractsSelect
                   multiple
                   value={chartFilter.contracts || []}
                   onChange={(value) => changeChartFilter('contracts', (value ?? []) as ICustomerContract[])}
