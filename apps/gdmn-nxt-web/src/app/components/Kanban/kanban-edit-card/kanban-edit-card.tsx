@@ -27,7 +27,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
+import { IContactWithID, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
@@ -61,6 +61,7 @@ import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-butto
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -668,20 +669,13 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 />
                               )}
                             />
-                            <Autocomplete
-                              fullWidth
-                              options={employees?.filter(
-                                empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[1]?.ID) || []}
-                              getOptionLabel={option => option.NAME}
-                              filterOptions={filterOptions(50, 'NAME')}
-                              readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                              value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[0]?.ID) || null}
-                              loading={employeesIsFetching}
-                              loadingText="Загрузка данных..."
-                              onChange={(event, value) => {
+                            <EmployeesSelect
+                              value={formik.values.DEAL?.PERFORMERS?.[0] ?? null}
+                              filter={empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[1]?.ID}
+                              onChange={(value) => {
                                 const secondPerformer = formik.values.DEAL?.PERFORMERS?.[1];
-                                const newPerformers = []
-                                  .concat(value ? value : [])
+                                const newPerformers: IContactWithID[] = []
+                                  .concat(value ? value as any : [])
                                   .concat(secondPerformer ? secondPerformer as any : []);
 
                                 formik.setFieldValue(
@@ -698,37 +692,15 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 }
                                 formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
                               }}
-                              renderOption={(props, option) => {
-                                return (
-                                  <li {...props} key={option.ID}>
-                                    {option.NAME}
-                                  </li>
-                                );
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Исполнитель"
-                                  disabled={formik.values.DEAL?.USR$READYTOWORK || false}
-                                  placeholder="Выберите сотрудника"
-                                />
-                              )}
                             />
-                            <Autocomplete
-                              fullWidth
+                            <EmployeesSelect
                               disabled={(formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
-                              options={employees?.filter(empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID) || []}
-                              getOptionLabel={option => option.NAME}
-                              filterOptions={filterOptions(50, 'NAME')}
-                              readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
-                              value={employees?.find(el => el.ID === formik.values.DEAL?.PERFORMERS?.[1]?.ID) || null}
-                              loading={employeesIsFetching}
-                              loadingText="Загрузка данных..."
-                              onChange={(event, value) => {
+                              value={formik.values.DEAL?.PERFORMERS?.[1] ?? null}
+                              onChange={(value) => {
                                 const firstPerformer = formik.values.DEAL?.PERFORMERS?.[0];
                                 const newPerformers = []
                                   .concat(firstPerformer ? firstPerformer as any : [])
-                                  .concat(value ? value : []);
+                                  .concat(value ? value as any : []);
 
                                 formik.setFieldValue(
                                   'DEAL',
@@ -743,21 +715,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 }
                                 formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
                               }}
-                              renderOption={(props, option) => {
-                                return (
-                                  <li {...props} key={option.ID}>
-                                    {option.NAME}
-                                  </li>
-                                );
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Второй исполнитель"
-                                  disabled={formik.values.DEAL?.USR$READYTOWORK || false}
-                                  placeholder="Выберите сотрудника"
-                                />
-                              )}
+                              filter={empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID}
+                              label={'Второй исполнитель'}
                             />
                           </Stack>
                         </Stack>

@@ -8,6 +8,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import filterOptions from '../../helpers/filter-options';
 import { CustomerSelect } from '../kanban-edit-card/components/customer-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -79,36 +80,11 @@ export function TasksFilter(props: TasksFilterProps) {
               value={taskNumber || ''}
               onChange={taskNumberChange}
             />
-            <Autocomplete
-              options={employees}
-              value={
-                employees?.filter(employee => filteringData && (filteringData.performers)?.find((el: any) => el.ID === employee.ID))
-              }
-              onChange={(e, value) => handleOnChange('performers', value)}
+            <EmployeesSelect
+              value={filteringData.performers}
+              onChange={(value) => handleOnChange('performers', value)}
               multiple
               limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Исполнитель"
-                  placeholder="Выберите исполнителей"
-                />
-              )}
-              loading={employeesIsFetching}
-              loadingText="Загрузка данных..."
             />
             <CustomerSelect
               label="Клиенты"
