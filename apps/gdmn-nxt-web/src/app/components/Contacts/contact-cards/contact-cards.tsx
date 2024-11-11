@@ -33,7 +33,6 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
   const [isSet, setIsSet] = useState(false);
   const [reCalc, setReCalc] = useState({});
   useEffect(() => {
-    // if (viewLabelsCount === 1 || isSet) return;
     const masLabelsWidth = ref.current?.children?.[0]?.offsetWidth;
     const labelEls = ref.current?.children?.[0]?.children || [];
     const tooBig = masLabelsWidth < (labelEls[0]?.offsetWidth || 0) + (labelEls[1]?.offsetWidth || 0) + (labelEls.length > 1 ? 0 : 0);
@@ -64,10 +63,10 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
           alignItems: 'center',
           visibility: isSet ? 'visible' : 'hidden'
         }}
-      > 
+      >
         {labels.slice(0, 2)?.map((label, index) => {
           return (
-            <div key={label.ID} style={(index === 1 && viewLabelsCount === 1) ? { display: 'none' } : {}}>
+            <div key={label.ID} style={(index === 1 && viewLabelsCount === 1) ? { visibility: 'hidden', pointerEvents: 'none' } : {}}>
               <Tooltip
                 arrow
                 placement="bottom-start"
