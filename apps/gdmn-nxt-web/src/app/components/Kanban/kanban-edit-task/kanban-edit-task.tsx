@@ -4,7 +4,7 @@ import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useRef,
 import styles from './kanban-edit-task.module.less';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IEmployee, IKanbanCard, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
+import { IContactWithID, IEmployee, IKanbanCard, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { useSelector } from 'react-redux';
@@ -23,6 +23,7 @@ import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -276,60 +277,30 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
                     helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
                   />
-                  <Autocomplete
-                    options={employees || []}
-                    // readOnly
-                    value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
-                    onChange={(e, value) => {
+                  <EmployeesSelect
+                    value={formik.values.CREATOR ?? null}
+                    onChange={value => {
+                      const employee = value as IContactWithID;
                       formik.setFieldValue(
                         'CREATOR',
-                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                        value ? { ID: employee.ID, NAME: employee.NAME } : undefined
                       );
                     }}
-                    getOptionLabel={option => option.NAME}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Постановщик"
-                        placeholder="Выберите постановщика"
-                        required
-                        error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
-                        helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
-                      />
-                    )}
-                    loading={employeesIsFetching}
-                    loadingText="Загрузка данных..."
+                    label="Постановщик"
+                    placeholder="Выберите постановщика"
+                    required
                   />
-                  <Autocomplete
-                    options={employees || []}
-                    filterOptions={filterOptions(50, 'NAME')}
-                    value={employees?.find(el => el.ID === formik.values.PERFORMER?.ID) || null}
-                    onChange={(e, value) => {
+                  <EmployeesSelect
+                    value={formik.values.PERFORMER ?? null}
+                    onChange={(value) => {
+                      const employee = value as IContactWithID;
                       formik.setFieldValue(
                         'PERFORMER',
-                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                        value ? { ID: employee.ID, NAME: employee.NAME } : undefined
                       );
                     }}
-                    getOptionLabel={option => option.NAME}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Исполнитель"
-                        placeholder="Выберите исполнителя"
-                      />
-                    )}
-                    loading={employeesIsFetching}
-                    loadingText="Загрузка данных..."
+                    label="Исполнитель"
+                    placeholder="Выберите исполнителя"
                   />
                   <Stack
                     direction="row"

@@ -127,6 +127,8 @@ export function DealsFilter(props: DealsFilterProps) {
               onChange={(value) => handleOnChange('performers', value)}
               multiple
               limitTags={2}
+              label={'Исполнитель'}
+              placeholder={'Выберите исполнителя'}
             />
             <FormControlLabel
               control={

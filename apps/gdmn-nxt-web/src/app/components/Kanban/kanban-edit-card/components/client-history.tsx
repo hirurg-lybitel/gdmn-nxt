@@ -17,6 +17,7 @@ import { useAddClientHistoryMutation, useGetClientHistoryQuery, useGetClientHist
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
+import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
 
 interface ClientHistoryProps {
   card?: IKanbanCard;
@@ -67,8 +68,8 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
     });
   };
 
-  const changeCreator = (e: SyntheticEvent, value: IContactWithID | null) => {
-    setMessage(prev => ({ ...prev, creator: value }));
+  const changeCreator = (value: IContactWithID | IContactWithID[] | null) => {
+    setMessage(prev => ({ ...prev, creator: value as IContactWithID }));
   };
   const changeHistoryType = (e: SyntheticEvent, value: IClientHistoryType | null) => {
     setMessage(prev => ({ ...prev, selectedType: value }));
@@ -197,28 +198,15 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                   />
                 )}
               />
-              <Autocomplete
-                size="small"
+              <EmployeesSelect
+                value={message.creator}
+                onChange={changeCreator}
                 style={{
                   width: '350px'
                 }}
-                options={employees}
-                value={message.creator}
-                getOptionLabel={option => option.NAME}
-                loading={employeesIsFetching}
-                onChange={changeCreator}
-                renderOption={(props, option) => (
-                  <li {...props} key={option.ID}>
-                    {option.NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="standard"
-                    placeholder="От кого"
-                  />
-                )}
+                placeholder="От кого"
+                label=""
+                textFieldVariant="standard"
               />
             </Stack>
             <TextField

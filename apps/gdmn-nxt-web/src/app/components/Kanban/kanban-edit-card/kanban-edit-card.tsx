@@ -631,6 +631,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                         <Stack direction={'column'} spacing={2}>
                           <DepartmentsSelect
                             value={formik.values.DEAL?.DEPARTMENT ?? null}
+                            required
                             onChange={(value) => {
                               formik.setFieldValue(
                                 'DEAL',
@@ -639,35 +640,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                             }}
                           />
                           <Stack direction="column" spacing={2}>
-                            <Autocomplete
-                              fullWidth
-                              options={employees || []}
-                              getOptionLabel={option => option.NAME}
-                              filterOptions={filterOptions(50, 'NAME')}
-                              value={employees?.find(el => el.ID === formik.values.DEAL?.CREATOR?.ID) || null}
-                              loading={employeesIsFetching}
-                              loadingText="Загрузка данных..."
-                              onChange={(event, value) => {
-                                formik.setFieldValue('DEAL.CREATOR', value);
-                              }}
-                              renderOption={(props, option) => {
-                                return (
-                                  <li {...props} key={option.ID}>
-                                    {option.NAME}
-                                  </li>
-                                );
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Создал"
-
-                                  required
-                                  placeholder="Выберите сотрудника"
-                                  error={getIn(formik.touched, 'DEAL.CREATOR') && Boolean(getIn(formik.errors, 'DEAL.CREATOR'))}
-                                  helperText={getIn(formik.touched, 'DEAL.CREATOR') && getIn(formik.errors, 'DEAL.CREATOR')}
-                                />
-                              )}
+                            <EmployeesSelect
+                              value={formik.values.DEAL?.CREATOR ?? null}
+                              onChange={value => formik.setFieldValue('DEAL.CREATOR', value)}
+                              label="Создал"
+                              required
                             />
                             <EmployeesSelect
                               value={formik.values.DEAL?.PERFORMERS?.[0] ?? null}
@@ -692,6 +669,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 }
                                 formik.setFieldValue('USR$MASTERKEY', stages[1].ID);
                               }}
+                              label={'Исполнитель'}
+                              placeholder={'Выберите исполнителя'}
                             />
                             <EmployeesSelect
                               disabled={(formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
@@ -717,6 +696,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               }}
                               filter={empl => empl.ID !== formik.values.DEAL?.PERFORMERS?.[0]?.ID}
                               label={'Второй исполнитель'}
+                              placeholder={'Выберите исполнителя'}
                             />
                           </Stack>
                         </Stack>

@@ -81,10 +81,12 @@ export function TasksFilter(props: TasksFilterProps) {
               onChange={taskNumberChange}
             />
             <EmployeesSelect
-              value={filteringData.performers}
+              value={filteringData?.performers}
               onChange={(value) => handleOnChange('performers', value)}
               multiple
               limitTags={2}
+              label={'Исполнитель'}
+              placeholder={'Выберите исполнителя'}
             />
             <CustomerSelect
               label="Клиенты"

@@ -1,5 +1,5 @@
 import { IContactWithID } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, FilterOptionsState, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, FilterOptionsState, InputAdornment, TextField, TextFieldVariants } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -16,18 +16,24 @@ interface Props{
   disableCloseOnSelect?: boolean,
   filterOptions?: (options: IContactWithID, state: FilterOptionsState<IContactWithID>) => boolean,
   filter?: (emploee: IContactWithID) => boolean,
-  disabled?: boolean
+  disabled?: boolean,
+  required?: boolean,
+  style?: React.CSSProperties,
+  textFieldVariant?: TextFieldVariants
 }
 export function EmployeesSelect({
   value,
   onChange,
-  label = 'Исполнитель',
+  label = 'Сотрудник',
   placeholder,
   limitTags = -1,
   multiple = false,
   disableCloseOnSelect = false,
   filter,
-  disabled
+  disabled,
+  required,
+  style,
+  textFieldVariant
 }: Props) {
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IContactWithID[] | IContactWithID | null) => onChange(value), [onChange]);
@@ -44,6 +50,7 @@ export function EmployeesSelect({
 
   return (
     <Autocomplete
+      style={style}
       disabled={disabled}
       options={(filter ? employees.filter(employee => filter(employee)) : employees) ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
@@ -76,8 +83,10 @@ export function EmployeesSelect({
       renderInput={(params) => (
         <TextField
           {...params}
+          variant={textFieldVariant}
+          required={required}
           label={label}
-          placeholder={placeholder ?? (multiple ? 'Выберите исполнителей' : 'Выберите исполнителя')}
+          placeholder={placeholder ?? (multiple ? 'Выберите сотрудников' : 'Выберите сотрудника')}
         />
       )}
       loading={employeesIsFetching}

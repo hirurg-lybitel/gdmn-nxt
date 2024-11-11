@@ -13,7 +13,8 @@ interface Props{
   placeholder?: string;
   limitTags?: number;
   multiple?: boolean,
-  disableCloseOnSelect?: boolean
+  disableCloseOnSelect?: boolean,
+  required?: boolean
 }
 export function DepartmentsSelect({
   value,
@@ -22,7 +23,8 @@ export function DepartmentsSelect({
   placeholder,
   limitTags = -1,
   multiple = false,
-  disableCloseOnSelect = false
+  disableCloseOnSelect = false,
+  required
 }: Props) {
   const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery();
 
@@ -72,6 +74,7 @@ export function DepartmentsSelect({
         <TextField
           {...params}
           label={label}
+          required={required}
           placeholder={placeholder ?? (multiple ? 'Выберите отделы' : 'Выберите отдел')}
         />
       )}
