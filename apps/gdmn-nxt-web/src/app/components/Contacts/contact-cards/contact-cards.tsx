@@ -63,7 +63,8 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
           columnGap: '5px',
           alignItems: 'center',
           visibility: isSet ? 'visible' : 'hidden',
-          maxWidth: '100%'
+          height: 'fit-content',
+          overflow: 'hidden',
         }}
       >
         {labels.slice(0, 2)?.map((label, index) => {
