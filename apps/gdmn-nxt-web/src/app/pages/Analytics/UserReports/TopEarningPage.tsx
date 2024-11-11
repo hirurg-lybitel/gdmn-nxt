@@ -12,6 +12,7 @@ import { DateRange } from '@mui/x-date-pickers-pro';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface IInitState {
   cutomerId: number | null;
@@ -59,6 +60,8 @@ export default function TopEarningPage() {
     // setCustomerId(initState.cutomerId);
     setGenerate(false);
   };
+
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <>
@@ -115,6 +118,7 @@ export default function TopEarningPage() {
                 </Grid>
                 <Grid item xs={4}>
                   <Autocomplete
+                    ListboxComponent={ListboxComponent}
                     options={workTypes || []}
                     getOptionLabel={option => option.USR$NAME || ''}
                     renderOption={renderOption('USR$NAME')}

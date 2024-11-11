@@ -35,8 +35,6 @@ export function HistoryType({
   const { data: historyType = [], isFetching: historyTypeIsFetching } = useGetClientHistoryTypeQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IClientHistoryType[] | IClientHistoryType | null) => onChange(value), [onChange]);
 
-  const [ListboxComponent] = useAutocompleteVirtualization();
-
   const gethistoryTypes = useCallback(() => {
     if (multiple) {
       return historyType?.filter(historyType => (value as IClientHistoryType[])?.find((el) => el.ID === historyType.ID)) ?? [];
@@ -51,7 +49,6 @@ export function HistoryType({
       options={historyType ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
       value={value === undefined ? undefined : gethistoryTypes()}
-      ListboxComponent={ListboxComponent}
       onChange={handleOnChange}
       multiple={multiple}
       limitTags={limitTags}
