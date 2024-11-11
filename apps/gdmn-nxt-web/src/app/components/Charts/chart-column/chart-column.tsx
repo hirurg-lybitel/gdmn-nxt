@@ -15,6 +15,7 @@ import { useGetCustomerContractsQuery } from '../../../features/customer-contrac
 import ChartSkeleton from './chart-skeleton';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 import { ContactsSelect } from '@gdmn-nxt/components/contacts-select/contacts-select';
+import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 interface IPeriodType {
   id: number;
@@ -347,31 +348,12 @@ export function ChartColumn(props: ChartColumnProps) {
                 />
               </Grid>
               <Grid item xs={4}>
-                <Autocomplete
+                <WorktypesSelect
                   multiple
-                  filterOptions={filterOptions(50, 'USR$NAME')}
-                  loading={workTypesIsFetching}
-                  options={workTypes || []}
-                  onChange={(e, value) => changeChartFilter('workTypes', [...value])}
-                  value={chartFilter.workTypes || []}
-                  getOptionLabel={option => option.USR$NAME || ''}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        // style={{ marginRight: 8 }}
-                        checked={selected}
-                      />
-                      {option.USR$NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Виды работ"
-                    />
-                  )}
+                  onChange={(value) => changeChartFilter('workTypes', (value ?? []) as IWorkType[])}
+                  value={chartFilter.workTypes}
+                  label={''}
+                  placeholder="Виды работ"
                 />
               </Grid>
             </Grid>

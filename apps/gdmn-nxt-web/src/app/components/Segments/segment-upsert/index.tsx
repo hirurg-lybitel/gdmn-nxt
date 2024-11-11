@@ -20,6 +20,7 @@ import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;
@@ -290,36 +291,12 @@ export function SegmentUpsert({
                         />
                       </Box>
                       <Box>
-                        <Autocomplete
+                        <WorktypesSelect
                           multiple
                           limitTags={2}
                           disableCloseOnSelect
-                          options={workTypes || []}
-                          onChange={handleAutocompleteChange('WORKTYPES')}
-                          value={
-                            workTypes?.filter(wt => formik.values.WORKTYPES && formik.values.WORKTYPES.find(el => el.ID === wt.ID))
-                          }
-                          getOptionLabel={option => option.USR$NAME || ''}
-                          renderOption={(props, option, { selected }) => (
-                            <li {...props} key={option.ID}>
-                              <Checkbox
-                                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                                checkedIcon={<CheckBoxIcon fontSize="small" />}
-                                style={{ marginRight: 8 }}
-                                checked={selected}
-                              />
-                              {option.USR$NAME}
-                            </li>
-                          )}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Виды работ"
-                              placeholder="Выберите виды работ"
-                            />
-                          )}
-                          loading={workTypesIsFetching}
-                          loadingText="Загрузка данных..."
+                          onChange={(value) => handleAutocompleteChange('WORKTYPES')({}, value)}
+                          value={formik.values.WORKTYPES}
                         />
                       </Box>
                       <LabelsSelect

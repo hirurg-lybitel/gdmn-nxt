@@ -22,6 +22,7 @@ import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
 import { ContactsSelect } from '@gdmn-nxt/components/contacts-select/contacts-select';
+import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -169,37 +170,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
               </Stack>
             </Box>
             <Box>
-              <Autocomplete
+              <WorktypesSelect
                 multiple
                 limitTags={2}
                 disableCloseOnSelect
-                filterOptions={filterOptions(30, 'USR$NAME')}
-                options={workTypes || []}
-                onChange={(e, value) => handleOnChange('WORKTYPES', value)}
-                value={
-                  workTypes?.filter(wt => filteringData && (filteringData['WORKTYPES'])?.find((el: any) => el.ID === wt.ID))
-                }
-                getOptionLabel={option => option.USR$NAME || ''}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.USR$NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Виды работ"
-                    placeholder="Выберите виды работ"
-                  />
-                )}
-                loading={workTypesIsFetching}
-                loadingText="Загрузка данных..."
+                onChange={(value) => handleOnChange('WORKTYPES', value)}
+                value={filteringData['WORKTYPES']}
               />
               <Stack
                 direction="row"
