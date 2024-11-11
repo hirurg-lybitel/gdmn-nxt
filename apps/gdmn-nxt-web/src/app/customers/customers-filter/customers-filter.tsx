@@ -21,6 +21,7 @@ import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/com
 import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { ContactsSelect } from '@gdmn-nxt/components/contacts-select/contacts-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -140,36 +141,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
               </Stack>
             </Box>
             <Box>
-              <Autocomplete
+              <ContactsSelect
                 multiple
                 limitTags={2}
+                value={filteringData.CONTRACTS}
+                onChange={(value) => handleOnChange('CONTRACTS', value)}
                 disableCloseOnSelect
-                options={customerContracts || []}
-                onChange={(e, value) => handleOnChange('CONTRACTS', value)}
-                value={
-                  customerContracts?.filter(customerContract => filteringData && (filteringData.CONTRACTS)?.find((el: any) => el.ID === customerContract.ID))
-                }
-                getOptionLabel={option => option.USR$NUMBER}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.USR$NUMBER}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Заказы"
-                    placeholder="Выберите заказы"
-                  />
-                )}
-                loading={customerContractsIsFetching}
-                loadingText="Загрузка данных..."
               />
               <Stack
                 direction="row"
