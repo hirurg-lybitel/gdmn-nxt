@@ -51,6 +51,7 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
       pt="8px"
       pr={'25px'}
       height={'24px'}
+      paddingRight = {'32px'}
     >
       <List
         style={{
@@ -61,12 +62,17 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
           flexWrap: 'wrap',
           columnGap: '5px',
           alignItems: 'center',
-          visibility: isSet ? 'visible' : 'hidden'
+          visibility: isSet ? 'visible' : 'hidden',
+          maxWidth: '100%'
         }}
       >
         {labels.slice(0, 2)?.map((label, index) => {
           return (
-            <div key={label.ID} style={(index === 1 && viewLabelsCount === 1) ? { visibility: 'hidden', pointerEvents: 'none' } : {}}>
+            <div
+              key={label.ID}
+              style={{
+                maxWidth: '100%', ...((index === 1 && viewLabelsCount === 1) ? { visibility: 'hidden', pointerEvents: 'none' } : {}) }}
+            >
               <Tooltip
                 arrow
                 placement="bottom-start"
@@ -80,7 +86,7 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
                     borderRadius: '2em',
                   }}
                 >
-                  <LabelMarker label={label} />
+                  <LabelMarker nowrap label={label} />
                 </ListItemButton>
               </Tooltip>
             </div>
