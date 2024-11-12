@@ -2,7 +2,7 @@ import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-ap
 import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
-import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
@@ -208,26 +208,37 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     handleTaskSelect({ ...defaultTasks[0], project });
   }, [multiple, projects, projectsIsLoading]);
 
-  interface IInputAdornmentComponentProps {
-    viewed?: boolean,
-    projectsIsFetching: boolean,
-    projects: ITimeTrackProject[],
-    projectsIsLoading: boolean,
-    selectedTask: ITimeTrackTask | null,
-    handleTaskSelect: (task: ITimeTrackTask) => void
-  }
+  const taskSelectAreaRef = useRef<HTMLDivElement>(null);
+  const [taskSelectAreaWidth, setTaskSelectAreaWidth] = useState(0);
 
-  const InputAdornmentComponent = useCallback(({ viewed = false, projects, projectsIsFetching, projectsIsLoading, selectedTask, handleTaskSelect }: IInputAdornmentComponentProps) => {
-    const style = viewed ? { zIndex: 2 } : { visibility: 'hidden', pointerEvents: 'none' };
-    return (
-      <InputAdornment
-        position="start"
+  useEffect(() => {
+    if (projects.length === 0) {
+      setTaskSelectAreaWidth(0);
+      return;
+    }
+
+    setTaskSelectAreaWidth(taskSelectAreaRef.current?.clientWidth ?? 0);
+  }, [selectedTask?.name, projects.length]);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        ref={taskSelectAreaRef}
         style={{
-          display: (!projectsIsFetching && projects.length === 0) ? 'none' : 'inline-flex',
-          ...style as any
+          position: 'absolute',
+          left: '14px',
+          top: '9px',
+          zIndex: 99,
         }}
       >
-        <div style={{ position: 'relative', color: 'transparent', paddingLeft: viewed ? 0 : 8 }}>
+        <div
+          style={{
+            display: (projectsIsFetching || projects.length === 0) ? 'none' : 'inline-flex',
+            position: 'relative',
+            zIndex: 2,
+            color: 'transparent'
+          }}
+        >
           <Stack direction={'row'}>
             {projectsIsLoading
               ? 'Загрузка'
@@ -241,27 +252,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             onSelect={handleTaskSelect}
           />
         </div>
-      </InputAdornment>
-    );
-  }, []);
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <div
-        style={{ position: 'absolute',
-          left: '14px',
-          top: '9px',
-          zIndex: 99,
-          width: 'min-content' }}
-      >
-        <InputAdornmentComponent
-          viewed
-          projects={projects}
-          projectsIsFetching={projectsIsFetching}
-          projectsIsLoading={projectsIsLoading}
-          selectedTask={selectedTask}
-          handleTaskSelect={handleTaskSelect}
-        />
       </div>
       <Autocomplete
         className={classes.root}
@@ -341,13 +331,14 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...params.InputProps,
               ...rest.InputProps,
               startAdornment: (
-                <InputAdornmentComponent
-                  projects={projects}
-                  projectsIsFetching={projectsIsFetching}
-                  projectsIsLoading={projectsIsLoading}
-                  selectedTask={selectedTask}
-                  handleTaskSelect={handleTaskSelect}
-                />
+                <InputAdornment
+                  position="start"
+                  style={{
+                    display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
+                  }}
+                >
+                  <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
+                </InputAdornment>
               ),
               endAdornment: (
                 <>
