@@ -31,7 +31,6 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   editEmpty?: boolean;
   cancellable?: boolean,
   onSave?: () => void;
-  closeOnClickAway?: boolean,
   buttonDirection?: 'column' | 'column-reverse' | 'row' | 'row-reverse'
 }
 
@@ -51,7 +50,6 @@ const EditableTypography = <Value extends React.ReactNode>({
   onSave: handleSave,
   containerStyle,
   editEmpty = true,
-  closeOnClickAway = false,
   buttonDirection = 'row',
   ...props
 }: EditableTypographyProps<Value>) => {
@@ -131,7 +129,7 @@ const EditableTypography = <Value extends React.ReactNode>({
   };
 
   return (
-    <ClickAwayListener onClickAway={editText && closeOnClickAway ? onClose : () => {}}>
+    <ClickAwayListener onClickAway={editText && closeOnBlur ? onClose : () => {}}>
       <div
         aria-label="editable-typography"
         className={styles['container']}
