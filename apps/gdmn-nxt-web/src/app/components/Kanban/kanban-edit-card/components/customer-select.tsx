@@ -1,8 +1,8 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
-import { customerApi, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
-import { HTMLAttributes, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
+import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
@@ -13,10 +13,7 @@ import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { GroupHeader, GroupItems } from './group';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
-import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -76,7 +73,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery({
     filter: {
       withTasks
-    }
+    },
   });
   const customers: ICustomer[] = useMemo(
     () => [...(customersResponse?.data ?? [])],
@@ -86,8 +83,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const [insertCustomer, { isSuccess: insertCustomerIsSuccess, isLoading: insertCustomerIsLoading, data: newCustomer }] = useAddCustomerMutation();
   const [updateCustomer] = useUpdateCustomerMutation();
 
-  const [addFavorite] = customerApi.useAddFavoriteMutation();
-  const [deleteFavorite] = customerApi.useDeleteFavoriteMutation();
+  const [addFavorite] = useAddFavoriteMutation();
+  const [deleteFavorite] = useDeleteFavoriteMutation();
 
   const [addCustomer, setAddCustomer] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<ICustomer | null>(null);
@@ -96,7 +93,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     if (insertCustomerIsSuccess) {
       onChange && onChange((multiple ? [newCustomer] : newCustomer) as Value<Multiple>);
     }
-  }, [insertCustomerIsSuccess, newCustomer, onChange]);
+  }, [insertCustomerIsSuccess, multiple, newCustomer, onChange]);
 
   const handleAddCustomer = useCallback(() => {
     setEditingCustomer(null);
@@ -156,7 +153,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     matchFrom: 'any',
     limit: 50,
     ignoreCase: true,
-    stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID} ${option.tasks?.map(task => task.name).join(' ')}`,
+    stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
   });
 
   const handleFavoriteClick = useCallback((customer: ICustomer) => (e: MouseEvent<HTMLElement>) => {
@@ -167,6 +164,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   }, []);
 
   const [selectedTask, setSelectedTask] = useState<ITimeTrackTask | null>(null);
+
   const handleTaskSelect = useCallback((task: ITimeTrackTask) => {
     setSelectedTask(task);
     onTaskSelected && onTaskSelected(task);
@@ -185,8 +183,76 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
+  const {
+    data: projects = [],
+    isLoading: projectsIsLoading,
+    isFetching: projectsIsFetching
+  } = useGetProjectsQuery({
+    ...(!Array.isArray(value)
+      ? { filter: { customerId: value?.ID } }
+      : {}),
+  }, {
+    skip: multiple || !value
+  });
+
+  useEffect(() => {
+    if (multiple) return;
+    if (projectsIsLoading) return;
+    if (projects.length !== 1) return;
+    const defaultTasks = projects[0].tasks ?? [];
+
+    if (defaultTasks.length !== 1) return;
+
+    const { tasks, ...project } = projects[0];
+
+    handleTaskSelect({ ...defaultTasks[0], project });
+  }, [multiple, projects, projectsIsLoading]);
+
+  const taskSelectAreaRef = useRef<HTMLDivElement>(null);
+  const [taskSelectAreaWidth, setTaskSelectAreaWidth] = useState(0);
+
+  useEffect(() => {
+    if (projects.length === 0) {
+      setTaskSelectAreaWidth(0);
+      return;
+    }
+
+    setTaskSelectAreaWidth(taskSelectAreaRef.current?.clientWidth ?? 0);
+  }, [selectedTask?.name, projects.length]);
+
   return (
-    <>
+    <div style={{ position: 'relative' }}>
+      <div
+        ref={taskSelectAreaRef}
+        style={{
+          position: 'absolute',
+          left: '14px',
+          top: '9px',
+          zIndex: 99,
+        }}
+      >
+        <div
+          style={{
+            display: (projectsIsFetching || projects.length === 0) ? 'none' : 'inline-flex',
+            position: 'relative',
+            zIndex: 2,
+            color: 'transparent'
+          }}
+        >
+          <Stack direction={'row'}>
+            {projectsIsLoading
+              ? 'Загрузка'
+              : `${selectedTask?.name ?? 'Выберите задачу'}`
+            }
+            <Box width={34} />
+          </Stack>
+          <CustomerTasks
+            projects={projects}
+            task={selectedTask}
+            onSelect={handleTaskSelect}
+          />
+        </div>
+      </div>
       <Autocomplete
         className={classes.root}
         style={style}
@@ -219,13 +285,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         onChange={handleChange}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index, inputValue }: AutocompleteRenderOptionState) => {
           const handleCustomerSelect = (e: MouseEvent<HTMLDivElement>, customer: ICustomer) => {
-            /** Don't select directly customer with tasks. Only the task */
-            if ((customer.taskCount ?? 0) > 0) {
-              e.preventDefault();
-              e.stopPropagation();
-              return;
-            }
-
             /** Need to pass some attributes for event */
             e.currentTarget.setAttribute('data-option-index', index.toString());
             props.onClick && props.onClick(e as unknown as MouseEvent<HTMLLIElement>);
@@ -248,7 +307,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                tasksFilter={inputValue}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -259,7 +317,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 editCustomer={handleEditCustomer}
                 favoriteClick={handleFavoriteClick}
                 onCustomerSelect={handleCustomerSelect}
-                onTaskSelect={handleTaskSelect}
               />
             </ListItem>
           );
@@ -274,10 +331,14 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...params.InputProps,
               ...rest.InputProps,
               startAdornment: (
-                <>
-                  {!!selectedTask?.name && <InputAdornment position="end">{selectedTask?.name}</InputAdornment>}
-                  {params.InputProps.startAdornment}
-                </>
+                <InputAdornment
+                  position="start"
+                  style={{
+                    display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
+                  }}
+                >
+                  <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
+                </InputAdornment>
               ),
               endAdornment: (
                 <>
@@ -294,7 +355,18 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 </>)
             }}
           />
-        ), [insertCustomerIsLoading, rest, value, disableEdition, handleEditCustomer, customers])}
+        ), [
+          insertCustomerIsLoading,
+          rest,
+          value,
+          disableEdition,
+          handleTaskSelect,
+          handleEditCustomer,
+          customers,
+          selectedTask,
+          projects,
+          projectsIsFetching,
+          projectsIsLoading])}
         renderGroup={(params) => (
           <li key={params.key}>
             <GroupHeader>
@@ -305,12 +377,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         )}
       />
       {memoCustomerUpsert}
-    </>
+    </div>
   );
 }
 
 interface CustomerItemProps {
-  tasksFilter?: string,
   customer: ICustomer;
   selected: boolean;
   multiple?: boolean;
@@ -321,16 +392,9 @@ interface CustomerItemProps {
   editCustomer: (customer: ICustomer | undefined) => (e: MouseEvent<HTMLButtonElement>) => void;
   favoriteClick: (customer: ICustomer) => (e: MouseEvent<HTMLElement>) => void;
   onCustomerSelect: (event: MouseEvent<HTMLDivElement>, customer: ICustomer) => void;
-  onTaskSelect: (task: ITimeTrackTask) => void;
-};
-
-const filterTasks = (tasks: ITimeTrackTask[], filter: string) => {
-  if (!filter || !tasks) return tasks;
-  return tasks?.filter((task) => task.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
 };
 
 const CustomerItem = ({
-  tasksFilter,
   customer,
   selected,
   multiple = false,
@@ -341,27 +405,13 @@ const CustomerItem = ({
   editCustomer,
   favoriteClick,
   onCustomerSelect,
-  onTaskSelect
 }: CustomerItemProps) => {
-  const [expandedTasks, setExpandedTasks] = useState(false);
-
-  const taskClick = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    setExpandedTasks(prev => !prev);
-  }, []);
-
-  const handleTaskClick = useCallback((task: ITimeTrackTask) => onTaskSelect(task), [onTaskSelect]);
-
   const customerClick = useCallback((customer: ICustomer) => (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     onCustomerSelect(e, customer);
   }, [onCustomerSelect]);
 
-  const taskCount = useMemo(() => filterTasks(customer?.tasks || [], tasksFilter || '').length, [customer?.tasks, tasksFilter]);
-
-  const notFoundTask = taskCount < 1;
-
-  const endTaskCount = notFoundTask ? customer.taskCount : taskCount;
+  const taskCount = useMemo(() => customer?.taskCount ?? 0, [customer?.taskCount]);
 
   return (
     <Stack
@@ -388,25 +438,13 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        {withTasks && (endTaskCount ?? 0) > 0 &&
+        {withTasks && (taskCount ?? 0) > 0 &&
           <Stack
             direction="row"
             alignItems={'center'}
-            onClick={taskClick}
             spacing={0.5}
           >
-            <Typography>{`${endTaskCount} ${pluralize(endTaskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
-            <IconButton
-              size="small"
-              style={{ padding: 0 }}
-              color="inherit"
-            >
-              {
-                expandedTasks
-                  ? <KeyboardArrowDownIcon fontSize="small" />
-                  : <KeyboardArrowRightIcon fontSize="small" />
-              }
-            </IconButton>
+            <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
           </Stack>
         }
         {!disableEdition &&
@@ -425,63 +463,74 @@ const CustomerItem = ({
         {!disableFavorite &&
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
-      <CustomerTasks
-        filter={notFoundTask ? '' : tasksFilter}
-        open={expandedTasks}
-        customerId={customer.ID}
-        onSelect={handleTaskClick}
-      />
     </Stack>
   );
 };
 
+const filterProjects = (limit = 50) => createFilterOptions({
+  matchFrom: 'any',
+  ignoreCase: true,
+  stringify: (option: ITimeTrackProject) => `${option.name} ${option.tasks?.map(task => task.name).join(' ')}`,
+});
+
+const ListboxComponent = forwardRef<
+  HTMLUListElement,
+  HTMLAttributes<HTMLElement>
+>(function ListboxComponent(
+  props,
+  ref
+) {
+  const { children, ...other } = props;
+
+  return (
+    <List
+      {...other}
+      subheader={<li />}
+      dense
+      disablePadding
+      ref={ref}
+      sx={{
+        width: '100%',
+        position: 'relative',
+        overflow: 'auto',
+        zIndex: 0,
+        '& ul': {
+          padding: 0,
+          flex: 1
+        },
+      }}
+    >
+      {children}
+    </List>
+  );
+});
+
 interface CustomerTasksProps {
-  open: boolean;
-  customerId: number;
+  projects: ITimeTrackProject[],
+  task: ITimeTrackTask | null,
   onSelect: (task: ITimeTrackTask) => void;
-  filter?: string,
 };
 
 const CustomerTasks = ({
-  open,
-  filter,
-  customerId,
+  projects,
+  task,
   onSelect
-}: CustomerTasksProps) => {
-  const { data: projects = [] } = useGetProjectsQuery({
-    filter: { customerId }
-  }, {
-    skip: !open
-  });
+}: Readonly<CustomerTasksProps>) => {
+  const [addFavoriteProject] = useAddFavoriteProjectMutation();
+  const [deleteFavoriteProject] = useDeleteFavoriteProjectMutation();
 
-  const filteredAndSortedProjects = useMemo(() => {
-    const filtered = [];
-    for (const element of projects) {
-      const tasks = filterTasks(element.tasks || [], filter || '') ;
-      if (tasks?.length > 0) {
-        filtered.push({ ...element, tasks: sortByFavorite<ITimeTrackTask[]>(tasks) });
-      }
+  const toggleProjectFavorite = (id: number, favorite: boolean) => () => {
+    if (favorite) {
+      deleteFavoriteProject(id);
+      return;
     }
-    return sortByFavorite<ITimeTrackProject[]>(filtered);
-  }, [filter, projects]);
-
-  function sortByFavorite <S>(mas: any[]): S {
-    const favorites = [];
-    const other = [];
-    for (const element of mas) {
-      if (element.isFavorite) {
-        favorites.push(element);
-      } else {
-        other.push(element);
-      }
-    }
-    return [...favorites, ...other] as S;
+    addFavoriteProject(id);
   };
 
   const [addFavoriteTask] = useAddFavoriteTaskMutation();
   const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
 
-  const handleToggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+  const toggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
     e.stopPropagation();
     if (favorite) {
       deleteFavoriteTask({ taskId, projectId });
@@ -490,88 +539,127 @@ const CustomerTasks = ({
     }
   };
 
-  const [addFavoriteProject] = useAddFavoriteProjectMutation();
-  const [deleteFavoriteProject] = useDeleteFavoriteProjectMutation();
-
-  const handleToggleProjectFavorite = (id: number, favorite: boolean) => () => {
-    if (favorite) {
-      deleteFavoriteProject(id);
-    } else {
-      addFavoriteProject(id);
-    }
-  };
-
-  const taskSelect = useCallback((task: ITimeTrackTask) => () => onSelect(task), [onSelect]);
-
   const preventAction = useCallback((e: MouseEvent<HTMLLIElement>) => {
     e.stopPropagation();
     e.preventDefault();
   }, []);
 
-  const rowHeight = 72;
-  const maxLines = 4;
+  const taskSelect = useCallback((task: ITimeTrackTask) => () => {
+    onSelect(task);
+  }, [onSelect]);
+
+  const [selectedProject, setSelectedProject] = useState<ITimeTrackProject | null>(null);
+
+  const projectOnChange = (
+    e: SyntheticEvent,
+    value: ITimeTrackProject | null
+  ) => {
+    setSelectedProject(value);
+  };
+
+  useEffect(() => {
+    if (!task?.project) {
+      return;
+    }
+
+    setSelectedProject(task?.project);
+  }, [task?.project]);
 
   return (
-    <CustomizedCard
-      style={{
-        height: open ? (filteredAndSortedProjects.length === 1 ? (filteredAndSortedProjects[0].tasks ?? []).length : filteredAndSortedProjects.length) * rowHeight : '0px',
-        visibility: open ? 'visible' : 'hidden',
-        maxHeight: maxLines * rowHeight,
-        transition: 'height 0.5s, visibility  0.5s',
-        backgroundColor: 'var(--color-main-bg)',
-      }}
-    >
-      <List
-        sx={{
-          width: '100%',
-          position: 'relative',
-          overflow: 'auto',
-          zIndex: 0,
-          '& ul': { padding: 0 },
-        }}
-        subheader={<li />}
-        dense
-        disablePadding
-      >
-        {filteredAndSortedProjects.map(project => (
-          <li key={`section-${project.ID}`}>
-            <ul>
-              <ListSubheader
-                style={{ lineHeight: '36px', cursor: 'text' }}
-                onClick={preventAction}
+    <Autocomplete
+      clearIcon={null}
+      options={projects}
+      getOptionLabel={() => task?.name ?? ''}
+      filterOptions={filterProjects()}
+      onChange={projectOnChange}
+      value={selectedProject}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          variant="standard"
+          placeholder="Выберите задачу"
+          InputProps={{
+            ref: params.InputProps.ref,
+            endAdornment: params.InputProps.endAdornment
+          }}
+        />
+      )}
+      groupBy={({ isFavorite }: ITimeTrackProject) => isFavorite ? 'Избранные' : 'Остальные'}
+      renderGroup={(params) => (
+        <li key={params.key}>
+          <GroupHeader>
+            <Typography variant="subtitle1">{params.group}</Typography>
+          </GroupHeader>
+          <GroupItems>{params.children}</GroupItems>
+        </li>
+      )}
+      ListboxComponent={ListboxComponent}
+      renderOption={(props, { tasks, ...option }) => (
+        <li
+          {...props}
+          key={`section-${option.ID}`}
+          style={{
+            padding: 0,
+          }}
+        >
+          <ul>
+            <ListSubheader
+              style={{
+                lineHeight: '36px',
+                cursor: 'text',
+              }}
+              onClick={preventAction}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
               >
-                <div
-                  style={{ display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  {project.name}
-                  <div>
-                    <SwitchStar selected={!!project.isFavorite} onClick={handleToggleProjectFavorite(project.ID, !!project.isFavorite)} />
-                  </div>
-                </div>
-
-              </ListSubheader>
-              {project.tasks?.map(task => (
-                <ListItem
-                  key={`item-${project.ID}-${task.ID}`}
-                  onClick={taskSelect(task)}
-                  disablePadding
-                  style={{ position: 'relative' }}
-                >
-                  <ListItemButton>
-                    <ListItemText inset primary={task.name} />
-                  </ListItemButton>
-                  <div style={{ position: 'absolute', right: '16px' }}>
-                    <SwitchStar selected={!!task.isFavorite} onClick={handleToggleTaskFavorite(task.ID, project.ID, !!task.isFavorite)} />
-                  </div>
-                </ListItem>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </List>
-    </CustomizedCard>
+                {option.name}
+                <Box flex={1} minWidth={12} />
+                <SwitchStar
+                  selected={!!option.isFavorite}
+                  onClick={toggleProjectFavorite(option.ID, !!option.isFavorite)}
+                />
+              </div>
+            </ListSubheader>
+            {tasks?.map(task => (
+              <ListItem
+                key={`item-${option.ID}-${task.ID}`}
+                onClick={taskSelect({ ...task, project: option })}
+                disablePadding
+                style={{
+                  backgroundColor: 'var(--color-main-bg)',
+                }}
+              >
+                <ListItemButton>
+                  <ListItemText inset primary={task.name} />
+                  <Box flex={1} minWidth={12} />
+                  <SwitchStar
+                    selected={!!task.isFavorite}
+                    onClick={toggleTaskFavorite(task.ID, option.ID, !!task.isFavorite)}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </ul>
+        </li>
+      )}
+      sx={{
+        position: 'absolute',
+        top: -2,
+        width: '100%',
+        '& .MuiInput-root::before': { borderBottom: 0 },
+      }}
+      slotProps={{
+        paper: {
+          style: {
+            width: 'max-content'
+          }
+        }
+      }}
+    />
   );
 };

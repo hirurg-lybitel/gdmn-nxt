@@ -41,7 +41,6 @@ export interface ICustomer extends IContactWithID {
   BUSINESSPROCESSES?: IBusinessProcess[];
   isFavorite?: boolean;
   taskCount?: number;
-  tasks?: ITimeTrackTask[]
 };
 
 interface IMapOfArrays {
