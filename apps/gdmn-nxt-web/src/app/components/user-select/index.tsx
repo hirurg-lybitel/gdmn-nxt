@@ -5,10 +5,10 @@ import { IUser } from '@gsbelarus/util-api-types';
 import { ChangeEvent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import CustomPaperComponent from '../helpers/custom-paper-component/custom-paper-component';
 import { array } from 'yup/lib/locale';
+import { useAutocompleteVirtualization } from '../helpers/hooks/useAutocompleteVirtualization';
 
 const filterOptions = createFilterOptions<IUser>({
   matchFrom: 'any',
-  limit: 20,
   stringify: (option) => `${option.NAME} ${option.CONTACT?.NAME}`
 });
 
@@ -89,11 +89,13 @@ export function UserSelect({
     onChange && onChange(event, value, false);
   }, [onChange]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <Autocomplete
       multiple={multiple}
       loading={isFetching}
+      ListboxComponent={ListboxComponent}
       loadingText="Загрузка данных..."
       options={filter ? users.filter(user => filter(user)) : users}
       onChange={handleChange}

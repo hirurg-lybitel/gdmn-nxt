@@ -7,6 +7,7 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import DenyReasonsUpsert from '../../deny-reasons-upsert/deny-reasons-upsert';
 import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
 import filterOptions from '../../../helpers/filter-options';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface DenyReasonsSelectProps {
   formik: FormikProps<IKanbanCard>;
@@ -49,13 +50,15 @@ export function DenyReasonsSelect(props: DenyReasonsSelectProps) {
       onSubmit={handleSubmitDenyReason}
     />, [addDenyReason]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
+
   return (
     <>
       <Autocomplete
         fullWidth
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={option => option.NAME}
-        filterOptions={filterOptions(50, 'NAME')}
+        ListboxComponent={ListboxComponent}
         loading={denyReasonsIsFetching || insertDenyReasonIsLoading}
         {...(insertDenyReasonIsLoading
           ? {

@@ -17,6 +17,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -125,7 +126,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
   const handleChange = (e: any, newValue: ICustomer | ICustomer[] | null) => {
-    setSearchText('');
     onChange && onChange(newValue as Value<Multiple>);
     if (!newValue) {
       setSelectedTask(null);
@@ -157,7 +157,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
-    limit: 50,
+    limit: withTasks ? 100 : undefined,
     ignoreCase: true,
     stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID} ${option.tasks?.map(task => task.name).join(' ')}`,
   });
@@ -188,7 +188,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
-  const [searchText, setSearchText] = useState('');
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <>
@@ -196,6 +196,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         className={classes.root}
         style={style}
         fullWidth
+        ListboxComponent={ListboxComponent}
         multiple={multiple}
         disableCloseOnSelect={disableCloseOnSelect}
         limitTags={limitTags}
@@ -222,7 +223,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         }
         loadingText="Загрузка данных..."
         onChange={handleChange}
-        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index }: AutocompleteRenderOptionState) => {
+        renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index, inputValue }: AutocompleteRenderOptionState) => {
           const handleCustomerSelect = (e: MouseEvent<HTMLDivElement>, customer: ICustomer) => {
             /** Don't select directly customer with tasks. Only the task */
             if ((customer.taskCount ?? 0) > 0) {
@@ -253,7 +254,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                tasksFilter={searchText}
+                tasksFilter={inputValue}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -268,7 +269,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick, searchText])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
@@ -276,8 +277,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
-            onChange={(e) => setSearchText(e.target.value)}
-            onBlur={() => setSearchText('')}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
@@ -380,7 +379,7 @@ const CustomerItem = ({
         direction="row"
         alignItems="center"
         spacing={1}
-        style={{ padding: '2px 16px' }}
+        style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
         {multiple &&

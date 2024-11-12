@@ -66,7 +66,8 @@ export function EmployeesSelect({
           key={option.ID}
           style={{
             paddingTop: 2,
-            paddingBottom: 2
+            paddingBottom: 2,
+            minHeight: '36px'
           }}
         >
           {multiple && (

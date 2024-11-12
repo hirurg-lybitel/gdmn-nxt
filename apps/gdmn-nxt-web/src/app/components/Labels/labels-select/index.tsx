@@ -11,6 +11,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import TagIcon from '@mui/icons-material/Tag';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface LabelsSelectProps extends Pick<TextFieldProps, 'InputProps'> {
   labels?: ILabel[];

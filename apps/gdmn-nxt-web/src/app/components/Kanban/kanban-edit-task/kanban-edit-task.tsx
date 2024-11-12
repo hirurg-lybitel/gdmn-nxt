@@ -24,6 +24,7 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -217,6 +218,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     );
   }, [editDeal, dealCard, deals]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <CustomizedDialog
@@ -238,6 +240,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
               <Form id="taskForm" onSubmit={formik.handleSubmit}>
                 <Stack direction="column" spacing={2}>
                   <Autocomplete
+                    ListboxComponent={ListboxComponent}
                     options={taskTypes || []}
                     value={taskTypes?.find(el => el.ID === formik.values.TASKTYPE?.ID) || null}
                     onChange={(e, value) => {
@@ -308,10 +311,10 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     style={{ alignItems: 'center' }}
                   >
                     <Autocomplete
+                      ListboxComponent={ListboxComponent}
                       options={cards}
                       fullWidth
-                      filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))
-                      }
+                      filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))}
                       getOptionLabel={option => option.DEAL?.USR$NAME || ''}
                       value={cards?.find(el => el.ID === formik.values.USR$CARDKEY) || null}
                       readOnly={(initValue.USR$CARDKEY || 0) > 0}

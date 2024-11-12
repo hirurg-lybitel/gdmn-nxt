@@ -20,6 +20,7 @@ import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 const durationMask = [
   /[0-9]/,
@@ -265,6 +266,8 @@ export const AddItem = ({
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
+  const [ListboxComponent] = useAutocompleteVirtualization({ minWidthByContent: true });
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -319,11 +322,11 @@ export const AddItem = ({
                       </Stack>
                       <Autocomplete
                         disableClearable
+                        ListboxComponent={ListboxComponent}
                         options={workProjects}
                         loading={workProjectsFetching}
                         loadingText="Загрузка данных..."
                         value={formik.values.workProject ?? defaultWorkProject}
-                        filterOptions={filterOptions(100, 'NAME')}
                         getOptionLabel={option => option?.NAME ?? ''}
                         onChange={handleWorkProjectChange}
                         sx={{
@@ -342,7 +345,7 @@ export const AddItem = ({
                         slotProps={{
                           paper: {
                             style: {
-                              width: 'max-content'
+                              width: '300px'
                             }
                           }
                         }}

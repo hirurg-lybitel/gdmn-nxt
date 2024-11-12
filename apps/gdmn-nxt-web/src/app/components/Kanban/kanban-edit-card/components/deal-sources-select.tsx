@@ -7,6 +7,7 @@ import filterOptions from '../../../helpers/filter-options';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddDealSourceMutation, useGetDealSourcesQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import DealSourceUpsert from '../../deal-source-upsert/deal-source-upsert';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface DealSourcesSelectProps {
   formik: FormikProps<IKanbanCard>;
@@ -51,13 +52,15 @@ export function DealSourcesSelect(props: DealSourcesSelectProps) {
       onSubmit={handleSubmitDealSource}
     />, [addDealSource]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
+
   return (
     <>
       <Autocomplete
         fullWidth
+        ListboxComponent={ListboxComponent}
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={option => option.NAME}
-        filterOptions={filterOptions(50, 'NAME')}
         loading={dealSourcesIsFetching || insertDealSourceIsLoading}
         {...(insertDealSourceIsLoading
           ? {
