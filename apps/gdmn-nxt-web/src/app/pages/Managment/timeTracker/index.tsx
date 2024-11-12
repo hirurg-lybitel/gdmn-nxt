@@ -345,7 +345,7 @@ export function TimeTracker() {
       </Stack>
       <CustomizedScrollBox container={{ style: { marginRight: '-16px' } }}>
         <Stack spacing={2} mr={2}>
-          {isFetching ?
+          {isLoading ?
             <ItemsSkeleton /> :
             timeTrackGroup.map(({ date, duration, items }, idx) => {
               return (
@@ -371,7 +371,7 @@ export function TimeTracker() {
                       </Stack>
                     </AccordionSummary>
                     <AccordionDetails style={{ padding: '0 16px' }}>
-                      {items.map(item => {
+                      {items.map((item, index) => {
                         const {
                           ID,
                           customer,
@@ -384,6 +384,22 @@ export function TimeTracker() {
                           task,
                           user
                         } = item;
+
+                        if (isFetching) {
+                          return (
+                            <Skeleton
+                              key={item.ID}
+                              variant="rounded"
+                              animation="wave"
+                              style={{
+                                borderRadius: 'var(--border-radius)',
+                                height: 58,
+                                width: 'auto',
+                                margin: '10px 0px'
+                              }}
+                            />
+                          );
+                        }
 
                         return (
                           <Stack
@@ -432,9 +448,11 @@ export function TimeTracker() {
                                 </Typography>
                               </Stack>
                               <EditableTypography
+                                closeOnBlur
                                 value={description}
                                 editEmpty={false}
-                                onClose={descriptionOnClose(item)}
+                                cancellable
+                                onSave={descriptionOnClose(item)}
                                 editComponent={
                                   <TextField
                                     inputRef={descriptionRef}
@@ -466,12 +484,14 @@ export function TimeTracker() {
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
                             <EditableTypography
+                              closeOnBlur
                               containerStyle={{
-                                maxWidth: 128,
+                                maxWidth: 158,
                                 width: 'auto'
                               }}
                               value={durationFormat(duration)}
-                              onClose={durationOnClose(item)}
+                              cancellable
+                              onSave={durationOnClose(item)}
                               editComponent={
                                 <TextFieldMasked
                                   style={{
