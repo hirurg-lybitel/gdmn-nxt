@@ -8,7 +8,7 @@ import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { ButtonBaseProps, Avatar, Box, Divider, IconButton, List, ListItemButton, Stack, TablePagination, Tooltip, TooltipProps, Typography, tooltipClasses, useMediaQuery, useTheme } from '@mui/material';
 import { socialMediaIcons, socialMediaLinks } from '@gdmn-nxt/components/social-media-input';
-import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useState } from 'react';
+import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
@@ -21,10 +21,92 @@ import { styled } from '@mui/styles';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 
+interface CardLabelsProps {
+  labels: ILabel[];
+  handleLabelClick: (label: ILabel) => (e: any) => void
+}
+
+const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
+  const ref = useRef<any>(null);
+
+  const [viewLabelsCount, setViewLabelsCount] = useState(2);
+  const [isSet, setIsSet] = useState(false);
+  const [reCalc, setReCalc] = useState({});
+  useEffect(() => {
+    const masLabelsWidth = ref.current?.children?.[0]?.offsetWidth;
+    const labelEls = ref.current?.children?.[0]?.children || [];
+    const tooBig = masLabelsWidth < (labelEls[0]?.offsetWidth || 0) + (labelEls[1]?.offsetWidth || 0) + (labelEls.length > 1 ? 0 : 0);
+    if (!!labelEls[0] && labelEls[0]?.offsetWidth === 0) {
+      setReCalc({});
+      return;
+    };
+    setIsSet(true);
+    setViewLabelsCount(tooBig ? 1 : 2);
+  }, [labels, reCalc]);
+
+  return (
+    <Stack
+      ref={ref}
+      direction={'row'}
+      pt="8px"
+      pr={'25px'}
+      height={'24px'}
+      paddingRight = {'32px'}
+    >
+      <List
+        style={{
+          flexDirection: 'row',
+          padding: '0px',
+          width: 'fit-content',
+          display: 'flex',
+          flexWrap: 'wrap',
+          columnGap: '5px',
+          alignItems: 'center',
+          visibility: isSet ? 'visible' : 'hidden',
+          height: 'fit-content',
+          overflow: 'hidden',
+        }}
+      >
+        {labels.slice(0, 2)?.map((label, index) => {
+          return (
+            <div
+              key={label.ID}
+              style={{
+                maxWidth: '100%', ...((index === 1 && viewLabelsCount === 1) ? { visibility: 'hidden', pointerEvents: 'none' } : {}) }}
+            >
+              <Tooltip
+                arrow
+                placement="bottom-start"
+                title={label.USR$DESCRIPTION}
+              >
+                <ListItemButton
+                  key={label.ID}
+                  onClick={handleLabelClick(label)}
+                  sx={{
+                    padding: 0,
+                    borderRadius: '2em',
+                  }}
+                >
+                  <LabelMarker nowrap label={label} />
+                </ListItemButton>
+              </Tooltip>
+            </div>
+          );
+        }
+        )}
+      </List>
+      {Array.isArray(labels) && labels.length > viewLabelsCount
+        ? <Typography ml={'5px'} variant="caption">+{labels.length - viewLabelsCount}</Typography>
+        : <></>}
+    </Stack>
+  );
+};
+
 interface CardItemProps {
   contact: IContactPerson;
   onEditClick: (contact: IContactPerson) => void;
 }
+
 const CardItem = ({ contact, onEditClick }: CardItemProps) => {
   const [addFavorite] = useAddFavoriteMutation();
   const [deleteFavorite] = useDeleteFavoriteMutation();
@@ -87,6 +169,8 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
     copyToClipboard(value);
     setClipboardTooltipOpen(prev => ({ ...prev, [fieldName]: true }));
   };
+
+  const memoCardLabels = useMemo(() => <CardLabels labels={contact.LABELS || []} handleLabelClick={handleLabelClick} />, [contact.LABELS, handleLabelClick]);
 
   return (
     <div
@@ -237,53 +321,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               </Stack>
               : <Box height={20} />
           }
-          {
-            <Stack
-              direction={'row'}
-              pt="8px"
-              pr={'25px'}
-              height={'24px'}
-            >
-              <List
-                style={{
-                  flexDirection: 'row',
-                  padding: '0px',
-                  width: 'fit-content',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  columnGap: '5px',
-                  alignItems: 'center'
-                }}
-              >
-                {contact.LABELS?.slice(0, 2)?.map((label) => {
-                  return (
-                    <div key={label.ID}>
-                      <Tooltip
-                        arrow
-                        placement="bottom-start"
-                        title={label.USR$DESCRIPTION}
-                      >
-                        <ListItemButton
-                          key={label.ID}
-                          onClick={handleLabelClick(label)}
-                          sx={{
-                            padding: 0,
-                            borderRadius: '2em',
-                          }}
-                        >
-                          <LabelMarker label={label} />
-                        </ListItemButton>
-                      </Tooltip>
-                    </div>
-                  );
-                }
-                )}
-              </List>
-              {Array.isArray(contact.LABELS) && contact.LABELS?.length > 2
-                ? <Typography ml={'5px'} variant="caption">+{contact.LABELS.length - 2}</Typography>
-                : <></>}
-            </Stack>
-          }
+          {memoCardLabels}
           <div className={styles.starButton}>
             <SwitchStar
               selected={!!contact.isFavorite}
