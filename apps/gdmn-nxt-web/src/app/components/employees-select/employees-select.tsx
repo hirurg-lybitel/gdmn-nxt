@@ -19,7 +19,10 @@ interface Props{
   disabled?: boolean,
   required?: boolean,
   style?: React.CSSProperties,
-  textFieldVariant?: TextFieldVariants
+  textFieldVariant?: TextFieldVariants,
+  error?: boolean,
+  helperText?: string,
+  readOnly?: boolean
 }
 export function EmployeesSelect({
   value,
@@ -33,7 +36,10 @@ export function EmployeesSelect({
   disabled,
   required,
   style,
-  textFieldVariant
+  textFieldVariant,
+  error,
+  helperText,
+  readOnly
 }: Props) {
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IContactWithID[] | IContactWithID | null) => onChange(value), [onChange]);
@@ -51,6 +57,7 @@ export function EmployeesSelect({
   return (
     <Autocomplete
       style={style}
+      readOnly={readOnly}
       disabled={disabled}
       options={(filter ? employees.filter(employee => filter(employee)) : employees) ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
@@ -84,6 +91,8 @@ export function EmployeesSelect({
       renderInput={(params) => (
         <TextField
           {...params}
+          error={error}
+          helperText={helperText}
           variant={textFieldVariant}
           required={required}
           label={label}

@@ -462,6 +462,8 @@ export function EditContact({
                       placeholder="Выберите ответственного"
                       value={formik.values.RESPONDENT ?? null}
                       onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
+                      error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
+                      helperText={formik.touched.RESPONDENT ? formik.errors.RESPONDENT : undefined}
                     />
                     <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                     <CustomerSelect

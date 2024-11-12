@@ -14,7 +14,9 @@ interface Props {
   label?: string;
   placeholder?: string;
   limitTags?: number;
-  multiple?: boolean
+  multiple?: boolean,
+  error?: boolean,
+  helperText?: string
 }
 export function ContactSelect({
   value,
@@ -22,7 +24,9 @@ export function ContactSelect({
   label = 'Контакты',
   placeholder,
   limitTags = -1,
-  multiple = false
+  multiple = false,
+  error,
+  helperText
 }: Props) {
   const {
     data: persons,
@@ -74,6 +78,8 @@ export function ContactSelect({
         <TextField
           {...params}
           label={label}
+          error={error}
+          helperText={helperText}
           placeholder={placeholder ?? (multiple ? 'Выберите контакты' : 'Выберите контакт')}
           InputProps={{
             ...params.InputProps,

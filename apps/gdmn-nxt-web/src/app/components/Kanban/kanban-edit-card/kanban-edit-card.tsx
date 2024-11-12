@@ -638,6 +638,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                                 { ...formik.values.DEAL, DEPARTMENT: value ? value : null }
                               );
                             }}
+                            error={getIn(formik.touched, 'DEAL.DEPARTMENT') && Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))}
+                            helperText={getIn(formik.touched, 'DEAL.DEPARTMENT') && getIn(formik.errors, 'DEAL.DEPARTMENT')}
                           />
                           <Stack direction="column" spacing={2}>
                             <EmployeesSelect
@@ -645,6 +647,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               onChange={value => formik.setFieldValue('DEAL.CREATOR', value)}
                               label="Создал"
                               required
+                              error={getIn(formik.touched, 'DEAL.CREATOR') && Boolean(getIn(formik.errors, 'DEAL.CREATOR'))}
+                              helperText={getIn(formik.touched, 'DEAL.CREATOR') && getIn(formik.errors, 'DEAL.CREATOR')}
                             />
                             <EmployeesSelect
                               value={formik.values.DEAL?.PERFORMERS?.[0] ?? null}
@@ -671,9 +675,11 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                               }}
                               label={'Исполнитель'}
                               placeholder={'Выберите исполнителя'}
+                              disabled={formik.values.DEAL?.USR$READYTOWORK || false}
                             />
                             <EmployeesSelect
-                              disabled={(formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
+                              readOnly={formik.values.DEAL?.USR$READYTOWORK || false}
+                              disabled={formik.values.DEAL?.USR$READYTOWORK || (formik.values.DEAL?.PERFORMERS?.length || 0) === 0}
                               value={formik.values.DEAL?.PERFORMERS?.[1] ?? null}
                               onChange={(value) => {
                                 const firstPerformer = formik.values.DEAL?.PERFORMERS?.[0];

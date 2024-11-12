@@ -291,6 +291,8 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     }}
                     label="Постановщик"
                     placeholder="Выберите постановщика"
+                    error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
+                    helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
                     required
                   />
                   <EmployeesSelect

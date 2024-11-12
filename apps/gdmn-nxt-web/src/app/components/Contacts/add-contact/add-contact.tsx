@@ -357,6 +357,8 @@ export function AddContact({
                 placeholder="Выберите ответственного"
                 value={formik.values.RESPONDENT ?? null}
                 onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
+                error={getIn(formik.touched, 'RESPONDENT') && Boolean(getIn(formik.errors, 'RESPONDENT'))}
+                helperText={getIn(formik.touched, 'RESPONDENT') && getIn(formik.errors, 'RESPONDENT')}
               />
               <LabelsSelect
                 labels={formik.values.LABELS}
@@ -413,6 +415,7 @@ export function AddContact({
                     value ? { ID: department.ID, NAME: department.NAME } : undefined
                   );
                 }}
+                helperText={formik.errors.USR$BG_OTDEL}
               />
               <TextField
                 label="Комментарий"
