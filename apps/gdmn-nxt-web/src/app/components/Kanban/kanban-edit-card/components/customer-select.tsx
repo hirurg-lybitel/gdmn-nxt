@@ -469,7 +469,6 @@ const CustomerItem = ({
 
 const filterProjects = (limit = 50) => createFilterOptions({
   matchFrom: 'any',
-  limit,
   ignoreCase: true,
   stringify: (option: ITimeTrackProject) => `${option.name} ${option.tasks?.map(task => task.name).join(' ')}`,
 });
@@ -571,7 +570,7 @@ const CustomerTasks = ({
       clearIcon={null}
       options={projects}
       getOptionLabel={() => task?.name ?? ''}
-      // filterOptions={filterProjects(50)}
+      filterOptions={filterProjects()}
       onChange={projectOnChange}
       value={selectedProject}
       renderInput={(params) => (
