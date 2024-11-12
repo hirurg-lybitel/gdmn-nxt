@@ -1,3 +1,4 @@
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WorkIcon from '@mui/icons-material/Work';
@@ -464,6 +465,9 @@ export function EditContact({
                       onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
                       error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
                       helperText={formik.touched.RESPONDENT ? formik.errors.RESPONDENT : undefined}
+                      slots={{
+                        startIcon: <ManageAccountsIcon />
+                      }}
                     />
                     <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                     <CustomerSelect

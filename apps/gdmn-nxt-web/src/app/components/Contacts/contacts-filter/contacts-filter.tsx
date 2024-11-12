@@ -6,6 +6,7 @@ import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
 import { IContactPerson, ICustomer, IFilteringData, ILabel } from '@gsbelarus/util-api-types';
 import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
 import { ContactSelect } from '../contact-select';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 export interface ContactsFilterProps {
   open: boolean;
@@ -86,6 +87,9 @@ export function ContactsFilter({
             multiple
             value={filteringData?.RESPONDENTS as IContactPerson[] ?? []}
             onChange={(value) => handleOnChange('RESPONDENTS', value)}
+            slots={{
+              startIcon: <ManageAccountsIcon />
+            }}
           />
           <LabelsSelect
             onChange={(value) => handleOnChange('LABELS', value)}

@@ -359,6 +359,9 @@ export function AddContact({
                 onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
                 error={getIn(formik.touched, 'RESPONDENT') && Boolean(getIn(formik.errors, 'RESPONDENT'))}
                 helperText={getIn(formik.touched, 'RESPONDENT') && getIn(formik.errors, 'RESPONDENT')}
+                slots={{
+                  startIcon: <ManageAccountsIcon />
+                }}
               />
               <LabelsSelect
                 labels={formik.values.LABELS}

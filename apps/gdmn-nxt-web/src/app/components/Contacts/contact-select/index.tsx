@@ -1,22 +1,27 @@
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { Autocomplete, Checkbox, InputAdornment, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Checkbox, InputAdornment, TextField } from '@mui/material';
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import { IContactPerson } from '@gsbelarus/util-api-types';
-import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
-interface Props {
-  value: IContactPerson[] | IContactPerson | null;
-  onChange: (value: IContactPerson[] | IContactPerson | null) => void;
+type ValueType = IContactPerson[] | IContactPerson | null;
+interface ContactSelectProps<Value> extends Omit<AutocompleteProps<
+  Value, boolean | undefined, boolean | undefined, false>,
+  'value' | 'options' | 'renderInput' | 'renderOption' | 'onChange'
+> {
+  value: ValueType;
+  onChange: (value: ValueType) => void;
   label?: string;
   placeholder?: string;
   limitTags?: number;
   multiple?: boolean,
   error?: boolean,
-  helperText?: string
+  helperText?: string,
+  slots?: {
+    startIcon?: JSX.Element
+  }
 }
 export function ContactSelect({
   value,
@@ -26,14 +31,15 @@ export function ContactSelect({
   limitTags = -1,
   multiple = false,
   error,
-  helperText
-}: Props) {
+  helperText,
+  slots
+}: Readonly<ContactSelectProps<IContactPerson>>) {
   const {
     data: persons,
     isFetching: personsIsFetching,
   } = useGetContactPersonsQuery();
 
-  const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IContactPerson[] | IContactPerson | null) => onChange(value), [onChange]);
+  const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: ValueType) => onChange(value), [onChange]);
 
   const [ListboxComponent] = useAutocompleteVirtualization();
 
@@ -85,9 +91,10 @@ export function ContactSelect({
             ...params.InputProps,
             startAdornment: (
               <>
+                {slots?.startIcon &&
                 <InputAdornment position="end">
-                  <ManageAccountsIcon />
-                </InputAdornment>
+                  {slots?.startIcon}
+                </InputAdornment>}
                 {params.InputProps.startAdornment}
               </>
             ),
