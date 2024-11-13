@@ -18,7 +18,11 @@
     "docker:redis": "yarn docker:run redis",
     "docker:network": "docker network create proxy_network",
     "prepare": "husky",
-    "lint-stage": "lint-staged --concurrent false --relative"
+    "lint-staged": "lint-staged --relative"
+  },
+  "lint-staged": {
+    "{src,apps,libs,test}/**/*.{ts,tsx,js,jsx}": "eslint --quiet --max-warnings=0",
+    "{src,test}/**/*.{ts,tsx,js,jsx}": "prettier --write"
   },
   "private": true,
   "dependencies": {
