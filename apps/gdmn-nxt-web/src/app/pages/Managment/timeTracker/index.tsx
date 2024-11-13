@@ -15,6 +15,7 @@ import {
   Checkbox,
   Tooltip,
   TextField,
+  Skeleton,
 } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
@@ -24,14 +25,12 @@ import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
 import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTrackingByDateQuery, useGetTimeTrackingInProgressQuery, useUpdateTimeTrackingMutation } from '../../../features/time-tracking';
-import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
-import ButtonDateRangePicker, { shortcutsLabels } from '@gdmn-nxt/components/button-date-range-picker';
+import { saveFilterData } from '../../../store/filtersSlice';
+import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
@@ -39,6 +38,7 @@ import FilterPanel from './components/filter-panel';
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 
 const durationMask = [
   /[0-9]/,
@@ -89,7 +89,6 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   // backgroundColor: 'var(--color-card-bg)',
 }));
 
-const filterEntityName = 'timeTracking';
 
 export function TimeTracker() {
   const dispatch = useDispatch();
@@ -117,13 +116,18 @@ export function TimeTracker() {
   const billableRef = useRef<HTMLInputElement>(null);
   const durationRef = useRef<HTMLInputElement>(null);
 
-  const defaultFilter = useMemo(() => {
-    const today = dayjs();
-    return { period: [today.subtract(7, 'day').toDate()
-      .getTime(), today.toDate().getTime()] };
-  }, []);
+  useEffect(() => {
+    if (filterData?.period) {
+      return;
+    }
 
-  const [filtersIsLoading] = useFilterStore(filterEntityName, defaultFilter);
+    const today = dayjs();
+
+    dateRangeOnChange([
+      today.subtract(7, 'day').toDate(),
+      today.toDate()
+    ]);
+  }, []);
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ timeTracking: filteringData }));
@@ -251,13 +255,10 @@ export function TimeTracker() {
       filteringData={filterData}
       onFilteringDataChange={handleFilteringDataChange}
       onClear={filterHandlers.filterClear}
-
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  const defaultShortcut = useMemo(() => filtersIsLoading || filterData.period ? undefined : shortcutsLabels[2], [filterData.period, filtersIsLoading]);
-
-  const dateRangeOnChange = (value: DateRange<Date>, context: PickerChangeHandlerContext<DateRangeValidationError>) => {
+  const dateRangeOnChange = (value: DateRange<Date>, context?: PickerChangeHandlerContext<DateRangeValidationError>) => {
     const newPeriod = [
       value[0]?.getTime() ?? null,
       value[1]?.getTime() ?? null
@@ -317,7 +318,6 @@ export function TimeTracker() {
       <Stack direction="row">
         <ButtonDateRangePicker
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-          defaultShortcut={defaultShortcut}
           onChange={dateRangeOnChange}
         />
         <Box flex={1} />
@@ -343,11 +343,11 @@ export function TimeTracker() {
           </Typography>
         </Stack>
       </Stack>
-      {isLoading ?
-        <CircularIndeterminate open size={70} /> :
-        <CustomizedScrollBox container={{ style: { marginRight: '-16px' } }}>
-          <Stack spacing={2} mr={2}>
-            {timeTrackGroup.map(({ date, duration, items }, idx) => {
+      <CustomizedScrollBox container={{ style: { marginRight: '-16px' } }}>
+        <Stack spacing={2} mr={2}>
+          {isLoading ?
+            <ItemsSkeleton /> :
+            timeTrackGroup.map(({ date, duration, items }, idx) => {
               return (
                 <CustomizedCard key={idx}>
                   <Accordion defaultExpanded={false}>
@@ -371,7 +371,7 @@ export function TimeTracker() {
                       </Stack>
                     </AccordionSummary>
                     <AccordionDetails style={{ padding: '0 16px' }}>
-                      {items.map(item => {
+                      {items.map((item, index) => {
                         const {
                           ID,
                           customer,
@@ -384,6 +384,22 @@ export function TimeTracker() {
                           task,
                           user
                         } = item;
+
+                        if (isFetching) {
+                          return (
+                            <Skeleton
+                              key={item.ID}
+                              variant="rounded"
+                              animation="wave"
+                              style={{
+                                borderRadius: 'var(--border-radius)',
+                                height: 58,
+                                width: 'auto',
+                                margin: '10px 0px'
+                              }}
+                            />
+                          );
+                        }
 
                         return (
                           <Stack
@@ -432,9 +448,11 @@ export function TimeTracker() {
                                 </Typography>
                               </Stack>
                               <EditableTypography
+                                closeOnBlur
                                 value={description}
                                 editEmpty={false}
-                                onClose={descriptionOnClose(item)}
+                                cancellable
+                                onSave={descriptionOnClose(item)}
                                 editComponent={
                                   <TextField
                                     inputRef={descriptionRef}
@@ -466,12 +484,14 @@ export function TimeTracker() {
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
                             <EditableTypography
+                              closeOnBlur
                               containerStyle={{
-                                maxWidth: 128,
+                                maxWidth: 158,
                                 width: 'auto'
                               }}
                               value={durationFormat(duration)}
-                              onClose={durationOnClose(item)}
+                              cancellable
+                              onSave={durationOnClose(item)}
                               editComponent={
                                 <TextFieldMasked
                                   style={{
@@ -485,14 +505,20 @@ export function TimeTracker() {
                               }
                             />
                             <MenuBurger
-                              items={[
-                                <ItemButtonDelete
+                              items={({ closeMenu }) => [
+                                <Confirmation
                                   key="delete"
-                                  label="Удалить"
                                   title="Удалить запись?"
                                   text={'Данные невозможно будет восстановить'}
-                                  onClick={onDelete(ID)}
-                                />
+                                  dangerous
+                                  onConfirm={onDelete(ID)}
+                                  onClose={closeMenu}
+                                >
+                                  <ItemButtonDelete
+                                    label="Удалить"
+                                    confirmation={false}
+                                  />
+                                </Confirmation>,
                               ]}
                             />
                           </Stack>
@@ -503,8 +529,25 @@ export function TimeTracker() {
                 </CustomizedCard>
               );
             })}
-          </Stack>
-        </CustomizedScrollBox>}
+        </Stack>
+      </CustomizedScrollBox>
     </Stack>
   );
 };
+
+
+const ItemsSkeleton = () => (
+  [...Array(10).keys()].map(item => (
+    <Skeleton
+      key={item}
+      variant="rounded"
+      animation="wave"
+      style={{
+        borderRadius: 'var(--border-radius)',
+        height: 48,
+        width: 'auto'
+      }}
+    />
+  ))
+
+);

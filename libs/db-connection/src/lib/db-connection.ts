@@ -267,7 +267,7 @@ export const startTransaction = async (sessionId: string) => {
   };
 
   const generateId = () => genId(attachment, transaction);
-  const string2Blob = (value: string) => getBlob(attachment, transaction, value);
+  const string2Blob = (value = '') => getBlob(attachment, transaction, value);
 
   return {
     attachment,

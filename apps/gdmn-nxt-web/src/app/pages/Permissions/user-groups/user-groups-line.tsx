@@ -1,14 +1,17 @@
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import PowerOffIcon from '@mui/icons-material/PowerOff';
 import { Avatar, Box, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
-import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation } from '../../../features/permissions';
+import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation, useCloseSessionByIdMutation } from '../../../features/permissions';
 import { ChangeEvent, useMemo } from 'react';
 import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import { useResetProfileSettingsMutation } from '../../../features/profileSettings';
+import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+
 
 interface IUsersProps{
   group?: IUserGroup;
@@ -20,6 +23,7 @@ export function Users(props: IUsersProps) {
   const { data: users = [], isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID });
   const [updateUser] = useUpdateUserGroupLineMutation();
   const [deleteUserGroupLine] = useDeleteUserGroupLineMutation();
+  const [closeSession] = useCloseSessionByIdMutation();
 
   const [resetUser] = useResetProfileSettingsMutation();
 
@@ -34,9 +38,16 @@ export function Users(props: IUsersProps) {
     });
   };
 
-  const onReset = (id: number) => () => {
+  const onReset = (id: number) => {
     resetUser(id);
   };
+
+  const onSessionClose = (id?: number) => {
+    if (!id) return;
+    closeSession(id);
+  };
+
+  const { id: userId } = useUserData();
 
   const columns: GridColDef<IUserGroupLine>[] = [
     {
@@ -90,15 +101,41 @@ export function Users(props: IUsersProps) {
       resizable: false,
       width: 50,
       align: 'center',
-      renderCell: ({ id, row: { USER, USERGROUP } }) =>
+      renderCell: ({ row: { ID, USER, USERGROUP } }) =>
         <MenuBurger
-          items={[
+          items={({ closeMenu }) => [
+            userId === USER?.ID
+              ? <></>
+              : <Confirmation
+                key="delete"
+                title="Закрытие сессии"
+                text={`Вы действительно хотите закрыть сессию пользователя ${USER?.NAME}?`}
+                dangerous
+                onConfirm={() => {
+                  onSessionClose(USER?.ID);
+                  closeMenu();
+                }}
+                onClose={closeMenu}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                >
+                  <PowerOffIcon />
+                  <span>Закрыть сессию</span>
+                </Stack>
+              </Confirmation>,
             <Confirmation
               key="delete"
               title="Сброс настроек"
               text={`Вы действительно хотите сбросить настройки пользователя ${USER?.NAME}?`}
               dangerous
-              onConfirm={onReset(Number(USER?.ID))}
+              onConfirm={() => {
+                onReset(Number(USER?.ID));
+                closeMenu();
+              }}
+              onClose={closeMenu}
             >
               <Stack
                 direction="row"
@@ -109,12 +146,19 @@ export function Users(props: IUsersProps) {
                 <span>Сбросить</span>
               </Stack>
             </Confirmation>,
-            <ItemButtonDelete
+            <Confirmation
               key="delete"
-              label="Удалить"
+              title="Удалить пользователя"
               text={`Вы действительно хотите удалить пользователя ${USER?.CONTACT?.NAME} из группы ${USERGROUP?.NAME}?`}
-              onClick={onDelete(Number(id))}
-            />
+              dangerous
+              onConfirm={onDelete(ID)}
+              onClose={closeMenu}
+            >
+              <ItemButtonDelete
+                label="Удалить"
+                confirmation={false}
+              />
+            </Confirmation>
           ]}
         />
     }

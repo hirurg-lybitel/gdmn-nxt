@@ -4,7 +4,8 @@ import { FindHandler, FindOneHandler, FindOperator, ITimeTrackProject } from '@g
 
 const find: FindHandler<ITimeTrackProject> = async (
   sessionID,
-  clause
+  clause,
+  order = { 'USR$NAME': 'ASC' }
 ) => {
   const {
     fetchAsObject,
@@ -39,7 +40,7 @@ const find: FindHandler<ITimeTrackProject> = async (
       FROM USR$CRM_TIMETRACKER_PROJECTS z
       JOIN GD_CONTACT con ON con.ID = z.USR$CUSTOMER
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
-      ORDER BY z.USR$NAME`,
+      ${order ? ` ORDER BY z.${Object.keys(order)[0]} ${Object.values(order)[0]}` : ''}`,
       { ...whereClause });
 
     const projects: ITimeTrackProject[] = rows.map(r => ({
