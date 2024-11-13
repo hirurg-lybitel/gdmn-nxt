@@ -91,6 +91,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
                     generate && setGenerate(false);
                     setCustomerId(value?.ID || null);
                   }}
+                  required
                 />
               </Grid>
               <Grid item>

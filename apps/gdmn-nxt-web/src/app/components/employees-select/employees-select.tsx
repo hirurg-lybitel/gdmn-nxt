@@ -21,7 +21,7 @@ interface Props{
   style?: React.CSSProperties,
   textFieldVariant?: TextFieldVariants,
   error?: boolean,
-  helperText?: string,
+  helperText?: React.ReactNode,
   readOnly?: boolean
 }
 export function EmployeesSelect({

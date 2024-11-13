@@ -16,7 +16,7 @@ interface Props{
   disableCloseOnSelect?: boolean,
   required?: boolean,
   error?: boolean,
-  helperText?: string
+  helperText?: React.ReactNode
 }
 export function DepartmentsSelect({
   value,

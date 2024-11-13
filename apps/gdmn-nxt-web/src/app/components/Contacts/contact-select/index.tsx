@@ -18,7 +18,7 @@ interface ContactSelectProps<Value> extends Omit<AutocompleteProps<
   limitTags?: number;
   multiple?: boolean,
   error?: boolean,
-  helperText?: string,
+  helperText?: React.ReactNode,
   slots?: {
     startIcon?: JSX.Element
   }

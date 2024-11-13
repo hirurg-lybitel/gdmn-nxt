@@ -24,7 +24,10 @@ export interface UserSelectProps<
   disableSelectAll?: boolean;
   allSelected?: boolean;
   selectAllButton?: boolean;
-  filter?: (user: IUser) => boolean
+  filter?: (user: IUser) => boolean,
+  error?: boolean,
+  helperText?: React.ReactNode,
+  focused?: boolean
 }
 
 const selectAllObject = {
@@ -40,6 +43,9 @@ export function UserSelect({
   onChange,
   selectAllButton,
   filter,
+  error,
+  helperText,
+  focused,
   ...props
 }: UserSelectProps<IUser>) {
   const {
@@ -105,6 +111,9 @@ export function UserSelect({
         <TextField
           {...params}
           label={label}
+          error={error}
+          focused={focused}
+          helperText={helperText}
           placeholder={placeholder}
         />
       )}

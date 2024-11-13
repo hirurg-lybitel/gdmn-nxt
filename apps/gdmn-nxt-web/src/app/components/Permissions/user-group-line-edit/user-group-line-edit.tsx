@@ -111,6 +111,9 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
                         'USERS', value
                       );
                     }}
+                    focused
+                    error={Boolean(formik.errors.USERS)}
+                    helperText={formik.errors.USERS as ReactNode}
                   />
                   <FormControlLabel
                     control={
