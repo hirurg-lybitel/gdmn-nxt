@@ -13,8 +13,8 @@ import LinearIndeterminate from '../../linear-indeterminate/linear-indeterminate
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import ChartSkeleton from './chart-skeleton';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
-import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 interface IPeriodType {

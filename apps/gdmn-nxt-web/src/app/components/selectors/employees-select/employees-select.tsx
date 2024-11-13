@@ -1,10 +1,10 @@
 import { IContactWithID } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, FilterOptionsState, InputAdornment, TextField, TextFieldVariants } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
-import { useAutocompleteVirtualization } from '../helpers/hooks/useAutocompleteVirtualization';
-import { useGetDepartmentsQuery } from '../../features/departments/departmentsApi';
+import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 
 interface Props{
   value: IContactWithID[] | IContactWithID | null;
@@ -14,41 +14,54 @@ interface Props{
   limitTags?: number;
   multiple?: boolean,
   disableCloseOnSelect?: boolean,
+  filterOptions?: (options: IContactWithID, state: FilterOptionsState<IContactWithID>) => boolean,
+  filter?: (emploee: IContactWithID) => boolean,
+  disabled?: boolean,
   required?: boolean,
+  style?: React.CSSProperties,
+  textFieldVariant?: TextFieldVariants,
   error?: boolean,
-  helperText?: React.ReactNode
+  helperText?: React.ReactNode,
+  readOnly?: boolean
 }
-export function DepartmentsSelect({
+export function EmployeesSelect({
   value,
   onChange,
-  label = 'Отдел',
+  label = 'Сотрудник',
   placeholder,
   limitTags = -1,
   multiple = false,
   disableCloseOnSelect = false,
+  filter,
+  disabled,
   required,
+  style,
+  textFieldVariant,
   error,
-  helperText
+  helperText,
+  readOnly
 }: Props) {
-  const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery();
-
+  const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IContactWithID[] | IContactWithID | null) => onChange(value), [onChange]);
 
   const [ListboxComponent] = useAutocompleteVirtualization();
 
-  const getDepartments = useCallback(() => {
+  const getEmployees = useCallback(() => {
     if (multiple) {
-      return departments?.filter(department => (value as IContactWithID[])?.find((el) => el.ID === department.ID)) ?? [];
+      return employees?.filter(employee => (value as IContactWithID[])?.find((el) => el.ID === employee.ID)) ?? [];
     }
-    if (!value || !departments) return null;
-    return departments[departments.findIndex(department => (value as IContactWithID).ID === department.ID)];
-  }, [multiple, departments, value]);
+    if (!value || !employees) return null;
+    return employees[employees.findIndex(employee => (value as IContactWithID).ID === employee.ID)];
+  }, [multiple, employees, value]);
 
   return (
     <Autocomplete
-      options={departments ?? []}
+      style={style}
+      readOnly={readOnly}
+      disabled={disabled}
+      options={(filter ? employees.filter(employee => filter(employee)) : employees) ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
-      value={getDepartments()}
+      value={getEmployees()}
       ListboxComponent={ListboxComponent}
       onChange={handleOnChange}
       multiple={multiple}
@@ -77,14 +90,15 @@ export function DepartmentsSelect({
       renderInput={(params) => (
         <TextField
           {...params}
-          label={label}
-          required={required}
-          placeholder={placeholder ?? (multiple ? 'Выберите отделы' : 'Выберите отдел')}
           error={error}
           helperText={helperText}
+          variant={textFieldVariant}
+          required={required}
+          label={label}
+          placeholder={placeholder ?? (multiple ? 'Выберите сотрудников' : 'Выберите сотрудника')}
         />
       )}
-      loading={departmentsIsFetching}
+      loading={employeesIsFetching}
       loadingText="Загрузка данных..."
     />
   );

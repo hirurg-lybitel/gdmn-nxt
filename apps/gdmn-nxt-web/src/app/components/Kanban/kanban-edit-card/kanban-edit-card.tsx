@@ -41,11 +41,11 @@ import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import filterOptions from '../../helpers/filter-options';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DealSourcesSelect } from './components/deal-sources-select';
-import { CustomerSelect } from './components/customer-select';
+import { DealSourcesSelect } from '../../selectors/deal-sources-select/deal-sources-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
 import styles from './kanban-edit-card.module.less';
 import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
-import { DenyReasonsSelect } from './components/deny-reasons-select';
+import { DenyReasonsSelect } from '../../selectors/deny-reasons-select/deny-reasons-select';
 import { TabDescription } from './components/tab-descrption';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
@@ -60,8 +60,8 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
-import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {

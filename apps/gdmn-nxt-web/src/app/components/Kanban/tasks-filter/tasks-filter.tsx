@@ -7,8 +7,8 @@ import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import filterOptions from '../../helpers/filter-options';
-import { CustomerSelect } from '../kanban-edit-card/components/customer-select';
-import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 
 export interface IFilteringData {
   [name: string]: any;

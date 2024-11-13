@@ -9,7 +9,7 @@ import { IUser } from '@gsbelarus/util-api-types';
 import CustomNoData from '../../../components/Styled/Icons/CustomNoData';
 import { Socket } from 'socket.io-client';
 import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
-import UserSelect from '@gdmn-nxt/components/user-select';
+import UserSelect from '@gdmn-nxt/components/selectors/user-select';
 
 /* eslint-disable-next-line */
 export interface ViewUserNotificationsProps {}

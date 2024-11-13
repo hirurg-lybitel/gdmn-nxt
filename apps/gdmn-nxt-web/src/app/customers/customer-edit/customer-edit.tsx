@@ -25,7 +25,7 @@ import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/teleph
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import CustomerInfo from '../CustomerDetails/customer-info/customer-info';
 import ActCompletion from '../CustomerDetails/act-completion/act-completion';
 import BankStatement from '../CustomerDetails/bank-statement/bank-statement';
@@ -37,7 +37,7 @@ import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { CustomerFeedback } from '../CustomerDetails/customer-feedback/customer-feedback';
 import { CustomerTasks } from '../CustomerDetails/customer-tasks/customer-tasks';
-import { BusinessProcessesSelect } from '@gdmn-nxt/components/businessProcesses-select/businessProcesses-select';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
 
 export interface CustomerEditProps {
   open: boolean;

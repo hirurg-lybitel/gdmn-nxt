@@ -10,8 +10,8 @@ import { useGetDepartmentsQuery } from '../../../features/departments/department
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { DateRange } from '@mui/x-date-pickers-pro';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
-import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface IInitState {

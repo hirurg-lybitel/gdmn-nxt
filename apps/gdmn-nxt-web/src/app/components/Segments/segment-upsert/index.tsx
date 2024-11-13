@@ -17,13 +17,13 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
-import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
-import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { BusinessProcessesSelect } from '@gdmn-nxt/components/businessProcesses-select/businessProcesses-select';
+import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;

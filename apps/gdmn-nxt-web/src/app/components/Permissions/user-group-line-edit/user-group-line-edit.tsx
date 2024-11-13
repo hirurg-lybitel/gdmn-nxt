@@ -9,7 +9,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useGetUserGroupLineQuery } from '../../../features/permissions';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import UserSelect from '@gdmn-nxt/components/user-select';
+import UserSelect from '@gdmn-nxt/components/selectors/user-select';
 
 const useStyles = makeStyles(() => ({
   dialog: {

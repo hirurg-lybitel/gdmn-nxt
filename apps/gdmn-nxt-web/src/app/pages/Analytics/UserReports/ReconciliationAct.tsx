@@ -8,7 +8,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 import { DateRange } from '@mui/x-date-pickers-pro';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 
 
 const filterOptions = createFilterOptions({

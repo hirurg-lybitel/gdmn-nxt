@@ -1,10 +1,10 @@
 import { IClientHistoryType } from '@gsbelarus/util-api-types';
 import { Autocomplete, Checkbox, TextField, TextFieldVariants } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
-import { useAutocompleteVirtualization } from '../helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { useGetClientHistoryTypeQuery } from '../../features/kanban/kanbanCatalogsApi';
+import { useGetClientHistoryTypeQuery } from '../../../features/kanban/kanbanCatalogsApi';
 
 interface Props{
   value?: IClientHistoryType[] | IClientHistoryType | null;

@@ -6,10 +6,10 @@ import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import { ILabel } from '@gsbelarus/util-api-types';
-import LabelMarker from '../label-marker/label-marker';
+import LabelMarker from '../../Labels/label-marker/label-marker';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
+import LabelListItemEdit from '../../Labels/label-list-item-edit/label-list-item-edit';
 import TagIcon from '@mui/icons-material/Tag';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 

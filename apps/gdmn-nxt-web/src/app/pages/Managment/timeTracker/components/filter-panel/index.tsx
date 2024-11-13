@@ -2,9 +2,9 @@ import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/cust
 import styles from './filter-panel.module.less';
 import { ICustomer, IFilteringData, IUser } from '@gsbelarus/util-api-types';
 import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack } from '@mui/material';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { useCallback } from 'react';
-import UserSelect from '@gdmn-nxt/components/user-select';
+import UserSelect from '@gdmn-nxt/components/selectors/user-select';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
 export interface FilterPanelProps {

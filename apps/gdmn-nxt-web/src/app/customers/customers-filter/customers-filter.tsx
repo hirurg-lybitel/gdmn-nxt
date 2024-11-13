@@ -17,13 +17,13 @@ import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
 import filterOptions from '../../components/helpers/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
-import { ContractsSelect } from '@gdmn-nxt/components/contracts-select/contracts-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
-import { BusinessProcessesSelect } from '@gdmn-nxt/components/businessProcesses-select/businessProcesses-select';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {

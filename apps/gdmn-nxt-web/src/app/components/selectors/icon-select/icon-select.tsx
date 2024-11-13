@@ -3,10 +3,10 @@ import styles from './icon-select.module.less';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { MouseEvent, useCallback, useMemo, useState } from 'react';
-import CustomizedCard from '../Styled/customized-card/customized-card';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import * as iconsSource from '@mui/icons-material';
-import { IconByName } from '../icon-by-name';
-import { useAutocompleteGridVirtualization, useAutocompleteVirtualization } from '../helpers/hooks/useAutocompleteVirtualization';
+import { IconByName } from '../../icon-by-name';
+import { useAutocompleteGridVirtualization, useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 
 interface ListboxComponentProps {
   open: boolean;

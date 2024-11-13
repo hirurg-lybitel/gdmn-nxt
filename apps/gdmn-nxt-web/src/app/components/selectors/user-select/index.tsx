@@ -1,11 +1,11 @@
 import { Autocomplete, AutocompleteProps, Checkbox, Chip, createFilterOptions, FormControlLabel, TextField, Typography } from '@mui/material';
 import styles from './user-select.module.less';
-import { useGetUsersQuery } from '../../features/systemUsers';
+import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import { ChangeEvent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
-import CustomPaperComponent from '../helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
 import { array } from 'yup/lib/locale';
-import { useAutocompleteVirtualization } from '../helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 
 const filterOptions = createFilterOptions<IUser>({
   matchFrom: 'any',

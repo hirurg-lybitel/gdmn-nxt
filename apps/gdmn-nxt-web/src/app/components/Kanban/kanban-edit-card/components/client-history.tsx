@@ -17,8 +17,8 @@ import { useAddClientHistoryMutation, useGetClientHistoryQuery, useGetClientHist
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
-import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
-import { HistoryType } from '@gdmn-nxt/components/historyType-select/historyType-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
+import { HistoryType } from '@gdmn-nxt/components/selectors/historyType-select/historyType-select';
 
 interface ClientHistoryProps {
   card?: IKanbanCard;

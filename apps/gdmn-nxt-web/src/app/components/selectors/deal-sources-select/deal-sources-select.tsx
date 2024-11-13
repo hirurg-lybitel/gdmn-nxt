@@ -2,11 +2,11 @@ import { IDealSource, IKanbanCard } from '@gsbelarus/util-api-types';
 import { Autocomplete, Button, TextField } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
-import filterOptions from '../../../helpers/filter-options';
+import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
+import filterOptions from '../../helpers/filter-options';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddDealSourceMutation, useGetDealSourcesQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
-import DealSourceUpsert from '../../deal-source-upsert/deal-source-upsert';
+import DealSourceUpsert from '../../Kanban/deal-source-upsert/deal-source-upsert';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 interface DealSourcesSelectProps {

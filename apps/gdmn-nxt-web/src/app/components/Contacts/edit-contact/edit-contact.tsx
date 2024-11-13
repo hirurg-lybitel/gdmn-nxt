@@ -17,8 +17,8 @@ import { emailsValidation, phonesValidation } from '../../helpers/validators';
 import EditableTypography from '../../editable-typography/editable-typography';
 import TelephoneInput from '../../telephone-input';
 import filterOptions from '../../helpers/filter-options';
-import { LabelsSelect } from '../../Labels/labels-select';
-import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
+import { LabelsSelect } from '../../selectors/labels-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
 import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
@@ -31,7 +31,7 @@ import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
-import { ContactSelect } from '../contact-select';
+import { ContactSelect } from '../../selectors/contact-select';
 
 export interface EditContactProps {
   contact: IContactPerson;

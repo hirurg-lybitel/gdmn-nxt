@@ -12,16 +12,16 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { IContactName, IContactPerson, IContactWithID, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { useEffect, useMemo, useState } from 'react';
-import { LabelsSelect } from '../../Labels/labels-select';
-import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
+import { LabelsSelect } from '../../selectors/labels-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
 import filterOptions from '../../helpers/filter-options';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
 import SocialMediaInput, { ISocialMedia } from '../../social-media-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
-import { ContactSelect } from '../contact-select';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
+import { ContactSelect } from '../../selectors/contact-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 
 export interface AddContactProps {
   open: boolean;

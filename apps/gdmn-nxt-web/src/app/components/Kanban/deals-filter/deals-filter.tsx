@@ -10,9 +10,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { ICustomer } from '@gsbelarus/util-api-types';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
-import { DepartmentsSelect } from '@gdmn-nxt/components/departments-select/departments-select';
-import { CustomerSelect } from '../kanban-edit-card/components/customer-select';
-import { EmployeesSelect } from '@gdmn-nxt/components/employees-select/employees-select';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 
 export interface IFilteringData {
   [name: string]: any;

@@ -1,7 +1,7 @@
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { Button, CardActions, CardContent, ClickAwayListener, Fade, IconButton, Popper, Tooltip } from '@mui/material';
-import { ContactSelect } from '../contact-select';
+import { ContactSelect } from '../../selectors/contact-select';
 import { MouseEvent, useEffect, useState } from 'react';
 import { IContactPerson } from '@gsbelarus/util-api-types';
 
