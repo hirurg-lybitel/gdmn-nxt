@@ -54,8 +54,7 @@ export function ContractsSelect({
           key={option.ID}
           style={{
             paddingTop: 2,
-            paddingBottom: 2,
-            minHeight: '36px'
+            paddingBottom: 2
           }}
         >
           {multiple && (
