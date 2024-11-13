@@ -172,7 +172,7 @@ export function useAutocompleteGridVirtualization({ width, columnCount, rowHeigh
     const itemCount = itemData.length;
     const gridRef = useResetCache(itemCount);
     const rowHeights = new Map<number, number>();
-    const rowCount = itemCount / columnCount;
+    const rowCount = Math.ceil(itemCount / columnCount);
     const itemWidth = (width - 10) / columnCount;
 
     const ListItem = (props: GridChildComponentProps) => {
