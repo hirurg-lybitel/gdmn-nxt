@@ -26,8 +26,6 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
 
   const [ListboxComponent] = useAutocompleteGridVirtualization({ width: 450, columnCount: 8, rowHeight: 55 });
 
-  const memoListBox = useMemo(() => ListboxComponent, []);
-
   if (!open) return <></>;
 
   return (
@@ -37,7 +35,7 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
     >
       <Autocomplete
         options={icons || []}
-        ListboxComponent={memoListBox}
+        ListboxComponent={ListboxComponent}
         open
         disableListWrap
         disableCloseOnSelect
