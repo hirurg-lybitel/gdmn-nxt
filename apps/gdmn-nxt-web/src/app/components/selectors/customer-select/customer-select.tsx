@@ -337,14 +337,17 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...params.InputProps,
               ...rest.InputProps,
               startAdornment: (
-                <InputAdornment
-                  position="start"
-                  style={{
-                    display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
-                  }}
-                >
-                  <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
-                </InputAdornment>
+                <>
+                  <InputAdornment
+                    position="start"
+                    style={{
+                      display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
+                    }}
+                  >
+                    <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
+                  </InputAdornment>
+                  {params.InputProps.startAdornment}
+                </>
               ),
               endAdornment: (
                 <>
