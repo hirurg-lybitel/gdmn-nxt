@@ -21,7 +21,7 @@
     "lint-staged": "lint-staged --relative"
   },
   "lint-staged": {
-    "{src,apps,libs,test}/**/*.{ts,tsx,js,jsx}": "eslint --quiet --max-warnings=0",
+    "{src,apps,libs,test}/**/*.{ts,tsx,js,jsx}": "eslint --quiet",
     "{src,test}/**/*.{ts,tsx,js,jsx}": "prettier --write"
   },
   "private": true,
