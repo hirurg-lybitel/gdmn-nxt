@@ -450,7 +450,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       width="calc(100% - var(--menu-width))"
     >
       <DialogTitle>
-        {formik.values.ID > 0 ? `Редактирование сделки: ${card?.DEAL?.USR$NAME}` : 'Создание сделки'}
+        {formik.values.ID > 0 ? `Редактирование сделки №${card?.DEAL?.USR$NUMBER ?? 'Н/Д'}: ${card?.DEAL?.USR$NAME ?? 'Без имени'}` : 'Создание сделки'}
       </DialogTitle>
       <DialogContent dividers style={{ display: 'flex' }}>
         <FormikProvider value={formik}>
