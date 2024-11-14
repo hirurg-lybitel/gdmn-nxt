@@ -110,7 +110,9 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
             height={380}
             width="100%"
             style={{
-              height: 'auto'
+              height: 'auto',
+              marginTop: 8,
+              marginBottom: 8,
             }}
             outerElementType={OuterElementType}
             innerElementType="ul"

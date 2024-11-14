@@ -74,8 +74,8 @@ export function ContactSelect({
           {...props as HTMLAttributes<HTMLElement>}
           key={option.ID}
           style={{
-            paddingTop: 2,
-            paddingBottom: 2
+            paddingTop: 6,
+            paddingBottom: 6
           }}
         >
           {multiple && (
