@@ -1,10 +1,11 @@
 import { IContactWithID } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, createFilterOptions, InputAdornment, TextField } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface Props{
   value: IContactWithID[] | IContactWithID | null;
@@ -44,8 +45,16 @@ export function DepartmentsSelect({
     return departments[departments.findIndex(department => (value as IContactWithID).ID === department.ID)];
   }, [multiple, departments, value]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IContactWithID) => `${option.NAME}`,
+  });
+
   return (
     <Autocomplete
+      filterOptions={filterOptions}
       options={departments ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
       value={getDepartments()}

@@ -57,7 +57,7 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
     return ref;
   }
 
-  const ListboxComponent = (props: React.HTMLAttributes<HTMLElement>) => {
+  const ListboxComponent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLElement>>(function ListboxComponent(props, ref) {
     const { children, ...other } = props;
     const itemData: React.ReactElement[] = [];
     (children as React.ReactElement[]).forEach(
@@ -102,7 +102,7 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
     }
 
     return (
-      <div className={classes.list}>
+      <div ref={ref} className={classes.list}>
         <OuterElementContext.Provider value={other}>
           <VariableSizeList
             ref={gridRef}
@@ -123,7 +123,7 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
         </OuterElementContext.Provider>
       </div>
     );
-  };
+  });
 
   return [ListboxComponent];
 }

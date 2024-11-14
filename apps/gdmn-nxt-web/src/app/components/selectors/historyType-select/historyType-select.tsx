@@ -1,10 +1,11 @@
 import { IClientHistoryType } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, TextField, TextFieldVariants } from '@mui/material';
+import { Autocomplete, Checkbox, createFilterOptions, TextField, TextFieldVariants } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetClientHistoryTypeQuery } from '../../../features/kanban/kanbanCatalogsApi';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface Props{
   value?: IClientHistoryType[] | IClientHistoryType | null;
@@ -43,8 +44,16 @@ export function HistoryType({
     return historyType[historyType.findIndex(historyType => (value as IClientHistoryType).ID === historyType.ID)];
   }, [multiple, historyType, value]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IClientHistoryType) => `${option.NAME}`,
+  });
+
   return (
     <Autocomplete
+      filterOptions={filterOptions}
       style={style}
       options={historyType ?? []}
       disableCloseOnSelect={disableCloseOnSelect}

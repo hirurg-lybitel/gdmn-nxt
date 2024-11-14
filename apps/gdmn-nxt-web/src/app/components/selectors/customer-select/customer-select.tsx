@@ -15,6 +15,7 @@ import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-ed
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -154,7 +155,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
-    limit: withTasks ? 100 : undefined,
+    limit: withTasks ? 100 : maxVirtualizationList,
     ignoreCase: true,
     stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
   });

@@ -1,10 +1,11 @@
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { Autocomplete, AutocompleteProps, Checkbox, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Checkbox, createFilterOptions, InputAdornment, TextField } from '@mui/material';
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 type ValueType = IContactPerson[] | IContactPerson | null;
 interface ContactSelectProps<Value> extends Omit<AutocompleteProps<
@@ -51,8 +52,16 @@ export function ContactSelect({
     return persons.records[persons.records.findIndex(employee => (value as IContactPerson).ID === employee.ID)];
   }, [multiple, persons?.records, value]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IContactPerson) => `${option.NAME}`,
+  });
+
   return (
     <Autocomplete
+      filterOptions={filterOptions}
       options={persons?.records ?? []}
       value={getPersons()}
       ListboxComponent={ListboxComponent}

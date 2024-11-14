@@ -1,10 +1,11 @@
 import { IContactWithID } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, FilterOptionsState, InputAdornment, TextField, TextFieldVariants } from '@mui/material';
+import { Autocomplete, Checkbox, createFilterOptions, FilterOptionsState, InputAdornment, TextField, TextFieldVariants } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface Props{
   value: IContactWithID[] | IContactWithID | null;
@@ -54,8 +55,16 @@ export function EmployeesSelect({
     return employees[employees.findIndex(employee => (value as IContactWithID).ID === employee.ID)];
   }, [multiple, employees, value]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IContactWithID) => `${option.NAME}`,
+  });
+
   return (
     <Autocomplete
+      filterOptions={filterOptions}
       style={style}
       readOnly={readOnly}
       disabled={disabled}

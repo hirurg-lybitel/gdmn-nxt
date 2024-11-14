@@ -6,9 +6,11 @@ import { ChangeEvent, SyntheticEvent, useCallback, useMemo, useState } from 'rea
 import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
 import { array } from 'yup/lib/locale';
 import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 const filterOptions = createFilterOptions<IUser>({
   matchFrom: 'any',
+  limit: maxVirtualizationList,
   stringify: (option) => `${option.NAME} ${option.CONTACT?.NAME}`
 });
 

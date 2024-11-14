@@ -1,10 +1,11 @@
 import { IBusinessProcess } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, createFilterOptions, TextField } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetBusinessProcessesQuery } from '../../../features/business-processes';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface Props{
   value: IBusinessProcess[] | IBusinessProcess | null;
@@ -39,8 +40,16 @@ export function BusinessProcessesSelect({
     return businessProcesses[businessProcesses.findIndex(businessProcess => (value as IBusinessProcess).ID === businessProcess.ID)];
   }, [multiple, businessProcesses, value]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IBusinessProcess) => `${option.NAME}`,
+  });
+
   return (
     <Autocomplete
+      filterOptions={filterOptions}
       options={businessProcesses ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
       value={getBusinessProcesses()}

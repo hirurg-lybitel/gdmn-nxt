@@ -1,10 +1,11 @@
 import { ICustomerContract } from '@gsbelarus/util-api-types';
-import { Autocomplete, Checkbox, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, createFilterOptions, TextField } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
 import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface Props{
   value: ICustomerContract[] | ICustomerContract | null;
@@ -38,8 +39,16 @@ export function ContractsSelect({
     return contracts[contracts.findIndex(contract => (value as ICustomerContract).ID === contract.ID)];
   }, [multiple, contracts, value]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: ICustomerContract) => `${option.USR$NUMBER}`,
+  });
+
   return (
     <Autocomplete
+      filterOptions={filterOptions}
       options={contracts ?? []}
       disableCloseOnSelect={disableCloseOnSelect}
       value={getContracts()}
