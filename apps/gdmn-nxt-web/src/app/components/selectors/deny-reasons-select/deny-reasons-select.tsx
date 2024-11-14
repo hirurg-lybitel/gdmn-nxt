@@ -1,12 +1,14 @@
 import { IDenyReason, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, TextField } from '@mui/material';
+import { Autocomplete, Button, createFilterOptions, TextField } from '@mui/material';
 import { useAddDenyReasonMutation, useGetDenyReasonsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { FormikProps, getIn } from 'formik';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import DenyReasonsUpsert from '../../deny-reasons-upsert/deny-reasons-upsert';
-import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
-import filterOptions from '../../../helpers/filter-options';
+import DenyReasonsUpsert from '../../Kanban/deny-reasons-upsert/deny-reasons-upsert';
+import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
+import filterOptions from '../../helpers/filter-options';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface DenyReasonsSelectProps {
   formik: FormikProps<IKanbanCard>;
@@ -49,13 +51,23 @@ export function DenyReasonsSelect(props: DenyReasonsSelectProps) {
       onSubmit={handleSubmitDenyReason}
     />, [addDenyReason]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
+
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IDenyReason) => `${option.NAME}`,
+  });
+
   return (
     <>
       <Autocomplete
+        filterOptions={filterOptions}
         fullWidth
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={option => option.NAME}
-        filterOptions={filterOptions(50, 'NAME')}
+        ListboxComponent={ListboxComponent}
         loading={denyReasonsIsFetching || insertDenyReasonIsLoading}
         {...(insertDenyReasonIsLoading
           ? {

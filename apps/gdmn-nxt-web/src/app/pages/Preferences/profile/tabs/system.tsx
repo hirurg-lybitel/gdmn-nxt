@@ -1,4 +1,4 @@
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
 import { ContractType, ICustomer, ISystemSettings } from '@gsbelarus/util-api-types';

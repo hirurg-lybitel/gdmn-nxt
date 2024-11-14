@@ -7,7 +7,7 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import LabelMarker from '../label-marker/label-marker';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import IconSelect from '@gdmn-nxt/components/icon-select/icon-select';
+import IconSelect from '@gdmn-nxt/components/selectors/icon-select/icon-select';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 

@@ -10,7 +10,7 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 import StopIcon from '@mui/icons-material/Stop';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
 import { ICustomer, ITimeTrack, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
@@ -20,6 +20,7 @@ import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
 
 const durationMask = [
   /[0-9]/,
@@ -265,6 +266,8 @@ export const AddItem = ({
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
+  const [ListboxComponent] = useAutocompleteVirtualization({ minWidthByContent: true });
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -332,7 +335,6 @@ export const AddItem = ({
                               width: '100%',
                               '& .MuiInput-root::before': { borderBottom: 0 }
                             }}
-
                             renderInput={(params) => (
                               <TextField
                                 {...params}

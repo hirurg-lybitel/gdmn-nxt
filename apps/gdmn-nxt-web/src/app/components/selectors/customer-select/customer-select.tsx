@@ -3,17 +3,19 @@ import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, Ico
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { makeStyles } from '@mui/styles';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
-import { GroupHeader, GroupItems } from './group';
+import { GroupHeader, GroupItems } from '../../Kanban/kanban-edit-card/components/group';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -48,6 +50,7 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   task?: ITimeTrackTask;
   limitTags?: number;
   onTaskSelected?: (task: ITimeTrackTask | null) => void;
+  required?: boolean
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
@@ -65,6 +68,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     style,
     task,
     onTaskSelected,
+    required,
     ...rest
   } = props;
 
@@ -151,7 +155,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
-    limit: 50,
+    limit: withTasks ? 100 : maxVirtualizationList,
     ignoreCase: true,
     stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
   });
@@ -183,6 +187,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setSelectedTask(task);
   }, [task]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
   const {
     data: projects = [],
     isLoading: projectsIsLoading,
@@ -257,6 +262,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         className={classes.root}
         style={style}
         fullWidth
+        ListboxComponent={ListboxComponent}
         multiple={multiple}
         disableCloseOnSelect={disableCloseOnSelect}
         limitTags={limitTags}
@@ -324,6 +330,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
+            required={required}
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
@@ -331,14 +338,17 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               ...params.InputProps,
               ...rest.InputProps,
               startAdornment: (
-                <InputAdornment
-                  position="start"
-                  style={{
-                    display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
-                  }}
-                >
-                  <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
-                </InputAdornment>
+                <>
+                  <InputAdornment
+                    position="start"
+                    style={{
+                      display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
+                    }}
+                  >
+                    <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
+                  </InputAdornment>
+                  {params.InputProps.startAdornment}
+                </>
               ),
               endAdornment: (
                 <>
@@ -422,7 +432,7 @@ const CustomerItem = ({
         direction="row"
         alignItems="center"
         spacing={1}
-        style={{ padding: '2px 16px' }}
+        style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
         {multiple &&

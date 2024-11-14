@@ -2,10 +2,11 @@ import TagIcon from '@mui/icons-material/Tag';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import styles from './contacts-filter.module.less';
 import { Button, CardActions, CardContent, Checkbox, FormControlLabel, InputAdornment, Stack } from '@mui/material';
-import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import { IContactPerson, ICustomer, IFilteringData, ILabel } from '@gsbelarus/util-api-types';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { ContactSelect } from '../contact-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+import { ContactSelect } from '../../selectors/contact-select';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 export interface ContactsFilterProps {
   open: boolean;
@@ -83,8 +84,12 @@ export function ContactsFilter({
             label="Ответственный"
             placeholder="Выберите ответственного"
             limitTags={2}
+            multiple
             value={filteringData?.RESPONDENTS as IContactPerson[] ?? []}
             onChange={(value) => handleOnChange('RESPONDENTS', value)}
+            slots={{
+              startIcon: <ManageAccountsIcon />
+            }}
           />
           <LabelsSelect
             onChange={(value) => handleOnChange('LABELS', value)}
