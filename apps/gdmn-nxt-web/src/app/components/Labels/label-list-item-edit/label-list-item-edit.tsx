@@ -134,6 +134,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                 />
               </div>
               <ColorEdit
+                label="Цвет метки"
                 value={formik.values.USR$COLOR}
                 onChange={(color) => {
                   formik.setFieldValue('USR$COLOR', color);
