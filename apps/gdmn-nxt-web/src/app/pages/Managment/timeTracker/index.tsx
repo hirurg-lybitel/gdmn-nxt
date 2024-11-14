@@ -448,7 +448,6 @@ export function TimeTracker() {
                                 </Typography>
                               </Stack>
                               <EditableTypography
-                                closeOnBlur
                                 value={description}
                                 editEmpty={false}
                                 cancellable
@@ -484,7 +483,6 @@ export function TimeTracker() {
                             <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
                             <Divider orientation="vertical" flexItem />
                             <EditableTypography
-                              closeOnBlur
                               containerStyle={{
                                 maxWidth: 158,
                                 width: 'auto'
