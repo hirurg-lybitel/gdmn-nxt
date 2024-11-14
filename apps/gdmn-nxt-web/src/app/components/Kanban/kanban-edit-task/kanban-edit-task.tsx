@@ -225,7 +225,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       width={500}
     >
       <DialogTitle>
-        {Number(task?.ID) > 0 ? `Редактирование задачи № ${task?.USR$NUMBER ?? 'Н/Д'}: ${task?.USR$NAME ?? ''}` : 'Добавление задачи'}
+        {Number(task?.ID) > 0 ? `Редактирование задачи №${task?.USR$NUMBER ?? 'Н/Д'}: ${task?.USR$NAME ?? ''}` : 'Добавление задачи'}
       </DialogTitle>
       <DialogContent
         dividers
