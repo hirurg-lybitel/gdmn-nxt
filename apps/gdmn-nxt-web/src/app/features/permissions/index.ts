@@ -183,6 +183,7 @@ export const permissionsApi = createApi({
         url: `permissions/userGroups/closeSessionById/${userID}`,
         method: 'POST'
       }),
+      invalidatesTags: () => [{ type: 'Users', id: 'LIST' }]
     }),
   })
 });

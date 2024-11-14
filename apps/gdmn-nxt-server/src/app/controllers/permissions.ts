@@ -504,11 +504,14 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['GROUP_NAME'],
       };
 
+      const sessionID: any = await req.sessionStore.all(async (err, sessions) => await getSessionIdByUserId(user['USER_ID'], sessions));
+
       users.push({
         ID: user['ID'],
         REQUIRED_2FA: user['REQUIRED_2FA'] === 1,
         USERGROUP: { ...USERGROUP },
-        USER: { ...USER }
+        USER: { ...USER },
+        STATUS: !!(sessionID)
       });
     });
 
