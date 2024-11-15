@@ -295,30 +295,35 @@ const upsert: RequestHandler = async (req, res) => {
 
     const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
-    const deleteAttachments = await executeSingleton(
-      `DELETE FROM USR$CRM_DEALS_FILES
-        WHERE USR$MASTERKEY = :MASTERKEY`,
-      {
-        MASTERKEY: dealId
+    const updateAttachments = async () => {
+      if (!deal['ATTACHMENTS']) return;
+      const deleteAttachments = await executeSingleton(
+        `DELETE FROM USR$CRM_DEALS_FILES
+          WHERE USR$MASTERKEY = :MASTERKEY`,
+        {
+          MASTERKEY: dealId
+        });
+
+      const sql = `
+          INSERT INTO USR$CRM_DEALS_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
+          VALUES(:MASTERKEY, :CONTENT, :NAME)
+          RETURNING ID` ;
+
+      const insertAttachments = deal['ATTACHMENTS']?.map(async ({ content, fileName }) => {
+        return await fetchAsSingletonObject(sql, {
+          MASTERKEY: dealId,
+          CONTENT: await string2Blob(content),
+          NAME: fileName
+        });
       });
 
-    sql = `
-        INSERT INTO USR$CRM_DEALS_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
-        VALUES(:MASTERKEY, :CONTENT, :NAME)
-        RETURNING ID` ;
+      await Promise.all([
+        deleteAttachments,
+        ...insertAttachments
+      ]);
+    };
 
-    const insertAttachments = deal['ATTACHMENTS'].map(async ({ content, fileName }) => {
-      return await fetchAsSingletonObject(sql, {
-        MASTERKEY: dealId,
-        CONTENT: await string2Blob(content),
-        NAME: fileName
-      });
-    });
-
-    await Promise.all([
-      deleteAttachments,
-      ...insertAttachments
-    ]);
+    await updateAttachments();
 
     sql = `
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
