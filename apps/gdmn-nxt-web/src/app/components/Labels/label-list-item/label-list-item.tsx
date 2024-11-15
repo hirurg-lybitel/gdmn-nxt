@@ -1,16 +1,14 @@
-import { ILabel, Permissions } from '@gsbelarus/util-api-types';
-import { Box, Grid, Typography } from '@mui/material';
+import { ILabel } from '@gsbelarus/util-api-types';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import styles from './label-list-item.module.less';
 import { useCallback, useState } from 'react';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { useDeleteLabelMutation, useUpdateLabelMutation } from '../../../features/labels';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import LabelMarker from '../label-marker/label-marker';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import EditIcon from '@mui/icons-material/Edit';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
 export interface LabelListItemProps {
   data: ILabel;
@@ -18,16 +16,11 @@ export interface LabelListItemProps {
   onDelete?: (id: number) => void;
 }
 
-
-export function LabelListItem(props: LabelListItemProps) {
+export function LabelListItem(props: Readonly<LabelListItemProps>) {
   const { data, onEdit, onDelete } = props;
-  const { ID } = data;
+  const { ID, USR$NAME: NAME } = data;
 
   const [openEditForm, setOpenEditForm] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const [deleteLabel, { isLoading: deleteIsLoading }] = useDeleteLabelMutation();
-  const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
 
   const handleEditClick = useCallback(() => {
     setOpenEditForm(true);
@@ -47,78 +40,13 @@ export function LabelListItem(props: LabelListItemProps) {
   }, []);
 
   const handleDelete = useCallback(() => {
-    setConfirmOpen(false);
     onDelete && onDelete(ID);
-  }, [ID]);
+  }, [ID, onDelete]);
 
-  function hexToRGB(h: any) {
-    let r = 0, g = 0, b = 0;
-
-    if (!h) return { r, g, b };
-
-    // 3 digits
-    if (h.length === 4) {
-      r = h[1] + h[1];
-      g = h[2] + h[2];
-      b = h[3] + h[3];
-
-    // 6 digits
-    } else if (h.length === 7) {
-      r = parseInt(h[1] + h[2], 16);
-      g = parseInt(h[3] + h[4], 16);
-      b = parseInt(h[5] + h[6], 16);
-    }
-
-    return { r, g, b };
-  }
-
-  function RGBToHSL(r: number, g: number, b: number) {
-    // Make r, g, and b fractions of 1
-    r /= 255;
-    g /= 255;
-    b /= 255;
-
-    // Find greatest and smallest channel values
-    const cmin = Math.min(r, g, b),
-      cmax = Math.max(r, g, b),
-      delta = cmax - cmin;
-    let h = 0,
-      s = 0,
-      l = 0;
-
-    if (delta === 0) h = 0;
-    else if (cmax === r) h = ((g - b) / delta) % 6;
-    else if (cmax === g) h = (b - r) / delta + 2;
-    else h = (r - g) / delta + 4;
-
-    h = Math.round(h * 60);
-
-    if (h < 0) h += 360;
-
-    l = (cmax + cmin) / 2;
-    s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
-    s = +(s * 100).toFixed(1);
-    l = +(l * 100).toFixed(1);
-
-    return { h, s, l };
-  };
-
-  const rgb = hexToRGB(data.USR$COLOR);
-  const hsl = RGBToHSL(rgb.r, rgb.g, rgb.b);
-  // const labelR = 0;
-  // const labelG = 117;
-  // const labelB = 202;
-  const labelH = hsl.h;
-  const labelS = hsl.s;
-  const labelL = hsl.l;
-  const backgroundAlpha = 0.2;
-  const borderAlpha = 0.3;
-
-  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
-
+  const userPermissions = usePermissions();
 
   return (
-    <Box style={{ padding: '4px 0px' }}>
+    <Box className={styles.container}>
       <Grid container alignItems="center">
         <Grid
           item
@@ -135,28 +63,43 @@ export function LabelListItem(props: LabelListItemProps) {
           item
           xs={2}
           md={1}
+          marginRight={1.5}
+          textAlign={'right'}
         >
-          <Box
-            display={'inline-flex'}
-            width="100%"
-            justifyContent={'center'}
-            style={{ marginRight: 0 }}
-          >
-            <PermissionsGate actionAllowed={userPermissions?.labels.PUT}>
-              <ItemButtonEdit
-                disabled={editIsLoading || deleteIsLoading}
-                color="primary"
-                onClick={handleEditClick}
-              />
-            </PermissionsGate>
-            <PermissionsGate actionAllowed={userPermissions?.labels.DELETE}>
-              <ItemButtonDelete
-                button
-                disabled={editIsLoading || deleteIsLoading}
-                onClick={handleDelete}
-              />
-            </PermissionsGate>
-          </Box>
+          <MenuBurger
+            items={({ closeMenu }) => [
+              userPermissions?.labels.PUT
+                ? <Stack
+                  key="edit"
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  onClick={() => {
+                    handleEditClick();
+                    closeMenu();
+                  }}
+                >
+                  <EditIcon />
+                  <span>Редактировать</span>
+                </Stack>
+                : <></>,
+              userPermissions?.labels.DELETE
+                ? <Confirmation
+                  key="delete"
+                  title="Удалить метку"
+                  text={`Вы действительно хотите удалить метку "${NAME}"?`}
+                  dangerous
+                  onConfirm={handleDelete}
+                  onClose={closeMenu}
+                >
+                  <ItemButtonDelete
+                    label="Удалить"
+                    confirmation={false}
+                  />
+                </Confirmation>
+                : <></>
+            ]}
+          />
         </Grid>
       </Grid>
       <LabelListItemEdit
