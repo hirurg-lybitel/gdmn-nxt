@@ -122,7 +122,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [] = useFilterStore('menu');
+  const [] = useFilterStore('menu', undefined, true);
 
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.menu);
   useEffect(() => {
