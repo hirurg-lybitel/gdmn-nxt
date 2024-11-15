@@ -31,7 +31,7 @@ export function Users(props: IUsersProps) {
 
   const classes = useStyles();
 
-  const { data: users = [], isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID });
+  const { data: users = [], isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID, pollingInterval: 1000 * 10 });
   const [updateUser] = useUpdateUserGroupLineMutation();
   const [deleteUserGroupLine] = useDeleteUserGroupLineMutation();
   const [closeSession] = useCloseSessionByIdMutation();
