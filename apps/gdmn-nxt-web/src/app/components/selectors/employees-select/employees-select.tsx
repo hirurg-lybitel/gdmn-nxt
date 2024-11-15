@@ -41,7 +41,7 @@ export function EmployeesSelect({
   error,
   helperText,
   readOnly
-}: Props) {
+}: Readonly<Props>) {
   const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IContactWithID[] | IContactWithID | null) => onChange(value), [onChange]);
 
@@ -81,8 +81,8 @@ export function EmployeesSelect({
           {...props as HTMLAttributes<HTMLElement>}
           key={option.ID}
           style={{
-            paddingTop: 2,
-            paddingBottom: 2
+            paddingTop: 6,
+            paddingBottom: 6
           }}
         >
           {multiple && (
