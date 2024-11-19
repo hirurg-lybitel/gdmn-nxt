@@ -1,6 +1,6 @@
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
-import { Avatar, Box, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Stack, Switch, Tooltip, Typography, Theme } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation, useCloseSessionByIdMutation } from '../../../features/permissions';
@@ -11,7 +11,16 @@ import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
 import { useResetProfileSettingsMutation } from '../../../features/profileSettings';
 import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import { makeStyles } from '@mui/styles';
+import { Height } from '@mui/icons-material';
 
+const useStyles = makeStyles((theme: Theme) => ({
+  statusIcon: {
+    borderRadius: '100%',
+    height: '10px',
+    width: '10px'
+  }
+}));
 
 interface IUsersProps{
   group?: IUserGroup;
@@ -20,7 +29,9 @@ interface IUsersProps{
 export function Users(props: IUsersProps) {
   const { group } = props;
 
-  const { data: users = [], isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID });
+  const classes = useStyles();
+
+  const { data: users = [], isFetching: usersFetching, isLoading: usersLoading } = useGetUserGroupLineQuery(group?.ID ?? -1, { skip: !group?.ID, pollingInterval: 1000 * 10 });
   const [updateUser] = useUpdateUserGroupLineMutation();
   const [deleteUserGroupLine] = useDeleteUserGroupLineMutation();
   const [closeSession] = useCloseSessionByIdMutation();
@@ -80,6 +91,17 @@ export function Users(props: IUsersProps) {
     },
     { field: 'isActivated', headerName: 'Активирован', resizable: false, type: 'boolean', width: 150,
       valueGetter: (params) => params.row.USER?.isActivated ?? false
+    },
+    { field: 'status', headerName: '', width: 60, resizable: false, disableColumnMenu: true, sortable: false,
+      renderCell: ({ value = false, row }) =>
+        <Tooltip
+          arrow
+          title={row.STATUS ? 'В сети' : 'Не в сети'}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            <div style={{ background: row.STATUS ? 'rgb(32, 147, 81)' : 'rgb(242, 63, 67)' }} className={classes.statusIcon} />
+          </div>
+        </Tooltip>
     },
     { field: 'REQUIRED_2FA', headerName: '2FA', width: 70, resizable: false,
       renderCell: ({ value = false, row }) =>

@@ -284,6 +284,7 @@ export interface IUserGroupLine extends IWithID {
   USERGROUP: IUserGroup;
   USER?: IUser;
   REQUIRED_2FA?: boolean;
+  STATUS?: boolean
 };
 
 export interface IPermissionByUser {
