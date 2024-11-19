@@ -58,7 +58,10 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
             key={option}
             className={styles.listBoxItem}
           >
-            <IconButton style={{ width: '44px', height: '44px' }}>
+            <IconButton
+              className={styles.iconButton}
+              disableTouchRipple
+            >
               <IconByName
                 name={option}
                 fontSize="medium"
