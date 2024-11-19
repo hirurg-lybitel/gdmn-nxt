@@ -21,8 +21,6 @@ export default function OptionsTab() {
     });
   };
 
-  console.log(appOptions);
-
   return (
     <Stack>
       <div style={{ display: 'flex', alignItems: 'center' }}>
