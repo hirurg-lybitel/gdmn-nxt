@@ -92,6 +92,13 @@ const reducers = combineReducers({
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
   /** Очищаем весь стор при разлогине */
   if (action.type === 'user/logout/fulfilled') {
+    // Отменяем все запросы на сохранение фильтров
+    if (state) {
+      const debouncesMas = Object.values(state.filtersStorage.filterDebounce);
+      for (const element of debouncesMas) {
+        clearTimeout(element);
+      }
+    }
     state = undefined;
   }
   return reducers(state, action);
