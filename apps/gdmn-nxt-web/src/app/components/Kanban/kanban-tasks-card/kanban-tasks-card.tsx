@@ -95,9 +95,11 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
           padding: '12px',
           cursor: 'pointer',
           color: colorModeIsLight ? '#636b74' : '#bababa',
-          ...(card?.STATUS && ('isRead' in card?.STATUS) && !card?.STATUS?.isRead
+          ...(card?.STATUS &&
+            ('isRead' in (card?.STATUS ?? {})) &&
+            !card?.STATUS?.isRead
             ? {
-              backgroundColor: 'rgba(193, 228, 250, 0.5)',
+              backgroundColor: 'rgba(193, 228, 250, 0.25)',
               border: '1px solid rgb(13, 228, 250)',
             }
             : {}),

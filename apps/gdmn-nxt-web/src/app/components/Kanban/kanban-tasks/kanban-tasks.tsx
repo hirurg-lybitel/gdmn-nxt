@@ -1,19 +1,18 @@
 import { IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
-import { Box, Button, Checkbox, Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Checkbox, Stack, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './kanban-tasks.module.less';
-import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '../../../store';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
 import { FormikProps } from 'formik';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {
@@ -50,12 +49,12 @@ export interface KanbanTasksProps {
   formik: FormikProps<IKanbanCard>;
 }
 
-export function KanbanTasks(props: KanbanTasksProps) {
+export function KanbanTasks(props: Readonly<KanbanTasksProps>) {
   const { card, formik } = props;
 
   const classes = useStyles();
 
-  const [openEidtForm, setOpenEditForm] = useState(false);
+  const [openEditForm, setOpenEditForm] = useState(false);
   const tasks = useMemo(() => card?.TASKS ?? [], [card?.TASKS]);
 
   const addTask = (newTask: IKanbanTask) => {
@@ -98,7 +97,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
   const handleTaskEditSubmit = (task: IKanbanTask, deleting: boolean) => {
     const newTask: IKanbanTask = {
       ...task,
-      USR$CARDKEY: card?.ID || -1
+      USR$CARDKEY: card?.ID ?? -1
     };
 
     if (deleting) {
@@ -123,11 +122,11 @@ export function KanbanTasks(props: KanbanTasksProps) {
 
   const initTask: IKanbanTask = useMemo(() => ({
     ID: -1 * (formik.values.TASKS?.length ?? 1),
-    USR$CARDKEY: card?.ID || -1,
+    USR$CARDKEY: card?.ID ?? -1,
     USR$NAME: '',
     CREATOR: {
-      ID: user.userProfile?.contactkey || -1,
-      NAME: user.userProfile?.userName || ''
+      ID: user.userProfile?.contactkey ?? -1,
+      NAME: user.userProfile?.userName ?? ''
     },
     USR$CLOSED: false
   }), [formik.values.TASKS?.length]);
@@ -146,7 +145,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
             title={'Подтверждение'}
             text={'Пометить как выполнено?'}
             onConfirm={handleClosedChange(row, !value)}
-            >
+          >
             <Tooltip title={'Пометить как выполнено'} placement="right">
               <Checkbox checked={value}/>
             </Tooltip>
@@ -187,12 +186,12 @@ export function KanbanTasks(props: KanbanTasksProps) {
 
   const memoKanbanEditTask = useMemo(() =>
     <KanbanEditTask
-      open={openEidtForm}
+      open={openEditForm}
       task={currentTask.current ? currentTask.current : initTask}
       onSubmit={handleTaskEditSubmit}
       onCancelClick={handleTaskEditCancelClick}
     />,
-  [openEidtForm, currentTask.current]);
+  [openEditForm, currentTask.current, initTask]);
 
   return (
     <Stack
@@ -204,9 +203,7 @@ export function KanbanTasks(props: KanbanTasksProps) {
     >
       <Stack direction="row">
         <Box flex={1} />
-        <IconButton color="primary" onClick={handleTaskAdd}>
-          <AddCircleRoundedIcon />
-        </IconButton>
+        <CustomAddButton label="Добавить задачу" onClick={handleTaskAdd} />
       </Stack>
       <CustomizedCard
         borders
