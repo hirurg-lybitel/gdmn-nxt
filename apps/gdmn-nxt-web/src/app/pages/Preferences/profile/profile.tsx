@@ -17,11 +17,13 @@ import AccountTab from './tabs/account';
 import SecurityTab from './tabs/security';
 import NotificationsTab from './tabs/notifications';
 import LinkTab from '@gdmn-nxt/components/link-tab/link-tab';
+import TuneIcon from '@mui/icons-material/Tune';
+import OptionsTab from './tabs/options';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
 
-export const TABS = ['account', 'security', 'notifications', 'system'] as const;
+export const TABS = ['account', 'security', 'notifications', 'system', 'options'] as const;
 type TabIndex = typeof TABS[number];
 
 export function Profile(props: ProfileProps) {
@@ -77,6 +79,14 @@ export function Profile(props: ProfileProps) {
               icon={<SettingsSuggestIcon />}
               iconPosition="start"
             />
+            <LinkTab
+              label="Опции"
+              value="options"
+              href="/employee/system/settings/options"
+              className={!userPermissions?.system?.PUT ? styles.tabHeaderHide : ''}
+              icon={<TuneIcon />}
+              iconPosition="start"
+            />
           </TabList>
           <Divider style={{ margin: 0 }} />
           <TabPanel value="account" className={tabIndex === 'account' ? styles.tabPanel : ''}>
@@ -93,6 +103,9 @@ export function Profile(props: ProfileProps) {
               <SystemTab />
             </TabPanel>
           </PermissionsGate>
+          <TabPanel value="options" className={tabIndex === 'options' ? styles.tabPanel : ''}>
+            <OptionsTab />
+          </TabPanel>
         </TabContext>
       </CardContent>
     </CustomizedCard>

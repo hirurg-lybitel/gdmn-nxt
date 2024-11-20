@@ -12,7 +12,7 @@ import CreateCustomerAccount from './create-customer-account/create-customer-acc
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
-import { setColorMode } from './store/settingsSlice';
+import { setAppOptions, setColorMode } from './store/settingsSlice';
 import { baseUrlApi } from './constants';
 import { saveFilterData } from './store/filtersSlice';
 
@@ -110,6 +110,9 @@ export default function App(props: AppProps) {
               dispatch(setColorMode(ColorMode.Light));
               break;
           }
+
+          dispatch(setAppOptions({ saveFilters: data.user.saveFilters }));
+
           break;
         }
         case 'OTHER_LOADINGS': {

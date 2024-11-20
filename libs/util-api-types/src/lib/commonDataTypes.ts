@@ -108,6 +108,7 @@ export interface IProfileSettings {
   REQUIRED_2FA?: boolean;
   SECRETKEY?: string;
   LAST_IP?: string;
+  SAVEFILTERS?: boolean
 }
 
 export interface ISystemSettings extends IWithID{
@@ -131,6 +132,7 @@ export type GedeminUser = {
   rank?: string;
   colorMode?: ColorMode;
   fullName?: string;
+  saveFilters: boolean
 }
 
 export interface IChanges {
