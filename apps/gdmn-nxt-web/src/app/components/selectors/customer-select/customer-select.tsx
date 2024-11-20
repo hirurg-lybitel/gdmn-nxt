@@ -628,11 +628,11 @@ const CustomerTasks = ({
                 }}
               >
                 {option.name}
-                <Box flex={1} minWidth={12} />
+                {/* <Box flex={1} minWidth={12} />
                 <SwitchStar
                   selected={!!option.isFavorite}
                   onClick={toggleProjectFavorite(option.ID, !!option.isFavorite)}
-                />
+                /> */}
               </div>
             </ListSubheader>
             {tasks?.map(task => (
