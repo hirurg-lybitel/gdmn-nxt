@@ -1,4 +1,4 @@
-import { InternalServerErrorException, NotFoundException } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, ITimeTrackTask, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackerTasksRepository } from '../repository';
 import { favoriteTimeTrackerTasksRepository } from '../repository/favoriteTimeTrackerTasks';
 
@@ -28,7 +28,7 @@ const findAll = async (
       }
 
       return filteredArray;
-    }, []);
+    }, [] as ITimeTrackTask[]);
   } catch (error) {
     throw error;
   }

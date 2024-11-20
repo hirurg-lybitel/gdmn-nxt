@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField } from '@mui/material';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { DateRange } from '@mui/lab';
 import dayjs from '@gdmn-nxt/dayjs';

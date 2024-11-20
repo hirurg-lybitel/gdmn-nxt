@@ -1,16 +1,18 @@
 import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
-import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, createFilterOptions, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography } from '@mui/material';
 import { MouseEvent, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../../features/labels';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import { ILabel } from '@gsbelarus/util-api-types';
-import LabelMarker from '../label-marker/label-marker';
+import LabelMarker from '../../Labels/label-marker/label-marker';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
+import LabelListItemEdit from '../../Labels/label-list-item-edit/label-list-item-edit';
 import TagIcon from '@mui/icons-material/Tag';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface LabelsSelectProps extends Pick<TextFieldProps, 'InputProps'> {
   labels?: ILabel[];
@@ -91,10 +93,18 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
     />
   , [upsertLabel]);
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: ILabel) => `${option.USR$NAME}`,
+  });
+
   return (
     <>
       {labelEditComponent}
       <Autocomplete
+        filterOptions={filterOptions}
         multiple
         limitTags={2}
         disableCloseOnSelect

@@ -1,4 +1,4 @@
-import { InternalServerErrorException, ITimeTrackTask, NotFoundException } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, ITimeTrackProject, ITimeTrackTask, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackerProjectsRepository } from '../repository';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import { favoriteTimeTrackerProjectsRepository } from '../repository/favoriteTimeTrackerProjects';
@@ -11,9 +11,11 @@ const findAll = async (
   const customerId = filter.customerId;
 
   try {
-    const projects = await timeTrackerProjectsRepository.find(sessionID, {
-      ...(customerId && { 'USR$CUSTOMER': customerId }),
-    });
+    const projects = await timeTrackerProjectsRepository.find(
+      sessionID,
+      {
+        ...(customerId && { 'USR$CUSTOMER': customerId }),
+      });
 
     const favorites = await favoriteTimeTrackerProjectsRepository.find(sessionID, { 'USR$USER': userId });
 
@@ -31,11 +33,33 @@ const findAll = async (
         };
       });
 
-    return projects.map(p => ({
-      ...p,
-      isFavorite: favorites.findIndex(f => f.project.ID === p.ID) >= 0,
-      tasks: tasks.get(p.ID) ?? []
-    }));
+    const response: ITimeTrackProject[] = [];
+
+    /** Split projects into favorite and non-favorite */
+    projects.forEach((project) => {
+      const projectTasks = tasks.get(project.ID) ?? [];
+
+      const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
+      const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
+
+      if (favoriteTasks.length > 0) {
+        response.push({
+          ...project,
+          isFavorite: true,
+          tasks: favoriteTasks
+        });
+      }
+
+      if (nonFavoriteTasks.length > 0) {
+        response.push({
+          ...project,
+          isFavorite: false,
+          tasks: nonFavoriteTasks
+        });
+      }
+    });
+
+    return response.sort((a, b) => (a.isFavorite ? -1 : 1));
   } catch (error) {
     throw error;
   }

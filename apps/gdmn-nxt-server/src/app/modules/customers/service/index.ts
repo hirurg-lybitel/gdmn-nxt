@@ -160,7 +160,6 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             isFavorite,
             ...(withTasksBool ? {
               taskCount: tasks.get(c.ID)?.length ?? 0,
-              tasks: tasks.get(c.ID) ?? []
             } : {})
           });
         }

@@ -5,14 +5,14 @@ import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-import { forEachAsync } from '@gsbelarus/util-helpers';
+import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
 function getSessionIdByUserId(userId: number, sessions) {
   const keys = Object.keys(sessions);
   for (const key of keys) {
-    if (sessions[key].userId === userId) return key;
+    if (sessions[key].userId === userId) return sessions[key].id;
   }
   return null;
 }
@@ -478,6 +478,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
 
     const rawUsers = await Promise.resolve(execQuery(query));
 
+
     const users: IUserGroupLine[] = [];
     await forEachAsync(rawUsers, async user => {
       const CONTACT = {
@@ -485,6 +486,9 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['CONTACT_NAME'],
         PHONE: user['CONTACT_PHONE']
       };
+
+      const avatarBlob = await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB']);
+
       const USER = {
         ID: user['USER_ID'],
         NAME: user['USER_NAME'],
@@ -492,7 +496,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT },
-        AVATAR: await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB'])
+        AVATAR: bin2String(avatarBlob.split(','))
       };
 
       const USERGROUP = {
@@ -500,11 +504,14 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['GROUP_NAME'],
       };
 
+      const sessionID: any = await req.sessionStore.all(async (err, sessions) => await getSessionIdByUserId(user['USER_ID'], sessions));
+
       users.push({
         ID: user['ID'],
         REQUIRED_2FA: user['REQUIRED_2FA'] === 1,
         USERGROUP: { ...USERGROUP },
-        USER: { ...USER }
+        USER: { ...USER },
+        STATUS: !!(sessionID)
       });
     });
 
@@ -852,6 +859,16 @@ const getPermissionByUser: RequestHandler = async (req, res) => {
   };
 };
 
+const closeUserSessionById: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    await closeUserSession(req, id);
+    return res.status(200).json({ id });
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  }
+};
+
 export const PermissionsController = {
   getCross,
   upsertCross,
@@ -864,5 +881,6 @@ export const PermissionsController = {
   removeUserGroupLine,
   getUserGroupLine,
   getPermissionByUser,
-  upsertUsersGroupLine
+  upsertUsersGroupLine,
+  closeUserSessionById
 };

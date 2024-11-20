@@ -10,6 +10,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { ICustomer } from '@gsbelarus/util-api-types';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -105,98 +108,27 @@ export function DealsFilter(props: DealsFilterProps) {
               value={dealNumber || ''}
               onChange={(e) => /^\d*$/.test(e.target.value) && setDealNumber(e.target.value)}
             />
-            <Autocomplete
-              options={customers}
-              value={
-                customers?.filter(customer => filteringData && (filteringData.customers)?.find((el: any) => el.ID === customer.ID))
-              }
-              onChange={(e, value) => handleOnChange('customers', value)}
+            <CustomerSelect
               multiple
               limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Клиент"
-                  placeholder="Выберите клиентов"
-                />
-              )}
-              loading={customerFetching}
-              loadingText="Загрузка данных..."
+              value={filteringData?.customers ?? []}
+              onChange={(value) => handleOnChange('customers', value)}
             />
-            <Autocomplete
-              options={departments || []}
-              value={
-                departments?.filter(department => filteringData && (filteringData.departments)?.find((el: any) => el.ID === department.ID))
-              }
-              onChange={(e, value) => handleOnChange('departments', value)}
+            <DepartmentsSelect
               multiple
               limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Подразделение"
-                  placeholder="Выберите Подразделение"
-                />
-              )}
-              loading={departmentsFetching}
-              loadingText="Загрузка данных..."
+              value={filteringData?.departments}
+              onChange={(value) => handleOnChange('departments', value)}
+              label="Подразделение"
+              placeholder="Выберите Подразделение"
             />
-            <Autocomplete
-              options={employees}
-              value={
-                employees?.filter(employee => filteringData && (filteringData.performers)?.find((el: any) => el.ID === employee.ID))
-              }
-              onChange={(e, value) => handleOnChange('performers', value)}
+            <EmployeesSelect
+              value={filteringData?.performers}
+              onChange={(value) => handleOnChange('performers', value)}
               multiple
               limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Исполнитель"
-                  placeholder="Выберите исполнителей"
-                />
-              )}
-              loading={employeesIsFetching}
-              loadingText="Загрузка данных..."
+              label={'Исполнитель'}
+              placeholder={'Выберите исполнителя'}
             />
             <FormControlLabel
               control={

@@ -1,21 +1,15 @@
-import { Autocomplete, Box, Button, Checkbox, createFilterOptions, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Slide, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { forwardRef, ReactElement, Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './kanban-edit-task.module.less';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
-import { IEmployee, IKanbanCard, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
+import { IContactWithID, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { UserState } from '../../../features/user/userSlice';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { DateTimePicker, TimePicker } from '@mui/x-date-pickers-pro';
+import { TimePicker } from '@mui/x-date-pickers-pro';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import { useAddTaskMutation, useDeleteCardMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
+import { useAddTaskMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import filterOptions from '../../helpers/filter-options';
 import { useGetTaskTypesQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -23,6 +17,10 @@ import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -53,12 +51,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// const filterOptions = createFilterOptions({
-//   matchFrom: 'any',
-//   limit: 50,
-//   stringify: (option: IEmployee) => option.NAME,
-// });
-
 export interface KanbanEditTaskProps {
   open: boolean;
   task?: IKanbanTask;
@@ -66,14 +58,13 @@ export interface KanbanEditTaskProps {
   onCancelClick: () => void;
 }
 
-export function KanbanEditTask(props: KanbanEditTaskProps) {
+export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
   const { open, task } = props;
   const { onSubmit, onCancelClick } = props;
 
   const classes = useStyles();
   const [cards, setCards] = useState<IKanbanCard[]>([]);
 
-  const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { data: deals = [], isLoading: dealsIsLoading } = useGetKanbanDealsQuery({ userId: -1 });
   const { data: taskTypes = [], isFetching: taskTypesFetching } = useGetTaskTypesQuery();
 
@@ -87,8 +78,6 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     if (dealsIsLoading) return;
     setCards(deals.map(d => d.CARDS)?.flat());
   }, [deals, dealsIsLoading]);
-
-  const user = useSelector<RootState, UserState>(state => state.user);
 
   const initValue: IKanbanTask = {
     ID: task?.ID || -1,
@@ -153,7 +142,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
   };
 
   const [editDeal, setEditDeal] = useState(false);
-  const contactId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.contactkey);
+  const { contactkey: contactId } = useUserData();
 
   const dealCard = useMemo(() => cards?.find(el => el.ID === formik.values.USR$CARDKEY), [cards, formik.values.USR$CARDKEY]);
 
@@ -192,7 +181,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     },
   };
 
-  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const userPermissions = usePermissions();
 
   const canOpenDeal = useMemo(() =>
     formik.values.ID > 0 &&
@@ -216,6 +205,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
     );
   }, [editDeal, dealCard, deals]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <CustomizedDialog
@@ -225,7 +215,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
       width={500}
     >
       <DialogTitle>
-        {Number(task?.ID) > 0 ? `Редактирование: ${task?.USR$NAME}` : 'Добавление задачи'}
+        {Number(task?.ID) > 0 ? `Редактирование задачи №${task?.USR$NUMBER ?? 'Н/Д'}: ${task?.USR$NAME ?? ''}` : 'Добавление задачи'}
       </DialogTitle>
       <DialogContent
         dividers
@@ -237,6 +227,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
               <Form id="taskForm" onSubmit={formik.handleSubmit}>
                 <Stack direction="column" spacing={2}>
                   <Autocomplete
+                    ListboxComponent={ListboxComponent}
                     options={taskTypes || []}
                     value={taskTypes?.find(el => el.ID === formik.values.TASKTYPE?.ID) || null}
                     onChange={(e, value) => {
@@ -276,60 +267,32 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
                     helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
                   />
-                  <Autocomplete
-                    options={employees || []}
-                    // readOnly
-                    value={employees?.find(el => el.ID === formik.values.CREATOR?.ID) || null}
-                    onChange={(e, value) => {
+                  <EmployeesSelect
+                    value={formik.values.CREATOR ?? null}
+                    onChange={value => {
+                      const employee = value as IContactWithID;
                       formik.setFieldValue(
                         'CREATOR',
-                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                        value ? { ID: employee.ID, NAME: employee.NAME } : undefined
                       );
                     }}
-                    getOptionLabel={option => option.NAME}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Постановщик"
-                        placeholder="Выберите постановщика"
-                        required
-                        error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
-                        helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
-                      />
-                    )}
-                    loading={employeesIsFetching}
-                    loadingText="Загрузка данных..."
+                    label="Постановщик"
+                    placeholder="Выберите постановщика"
+                    error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
+                    helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
+                    required
                   />
-                  <Autocomplete
-                    options={employees || []}
-                    filterOptions={filterOptions(50, 'NAME')}
-                    value={employees?.find(el => el.ID === formik.values.PERFORMER?.ID) || null}
-                    onChange={(e, value) => {
+                  <EmployeesSelect
+                    value={formik.values.PERFORMER ?? null}
+                    onChange={(value) => {
+                      const employee = value as IContactWithID;
                       formik.setFieldValue(
                         'PERFORMER',
-                        value ? { ID: value.ID, NAME: value.NAME } : undefined
+                        value ? { ID: employee.ID, NAME: employee.NAME } : undefined
                       );
                     }}
-                    getOptionLabel={option => option.NAME}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Исполнитель"
-                        placeholder="Выберите исполнителя"
-                      />
-                    )}
-                    loading={employeesIsFetching}
-                    loadingText="Загрузка данных..."
+                    label="Исполнитель"
+                    placeholder="Выберите исполнителя"
                   />
                   <Stack
                     direction="row"
@@ -337,11 +300,11 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                     style={{ alignItems: 'center' }}
                   >
                     <Autocomplete
+                      ListboxComponent={ListboxComponent}
                       options={cards}
                       fullWidth
-                      filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))
-                      }
-                      getOptionLabel={option => option.DEAL?.USR$NAME || ''}
+                      filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))}
+                      getOptionLabel={option => option.DEAL?.USR$NAME ?? ''}
                       value={cards?.find(el => el.ID === formik.values.USR$CARDKEY) || null}
                       readOnly={(initValue.USR$CARDKEY || 0) > 0}
                       onChange={(e, value) => formik.setFieldValue('USR$CARDKEY', value?.ID)}
@@ -358,7 +321,7 @@ export function KanbanEditTask(props: KanbanEditTaskProps) {
                           {...params}
                           label="Сделка"
                           placeholder="Выберите сделку"
-                          // required
+                          disabled={(initValue.USR$CARDKEY || 0) > 0}
                         />
                       )}
                       loading={dealsIsLoading}

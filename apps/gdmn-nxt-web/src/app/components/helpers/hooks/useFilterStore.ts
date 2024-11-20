@@ -5,7 +5,11 @@ import { saveFilterData, setDebounce, setFilterId, setLastFilter } from '../../.
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 
-export function useFilterStore(filterEntityName: string, defaultFilters?: {[x: string]: any} | null): any {
+export function useFilterStore(
+  filterEntityName: string,
+  defaultFilters?: {[x: string]: any} | null,
+  ignoreFilterSaveDisabled = false
+): any {
   // Если defaultFilters надо подгружать с сервера передавать null пока грузятся
   const filter = useSelector((state: RootState) => state.filtersStorage);
   const debounceTime = 1000 * 10;
@@ -18,14 +22,18 @@ export function useFilterStore(filterEntityName: string, defaultFilters?: {[x: s
   const filterId = filter.filterId[`${filterEntityName}`];
   const [pendingRequest, setPendingRequest] = useState<string | null>(null);
   const dispatch = useDispatch();
+  const saveFilters = useSelector((state: RootState) => state.settings.appOptions.saveFilters);
+  const disabled = !saveFilters && !ignoreFilterSaveDisabled;
 
   useEffect(() => {
+    if (disabled) return;
     if (!updateIsLoading && !deleteIsLoading && !addIsLoading && !filtersIsLoading && !filtersIsFetching) {
       setPendingRequest(null);
     }
   }, [pendingRequest]);
 
   useEffect(() => {
+    if (disabled) return;
     dispatch(setFilterId({ [`${filterEntityName}`]: (filters?.ID || null) }));
     if (pendingRequest) {
       setPendingRequest(null);
@@ -45,6 +53,7 @@ export function useFilterStore(filterEntityName: string, defaultFilters?: {[x: s
   }, [filters]);
 
   useEffect(() => {
+    if (disabled) return;
     if (filtersData === undefined || filter.lastFilter?.[`${filterEntityName}`] !== undefined || defaultFilters === null) return;
     const data = { ...defaultFilters, ...(filters?.filters || filter.filterData?.[`${filterEntityName}`] || {}), ...filter.filterData?.[`${filterEntityName}`] };
     dispatch(setFilterId({ [`${filterEntityName}`]: (filters?.ID || null) }));
@@ -92,6 +101,7 @@ export function useFilterStore(filterEntityName: string, defaultFilters?: {[x: s
   }, [addFilter, deleteFilter, filterEntityName, filterId, lastFilter, pendingRequest, updateFilter, dispatch]);
 
   useEffect(() => {
+    if (disabled) return;
     dispatch(setDebounce({ name: filterEntityName, callBack: () => save(currentFilterData), time: debounceTime }));
   }, [currentFilterData]);
 

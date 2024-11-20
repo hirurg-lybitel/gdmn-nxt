@@ -171,7 +171,7 @@ const get: RequestHandler = async (req, res) => {
           ELSE 1
         END)
         ${name
-          ? ` AND (
+    ? ` AND (
             LOWER(deal.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
             LOWER(deal.USR$DESCRIPTION) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
             LOWER(creator.NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
@@ -180,7 +180,7 @@ const get: RequestHandler = async (req, res) => {
             LOWER(source.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
             LOWER(CAST(deal.USR$NUMBER AS VARCHAR(10))) SIMILAR TO '%${name.toString().toLowerCase()}%'
           ) `
-          : ''}
+    : ''}
         ${departments ? ` AND dep.ID IN (${departments}) ` : ''}
         ${customers ? ` AND con.ID IN (${customers}) ` : ''}
         ${requestNumber ? ` AND deal.USR$REQUESTNUMBER LIKE '%${requestNumber}%' ` : ''}
@@ -260,7 +260,7 @@ const get: RequestHandler = async (req, res) => {
           WHERE 1=1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY card.USR$MASTERKEY, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000)`
+          ORDER BY card.USR$MASTERKEY, COALESCE(deal.USR$DEADLINE, CURRENT_DATE + 1000), deal.USR$CREATIONDATE`
       },
       {
         name: 'tasks',
@@ -634,9 +634,8 @@ const getTasks: RequestHandler = async (req, res) => {
       return res;
     })();
 
-    const filter = `
-      ${name
-        ? ` AND (
+    const filter = `${name
+      ? ` AND (
           LOWER(task.USR$NAME) LIKE '%${name.toString().toLowerCase()}%' OR
           LOWER(task.USR$DESCRIPTION) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
           LOWER(CAST(task.USR$NUMBER AS VARCHAR(10))) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
@@ -645,7 +644,7 @@ const getTasks: RequestHandler = async (req, res) => {
           LOWER(tt.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%' OR
           LOWER(deal.USR$NAME) SIMILAR TO '%${name.toString().toLowerCase()}%'
           ) `
-        : ''}
+      : ''}
       ${taskNumber ? ` AND task.USR$NUMBER = ${taskNumber} ` : ''}
       ${customers ? ` AND con.ID IN (${customers})` : ''}
       ${performers ? ` AND performer.ID IN (${performers}) ` : ''}
@@ -728,7 +727,7 @@ const getTasks: RequestHandler = async (req, res) => {
           WHERE 1 = 1
           ${userId > 0 ? checkCardsVisibility : ''}
           ${filter}
-          ORDER BY task.USR$DEADLINE DESC, card.USR$MASTERKEY `
+          ORDER BY task.USR$DEADLINE ASC, card.USR$MASTERKEY `
       },
       {
         name: 'status',

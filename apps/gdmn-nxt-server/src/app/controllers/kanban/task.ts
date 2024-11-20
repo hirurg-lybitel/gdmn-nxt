@@ -288,7 +288,7 @@ const upsert: RequestHandler = async (req, res) => {
           JOIN USR$CRM_KANBAN_CARD_TASKS task
             ON task.USR$CREATORKEY = con.ID
             OR task.USR$PERFORMER = con.ID
-          WHERE task.ID = :cardId AND u.ID != :userId
+          WHERE task.ID = :cardId
           INTO :CON_ID
         DO
           UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_STATUS(USR$ISREAD, USR$CARDKEY, USR$USERKEY)
@@ -296,7 +296,7 @@ const upsert: RequestHandler = async (req, res) => {
           MATCHING(USR$CARDKEY, USR$USERKEY);
       END`;
 
-    await executeSingletonAsObject(sql, [task.ID, userId]);
+    await executeSingletonAsObject(sql, [taskRecord.ID, userId]);
 
     const result: IRequestResult = {
       queries: { tasks: [taskRecord] },

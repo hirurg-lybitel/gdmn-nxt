@@ -13,6 +13,9 @@ import LinearIndeterminate from '../../linear-indeterminate/linear-indeterminate
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import ChartSkeleton from './chart-skeleton';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
+import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 
 interface IPeriodType {
   id: number;
@@ -327,86 +330,30 @@ export function ChartColumn(props: ChartColumnProps) {
               }}
             >
               <Grid item xs={4}>
-                <Autocomplete
+                <DepartmentsSelect
                   multiple
-                  filterOptions={filterOptions(50, 'NAME')}
-                  loading={departmentsIsFetching}
-                  options={departments || []}
-                  onChange={(e, value) => changeChartFilter('departments', [...value])}
-                  value={chartFilter.departments || []}
-                  getOptionLabel={option => option.NAME}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        checked={selected}
-                      />
-                      {option.NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Все отделы"
-                    />
-                  )}
+                  value={chartFilter.departments}
+                  onChange={(value) => changeChartFilter('departments', (value ?? []) as IContactWithID[])}
+                  label=""
+                  placeholder="Все отделы"
                 />
               </Grid>
               <Grid item xs={4}>
-                <Autocomplete
+                <ContractsSelect
                   multiple
-                  filterOptions={filterOptions(50, 'USR$NUMBER')}
-                  loading={customerContractsIsFetching}
-                  options={customerContracts || []}
-                  onChange={(e, value) => changeChartFilter('contracts', [...value])}
                   value={chartFilter.contracts || []}
-                  getOptionLabel={option => option.USR$NUMBER}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        // style={{ marginRight: 8 }}
-                        checked={selected}
-                      />
-                      {option.USR$NUMBER}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Все заказы"
-                    />
-                  )}
+                  onChange={(value) => changeChartFilter('contracts', (value ?? []) as ICustomerContract[])}
+                  label={''}
+                  placeholder="Все заказы"
                 />
               </Grid>
               <Grid item xs={4}>
-                <Autocomplete
+                <WorktypesSelect
                   multiple
-                  filterOptions={filterOptions(50, 'USR$NAME')}
-                  loading={workTypesIsFetching}
-                  options={workTypes || []}
-                  onChange={(e, value) => changeChartFilter('workTypes', [...value])}
-                  value={chartFilter.workTypes || []}
-                  getOptionLabel={option => option.USR$NAME || ''}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        // style={{ marginRight: 8 }}
-                        checked={selected}
-                      />
-                      {option.USR$NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Виды работ"
-                    />
-                  )}
+                  onChange={(value) => changeChartFilter('workTypes', (value ?? []) as IWorkType[])}
+                  value={chartFilter.workTypes}
+                  label={''}
+                  placeholder="Виды работ"
                 />
               </Grid>
             </Grid>

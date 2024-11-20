@@ -167,7 +167,7 @@ export const timeTrackingApi = createApi({
             timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
               if (Array.isArray(draft)) {
                 const projectIndex = draft?.findIndex(c => c.ID === projectId);
-                const tasks = draft[projectIndex].tasks;
+                const tasks = draft[projectIndex]?.tasks;
 
                 if (!tasks) {
                   return;
@@ -182,7 +182,7 @@ export const timeTrackingApi = createApi({
                   return;
                 }
 
-                const newTasks = draft[projectIndex].tasks;
+                const newTasks = draft[projectIndex]?.tasks;
 
                 if (!newTasks) {
                   return;
@@ -213,7 +213,7 @@ export const timeTrackingApi = createApi({
             timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
               if (Array.isArray(draft)) {
                 const projectIndex = draft?.findIndex(c => c.ID === projectId);
-                const tasks = draft[projectIndex].tasks;
+                const tasks = draft[projectIndex]?.tasks;
 
                 if (!tasks) {
                   return;
@@ -231,7 +231,7 @@ export const timeTrackingApi = createApi({
                 }
 
 
-                const newTasks = draft[projectIndex].tasks;
+                const newTasks = draft[projectIndex]?.tasks;
 
                 if (!newTasks) {
                   return;

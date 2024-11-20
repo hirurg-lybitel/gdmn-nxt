@@ -1,14 +1,16 @@
 import { Autocomplete, AutocompleteProps, Checkbox, Chip, createFilterOptions, FormControlLabel, TextField, Typography } from '@mui/material';
 import styles from './user-select.module.less';
-import { useGetUsersQuery } from '../../features/systemUsers';
+import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import { ChangeEvent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
-import CustomPaperComponent from '../helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
 import { array } from 'yup/lib/locale';
+import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 const filterOptions = createFilterOptions<IUser>({
   matchFrom: 'any',
-  limit: 20,
+  limit: maxVirtualizationList,
   stringify: (option) => `${option.NAME} ${option.CONTACT?.NAME}`
 });
 
@@ -23,6 +25,11 @@ export interface UserSelectProps<
   placeholder?: string;
   disableSelectAll?: boolean;
   allSelected?: boolean;
+  selectAllButton?: boolean;
+  filter?: (user: IUser) => boolean,
+  error?: boolean,
+  helperText?: React.ReactNode,
+  focused?: boolean
 }
 
 const selectAllObject = {
@@ -36,6 +43,11 @@ export function UserSelect({
   disableSelectAll = false,
   allSelected = false,
   onChange,
+  selectAllButton,
+  filter,
+  error,
+  helperText,
+  focused,
   ...props
 }: UserSelectProps<IUser>) {
   const {
@@ -85,13 +97,15 @@ export function UserSelect({
     onChange && onChange(event, value, false);
   }, [onChange]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <Autocomplete
       multiple={multiple}
       loading={isFetching}
+      ListboxComponent={ListboxComponent}
       loadingText="Загрузка данных..."
-      options={users}
+      options={filter ? users.filter(user => filter(user)) : users}
       onChange={handleChange}
       getOptionLabel={option => option.CONTACT?.NAME ?? option.NAME}
       filterOptions={filterOptions}
@@ -99,6 +113,9 @@ export function UserSelect({
         <TextField
           {...params}
           label={label}
+          error={error}
+          focused={focused}
+          helperText={helperText}
           placeholder={placeholder}
         />
       )}
@@ -135,7 +152,7 @@ export function UserSelect({
             label={getOptionLabel(user)}
           />
         ))}
-      PaperComponent={CustomPaperComponent({ header: memoPaperHeader })}
+      PaperComponent={CustomPaperComponent({ header: selectAllButton ? memoPaperHeader : undefined })}
       {...props}
       {...(allSelected ? {
         value: (multiple ? [selectAllObject] : selectAllObject) as unknown as IUser

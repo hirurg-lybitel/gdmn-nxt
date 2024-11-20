@@ -158,13 +158,19 @@ export const kanbanApi = createApi({
                       sourceColumn.CARDS?.splice(
                         0,
                         sourceColumn.CARDS?.length,
-                        ...sourceColumn.CARDS?.filter(c => c.ID !== Number(card.ID))
+                        ...sourceColumn.CARDS?.filter(c => c.ID !== Number(card.ID)) ?? {}
                       );
                     }
 
                     const targetColumn = columns.find(c => c.ID === card.USR$MASTERKEY);
                     if (targetColumn) {
-                      targetColumn.CARDS.unshift({ ...findedCard, ...card });
+                      targetColumn.CARDS.unshift({
+                        ...findedCard,
+                        ...{
+                          ...card,
+                          STATUS: { isRead: false }
+                        }
+                      });
                     }
                   } else {
                     column.CARDS[findCardIndex] = { ...column.CARDS[findCardIndex], ...card };
@@ -179,7 +185,7 @@ export const kanbanApi = createApi({
             updateCachedData((draft) => {
               draft.forEach(column => {
                 if (column.ID !== Number(columnId)) return;
-                column.CARDS?.splice(0, column.CARDS?.length, ...column.CARDS?.filter(card => card.ID !== Number(cardId)));
+                column.CARDS?.splice(0, column.CARDS?.length, ...column.CARDS?.filter(card => card.ID !== Number(cardId)) ?? {});
               });
             });
           };
@@ -222,7 +228,12 @@ export const kanbanApi = createApi({
                 const tasks = column.CARDS[findCardIndex].TASKS;
                 if (!tasks?.length) return;
 
-                tasks[findTaskIndex] = { ...tasks[findTaskIndex], ...task };
+                tasks[findTaskIndex] = {
+                  ...tasks[findTaskIndex],
+                  ...{
+                    ...task,
+                  }
+                };
               });
             });
           };

@@ -1,11 +1,12 @@
-import { Autocomplete, Button, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Button, IconButton, TextField, Tooltip } from '@mui/material';
 import styles from './icon-select.module.less';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { MouseEvent, useMemo, useState } from 'react';
-import CustomizedCard from '../Styled/customized-card/customized-card';
+import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import CustomizedCard from '../../Styled/customized-card/customized-card';
 import * as iconsSource from '@mui/icons-material';
-import { IconByName } from '../icon-by-name';
+import { IconByName } from '../../icon-by-name';
+import { useAutocompleteGridVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
 
 interface ListboxComponentProps {
   open: boolean;
@@ -23,6 +24,8 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
         !item.includes('Sharp'))
     ), []);
 
+  const [ListboxComponent] = useAutocompleteGridVirtualization({ width: 450, columnCount: 8, rowHeight: 55 });
+
   if (!open) return <></>;
 
   return (
@@ -32,6 +35,7 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
     >
       <Autocomplete
         options={icons || []}
+        ListboxComponent={ListboxComponent}
         open
         disableListWrap
         disableCloseOnSelect
@@ -54,11 +58,16 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
             key={option}
             className={styles.listBoxItem}
           >
-            <IconByName
-              name={option}
-              fontSize="medium"
-              color="action"
-            />
+            <IconButton
+              className={styles.iconButton}
+              disableTouchRipple
+            >
+              <IconByName
+                name={option}
+                fontSize="medium"
+                color="action"
+              />
+            </IconButton>
           </li>
         )}
       />
@@ -82,13 +91,13 @@ export function IconSelect(props: Readonly<IconSelectProps>) {
     setToggleSelect(prev => !prev);
   };
 
-  const handleCloseSelect = () => {
+  const handleCloseSelect = useCallback(() => {
     setToggleSelect(false);
-  };
+  }, []);
 
-  const handleChange = (e: any, value: string | null) => {
+  const handleChange = useCallback((e: any, value: string | null) => {
     setIcon(value ?? '');
-  };
+  }, []);
 
   return (
     <div>

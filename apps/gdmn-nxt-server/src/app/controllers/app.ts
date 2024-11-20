@@ -72,6 +72,7 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
       u.contactkey,
       w.NAME as RANK,
       ps.USR$MODE as ColorMode,
+      ps.USR$SAVEFILTERS as SAVEFILTERS,
       c.NAME as FullName
     FROM
       gd_user u
@@ -96,6 +97,7 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
           rank: data[0]['RANK'],
           colorMode: data[0]['COLORMODE'] ?? ColorMode.Dark,
           fullName: data[0]['FULLNAME'],
+          saveFilters: data[0]['SAVEFILTERS'] === 1
         };
       } else if (!data.length) {
         return undefined;

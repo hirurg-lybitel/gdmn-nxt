@@ -220,14 +220,18 @@ export function SignInSignUp({
           {bottomDecorator?.(stage)}
         </Stack>
         :
-        <Stack direction="column" spacing={3}>
+        <Stack
+          direction="column"
+          spacing={3}
+          width={320}
+        >
           {topDecorator?.(stage)}
           {/* <Box textAlign={'center'}>
             <BelgissLogo color="#64b5f6" scale={1.5}/>
           </Box> */}
           
           <Box textAlign={'center'}>
-            <Typography variant="h4" fontWeight={600}>
+            <Typography variant="h5" fontWeight={600}>
               Вход в систему
             </Typography>
           </Box>
@@ -238,7 +242,6 @@ export function SignInSignUp({
           </Box> */}
           <TextField
             label="Пользователь"
-            size="medium"
             sx={{ input: { color: 'black' } }}
             value={userName}
             error={authResult?.result === 'UNKNOWN_USER'}
@@ -258,7 +261,6 @@ export function SignInSignUp({
           />
           <TextField
             label="Пароль"
-            size="medium"
             sx={{ input: { color: 'black' } }}
             type={passwordVisible ? 'text' : 'password'}
             error={authResult?.result === 'INVALID_PASSWORD'}
@@ -308,7 +310,7 @@ export function SignInSignUp({
             createUser
           &&
           <Typography>
-            Don't have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
+            {'Don\'t have an account?'} <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
           </Typography>
           }
           {bottomDecorator?.(stage)}

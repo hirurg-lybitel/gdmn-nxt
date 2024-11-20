@@ -1,6 +1,6 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { IContactPerson } from '@gsbelarus/util-api-types';
-import { forEachAsync } from '@gsbelarus/util-helpers';
+import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
 import { parseContactName } from '@gsbelarus/util-useful';
 
 /**
@@ -137,7 +137,14 @@ const find = async (
         };
       }
       if (p['PHOTO_BLOB'] !== null && typeof p['PHOTO_BLOB'] === 'object') {
-        p.PHOTO = await blob2String(p['PHOTO_BLOB']);
+        const photoString = await blob2String(p['PHOTO_BLOB']);
+
+        /** Temporary. Some data are stored as binary and as string */
+        if (!isNaN(Number(photoString[0]))) {
+          p.PHOTO = bin2String(photoString.split(','));
+        } else {
+          p.PHOTO = photoString;
+        }
       }
       if (p['COMP_ID']) {
         p.COMPANY = {
@@ -243,7 +250,7 @@ const update = async (
         NAME: nameInfo.nickName ?? '',
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
-        NOTE: await string2Blob(NOTE),
+        NOTE: NOTE ? await string2Blob(NOTE) : null,
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );

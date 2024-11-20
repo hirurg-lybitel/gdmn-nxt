@@ -65,7 +65,15 @@ const get: RequestHandler = async (req, res) => {
 };
 
 const upsert: RequestHandler = async (req, res) => {
-  const { releaseTransaction, executeSingletonAsObject, executeSingleton, fetchAsObject, fetchAsSingletonObject, generateId, string2Blob } = await startTransaction(req.sessionID);
+  const {
+    releaseTransaction,
+    executeSingletonAsObject,
+    executeSingleton,
+    fetchAsObject,
+    fetchAsSingletonObject,
+    generateId,
+    string2Blob
+  } = await startTransaction(req.sessionID);
 
   const { id } = req.params;
 
@@ -138,10 +146,9 @@ const upsert: RequestHandler = async (req, res) => {
 
     const columns = await fetchAsObject(sql);
 
-    const newStageIndex = columns.findIndex(stage => stage['ID'] === card.USR$MASTERKEY);
-    const oldStageIndex = columns.findIndex(stage => stage['ID'] === oldCardRecord?.USR$MASTERKEY);
-
     /** Отключено на время продумывания перехода с этапа на этап */
+    // const newStageIndex = columns.findIndex(stage => stage['ID'] === card.USR$MASTERKEY);
+    // const oldStageIndex = columns.findIndex(stage => stage['ID'] === oldCardRecord?.USR$MASTERKEY);
     // if (Math.abs(newStageIndex - oldStageIndex) > 1) {
     //   return res.status(400).send(resultError('Сделку можно перемещать только на один этап'));
     // }
@@ -295,30 +302,35 @@ const upsert: RequestHandler = async (req, res) => {
 
     const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
-    const deleteAttachments = await executeSingleton(
-      `DELETE FROM USR$CRM_DEALS_FILES
-        WHERE USR$MASTERKEY = :MASTERKEY`,
-      {
-        MASTERKEY: dealId
+    const updateAttachments = async () => {
+      if (!deal['ATTACHMENTS']) return;
+      const deleteAttachments = await executeSingleton(
+        `DELETE FROM USR$CRM_DEALS_FILES
+          WHERE USR$MASTERKEY = :MASTERKEY`,
+        {
+          MASTERKEY: dealId
+        });
+
+      const sql = `
+          INSERT INTO USR$CRM_DEALS_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
+          VALUES(:MASTERKEY, :CONTENT, :NAME)
+          RETURNING ID` ;
+
+      const insertAttachments = deal['ATTACHMENTS']?.map(async ({ content, fileName }) => {
+        return await fetchAsSingletonObject(sql, {
+          MASTERKEY: dealId,
+          CONTENT: await string2Blob(content),
+          NAME: fileName
+        });
       });
 
-    sql = `
-        INSERT INTO USR$CRM_DEALS_FILES(USR$MASTERKEY, USR$CONTENT, USR$NAME)
-        VALUES(:MASTERKEY, :CONTENT, :NAME)
-        RETURNING ID` ;
+      await Promise.all([
+        deleteAttachments,
+        ...insertAttachments
+      ]);
+    };
 
-    const insertAttachments = deal['ATTACHMENTS'].map(async ({ content, fileName }) => {
-      return await fetchAsSingletonObject(sql, {
-        MASTERKEY: dealId,
-        CONTENT: await string2Blob(content),
-        NAME: fileName
-      });
-    });
-
-    await Promise.all([
-      deleteAttachments,
-      ...insertAttachments
-    ]);
+    await updateAttachments();
 
     sql = `
       EXECUTE PROCEDURE USR$CRM_UPSERT_DEAL(?, ?, ?, ?, ?, ?)`;
@@ -372,6 +384,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     const cardRecord: IKanbanCard = await fetchAsSingletonObject(sql, paramsValues);
 
+    /** Устанвливаем статус НЕ прочитано */
     sql = `
       EXECUTE BLOCK(
         cardId INTEGER = ?,
@@ -389,7 +402,7 @@ const upsert: RequestHandler = async (req, res) => {
             OR deal.USR$PERFORMER = con.ID
             OR deal.USR$SECOND_PERFORMER = con.ID
           JOIN USR$CRM_KANBAN_CARDS card ON card.USR$DEALKEY = deal.ID
-          WHERE card.ID = :cardId AND u.ID != :userId
+          WHERE card.ID = :cardId
           INTO :CON_ID
         DO
           UPDATE OR INSERT INTO USR$CRM_KANBAN_CARD_STATUS(USR$ISREAD, USR$CARDKEY, USR$USERKEY)
@@ -415,7 +428,7 @@ const upsert: RequestHandler = async (req, res) => {
   } catch (error) {
     await releaseTransaction(false);
     return res.status(500).send(resultError(error.message));
-  } finally {};
+  };
 };
 
 const remove: RequestHandler = async(req, res) => {

@@ -41,7 +41,6 @@ export interface ICustomer extends IContactWithID {
   BUSINESSPROCESSES?: IBusinessProcess[];
   isFavorite?: boolean;
   taskCount?: number;
-  tasks?: ITimeTrackTask[]
 };
 
 interface IMapOfArrays {
@@ -285,6 +284,7 @@ export interface IUserGroupLine extends IWithID {
   USERGROUP: IUserGroup;
   USER?: IUser;
   REQUIRED_2FA?: boolean;
+  STATUS?: boolean
 };
 
 export interface IPermissionByUser {

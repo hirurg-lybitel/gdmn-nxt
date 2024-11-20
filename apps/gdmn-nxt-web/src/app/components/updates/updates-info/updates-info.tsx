@@ -57,7 +57,7 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       <DialogTitle>
         <span>Gedemin CRM обновилась до версии {lastUpdate?.VERSION}</span>
         <IconButton
-          style={{ position: 'absolute', top: 3, right: 5 }}
+          style={{ float: 'right' }}
           onClick={onClose}
           size="small"
         >

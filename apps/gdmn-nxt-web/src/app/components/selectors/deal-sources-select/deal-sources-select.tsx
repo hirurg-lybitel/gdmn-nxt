@@ -1,12 +1,14 @@
 import { IDealSource, IKanbanCard } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, TextField } from '@mui/material';
+import { Autocomplete, Button, createFilterOptions, TextField } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import CustomPaperComponent from '../../../helpers/custom-paper-component/custom-paper-component';
-import filterOptions from '../../../helpers/filter-options';
+import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
+import filterOptions from '../../helpers/filter-options';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddDealSourceMutation, useGetDealSourcesQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
-import DealSourceUpsert from '../../deal-source-upsert/deal-source-upsert';
+import DealSourceUpsert from '../../Kanban/deal-source-upsert/deal-source-upsert';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface DealSourcesSelectProps {
   formik: FormikProps<IKanbanCard>;
@@ -51,13 +53,23 @@ export function DealSourcesSelect(props: DealSourcesSelectProps) {
       onSubmit={handleSubmitDealSource}
     />, [addDealSource]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
+
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: maxVirtualizationList,
+    ignoreCase: true,
+    stringify: (option: IDealSource) => `${option.NAME}`,
+  });
+
   return (
     <>
       <Autocomplete
+        filterOptions={filterOptions}
         fullWidth
+        ListboxComponent={ListboxComponent}
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={option => option.NAME}
-        filterOptions={filterOptions(50, 'NAME')}
         loading={dealSourcesIsFetching || insertDealSourceIsLoading}
         {...(insertDealSourceIsLoading
           ? {

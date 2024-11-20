@@ -8,6 +8,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
   title?: string;
   text?: string;
   actions?: [string, string];
+  onClose?: () => void;
 }
 export default function Confirmation({
   children,
@@ -16,6 +17,7 @@ export default function Confirmation({
   text = 'Вы уверены, что хотите продолжить?',
   title = 'Внимание',
   actions = ['Нет', 'Да'],
+  onClose,
   ...props
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -25,6 +27,7 @@ export default function Confirmation({
 
   const handleCancel = useCallback(() => {
     setConfirmOpen(false);
+    onClose && onClose();
   }, []);
 
   const handleConfirm = useCallback(() => {

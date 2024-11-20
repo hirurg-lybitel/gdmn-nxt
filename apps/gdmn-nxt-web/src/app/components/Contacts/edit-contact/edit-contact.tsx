@@ -1,11 +1,11 @@
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WorkIcon from '@mui/icons-material/Work';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import EmailIcon from '@mui/icons-material/Email';
-import { Autocomplete, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactName, IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
@@ -16,10 +16,9 @@ import * as yup from 'yup';
 import { emailsValidation, phonesValidation } from '../../helpers/validators';
 import EditableTypography from '../../editable-typography/editable-typography';
 import TelephoneInput from '../../telephone-input';
-import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import filterOptions from '../../helpers/filter-options';
-import { LabelsSelect } from '../../Labels/labels-select';
-import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
+import { LabelsSelect } from '../../selectors/labels-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
 import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
@@ -32,6 +31,7 @@ import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
+import { ContactSelect } from '../../selectors/contact-select';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -47,7 +47,6 @@ export function EditContact({
   onCancel,
 }: EditContactProps) {
   const userPermissions = usePermissions();
-  const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
   const [tabIndex, setTabIndex] = useState('2');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -459,41 +458,16 @@ export function EditContact({
                     {emailsOptions}
                     {messengersOptions}
                     <Divider flexItem />
-                    <Autocomplete
-                      fullWidth
-                      options={persons?.records ?? []}
-                      getOptionLabel={option => option.NAME}
-                      filterOptions={filterOptions(50, 'NAME')}
-                      value={persons?.records?.find(el => el.ID === formik.values.RESPONDENT?.ID) ?? null}
-                      loading={personsIsFetching}
-                      loadingText="Загрузка данных..."
-                      onChange={(event, value) => {
-                        formik.setFieldValue('RESPONDENT', value);
+                    <ContactSelect
+                      label="Ответственный"
+                      placeholder="Выберите ответственного"
+                      value={formik.values.RESPONDENT ?? null}
+                      onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
+                      error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
+                      helperText={formik.touched.RESPONDENT ? formik.errors.RESPONDENT : undefined}
+                      slots={{
+                        startIcon: <ManageAccountsIcon />
                       }}
-                      renderOption={(props, option) => {
-                        return (
-                          <li {...props} key={option.ID}>
-                            {option.NAME}
-                          </li>
-                        );
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Ответственный"
-                          placeholder="Выберите ответственного"
-                          error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
-                          helperText={formik.touched.RESPONDENT && formik.errors.RESPONDENT}
-                          InputProps={{
-                            ...params.InputProps,
-                            startAdornment: (
-                              <InputAdornment position="end">
-                                <ManageAccountsIcon />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      )}
                     />
                     <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                     <CustomerSelect

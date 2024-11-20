@@ -9,15 +9,25 @@ const initCustomization: ICustomization = {
   colorMode: ColorMode.Dark
 };
 
+export interface IAppOptions {
+  saveFilters: boolean
+}
+
+const initAppOptions: IAppOptions = {
+  saveFilters: true
+};
+
 interface ISettingsState {
   menuOpened: boolean;
   customization: ICustomization,
-  system?: ISystemSettings
+  system?: ISystemSettings,
+  appOptions: IAppOptions
 };
 
 const initialState: ISettingsState = {
   menuOpened: true,
-  customization: initCustomization
+  customization: initCustomization,
+  appOptions: initAppOptions
 };
 
 export const settingsSlice = createSlice({
@@ -35,13 +45,17 @@ export const settingsSlice = createSlice({
     setSystemSettings: (state, action: PayloadAction<ISystemSettings>) => {
       return ({ ...state, system: action.payload });
     },
+    setAppOptions: (state, action: PayloadAction<IAppOptions>) => {
+      return ({ ...state, appOptions: { ...state.appOptions, ...action.payload } });
+    }
   }
 });
 
 export const {
   toggleMenu,
   setColorMode,
-  setSystemSettings
+  setSystemSettings,
+  setAppOptions
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;
