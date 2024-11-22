@@ -53,6 +53,7 @@ import { workProjectsRouter } from './app/routes/workProject';
 import { timeTrackingRouter } from './app/routes/timeTracking';
 import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
+import { securityRouter } from './app/routes/security';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
@@ -65,6 +66,9 @@ declare module 'express-session' {
     email: string;
     userName: string;
     captcha: string;
+    location: string;
+    device: string;
+    creationDate: Date
   }
 }
 
@@ -347,6 +351,9 @@ router.use(businessProcessRouter);
 
 /** Labels*/
 router.use(labelsRouter);
+
+/** Security */
+router.use(securityRouter);
 
 /** FAQ*/
 router.use(faqRouter);

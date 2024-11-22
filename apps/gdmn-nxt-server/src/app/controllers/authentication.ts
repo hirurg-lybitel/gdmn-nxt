@@ -16,6 +16,9 @@ import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
 import { resultError } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import geoip from 'geoip-lite';
+import countryList from 'country-list';
+import useragent from 'useragent';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -149,7 +152,12 @@ const signIn: RequestHandler = async (req, res, next) => {
           req.session.userId = user.id;
           req.session.base32Secret = '';
           req.session.token = jwt.sign({ EMAIL }, config.jwtSecret, { expiresIn: jwtExpirationTime });
-
+          req.session.device = useragent.parse(req.headers['user-agent']).toString();
+          const ip = req.socket.remoteAddress;
+          const ipInfo = geoip.lookup(ip);
+          const location = (ipInfo?.country && ipInfo?.city) ? `${ipInfo.city}, ${countryList.getName(ipInfo.country)}` : 'Не определено';
+          req.session.location = location;
+          req.session.creationDate = new Date();
           return res.json(authResult(
             'SUCCESS',
             `Вы вошли как ${userName}.`

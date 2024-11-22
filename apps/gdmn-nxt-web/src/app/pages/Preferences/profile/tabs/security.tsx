@@ -1,7 +1,7 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
-import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
-import { Box, Dialog, FormControlLabel, Icon, IconButton, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { IAuthResult, IProfileSettings, ISession, IUserProfile } from '@gsbelarus/util-api-types';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, Divider, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
@@ -12,11 +12,16 @@ import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
+import { useCloseSessionBySessionIdMutation, useGetActiveSessionsQuery } from 'apps/gdmn-nxt-web/src/app/features/security/securityApi';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import dayjs from 'dayjs';
 
 export default function SecurityTab() {
   const userProfile = useUserData();
   const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
-
+  const { data: activeSessions = [], isFetching: sessionIsFetching, isLoading: sessionsIsLoading } = useGetActiveSessionsQuery(undefined, { pollingInterval: 1 * 60 * 1000 });
+  const [closeSession] = useCloseSessionBySessionIdMutation();
   const [fetchDataCreate2fa, setFetchDataCreate2fa] = useState(false);
   const { data: dataCreate2fa } = useGetCreate2faQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -156,131 +161,19 @@ export default function SecurityTab() {
       </Stack>
     </Dialog>, [twoFAOpen.create, user]);
 
-  const columns: GridColDef[] = [
-    {
-      field: 'device',
-      headerName: 'Устройство',
-      flex: 1,
-      resizable: false,
-      renderCell: (params) => <Typography
-        variant="body2"
-        whiteSpace="normal"
-      >
-        {params.value}
-      </Typography> },
-    {
-      field: 'location',
-      flex: 1,
-      resizable: false,
-      headerName: 'Местоположение',
-      renderCell: (params) =>
-        <Typography
-          variant="body2"
-          whiteSpace="normal"
-        >
-          {params.value}
-        </Typography>,
-    },
-    {
-      field: 'date',
-      headerName: 'Дата',
-      minWidth: 160,
-      resizable: false,
-      renderCell: ({ value, row }) =>
-        <Typography
-          variant="body2"
-          whiteSpace="normal"
-        >
-          {value}
-        </Typography>
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      resizable: false,
-      renderCell: ({ value, row }) =>
-        <IconButton >
-          <PowerOffIcon color="error"/>
-        </IconButton>
-    },
-  ];
 
-  const activeSessions = [
-    {
-      id: 1,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '10.10.2003 18:43',
-    },
-    {
-      id: 2,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 3,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 4,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '10.10.2003 18:43',
-    },
-    {
-      id: 5,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 6,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 7,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '10.10.2003 18:43',
-    },
-    {
-      id: 8,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 9,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 10,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '10.10.2003 18:43',
-    },
-    {
-      id: 11,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    },
-    {
-      id: 12,
-      device: 'Windows',
-      location: 'Minsk, Belarus',
-      date: '18:43',
-    }
-  ];
+  const handleCloseSession = (id: string) => () => {
+    if (!id) return;
+    closeSession(id);
+  };
 
-  console.log(50 + (activeSessions.length * 40));
+  const reorderSessions = (sessions: ISession[]) => {
+    const index = sessions.findIndex(item => item.current);
+    if (index === -1) return sessions;
+    const newMas = [...sessions];
+    newMas.splice(index, 1);
+    return [...[sessions[index]], ...newMas];
+  };
 
   return (
     <FormikProvider value={formik}>
@@ -317,15 +210,85 @@ export default function SecurityTab() {
             </Tooltip>
           </Stack>
           <Stack>
-            <Typography variant="subtitle1">Активные сессии</Typography>
-            <StyledGrid
-              style={{ height: `${50 + (Math.min(activeSessions.length, 6) * 40)}px` }}
-              rows={activeSessions}
-              getRowId={row => row.id}
-              columns={columns}
-              hideFooter
-              disableRowSelectionOnClick
-            />
+            <Accordion>
+              <AccordionSummary
+                // className={styles.accordionSummary}
+                expandIcon={<ExpandMoreIcon />}
+              >
+                <Typography variant="subtitle1">Активные сессии</Typography>
+              </AccordionSummary>
+              {(sessionsIsLoading || sessionIsFetching) ?
+                [1, 2, 3].map(value => {
+                  return (
+                    <AccordionDetails
+                      key={value}
+                      style={{
+                        padding: 0,
+                        paddingBottom: '1px',
+                      }}
+                    >
+                      <Skeleton
+                        variant="rectangular"
+                        height={'38px'}
+                        width={'100%'}
+                      />
+                    </AccordionDetails>
+                  );
+                })
+                : reorderSessions(activeSessions).map(item => {
+                  const date = dayjs(item.creationDate);
+                  return (
+                    <AccordionDetails
+                      key={item.id}
+                      style={{
+                        padding: 0,
+                        background: item.current ? 'rgba(33, 150, 243, 0.16)' : undefined
+                      }}
+                    >
+                      <Grid
+                        container
+                        alignItems="center"
+                        style={{ padding: '4px 0px' }}
+                      >
+                        <Grid
+                          item
+                          xs={5}
+                          paddingLeft={2}
+                          paddingRight={2}
+                        >
+                          <Typography variant="body2">{item.device}</Typography>
+                        </Grid>
+                        <Grid item flex={1}>
+                          <Typography variant="body2">{item.location}</Typography>
+                        </Grid>
+                        <Grid item flex={1}>
+                          <Typography variant="body2">
+                            {date.format('DD.MM.YYYY HH:mm')}
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={2}
+                          md={1}
+                          marginRight={1.5}
+                          textAlign={'right'}
+                        >
+                          <Confirmation
+                            dangerous
+                            onConfirm={handleCloseSession(item.id)}
+                          >
+                            <IconButton>
+                              <PowerOffIcon color="error"/>
+                            </IconButton>
+                          </Confirmation>
+                        </Grid>
+                      </Grid>
+                      <Divider/>
+                    </AccordionDetails>
+                  );
+                })
+              }
+            </Accordion>
           </Stack>
         </Stack>
         {memoCheckCode}
