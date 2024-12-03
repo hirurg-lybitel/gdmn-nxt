@@ -212,7 +212,7 @@ export default function SecurityTab() {
           <Stack>
             <Accordion>
               <AccordionSummary
-                // className={styles.accordionSummary}
+                sx={{ paddingLeft: 0 }}
                 expandIcon={<ExpandMoreIcon />}
               >
                 <Typography variant="subtitle1">Активные сессии</Typography>
