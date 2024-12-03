@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Theme } from '@mui/material/styles';
 import { VariableSizeList, VariableSizeGrid, ListChildComponentProps, GridChildComponentProps } from 'react-window';
 import { makeStyles } from '@mui/styles';
@@ -30,6 +30,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const defaultItemHeight = 42;
+
+const rowHeights = new Map<number, number>();
 
 export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizationProps): React.ComponentType<React.HTMLAttributes<HTMLElement>>[] {
   const classes = useStyles();
@@ -69,7 +71,6 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
 
     const itemCount = itemData.length;
     const gridRef = useResetCache(itemCount);
-    const rowHeights = new Map<number, number>();
 
     const ListItem = (props: ListChildComponentProps) => {
       const { data, index, style } = props;
@@ -101,25 +102,27 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
       return rowHeights.get(index) ?? defaultItemHeight;
     }
 
+    const listProps: Omit<VariableSizeList['props'], 'children'> = useMemo(() => ({
+      ref: gridRef,
+      itemData,
+      height: 380,
+      width: '100%',
+      style: {
+        height: 'auto',
+        marginTop: 8,
+        marginBottom: 8,
+      },
+      outerElementType: OuterElementType,
+      innerElementType: 'ul',
+      itemSize: getRowHeight,
+      overscanCount: 5,
+      itemCount,
+    }), [gridRef, itemData, itemCount]);
+
     return (
       <div ref={ref} className={classes.list}>
         <OuterElementContext.Provider value={other}>
-          <VariableSizeList
-            ref={gridRef}
-            itemData={itemData}
-            height={380}
-            width="100%"
-            style={{
-              height: 'auto',
-              marginTop: 8,
-              marginBottom: 8,
-            }}
-            outerElementType={OuterElementType}
-            innerElementType="ul"
-            itemSize={getRowHeight}
-            overscanCount={5}
-            itemCount={itemCount}
-          >
+          <VariableSizeList {...listProps}>
             {ListItem}
           </VariableSizeList>
         </OuterElementContext.Provider>
