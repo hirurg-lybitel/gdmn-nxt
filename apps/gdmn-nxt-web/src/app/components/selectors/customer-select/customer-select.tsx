@@ -29,7 +29,6 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-
 type BaseTextFieldProps = Omit<
   TextFieldProps,
   'onChange'
@@ -53,7 +52,8 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   required?: boolean
 };
 
-export function CustomerSelect<Multiple extends boolean | undefined = false>(props: CustomerSelectProps<Multiple>) {
+
+export function CustomerSelect<Multiple extends boolean | undefined = false>(props: Readonly<CustomerSelectProps<Multiple>>) {
   const {
     value,
     onChange,
@@ -77,7 +77,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery({
     filter: {
       withTasks
-    },
+    }
   });
   const customers: ICustomer[] = useMemo(
     () => [...(customersResponse?.data ?? [])],
@@ -170,8 +170,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const [selectedTask, setSelectedTask] = useState<ITimeTrackTask | null>(null);
 
   const handleTaskSelect = useCallback((task: ITimeTrackTask) => {
-    setSelectedTask(task);
     onTaskSelected && onTaskSelected(task);
+    setSelectedTask(task);
   }, [onTaskSelected]);
 
   useEffect(() => {
@@ -188,6 +188,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   }, [task]);
 
   const [ListboxComponent] = useAutocompleteVirtualization();
+
   const {
     data: projects = [],
     isLoading: projectsIsLoading,
@@ -197,7 +198,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       ? { filter: { customerId: value?.ID } }
       : {}),
   }, {
-    skip: multiple || !value
+    skip: multiple || !value || !withTasks
   });
 
   useEffect(() => {
@@ -238,7 +239,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       >
         <div
           style={{
-            display: (projectsIsFetching || projects.length === 0) ? 'none' : 'inline-flex',
+            display: (projects.length === 0) ? 'none' : 'inline-flex',
             position: 'relative',
             zIndex: 2,
             color: 'transparent'
@@ -342,7 +343,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                   <InputAdornment
                     position="start"
                     style={{
-                      display: projectsIsFetching || projects.length === 0 ? 'none' : 'inline-flex'
+                      display: projects.length === 0 ? 'none' : 'inline-flex'
                     }}
                   >
                     <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
@@ -375,7 +376,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
           customers,
           selectedTask,
           projects,
-          projectsIsFetching,
           projectsIsLoading])}
         renderGroup={(params) => (
           <li key={params.key}>
@@ -516,8 +516,8 @@ const ListboxComponent = forwardRef<
 });
 
 interface CustomerTasksProps {
-  projects: ITimeTrackProject[],
-  task: ITimeTrackTask | null,
+  projects: ITimeTrackProject[];
+  task: ITimeTrackTask | null;
   onSelect: (task: ITimeTrackTask) => void;
 };
 
@@ -540,7 +540,7 @@ const CustomerTasks = ({
   const [addFavoriteTask] = useAddFavoriteTaskMutation();
   const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
 
-  const toggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+  const toggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
     e.stopPropagation();
     if (favorite) {
       deleteFavoriteTask({ taskId, projectId });
