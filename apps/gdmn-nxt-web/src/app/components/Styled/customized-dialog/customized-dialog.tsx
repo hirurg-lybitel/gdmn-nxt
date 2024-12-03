@@ -130,7 +130,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
             borderBottomRightRadius: 0,
             maxWidth: '100%',
             '& .MuiDialogActions-root': {
-              padding: '12px 24px 12px 16px !important',
+              padding: '12px 24px 12px 24px !important',
               '& .DialogButton': {
                 width: 120
               }
