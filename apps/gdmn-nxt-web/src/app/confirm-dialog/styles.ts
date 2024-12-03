@@ -9,9 +9,8 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'var(--color-card-bg)'
     },
     dialogAction: {
-      display: 'flex',
-      justifyContent: 'flex-start',
-      padding: '12px 24px',
+      gap: '8px',
+      padding: '12px',
     },
     button: {
       minWidth: '100px'

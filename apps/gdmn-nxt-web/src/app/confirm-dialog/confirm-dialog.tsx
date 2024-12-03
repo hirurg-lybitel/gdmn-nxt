@@ -74,7 +74,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           {text.replace('<br>', '  ')}
         </ReactMarkdown>
       </DialogContent>
-      <DialogActions>
+      <DialogActions className={classes.dialogAction}>
         <Button
           className={classes.button}
           onClick={cancelClick}
