@@ -4,7 +4,7 @@ import { IAuthResult, IProfileSettings, ISession, IUserProfile } from '@gsbelaru
 import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, Divider, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useCreate2faMutation, useDisableOtpMutation, useGetCreate2faQuery } from 'apps/gdmn-nxt-web/src/app/features/auth/authApi';
 import { useDispatch } from 'react-redux';
 import { setError } from 'apps/gdmn-nxt-web/src/app/features/error-slice/error-slice';
@@ -162,18 +162,18 @@ export default function SecurityTab() {
     </Dialog>, [twoFAOpen.create, user]);
 
 
-  const handleCloseSession = (id: string) => () => {
+  const handleCloseSession = useCallback((id: string) => () => {
     if (!id) return;
     closeSession(id);
-  };
+  }, [closeSession]);
 
-  const reorderSessions = (sessions: ISession[]) => {
-    const index = sessions.findIndex(item => item.current);
-    if (index === -1) return sessions;
-    const newMas = [...sessions];
+  const reorderSessions = useMemo(() => {
+    const index = activeSessions.findIndex(item => item.current);
+    if (index === -1) return activeSessions;
+    const newMas = [...activeSessions];
     newMas.splice(index, 1);
-    return [...[sessions[index]], ...newMas];
-  };
+    return [...[activeSessions[index]], ...newMas];
+  }, [activeSessions]);
 
   return (
     <FormikProvider value={formik}>
@@ -235,7 +235,7 @@ export default function SecurityTab() {
                     </AccordionDetails>
                   );
                 })
-                : reorderSessions(activeSessions).map(item => {
+                : reorderSessions.map(item => {
                   const date = dayjs(item.creationDate);
                   return (
                     <AccordionDetails
