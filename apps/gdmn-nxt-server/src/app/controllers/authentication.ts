@@ -82,7 +82,7 @@ const signIn: RequestHandler = async (req, res, next) => {
     const { userName } = req.body;
 
     if (user) {
-      const result = await profileSettingsController.getSettings(user.id, req);
+      const result = await profileSettingsController.getSettings({ userId: user.id, sessionId: req.sessionID });
       const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
 
 
@@ -366,7 +366,7 @@ const disable2fa: RequestHandler = async (req, res) => {
   const userId = req.user['id'];
 
   try {
-    const result = await profileSettingsController.getSettings(userId, req);
+    const result = await profileSettingsController.getSettings({ userId, sessionId: req.sessionID });
     const { SECRETKEY, EMAIL } = result.settings;
 
     const checkCode = await verifyCode(EMAIL, code.toString(), SECRETKEY);

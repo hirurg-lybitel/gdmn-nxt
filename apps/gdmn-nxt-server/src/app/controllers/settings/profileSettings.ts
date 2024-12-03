@@ -7,11 +7,36 @@ import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
 import { closeUserSession } from '../../utils/sessions-helper';
 import { setPermissonsCache } from '../../middlewares/permissions';
 
-const getSettings = async (userId: number, req: Request) => {
-  const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(req.sessionID);
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+type GetSettingsParams = {
+  sessionId: string;
+} & ({
+  userId: number;
+  contactId?: number;
+} | {
+  userId?: number;
+  contactId: number;
+});
+
+const getSettings = async ({
+  sessionId,
+  userId: _userId,
+  contactId
+}: GetSettingsParams) => {
+  const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(sessionId);
+  const { attachment, transaction } = await getReadTransaction(sessionId);
 
   try {
+    const userId: number = await (async () => {
+      if (_userId) return _userId;
+
+      const userInfo = await fetchAsSingletonObject(`
+        SELECT ID
+        FROM GD_USER
+        WHERE CONTACTKEY = :contactId`, { contactId });
+
+      return userInfo?.ID ?? -1;
+    })();
+
     const check2FA = await fetchAsSingletonObject(`
       SELECT ug.USR$REQUIRED_2FA GROUP_2FA, ul.USR$REQUIRED_2FA USER_2FA
       FROM USR$CRM_PERMISSIONS_USERGROUPS ug
@@ -76,14 +101,14 @@ const getSettings = async (userId: number, req: Request) => {
     };
   } finally {
     /** Так как используем две транзакции */
-    await releaseRT(req.sessionID);
+    await releaseRT(sessionId);
     await releaseReadTransaction();
   }
 };
 
 const get: RequestHandler = async (req, res) => {
   const userId = parseIntDef(req.params.userId, -1);
-  const data = await getSettings(userId, req);
+  const data = await getSettings({ userId, sessionId: req.sessionID });
 
   if (!data.OK) return res.status(500).send(resultError(data.error));
 

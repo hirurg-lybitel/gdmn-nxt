@@ -1,10 +1,14 @@
-import { IChanges, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
+import { IChanges, IContactWithID, IDeal, IEntities, IKanbanCard, IKanbanColumn, IKanbanHistory, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
 import { acquireReadTransaction, commitTransaction, getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { addHistory } from './history';
 import { forEachAsync } from '@gsbelarus/util-helpers';
+import { sendEmail } from '@gdmn/mailer';
+import { config } from '@gdmn-nxt/config';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { profileSettingsController } from '../settings/profileSettings';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -424,6 +428,15 @@ const upsert: RequestHandler = async (req, res) => {
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
 
+    try {
+      console.log('call_sendNewDealEmail', { isInsertMode, bool: deal.PERFORMERS?.length > 0 });
+      if (isInsertMode && deal.PERFORMERS?.length > 0) {
+        await sendNewDealEmail(req.sessionID, deal, deal.PERFORMERS);
+      }
+    } catch (error) {
+      console.error('[ sendNewDealEmail ]', error);
+    }
+
     return res.status(200).json(result);
   } catch (error) {
     await releaseTransaction(false);
@@ -516,3 +529,44 @@ const getFiles: RequestHandler = async (req, res) => {
 };
 
 export default { get, upsert, remove, getFiles };
+
+
+async function sendNewDealEmail(sessionId: string, deal: IDeal, performers: IContactWithID[]) {
+  try {
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } =
+      await systemSettingsRepository.findOne(sessionId);
+
+    for (const performer of performers) {
+      const userSettings = await profileSettingsController.getSettings({ contactId: performer.ID, sessionId });
+      const email = userSettings?.settings.EMAIL;
+      if (!email) continue;
+
+      const messageText = `
+        <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+          <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${performer.NAME}</strong>!</div>
+          <div style="font-size:20px;font-weight:bold;color:#1976d2">Вам назначена новая сделка</div>
+          <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+            <div style="color:#666">Наименование: ${deal.USR$NAME || ''}</div>
+            ${deal.CONTACT?.NAME ? `<div style="color:#666">Клиент: ${deal.CONTACT.NAME}</div>` : ''}
+            ${deal.USR$AMOUNT ? `<div style="color:#666">Сумма: ${deal.USR$AMOUNT.toLocaleString('ru-RU')} руб.</div>` : ''}
+            ${deal.USR$DEADLINE ? `<div style="color:#666">Срок: ${new Date(deal.USR$DEADLINE).toLocaleDateString('ru-RU')}</div>` : ''}
+            ${deal.DESCRIPTION ? `<div style="color:#666">Описание: ${deal.DESCRIPTION}</div>` : ''}
+          </div>
+          <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+            <a href="${config.origin}/employee/managment/deals/list" style="color:#1976d2">Открыть в CRM</a>
+            <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+          </div>
+        </div>`;
+
+      await sendEmail({
+        from: `CRM система ${ourCompanyName} <${smtpUser}>`,
+        to: email,
+        subject: `Новая сделка: ${deal.USR$NAME}`,
+        html: messageText,
+        options: { host: smtpHost, port: smtpPort, user: smtpUser, password: smtpPassword }
+      });
+    }
+  } catch (error) {
+    console.error('Error sending new deal email:', error);
+  }
+}
