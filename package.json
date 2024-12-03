@@ -67,7 +67,6 @@
     "express-session": "^1.17.2",
     "formik": "^2.2.9",
     "fs-extra-promise": "^1.0.1",
-    "geoip-lite": "^1.4.10",
     "ioredis": "^5.4.1",
     "jodit-react": "^4.0.25",
     "jsonwebtoken": "^9.0.2",

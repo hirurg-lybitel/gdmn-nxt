@@ -16,7 +16,6 @@ import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
 import { resultError } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
-import geoip from 'geoip-lite';
 import countryList from 'country-list';
 import useragent from 'useragent';
 
@@ -154,9 +153,7 @@ const signIn: RequestHandler = async (req, res, next) => {
           req.session.token = jwt.sign({ EMAIL }, config.jwtSecret, { expiresIn: jwtExpirationTime });
           req.session.device = useragent.parse(req.headers['user-agent']).toString();
           const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-          const ipInfo = geoip.lookup(ip);
-          const location = (ipInfo?.country && ipInfo?.city) ? `${ipInfo.city}, ${countryList.getName(ipInfo.country)}` : 'Не определено';
-          req.session.location = location;
+          req.session.location = ip.toString();
           req.session.creationDate = new Date();
           return res.json(authResult(
             'SUCCESS',

@@ -276,12 +276,12 @@ export default function SecurityTab() {
                           <Confirmation
                             dangerous
                             onConfirm={handleCloseSession(item.id)}
-                            title={'Закрытие сессии'}
-                            text={`Вы уверены что хотите закрыть сессию на устройстве ${item.device}?`}
                           >
-                            <IconButton>
-                              <PowerOffIcon color="error"/>
-                            </IconButton>
+                            <Tooltip title={'Закрыть сессию'}>
+                              <IconButton>
+                                <PowerOffIcon color="error"/>
+                              </IconButton>
+                            </Tooltip>
                           </Confirmation>
                         </Grid>
                       </Grid>
