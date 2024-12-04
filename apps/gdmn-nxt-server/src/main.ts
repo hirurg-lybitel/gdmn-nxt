@@ -54,6 +54,8 @@ import { timeTrackingRouter } from './app/routes/timeTracking';
 import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
 
+const COOKIE_AGE = 24 * 60 * 60 * 1000;
+
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
   interface SessionData {
@@ -277,7 +279,7 @@ const appMiddlewares = [
     saveUninitialized: true,
     store: sessionStore,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: COOKIE_AGE,
       secure: true
     },
   }),
