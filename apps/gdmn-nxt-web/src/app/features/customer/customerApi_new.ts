@@ -160,7 +160,7 @@ export const customerApi = createApi({
         url: `contacts/favorites/${contactID}`,
         method: 'POST'
       }),
-      invalidatesTags: [{ type: 'Customers', id: 'LIST' }],
+      // invalidatesTags: [{ type: 'Customers', id: 'LIST' }],
       async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
         cachedOptions?.forEach(async opt => {
           const options = Object.keys(opt).length > 0 ? opt : undefined;
@@ -170,6 +170,7 @@ export const customerApi = createApi({
                 const findIndex = draft?.data?.findIndex(c => c.ID === contactID);
                 if (findIndex >= 0) {
                   draft.data[findIndex] = { ...draft.data[findIndex], isFavorite: true };
+                  draft.data.sort((a, b) => a.isFavorite ? -1 : 1);
                 }
               }
             })
@@ -187,7 +188,7 @@ export const customerApi = createApi({
         url: `contacts/favorites/${contactID}`,
         method: 'DELETE',
       }),
-      invalidatesTags: [{ type: 'Customers', id: 'LIST' }],
+      // invalidatesTags: [{ type: 'Customers', id: 'LIST' }],
       async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
         cachedOptions?.forEach(async opt => {
           const options = Object.keys(opt).length > 0 ? opt : undefined;
@@ -197,6 +198,7 @@ export const customerApi = createApi({
                 const findIndex = draft?.data?.findIndex(c => c.ID === contactID);
                 if (findIndex >= 0) {
                   draft.data[findIndex] = { ...draft.data[findIndex], isFavorite: false };
+                  draft.data.sort((a, b) => a.isFavorite ? -1 : 1);
                 }
               }
             })

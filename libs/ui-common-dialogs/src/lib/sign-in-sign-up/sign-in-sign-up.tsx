@@ -7,7 +7,7 @@ import './sign-in-sign-up.module.less';
 import type { IAuthResult } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
-import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton, Box } from '@mui/material';
+import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton, Box, alpha } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
@@ -151,7 +151,7 @@ export function SignInSignUp({
         <Button
           variant="contained"
           disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick = {newPassword && waitAndDispatch(() => newPassword(email))}
+          onClick={newPassword && waitAndDispatch(() => newPassword(email))}
         >
           Request new Password
         </Button>
@@ -222,27 +222,44 @@ export function SignInSignUp({
         :
         <Stack
           direction="column"
-          spacing={3}
-          width={320}
+          spacing={4}
+          sx={{
+            width: { xs: '100%', sm: 360 },
+            maxWidth: '100%',
+            padding: { xs: 2, sm: 3 },
+            backgroundColor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: (theme) => `0 8px 24px ${alpha(theme.palette.primary.main, 0.08)}`,
+            transition: 'box-shadow 0.3s ease-in-out',
+            '&:hover': {
+              boxShadow: (theme) => `0 12px 28px ${alpha(theme.palette.primary.main, 0.12)}`
+            }
+          }}
         >
           {topDecorator?.(stage)}
-          {/* <Box textAlign={'center'}>
-            <BelgissLogo color="#64b5f6" scale={1.5}/>
-          </Box> */}
-          
-          <Box textAlign={'center'}>
-            <Typography variant="h5" fontWeight={600}>
+          <Box textAlign="center">
+            <Typography
+              variant="h4"
+              fontWeight={700}
+              sx={{
+                color: 'primary.main',
+                mb: 1,
+                fontSize: { xs: '1.75rem', sm: '2rem' }
+              }}
+            >
               Вход в систему
             </Typography>
-          </Box>
-          {/* <Box textAlign={"center"}>
-            <Typography variant="subtitle1" color={"GrayText"}>
-              Введите свои учётные данные
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ opacity: 0.8 }}
+            >
+              Введите свои учётные данные для входа
             </Typography>
-          </Box> */}
+          </Box>
           <TextField
+            fullWidth
             label="Пользователь"
-            sx={{ input: { color: 'black' } }}
             value={userName}
             error={authResult?.result === 'UNKNOWN_USER'}
             helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
@@ -250,38 +267,41 @@ export function SignInSignUp({
             autoFocus
             onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
             onKeyDown={keyPress}
-            inputProps={{ className: classes.input }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <AccountCircleIcon />
+                  <AccountCircleIcon color="action" sx={{ opacity: 0.7 }} />
                 </InputAdornment>
               ),
             }}
           />
           <TextField
+            fullWidth
             label="Пароль"
-            sx={{ input: { color: 'black' } }}
             type={passwordVisible ? 'text' : 'password'}
             error={authResult?.result === 'INVALID_PASSWORD'}
             helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
             disabled={waiting}
             onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
             onKeyDown={keyPress}
-            autoComplete={'false'}
-            inputProps={{ className: classes.input }}
+            autoComplete="false"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <VpnKeyIcon />
+                  <VpnKeyIcon color="action" sx={{ opacity: 0.7 }} />
                 </InputAdornment>
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton className={classes.visibilityPassword} onClick={() => setPasswordVisible(!passwordVisible)}>
-                    {passwordVisible
-                      ? <VisibilityOnIcon />
-                      : <VisibilityOffIcon />}
+                  <IconButton
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                    edge="end"
+                    sx={{
+                      opacity: 0.7,
+                      '&:hover': { opacity: 1 }
+                    }}
+                  >
+                    {passwordVisible ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
                   </IconButton>
                 </InputAdornment>
               ),
@@ -289,9 +309,17 @@ export function SignInSignUp({
           />
           <Button
             variant="contained"
-            size="medium"
+            size="large"
             disabled={waiting || !userName || !password || launching}
             onClick={doSignIn}
+            sx={{
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 600,
+              boxShadow: 'none',
+              transition: 'all 0.2s ease-in-out',
+            }}
           >
             {launching ? 'Входим...' : 'Войти'}
           </Button>
@@ -322,13 +350,13 @@ export function SignInSignUp({
       <Dialog onClose={() => dispatch({ type: 'CLEAR_AUTHRESULT' })} open={authResult?.result === 'ERROR'} >
         <Alert severity="error" style={{ alignItems: 'center' }}><Typography variant="subtitle1">{authResult?.message}</Typography></Alert>
       </Dialog>
-      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS_USER_CREATED'}>
+      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS_USER_CREATED'} >
         <Alert severity="success" style={{ alignItems: 'center' }}><Typography variant="subtitle1">{authResult?.message}</Typography></Alert>
       </Dialog>
-      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS_PASSWORD_CHANGED'}>
+      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS_PASSWORD_CHANGED'} >
         <Alert severity="success" style={{ alignItems: 'center' }}><Typography variant="subtitle1">{authResult?.message}</Typography></Alert>
       </Dialog>
-      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS'}>
+      <Dialog onClose={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })} open={authResult?.result === 'SUCCESS'} >
         <Alert severity="success" style={{ alignItems: 'center' }}><Typography>{authResult?.message}</Typography></Alert>
       </Dialog>
     </>

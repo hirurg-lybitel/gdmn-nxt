@@ -27,7 +27,6 @@ interface NotificationsProps {
   router: Router;
 }
 
-
 export function Notifications({ router }: NotificationsProps) {
   const httpsServer = createServer({
     key: process.env.NODE_ENV === 'development'
@@ -165,33 +164,81 @@ export function Notifications({ router }: NotificationsProps) {
         if (userNotifications?.length === 0) return;
 
         const styles = {
-          main: `
-            font-family: Montserrat;
-            font-weight: 400`,
+          container: `
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+            line-height: 1.5;
+            color: #333333;`,
+          header: `
+            font-size: 16px;
+            color: #333333;
+            margin-bottom: 24px;`,
+          title: `
+            font-size: 20px;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 16px;`,
+          list: `
+            list-style-type: none;
+            padding: 0;
+            margin: 0;`,
           item: `
-            border: 2px solid rgb(100, 181, 246);
-            background-color: rgb(236, 246, 255);
-            border-radius: 5px;
-            padding: 0 1em;
-            margin: 0.3em 0;`,
+            background-color: #f5f9ff;
+            border: 1px solid #e3f2fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;`,
+          itemTitle: `
+            font-size: 16px;
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+            display: block;`,
+          itemContent: `
+            font-size: 14px;
+            color: #424242;
+            line-height: 1.6;`,
+          footer: `
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666666;`,
+          link: `
+            color: #1976d2;
+            text-decoration: none;`
         };
 
         /** markdown -> html */
         const htmlText = userNotifications.map(n => `
           <li style="${styles.item}">
-            <strong>${marked(n.title)}</strong>
-            ${marked(n.message)}
+            <span style="${styles.itemTitle}">${marked(n.title)}</span>
+            <div style="${styles.itemContent}">${marked(n.message)}</div>
           </li>`)
           .join('');
 
         const messageText = `
-          <div style="${styles.main}">
-            Добрый день, <strong>${NAME}</strong>.
-            <p>Вот ваш список уведомлений:</p>
-            <ol>
+          <div style="${styles.container}">
+            <div style="${styles.header}">
+              Добрый день, <strong>${NAME}</strong>!
+            </div>
+
+            <div style="${styles.title}">
+              Список ваших уведомлений:
+            </div>
+
+            <ul style="${styles.list}">
               ${htmlText}
-            </ol>
-            <p>Если какое-то уведомление уже неактуально, то не забудьте удалить его в <a href="https://${config.host}/">CRM системе</a>.</p>
+            </ul>
+
+            <div style="${styles.footer}">
+              <p>Если какое-то уведомление уже неактуально, не забудьте удалить его в <a style="${styles.link}" href="${config.origin}/">CRM системе</a>.</p>
+              <p style="color: #999999; font-size: 12px;">
+                Это автоматическое уведомление. Пожалуйста, не отвечайте на него.
+              </p>
+            </div>
           </div>`;
 
         const from = `CRM система ${ourCompanyName} <${smtpOpt.user}>`;

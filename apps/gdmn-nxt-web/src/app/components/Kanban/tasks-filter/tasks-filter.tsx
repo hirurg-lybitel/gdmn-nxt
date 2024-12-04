@@ -1,4 +1,4 @@
-import { Autocomplete, Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, DialogActions, DialogContent, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './tasks-filter.module.less';
@@ -65,75 +65,106 @@ export function TasksFilter(props: TasksFilterProps) {
       onClose={onClose}
       width={width}
     >
-      <CustomizedCard
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          width: width,
-        }}
-      >
-        <CardContent style={{ flex: 1 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Номер задачи"
-              value={taskNumber || ''}
-              onChange={taskNumberChange}
-            />
-            <EmployeesSelect
-              value={filteringData?.performers}
-              onChange={(value) => handleOnChange('performers', value)}
-              multiple
-              limitTags={2}
-              label={'Исполнитель'}
-              placeholder={'Выберите исполнителя'}
-            />
-            <CustomerSelect
-              label="Клиенты"
-              placeholder="Выберите клиента"
-              multiple
-              disableCreation
-              onChange={(value) => handleOnChange('customers', value)}
-              value={filteringData?.customers ? filteringData.customers : []}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filteringData?.isCreator ?? false}
-                  onChange={(e) => handleOnChange('isCreator', e.target.checked)}
-                />
-              }
-              label="Я постановщик"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filteringData?.isPerformer ?? false}
-                  onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
-                />
-              }
-              label="Я исполнитель"
-            />
-          </Stack>
-        </CardContent>
-        <CardActions
-          style={{
-            padding: '16px'
+      <DialogContent>
+        <Stack spacing={5}>
+          <Box>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              fontWeight={600}
+              mb={2}
+            >
+              Основная информация
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label="Номер задачи"
+                value={taskNumber || ''}
+                onChange={taskNumberChange}
+              />
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              fontWeight={600}
+              mb={2}
+            >
+              Фильтры
+            </Typography>
+            <Stack spacing={2}>
+              <EmployeesSelect
+                value={filteringData?.performers}
+                onChange={(value) => handleOnChange('performers', value)}
+                multiple
+                limitTags={2}
+                label={'Исполнитель'}
+                placeholder={'Выберите исполнителя'}
+              />
+              <CustomerSelect
+                label="Клиенты"
+                placeholder="Выберите клиента"
+                multiple
+                disableCreation
+                onChange={(value) => handleOnChange('customers', value)}
+                value={filteringData?.customers ? filteringData.customers : []}
+              />
+
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              fontFamily={'600'}
+              mb={1}
+            >
+              Дополнительно
+            </Typography>
+            <Stack>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filteringData?.isCreator ?? false}
+                    onChange={(e) => handleOnChange('isCreator', e.target.checked)}
+                  />
+                }
+                label="Я постановщик"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filteringData?.isPerformer ?? false}
+                    onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
+                  />
+                }
+                label="Я исполнитель"
+              />
+
+            </Stack>
+          </Box>
+        </Stack>
+
+      </DialogContent>
+      <DialogActions>
+        <Button
+          sx={{
+            mb: 1.5
+          }}
+          variant="contained"
+          fullWidth
+          onClick={() => {
+            onFilterClear();
+            setTaskNumber('');
+            onClose && onClose();
           }}
         >
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={() => {
-              onFilterClear();
-              setTaskNumber('');
-              onClose && onClose();
-            }}
-          >
-            Очистить
-          </Button>
-        </CardActions>
-      </CustomizedCard>
+          Очистить фильтры
+        </Button>
+      </DialogActions>
     </CustomizedDialog>
   );
 }

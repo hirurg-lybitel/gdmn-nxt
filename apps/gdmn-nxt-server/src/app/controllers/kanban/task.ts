@@ -4,6 +4,48 @@ import { ResultSet } from 'node-firebird-driver-native';
 import { resultError } from '../../responseMessages';
 import { getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { addHistory } from './history';
+import { sendEmail } from '@gdmn/mailer';
+import { config } from '@gdmn-nxt/config';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { profileSettingsController } from '../settings/profileSettings';
+
+async function sendNewTaskEmail(sessionId: string, task: IKanbanTask) {
+  if (!task.PERFORMER?.ID) return;
+
+  try {
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } =
+      await systemSettingsRepository.findOne(sessionId);
+
+    const userSettings = await profileSettingsController.getSettings({ contactId: task.PERFORMER.ID, sessionId });
+    const email = userSettings?.settings.EMAIL;
+    if (!email) return;
+
+    const messageText = `
+      <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+        <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${task.PERFORMER.NAME}</strong>!</div>
+        <h2 style="color:#1976d2;margin:0 0 24px">Вам назначена новая задача</h2>
+        <div style="background:#f5f5f5;padding:16px;border-radius:8px">
+          <h3 style="margin:0 0 8px">${task.USR$NAME}</h3>
+          ${task.DESCRIPTION ? `<div style="color:#666">Описание: ${task.DESCRIPTION}</div>` : ''}
+          ${task.USR$DEADLINE ? `<div style="color:#666;margin-top:8px">Срок: ${new Date(task.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>` : ''}
+        </div>
+        <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+          <a href="${config.origin}/employee/managment/tasks/list" style="color:#1976d2">Открыть в CRM</a>
+          <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+        </div>
+      </div>`;
+
+    await sendEmail({
+      from: `CRM система ${ourCompanyName} <${smtpUser}>`,
+      to: email,
+      subject: `Новая задача: ${task.USR$NAME}`,
+      html: messageText,
+      options: { host: smtpHost, port: smtpPort, user: smtpUser, password: smtpPassword }
+    });
+  } catch (error) {
+    console.error('Error sending task email:', error);
+  }
+}
 
 const get: RequestHandler = async (req, res) => {
   const cardId = parseInt(req.params.cardId);
@@ -271,6 +313,14 @@ const upsert: RequestHandler = async (req, res) => {
 
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));
+
+    try {
+      if (isInsertMode && task.PERFORMER?.ID) {
+        await sendNewTaskEmail(req.sessionID, task);
+      }
+    } catch (error) {
+      console.error('Error sending task notification:', error);
+    }
 
     /** Изменение статуса карточки */
     sql = `
