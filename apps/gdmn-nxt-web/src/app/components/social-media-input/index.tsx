@@ -81,11 +81,11 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     handleClose();
     if (paste) {
       setPaste(false);
-      const cuttedValue = decodeURI(newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue);
-      const parsedvalue = cuttedValue.split('/');
-      const domain = cuttedValue.includes('https://') ? parsedvalue[2] : null;
+      const parsedValue = decodeURI(newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue);
+      const valueMas = parsedValue.split('/');
+      const domain = parsedValue.includes('https://') ? valueMas[2] : null;
       const iconIndex = Object.values(socialMediaIcons).findIndex(item => item.domain === domain);
-      onChange({ ...value, name: Object.keys(socialMediaIcons)[iconIndex] as MessengerCode || value.name, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
+      onChange({ ...value, name: Object.keys(socialMediaIcons)[iconIndex] as MessengerCode || value.name, text: (valueMas[valueMas.length - 1]).replace(/\s+/g, ' ') });
       return;
     }
     onChange({ ...value, text: newValue.replace(/\s+/g, ' ') });
