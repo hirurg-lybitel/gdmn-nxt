@@ -81,7 +81,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     handleClose();
     if (paste) {
       setPaste(false);
-      const cuttedValue = newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue;
+      const cuttedValue = decodeURI(newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue);
       const parsedvalue = cuttedValue.split('/');
       const domain = cuttedValue.includes('https://') ? parsedvalue[2] : null;
       const iconIndex = Object.values(socialMediaIcons).findIndex(item => item.domain === domain);
