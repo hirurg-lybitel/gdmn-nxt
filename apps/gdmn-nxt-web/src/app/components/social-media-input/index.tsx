@@ -2,7 +2,7 @@ import { Divider, InputAdornment, Stack, TextField, TextFieldProps } from '@mui/
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import SocialMediaButton from './components/social-media-button/social-media-button';
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
-import { IIconsNames } from './social-media-icons';
+import { IIconsNames, socialMediaIcons } from './social-media-icons';
 export * from './social-media-icons';
 export * from './social-media-links';
 
@@ -81,8 +81,11 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     handleClose();
     if (paste) {
       setPaste(false);
-      const parsedvalue = newValue.split('/');
-      onChange({ ...value, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
+      const cuttedValue = newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue;
+      const parsedvalue = cuttedValue.split('/');
+      const domain = cuttedValue.includes('https://') ? parsedvalue[2] : null;
+      const iconIndex = Object.values(socialMediaIcons).findIndex(item => item.domain === domain);
+      onChange({ ...value, name: Object.keys(socialMediaIcons)[iconIndex] as IIconsNames || value.name, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
       return;
     }
     onChange({ ...value, text: newValue.replace(/\s+/g, ' ') });

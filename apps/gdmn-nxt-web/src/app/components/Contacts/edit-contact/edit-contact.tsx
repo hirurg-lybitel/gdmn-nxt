@@ -354,7 +354,7 @@ export function EditContact({
           >
             {/* <SmsIcon fontSize="small" color="primary" /> */}
             <div className={styles['messenger-icon']}>
-              <img src={socialMediaIcons[CODE]} width={17} />
+              <img src={socialMediaIcons[CODE].icon} width={17} />
             </div>
             <Stack
               direction="row"

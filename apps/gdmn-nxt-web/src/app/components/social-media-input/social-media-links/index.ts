@@ -6,11 +6,11 @@ type ISocialMediaLinks= {
 
 export const socialMediaLinks: ISocialMediaLinks = {
   'facebook': 'https://www.facebook.com/',
-  'instagram': 'https://vk.com/',
+  'instagram': 'https://www.instagram.com/',
   'telegram': 'https://t.me/',
   'viber': '',
   'linkedin': 'https://www.linkedin.com/in/',
-  'skype': '',
+  'skype': 'https://join.skype.com/invite/',
   'ok': 'https://ok.ru/profile/',
   'whatsApp': '',
   'github': 'https://github.com/',

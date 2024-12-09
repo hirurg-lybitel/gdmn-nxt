@@ -25,7 +25,7 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
           disabled
         >
           {socialMediaIcons[socialName]
-            ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName]}/>
+            ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName].icon}/>
             : <PanoramaFishEyeIcon/>}
           <ArrowDropDownIcon />
         </Button>
@@ -35,7 +35,7 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
           component="span"
         >
           {socialMediaIcons[socialName]
-            ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName]}/>
+            ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName].icon}/>
             : <PanoramaFishEyeIcon/>}
         </IconButton>
       </>
@@ -50,7 +50,7 @@ export function SocialMediaButton(props: SocialMediaButtonProps) {
         color="inherit"
       >
         {socialMediaIcons[socialName]
-          ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName]}/>
+          ? <img style={{ width: '20px' }} src={socialMediaIcons[socialName].icon}/>
           : <PanoramaFishEyeIcon/>}
         <ArrowDropDownIcon />
       </Button>

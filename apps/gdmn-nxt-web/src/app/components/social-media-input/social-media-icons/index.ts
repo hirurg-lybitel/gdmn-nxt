@@ -22,18 +22,46 @@ export type IIconsNames =
   | 'vk';
 
 type ISocialMediaIcons = {
-  [key in IIconsNames]: string;
+  [key in IIconsNames]: {icon: string, domain?: string};
 }
 
 export const socialMediaIcons: ISocialMediaIcons = {
-  'facebook': facebook,
-  'instagram': instagram,
-  'telegram': telegram,
-  'viber': viber,
-  'linkedin': linkedin,
-  'skype': skype,
-  'ok': ok,
-  'whatsApp': whatsApp,
-  'github': github,
-  'vk': vk
+  'facebook': {
+    icon: facebook,
+    domain: 'www.facebook.com'
+  },
+  'instagram': {
+    icon: instagram,
+    domain: 'www.instagram.com'
+  },
+  'telegram': {
+    icon: telegram,
+    domain: 't.me'
+  },
+  'viber': {
+    icon: viber
+  },
+  'linkedin': {
+    icon: linkedin,
+    domain: 'www.linkedin.com'
+  },
+  'skype': {
+    icon: skype,
+    domain: 'join.skype.com'
+  },
+  'ok': {
+    icon: ok,
+    domain: 'ok.ru'
+  },
+  'whatsApp': {
+    icon: whatsApp
+  },
+  'github': {
+    icon: github,
+    domain: 'github.com'
+  },
+  'vk': {
+    icon: vk,
+    domain: 'vk.com'
+  }
 };

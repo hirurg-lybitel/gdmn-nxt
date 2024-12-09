@@ -27,7 +27,7 @@ export function SocialMediaMenuItem(props: SocialMediaMenuItemProps) {
       data-testid={`option-${socialName}`}
     >
       <Styled.ListItemIcon>
-        <img style={{ width: '25px' }} src={socialMediaIcons[socialName]}/>
+        <img style={{ width: '25px' }} src={socialMediaIcons[socialName].icon}/>
       </Styled.ListItemIcon>
       <Styled.ListItemText>
         {socialName}

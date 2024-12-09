@@ -299,7 +299,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               >
                 <div className={styles['messenger-icon']}>
                   <img
-                    src={socialMediaIcons[contact.MESSENGERS[0]?.CODE]}
+                    src={socialMediaIcons[contact.MESSENGERS[0]?.CODE].icon}
                     width={16}
                     height={16}
                   />
@@ -406,7 +406,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 >
                   <div className={styles['messenger-icon']}>
                     <img
-                      src={socialMediaIcons[mes.CODE]}
+                      src={socialMediaIcons[mes.CODE].icon}
                       width={16}
                       height={16}
                     />
