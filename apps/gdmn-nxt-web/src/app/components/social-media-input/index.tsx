@@ -5,7 +5,6 @@ import SocialMediaMenu from './components/social-media-menu/social-media-menu';
 import { socialMediaIcons } from './social-media-icons';
 import { MessengerCode } from '@gsbelarus/util-api-types';
 export * from './social-media-icons';
-export * from './social-media-links';
 
 type BaseTextFieldProps = Omit<
   TextFieldProps,

@@ -7,7 +7,7 @@ import { IContactPerson, ILabel, IPaginationData } from '@gsbelarus/util-api-typ
 import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { ButtonBaseProps, Avatar, Box, Divider, IconButton, List, ListItemButton, Stack, TablePagination, Tooltip, TooltipProps, Typography, tooltipClasses, useMediaQuery, useTheme } from '@mui/material';
-import { socialMediaIcons, socialMediaLinks } from '@gdmn-nxt/components/social-media-input';
+import { socialMediaIcons } from '@gdmn-nxt/components/social-media-input';
 import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
@@ -305,7 +305,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                   />
                 </div>
                 <a
-                  className={`${styles.link} ${!socialMediaLinks[contact.MESSENGERS[0]?.CODE] ? styles.linkDisabled : ''}`}
+                  className={`${styles.link} ${!socialMediaIcons[contact.MESSENGERS[0]?.CODE].link ? styles.linkDisabled : ''}`}
                   onClick={handleStopPropagation}
                   href={parseToMessengerLink(contact.MESSENGERS[0]?.CODE, contact.MESSENGERS[0]?.USERNAME)}
                   rel="noreferrer"
@@ -412,7 +412,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                     />
                   </div>
                   <a
-                    className={`${styles.link} ${!socialMediaLinks[mes.CODE] ? styles.linkDisabled : ''}`}
+                    className={`${styles.link} ${!socialMediaIcons[mes.CODE].link ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
                     href={parseToMessengerLink(mes.CODE, mes.USERNAME)}
                     rel="noreferrer"
