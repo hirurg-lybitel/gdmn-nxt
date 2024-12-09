@@ -97,7 +97,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     if (insertCustomerIsSuccess) {
       onChange && onChange((multiple ? [newCustomer] : newCustomer) as Value<Multiple>);
     }
-  }, [insertCustomerIsSuccess, multiple, newCustomer, onChange]);
+  }, [insertCustomerIsSuccess, multiple, newCustomer]);
 
   const handleAddCustomer = useCallback(() => {
     setEditingCustomer(null);
