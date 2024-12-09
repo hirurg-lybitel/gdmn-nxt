@@ -1,10 +1,11 @@
 import { Button, IconButton, ButtonProps } from '@mui/material';
-import { IIconsNames, socialMediaIcons } from '../../social-media-icons';
+import { socialMediaIcons } from '../../social-media-icons';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { MessengerCode } from '@gsbelarus/util-api-types';
 
 export interface SocialMediaButtonProps extends ButtonProps {
-  socialName: IIconsNames | undefined
+  socialName: MessengerCode | undefined
   disableDropdown?: boolean;
 };
 

@@ -8,21 +8,11 @@ import linkedin from './linkedin.png';
 import ok from './ok.png';
 import github from './github.png';
 import viber from './viber.png';
-
-export type IIconsNames =
-  'facebook'
-  | 'instagram'
-  | 'telegram'
-  | 'viber'
-  | 'linkedin'
-  | 'skype'
-  | 'ok'
-  | 'whatsApp'
-  | 'github'
-  | 'vk';
+import discord from './discord.png';
+import { MessengerCode } from '@gsbelarus/util-api-types';
 
 type ISocialMediaIcons = {
-  [key in IIconsNames]: {icon: string, domain?: string};
+  [key in MessengerCode]: {icon: string, domain?: string};
 }
 
 export const socialMediaIcons: ISocialMediaIcons = {
@@ -63,5 +53,8 @@ export const socialMediaIcons: ISocialMediaIcons = {
   'vk': {
     icon: vk,
     domain: 'vk.com'
+  },
+  'discord': {
+    icon: discord
   }
 };

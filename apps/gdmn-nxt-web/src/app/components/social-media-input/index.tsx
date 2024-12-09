@@ -2,7 +2,8 @@ import { Divider, InputAdornment, Stack, TextField, TextFieldProps } from '@mui/
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import SocialMediaButton from './components/social-media-button/social-media-button';
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
-import { IIconsNames, socialMediaIcons } from './social-media-icons';
+import { socialMediaIcons } from './social-media-icons';
+import { MessengerCode } from '@gsbelarus/util-api-types';
 export * from './social-media-icons';
 export * from './social-media-links';
 
@@ -13,7 +14,7 @@ type BaseTextFieldProps = Omit<
 
 export interface ISocialMedia {
     text: string;
-    name: IIconsNames
+    name: MessengerCode
 }
 
 export interface socialMediaInputProps extends BaseTextFieldProps {
@@ -71,7 +72,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
 
   const handleSocialChange = (socialValue: string) => {
     handleClose();
-    onChange({ ...value, name: socialValue as IIconsNames });
+    onChange({ ...value, name: socialValue as MessengerCode });
   };
 
   const [paste, setPaste] = useState(false);
@@ -85,7 +86,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
       const parsedvalue = cuttedValue.split('/');
       const domain = cuttedValue.includes('https://') ? parsedvalue[2] : null;
       const iconIndex = Object.values(socialMediaIcons).findIndex(item => item.domain === domain);
-      onChange({ ...value, name: Object.keys(socialMediaIcons)[iconIndex] as IIconsNames || value.name, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
+      onChange({ ...value, name: Object.keys(socialMediaIcons)[iconIndex] as MessengerCode || value.name, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
       return;
     }
     onChange({ ...value, text: newValue.replace(/\s+/g, ' ') });

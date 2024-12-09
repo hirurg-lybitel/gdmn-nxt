@@ -1,7 +1,7 @@
-import { IIconsNames } from '../social-media-icons';
+import { MessengerCode } from '@gsbelarus/util-api-types';
 
 type ISocialMediaLinks= {
-  [key in IIconsNames]: string;
+  [key in MessengerCode]: string;
 }
 
 export const socialMediaLinks: ISocialMediaLinks = {
@@ -15,4 +15,5 @@ export const socialMediaLinks: ISocialMediaLinks = {
   'whatsApp': '',
   'github': 'https://github.com/',
   'vk': 'https://vk.com/',
+  'discord': ''
 };
