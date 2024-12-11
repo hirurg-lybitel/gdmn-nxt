@@ -156,7 +156,7 @@ export default function App(props: AppProps) {
 
     const browser = bowser.parse(window.navigator.userAgent);
 
-    loginData.device = `${browser?.os?.name} ${browser?.os?.version}, ${browser?.browser?.name} v${browser?.browser?.version}`;
+    loginData.device = `${browser?.os?.name} ${browser?.os?.version} / ${browser?.browser?.name} v${browser?.browser?.version}`;
 
     const response = await post('user/signin', { userName, password, employeeMode: true, ...(email && { email }), ...loginData });
 
