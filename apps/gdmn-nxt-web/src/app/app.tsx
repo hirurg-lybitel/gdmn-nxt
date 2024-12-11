@@ -324,7 +324,7 @@ export default function App(props: AppProps) {
         padding: '12px 0'
       }}
     >
-      <div style={{ width: 360 }}>
+      <div>
         {renderLoginStage}
       </div>
     </div>;

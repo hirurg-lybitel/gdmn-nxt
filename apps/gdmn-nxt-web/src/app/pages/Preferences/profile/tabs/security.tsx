@@ -130,7 +130,6 @@ export default function SecurityTab() {
         direction="column"
         justifyContent="center"
         alignContent="center"
-        sx={{ maxWidth: '360px', margin: 3 }}
       >
         <CheckCode onCancel={() => setTwoFAOpen({ check: false })} onSubmit={handleCheckOnSubmit} />
       </Stack>

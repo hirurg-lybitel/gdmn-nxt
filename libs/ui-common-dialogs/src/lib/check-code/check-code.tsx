@@ -34,31 +34,69 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   };
 
   return (
-    <Stack spacing={2} textAlign="center">
+    <Stack
+      spacing={3}
+      sx={{
+        width: { xs: '100%', sm: 424 },
+        padding: { xs: 2.5, sm: 4 },
+        borderRadius: 2,
+        boxShadow: (theme) => theme.shadows[3],
+        transition: 'box-shadow 0.3s ease-in-out',
+        '&:hover': {
+          boxShadow: (theme) => theme.shadows[8]
+        }
+      }}
+    >
       <Box textAlign="center">
-        <Typography variant="h6">Двухфакторная аутентификация</Typography>
+        <Typography
+          variant="h5"
+          fontWeight={600}
+          sx={{
+            fontSize: { xs: '1.5rem', sm: '1.75rem' }
+          }}
+        >
+          Двухфакторная аутентификация
+        </Typography>
       </Box>
-      <Typography variant="body1">Откройте приложение двухфакторной проверки на своём мобильном устройстве, чтобы получить код подтверждения.</Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          color: 'text.secondary',
+          opacity: 0.9,
+        }}
+      >
+        Откройте приложение двухфакторной проверки на своём мобильном устройстве, чтобы получить код подтверждения.
+      </Typography>
       <VerifyCode
         ref={codeRef}
         onSubmit={handleCodeInputSubmit}
         autoFocus
       />
-      <Stack spacing={1}>
+      <Stack spacing={1.5}>
         <Button
           variant="contained"
           disabled={loading}
           onClick={handleSubmit}
+          sx={{
+            py: 1.25,
+            fontSize: '1rem',
+            boxShadow: 'none',
+          }}
         >
           {loading ? 'Проверяем...' : 'Продолжить'}
         </Button>
-        <Button variant="outlined" onClick={onCancel}>Отмена</Button>
+        <Button
+          variant="outlined"
+          onClick={onCancel}
+        >
+          Отмена
+        </Button>
       </Stack>
       <Dialog
         open={!!error}
         onClose={() => setError('')}
         PaperProps={{
-          style: {
+          sx: {
             backgroundColor: 'transparent',
           }
         }}
