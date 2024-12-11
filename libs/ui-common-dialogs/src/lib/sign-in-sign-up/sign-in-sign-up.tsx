@@ -222,17 +222,17 @@ export function SignInSignUp({
         :
         <Stack
           direction="column"
-          spacing={4}
+          spacing={3}
           sx={{
             width: { xs: '100%', sm: 360 },
             maxWidth: '100%',
-            padding: { xs: 2, sm: 3 },
+            padding: { xs: 2.5, sm: 4 },
             backgroundColor: 'background.paper',
             borderRadius: 2,
-            boxShadow: (theme) => `0 8px 24px ${alpha(theme.palette.primary.main, 0.08)}`,
+            boxShadow: (theme) => theme.shadows[3],
             transition: 'box-shadow 0.3s ease-in-out',
             '&:hover': {
-              boxShadow: (theme) => `0 12px 28px ${alpha(theme.palette.primary.main, 0.12)}`
+              boxShadow: (theme) => theme.shadows[8]
             }
           }}
         >
@@ -313,7 +313,7 @@ export function SignInSignUp({
             disabled={waiting || !userName || !password || launching}
             onClick={doSignIn}
             sx={{
-              py: 1.5,
+              py: 1.25,
               textTransform: 'none',
               fontSize: '1rem',
               fontWeight: 600,
@@ -325,21 +325,21 @@ export function SignInSignUp({
           </Button>
           {
             newPassword
-          &&
-          <Button
-            variant="outlined"
-            disabled={waiting}
-            onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}
-          >
-            Забыли пароль?
-          </Button>
+            &&
+            <Button
+              variant="outlined"
+              disabled={waiting}
+              onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}
+            >
+              Забыли пароль?
+            </Button>
           }
           {
             createUser
-          &&
-          <Typography>
-            {'Don\'t have an account?'} <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
-          </Typography>
+            &&
+            <Typography>
+              {'Don\'t have an account?'} <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
+            </Typography>
           }
           {bottomDecorator?.(stage)}
         </Stack>;

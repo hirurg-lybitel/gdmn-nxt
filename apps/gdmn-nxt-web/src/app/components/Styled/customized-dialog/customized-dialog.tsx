@@ -131,6 +131,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
             maxWidth: '100%',
             '& .MuiDialogActions-root': {
               padding: '12px 24px 12px 24px !important',
+              gap: '6px',
               '& .DialogButton': {
                 width: 120
               }
