@@ -16,8 +16,6 @@ import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
 import { resultError } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
-import countryList from 'country-list';
-import useragent from 'useragent';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -81,7 +79,7 @@ const signIn: RequestHandler = async (req, res, next) => {
       return next(err);
     }
 
-    const { userName } = req.body;
+    const { userName, ip, device } = req.body;
 
     if (user) {
       const result = await profileSettingsController.getSettings(user.id, req);
@@ -151,9 +149,8 @@ const signIn: RequestHandler = async (req, res, next) => {
           req.session.userId = user.id;
           req.session.base32Secret = '';
           req.session.token = jwt.sign({ EMAIL }, config.jwtSecret, { expiresIn: jwtExpirationTime });
-          req.session.device = useragent.parse(req.headers['user-agent']).toString();
-          const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-          req.session.location = ip.toString();
+          req.session.device = device;
+          req.session.location = ip;
           req.session.creationDate = new Date();
           return res.json(authResult(
             'SUCCESS',
@@ -176,7 +173,7 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
       return next(err);
     }
 
-    const { authCode } = req.body;
+    const { authCode, ip, device } = req.body;
     const { base32Secret } = req.session;
     const { email, userName } = user;
 
@@ -199,7 +196,9 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
         Object.assign(req.session, prevSession);
         req.session.base32Secret = base32Secret;
         req.session.token = jwt.sign({ email }, config.jwtSecret, { expiresIn: jwtExpirationTime });
-
+        req.session.device = device;
+        req.session.location = ip;
+        req.session.creationDate = new Date();
         return res.json(authResult(
           'SUCCESS',
           `Вы вошли как ${userName}.`

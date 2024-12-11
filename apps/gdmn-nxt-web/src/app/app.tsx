@@ -15,6 +15,7 @@ import { InitData } from './store/initData';
 import { setAppOptions, setColorMode } from './store/settingsSlice';
 import { baseUrlApi } from './constants';
 import { saveFilterData } from './store/filtersSlice';
+import bowser from 'bowser';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -145,7 +146,19 @@ export default function App(props: AppProps) {
   const handleSignInWithEmail = (email: string) => handleSignIn(userProfile?.userName ?? '', userProfile?.password ?? '', email);
 
   const handleSignIn = async (userName: string, password: string, email?: string) => {
-    const response = await post('user/signin', { userName, password, employeeMode: true, ...(email && { email }) });
+    const loginData = { ip: 'Неопределено', device: '' };
+    await fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => {
+        loginData.ip = data.ip;
+      })
+      .catch(error => console.error('Ошибка:', error));
+
+    const browser = bowser.parse(window.navigator.userAgent);
+
+    loginData.device = `${browser?.os?.name} ${browser?.os?.version}, ${browser?.browser?.name} v${browser?.browser?.version}`;
+
+    const response = await post('user/signin', { userName, password, employeeMode: true, ...(email && { email }), ...loginData });
 
     if (response.result === 'SUCCESS') {
       dispatch(queryLogin());
@@ -167,7 +180,7 @@ export default function App(props: AppProps) {
     }
 
     if (response.result === 'ENABLED_2FA') {
-      dispatch(signIn2fa({ ...userProfile, userName, password }));
+      dispatch(signIn2fa({ ...userProfile, userName, password, ...loginData }));
     };
 
     return response;
@@ -183,7 +196,7 @@ export default function App(props: AppProps) {
     if (response.result === 'SUCCESS') {
       handleSignIn(
         userProfile?.userName ?? '',
-        userProfile?.password ?? ''
+        userProfile?.password ?? '',
       );
     };
 

@@ -49,13 +49,13 @@
     "allotment": "^1.13.0",
     "apexcharts": "3.33.1",
     "axios": "^1.7.4",
+    "bowser": "^2.11.0",
     "clsx": "^1.1.1",
     "connect-flash": "^0.1.1",
     "connect-redis": "^7.1.1",
     "cookie-parser": "^1.4.6",
     "core-js": "^3.6.5",
     "cors": "^2.8.5",
-    "country-list": "^2.3.0",
     "cron": "^2.3.1",
     "dagre": "^0.8.5",
     "date-fns": "^2.28.0",
@@ -109,7 +109,6 @@
     "svg-captcha": "^1.4.0",
     "temp-fs": "^0.9.9",
     "tslib": "^2.3.0",
-    "useragent": "^2.3.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {
