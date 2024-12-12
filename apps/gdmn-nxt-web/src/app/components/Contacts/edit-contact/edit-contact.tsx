@@ -85,6 +85,11 @@ export function EditContact({
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       EMAILS: yup.array().of(emailsValidation()),
       PHONES: yup.array().of(phonesValidation()),
+      MESSENGERS: yup.array().of(
+        yup.object().shape({
+          USERNAME: yup.string().max(40, 'Слишком длинное имя'),
+        })
+      ),
       nameInfo: yup.object({
         lastName: yup.string()
           .required('Не указана фамилия')
@@ -264,7 +269,9 @@ export function EditContact({
               onDelete={() => handleDeletePhone(index)}
               helperText={error}
               error={isTouched && Boolean(error)}
+              editMode={firstElement}
               closeOnBlur={!firstElement}
+              editEmpty={false}
               editComponent={
                 <TelephoneInput
                   name={`PHONE${index}`}
@@ -313,7 +320,9 @@ export function EditContact({
               onDelete={() => handleDeleteEmail(index)}
               error={isTouched && Boolean(error)}
               helperText={error}
+              editMode={firstElement}
               closeOnBlur={!firstElement}
+              editEmpty={false}
               editComponent={
                 <TextField
                   fullWidth
@@ -379,7 +388,9 @@ export function EditContact({
                 onDelete={() => handleDeleteMessenger(index)}
                 helperText={error}
                 error={isTouched && Boolean(error)}
+                editMode={firstElement}
                 closeOnBlur={!firstElement}
+                editEmpty={false}
                 editComponent={
                   <SocialMediaInput
                     value={{
