@@ -2,7 +2,7 @@ import { Divider, InputAdornment, Stack, TextField, TextFieldProps } from '@mui/
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import SocialMediaButton from './components/social-media-button/social-media-button';
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
-import { socialMediaIcons } from './social-media-icons';
+import { socialMedia } from './social-media-icons';
 import { MessengerCode } from '@gsbelarus/util-api-types';
 export * from './social-media-icons';
 
@@ -84,8 +84,8 @@ export function SocialMediaInput(props: socialMediaInputProps) {
       const parsedValue = decodeURI(newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue);
       const valueMas = parsedValue.split('/');
       const domain = parsedValue.includes('https://') ? valueMas[2] : null;
-      const iconIndex = Object.values(socialMediaIcons).findIndex(item => item.domain === domain);
-      onChange({ ...value, name: Object.keys(socialMediaIcons)[iconIndex] as MessengerCode || value.name, text: (valueMas[valueMas.length - 1]).replace(/\s+/g, ' ') });
+      const iconIndex = Object.values(socialMedia).findIndex(item => item.domain === domain);
+      onChange({ ...value, name: Object.keys(socialMedia)[iconIndex] as MessengerCode || value.name, text: (valueMas[valueMas.length - 1]).replace(/\s+/g, ' ') });
       return;
     }
     onChange({ ...value, text: newValue.replace(/\s+/g, ' ') });

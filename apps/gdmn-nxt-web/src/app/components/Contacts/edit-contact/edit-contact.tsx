@@ -19,7 +19,7 @@ import TelephoneInput from '../../telephone-input';
 import filterOptions from '../../helpers/filter-options';
 import { LabelsSelect } from '../../selectors/labels-select';
 import { CustomerSelect } from '../../selectors/customer-select/customer-select';
-import SocialMediaInput, { ISocialMedia, socialMediaIcons } from '../../social-media-input';
+import SocialMediaInput, { ISocialMedia, socialMedia } from '../../social-media-input';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
@@ -354,7 +354,7 @@ export function EditContact({
           >
             {/* <SmsIcon fontSize="small" color="primary" /> */}
             <div className={styles['messenger-icon']}>
-              <img src={socialMediaIcons[CODE].icon} width={17} />
+              <img src={socialMedia[CODE].icon} width={17} />
             </div>
             <Stack
               direction="row"
@@ -366,7 +366,7 @@ export function EditContact({
                 value={USERNAME}
                 container={(value) =>
                   <a
-                    className={`${styles.link} ${!socialMediaIcons[CODE].link ? styles.linkDisabled : ''}`}
+                    className={`${styles.link} ${!socialMedia[CODE].link ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
                     href={parseToMessengerLink(CODE, USERNAME)}
                     rel="noreferrer"

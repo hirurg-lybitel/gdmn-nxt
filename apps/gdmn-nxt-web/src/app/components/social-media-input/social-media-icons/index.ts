@@ -11,11 +11,11 @@ import viber from './viber.png';
 import discord from './discord.png';
 import { MessengerCode } from '@gsbelarus/util-api-types';
 
-type ISocialMediaIcons = {
+type ISocialMedia = {
   [key in MessengerCode]: {icon: string, domain?: string, link?: string};
 }
 
-export const socialMediaIcons: ISocialMediaIcons = {
+export const socialMedia: ISocialMedia = {
   'facebook': {
     icon: facebook,
     domain: 'www.facebook.com',

@@ -1,6 +1,6 @@
 import { MenuItem, MenuItemProps, Typography } from '@mui/material';
 import { Styled } from './styled';
-import { socialMediaIcons } from '../../social-media-icons';
+import { socialMedia } from '../../social-media-icons';
 import { MessengerCode } from '@gsbelarus/util-api-types';
 
 export interface SocialMediaMenuItemProps extends MenuItemProps {
@@ -28,7 +28,7 @@ export function SocialMediaMenuItem(props: SocialMediaMenuItemProps) {
       data-testid={`option-${socialName}`}
     >
       <Styled.ListItemIcon>
-        <img style={{ width: '25px' }} src={socialMediaIcons[socialName].icon}/>
+        <img style={{ width: '25px' }} src={socialMedia[socialName].icon}/>
       </Styled.ListItemIcon>
       <Styled.ListItemText>
         {socialName}
