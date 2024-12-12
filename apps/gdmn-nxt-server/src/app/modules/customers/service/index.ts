@@ -3,6 +3,7 @@ import { FindHandler, ICustomer, IFavoriteContact, ITimeTrackTask } from '@gsbel
 import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import task from '@gdmn-nxt/controllers/kanban/task';
+import { contractsService } from '@gdmn-nxt/modules/contracts/service';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
@@ -16,7 +17,9 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     customerId,
     isFavorite,
     userId = -1,
-    withTasks
+    withTasks,
+    withAgreements,
+    withDebt,
   } = clause as any;
 
   const sortField = Object.keys(order)[0] ?? 'NAME';
@@ -101,6 +104,34 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
       }
     });
 
+    /** Действующие договоры по клиентам */
+    const agreements = new Map<number, number[]>();
+    const withAgreementsBool = (withAgreements as string)?.toLowerCase() === 'true';
+    if (withAgreementsBool) {
+      const contracts = (await contractsService.findAll(
+        sessionID,
+        null,
+        {
+          isActive: 'true'
+        }))
+        .contracts;
+
+      contracts.forEach(({ ID, customer: { ID: customerId } }) => {
+        if (agreements.has(customerId)) {
+          agreements.get(customerId)?.push(ID);
+        } else {
+          agreements.set(customerId, [ID]);
+        };
+      });
+    }
+
+    /** Задолженности */
+    const debts = new Map<number, number>();
+    const withDebtBool = (withDebt as string)?.toLowerCase() === 'true';
+    if (withDebtBool) {
+      debts.set(147329469, 31457);
+    }
+
     const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
     const depotIds = DEPARTMENTS ? (DEPARTMENTS as string).split(',').map(Number) ?? [] : [];
     const contractIds = CONTRACTS ? (CONTRACTS as string).split(',').map(Number) ?? [] : [];
@@ -160,6 +191,12 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             isFavorite,
             ...(withTasksBool ? {
               taskCount: tasks.get(c.ID)?.length ?? 0,
+            } : {}),
+            ...(withAgreementsBool ? {
+              agreementCount: agreements.get(c.ID)?.length ?? 0
+            } : {}),
+            ...(withDebtBool ? {
+              debt: debts.get(c.ID) ?? 0
             } : {})
           });
         }
