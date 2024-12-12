@@ -269,7 +269,9 @@ export function EditContact({
               onDelete={() => handleDeletePhone(index)}
               helperText={error}
               error={isTouched && Boolean(error)}
+              editMode={firstElement}
               closeOnBlur={!firstElement}
+              editEmpty={false}
               editComponent={
                 <TelephoneInput
                   name={`PHONE${index}`}
@@ -318,7 +320,9 @@ export function EditContact({
               onDelete={() => handleDeleteEmail(index)}
               error={isTouched && Boolean(error)}
               helperText={error}
+              editMode={firstElement}
               closeOnBlur={!firstElement}
+              editEmpty={false}
               editComponent={
                 <TextField
                   fullWidth
@@ -384,7 +388,9 @@ export function EditContact({
                 onDelete={() => handleDeleteMessenger(index)}
                 helperText={error}
                 error={isTouched && Boolean(error)}
+                editMode={firstElement}
                 closeOnBlur={!firstElement}
+                editEmpty={false}
                 editComponent={
                   <SocialMediaInput
                     value={{
