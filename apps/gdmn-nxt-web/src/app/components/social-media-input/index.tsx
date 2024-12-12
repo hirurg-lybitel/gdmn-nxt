@@ -2,9 +2,9 @@ import { Divider, InputAdornment, Stack, TextField, TextFieldProps } from '@mui/
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import SocialMediaButton from './components/social-media-button/social-media-button';
 import SocialMediaMenu from './components/social-media-menu/social-media-menu';
-import { IIconsNames } from './social-media-icons';
+import { socialMedia } from './social-media-icons';
+import { MessengerCode } from '@gsbelarus/util-api-types';
 export * from './social-media-icons';
-export * from './social-media-links';
 
 type BaseTextFieldProps = Omit<
   TextFieldProps,
@@ -13,7 +13,7 @@ type BaseTextFieldProps = Omit<
 
 export interface ISocialMedia {
     text: string;
-    name: IIconsNames
+    name: MessengerCode
 }
 
 export interface socialMediaInputProps extends BaseTextFieldProps {
@@ -71,7 +71,7 @@ export function SocialMediaInput(props: socialMediaInputProps) {
 
   const handleSocialChange = (socialValue: string) => {
     handleClose();
-    onChange({ ...value, name: socialValue as IIconsNames });
+    onChange({ ...value, name: socialValue as MessengerCode });
   };
 
   const [paste, setPaste] = useState(false);
@@ -81,8 +81,11 @@ export function SocialMediaInput(props: socialMediaInputProps) {
     handleClose();
     if (paste) {
       setPaste(false);
-      const parsedvalue = newValue.split('/');
-      onChange({ ...value, text: (parsedvalue[parsedvalue.length - 1]).replace(/\s+/g, ' ') });
+      const parsedValue = decodeURI(newValue.endsWith('/') ? newValue.slice(0, newValue.length - 1) : newValue);
+      const valueMas = parsedValue.split('/');
+      const domain = parsedValue.includes('https://') ? valueMas[2] : null;
+      const iconIndex = Object.values(socialMedia).findIndex(item => item.domain === domain);
+      onChange({ ...value, name: Object.keys(socialMedia)[iconIndex] as MessengerCode || value.name, text: (valueMas[valueMas.length - 1]).replace(/\s+/g, ' ') });
       return;
     }
     onChange({ ...value, text: newValue.replace(/\s+/g, ' ') });
