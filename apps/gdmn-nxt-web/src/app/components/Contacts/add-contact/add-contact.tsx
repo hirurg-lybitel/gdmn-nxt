@@ -73,12 +73,7 @@ export function AddContact({
           .max(20, 'Слишком длинное имя'),
         middleName: yup.string()
           .max(20, 'Слишком длинное отчество'),
-      }),
-      MESSENGERS: yup.array().of(
-        yup.object().shape({
-          USERNAME: yup.string().max(40, 'Слишком длинное имя'),
-        })
-      ),
+      })
     }),
     onSubmit: (values) => {
       const newPhones = values.PHONES?.filter(phone => !!phone.USR$PHONENUMBER);
