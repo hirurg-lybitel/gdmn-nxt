@@ -85,6 +85,11 @@ export function EditContact({
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       EMAILS: yup.array().of(emailsValidation()),
       PHONES: yup.array().of(phonesValidation()),
+      MESSENGERS: yup.array().of(
+        yup.object().shape({
+          USERNAME: yup.string().max(40, 'Слишком длинное имя'),
+        })
+      ),
       nameInfo: yup.object({
         lastName: yup.string()
           .required('Не указана фамилия')
