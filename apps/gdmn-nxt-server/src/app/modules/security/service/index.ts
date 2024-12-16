@@ -19,8 +19,9 @@ const getSessionsById = async (
 
   const userSessions = allSessions
     .filter(session => session.userId === userId)
-    .map(({ id, location, device, creationDate }) => ({
+    .map(({ id, ip, location, device, creationDate }) => ({
       id,
+      ip,
       location,
       device,
       creationDate,
