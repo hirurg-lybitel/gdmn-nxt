@@ -9,3 +9,4 @@ export * from './lib/systemDataTypes';
 export * from './lib/repository';
 export * from './lib/exceptions';
 export * from './lib/find-options';
+export * from './lib/session';

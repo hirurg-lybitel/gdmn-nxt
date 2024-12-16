@@ -6334,6 +6334,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bowser@npm:^2.11.0":
+  version: 2.11.0
+  resolution: "bowser@npm:2.11.0"
+  checksum: 29c3f01f22e703fa6644fc3b684307442df4240b6e10f6cfe1b61c6ca5721073189ca97cdeedb376081148c8518e33b1d818a57f781d70b0b70e1f31fb48814f
+  languageName: node
+  linkType: hard
+
 "brace-expansion@npm:^1.1.7":
   version: 1.1.11
   resolution: "brace-expansion@npm:1.1.11"
@@ -9859,6 +9866,7 @@ __metadata:
     apexcharts: 3.33.1
     axios: ^1.7.4
     babel-jest: 28.1.3
+    bowser: ^2.11.0
     clsx: ^1.1.1
     connect-flash: ^0.1.1
     connect-redis: ^7.1.1

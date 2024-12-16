@@ -142,7 +142,6 @@ export interface IChanges {
   newValue: string | number | undefined;
 };
 
-
 export interface ISortingData {
   field: string;
   sort: 'asc' | 'desc' | null | undefined;

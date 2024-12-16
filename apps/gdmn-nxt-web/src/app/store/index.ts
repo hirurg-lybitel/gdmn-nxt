@@ -43,6 +43,7 @@ import { mailingApi } from '../features/Marketing/mailing';
 import { customerFeedbackApi } from '../features/customer-feedback';
 import { workProjectsApi } from '../features/work-projects';
 import { timeTrackingApi } from '../features/time-tracking';
+import { sacurityApi } from '../features/security/securityApi';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -86,7 +87,8 @@ const reducers = combineReducers({
   [mailingApi.reducerPath]: mailingApi.reducer,
   [customerFeedbackApi.reducerPath]: customerFeedbackApi.reducer,
   [workProjectsApi.reducerPath]: workProjectsApi.reducer,
-  [timeTrackingApi.reducerPath]: timeTrackingApi.reducer
+  [timeTrackingApi.reducerPath]: timeTrackingApi.reducer,
+  [sacurityApi.reducerPath]: sacurityApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
@@ -146,6 +148,7 @@ export const store = configureStore({
     .concat(customerFeedbackApi.middleware)
     .concat(workProjectsApi.middleware)
     .concat(timeTrackingApi.middleware)
+    .concat(sacurityApi.middleware)
 });
 
 setupListeners(store.dispatch);

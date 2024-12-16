@@ -25,6 +25,7 @@
       "@gdmn-nxt/dayjs": ["libs/dayjs-provider/src/index.ts"],
       "@gdmn-nxt/dayjs-provider": ["libs/dayjs-provider/src/index.ts"],
       "@gdmn-nxt/db-connection": ["libs/db-connection/src/index.ts"],
+      "@gdmn-nxt/ip-info": ["libs/ip-info/src/index.ts"],
       "@gdmn-nxt/modules/*": ["apps/gdmn-nxt-server/src/app/modules/*"],
       "@gdmn-nxt/repositories/*": [
         "apps/gdmn-nxt-server/src/app/repositories/*"
