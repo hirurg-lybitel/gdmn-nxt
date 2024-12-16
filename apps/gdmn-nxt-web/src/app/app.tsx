@@ -217,7 +217,8 @@ export default function App(props: AppProps) {
       authCode,
       userName: userProfile?.userName ?? '',
       password: userProfile?.password ?? '',
-      employeeMode: true });
+      employeeMode: true,
+    });
 
     if (response.result === 'SUCCESS') {
       dispatch(queryLogin());

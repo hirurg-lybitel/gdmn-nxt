@@ -105,6 +105,10 @@ const signIn: RequestHandler = async (req, res, next) => {
         req.session.email = EMAIL;
         req.session.userName = user.userName;
 
+        req.session.device = device;
+        req.session.location = await getGeoData(ip);
+        req.session.creationDate = dayjs().toDate();
+
         return res.json(authResult(
           'ENABLED_2FA',
           'Требуется подтвердить код 2FA.'
@@ -177,7 +181,7 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
       return next(err);
     }
 
-    const { authCode, ip, device } = req.body;
+    const { authCode } = req.body;
     const { base32Secret } = req.session;
     const { email, userName } = user;
 
@@ -190,6 +194,8 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
       ));
     }
 
+    const { device, location, creationDate } = req.session;
+
     return req.login(user, loginErr => {
       if (loginErr) {
         return next(loginErr);
@@ -198,12 +204,13 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
       const prevSession = req.session;
       req.session.regenerate(async (err) => {
         Object.assign(req.session, prevSession);
+        req.session.userId = user.id;
         req.session.base32Secret = base32Secret;
         req.session.token = jwt.sign({ email }, config.jwtSecret, { expiresIn: jwtExpirationTime });
 
         req.session.device = device;
-        req.session.location = await getGeoData(ip);
-        req.session.creationDate = dayjs().toDate();
+        req.session.location = location;
+        req.session.creationDate = creationDate;
 
         return res.json(authResult(
           'SUCCESS',
