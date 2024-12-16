@@ -3,7 +3,7 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { resultError, validPassword } from '@gsbelarus/util-helpers';
-import { IsNotNull, IsNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
+import { ISessionInfo, IsNotNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
@@ -57,7 +57,7 @@ import { securityRouter } from './app/routes/security';
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
-  interface SessionData {
+  interface SessionData extends ISessionInfo {
     userId: number;
     permissions: Permissions;
     qr: string;
@@ -66,9 +66,6 @@ declare module 'express-session' {
     email: string;
     userName: string;
     captcha: string;
-    location: string;
-    device: string;
-    creationDate: Date
   }
 }
 

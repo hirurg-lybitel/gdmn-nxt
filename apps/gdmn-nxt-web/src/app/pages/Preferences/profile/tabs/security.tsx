@@ -1,7 +1,7 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
-import { IAuthResult, IProfileSettings, ISession, IUserProfile } from '@gsbelarus/util-api-types';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, Divider, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useTheme } from '@mui/material';
+import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -9,13 +9,17 @@ import { useCreate2faMutation, useDisableOtpMutation, useGetCreate2faQuery } fro
 import { useDispatch } from 'react-redux';
 import { setError } from 'apps/gdmn-nxt-web/src/app/features/error-slice/error-slice';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
-import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
+
 import PowerOffIcon from '@mui/icons-material/PowerOff';
 import { useCloseSessionBySessionIdMutation, useGetActiveSessionsQuery } from 'apps/gdmn-nxt-web/src/app/features/security/securityApi';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
 import dayjs from 'dayjs';
+import ComputerIcon from '@mui/icons-material/Computer';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import TabletIcon from '@mui/icons-material/Tablet';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 export default function SecurityTab() {
   const userProfile = useUserData();
@@ -161,19 +165,25 @@ export default function SecurityTab() {
       </Stack>
     </Dialog>, [twoFAOpen.create, user]);
 
-
   const handleCloseSession = useCallback((id: string) => () => {
     if (!id) return;
     closeSession(id);
   }, [closeSession]);
 
   const reorderSessions = useMemo(() => {
-    const index = activeSessions.findIndex(item => item.current);
-    if (index === -1) return activeSessions;
-    const newMas = [...activeSessions];
-    newMas.splice(index, 1);
-    return [...[activeSessions[index]], ...newMas];
+    const currentSession = activeSessions.find(item => item.current);
+    if (!currentSession) return activeSessions;
+
+    const otherSessions = activeSessions.filter(item => !item.current);
+    return [currentSession, ...otherSessions];
   }, [activeSessions]);
+
+  const getDeviceIcon = (device: string) => {
+    const deviceLower = device.toLowerCase();
+    if (deviceLower.includes('android') || deviceLower.includes('iphone')) return <SmartphoneIcon />;
+    if (deviceLower.includes('ipad')) return <TabletIcon />;
+    return <ComputerIcon />;
+  };
 
   return (
     <FormikProvider value={formik}>
@@ -182,7 +192,7 @@ export default function SecurityTab() {
           <Typography variant="subtitle1">Способы входа</Typography>
           <Stack direction="row" spacing={1}>
             <Icon fontSize="large" style={{ height: '100%', marginLeft: -7 }}>
-              <SystemSecurityUpdateGoodIcon fontSize="large" color="action"/>
+              <SystemSecurityUpdateGoodIcon fontSize="large" color="action" />
             </Icon>
             <Stack>
               <Typography >Двухфакторная аутентификация</Typography>
@@ -209,92 +219,138 @@ export default function SecurityTab() {
               />
             </Tooltip>
           </Stack>
-          <Stack>
-            <Accordion>
+          <Stack spacing={2}>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
-                sx={{ paddingLeft: 0 }}
+                sx={{
+                  paddingLeft: 0,
+                  '& .MuiAccordionSummary-content': {
+                    alignItems: 'center'
+                  }
+                }}
                 expandIcon={<ExpandMoreIcon />}
               >
-                <Typography variant="subtitle1">Активные сессии</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Активные сессии ({activeSessions.length})
+                </Typography>
               </AccordionSummary>
               {(sessionsIsLoading || sessionIsFetching) ?
-                [1, 2, 3].map(value => {
-                  return (
-                    <AccordionDetails
-                      key={value}
-                      style={{
-                        padding: 0,
-                        paddingBottom: '1px',
-                      }}
-                    >
-                      <Skeleton
-                        variant="rectangular"
-                        height={'38px'}
-                        width={'100%'}
-                      />
-                    </AccordionDetails>
-                  );
-                })
+                [1, 2, 3].map(value => (
+                  <AccordionDetails
+                    key={value}
+                    sx={{
+                      padding: 0,
+                      paddingBottom: '1px',
+                    }}
+                  >
+                    <Skeleton
+                      variant="rectangular"
+                      height={60}
+                      width="100%"
+                      sx={{ borderRadius: 1 }}
+                    />
+                  </AccordionDetails>
+                ))
                 : reorderSessions.map(item => {
                   const date = dayjs(item.creationDate);
                   return (
                     <AccordionDetails
                       key={item.id}
-                      style={{
-                        padding: 0,
-                        background: item.current ? 'rgba(33, 150, 243, 0.16)' : undefined
+                      sx={{
+                        padding: '12px 0',
+                        background: item.current ? 'rgba(33, 150, 243, 0.08)' : undefined,
+                        borderRadius: 1,
+                        '&:hover': {
+                          background: item.current ? 'rgba(33, 150, 243, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                        }
                       }}
                     >
                       <Grid
                         container
                         alignItems="center"
-                        style={{ padding: '4px 0px' }}
+                        spacing={2}
+                        sx={{ px: 2 }}
                       >
                         <Grid
                           item
-                          xs={5}
-                          paddingLeft={2}
-                          paddingRight={2}
+                          xs={12}
+                          md={4}
                         >
-                          <Typography variant="body2">{item.device}</Typography>
-                        </Grid>
-                        <Grid item flex={1}>
-                          <Typography variant="body2">{item.location}</Typography>
-                        </Grid>
-                        <Grid item flex={1}>
-                          <Typography variant="body2">
-                            {date.format('DD.MM.YYYY HH:mm')}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {getDeviceIcon(item.device?.os?.name ?? '')}
+                            <Box>
+                              <Typography variant="body2" sx={{ fontWeight: item.current ? 600 : 400 }}>
+                                {item.device?.os?.name ?? 'Не определено'}
+                                {item.current && (
+                                  <Typography
+                                    component="span"
+                                    variant="caption"
+                                    sx={{ ml: 1, color: 'primary.main' }}
+                                  >
+                                    (текущая сессия)
+                                  </Typography>
+                                )}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {item.device?.browser?.name ?? 'Не определено'}
+                              </Typography>
+                            </Box>
+                          </Box>
                         </Grid>
                         <Grid
                           item
-                          xs={2}
-                          md={1}
-                          marginRight={1.5}
-                          textAlign={'right'}
+                          xs={12}
+                          md={3}
                         >
-                          <Confirmation
-                            dangerous
-                            onConfirm={handleCloseSession(item.id)}
-                          >
-                            <Tooltip title={'Закрыть сессию'}>
-                              <IconButton>
-                                <PowerOffIcon color="error"/>
-                              </IconButton>
-                            </Tooltip>
-                          </Confirmation>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <LocationOnIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color="text.secondary">
+                              {item.location ? `${item.location.city}, ${item.location.country}` : 'Местоположение неизвестно'}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          md={3}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AccessTimeIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color="text.secondary">
+                              {date.format('DD.MM.YYYY HH:mm')}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          md={2}
+                          sx={{ display: 'flex', justifyContent: 'flex-end' }}
+                        >
+                          {!item.current && (
+                            <Confirmation
+                              dangerous
+                              onConfirm={handleCloseSession(item.id)}
+                              title="Закрытие сессии"
+                            >
+                              <Tooltip title="Закрыть сессию">
+                                <IconButton sx={{ color: 'error.main' }}>
+                                  <PowerOffIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Confirmation>
+                          )}
                         </Grid>
                       </Grid>
-                      <Divider/>
                     </AccordionDetails>
                   );
                 })
               }
             </Accordion>
           </Stack>
+          {memoCheckCode}
+          {memoCreateCode}
         </Stack>
-        {memoCheckCode}
-        {memoCreateCode}
       </Form>
     </FormikProvider>
   );

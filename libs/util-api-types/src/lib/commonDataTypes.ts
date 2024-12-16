@@ -142,14 +142,6 @@ export interface IChanges {
   newValue: string | number | undefined;
 };
 
-export interface ISession {
-  location: string,
-  device: string,
-  id: string,
-  creationDate: string,
-  current: boolean
-}
-
 export interface ISortingData {
   field: string;
   sort: 'asc' | 'desc' | null | undefined;

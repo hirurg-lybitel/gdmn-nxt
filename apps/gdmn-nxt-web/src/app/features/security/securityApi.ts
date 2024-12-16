@@ -1,10 +1,10 @@
 
-import { IRequestResult, ISession } from '@gsbelarus/util-api-types';
+import { IRequestResult, ISessionInfo } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
 interface ISessions{
-  activeSessions: ISession[];
+  activeSessions: ISessionInfo[];
 };
 
 type ISessionsRequestResult = IRequestResult<ISessions>
@@ -14,7 +14,7 @@ export const sacurityApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'security', credentials: 'include' }),
   tagTypes: ['sessions'],
   endpoints: (builder) => ({
-    getActiveSessions: builder.query<ISession[], void>({
+    getActiveSessions: builder.query<ISessionInfo[], void>({
       query: () => '/active-sessions',
       transformResponse: (response: ISessionsRequestResult) => response.queries?.activeSessions || [],
       providesTags: ['sessions']

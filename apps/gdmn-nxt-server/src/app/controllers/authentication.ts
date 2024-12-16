@@ -16,6 +16,8 @@ import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
 import { resultError } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { getGeoData } from '@gdmn-nxt/ip-info';
+import dayjs from '@gdmn-nxt/dayjs';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -144,14 +146,16 @@ const signIn: RequestHandler = async (req, res, next) => {
         }
 
         const prevSession = req.session;
-        req.session.regenerate((err) => {
+        req.session.regenerate(async (err) => {
           Object.assign(req.session, prevSession);
           req.session.userId = user.id;
           req.session.base32Secret = '';
           req.session.token = jwt.sign({ EMAIL }, config.jwtSecret, { expiresIn: jwtExpirationTime });
+
           req.session.device = device;
-          req.session.location = ip;
-          req.session.creationDate = new Date();
+          req.session.location = await getGeoData(ip);
+          req.session.creationDate = dayjs().toDate();
+
           return res.json(authResult(
             'SUCCESS',
             `Вы вошли как ${userName}.`
@@ -192,13 +196,15 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
       }
 
       const prevSession = req.session;
-      req.session.regenerate((err) => {
+      req.session.regenerate(async (err) => {
         Object.assign(req.session, prevSession);
         req.session.base32Secret = base32Secret;
         req.session.token = jwt.sign({ email }, config.jwtSecret, { expiresIn: jwtExpirationTime });
+
         req.session.device = device;
-        req.session.location = ip;
-        req.session.creationDate = new Date();
+        req.session.location = await getGeoData(ip);
+        req.session.creationDate = dayjs().toDate();
+
         return res.json(authResult(
           'SUCCESS',
           `Вы вошли как ${userName}.`

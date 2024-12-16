@@ -1,21 +1,33 @@
-const getSessionsById = async (userId, sessionStore, currentSessionId) => {
-  const activeSessions = [];
-  await sessionStore.all((err, sessions) => {
-    if (!sessions) return [];
-    const keys = Object.keys(sessions);
-    for (const key of keys) {
-      if (sessions[key].userId === userId) {
-        activeSessions.push({
-          id: sessions[key].id,
-          location: sessions[key].location,
-          device: sessions[key].device,
-          creationDate: sessions[key].creationDate,
-          current: sessions[key].id === currentSessionId
-        });
-      };
-    }
+import { ISessionInfo } from '@gsbelarus/util-api-types';
+import { SessionData } from 'express-session';
+
+const getSessionsById = async (
+  userId: number,
+  sessionStore: Express.SessionStore,
+  currentSessionId: string
+): Promise<ISessionInfo[]> => {
+  const allSessions: SessionData[] = await new Promise((resolve, reject) => {
+    sessionStore.all((error, results) => {
+      if (error) return reject(error);
+      if (!Array.isArray(results)) return reject('Not an array');
+
+      else return resolve(results);
+    });
   });
-  return activeSessions;
+
+  if (!allSessions) return [];
+
+  const userSessions = allSessions
+    .filter(session => session.userId === userId)
+    .map(({ id, location, device, creationDate }) => ({
+      id,
+      location,
+      device,
+      creationDate,
+      current: id === currentSessionId
+    }));
+
+  return userSessions;
 };
 
 const closeSessionBySessionId = async (sessionId, sessionStore) => {

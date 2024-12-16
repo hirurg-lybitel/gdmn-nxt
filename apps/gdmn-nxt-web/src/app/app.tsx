@@ -1,12 +1,11 @@
 import { Captcha, CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
-import { IAuthResult, IUserProfile, ColorMode } from '@gsbelarus/util-api-types';
+import { IAuthResult, IUserProfile, ColorMode, ISessionInfo } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
-
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -16,6 +15,7 @@ import { setAppOptions, setColorMode } from './store/settingsSlice';
 import { baseUrlApi } from './constants';
 import { saveFilterData } from './store/filtersSlice';
 import bowser from 'bowser';
+import { getPublicIP } from '@gdmn-nxt/ip-info';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -146,19 +146,28 @@ export default function App(props: AppProps) {
   const handleSignInWithEmail = (email: string) => handleSignIn(userProfile?.userName ?? '', userProfile?.password ?? '', email);
 
   const handleSignIn = async (userName: string, password: string, email?: string) => {
-    const loginData = { ip: 'Неопределено', device: '' };
-    await fetch('https://api.ipify.org?format=json')
-      .then(response => response.json())
-      .then(data => {
-        loginData.ip = data.ip;
-      })
-      .catch(error => console.error('Ошибка:', error));
-
+    const loginData: Pick<ISessionInfo, 'ip' | 'device'> = { ip: 'unknown' };
     const browser = bowser.parse(window.navigator.userAgent);
 
-    loginData.device = `${browser?.os?.name} ${browser?.os?.version} / ${browser?.browser?.name} v${browser?.browser?.version}`;
+    loginData.ip = await getPublicIP();
+    loginData.device = {
+      os: {
+        name: browser?.os?.name ?? 'Не определено',
+        version: browser?.os?.version
+      },
+      browser: {
+        name: browser?.browser?.name ?? 'Не определено',
+        version: browser?.browser?.version
+      }
+    };
 
-    const response = await post('user/signin', { userName, password, employeeMode: true, ...(email && { email }), ...loginData });
+    const response = await post('user/signin', {
+      userName,
+      password,
+      employeeMode: true,
+      ...(email && { email }),
+      ...loginData
+    });
 
     if (response.result === 'SUCCESS') {
       dispatch(queryLogin());
