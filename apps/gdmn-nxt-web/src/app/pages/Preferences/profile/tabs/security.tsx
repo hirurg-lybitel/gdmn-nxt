@@ -1,19 +1,31 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
 import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
-import { Box, Dialog, FormControlLabel, Icon, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useCreate2faMutation, useDisableOtpMutation, useGetCreate2faQuery } from 'apps/gdmn-nxt-web/src/app/features/auth/authApi';
 import { useDispatch } from 'react-redux';
 import { setError } from 'apps/gdmn-nxt-web/src/app/features/error-slice/error-slice';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
 
+import PowerOffIcon from '@mui/icons-material/PowerOff';
+import { useCloseSessionBySessionIdMutation, useGetActiveSessionsQuery } from 'apps/gdmn-nxt-web/src/app/features/security/securityApi';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import dayjs from 'dayjs';
+import ComputerIcon from '@mui/icons-material/Computer';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import TabletIcon from '@mui/icons-material/Tablet';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+
 export default function SecurityTab() {
   const userProfile = useUserData();
   const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
-
+  const { data: activeSessions = [], isFetching: sessionIsFetching, isLoading: sessionsIsLoading } = useGetActiveSessionsQuery(undefined, { pollingInterval: 1 * 60 * 1000 });
+  const [closeSession] = useCloseSessionBySessionIdMutation();
   const [fetchDataCreate2fa, setFetchDataCreate2fa] = useState(false);
   const { data: dataCreate2fa } = useGetCreate2faQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -152,6 +164,25 @@ export default function SecurityTab() {
       </Stack>
     </Dialog>, [twoFAOpen.create, user]);
 
+  const handleCloseSession = useCallback((id: string) => () => {
+    if (!id) return;
+    closeSession(id);
+  }, [closeSession]);
+
+  const reorderSessions = useMemo(() => {
+    const currentSession = activeSessions.find(item => item.current);
+    if (!currentSession) return activeSessions;
+
+    const otherSessions = activeSessions.filter(item => !item.current);
+    return [currentSession, ...otherSessions];
+  }, [activeSessions]);
+
+  const getDeviceIcon = (device: string) => {
+    const deviceLower = device.toLowerCase();
+    if (deviceLower.includes('android') || deviceLower.includes('iphone')) return <SmartphoneIcon />;
+    if (deviceLower.includes('ipad')) return <TabletIcon />;
+    return <ComputerIcon />;
+  };
 
   return (
     <FormikProvider value={formik}>
@@ -160,7 +191,7 @@ export default function SecurityTab() {
           <Typography variant="subtitle1">Способы входа</Typography>
           <Stack direction="row" spacing={1}>
             <Icon fontSize="large" style={{ height: '100%', marginLeft: -7 }}>
-              <SystemSecurityUpdateGoodIcon fontSize="large" color="action"/>
+              <SystemSecurityUpdateGoodIcon fontSize="large" color="action" />
             </Icon>
             <Stack>
               <Typography >Двухфакторная аутентификация</Typography>
@@ -187,9 +218,138 @@ export default function SecurityTab() {
               />
             </Tooltip>
           </Stack>
+          <Stack spacing={2}>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                sx={{
+                  paddingLeft: 0,
+                  '& .MuiAccordionSummary-content': {
+                    alignItems: 'center'
+                  }
+                }}
+                expandIcon={<ExpandMoreIcon />}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Активные сессии ({activeSessions.length})
+                </Typography>
+              </AccordionSummary>
+              {(sessionsIsLoading || sessionIsFetching) ?
+                [1, 2, 3].map(value => (
+                  <AccordionDetails
+                    key={value}
+                    sx={{
+                      padding: 0,
+                      paddingBottom: '1px',
+                    }}
+                  >
+                    <Skeleton
+                      variant="rectangular"
+                      height={60}
+                      width="100%"
+                      sx={{ borderRadius: 1 }}
+                    />
+                  </AccordionDetails>
+                ))
+                : reorderSessions.map(item => {
+                  const date = dayjs(item.creationDate);
+                  return (
+                    <AccordionDetails
+                      key={item.id}
+                      sx={{
+                        padding: '12px 0',
+                        background: item.current ? 'rgba(33, 150, 243, 0.08)' : undefined,
+                        borderRadius: 1,
+                        '&:hover': {
+                          background: item.current ? 'rgba(33, 150, 243, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                        }
+                      }}
+                    >
+                      <Grid
+                        container
+                        alignItems="center"
+                        spacing={2}
+                        sx={{ px: 2 }}
+                      >
+                        <Grid
+                          item
+                          xs={12}
+                          md={4}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {getDeviceIcon(item.device?.os?.name ?? '')}
+                            <Box>
+                              <Typography variant="body2" sx={{ fontWeight: item.current ? 600 : 400 }}>
+                                {item.device?.os?.name ?? 'Не определено'}
+                                {item.current && (
+                                  <Typography
+                                    component="span"
+                                    variant="caption"
+                                    sx={{ ml: 1, color: 'primary.main' }}
+                                  >
+                                    (текущая сессия)
+                                  </Typography>
+                                )}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {item.device?.browser?.name ?? 'Не определено'}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          md={3}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <LocationOnIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color="text.secondary">
+                              {item.location ? `${item.location.city}, ${item.location.country}` : 'Местоположение неизвестно'}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          md={3}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AccessTimeIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color="text.secondary">
+                              {date.format('DD.MM.YYYY HH:mm')}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          md={2}
+                          sx={{ display: 'flex', justifyContent: 'flex-end' }}
+                        >
+                          {!item.current && (
+                            <Confirmation
+                              dangerous
+                              onConfirm={handleCloseSession(item.id)}
+                              title="Закрытие сессии"
+                            >
+                              <Tooltip title="Закрыть сессию">
+                                <IconButton sx={{ color: 'error.main' }}>
+                                  <PowerOffIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Confirmation>
+                          )}
+                        </Grid>
+                      </Grid>
+                    </AccordionDetails>
+                  );
+                })
+              }
+            </Accordion>
+          </Stack>
+          {memoCheckCode}
+          {memoCreateCode}
         </Stack>
-        {memoCheckCode}
-        {memoCreateCode}
       </Form>
     </FormikProvider>
   );

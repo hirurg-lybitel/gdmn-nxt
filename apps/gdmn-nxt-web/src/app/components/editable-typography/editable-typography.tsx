@@ -31,7 +31,8 @@ export interface EditableTypographyProps<Value extends React.ReactNode> extends 
   editEmpty?: boolean;
   cancellable?: boolean,
   onSave?: () => void;
-  buttonDirection?: 'column' | 'column-reverse' | 'row' | 'row-reverse'
+  buttonDirection?: 'column' | 'column-reverse' | 'row' | 'row-reverse',
+  editMode?: boolean
 }
 
 const EditableTypography = <Value extends React.ReactNode>({
@@ -51,6 +52,7 @@ const EditableTypography = <Value extends React.ReactNode>({
   containerStyle,
   editEmpty = true,
   buttonDirection = 'row',
+  editMode,
   ...props
 }: EditableTypographyProps<Value>) => {
   const [editText, setEditText] = useState(editEmpty ? !value : false);
@@ -142,7 +144,7 @@ const EditableTypography = <Value extends React.ReactNode>({
           title={helperText}
         >
           <div style={{ width: '100%' }}>
-            {editText
+            {editText || editMode
               ? clonedElement ??
           <TextField
             variant="standard"

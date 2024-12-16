@@ -3,7 +3,7 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { resultError, validPassword } from '@gsbelarus/util-helpers';
-import { IsNotNull, IsNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
+import { ISessionInfo, IsNotNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
 import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
@@ -53,12 +53,13 @@ import { workProjectsRouter } from './app/routes/workProject';
 import { timeTrackingRouter } from './app/routes/timeTracking';
 import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
+import { securityRouter } from './app/routes/security';
 
 const COOKIE_AGE = 24 * 60 * 60 * 1000;
 
 /** Расширенный интерфейс для сессии */
 declare module 'express-session' {
-  interface SessionData {
+  interface SessionData extends ISessionInfo {
     userId: number;
     permissions: Permissions;
     qr: string;
@@ -349,6 +350,9 @@ router.use(businessProcessRouter);
 
 /** Labels*/
 router.use(labelsRouter);
+
+/** Security */
+router.use(securityRouter);
 
 /** FAQ*/
 router.use(faqRouter);
