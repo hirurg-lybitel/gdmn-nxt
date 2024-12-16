@@ -14,8 +14,8 @@ import { InitData } from './store/initData';
 import { setAppOptions, setColorMode } from './store/settingsSlice';
 import { baseUrlApi } from './constants';
 import { saveFilterData } from './store/filtersSlice';
-import bowser from 'bowser';
 import { getPublicIP } from '@gdmn-nxt/ip-info';
+import bowser from 'bowser';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
