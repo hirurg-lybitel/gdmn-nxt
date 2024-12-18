@@ -1,5 +1,5 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
@@ -13,7 +13,7 @@ import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
 import { useCloseSessionBySessionIdMutation, useGetActiveSessionsQuery } from 'apps/gdmn-nxt-web/src/app/features/security/securityApi';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import dayjs from 'dayjs';
 import ComputerIcon from '@mui/icons-material/Computer';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';

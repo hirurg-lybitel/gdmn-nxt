@@ -3,7 +3,7 @@ import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
 import { SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAddCardMutation, useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { Autocomplete, Badge, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -13,14 +13,14 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import KanbanList from '../../../components/Kanban/kanban-list/kanban-list';
 import { IKanbanCard, IKanbanFilterDeadline } from '@gsbelarus/util-api-types';
 import DealsFilter, { IFilteringData } from '../../../components/Kanban/deals-filter/deals-filter';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery, usePostLastUsedFilterDeadlineMutation } from '../../../features/kanban/kanbanFiltersApi';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import KanbanEditCard from '@gdmn-nxt/components/Kanban/kanban-edit-card/kanban-edit-card';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 
 export interface IChanges {
   id: number;

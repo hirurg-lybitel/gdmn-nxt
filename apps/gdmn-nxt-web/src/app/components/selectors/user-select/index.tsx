@@ -3,9 +3,9 @@ import styles from './user-select.module.less';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import { ChangeEvent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
-import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
 import { array } from 'yup/lib/locale';
-import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
 
 const filterOptions = createFilterOptions<IUser>({

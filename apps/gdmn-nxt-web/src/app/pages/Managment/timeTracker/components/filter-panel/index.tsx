@@ -5,7 +5,7 @@ import { Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack } f
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { useCallback } from 'react';
 import UserSelect from '@gdmn-nxt/components/selectors/user-select';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 
 export interface FilterPanelProps {
   open: boolean;

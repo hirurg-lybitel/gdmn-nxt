@@ -5,10 +5,10 @@ import { useCallback, useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import LabelMarker from '../label-marker/label-marker';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import EditIcon from '@mui/icons-material/Edit';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 
 export interface LabelListItemProps {
   data: ILabel;

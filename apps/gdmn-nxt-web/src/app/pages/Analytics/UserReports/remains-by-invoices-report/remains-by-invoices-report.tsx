@@ -1,6 +1,6 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
 import { Grid, Typography } from '@mui/material';
-import { CircularIndeterminate } from 'apps/gdmn-nxt-web/src/app/components/helpers/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { useGetRemainsInvoicesQuery } from 'apps/gdmn-nxt-web/src/app/features/remains-by-invoices/remainsInvoicesApi';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { useSelector } from 'react-redux';

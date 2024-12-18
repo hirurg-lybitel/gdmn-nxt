@@ -3,7 +3,7 @@ import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, Ico
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -14,12 +14,12 @@ import { GroupHeader, GroupItems } from '../../Kanban/kanban-edit-card/component
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import WarningIcon from '@mui/icons-material/Warning';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles(() => ({

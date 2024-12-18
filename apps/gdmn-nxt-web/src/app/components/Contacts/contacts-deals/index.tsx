@@ -1,12 +1,12 @@
 import WarningIcon from '@mui/icons-material/Warning';
 import InProgressIcon from '@mui/icons-material/Autorenew';
 import InfoIcon from '@mui/icons-material/Info';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { IDeal } from '@gsbelarus/util-api-types';
 import { Box, Chip } from '@mui/material';
 import { useRef } from 'react';
-import useDateComparator from '@gdmn-nxt/components/helpers/hooks/useDateComparator';
+import useDateComparator from '@gdmn-nxt/helpers/hooks/useDateComparator';
 import KanbanList from '@gdmn-nxt/components/Kanban/kanban-list/kanban-list';
 import { GridColDef } from '@mui/x-data-grid-pro';
 

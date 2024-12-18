@@ -1,8 +1,8 @@
 import { useSelector } from 'react-redux';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { RootState } from '../../../store';
-import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
+import { RootState } from '@gdmn-nxt/store';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
 import { ColorMode } from '@gsbelarus/util-api-types';

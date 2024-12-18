@@ -3,16 +3,16 @@ import SelectTemplate from '@gdmn-nxt/components/Mailing/select-template/select-
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IFilteringData, IMailing, IPaginationData, ISortingData, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Chip, ChipOwnProps, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridColDef, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useLaunchMailingMutation, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
-import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
@@ -21,9 +21,9 @@ import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import SendIcon from '@mui/icons-material/Send';
 import PendingIcon from '@mui/icons-material/Pending';
 import dayjs from '@gdmn-nxt/dayjs';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 interface StatusChipProps extends ChipOwnProps {
   onClick?: () => void;
 }

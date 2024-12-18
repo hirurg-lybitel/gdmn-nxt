@@ -16,7 +16,7 @@ import * as yup from 'yup';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
-import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import TagIcon from '@mui/icons-material/Tag';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';

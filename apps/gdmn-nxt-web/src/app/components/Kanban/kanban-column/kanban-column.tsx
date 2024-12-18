@@ -10,7 +10,7 @@ import { DraggableProvided, DraggableStateSnapshot, DroppableStateSnapshot } fro
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 

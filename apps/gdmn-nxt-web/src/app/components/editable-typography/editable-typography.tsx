@@ -7,7 +7,7 @@ import { CSSProperties, KeyboardEvent, cloneElement, useMemo, useState } from 'r
 import { styled } from '@mui/material/styles';
 import { ErrorTooltip } from '../Styled/error-tooltip/error-tooltip';
 import SaveIcon from '@mui/icons-material/Save';
-import useConfirmation from '../helpers/hooks/useConfirmation';
+import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 
 export interface EditableTypographyProps<Value extends React.ReactNode> extends TypographyProps {
   name?: string;

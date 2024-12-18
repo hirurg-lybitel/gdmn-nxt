@@ -18,27 +18,27 @@ import {
   Skeleton,
 } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
 import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTrackingByDateQuery, useGetTimeTrackingInProgressQuery, useUpdateTimeTrackingMutation } from '../../../features/time-tracking';
-import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
+import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import FilterPanel from './components/filter-panel';
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 
 const durationMask = [
   /[0-9]/,

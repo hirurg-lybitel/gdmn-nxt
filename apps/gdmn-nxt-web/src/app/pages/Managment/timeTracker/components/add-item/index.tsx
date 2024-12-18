@@ -16,11 +16,11 @@ import { ICustomer, ITimeTrack, ITimeTrackTask, IWorkProject } from '@gsbelarus/
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
-import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 const durationMask = [
   /[0-9]/,
