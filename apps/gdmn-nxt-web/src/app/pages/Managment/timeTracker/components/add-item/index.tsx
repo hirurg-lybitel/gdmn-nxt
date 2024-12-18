@@ -69,7 +69,6 @@ export const AddItem = ({
   const { STATUS, ...defaultWorkProject } = workProjects.length > 0 ? workProjects[0] : { } as IWorkProject;
 
   useEffect(() => {
-    console.log('asd');
     if (Object.keys(defaultWorkProject).length <= 0) return;
     formik.setFieldValue('workProject', defaultWorkProject);
   }, [workProjects]);
