@@ -11,16 +11,16 @@ import StopIcon from '@mui/icons-material/Stop';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
-import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
+// import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
 import { ICustomer, ITimeTrack, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
-import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 const durationMask = [
   /[0-9]/,
@@ -45,19 +45,11 @@ export const AddItem = ({
   initial,
   onSubmit
 }: AddItemProps) => {
-  const [addFavorite] = useAddFavoriteMutation();
-  const [deleteFavorite] = useDeleteFavoriteMutation();
-
   const [calcMode, setCalcMode] = useState<CalcMode>(initial?.inProgress ? 'calc' : 'manual');
   const [submitMode, setSubmitMode] = useState<SubmitMode>('add');
   const [isValidTimers, toggleValidTimers] = useState(true);
   const currentDate = useMemo(() => dayjs().toDate(), []);
-
-  const {
-    data: workProjects = [],
-    isFetching: workProjectsFetching,
-    isLoading: workProjectsLoading
-  } = useGetWorkProjectsQuery();
+  const [onDate, setOnDate] = useState<Date>(currentDate);
 
   const calcModeChange = (
     event: MouseEvent<HTMLElement>,
@@ -66,16 +58,9 @@ export const AddItem = ({
     newAlignment && setCalcMode(newAlignment);
   };
 
-  const { STATUS, ...defaultWorkProject } = workProjects.length > 0 ? workProjects[0] : { } as IWorkProject;
-
-  useEffect(() => {
-    if (Object.keys(defaultWorkProject).length <= 0) return;
-    formik.setFieldValue('workProject', defaultWorkProject);
-  }, [workProjects]);
-
   const initialValues = {
     ID: -1,
-    date: currentDate,
+    date: onDate,
     customer: null,
     startTime: currentDate,
     endTime: null,
@@ -111,8 +96,8 @@ export const AddItem = ({
       onSubmit(values, submitMode);
       resetForm();
 
-      /** Устанавливаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
-      formik.setFieldValue('date', values.date);
+      /** Запоминаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
+      setOnDate(values.date);
     },
   });
 
@@ -230,15 +215,6 @@ export const AddItem = ({
     formik.setFieldValue('endTime', startTime.add(newDuration).toDate());
   };
 
-  const handleWorkProjectChange = (e: any, value: IWorkProject | null) => formik.setFieldValue('workProject', value);;
-
-  const handleFavoriteClick = useCallback((workProject: IWorkProject) => (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
-    workProject.isFavorite
-      ? deleteFavorite(workProject.ID)
-      : addFavorite(workProject.ID);
-  }, []);
-
   const billableChange = (
     event: ChangeEvent<HTMLInputElement>,
     checked: boolean
@@ -246,30 +222,11 @@ export const AddItem = ({
     formik.setFieldValue('billable', checked);
   };
 
-  const [selectedTask, setSelectedTask] = useState<ITimeTrackTask | null>(null);
-  const { data: selectedTaskInfo } = useGetTaskQuery(selectedTask?.ID ?? -1, { skip: !selectedTask });
-
   const handleTaskSelected = async (task: ITimeTrackTask | null) => {
-    setSelectedTask(task);
     formik.setFieldValue('task', task);
   };
 
-  useEffect(() => {
-    if (!selectedTaskInfo) {
-      return;
-    }
-
-    const workProjectIndex = workProjects.findIndex(p => p.NAME === selectedTaskInfo.project?.name);
-    if (workProjectIndex < 0) {
-      return;
-    }
-
-    formik.setFieldValue('workProject', workProjects[workProjectIndex]);
-  }, [selectedTaskInfo, workProjects]);
-
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
-
-  const [ListboxComponent] = useAutocompleteVirtualization({ minWidthByContent: true });
 
   return (
     <CustomizedCard className={styles.itemCard}>
@@ -286,6 +243,8 @@ export const AddItem = ({
                 disableCaption
                 disableFavorite={false}
                 withTasks
+                debt
+                agreement
                 required
                 value={formik.values.customer}
                 onChange={handleCustomerChange}
@@ -311,73 +270,6 @@ export const AddItem = ({
                   }}
                   onFocus={() => setDescriptionOnFocus(true)}
                   onBlur={() => setDescriptionOnFocus(false)}
-                  InputProps={{
-                    startAdornment:
-                      <InputAdornment position="start">
-                        <div style={{ position: 'relative', color: 'transparent' }}>
-                          {/* Костыль для автоширины Autocomplete */}
-                          <Stack direction={'row'}>
-                            {workProjectsLoading
-                              ? 'Загрузка'
-                              : `${formik.values.workProject?.NAME ?? defaultWorkProject.NAME}`
-                            }
-                            <Box width={34} />
-                          </Stack>
-                          <Autocomplete
-                            disableClearable
-                            options={workProjects}
-                            loading={workProjectsFetching}
-                            loadingText="Загрузка данных..."
-                            value={formik.values.workProject ?? defaultWorkProject}
-                            filterOptions={filterOptions(100, 'NAME')}
-                            getOptionLabel={option => option?.NAME ?? ''}
-                            onChange={handleWorkProjectChange}
-                            sx={{
-                              position: 'absolute',
-                              top: -2,
-                              width: '100%',
-                              '& .MuiInput-root::before': { borderBottom: 0 }
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                variant="standard"
-                              />
-                            )}
-                            slotProps={{
-                              paper: {
-                                style: {
-                                  width: 'max-content'
-                                }
-                              }
-                            }}
-                            renderOption={(props, option) => (
-                              <li
-                                {...props}
-                                key={option.ID}
-                                style={{
-                                  paddingTop: 2,
-                                  paddingBottom: 2
-                                }}
-                              >
-                                {option.NAME}
-                                <Box flex={1} minWidth={12} />
-                                <SwitchStar selected={!!option.isFavorite} onClick={handleFavoriteClick(option)} />
-                              </li>
-                            )}
-                            groupBy={({ isFavorite }: IWorkProject) => isFavorite ? 'Избранные' : 'Остальные'}
-                            renderGroup={(params) => (
-                              <li key={params.key}>
-                                <GroupHeader>
-                                  <Typography variant="subtitle1">{params.group}</Typography>
-                                </GroupHeader>
-                                <GroupItems>{params.children}</GroupItems>
-                              </li>
-                            )}
-                          />
-                        </div>
-                      </InputAdornment>,
-                  }}
                 />
               </div>
             </Stack>
@@ -385,7 +277,7 @@ export const AddItem = ({
               <Stack spacing={1} width={216}>
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
-                  value={formik.values.date}
+                  value={onDate}
                   onChange={handleDateTimeChange('date')}
                   sx={{
                     '& .MuiInputBase-root': {

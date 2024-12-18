@@ -1,5 +1,5 @@
 import { DetailedHTMLProps, HTMLAttributes, useCallback, useMemo, useState } from 'react';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 
 interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   children: JSX.Element;
@@ -9,6 +9,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
   text?: string;
   actions?: [string, string];
   onClose?: () => void;
+  disabled?: boolean
 }
 export default function Confirmation({
   children,

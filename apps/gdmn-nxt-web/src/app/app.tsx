@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { CircularIndeterminate } from './components/helpers/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setAppOptions, setColorMode } from './store/settingsSlice';
 import { baseUrlApi } from './constants';

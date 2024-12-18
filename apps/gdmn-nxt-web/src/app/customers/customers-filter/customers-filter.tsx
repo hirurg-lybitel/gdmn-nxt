@@ -15,7 +15,7 @@ import { Theme } from '@mui/material/styles';
 import { useGetWorkTypesQuery } from '../../features/work-types/workTypesApi';
 import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
-import filterOptions from '../../components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';

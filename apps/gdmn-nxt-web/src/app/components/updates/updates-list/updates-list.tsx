@@ -11,7 +11,7 @@ import { Fragment, SyntheticEvent, useCallback, useMemo, useState } from 'react'
 import { useAddUpdateMutation, useDeleteUpdateMutation, useEditUpdateMutation, useGetAllUpdatesQuery } from '../../../features/updates';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import usePermissions from '../../helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import UpdatesEdit from '../updates-edit/updates-edit';
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';

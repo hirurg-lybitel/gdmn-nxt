@@ -1,8 +1,8 @@
 import { SegmentUpsert } from '@gdmn-nxt/components/Segments/segment-upsert';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IFilteringData, IPaginationData, ISegment, ISortingData } from '@gsbelarus/util-api-types';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
@@ -10,10 +10,10 @@ import { GridColDef, GridRenderCellParams, GridSortModel } from '@mui/x-data-gri
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/Marketing/segments/segmentsApi';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import SegmentCustomers from '../components/segment-customers';
 
 export default function CustomersSegments() {

@@ -14,9 +14,9 @@ import { IContactName, IContactPerson, IContactWithID, ICustomer, IEmail, IMesse
 import { useEffect, useMemo, useState } from 'react';
 import { LabelsSelect } from '../../selectors/labels-select';
 import { CustomerSelect } from '../../selectors/customer-select/customer-select';
-import filterOptions from '../../helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import { emailsValidation, phonesValidation } from '../../helpers/validators';
+import { emailsValidation, phonesValidation } from '@gdmn-nxt/helpers/validators';
 import SocialMediaInput, { ISocialMedia } from '../../social-media-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';

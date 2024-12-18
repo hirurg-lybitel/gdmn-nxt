@@ -8,11 +8,11 @@ import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { UserState } from '../../../features/user/userSlice';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
 import { FormikProps } from 'formik';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
-import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 
 const useStyles = makeStyles(() => ({
   dataGrid: {

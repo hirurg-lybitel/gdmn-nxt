@@ -14,8 +14,8 @@ import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../feat
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { styled } from '@mui/styles';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';

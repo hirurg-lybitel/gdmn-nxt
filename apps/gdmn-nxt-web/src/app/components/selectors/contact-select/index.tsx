@@ -4,7 +4,7 @@ import { Autocomplete, AutocompleteProps, Checkbox, createFilterOptions, InputAd
 import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
 import { IContactPerson } from '@gsbelarus/util-api-types';
 import { HTMLAttributes, useCallback } from 'react';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
 
 type ValueType = IContactPerson[] | IContactPerson | null;

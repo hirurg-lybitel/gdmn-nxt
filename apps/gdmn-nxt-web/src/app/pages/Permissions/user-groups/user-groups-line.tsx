@@ -7,10 +7,10 @@ import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUser
 import { ChangeEvent, useMemo } from 'react';
 import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
-import MenuBurger from '@gdmn-nxt/components/helpers/menu-burger';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import { useResetProfileSettingsMutation } from '../../../features/profileSettings';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { makeStyles } from '@mui/styles';
 import { Height } from '@mui/icons-material';
 

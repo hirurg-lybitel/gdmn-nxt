@@ -12,9 +12,9 @@ import UpdatesInfo from '../../components/updates/updates-info/updates-info';
 import { logoutUser } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import { useIdleTimer } from 'react-idle-timer';
 import { LOGOUT_TIMEOUT } from '@gdmn/constants/client';
-import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { saveFilterData } from '../../store/filtersSlice';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import ContentContainer from '@gdmn-nxt/components/content-container/content-container';
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({

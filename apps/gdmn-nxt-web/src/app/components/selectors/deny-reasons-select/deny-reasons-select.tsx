@@ -5,9 +5,9 @@ import { FormikProps, getIn } from 'formik';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import DenyReasonsUpsert from '../../Kanban/deny-reasons-upsert/deny-reasons-upsert';
-import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
-import filterOptions from '../../helpers/filter-options';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface DenyReasonsSelectProps {

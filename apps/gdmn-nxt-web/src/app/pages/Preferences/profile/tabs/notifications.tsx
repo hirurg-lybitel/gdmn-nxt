@@ -1,14 +1,14 @@
 import InfoIcon from '@mui/icons-material/Info';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { IProfileSettings } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, FormControlLabel, List, ListItem, ListItemIcon, Stack, Tooltip } from '@mui/material';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
-import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
-import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
+import useObjectsComparator from '@gdmn-nxt/helpers/hooks/useObjectsComparator';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export default function NotificationsTab() {
