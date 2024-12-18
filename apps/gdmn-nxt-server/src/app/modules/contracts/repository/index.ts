@@ -47,7 +47,7 @@ const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
             doc.ID,
             doc.DOCUMENTDATE,
             doc.NUMBER,
-            IIF(h.USR$EXPIRYDATE > CURRENT_DATE, 1, 0) ISACTIVE,
+            IIF(CURRENT_DATE BETWEEN h.USR$FROMDATE AND h.USR$EXPIRYDATE, 1, 0) ISACTIVE,
             0 as ISBUDGET,
             h.USR$FROMDATE DATEBEGIN,
             h.USR$EXPIRYDATE DATEEND,
