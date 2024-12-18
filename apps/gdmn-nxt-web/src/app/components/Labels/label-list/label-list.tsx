@@ -12,7 +12,7 @@ import CardToolbar from '../../Styled/card-toolbar/card-toolbar';
 import { LoadingButton } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 const ItemSkeleton = () => {

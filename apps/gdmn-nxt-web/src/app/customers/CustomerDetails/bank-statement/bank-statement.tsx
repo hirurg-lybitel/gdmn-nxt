@@ -5,7 +5,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { columns } from './columns';
 import { ContractType } from '@gsbelarus/util-api-types';
-import useSystemSettings from '@gdmn-nxt/components/helpers/hooks/useSystemSettings';
+import useSystemSettings from '@gdmn-nxt/helpers/hooks/useSystemSettings';
 
 export interface BankStatementProps {
   companyId?: number;

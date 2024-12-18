@@ -1,4 +1,4 @@
-import CustomPaperComponent from '@gdmn-nxt/components/helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
 import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, createFilterOptions, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography } from '@mui/material';
 import { MouseEvent, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
@@ -11,7 +11,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import LabelListItemEdit from '../../Labels/label-list-item-edit/label-list-item-edit';
 import TagIcon from '@mui/icons-material/Tag';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
 
 interface LabelsSelectProps extends Pick<TextFieldProps, 'InputProps'> {

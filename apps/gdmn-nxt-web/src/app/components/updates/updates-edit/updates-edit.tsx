@@ -10,7 +10,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import usePermissions from '../../helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 

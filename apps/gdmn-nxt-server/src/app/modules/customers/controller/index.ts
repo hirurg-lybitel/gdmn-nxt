@@ -11,7 +11,18 @@ export const getContacts: RequestHandler = async (req, res) => {
   const userId = req.user['id'];
 
   const { pageSize, pageNo } = req.query;
-  const { DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME, isFavorite, withTasks } = req.query;
+  const {
+    DEPARTMENTS,
+    CONTRACTS,
+    WORKTYPES,
+    LABELS,
+    BUSINESSPROCESSES,
+    NAME,
+    isFavorite,
+    withTasks,
+    withAgreements,
+    withDebt
+  } = req.query;
 
   const sortField = (req.query.field ?? 'NAME') as string;
   const sortMode = (req.query.sort ?? 'ASC') as SortMode;
@@ -31,7 +42,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       req.sessionID,
       {
         DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME,
-        customerId, isFavorite, userId, withTasks
+        customerId, isFavorite, userId, withTasks, withAgreements, withDebt
       },
       {
         [sortField]: sortMode

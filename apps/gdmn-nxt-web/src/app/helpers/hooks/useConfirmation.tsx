@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
+import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 
 export interface IConfirmationProps {
   title?: string;

@@ -8,19 +8,19 @@ import ViewWeekIcon from '@mui/icons-material/ViewWeek';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import CustomLoadingButton from '../../../components/helpers/custom-loading-button/custom-loading-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import KanbanTasksBoard from '../../../components/Kanban/kanban-tasks-board/kanban-tasks-board';
 import KanbanTasksList from '../../../components/Kanban/kanban-tasks-list/kanban-tasks-list';
 import KanbanEditTask from '../../../components/Kanban/kanban-edit-task/kanban-edit-task';
 import { IKanbanTask } from '@gsbelarus/util-api-types';
 import PermissionsGate from '../../../components/Permissions/permission-gate/permission-gate';
-import usePermissions from '../../../components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import TasksFilter, { IFilteringData } from '../../../components/Kanban/tasks-filter/tasks-filter';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 
 export interface TasksProps {}
 

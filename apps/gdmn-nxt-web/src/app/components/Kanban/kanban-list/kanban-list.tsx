@@ -6,7 +6,7 @@ import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-gr
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAddCardMutation, useAddTaskMutation, useDeleteCardMutation, useDeleteTaskMutation, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';

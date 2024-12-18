@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAddFilterMutation, useDeleteFilterMutation, useGetAllFiltersQuery, useUpdateFilterMutation } from '../../../features/filters/filtersApi';
+import { useAddFilterMutation, useDeleteFilterMutation, useGetAllFiltersQuery, useUpdateFilterMutation } from '../../features/filters/filtersApi';
 import { IFilteringData } from '@gsbelarus/util-api-types';
-import { saveFilterData, setDebounce, setFilterId, setLastFilter } from '../../../store/filtersSlice';
+import { saveFilterData, setDebounce, setFilterId, setLastFilter } from '@gdmn-nxt/store/filtersSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 
 export function useFilterStore(
   filterEntityName: string,

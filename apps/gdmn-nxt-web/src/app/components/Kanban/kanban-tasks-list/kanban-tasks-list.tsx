@@ -9,7 +9,7 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import usePermissions from '../../helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 export interface KanbanTasksListProps {

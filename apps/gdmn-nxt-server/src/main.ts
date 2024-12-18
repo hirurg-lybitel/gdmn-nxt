@@ -49,7 +49,6 @@ import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
 import { filtersRouter } from './app/routes/filtersRouter';
 import { feedbackRouter } from './app/routes/feedbackRouter';
-import { workProjectsRouter } from './app/routes/workProject';
 import { timeTrackingRouter } from './app/routes/timeTracking';
 import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
@@ -393,7 +392,6 @@ router.use(marketingRouter);
 router.use(filtersRouter);
 
 router.use(feedbackRouter);
-router.use(workProjectsRouter);
 router.use(timeTrackingRouter);
 
 router.get('/er-model', async (_, res) => {

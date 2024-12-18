@@ -16,10 +16,13 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@gdmn-nxt/store": ["apps/gdmn-nxt-web/src/app/store"],
+      "@gdmn-nxt/store/*": ["apps/gdmn-nxt-web/src/app/store/*"],
       "@gdmn-nxt/api/*": ["apps/gdmn-nxt-server/src/app/features/*"],
       "@gdmn-nxt/assets/*": ["apps/gdmn-nxt-server/src/assets/*"],
       "@gdmn-nxt/cache-manager": ["libs/cache-manager/src/index.ts"],
       "@gdmn-nxt/components/*": ["apps/gdmn-nxt-web/src/app/components/*"],
+      "@gdmn-nxt/helpers/*": ["apps/gdmn-nxt-web/src/app/helpers/*"],
       "@gdmn-nxt/config": ["libs/config/src/index.ts"],
       "@gdmn-nxt/controllers/*": ["apps/gdmn-nxt-server/src/app/controllers/*"],
       "@gdmn-nxt/dayjs": ["libs/dayjs-provider/src/index.ts"],

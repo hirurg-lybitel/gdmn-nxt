@@ -29,7 +29,7 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { IContactWithID, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
@@ -39,7 +39,7 @@ import { useGetCustomersQuery } from '../../../features/customer/customerApi_new
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import filterOptions from '../../helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DealSourcesSelect } from '../../selectors/deal-sources-select/deal-sources-select';
 import { CustomerSelect } from '../../selectors/customer-select/customer-select';
@@ -62,6 +62,8 @@ import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -106,9 +108,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const [isFetchingCard, setIsFetchingCard] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tabIndex, setTabIndex] = useState('1');
-  const user = useSelector<RootState, UserState>(state => state.user);
 
-  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const { contactkey } = useUserData();
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { isFetching: customerFetching } = useGetCustomersQuery();
@@ -168,7 +169,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         (card?.ID && card?.ID !== -1)
           ? card?.DEAL?.CREATOR
           : {
-            ID: user.userProfile?.contactkey || -1,
+            ID: contactkey || -1,
             NAME: ''
           },
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
@@ -442,6 +443,13 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, [attachments]);
 
   const maxFileSize = 5000000; // in bytes
+
+  const userPermissions = usePermissions();
+  const checkDeletePermissions = useMemo(() =>
+    userPermissions?.deals.DELETE || contactkey === card?.DEAL?.CREATOR?.ID,
+  [card?.DEAL?.CREATOR?.ID, contactkey, userPermissions?.deals.DELETE]);
+
+  const tasksExist = useMemo(() => card?.TASKS && card?.TASKS?.length > 0, [card?.TASKS]);
 
   return (
     <CustomizedDialog
@@ -892,11 +900,20 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        <PermissionsGate actionAllowed={userPermissions?.deals.DELETE}>
+        <PermissionsGate actionAllowed={checkDeletePermissions}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) && deleteable &&
-            <ItemButtonDelete button onClick={handleDeleteClick} />
-          }
+          <Tooltip title={`${tasksExist ? 'Нельзя удалить сделку с задачами' : ''}`}>
+            <div>
+              <ItemButtonDelete
+                button
+                title={'Удаление сделки'}
+                onClick={handleDeleteClick}
+                disabled={tasksExist}
+              />
+            </div>
+          </Tooltip>}
         </PermissionsGate>
+
         <Box flex={1} />
         <ButtonWithConfirmation
           className={classes.button}

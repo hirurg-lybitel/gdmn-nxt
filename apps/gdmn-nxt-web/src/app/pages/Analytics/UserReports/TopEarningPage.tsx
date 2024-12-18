@@ -12,7 +12,7 @@ import { DateRange } from '@mui/x-date-pickers-pro';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 interface IInitState {
   cutomerId: number | null;
@@ -38,6 +38,7 @@ export default function TopEarningPage() {
     contractJob: selectedConstract ? [selectedConstract.ID] : undefined
   });
 
+  // eslint-disable-next-line react/display-name
   const renderOption = (fieldName: string) => (props: any, option: any) =>
     <li {...props} key={option.ID}>
       {option[fieldName]}

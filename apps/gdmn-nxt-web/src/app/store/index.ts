@@ -41,7 +41,6 @@ import { segmentApi } from '../features/Marketing/segments/segmentsApi';
 import { filtersApi } from '../features/filters/filtersApi';
 import { mailingApi } from '../features/Marketing/mailing';
 import { customerFeedbackApi } from '../features/customer-feedback';
-import { workProjectsApi } from '../features/work-projects';
 import { timeTrackingApi } from '../features/time-tracking';
 import { sacurityApi } from '../features/security/securityApi';
 
@@ -86,7 +85,6 @@ const reducers = combineReducers({
   [filtersApi.reducerPath]: filtersApi.reducer,
   [mailingApi.reducerPath]: mailingApi.reducer,
   [customerFeedbackApi.reducerPath]: customerFeedbackApi.reducer,
-  [workProjectsApi.reducerPath]: workProjectsApi.reducer,
   [timeTrackingApi.reducerPath]: timeTrackingApi.reducer,
   [sacurityApi.reducerPath]: sacurityApi.reducer
 });
@@ -146,7 +144,6 @@ export const store = configureStore({
     .concat(filtersApi.middleware)
     .concat(mailingApi.middleware)
     .concat(customerFeedbackApi.middleware)
-    .concat(workProjectsApi.middleware)
     .concat(timeTrackingApi.middleware)
     .concat(sacurityApi.middleware)
 });
