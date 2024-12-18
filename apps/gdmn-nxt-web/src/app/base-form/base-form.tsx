@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Avatar, Box, IconButton, InputBase } from '@mui/material';
 import { styled, ThemeProvider } from '@mui/styles';
 import { Link, Outlet, useLocation } from 'react-router-dom';
@@ -12,7 +13,7 @@ import { clearError } from '../features/error-slice/error-slice';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import { useTheme } from '@mui/material/styles';
 import styles from './base-form.module.less';
-import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 /* eslint-disable-next-line */
 export interface BaseFormProps {};
 
@@ -94,7 +95,7 @@ export function BaseForm(props: BaseFormProps) {
     borderBottom: props.active ? `2px solid ${gdmnTheme.palette.primary.main}` : 'none'
   }));
 
-  const Footer = styled('footer')(({ theme }) =>({
+  const Footer = styled('footer')(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',

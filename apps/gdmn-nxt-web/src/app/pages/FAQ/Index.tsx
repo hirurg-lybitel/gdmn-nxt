@@ -21,9 +21,9 @@ import PermissionsGate from '../../components/Permissions/permission-gate/permis
 import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import usePermissions from '../../components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
@@ -189,7 +189,7 @@ export default function FAQ() {
                         <AccordionSummary
                           expandIcon={<ExpandMoreIcon />}
                         >
-                          <Stack direction={'row'} flex={1}  alignItems={'center'}>
+                          <Stack direction={'row'} flex={1} alignItems={'center'}>
                             <Typography variant="h6">
                               <ReactMarkdown>
                                 {item.USR$QUESTION}

@@ -92,8 +92,7 @@ const findAllByGroup = async (
         const lowerName = String(name).toLowerCase();
         checkConditions = checkConditions && (
           timeTrack.description?.toLowerCase().includes(lowerName) ||
-          timeTrack.customer?.NAME?.toLowerCase().includes(lowerName) ||
-          timeTrack.workProject.NAME?.toLowerCase().includes(lowerName)
+          timeTrack.customer?.NAME?.toLowerCase().includes(lowerName)
         );
       }
       if (checkConditions) {

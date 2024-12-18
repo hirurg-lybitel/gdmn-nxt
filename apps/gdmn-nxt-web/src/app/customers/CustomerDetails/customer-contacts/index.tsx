@@ -8,8 +8,8 @@ import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact
 import AddContact from '@gdmn-nxt/components/Contacts/add-contact/add-contact';
 import { Box, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import ContactsChoose from '@gdmn-nxt/components/Contacts/contacts-choose';
 
 export interface CustomerContactsProps {

@@ -8,7 +8,7 @@ import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
 import { TaskStatus } from './task-status';

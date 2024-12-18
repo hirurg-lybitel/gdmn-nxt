@@ -7,22 +7,22 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { useGetAllSegmentsQuery, useGetCustomersCountMutation } from '../../../features/Marketing/segments/segmentsApi';
-import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import { useGetMailingByIdQuery, useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';
 import { LoadingButton } from '@mui/lab';
-import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 const sendTypes = [
   {

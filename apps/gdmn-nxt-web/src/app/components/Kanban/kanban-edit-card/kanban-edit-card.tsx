@@ -29,7 +29,7 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { IContactWithID, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
@@ -39,7 +39,7 @@ import { useGetCustomersQuery } from '../../../features/customer/customerApi_new
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import filterOptions from '../../helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DealSourcesSelect } from '../../selectors/deal-sources-select/deal-sources-select';
 import { CustomerSelect } from '../../selectors/customer-select/customer-select';
@@ -442,6 +442,10 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, [attachments]);
 
   const maxFileSize = 5000000; // in bytes
+
+  // const checkDeletePermissions = useMemo(() =>
+  //   userPermissions?.deals.DELETE || user.userProfile?.contactkey === card?.DEAL?.CREATOR?.ID,
+  // [card?.DEAL?.CREATOR?.ID, user.userProfile?.contactkey, userPermissions?.deals.DELETE]);
 
   return (
     <CustomizedDialog

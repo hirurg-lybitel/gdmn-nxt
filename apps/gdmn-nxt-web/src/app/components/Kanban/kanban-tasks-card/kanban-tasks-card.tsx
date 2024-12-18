@@ -3,14 +3,14 @@ import styles from './kanban-tasks-card.module.less';
 import { ColorMode, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { Box, Icon, Stack, Tooltip, Typography } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import useTruncate from '../../helpers/hooks/useTruncate';
+import useTruncate from '@gdmn-nxt/helpers/hooks/useTruncate';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import usePermissions from '../../helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ForwardIcon from '@mui/icons-material/Forward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 

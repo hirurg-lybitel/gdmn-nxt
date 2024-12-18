@@ -3,7 +3,7 @@ import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, Ico
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import CustomPaperComponent from '../../helpers/custom-paper-component/custom-paper-component';
+import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -14,8 +14,13 @@ import { GroupHeader, GroupItems } from '../../Kanban/kanban-edit-card/component
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import WarningIcon from '@mui/icons-material/Warning';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
+import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -28,6 +33,11 @@ const useStyles = makeStyles(() => ({
     }
   },
 }));
+
+function preventAction<T>(e: MouseEvent<T>) {
+  e.stopPropagation();
+  e.preventDefault();
+}
 
 type BaseTextFieldProps = Omit<
   TextFieldProps,
@@ -49,9 +59,12 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   task?: ITimeTrackTask;
   limitTags?: number;
   onTaskSelected?: (task: ITimeTrackTask | null) => void;
-  required?: boolean
+  required?: boolean;
+  /** Отображать информацию по задолженностям */
+  debt?: boolean;
+  /** Отображать информацию по договорам */
+  agreement?: boolean;
 };
-
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: Readonly<CustomerSelectProps<Multiple>>) {
   const {
@@ -69,6 +82,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     task,
     onTaskSelected,
     required,
+    debt = false,
+    agreement = false,
     ...rest
   } = props;
 
@@ -76,7 +91,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery({
     filter: {
-      withTasks
+      withTasks,
+      withAgreements: agreement,
+      withDebt: debt
     }
   });
   const customers: ICustomer[] = useMemo(
@@ -321,6 +338,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 disableCaption={disableCaption}
                 disableEdition={disableEdition}
                 disableFavorite={disableFavorite}
+                debt={debt}
+                agreement={agreement}
                 editCustomer={handleEditCustomer}
                 favoriteClick={handleFavoriteClick}
                 onCustomerSelect={handleCustomerSelect}
@@ -399,6 +418,8 @@ interface CustomerItemProps {
   disableCaption?: boolean;
   disableFavorite?: boolean;
   disableEdition?: boolean;
+  debt?: boolean;
+  agreement?: boolean;
   editCustomer: (customer: ICustomer | undefined) => (e: MouseEvent<HTMLButtonElement>) => void;
   favoriteClick: (customer: ICustomer) => (e: MouseEvent<HTMLElement>) => void;
   onCustomerSelect: (event: MouseEvent<HTMLDivElement>, customer: ICustomer) => void;
@@ -412,6 +433,8 @@ const CustomerItem = ({
   disableCaption = true,
   disableFavorite = true,
   disableEdition = false,
+  debt = false,
+  agreement = false,
   editCustomer,
   favoriteClick,
   onCustomerSelect,
@@ -421,7 +444,22 @@ const CustomerItem = ({
     onCustomerSelect(e, customer);
   }, [onCustomerSelect]);
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const taskCount = useMemo(() => customer?.taskCount ?? 0, [customer?.taskCount]);
+
+  const agreementClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+    preventAction<HTMLButtonElement>(e);
+
+    const newContractsFilters = {
+      isActive: true,
+      customers: [{ ...customer }]
+    };
+    dispatch(saveFilterData({ 'contracts': newContractsFilters }));
+
+    navigate('/employee/managment/contracts', { relative: 'path' });
+  }, []);
 
   return (
     <Stack
@@ -470,6 +508,21 @@ const CustomerItem = ({
             />
           </div>
         }
+        {agreement && (customer.agreementCount ?? 0) > 0 && (
+          <Tooltip title="Действует договор">
+            <IconButton onClick={agreementClick}>
+              <ContentPasteIcon fontSize="small" color="primary" />
+            </IconButton>
+          </Tooltip>
+        )}
+        {debt && (customer.debt ?? 0) > 0 && (
+          <Tooltip
+            title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
+            onClick={preventAction<HTMLDivElement>}
+          >
+            <WarningIcon fontSize="small" color="warning" />
+          </Tooltip>
+        )}
         {!disableFavorite &&
           <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
@@ -549,11 +602,6 @@ const CustomerTasks = ({
     }
   };
 
-  const preventAction = useCallback((e: MouseEvent<HTMLLIElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
-
   const taskSelect = useCallback((task: ITimeTrackTask) => () => {
     onSelect(task);
   }, [onSelect]);
@@ -618,7 +666,7 @@ const CustomerTasks = ({
                 lineHeight: '36px',
                 cursor: 'text',
               }}
-              onClick={preventAction}
+              onClick={preventAction<HTMLLIElement>}
             >
               <div
                 style={{

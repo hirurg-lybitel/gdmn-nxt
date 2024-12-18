@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { Permissions } from '@gsbelarus/util-api-types';
 
 const usePermissions = () => {

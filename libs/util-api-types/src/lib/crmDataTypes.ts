@@ -41,6 +41,8 @@ export interface ICustomer extends IContactWithID {
   BUSINESSPROCESSES?: IBusinessProcess[];
   isFavorite?: boolean;
   taskCount?: number;
+  agreementCount?: number;
+  debt?: number;
 };
 
 interface IMapOfArrays {
@@ -492,10 +494,8 @@ export interface ITimeTrack extends IWithID {
   customer?: ICustomer | null;
   description: string;
   inProgress?: boolean;
-  workProject?: IWorkProject;
   user?: IUser;
   billable?: boolean;
-  // task?: IKanbanTask;
   task?: ITimeTrackTask;
 }
 

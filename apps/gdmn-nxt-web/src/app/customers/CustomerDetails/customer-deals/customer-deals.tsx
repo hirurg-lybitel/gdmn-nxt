@@ -8,7 +8,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import CheckIcon from '@mui/icons-material/Check';
 import InProgressIcon from '@mui/icons-material/Autorenew';
 import InfoIcon from '@mui/icons-material/Info';
-import useDateComparator from '../../../components/helpers/hooks/useDateComparator';
+import useDateComparator from '@gdmn-nxt/helpers/hooks/useDateComparator';
 import { useRef, useState } from 'react';
 
 export interface CustomerDealsProps {

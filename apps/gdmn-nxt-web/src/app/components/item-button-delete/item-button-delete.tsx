@@ -2,7 +2,7 @@ import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { styled } from '@mui/material/styles';
 import { useMemo } from 'react';
-import Confirmation from '../helpers/confirmation';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 
 export interface ItemButtonDeleteProps extends IconButtonProps {
   button?: boolean;

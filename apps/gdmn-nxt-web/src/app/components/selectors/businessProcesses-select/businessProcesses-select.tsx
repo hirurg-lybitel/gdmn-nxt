@@ -1,7 +1,7 @@
 import { IBusinessProcess } from '@gsbelarus/util-api-types';
 import { Autocomplete, Checkbox, createFilterOptions, TextField } from '@mui/material';
 import { HTMLAttributes, useCallback } from 'react';
-import { useAutocompleteVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useGetBusinessProcessesQuery } from '../../../features/business-processes';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useGetKanbanTasksQuery } from '../../../features/kanban/kanbanApi';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import KanbanTasksList from '@gdmn-nxt/components/Kanban/kanban-tasks-list/kanban-tasks-list';
 
 export interface CustomerTasksProps {

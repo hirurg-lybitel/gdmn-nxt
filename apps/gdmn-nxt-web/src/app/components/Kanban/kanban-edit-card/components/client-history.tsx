@@ -16,7 +16,7 @@ import { IClientHistoryType, IContactWithID, IKanbanCard, IKanbanTask } from '@g
 import { useAddClientHistoryMutation, useGetClientHistoryQuery, useGetClientHistoryTypeQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import { HistoryType } from '@gdmn-nxt/components/selectors/historyType-select/historyType-select';
 

@@ -6,7 +6,7 @@ import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import * as iconsSource from '@mui/icons-material';
 import { IconByName } from '../../icon-by-name';
-import { useAutocompleteGridVirtualization } from '../../helpers/hooks/useAutocompleteVirtualization';
+import { useAutocompleteGridVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 interface ListboxComponentProps {
   open: boolean;

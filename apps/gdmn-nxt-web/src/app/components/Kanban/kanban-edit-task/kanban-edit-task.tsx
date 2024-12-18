@@ -10,7 +10,7 @@ import { TimePicker } from '@mui/x-date-pickers-pro';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useAddTaskMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
-import filterOptions from '../../helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { useGetTaskTypesQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
@@ -18,9 +18,9 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/components/helpers/hooks/useAutocompleteVirtualization';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {

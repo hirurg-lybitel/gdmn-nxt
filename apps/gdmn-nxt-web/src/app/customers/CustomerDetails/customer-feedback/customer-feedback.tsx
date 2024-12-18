@@ -15,9 +15,9 @@ import { CustomerFeedbackType, ICustomerFeedback } from '@gsbelarus/util-api-typ
 import SendIcon from '@mui/icons-material/Send';
 import { FeedbackItem } from './feedback-item';
 import { useGetClientHistoryTypeQuery } from '../../../features/kanban/kanbanCatalogsApi';
-import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 
 export interface CustomerFeedbackProps {
   customerId: number

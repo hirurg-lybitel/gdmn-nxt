@@ -6,7 +6,7 @@ import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi'
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
 import { useMemo } from 'react';
-import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 

@@ -1,10 +1,10 @@
 import { Box, CardContent, CardHeader, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { useGetKanbanDealsQuery, useGetKanbanTasksQuery } from '../../../features/kanban/kanbanApi';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { ColorMode } from '@gsbelarus/util-api-types';
-import CircularIndeterminate from '../../../components/helpers/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { useMemo } from 'react';
 import dayjs, { Dayjs } from '@gdmn-nxt/dayjs';
 import { DateRange } from '@mui/x-date-pickers-pro';

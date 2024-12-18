@@ -7,7 +7,7 @@ import { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import { useCallback } from 'react';
 import { IKanbanColumn } from '@gsbelarus/util-api-types';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import usePermissions from '../../helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 
 interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams<any, any, any, GridGroupNode> {
   columns?: IKanbanColumn[];
