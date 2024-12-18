@@ -4,6 +4,7 @@ import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import task from '@gdmn-nxt/controllers/kanban/task';
 import { contractsService } from '@gdmn-nxt/modules/contracts/service';
+import { debtsRepository } from '../repository/debts';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
@@ -129,7 +130,15 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     const debts = new Map<number, number>();
     const withDebtBool = (withDebt as string)?.toLowerCase() === 'true';
     if (withDebtBool) {
-      debts.set(147329469, 31457);
+      const debtRecords = await debtsRepository.find(sessionID);
+
+      debtRecords.forEach(({ customerId, amount }) => {
+        if (debts.has(customerId)) {
+          debts.set(customerId, debts.get(customerId) + amount);
+        } else {
+          debts.set(customerId, amount);
+        }
+      });
     }
 
     const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
