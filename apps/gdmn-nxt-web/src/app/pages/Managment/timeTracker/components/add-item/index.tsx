@@ -283,6 +283,8 @@ export const AddItem = ({
                 disableCaption
                 disableFavorite={false}
                 withTasks
+                debt
+                agreement
                 required
                 value={formik.values.customer}
                 onChange={handleCustomerChange}

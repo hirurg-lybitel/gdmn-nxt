@@ -41,6 +41,8 @@ export interface ICustomer extends IContactWithID {
   BUSINESSPROCESSES?: IBusinessProcess[];
   isFavorite?: boolean;
   taskCount?: number;
+  agreementCount?: number;
+  debt?: number;
 };
 
 interface IMapOfArrays {
