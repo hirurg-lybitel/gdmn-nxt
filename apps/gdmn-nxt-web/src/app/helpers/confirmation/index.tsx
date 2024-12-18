@@ -9,6 +9,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
   text?: string;
   actions?: [string, string];
   onClose?: () => void;
+  disabled?: boolean
 }
 export default function Confirmation({
   children,
