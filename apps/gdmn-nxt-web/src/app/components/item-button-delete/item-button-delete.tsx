@@ -22,6 +22,7 @@ export function ItemButtonDelete({
   title = 'Удаление',
   text = 'Вы уверены, что хотите продолжить?',
   hint = 'Удалить',
+  disabled = false,
   ...rest
 }: ItemButtonDeleteProps) {
   const Container = useMemo(() =>
@@ -42,8 +43,12 @@ export function ItemButtonDelete({
   }
 
   const RootElement = (
-    <Container size="small" className="StyledDeleteButton">
-      <Tooltip title={label ? '' : hint} arrow>
+    <Tooltip title={label ? '' : hint} arrow>
+      <Container
+        disabled={disabled}
+        size="small"
+        className="StyledDeleteButton"
+      >
         <Stack
           direction="row"
           alignItems="center"
@@ -52,13 +57,14 @@ export function ItemButtonDelete({
           <DeleteForeverIcon fontSize="small" />
           {label && <span>{label}</span>}
         </Stack>
-      </Tooltip>
-    </Container>
+      </Container>
+    </Tooltip>
   );
 
   return (
     confirmation
       ? <Confirmation
+        disabled={disabled}
         title={title}
         text={text}
         dangerous

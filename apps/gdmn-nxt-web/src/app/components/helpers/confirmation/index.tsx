@@ -9,6 +9,7 @@ interface Props extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDi
   text?: string;
   actions?: [string, string];
   onClose?: () => void;
+  disabled?: boolean
 }
 export default function Confirmation({
   children,
@@ -18,6 +19,7 @@ export default function Confirmation({
   title = 'Внимание',
   actions = ['Нет', 'Да'],
   onClose,
+  disabled,
   ...props
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -49,7 +51,7 @@ export default function Confirmation({
 
   return (
     <>
-      <div {...props} onClick={handleClick}>
+      <div {...props} onClick={disabled ? undefined : handleClick}>
         {children}
       </div>
       {memoConfirmDialog}

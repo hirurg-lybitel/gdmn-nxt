@@ -894,11 +894,17 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
       <DialogActions className={styles.DialogActions}>
         <PermissionsGate actionAllowed={userPermissions?.deals.DELETE || user.userProfile?.contactkey === card?.DEAL?.CREATOR?.ID}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) && deleteable &&
-            <ItemButtonDelete
-              title={'Удаление сделки'}
-              button
-              onClick={handleDeleteClick}
-            />
+          <Tooltip title={card.TASKS && card.TASKS?.length > 0 ? 'Нельзя удалить сделку у которой есть задачи' : ''}>
+            <div>
+              <ItemButtonDelete
+                sx={{ background: 'black' }}
+                disabled={card.TASKS && card.TASKS?.length > 0}
+                title={'Удаление сделки'}
+                button
+                onClick={handleDeleteClick}
+              />
+            </div>
+          </Tooltip>
           }
         </PermissionsGate>
         <Box flex={1} />
