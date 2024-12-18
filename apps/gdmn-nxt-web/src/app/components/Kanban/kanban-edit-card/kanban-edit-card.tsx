@@ -892,9 +892,13 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        <PermissionsGate actionAllowed={userPermissions?.deals.DELETE}>
+        <PermissionsGate actionAllowed={userPermissions?.deals.DELETE || user.userProfile?.contactkey === card?.DEAL?.CREATOR?.ID}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) && deleteable &&
-            <ItemButtonDelete button onClick={handleDeleteClick} />
+            <ItemButtonDelete
+              title={'Удаление сделки'}
+              button
+              onClick={handleDeleteClick}
+            />
           }
         </PermissionsGate>
         <Box flex={1} />
