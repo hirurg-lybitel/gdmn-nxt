@@ -19,7 +19,6 @@ export default function Confirmation({
   title = 'Внимание',
   actions = ['Нет', 'Да'],
   onClose,
-  disabled,
   ...props
 }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -51,7 +50,7 @@ export default function Confirmation({
 
   return (
     <>
-      <div {...props} onClick={disabled ? undefined : handleClick}>
+      <div {...props} onClick={handleClick}>
         {children}
       </div>
       {memoConfirmDialog}

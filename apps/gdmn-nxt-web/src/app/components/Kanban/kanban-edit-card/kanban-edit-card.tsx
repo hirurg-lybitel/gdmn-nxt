@@ -62,6 +62,8 @@ import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -106,9 +108,8 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const [isFetchingCard, setIsFetchingCard] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tabIndex, setTabIndex] = useState('1');
-  const user = useSelector<RootState, UserState>(state => state.user);
 
-  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const { contactkey } = useUserData();
 
   const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
   const { isFetching: customerFetching } = useGetCustomersQuery();
@@ -168,7 +169,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         (card?.ID && card?.ID !== -1)
           ? card?.DEAL?.CREATOR
           : {
-            ID: user.userProfile?.contactkey || -1,
+            ID: contactkey || -1,
             NAME: ''
           },
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
@@ -443,9 +444,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const maxFileSize = 5000000; // in bytes
 
-  // const checkDeletePermissions = useMemo(() =>
-  //   userPermissions?.deals.DELETE || user.userProfile?.contactkey === card?.DEAL?.CREATOR?.ID,
-  // [card?.DEAL?.CREATOR?.ID, user.userProfile?.contactkey, userPermissions?.deals.DELETE]);
+  const userPermissions = usePermissions();
+  const checkDeletePermissions = useMemo(() =>
+    userPermissions?.deals.DELETE || contactkey === card?.DEAL?.CREATOR?.ID,
+  [card?.DEAL?.CREATOR?.ID, contactkey, userPermissions?.deals.DELETE]);
+
+  const tasksExist = useMemo(() => card?.TASKS && card?.TASKS?.length > 0, [card?.TASKS]);
 
   return (
     <CustomizedDialog
@@ -896,21 +900,20 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions className={styles.DialogActions}>
-        <PermissionsGate actionAllowed={userPermissions?.deals.DELETE || user.userProfile?.contactkey === card?.DEAL?.CREATOR?.ID}>
+        <PermissionsGate actionAllowed={checkDeletePermissions}>
           {(card?.DEAL?.ID && (card?.DEAL?.ID > 0)) && deleteable &&
-          <Tooltip title={card.TASKS && card.TASKS?.length > 0 ? 'Нельзя удалить сделку у которой есть задачи' : ''}>
+          <Tooltip title={`${tasksExist ? 'Нельзя удалить сделку с задачами' : ''}`}>
             <div>
               <ItemButtonDelete
-                sx={{ background: 'black' }}
-                disabled={card.TASKS && card.TASKS?.length > 0}
-                title={'Удаление сделки'}
                 button
+                title={'Удаление сделки'}
                 onClick={handleDeleteClick}
+                disabled={tasksExist}
               />
             </div>
-          </Tooltip>
-          }
+          </Tooltip>}
         </PermissionsGate>
+
         <Box flex={1} />
         <ButtonWithConfirmation
           className={classes.button}

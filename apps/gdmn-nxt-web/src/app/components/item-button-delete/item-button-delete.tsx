@@ -43,12 +43,12 @@ export function ItemButtonDelete({
   }
 
   const RootElement = (
-    <Tooltip title={label ? '' : hint} arrow>
-      <Container
-        disabled={disabled}
-        size="small"
-        className="StyledDeleteButton"
-      >
+    <Container
+      disabled={disabled}
+      size="small"
+      className="StyledDeleteButton"
+    >
+      <Tooltip title={label ? '' : hint} arrow>
         <Stack
           direction="row"
           alignItems="center"
@@ -57,14 +57,13 @@ export function ItemButtonDelete({
           <DeleteForeverIcon fontSize="small" />
           {label && <span>{label}</span>}
         </Stack>
-      </Container>
-    </Tooltip>
+      </Tooltip>
+    </Container>
   );
 
   return (
-    confirmation
+    confirmation && !disabled
       ? <Confirmation
-        disabled={disabled}
         title={title}
         text={text}
         dangerous
