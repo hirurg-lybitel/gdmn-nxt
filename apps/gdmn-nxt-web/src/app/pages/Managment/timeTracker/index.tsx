@@ -375,7 +375,6 @@ export function TimeTracker() {
                         const {
                           ID,
                           customer,
-                          workProject,
                           description = '',
                           startTime,
                           endTime,
@@ -430,16 +429,16 @@ export function TimeTracker() {
                                 </Typography>
                                 <Typography
                                   variant={'caption'}
-                                  onClick={setInitial({ customer, workProject, task: {} })}
+                                  onClick={setInitial({ customer, task: {} })}
                                   style={{
                                     cursor: 'pointer'
                                   }}
                                 >
-                                  {`→ ${workProject?.NAME}`}
+                                  {task?.project && `→ ${task?.project?.name}`}
                                 </Typography>
                                 <Typography
                                   variant={'caption'}
-                                  onClick={setInitial({ customer, workProject, task })}
+                                  onClick={setInitial({ customer, task })}
                                   style={{
                                     cursor: 'pointer'
                                   }}

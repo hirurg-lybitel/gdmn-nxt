@@ -494,10 +494,8 @@ export interface ITimeTrack extends IWithID {
   customer?: ICustomer | null;
   description: string;
   inProgress?: boolean;
-  workProject?: IWorkProject;
   user?: IUser;
   billable?: boolean;
-  // task?: IKanbanTask;
   task?: ITimeTrackTask;
 }
 
