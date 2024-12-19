@@ -4460,15 +4460,15 @@
 					"response": []
 				},
 				{
-					"name": "Обратная связь по сделке Copy",
+					"name": "Удалить Обратную связь",
 					"id": "a3b3db68-6e2a-449a-a262-d0f99d752fb8",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [],
-						"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+						"url": "{{baseUrl}}/deal-feedback/"
 					},
 					"response": []
 				}
