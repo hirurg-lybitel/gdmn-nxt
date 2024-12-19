@@ -48,11 +48,12 @@ import { marketingRouter } from './app/routes/mailingRouter';
 import { createScheduler } from '@gdmn-nxt/scheduler';
 import { mailingService } from '@gdmn-nxt/modules/marketing/mailing/service';
 import { filtersRouter } from './app/routes/filtersRouter';
-import { feedbackRouter } from './app/routes/feedbackRouter';
+import { customerFeedbackRouter } from './app/routes/customerFeedbackRouter';
 import { timeTrackingRouter } from './app/routes/timeTracking';
 import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
 import { securityRouter } from './app/routes/security';
+import { dealFeedbackRouter } from './app/routes/dealFeedbackRouter';
 
 const COOKIE_AGE = 24 * 60 * 60 * 1000;
 
@@ -391,7 +392,8 @@ router.use(marketingRouter);
 /** Filters */
 router.use(filtersRouter);
 
-router.use(feedbackRouter);
+router.use(customerFeedbackRouter);
+router.use(dealFeedbackRouter);
 router.use(timeTrackingRouter);
 
 router.get('/er-model', async (_, res) => {

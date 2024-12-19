@@ -16,7 +16,7 @@ import { mailingRepository } from '../repository';
 import fs from 'fs/promises';
 import path from 'path';
 import { segmentsService } from '../../segments/service';
-import { feedbackService } from '@gdmn-nxt/modules/feedback/service';
+import { feedbackService } from '@gdmn-nxt/modules/customer-feedback/service';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 function extractImgSrc(htmlString: string) {
