@@ -4392,8 +4392,44 @@
 					"name": "Каталоги",
 					"item": [
 						{
-							"name": "New Request",
+							"name": "Обратная связь",
 							"id": "e070d8f9-08d3-4bc7-99f6-6d59e76ac25d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Компетентность персонала",
+							"id": "d1edaff1-b0ec-47d4-afdf-cd14e97f2d24",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Удовлетворенность полученной информацией",
+							"id": "4fd117f1-ba4e-44cb-a2f2-594d435a33ff",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Оценка удовлетворённости",
+							"id": "1a24fe09-1be9-426b-bf1f-a49d01cb4f10",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
