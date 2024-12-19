@@ -105,7 +105,7 @@ export function Projects(props: IProjectsProps) {
       setOpenFilters(false);
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      dispatch(clearFilterData(filterEntityName));
+      dispatch(clearFilterData({ filterEntityName, saveFields: ['type'] }));
     }, [dispatch]),
     filterDeadlineChange: (e: SyntheticEvent<Element, Event>, value: IProjectFilter) => {
       saveFilters({ ...filterData, deadline: [value] });

@@ -382,7 +382,7 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(false);
     }, []),
     handleFilterClear: useCallback(() => {
-      dispatch(clearFilterData(filterEntityName));
+      dispatch(clearFilterData({ filterEntityName }));
     }, [dispatch])
   };
 
