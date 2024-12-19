@@ -23,5 +23,7 @@ router.delete('/time-tracking/tasks/favorites/:id', timeTrackerTasksController.r
 router.post('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.addToFavorites);
 router.delete('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.removeFromFavorites);
 
+router.get('/time-tracking/projects/filters', timeTrackerProjectsController.getFilters);
+
 export const timeTrackingRouter = router;
 

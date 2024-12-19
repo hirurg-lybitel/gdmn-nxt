@@ -61,8 +61,26 @@ const removeFromFavorites: RequestHandler = async (req, res) => {
   }
 };
 
+const getFilters: RequestHandler = async (req, res) => {
+  try {
+    const { id: sessionID } = req.session;
+
+    const response = await timeTrackerProjectsService.getFilters(sessionID);
+
+    const result: IRequestResult = {
+      queries: { filters: [...response] },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const timeTrackerProjectsController = {
   findAll,
   addToFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  getFilters
 };

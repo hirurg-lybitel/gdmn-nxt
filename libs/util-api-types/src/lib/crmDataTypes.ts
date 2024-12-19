@@ -460,6 +460,11 @@ export interface ICustomerFeedback extends IWithID {
   creator?: IUser
 }
 
+export interface IProjectFilter extends IWithID {
+  CODE: number;
+  NAME: string;
+}
+
 export enum WorkProjectStatus {
   active = 0,
   suspended = 1,

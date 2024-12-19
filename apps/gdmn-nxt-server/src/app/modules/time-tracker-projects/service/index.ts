@@ -121,8 +121,20 @@ const removeFromFavorites = async (
   }
 };
 
+const getFilters = async (
+  sessionID: string
+) => {
+  try {
+    const filters = await favoriteTimeTrackerProjectsRepository.getFilters(sessionID);
+    return filters;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const timeTrackerProjectsService = {
   findAll,
   addToFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  getFilters
 };
