@@ -9,7 +9,7 @@ const findAll = async (
 ) => {
   const userId = filter.userId;
   const customerId = filter.customerId;
-
+  const groupByFavorite = filter.groupByFavorite === 'true';
   try {
     const projects = await timeTrackerProjectsRepository.find(
       sessionID,
@@ -35,31 +35,40 @@ const findAll = async (
 
     const response: ITimeTrackProject[] = [];
 
-    /** Split projects into favorite and non-favorite */
-    projects.forEach((project) => {
-      const projectTasks = tasks.get(project.ID) ?? [];
+    if (groupByFavorite) {
+      /** Split projects into favorite and non-favorite */
+      projects.forEach((project) => {
+        const projectTasks = tasks.get(project.ID) ?? [];
 
-      const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
-      const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
+        const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
+        const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
 
-      if (favoriteTasks.length > 0) {
-        response.push({
-          ...project,
-          isFavorite: true,
-          tasks: favoriteTasks
-        });
-      }
+        if (favoriteTasks.length > 0) {
+          response.push({
+            ...project,
+            isFavorite: true,
+            tasks: favoriteTasks
+          });
+        }
 
-      if (nonFavoriteTasks.length > 0) {
-        response.push({
-          ...project,
-          isFavorite: false,
-          tasks: nonFavoriteTasks
-        });
-      }
-    });
-
-    return response.sort((a, b) => (a.isFavorite ? -1 : 1));
+        if (nonFavoriteTasks.length > 0) {
+          response.push({
+            ...project,
+            isFavorite: false,
+            tasks: nonFavoriteTasks
+          });
+        }
+      });
+      return response.sort((a, b) => (a.isFavorite ? -1 : 1));
+    } else {
+      return projects.map((project) => {
+        const projectTasks = tasks.get(project.ID) ?? [];
+        for (const task of projectTasks) {
+          if (task.isFavorite) return { ...project, isFavorite: true, tasks: projectTasks };
+        }
+        return { ...project, isFavorite: false, tasks: projectTasks };
+      });
+    }
   } catch (error) {
     throw error;
   }

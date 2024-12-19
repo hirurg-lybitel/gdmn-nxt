@@ -234,12 +234,8 @@ export function KanbanList(props: KanbanListProps) {
   };
 
   const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {
-    console.log(row?.hierarchy);
     return row?.hierarchy || [];
   };
-
-  console.log(rows);
-
 
   return (
     <CustomizedCard

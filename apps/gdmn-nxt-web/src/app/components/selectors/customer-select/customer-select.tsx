@@ -212,7 +212,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     isFetching: projectsIsFetching
   } = useGetProjectsQuery({
     ...(!Array.isArray(value)
-      ? { filter: { customerId: value?.ID } }
+      ? { filter: { customerId: value?.ID, groupByFavorite: true } }
       : {}),
   }, {
     skip: multiple || !value || !withTasks

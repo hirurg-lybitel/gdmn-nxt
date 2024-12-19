@@ -3,8 +3,8 @@ import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { IFilteringData, IPaginationData, IProjectFilter, ISortingData } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridRenderCellParams, GridSortModel } from '@mui/x-data-grid-pro';
+import { IFilteringData, IPaginationData, IProjectFilter, ISortingData, ITimeTrackProject } from '@gsbelarus/util-api-types';
+import { DataGridProProps, GridColDef, GridGroupNode, GridRenderCellParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
@@ -19,6 +19,12 @@ import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { CustomGridTreeDataGroupingCell } from './components/CustomGridTreeDataGroupingCell';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 
 export interface IProjectsProps {}
 
@@ -44,8 +50,25 @@ export function Projects(props: IProjectsProps) {
     // }
   );
 
-  const [addFavorite] = useAddFavoriteProjectMutation();
-  const [deleteFavorite] = useDeleteFavoriteProjectMutation();
+  const [deletingTaskIDs, setDeletingCardIDs] = useState<number[]>([]);
+
+  const rows: ITimeTrackProject[] = useMemo(() => {
+    const newRows: any[] = [];
+    projects?.forEach(project => {
+      newRows.push({ ...project, hierarchy: [project.ID] });
+      project.tasks?.forEach(task => {
+        if (!deletingTaskIDs.includes(task.ID)) {
+          newRows.push({ ...task, ID: task.ID, hierarchy: [project.ID, task.ID] });
+        }
+      });
+    });
+    return newRows;
+  }, [projects, deletingTaskIDs]);
+
+  const onDelete = async (project: ITimeTrackProject) => {
+    // delete(value);
+    setDeletingCardIDs(prev => prev.concat(project.ID));
+  };
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
@@ -124,40 +147,54 @@ export function Projects(props: IProjectsProps) {
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
   const columns: GridColDef<any>[] = [
-    {
-      field: 'isFavorite',
-      type: 'actions',
-      resizable: false,
-      width: 40,
-      renderCell: ({ value, row }: GridRenderCellParams) => {
-        const id = row.ID;
-        const toggleFavorite = () => {
-          if (value) {
-            deleteFavorite(id);
-            return;
-          }
-          addFavorite(id);
-        };
-        return (
-          <SwitchStar
-            selected={!!value}
-            onClick={toggleFavorite}
-          />
-        );
+    { field: 'customer', headerName: 'Клиент', flex: 1,
+      renderCell: ({ value, row }) => {
+        return value?.NAME || '';
       }
     },
-    { field: 'name', headerName: 'Наименование', flex: 1, },
-    { field: 'customer', headerName: 'Клиент', flex: 1,
-      renderCell: ({ value, row }) => value.NAME
-    },
     {
-      field: 'STATUS',
+      field: 'actions',
       type: 'actions',
       resizable: false,
       renderCell: ({ value, row }: GridRenderCellParams) => {
         const handleChangeVisible = () => {
           // updateWorkProject({ ...row, STATUS: value === 1 ? 0 : 1 });
         };
+        if (row.tasks) {
+          return (
+            <MenuBurger
+              items={({ closeMenu }) => [
+                <Stack
+                  key="edit"
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  onClick={() => {
+                    // handleEditClick();
+                    closeMenu();
+                  }}
+                >
+                  <EditIcon />
+                  <span>Редактировать</span>
+                </Stack>,
+                <Stack
+                  key="edit"
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  onClick={() => {
+                    handleChangeVisible();
+                    closeMenu();
+                  }}
+                >
+                  {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+                  <span>{true ? 'Отключить' : 'Включить'}</span>
+                </Stack>
+              ]}
+            />
+          );
+        }
+
         return (
           <div>
             <IconButton
@@ -168,11 +205,12 @@ export function Projects(props: IProjectsProps) {
               <EditIcon/>
             </IconButton>
             <IconButton
-              color={value === 1 ? 'primary' : 'error'}
+              color={'primary'}
+              style={true ? { color: 'gray' } : {}}
               size="small"
               onClick={handleChangeVisible}
             >
-              {value === 1 ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+              {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
             </IconButton>
           </div>
         );
@@ -181,8 +219,40 @@ export function Projects(props: IProjectsProps) {
   ];
 
   const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {
-    return row?.hierarchy || [row.ID];
+    return row?.hierarchy || [];
   };
+
+  const groupingColDef: DataGridProProps['groupingColDef'] = {
+    headerName: 'Наименование',
+    flex: 1,
+    minWidth: 280,
+    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<any, any, any, GridGroupNode>} projects={projects} />
+  };
+
+  const memoGrid = useMemo(() => (
+    <StyledGrid
+      treeData
+      rows={rows}
+      rowCount={projects?.length ?? 0}
+      columns={columns}
+      loading={projectsIsFetching}
+      getTreeDataPath={getTreeDataPath}
+      groupingColDef={groupingColDef}
+      pagination
+      paginationMode="server"
+      pageSizeOptions={pageOptions}
+      onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+        setPaginationData({
+          ...paginationData,
+          pageSize: data.pageSize,
+          pageNo: data.page
+        });
+      }}
+      paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
+      sortingMode="server"
+      onSortModelChange={handleSortModelChange}
+    />
+  ), [columns, groupingColDef, handleSortModelChange, pageOptions, paginationData, projects?.length, projectsIsFetching]);
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
@@ -199,7 +269,7 @@ export function Projects(props: IProjectsProps) {
               cancelOnEscape
               value={
                 filterData?.name
-                  ? filterData.name[0]
+                  ? filterData.name?.[0]
                   : undefined
               }
             />
@@ -222,7 +292,7 @@ export function Projects(props: IProjectsProps) {
             <Box display="inline-flex" alignSelf="center">
               <CustomFilterButton
                 onClick={filterHandlers.filterClick}
-                disabled={projectsIsFetching}
+                disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
                 hasFilters={Object.keys(filterData || {}).filter(f => f !== 'type').length > 0}
               />
             </Box>
@@ -231,28 +301,7 @@ export function Projects(props: IProjectsProps) {
       />
       <Divider />
       <CardContent style={{ padding: 0 }}>
-        <StyledGrid
-          rows={projects}
-          rowCount={projects?.length ?? 0}
-          columns={columns}
-          loading={projectsIsFetching}
-          getTreeDataPath={getTreeDataPath}
-          pagination
-          paginationMode="server"
-          pageSizeOptions={pageOptions}
-          onPaginationModelChange={(data: {page: number, pageSize: number}) => {
-            setPaginationData({
-              ...paginationData,
-              pageSize: data.pageSize,
-              pageNo: data.page
-            });
-          }}
-          paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-          sortingMode="server"
-          onSortModelChange={handleSortModelChange}
-          // getDetailPanelHeight={() => 'auto'}
-          // getDetailPanelContent={getDetailPanelContent}
-        />
+        {memoGrid}
       </CardContent>
       {memoFilter}
     </CustomizedCard>
