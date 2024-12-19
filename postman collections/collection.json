@@ -4458,6 +4458,19 @@
 						"url": "{{baseUrl}}/deal-feedback/catalogs/results"
 					},
 					"response": []
+				},
+				{
+					"name": "Обратная связь по сделке Copy",
+					"id": "a3b3db68-6e2a-449a-a262-d0f99d752fb8",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+					},
+					"response": []
 				}
 			],
 			"id": "38df05ce-519f-4365-b251-e9b769f361dc"
