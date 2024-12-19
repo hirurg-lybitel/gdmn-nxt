@@ -4384,6 +4384,30 @@
 				}
 			],
 			"id": "fae59c26-9fa2-41bd-bae0-965343568664"
+		},
+		{
+			"name": "Сделки. Фидбэк",
+			"item": [
+				{
+					"name": "Каталоги",
+					"item": [
+						{
+							"name": "New Request",
+							"id": "e070d8f9-08d3-4bc7-99f6-6d59e76ac25d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					],
+					"id": "b80323a8-1446-49eb-a408-6b7e40c33183"
+				}
+			],
+			"id": "38df05ce-519f-4365-b251-e9b769f361dc"
 		}
 	],
 	"auth": {
