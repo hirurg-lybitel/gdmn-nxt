@@ -4399,7 +4399,8 @@
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/results"
 							},
 							"response": []
 						},
@@ -4411,7 +4412,8 @@
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/competences"
 							},
 							"response": []
 						},
@@ -4423,7 +4425,8 @@
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/satisfactions"
 							},
 							"response": []
 						},
@@ -4435,12 +4438,26 @@
 							},
 							"request": {
 								"method": "GET",
-								"header": []
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/satisfactionRates"
 							},
 							"response": []
 						}
 					],
 					"id": "b80323a8-1446-49eb-a408-6b7e40c33183"
+				},
+				{
+					"name": "Обратная связь по сделке",
+					"id": "e2f388c6-6936-4514-b529-95eea6fd52e6",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+					},
+					"response": []
 				}
 			],
 			"id": "38df05ce-519f-4365-b251-e9b769f361dc"
