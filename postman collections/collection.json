@@ -1637,25 +1637,6 @@
 			"id": "03d288bd-51e5-40e4-b662-61b79a2daefc"
 		},
 		{
-			"name": "Mailer",
-			"item": [
-				{
-					"name": "New Request",
-					"id": "c841b0ad-d9d5-41c2-9e55-14a60e4d7c0e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": "{{baseUrl}}/send-email"
-					},
-					"response": []
-				}
-			],
-			"id": "e105c407-5dcd-4ee5-a72e-92a242c0e3bf"
-		},
-		{
 			"name": "Marketing",
 			"item": [
 				{
@@ -3509,6 +3490,35 @@
 										{
 											"key": "id",
 											"value": "949744798"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Mailing History",
+							"id": "9410e992-060c-4e63-b789-2dd2cb4a3aab",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/history/:mailingId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"history",
+										":mailingId"
+									],
+									"variable": [
+										{
+											"key": "mailingId",
+											"value": ""
 										}
 									]
 								}
