@@ -1,6 +1,5 @@
 import './kanban-edit-card.module.less';
 import {
-  Autocomplete,
   Button,
   DialogActions,
   DialogContent,
@@ -27,26 +26,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { IContactWithID, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { useSelector } from 'react-redux';
-import { RootState } from '@gdmn-nxt/store';
+import { IContactWithID, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
 import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
-import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
-import { UserState } from '../../../features/user/userSlice';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
-import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DealSourcesSelect } from '../../selectors/deal-sources-select/deal-sources-select';
 import { CustomerSelect } from '../../selectors/customer-select/customer-select';
 import styles from './kanban-edit-card.module.less';
 import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsApi';
 import { DenyReasonsSelect } from '../../selectors/deny-reasons-select/deny-reasons-select';
-import { TabDescription } from './components/tab-descrption';
+import { TabDescription } from './components/tab-description';
+import { TabFeedback } from './components/tab-feedback';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
@@ -64,6 +58,7 @@ import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-se
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
+import { useGetDealFeedbackQuery } from '../../../features/deal-feedback';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordionTitle: {
@@ -99,7 +94,7 @@ export interface KanbanEditCardProps {
   onCancelClick: (newCard: IKanbanCard) => void;
 }
 
-export function KanbanEditCard(props: KanbanEditCardProps) {
+export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
   const { open, card, stages, currentStage = stages[0], deleteable = true } = props;
   const { onSubmit, onCancelClick } = props;
 
@@ -111,9 +106,12 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
 
   const { contactkey } = useUserData();
 
-  const { data: employees, isFetching: employeesIsFetching } = useGetEmployeesQuery();
+  const { data: dealFeedback } = useGetDealFeedbackQuery(card?.DEAL?.ID ?? -1, {
+    skip: !open || (card?.DEAL?.ID ?? 0) <= 0,
+    refetchOnMountOrArgChange: true
+  });
+
   const { isFetching: customerFetching } = useGetCustomersQuery();
-  const { data: departments, isFetching: departmentsIsFetching, refetch: departmentsRefetch } = useGetDepartmentsQuery();
   const { isFetching: denyReasonsIsFetching } = useGetDenyReasonsQuery();
   const id = card?.DEAL?.ID ?? -1;
   const { data: attachments = [], isFetching: attachmentsFetching } = useGetDealsFilesQuery(id, { skip: !open || id <= 0, refetchOnMountOrArgChange: true });
@@ -124,8 +122,13 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   }, [refComment.current]);
 
   useEffect(() => {
-    if (!open) formik.resetForm();
-  }, [open]);
+    if (open) {
+      return;
+    }
+
+    formik.resetForm();
+    tabIndex !== '1' && setTabIndex('1');
+  }, [open, tabIndex]);
 
   const theme = useTheme();
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
@@ -135,7 +138,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
   const windowWidth = useMemo(() => {
     switch (true) {
       case matchBetweenLgUw:
-        return '70vw';
+        return '100%';
       case matchDownUW:
         return '60vw';
       default:
@@ -169,16 +172,17 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
         (card?.ID && card?.ID !== -1)
           ? card?.DEAL?.CREATOR
           : {
-            ID: contactkey || -1,
+            ID: contactkey ?? -1,
             NAME: ''
           },
       DEPARTMENT: card?.DEAL?.DEPARTMENT,
       PERFORMERS: card?.DEAL?.PERFORMERS || [],
       CONTACT: card?.DEAL?.CONTACT,
-      COMMENT: card?.DEAL?.COMMENT || '',
+      COMMENT: card?.DEAL?.COMMENT ?? '',
       CREATIONDATE: card?.DEAL?.CREATIONDATE || currentDate,
       PREPAID: card?.DEAL?.PREPAID ?? false,
-      ATTACHMENTS: attachments
+      ATTACHMENTS: attachments,
+      ...(dealFeedback && { feedback: dealFeedback }),
     },
     TASKS: card?.TASKS || undefined,
   };
@@ -518,7 +522,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                     </Step>)}
                 </Stepper>}
               <TabContext value={tabIndex}>
-                <Box style={{ width: `calc(${windowWidth} - 5vw)`, alignSelf: 'center' }}>
+                <Box style={{ maxWidth: `calc(${windowWidth})`, alignSelf: 'center' }}>
                   <TabList
                     onChange={handleTabsChange}
                     scrollButtons="auto"
@@ -535,6 +539,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                       value="7"
                       disabled={(card?.ID ?? -1) <= 0}
                     />
+                    <Tab label="Обратная связь" value="8" />
                   </TabList>
                 </Box>
                 <Divider style={{ margin: 0 }} />
@@ -894,6 +899,9 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
                 <TabPanel value="7" className={tabIndex === '7' ? classes.tabPanel : ''}>
                   <ClientHistory card={formik.values} />
                 </TabPanel>
+                <TabPanel value="8" className={tabIndex === '8' ? classes.tabPanel : ''}>
+                  <TabFeedback formik={formik} />
+                </TabPanel>
               </TabContext>
             </Stack>
           </Form>
@@ -929,7 +937,7 @@ export function KanbanEditCard(props: KanbanEditCardProps) {
           <Button
             className={classes.button}
             variant="contained"
-            disabled={customerFetching || employeesIsFetching || denyReasonsIsFetching || departmentsIsFetching || isFetchingCard}
+            disabled={customerFetching || denyReasonsIsFetching || isFetchingCard}
             form="mainForm"
             type="submit"
           >

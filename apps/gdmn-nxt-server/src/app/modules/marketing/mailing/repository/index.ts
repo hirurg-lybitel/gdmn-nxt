@@ -181,7 +181,7 @@ const update: UpdateHandler<IMailing> = async (
       includeSegments = mailing.includeSegments,
       excludeSegments = mailing.excludeSegments,
       testingEmails = mailing.testingEmails,
-      attachments = mailing.attachments
+      attachments = mailing.attachments,
     } = metadata;
 
     const result = await fetchAsSingletonObject<IMailing>(
