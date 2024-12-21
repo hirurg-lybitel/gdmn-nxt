@@ -1,10 +1,10 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, TextField, Typography } from '@mui/material';
-import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { IFilteringData, IPaginationData, IProjectFilter, ISortingData, ITimeTrackProject } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridGroupNode, GridRenderCellParams, GridSortModel } from '@mui/x-data-grid-pro';
+import { IFilteringData, IPaginationData, IProjectFilter, ISortingData, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { DataGridProProps, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridGroupNode, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowParams, GridSortModel, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
@@ -13,7 +13,7 @@ import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import { ProjectsFilter } from './components/projectsFilter';
+import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
 import { useAddFavoriteProjectMutation, useDeleteFavoriteProjectMutation, useGetFiltersQuery, useGetProjectsQuery } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
@@ -21,10 +21,22 @@ import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import { CustomGridTreeDataGroupingCell } from './components/CustomGridTreeDataGroupingCell';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Close';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
+import { DetailPanelContent } from './components/DetailPanelContent/DetailPanelContent';
+import ProjectEdit from './components/projectEdit/projectEdit';
+
+interface IErrors {
+  [key: string]: string | undefined
+}
+interface IErrorsObject {
+  [key: GridRowId]: IErrors
+}
 
 export interface IProjectsProps {}
 
@@ -36,6 +48,7 @@ export function Projects(props: IProjectsProps) {
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
   const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, typeDefault ? { type: [typeDefault] } : null);
+  const apiRef = useGridApiRef();
 
   const {
     data: projects = [],
@@ -49,26 +62,6 @@ export function Projects(props: IProjectsProps) {
     //   ...(sortingData ? { sort: sortingData } : {})
     // }
   );
-
-  const [deletingTaskIDs, setDeletingCardIDs] = useState<number[]>([]);
-
-  const rows: ITimeTrackProject[] = useMemo(() => {
-    const newRows: any[] = [];
-    projects?.forEach(project => {
-      newRows.push({ ...project, hierarchy: [project.ID] });
-      project.tasks?.forEach(task => {
-        if (!deletingTaskIDs.includes(task.ID)) {
-          newRows.push({ ...task, ID: task.ID, hierarchy: [project.ID, task.ID] });
-        }
-      });
-    });
-    return newRows;
-  }, [projects, deletingTaskIDs]);
-
-  const onDelete = async (project: ITimeTrackProject) => {
-    // delete(value);
-    setDeletingCardIDs(prev => prev.concat(project.ID));
-  };
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
@@ -146,7 +139,57 @@ export function Projects(props: IProjectsProps) {
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  const columns: GridColDef<any>[] = [
+  const [openEditForm, setOpenEditForm] = useState(false);
+  const [project, setProject] = useState<ITimeTrackProject>();
+  const onSubmit = (project: ITimeTrackProject) => {
+
+  };
+
+  console.log(project);
+
+  const handleEdit = (project: ITimeTrackProject) => {
+    setProject(project);
+    setOpenEditForm(true);
+  };
+
+  const handleAdd = () => {
+    setProject(undefined);
+    setOpenEditForm(true);
+  };
+
+  const onCancelClick = () => {
+    setOpenEditForm(false);
+  };
+
+  const memoProjectEdit = useMemo(() => (
+    <ProjectEdit
+      open={openEditForm}
+      project={project}
+      onSubmit={onSubmit}
+      onCancelClick={onCancelClick}
+    />
+  ), [openEditForm]);
+
+  const columns: GridColDef<ITimeTrackProject>[] = [
+    {
+      ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
+      width: 70,
+      renderCell: ({ formattedValue, row }) => {
+        return (
+          <>
+            {row.isFavorite ? <StarIcon style={{ color: '#faaf00' }} /> : <StarBorderIcon />}
+            <div style={{ minWidth: '5px' }} />
+            <IconButton size="small">
+              <ExpandMoreIcon style={{ transition: '0.1s', transform: formattedValue ? 'rotate(-90deg)' : 'none' }}/>
+            </IconButton>
+          </>
+        );
+      },
+      align: 'center',
+    },
+    {
+      field: 'name', headerName: 'Наименование', flex: 1,
+    },
     { field: 'customer', headerName: 'Клиент', flex: 1,
       renderCell: ({ value, row }) => {
         return value?.NAME || '';
@@ -170,7 +213,7 @@ export function Projects(props: IProjectsProps) {
                   alignItems="center"
                   spacing={1}
                   onClick={() => {
-                    // handleEditClick();
+                    handleEdit(row);
                     closeMenu();
                   }}
                 >
@@ -218,92 +261,84 @@ export function Projects(props: IProjectsProps) {
     }
   ];
 
-  const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {
-    return row?.hierarchy || [];
-  };
-
-  const groupingColDef: DataGridProProps['groupingColDef'] = {
-    headerName: 'Наименование',
-    flex: 1,
-    minWidth: 280,
-    renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<any, any, any, GridGroupNode>} projects={projects} />
-  };
-
-  const memoGrid = useMemo(() => (
-    <StyledGrid
-      treeData
-      rows={rows}
-      rowCount={projects?.length ?? 0}
-      columns={columns}
-      loading={projectsIsFetching}
-      getTreeDataPath={getTreeDataPath}
-      groupingColDef={groupingColDef}
-      pagination
-      paginationMode="server"
-      pageSizeOptions={pageOptions}
-      onPaginationModelChange={(data: {page: number, pageSize: number}) => {
-        setPaginationData({
-          ...paginationData,
-          pageSize: data.pageSize,
-          pageNo: data.page
-        });
-      }}
-      paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-      sortingMode="server"
-      onSortModelChange={handleSortModelChange}
-    />
-  ), [columns, groupingColDef, handleSortModelChange, pageOptions, paginationData, projects?.length, projectsIsFetching]);
+  const getDetailPanelContent = useCallback(({ row }: GridRowParams<ITimeTrackProject>) => <DetailPanelContent row={row} />, []);
 
   return (
-    <CustomizedCard style={{ flex: 1 }}>
-      <CardHeader
-        title={<Typography variant="pageHeader">Проекты</Typography>}
-        action={
-          <Stack direction="row" spacing={1}>
-            <Box paddingX={'4px'} />
-            <SearchBar
-              disabled={projectsIsLoading}
-              onCancelSearch={cancelSearch}
-              onRequestSearch={requestSearch}
-              fullWidth
-              cancelOnEscape
-              value={
-                filterData?.name
-                  ? filterData.name?.[0]
-                  : undefined
-              }
-            />
-            <Box display="inline-flex" alignSelf="center">
-              {/* <PermissionsGate actionAllowed={userPermissions?.project?.POST}> */}
-              <CustomAddButton
+    <>
+      {memoProjectEdit}
+      <CustomizedCard style={{ flex: 1 }}>
+        <CardHeader
+          title={<Typography variant="pageHeader">Проекты</Typography>}
+          action={
+            <Stack direction="row" spacing={1}>
+              <Box paddingX={'4px'} />
+              <SearchBar
+                disabled={projectsIsLoading}
+                onCancelSearch={cancelSearch}
+                onRequestSearch={requestSearch}
+                fullWidth
+                cancelOnEscape
+                value={
+                  filterData?.name
+                    ? filterData.name?.[0]
+                    : undefined
+                }
+              />
+              <Box display="inline-flex" alignSelf="center">
+                {/* <PermissionsGate actionAllowed={userPermissions?.project?.POST}> */}
+                <CustomAddButton
                 // disabled={projectsIsFetching}
-                disabled
-                label="Создать договор"
-              />
-              {/* </PermissionsGate> */}
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomLoadingButton
-                hint="Обновить данные"
-                loading={projectsIsFetching}
-                onClick={refreshClick}
-              />
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomFilterButton
-                onClick={filterHandlers.filterClick}
-                disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
-                hasFilters={Object.keys(filterData || {}).filter(f => f !== 'type').length > 0}
-              />
-            </Box>
-          </Stack>
-        }
-      />
-      <Divider />
-      <CardContent style={{ padding: 0 }}>
-        {memoGrid}
-      </CardContent>
-      {memoFilter}
-    </CustomizedCard>
+                  onClick={handleAdd}
+                  disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
+                  label="Создать договор"
+                />
+                {/* </PermissionsGate> */}
+              </Box>
+              <Box display="inline-flex" alignSelf="center">
+                <CustomLoadingButton
+                  hint="Обновить данные"
+                  loading={projectsIsFetching}
+                  onClick={refreshClick}
+                />
+              </Box>
+              <Box display="inline-flex" alignSelf="center">
+                <CustomFilterButton
+                  onClick={filterHandlers.filterClick}
+                  disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
+                  hasFilters={Object.keys(filterData || {}).filter(f => f !== 'type').length > 0}
+                />
+              </Box>
+            </Stack>
+          }
+        />
+        <Divider />
+        <CardContent style={{ padding: 0 }}>
+          <StyledGrid
+            rows={projects}
+            rowCount={projects?.length ?? 0}
+            columns={columns}
+            loading={projectsIsFetching}
+            pagination
+            paginationMode="server"
+            pageSizeOptions={pageOptions}
+            onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+              setPaginationData({
+                ...paginationData,
+                pageSize: data.pageSize,
+                pageNo: data.page
+              });
+            }}
+            apiRef={apiRef}
+            paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
+            sortingMode="server"
+            onSortModelChange={handleSortModelChange}
+            rowThreshold={0}
+            getDetailPanelHeight={() => 'auto'}
+            getDetailPanelContent={getDetailPanelContent}
+          />
+        </CardContent>
+        {memoFilter}
+      </CustomizedCard>
+    </>
   );
 };
