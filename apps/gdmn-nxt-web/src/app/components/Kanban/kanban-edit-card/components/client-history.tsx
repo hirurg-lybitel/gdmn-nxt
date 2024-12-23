@@ -16,7 +16,9 @@ import { IClientHistoryType, IContactWithID, IKanbanCard, IKanbanTask } from '@g
 import { useAddClientHistoryMutation, useGetClientHistoryQuery, useGetClientHistoryTypeQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import CircularIndeterminate from '../../../helpers/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
+import { HistoryType } from '@gdmn-nxt/components/selectors/historyType-select/historyType-select';
 
 interface ClientHistoryProps {
   card?: IKanbanCard;
@@ -67,11 +69,11 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
     });
   };
 
-  const changeCreator = (e: SyntheticEvent, value: IContactWithID | null) => {
-    setMessage(prev => ({ ...prev, creator: value }));
+  const changeCreator = (value: IContactWithID | IContactWithID[] | null) => {
+    setMessage(prev => ({ ...prev, creator: value as IContactWithID }));
   };
-  const changeHistoryType = (e: SyntheticEvent, value: IClientHistoryType | null) => {
-    setMessage(prev => ({ ...prev, selectedType: value }));
+  const changeHistoryType = (value: IClientHistoryType | IClientHistoryType[] | null) => {
+    setMessage(prev => ({ ...prev, selectedType: value as IClientHistoryType }));
   };
 
   return (
@@ -180,45 +182,25 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
         <CardContent>
           <Stack spacing={2}>
             <Stack direction={'row'} spacing={2}>
-              <Autocomplete
-                size="small"
+              <HistoryType
+                value={message.selectedType}
+                onChange={changeHistoryType}
                 style={{
                   width: '150px'
                 }}
-                options={historyType}
-                loading={historyTypeIsFetching}
-                getOptionLabel={(option) => option.NAME}
-                onChange={changeHistoryType}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="standard"
-                    placeholder="Тип"
-                  />
-                )}
+                textfieldVariant="standard"
+                label=""
+                placeholder="Тип"
               />
-              <Autocomplete
-                size="small"
+              <EmployeesSelect
+                value={message.creator}
+                onChange={changeCreator}
                 style={{
                   width: '350px'
                 }}
-                options={employees}
-                value={message.creator}
-                getOptionLabel={option => option.NAME}
-                loading={employeesIsFetching}
-                onChange={changeCreator}
-                renderOption={(props, option) => (
-                  <li {...props} key={option.ID}>
-                    {option.NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="standard"
-                    placeholder="От кого"
-                  />
-                )}
+                placeholder="От кого"
+                label=""
+                textFieldVariant="standard"
               />
             </Stack>
             <TextField

@@ -3,7 +3,8 @@ import { genPassword } from '@gsbelarus/util-helpers';
 import { genRandomPassword } from '@gsbelarus/util-useful';
 import { RequestHandler } from 'express';
 import { acquireReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { sendEmail } from '../utils/mail';
+import { sendEmail } from '@gdmn/mailer';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 export const upsertAccount: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await startTransaction(req.sessionID);
@@ -109,29 +110,46 @@ export const upsertAccount: RequestHandler = async (req, res) => {
     const email = result.queries.accounts[0]?.USR$EMAIL;
 
     if (email) {
+      const {
+        smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPassword,
+        OURCOMPANY: { NAME: ourCompanyName }
+      } = await systemSettingsRepository.findOne(req.sessionID);
+
+      const smtpOpt = {
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser,
+        password: smtpPassword
+      };
+
       try {
         if (newCredentials) {
-          await sendEmail(
-            'CRM система БелГИСС <test@gsbelarus.com>',
-            email,
-            'Учетная запись и пароль для входа в систему',
-            `Используйте следующую учетную запись и пароль для входа на портал БелГИСС:\
+          await sendEmail({
+            from: `CRM система ${ourCompanyName} <${smtpOpt.user}>`,
+            to: email,
+            subject: 'Учетная запись и пароль для входа в систему',
+            text: `Используйте следующую учетную запись и пароль для входа на портал ${ourCompanyName}:\
             \n\n\
             Пользователь: ${email}\n\
-            Пароль: ${provisionalPassword}`
-          );
+            Пароль: ${provisionalPassword}`,
+            options: { ...smtpOpt }
+          });
         } else if (insert) {
-          await sendEmail(
-            'CRM система БелГИСС <test@gsbelarus.com>',
-            email,
-            'Подтверждение учетной записи',
-            `Уважаемый пользователь!
+          await sendEmail({
+            from: `CRM система ${ourCompanyName} <${smtpOpt.user}>`,
+            to: email,
+            subject: 'Подтверждение учетной записи',
+            text: `Уважаемый пользователь!
 
-            В ближайшее время мы рассмотрим вашу заявку на регистрацию в системе.
+              В ближайшее время мы рассмотрим вашу заявку на регистрацию в системе.
 
-            После подтверждения вы получите на этот адрес электронной почты
-            письмо с именем учетной записи и паролем.`
-          );
+              После подтверждения вы получите на этот адрес электронной почты
+              письмо с именем учетной записи и паролем.`,
+            options: { ...smtpOpt }
+          });
         }
       } catch (err) {
         console.error(err);

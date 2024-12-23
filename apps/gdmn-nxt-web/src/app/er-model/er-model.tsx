@@ -1,4 +1,4 @@
-import { CircularIndeterminate } from '../components/helpers/circular-indeterminate/circular-indeterminate';
+import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { useGetErModelQuery } from '../features/er-model/erModelApi';
 import './er-model.module.less';
 import { createElement, useEffect, useMemo, useState } from 'react';

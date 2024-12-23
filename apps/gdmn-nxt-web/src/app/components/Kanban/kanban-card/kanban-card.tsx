@@ -1,14 +1,14 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, IconButton, Stack, Typography, useTheme, Theme, Tooltip, Icon } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Tooltip, Icon } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { useSetCardStatusMutation } from '../../../features/kanban/kanbanApi';
 import { TaskStatus } from './task-status';
@@ -234,9 +234,11 @@ export function KanbanCard(props: KanbanCardProps) {
           textOverflow: 'ellipsis',
           padding: 5,
           backgroundColor: 'var(--color-card-bg)',
-          ...(card?.STATUS?.hasOwnProperty('isRead') && !card?.STATUS?.isRead
+          ...(card?.STATUS &&
+            'isRead' in (card?.STATUS ?? {}) &&
+            !card?.STATUS?.isRead
             ? {
-              backgroundColor: 'rgba(193, 228, 250, 0.5)',
+              backgroundColor: 'rgba(193, 228, 250, 0.25)',
               borderTop: '1px solid rgb(13, 228, 250)',
               borderBottom: '1px solid rgb(13, 228, 250)',
               borderRight: '1px solid rgb(13, 228, 250)',

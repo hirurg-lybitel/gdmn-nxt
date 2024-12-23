@@ -1,29 +1,27 @@
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WorkIcon from '@mui/icons-material/Work';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import EmailIcon from '@mui/icons-material/Email';
-import { Autocomplete, Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
-import { IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
+import { IContactName, IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useEffect, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
 import * as yup from 'yup';
-import { emailsValidation, phonesValidation } from '../../helpers/validators';
+import { emailsValidation, phonesValidation } from '@gdmn-nxt/helpers/validators';
 import EditableTypography from '../../editable-typography/editable-typography';
 import TelephoneInput from '../../telephone-input';
-import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
-import filterOptions from '../../helpers/filter-options';
-import { LabelsSelect } from '../../Labels/labels-select';
-import { CustomerSelect } from '../../Kanban/kanban-edit-card/components/customer-select';
-import SocialMediaInput, { ISocialMedia, socialMediaIcons, socialMediaLinks } from '../../social-media-input';
+import { LabelsSelect } from '../../selectors/labels-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
+import SocialMediaInput, { ISocialMedia, socialMedia } from '../../social-media-input';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import ContactsDeals from '../contacts-deals';
@@ -31,6 +29,8 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import ContactsTasks from '../contact-tasks';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
+import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
+import { ContactSelect } from '../../selectors/contact-select';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -46,7 +46,6 @@ export function EditContact({
   onCancel,
 }: EditContactProps) {
   const userPermissions = usePermissions();
-  const { data: persons, isFetching: personsIsFetching, isLoading, refetch } = useGetContactPersonsQuery(undefined, { skip: !open });
   const [tabIndex, setTabIndex] = useState('2');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -60,6 +59,10 @@ export function EditContact({
     LABELS: [],
     ADDRESS: '',
     RANK: '',
+    nameInfo: {
+      lastName: '',
+      nickName: ''
+    }
   };
 
   const formik = useFormik<IContactPerson>({
@@ -67,19 +70,34 @@ export function EditContact({
     validateOnBlur: false,
     initialValues: {
       ...initValue,
-      ...{ ...contact,
+      ...{
+        ...contact,
         PHONES: (contact?.PHONES && contact?.PHONES?.length > 0) ? contact?.PHONES : [voidPhoneValue],
         EMAILS: (contact?.EMAILS && contact?.EMAILS?.length > 0) ? contact?.EMAILS : [voidEmailValue],
         MESSENGERS: (contact?.MESSENGERS && contact?.MESSENGERS?.length > 0) ? contact?.MESSENGERS : [voidMessengerValue]
       }
     },
     validationSchema: yup.object().shape({
-      NAME: yup.string()
-        .required('Не указано имя')
-        .max(40, 'Слишком длинное имя'),
+      // NAME: yup.string()
+      //   .required('Не указано имя')
+      //   .max(40, 'Слишком длинное имя'),
       // USR$LETTER_OF_AUTHORITY: yup.string().max(80, 'Слишком длинное значение'),
       EMAILS: yup.array().of(emailsValidation()),
-      PHONES: yup.array().of(phonesValidation())
+      PHONES: yup.array().of(phonesValidation()),
+      MESSENGERS: yup.array().of(
+        yup.object().shape({
+          USERNAME: yup.string().max(40, 'Слишком длинное имя'),
+        })
+      ),
+      nameInfo: yup.object({
+        lastName: yup.string()
+          .required('Не указана фамилия')
+          .max(20, 'Слишком длинная фамилия'),
+        firstName: yup.string()
+          .max(20, 'Слишком длинное имя'),
+        middleName: yup.string()
+          .max(20, 'Слишком длинное отчество'),
+      })
     }),
     onSubmit: (values) => {
       onSubmit(validValues(), false);
@@ -250,7 +268,9 @@ export function EditContact({
               onDelete={() => handleDeletePhone(index)}
               helperText={error}
               error={isTouched && Boolean(error)}
+              editMode={firstElement}
               closeOnBlur={!firstElement}
+              editEmpty={false}
               editComponent={
                 <TelephoneInput
                   name={`PHONE${index}`}
@@ -299,7 +319,9 @@ export function EditContact({
               onDelete={() => handleDeleteEmail(index)}
               error={isTouched && Boolean(error)}
               helperText={error}
+              editMode={firstElement}
               closeOnBlur={!firstElement}
+              editEmpty={false}
               editComponent={
                 <TextField
                   fullWidth
@@ -340,7 +362,7 @@ export function EditContact({
           >
             {/* <SmsIcon fontSize="small" color="primary" /> */}
             <div className={styles['messenger-icon']}>
-              <img src={socialMediaIcons[CODE]} width={17} />
+              <img src={socialMedia[CODE].icon} width={17} />
             </div>
             <Stack
               direction="row"
@@ -352,7 +374,7 @@ export function EditContact({
                 value={USERNAME}
                 container={(value) =>
                   <a
-                    className={`${styles.link} ${!socialMediaLinks[CODE] ? styles.linkDisabled : ''}`}
+                    className={`${styles.link} ${!socialMedia[CODE].link ? styles.linkDisabled : ''}`}
                     onClick={handleStopPropagation}
                     href={parseToMessengerLink(CODE, USERNAME)}
                     rel="noreferrer"
@@ -365,7 +387,9 @@ export function EditContact({
                 onDelete={() => handleDeleteMessenger(index)}
                 helperText={error}
                 error={isTouched && Boolean(error)}
+                editMode={firstElement}
                 closeOnBlur={!firstElement}
+                editEmpty={false}
                 editComponent={
                   <SocialMediaInput
                     value={{
@@ -399,6 +423,10 @@ export function EditContact({
     formik.setFieldValue('PHOTO', newAvatar);
   };
 
+  const handleNameInfoChange = (value: IContactName) => {
+    formik.setFieldValue('nameInfo', value);
+  };
+
   return (
     <CustomizedDialog
       open={open}
@@ -428,51 +456,28 @@ export function EditContact({
                       alignItems="center"
                     >
                       <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
-                      <EditableTypography
-                        name="NAME"
-                        value={formik.values.NAME}
-                        onChange={formik.handleChange}
+                      <ContactName
+                        value={formik.values.nameInfo}
+                        onChange={handleNameInfoChange}
+                        required
+                        fullWidth
+                        error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
                       />
                     </Stack>
                     {phoneOptions}
                     {emailsOptions}
                     {messengersOptions}
                     <Divider flexItem />
-                    <Autocomplete
-                      fullWidth
-                      options={persons?.records ?? []}
-                      getOptionLabel={option => option.NAME}
-                      filterOptions={filterOptions(50, 'NAME')}
-                      value={persons?.records?.find(el => el.ID === formik.values.RESPONDENT?.ID) ?? null}
-                      loading={personsIsFetching}
-                      loadingText="Загрузка данных..."
-                      onChange={(event, value) => {
-                        formik.setFieldValue('RESPONDENT', value);
+                    <ContactSelect
+                      label="Ответственный"
+                      placeholder="Выберите ответственного"
+                      value={formik.values.RESPONDENT ?? null}
+                      onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
+                      error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
+                      helperText={formik.touched.RESPONDENT ? formik.errors.RESPONDENT : undefined}
+                      slots={{
+                        startIcon: <ManageAccountsIcon />
                       }}
-                      renderOption={(props, option) => {
-                        return (
-                          <li {...props} key={option.ID}>
-                            {option.NAME}
-                          </li>
-                        );
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Ответственный"
-                          placeholder="Выберите ответственного"
-                          error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
-                          helperText={formik.touched.RESPONDENT && formik.errors.RESPONDENT}
-                          InputProps={{
-                            ...params.InputProps,
-                            startAdornment: (
-                              <InputAdornment position="end">
-                                <ManageAccountsIcon />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      )}
                     />
                     <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
                     <CustomerSelect

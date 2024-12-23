@@ -1,7 +1,7 @@
 import './search-bar.module.less';
 import { ChangeEvent, cloneElement, CSSProperties, ReactElement, useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@mui/styles';
-import { Box, IconButton, Input, Theme } from '@mui/material';
+import { Box, IconButton, Input, InputBaseProps, InputProps, Theme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import CustomizedCard from '../Styled/customized-card/customized-card';
@@ -70,7 +70,7 @@ const styles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
   },
 }));
 
-export interface SearchBarProps {
+export interface SearchBarProps extends Omit<InputBaseProps, 'onChange'> {
   cancelOnEscape?: boolean,
   className?: string,
   closeIcon?: ReactElement,
@@ -113,6 +113,12 @@ export function SearchBar(props: SearchBarProps) {
     setSearchValue(value);
     setOnFocus(Boolean(value));
   }, [value]);
+
+  useEffect(() => {
+    if (searchValue === '') {
+      handleRequestSearch();
+    }
+  }, [searchValue]);
 
 
   const propsStyle: StyleProps = {

@@ -5,10 +5,9 @@ import { ILabel } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { SketchPicker } from 'react-color';
 import LabelMarker from '../label-marker/label-marker';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import IconSelect from '@gdmn-nxt/components/icon-select/icon-select';
+import IconSelect from '@gdmn-nxt/components/selectors/icon-select/icon-select';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
 
@@ -59,7 +58,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
   const classes = useStyles();
   const { open, label } = props;
   const { onSubmit, onCancelClick } = props;
-  const [selectColor, setSelectColor] = useState(false);
 
   const initValue: ILabel = {
     ID: label?.ID || 0,
@@ -82,11 +80,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       USR$DESCRIPTION: yup.string().max(120, 'Слишком длинное описание'),
     }),
     onSubmit: (value) => {
-      if (!confirmOpen) {
-        setConfirmOpen(true);
-        return;
-      };
-      setConfirmOpen(false);
+      onSubmit(formik.values);
     }
   });
 
@@ -94,22 +88,9 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     if (!open) formik.resetForm();
   }, [open]);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
   const onCancel = () => {
     onCancelClick();
   };
-
-  const handleConfirmOkClick = useCallback(() => {
-    setConfirmOpen(false);
-    onSubmit(formik.values);
-  }, [formik.values]);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
-
-  const [colorLabel, setColorLabel] = useState(label?.USR$COLOR || 'grey');
 
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
@@ -118,86 +99,86 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
   };
 
   return (
-    <>
-      <CustomizedDialog
-        open={open}
-        onClose={handleOnClose}
-        confirmation={formik.dirty}
-      >
-        <DialogTitle>
-          {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
-        </DialogTitle>
-        <DialogContent dividers>
-          <FormikProvider value={formik}>
-            <Form id="mainForm" onSubmit={formik.handleSubmit}>
-              <Stack direction="column" spacing={2}>
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                >
-                  <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
-                  <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
-                </Stack>
-                <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-                  <TextField
-                    style={{ width: '100%' }}
-                    label="Наименование"
-                    type="text"
-                    required
-                    autoFocus
-                    name="USR$NAME"
-                    onChange={formik.handleChange}
-                    value={formik.values.USR$NAME}
-                    error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
-                    helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
-                  />
-                </div>
-                <ColorEdit
-                  value={formik.values.USR$COLOR}
-                  onChange={(color) => {
-                    formik.setFieldValue('USR$COLOR', color);
-                  }}
-                  errorMessage={formik.errors.USR$COLOR}
-                />
-                <TextField
-                  label="Описание"
-                  type="text"
-                  name="USR$DESCRIPTION"
-                  multiline
-                  minRows={4}
-                  onChange={formik.handleChange}
-                  value={formik.values.USR$DESCRIPTION}
-                  error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}
-                  helperText={getIn(formik.touched, 'USR$DESCRIPTION') && getIn(formik.errors, 'USR$DESCRIPTION')}
-                />
+    <CustomizedDialog
+      open={open}
+      onClose={handleOnClose}
+      confirmation={formik.dirty}
+    >
+      <DialogTitle>
+        {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
+      </DialogTitle>
+      <DialogContent dividers>
+        <FormikProvider value={formik}>
+          <Form id="mainForm" onSubmit={formik.handleSubmit}>
+            <Stack direction="column" spacing={2}>
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+              >
+                <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
+                <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
               </Stack>
-            </Form>
-          </FormikProvider>
-        </DialogContent>
-        <DialogActions>
-          <Box flex={1}/>
-          <ButtonWithConfirmation
-            className={classes.button}
-            onClick={onCancel}
-            variant="outlined"
-            color="primary"
-            title="Внимание"
-            text={'Изменения будут утеряны. Продолжить?'}
-            confirmation={formik.dirty}
-          >
+              <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  style={{ width: '100%' }}
+                  label="Наименование"
+                  type="text"
+                  required
+                  autoFocus
+                  name="USR$NAME"
+                  onChange={formik.handleChange}
+                  value={formik.values.USR$NAME}
+                  error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                  helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
+                />
+              </div>
+              <ColorEdit
+                label="Цвет метки"
+                value={formik.values.USR$COLOR}
+                onChange={(color) => {
+                  formik.setFieldValue('USR$COLOR', color);
+                }}
+                errorMessage={formik.errors.USR$COLOR}
+              />
+              <TextField
+                label="Описание"
+                type="text"
+                name="USR$DESCRIPTION"
+                multiline
+                minRows={4}
+                onChange={formik.handleChange}
+                value={formik.values.USR$DESCRIPTION}
+                error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}
+                helperText={getIn(formik.touched, 'USR$DESCRIPTION') && getIn(formik.errors, 'USR$DESCRIPTION')}
+              />
+            </Stack>
+          </Form>
+        </FormikProvider>
+      </DialogContent>
+      <DialogActions>
+        <Box flex={1}/>
+        <ButtonWithConfirmation
+          className={classes.button}
+          onClick={onCancel}
+          variant="outlined"
+          color="primary"
+          title="Внимание"
+          text={'Изменения будут утеряны. Продолжить?'}
+          confirmation={formik.dirty}
+        >
             Отменить
-          </ButtonWithConfirmation>
-          <Button
-            className={classes.button}
-            variant="contained"
-            onClick={handleConfirmOkClick}
-          >
+        </ButtonWithConfirmation>
+        <Button
+          className={classes.button}
+          variant="contained"
+          form="mainForm"
+          type="submit"
+        >
             Сохранить
-          </Button>
-        </DialogActions>
-      </CustomizedDialog>
-    </>
+        </Button>
+      </DialogActions>
+    </CustomizedDialog>
   );
 }
 

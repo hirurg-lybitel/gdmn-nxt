@@ -1,9 +1,20 @@
 import { Button, Card, CardActions, CardContent, CardMedia, Grid, Typography } from '@mui/material';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
+import { useNavigate } from 'react-router-dom';
+import { saveFilterData } from '../../store/filtersSlice';
+import { useDispatch } from 'react-redux';
 // import sdfs from '../../../assets/'
 // 404
 
 export default function NotFound() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const backToMain = () => {
+    dispatch(saveFilterData({ menu: { path: '/' } }));
+    navigate('/');
+  };
+
   return (
     <Grid
       container
@@ -31,12 +42,22 @@ export default function NotFound() {
                 <Typography align="center" sx={{ fontSize: 100, fontWeight: 700, color: '#dbdee3' }}>404</Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography align="center" variant="h6" width={500}>
+                <Typography
+                  align="center"
+                  variant="h6"
+                  width={500}
+                >
                     Запрошенная страница не найдена.
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography align="center" variant="body1" width={600} fontWeight={600} color={'text.secondary'}>
+                <Typography
+                  align="center"
+                  variant="body1"
+                  width={600}
+                  fontWeight={600}
+                  color={'text.secondary'}
+                >
                     Извините, мы не смогли найти страницу, которую вы ищете.
                     Возможно, вы ошиблись адресом? Обязательно проверьте путь.
                 </Typography>
@@ -47,7 +68,7 @@ export default function NotFound() {
             <Button
               variant="contained"
               component="a"
-              href={'/'}
+              onClick={backToMain}
             >Вернуться на главную</Button>
           </CardActions>
 

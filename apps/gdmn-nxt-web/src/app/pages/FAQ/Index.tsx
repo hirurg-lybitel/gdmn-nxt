@@ -1,4 +1,4 @@
-import { CardContent, Grid } from '@mui/material';
+import { Box, CardContent, Grid, Stack } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -21,8 +21,11 @@ import PermissionsGate from '../../components/Permissions/permission-gate/permis
 import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import usePermissions from '../../components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -147,18 +150,18 @@ export default function FAQ() {
       <CustomizedCard sx={{ width: '100%' }}>
         <CardHeader
           title={<Typography variant="pageHeader">База знаний</Typography>}
-          // action={
-          //   <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
-          //     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          //       <div />
-          //       <Button
-          //         disabled={addFaqObj.isLoading}
-          //         variant="contained"
-          //         onClick={handleOpenAddPopup}
-          //       >Добавить</Button>
-          //     </div>
-          //   </PermissionsGate>
-          // }
+          action={
+            <Stack direction={'row'}>
+              <Box flex={1} />
+              <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
+                <CustomAddButton
+                  disabled={addFaqObj.isLoading}
+                  onClick={handleOpenAddPopup}
+                  label="Добавить запись"
+                />
+              </PermissionsGate>
+            </Stack>
+          }
         />
         <Divider />
         <CardContent sx={{ paddingRight: '0' }}>
@@ -186,12 +189,31 @@ export default function FAQ() {
                         <AccordionSummary
                           expandIcon={<ExpandMoreIcon />}
                         >
-                          <Typography variant="h6">
-
-                            <ReactMarkdown>
-                              {item.USR$QUESTION}
-                            </ReactMarkdown>
-                          </Typography>
+                          <Stack direction={'row'} flex={1} alignItems={'center'}>
+                            <Typography variant="h6">
+                              <ReactMarkdown>
+                                {item.USR$QUESTION}
+                              </ReactMarkdown>
+                            </Typography>
+                            {!componentIsFetching &&
+                              <>
+                                <Box flex={1} />
+                                <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
+                                  <ItemButtonEdit
+                                    disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                                    onClick={handleOpenEditPopup(item)}
+                                  />
+                                </PermissionsGate>
+                                <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
+                                  <ItemButtonDelete
+                                    button
+                                    disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                                    onClick={handleDeleteClick(item)}
+                                  />
+                                </PermissionsGate>
+                              </>
+                            }
+                          </Stack>
                         </AccordionSummary>
                         <AccordionDetails className={style.details}>
                           <Typography variant="body1" component="div">
@@ -201,30 +223,6 @@ export default function FAQ() {
                           </Typography>
                         </AccordionDetails>
                       </Accordion>
-                    </>
-                  }
-                  {!componentIsFetching &&
-                    <>
-                      {/* <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
-                        <IconButton
-                          color="primary"
-                          disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                          style={{ marginTop: '28px' }}
-                          onClick={handleOpenEditPopup(item)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </PermissionsGate>
-                      <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
-                        <IconButton
-                          color="primary"
-                          style={{ marginTop: '28px' }}
-                          disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                          onClick={handleDeleteClick(item)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </PermissionsGate> */}
                     </>
                   }
                 </div>

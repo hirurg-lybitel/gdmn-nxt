@@ -1,15 +1,7 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { IContactPerson } from '@gsbelarus/util-api-types';
-import { forEachAsync } from '@gsbelarus/util-helpers';
-
-const getFIO = (value: string) => {
-  const data = value.split(' ');
-  return [
-    data[0].slice(0, 20),
-    data.length > 1 ? data[1].slice(0, 20) : '',
-    data.length > 2 ? data[2].slice(0, 20) : '',
-  ];
-};
+import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
+import { parseContactName } from '@gsbelarus/util-useful';
 
 /**
  * Finds persons that match given find clause.
@@ -123,6 +115,9 @@ const find = async (
         respondent.ID as RESP_ID,
         respondent.NAME as RESP_NAME,
         p.PHOTO AS PHOTO_BLOB,
+        p.FIRSTNAME,
+        p.SURNAME,
+        p.MIDDLENAME,
         comp.ID AS COMP_ID,
         comp.NAME AS COMP_NAME
       FROM GD_CONTACT con
@@ -142,7 +137,14 @@ const find = async (
         };
       }
       if (p['PHOTO_BLOB'] !== null && typeof p['PHOTO_BLOB'] === 'object') {
-        p.PHOTO = await blob2String(p['PHOTO_BLOB']);
+        const photoString = await blob2String(p['PHOTO_BLOB']);
+
+        /** Temporary. Some data are stored as binary and as string */
+        if (!isNaN(Number(photoString[0]))) {
+          p.PHOTO = bin2String(photoString.split(','));
+        } else {
+          p.PHOTO = photoString;
+        }
       }
       if (p['COMP_ID']) {
         p.COMPANY = {
@@ -150,11 +152,21 @@ const find = async (
           NAME: p['COMP_NAME'],
         };
       }
+
+      p['nameInfo'] = parseContactName({
+        lastName: p['SURNAME'],
+        firstName: p['FIRSTNAME'],
+        middleName: p['MIDDLENAME'],
+      });
+
       delete p['COMP_ID'];
       delete p['COMP_NAME'];
       delete p['PHOTO_BLOB'];
       delete p['RESP_ID'];
       delete p['RESP_NAME'];
+      delete p['SURNAME'];
+      delete p['FIRSTNAME'];
+      delete p['MIDDLENAME'];
       p['USR$BG_OTDEL'] = departments[p['USR$BG_OTDEL']];
       p['PHONES'] = phones[p['ID']];
       p['EMAILS'] = emails[p['ID']];
@@ -208,7 +220,6 @@ const update = async (
     };
 
     const {
-      NAME = contact.NAME,
       COMPANY = contact.COMPANY,
       USR$LETTER_OF_AUTHORITY = contact.USR$LETTER_OF_AUTHORITY,
       RANK = contact.RANK,
@@ -220,7 +231,8 @@ const update = async (
       ADDRESS = contact.ADDRESS,
       NOTE = contact.NOTE,
       USR$BG_OTDEL = contact.USR$BG_OTDEL,
-      PHOTO = contact.PHOTO
+      PHOTO = contact.PHOTO,
+      nameInfo = contact.nameInfo
     } = metadata;
 
     await fetchAsSingletonObject<IContactPerson>(
@@ -235,10 +247,10 @@ const update = async (
         RETURNING ID`,
       {
         ID: id,
-        NAME,
+        NAME: nameInfo.nickName ?? '',
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
-        NOTE: await string2Blob(NOTE),
+        NOTE: NOTE ? await string2Blob(NOTE) : null,
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
@@ -250,8 +262,6 @@ const update = async (
       RETURNING ID, NAME`,
       { NAME: RANK }
     );
-
-    const fio = getFIO(NAME);
 
     const people = await fetchAsSingletonObject(
       `UPDATE GD_PEOPLE
@@ -271,9 +281,9 @@ const update = async (
         POSITIONKEY: position.ID,
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
         WCOMPANYKEY: COMPANY?.ID,
-        SURNAME: fio[0],
-        FIRSTNAME: fio[1],
-        MIDDLENAME: fio[2],
+        SURNAME: nameInfo?.lastName ?? '',
+        FIRSTNAME: nameInfo?.firstName ?? '',
+        MIDDLENAME: nameInfo.middleName ?? '',
         PHOTO: PHOTO ? await string2Blob(PHOTO) : null
       }
     );
@@ -400,7 +410,6 @@ const save = async (
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
   try {
     const {
-      NAME,
       COMPANY,
       USR$LETTER_OF_AUTHORITY,
       RANK,
@@ -412,7 +421,8 @@ const save = async (
       ADDRESS,
       NOTE,
       USR$BG_OTDEL,
-      PHOTO
+      PHOTO,
+      nameInfo
     } = metadata;
 
     // insert gd_contact
@@ -421,12 +431,12 @@ const save = async (
       VALUES(:NAME, :PARENT, :CONTACTTYPE, :RESPONDENT, :ADDRESS, :NOTE, :BG_OTDEL)
       RETURNING ID, NAME, PARENT, CONTACTTYPE`,
       {
-        NAME,
+        NAME: nameInfo.nickName ?? '',
         PARENT: 650001,
         CONTACTTYPE: 2,
         RESPONDENT: RESPONDENT?.ID,
         ADDRESS,
-        NOTE: await string2Blob(NOTE),
+        NOTE: NOTE ? await string2Blob(NOTE) : null,
         BG_OTDEL: USR$BG_OTDEL?.ID
       }
     );
@@ -440,8 +450,6 @@ const save = async (
       { NAME: RANK }
     );
 
-    const fio = getFIO(NAME);
-
     // insert gd_people
     const people = await fetchAsSingletonObject(
       `INSERT INTO GD_PEOPLE(CONTACTKEY, WPOSITIONKEY, USR$LETTER_OF_AUTHORITY, WCOMPANYKEY, PHOTO, SURNAME, FIRSTNAME, MIDDLENAME)
@@ -452,10 +460,10 @@ const save = async (
         POSITIONKEY: position.ID,
         LETTER_OF_AUTHORITY: USR$LETTER_OF_AUTHORITY,
         WCOMPANYKEY: COMPANY?.ID,
-        SURNAME: fio[0],
-        FIRSTNAME: fio[1],
-        MIDDLENAME: fio[2],
-        PHOTO: await string2Blob(PHOTO)
+        SURNAME: nameInfo?.lastName ?? '',
+        FIRSTNAME: nameInfo?.firstName ?? '',
+        MIDDLENAME: nameInfo.middleName ?? '',
+        PHOTO: PHOTO ? await string2Blob(PHOTO) : null
       }
     );
 
@@ -561,7 +569,7 @@ const remove = async (
 
   try {
     const deletedMailing = await fetchAsSingletonObject<{ID: number}>(
-      `DELETE FROM USR$CRM_MARKETING_MAILING WHERE ID = :id
+      `DELETE FROM GD_CONTACT WHERE ID = :id
       RETURNING ID`,
       { id }
     );

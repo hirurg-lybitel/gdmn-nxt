@@ -7,6 +7,7 @@ import { NavLink, NavLinkProps } from 'react-router-dom';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { ActionMethod, ActionName, Permissions } from '@gsbelarus/util-api-types';
+import FiberManualRecordOutlinedIcon from '@mui/icons-material/FiberManualRecordOutlined';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuItem: {
@@ -17,11 +18,23 @@ const useStyles = makeStyles((theme: Theme) => ({
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, .3)',
     },
+    '& .SelectedIcon': {
+      display: 'none'
+    },
+    '& .UnSelectedIcon': {
+      display: 'flex'
+    },
     '&.Mui-selected': {
       backgroundColor: 'rgba(255, 255, 255, .3)',
       '&:hover': {
         backgroundColor: 'rgba(255, 255, 255, .3)',
       },
+      '& .SelectedIcon': {
+        display: 'flex'
+      },
+      '& .UnSelectedIcon': {
+        display: 'none'
+      }
     },
   }
 }));
@@ -37,6 +50,19 @@ export function MenuItem(props: MenuItemProps) {
   const classes = useStyles();
 
   const itemIcon = item?.icon ||
+    (level > 1
+      ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }}>
+        <FiberManualRecordOutlinedIcon
+          sx={{
+            width: 6,
+            height: 6
+          }}
+          color="secondary"
+        />
+      </div>
+      : <></>);
+
+  const selectedItemIcon = item?.selectedIcon ||
     (level > 1
       ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }}>
         <FiberManualRecordIcon
@@ -84,7 +110,10 @@ export function MenuItem(props: MenuItemProps) {
         pl: `${level * 12 - level > 0 ? 12 : 0}px`
       }}
     >
-      <ListItemIcon sx={{ minWidth: !item?.icon && level > 1 ? 18 : 36 }}>{itemIcon}</ListItemIcon>
+      <ListItemIcon sx={{ minWidth: !item?.icon && level > 1 ? 18 : 36 }}>
+        <div className="SelectedIcon">{selectedItemIcon}</div>
+        <div className="UnSelectedIcon">{itemIcon}</div>
+      </ListItemIcon>
       <ListItemText
         primary={
           <Typography variant="subtitle1" color="inherit">

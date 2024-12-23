@@ -1,5 +1,7 @@
 import SummarizeIcon from '@mui/icons-material/Summarize';
+import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { IMenuItem } from '.';
 
 const analytics: IMenuItem = {
@@ -12,7 +14,8 @@ const analytics: IMenuItem = {
       title: 'Отчёты',
       type: 'collapse',
       url: 'analytics/reports',
-      icon: <SummarizeIcon color="secondary" />,
+      icon: <SummarizeOutlinedIcon color="secondary" />,
+      selectedIcon: <SummarizeIcon color="secondary" />,
       children: [
         {
           id: 'reconciliation',
@@ -39,7 +42,8 @@ const analytics: IMenuItem = {
       title: 'Продажи',
       type: 'item',
       url: 'analytics/salesfunnel',
-      icon: <FilterAltIcon color="secondary" />
+      icon: <FilterAltOutlinedIcon color="secondary" />,
+      selectedIcon: <FilterAltIcon color="secondary" />,
     }
   ]
 };

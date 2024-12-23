@@ -23,6 +23,8 @@ const find: FindHandler<ITimeTrack> = async (
           switch (expression.operator) {
             case 'LIKE':
               return ` UPPER(z.${f}) ${expression.value} `;
+            case 'IN':
+              return ` UPPER(z.${f}) ${expression.value} `;
           }
         }
 
@@ -38,24 +40,29 @@ const find: FindHandler<ITimeTrack> = async (
         USR$STARTTIME STARTTIME,
         USR$ENDTIME ENDTIME,
         USR$DURATION DURATION,
-        USR$WORKTYPEKEY WORKTYPEKEY,
         USR$CUSTOMERKEY CUSTOMERKEY,
         USR$DESCRIPTION DESCRIPTION_BLOB,
         USR$INPROGRESS INPROGRESS,
-        tt.ID WORK_ID,
-        tt.USR$NAME WORK_NAME,
         con.ID CON_ID,
         con.NAME CON_NAME,
         u.ID USER_ID,
-        u.NAME USER_NAME
+        u.NAME USER_NAME,
+        uc.ID as USER_CONTACT_ID,
+        uc.NAME as USER_CONTACT_NAME,
+        z.USR$BILLABLE BILLABLE,
+        task.ID TASK_ID,
+        task.USR$NAME TASK_NAME,
+        pr.ID PROJECT_ID,
+        pr.USR$NAME PROJECT_NAME
       FROM USR$CRM_TIMETRACKER z
-      JOIN USR$CRM_TIMETRACKER_TYPES tt ON tt.ID = z.USR$WORKTYPEKEY
       LEFT JOIN GD_CONTACT con ON con.ID = z.USR$CUSTOMERKEY
       LEFT JOIN GD_USER u ON u.ID = z.USR$USERKEY
+      LEFT JOIN GD_CONTACT uc ON uc.ID = u.CONTACTKEY
+      LEFT JOIN USR$CRM_TIMETRACKER_TASKS task ON task.ID = z.USR$TASK
+      LEFT JOIN USR$CRM_TIMETRACKER_PROJECTS pr ON pr.ID = task.USR$PROJECT
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
       ORDER BY z.USR$DATE DESC, z.USR$ENDTIME DESC`,
       { ...whereClause });
-
 
     const timeTracking: ITimeTrack[] = await Promise.all(rows.map(async r => ({
       ID: r['ID'],
@@ -64,13 +71,8 @@ const find: FindHandler<ITimeTrack> = async (
       endTime: r['ENDTIME'],
       duration: r['DURATION'] ?? '',
       inProgress: r['INPROGRESS'] === 1,
+      billable: r['BILLABLE'] === 1,
       description: await blob2String(r['DESCRIPTION_BLOB']),
-      ...(r['WORK_ID'] && {
-        workProject: {
-          ID: r['WORK_ID'],
-          NAME: r['WORK_NAME']
-        }
-      }),
       ...(r['CON_ID'] && {
         customer: {
           ID: r['CON_ID'],
@@ -80,9 +82,23 @@ const find: FindHandler<ITimeTrack> = async (
       ...(r['USER_ID'] && {
         user: {
           ID: r['USER_ID'],
-          NAME: r['USER_NAME']
+          NAME: r['USER_NAME'],
+          CONTACT: {
+            ID: r['USER_CONTACT_ID'],
+            NAME: r['USER_CONTACT_NAME'],
+          }
         }
       }),
+      ...(r['TASK_ID'] && {
+        task: {
+          ID: r['TASK_ID'],
+          name: r['TASK_NAME'],
+          project: {
+            ID: r['PROJECT_ID'],
+            name: r['PROJECT_NAME']
+          }
+        }
+      })
     })));
 
     return timeTracking;
@@ -127,7 +143,8 @@ const update: UpdateHandler<ITimeTrack> = async (
       description = timeTrack.description,
       inProgress = timeTrack.inProgress,
       user = timeTrack.user,
-      workProject = timeTrack.workProject,
+      billable = timeTrack.billable ?? true,
+      task = timeTrack.task,
     } = metadata;
 
     const updatedTimeTrack = await fetchAsSingletonObject<ITimeTrack>(
@@ -139,9 +156,10 @@ const update: UpdateHandler<ITimeTrack> = async (
         z.USR$DURATION = :duration,
         z.USR$INPROGRESS = :inProgress,
         z.USR$CUSTOMERKEY = :customerKey,
-        z.USR$WORKTYPEKEY = :workTypeKey,
         z.USR$USERKEY = :userKey,
-        z.USR$DESCRIPTION = :description
+        z.USR$DESCRIPTION = :description,
+        z.USR$BILLABLE = :billable,
+        z.USR$TASK = :task
       WHERE
         ID = :id
       RETURNING ID`,
@@ -154,8 +172,9 @@ const update: UpdateHandler<ITimeTrack> = async (
         description: await string2Blob(description),
         inProgress: Number(inProgress),
         customerKey: customer.ID ?? null,
-        workTypeKey: workProject.ID ?? null,
         userKey: user.ID ?? null,
+        billable: Number(billable),
+        task: task?.ID ?? null,
       }
     );
     await releaseTransaction();
@@ -186,14 +205,15 @@ const save: SaveHandler<ITimeTrack> = async (
     description,
     inProgress,
     user,
-    workProject,
+    billable = true,
+    task
   } = metadata;
 
   try {
     const newTimeTrack = await fetchAsSingletonObject<ITimeTrack>(
       `INSERT INTO USR$CRM_TIMETRACKER(USR$DATE, USR$STARTTIME, USR$ENDTIME, USR$DURATION,
-        USR$INPROGRESS, USR$DESCRIPTION, USR$CUSTOMERKEY, USR$USERKEY, USR$WORKTYPEKEY)
-      VALUES(:date, :startTime, :endTime, :duration, :inProgress, :description, :customerKey, :userKey, :workTypeKey)
+        USR$INPROGRESS, USR$DESCRIPTION, USR$CUSTOMERKEY, USR$USERKEY, USR$BILLABLE, USR$TASK)
+      VALUES(:date, :startTime, :endTime, :duration, :inProgress, :description, :customerKey, :userKey, :billable, :task)
       RETURNING ID`,
       {
         date: new Date(date),
@@ -204,7 +224,8 @@ const save: SaveHandler<ITimeTrack> = async (
         description: await string2Blob(description),
         customerKey: customer.ID ?? null,
         userKey: user.ID ?? null,
-        workTypeKey: workProject.ID ?? null
+        billable: Number(billable),
+        task: task?.ID ?? null
       }
     );
 

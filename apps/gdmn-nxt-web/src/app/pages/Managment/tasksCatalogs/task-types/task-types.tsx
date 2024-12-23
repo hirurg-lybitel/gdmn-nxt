@@ -2,7 +2,7 @@ import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customiz
 import styles from './task-types.module.less';
 import { Button, CardContent, CardHeader, Divider, IconButton, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import { GridActionsCellItem, GridCellParams, GridColDef, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridActionsCellItem, GridCellParams, GridColDef, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -13,10 +13,19 @@ import { ITaskType } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
 import AddIcon from '@mui/icons-material/Add';
+import { DESTRUCTION } from 'dns';
+import { Description } from '@mui/icons-material';
 
 /* eslint-disable-next-line */
 export interface TaskTypesProps {}
 
+
+interface IErrors {
+  [key: string]: string | undefined
+}
+interface IErrorsObject {
+  [key: GridRowId]: IErrors
+}
 interface ValidationShema {
   [key: string]: (value: string) => string;
 }
@@ -39,8 +48,23 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 }));
 
-const CustomCellEditForm = (props: GridRenderEditCellParams) => {
-  const { colDef, value, id, field, error } = props;
+const validationShema: ValidationShema = {
+  NAME: (value) => {
+    if (value?.length > 60) return 'Слишком длинное наименование';
+    if (!value) return 'Обязательное поле';
+    return '';
+  },
+};
+
+interface CustomCellEditFormProps extends GridRenderEditCellParams {
+  errors: IErrorsObject,
+  clearError: (name: string, id: GridRowId) => void
+}
+
+const CustomCellEditForm = (props: CustomCellEditFormProps) => {
+  const { colDef, value, id, field, error, errors, clearError } = props;
+
+  const errorMessage = errors[`${id}`]?.[`${field}`];
 
   const apiRef = useGridApiContext();
 
@@ -50,14 +74,15 @@ const CustomCellEditForm = (props: GridRenderEditCellParams) => {
   }, [apiRef, field, id]);
 
   return (
-    <StyledTooltip open={!!error} title={error} >
+    <StyledTooltip open={!!errorMessage} title={errorMessage} >
       <div className={styles.cellContainer}>
         <TextField
+          onFocus={() => clearError(field, id)}
           placeholder={`Введите ${colDef.headerName?.toLowerCase()}`}
           value={value ?? ''}
           onChange={handleCellOnChange}
           fullWidth
-          error={!!error}
+          error={!!errorMessage}
         />
       </div>
     </StyledTooltip>
@@ -112,6 +137,15 @@ export function TaskTypes(props: TaskTypesProps) {
     };
   }, []);
 
+  const [errors, setErrors] = useState<IErrorsObject>({});
+
+  const clearErrorByName = (name: string, id: GridRowId) => {
+    const newErrors = { ...errors };
+    if (!newErrors[`${id}`]) return;
+    newErrors[`${id}`][`${name}`] = '';
+    setErrors(newErrors);
+  };
+
   function RowMenuCell(props: GridRenderCellParams) {
     const { id } = props;
     const api = useGridApiContext();
@@ -136,6 +170,18 @@ export function TaskTypes(props: TaskTypesProps) {
     };
 
     const handleSave = (event: MouseEvent<HTMLButtonElement>) => {
+      const values = api.current.getRowWithUpdatedValues(id, '');
+      const errorList: IErrors = {};
+      let haveError = false;
+      Object.keys(values).map(value => {
+        const errorMessage = validationShema[`${value}`]?.(values[`${value}`]);
+        if (errorMessage) haveError = true;
+        errorList[`${value}`] = errorMessage;
+      });
+      const newErrors = { ...errors };
+      newErrors[`${id}`] = errorList;
+      setErrors(newErrors);
+      if (haveError) return;
       setConfirmOpen(false);
       api.current.stopRowEditMode({ id });
       forceUpdate();
@@ -156,7 +202,7 @@ export function TaskTypes(props: TaskTypesProps) {
       function removeEmpty(obj: any) {
         return Object.fromEntries(Object.entries(obj).filter(([_, v]) => (v !== null && v !== '' && v !== undefined)));
       }
-      if (JSON.stringify(api.current.getRow(id)) !== JSON.stringify(removeEmpty(api.current.getRowWithUpdatedValues(id, '')))) {
+      if (JSON.stringify(removeEmpty(api.current.getRow(id))) !== JSON.stringify(removeEmpty(api.current.getRowWithUpdatedValues(id, '')))) {
         handleSetTitleAndMethod('cancel', handleCancelClick);
         setConfirmOpen(true);
       } else {
@@ -168,6 +214,9 @@ export function TaskTypes(props: TaskTypesProps) {
 
     const handleCancelClick = () => {
       setConfirmOpen(false);
+      const newErrors = { ...errors };
+      newErrors[`${id}`] = {};
+      setErrors(newErrors);
       api.current.stopRowEditMode({ id, ignoreModifications: true });
       if (api.current.getRow(id)!.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
       forceUpdate();
@@ -218,19 +267,12 @@ export function TaskTypes(props: TaskTypesProps) {
     );
   }
 
-  const validationShema: ValidationShema = {
-    NAME: (value) => {
-      if (value.length > 60) return 'Слишком длинное наименование';
-      return '';
-    }
-  };
-
-  const validationCell = (fieldName: string) => async (params: GridPreProcessEditCellProps) => {
-    const errorMessage = validationShema[fieldName](params.props.value ?? '');
-    return { ...params.props, error: errorMessage };
-  };
-
-  const renderEditCell = (params: GridRenderEditCellParams) => <CustomCellEditForm {...params} />;
+  const renderEditCell = (params: GridRenderEditCellParams) => (
+    <CustomCellEditForm
+      {...params}
+      errors={errors}
+      clearError={clearErrorByName}
+    />);
 
   const columns: GridColDef[] = [
     {
@@ -239,7 +281,6 @@ export function TaskTypes(props: TaskTypesProps) {
       editable: true,
       flex: 0.5,
       renderEditCell,
-      preProcessEditCellProps: validationCell('NAME'),
     },
     {
       field: 'DESCRIPTION',

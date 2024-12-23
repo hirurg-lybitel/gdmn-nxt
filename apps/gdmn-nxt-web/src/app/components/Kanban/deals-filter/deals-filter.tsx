@@ -1,15 +1,10 @@
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
-import CustomizedCard from '../../Styled/customized-card/customized-card';
+import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './deals-filter.module.less';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import filterOptions from '../../helpers/filter-options';
-import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
-import { useEffect, useMemo, useState } from 'react';
-import { ICustomer } from '@gsbelarus/util-api-types';
-import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
-import { useGetEmployeesQuery } from '../../../features/contact/contactApi';
+import { useEffect, useState } from 'react';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { CustomerSelect } from '../../selectors/customer-select/customer-select';
+import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -24,7 +19,7 @@ export interface DealsFilterProps {
   onFilterClear: () => void;
 }
 
-export function DealsFilter(props: DealsFilterProps) {
+export function DealsFilter(props: Readonly<DealsFilterProps>) {
   const {
     open,
     width = '400px',
@@ -33,11 +28,6 @@ export function DealsFilter(props: DealsFilterProps) {
     onFilteringDataChange,
     onFilterClear
   } = props;
-
-  const { data: employees = [], isFetching: employeesIsFetching } = useGetEmployeesQuery();
-  const { data, isFetching: customerFetching } = useGetCustomersQuery();
-  const { data: departments, isFetching: departmentsFetching } = useGetDepartmentsQuery();
-  const customers: ICustomer[] = useMemo(() => [...data?.data || []], [data?.data]);
 
   const handleOnChange = (entity: string, value: any) => {
     const newObject = { ...filteringData };
@@ -84,158 +74,129 @@ export function DealsFilter(props: DealsFilterProps) {
       onClose={onClose}
       width={width}
     >
-      {/* <Filter /> */}
-      <CustomizedCard
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          width: width,
-        }}
-      >
-        <CardContent style={{ flex: 1 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Номер заявки"
-              value={requestNumber || ''}
-              onChange={(e) => setRequestNumber(e.target.value)}
-            />
-            <TextField
-              label="Номер сделки"
-              value={dealNumber || ''}
-              onChange={(e) => setDealNumber(e.target.value)}
-            />
-            <Autocomplete
-              options={customers}
-              value={
-                customers?.filter(customer => filteringData && (filteringData.customers)?.find((el: any) => el.ID === customer.ID))
-              }
-              onChange={(e, value) => handleOnChange('customers', value)}
-              multiple
-              limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
+      {/* <DialogTitle>Фильтр сделок</DialogTitle> */}
+      <DialogContent>
+        <Stack spacing={5}>
+          <Box>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              fontWeight={600}
+              mb={2}
+            >
+              Основная информация
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Номер заявки"
+                value={requestNumber || ''}
+                onChange={(e) => setRequestNumber(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Номер сделки"
+                value={dealNumber || ''}
+                onChange={(e) => /^\d*$/.test(e.target.value) && setDealNumber(e.target.value)}
+              />
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              fontWeight={600}
+              mb={2}
+            >
+              Фильтры
+            </Typography>
+            <Stack spacing={2}>
+              <CustomerSelect
+                multiple
+                limitTags={2}
+                value={filteringData?.customers ?? []}
+                onChange={(value) => handleOnChange('customers', value)}
+              />
+              <DepartmentsSelect
+                multiple
+                limitTags={2}
+                value={filteringData?.departments}
+                onChange={(value) => handleOnChange('departments', value)}
+                label="Подразделение"
+                placeholder="Выберите Подразделение"
+              />
+              <EmployeesSelect
+                value={filteringData?.performers}
+                onChange={(value) => handleOnChange('performers', value)}
+                multiple
+                limitTags={2}
+                label={'Исполнитель'}
+                placeholder={'Выберите исполнителя'}
+              />
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              fontFamily={'600'}
+              mb={1}
+            >
+              Дополнительно
+            </Typography>
+            <Stack>
+              <FormControlLabel
+                control={
                   <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
+                    size="small"
+                    checked={filteringData?.isCreator ?? false}
+                    onChange={(e) => handleOnChange('isCreator', e.target.checked)}
                   />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Клиент"
-                  placeholder="Выберите клиентов"
-                />
-              )}
-              loading={customerFetching}
-              loadingText="Загрузка данных..."
-            />
-            <Autocomplete
-              options={departments || []}
-              value={
-                departments?.filter(department => filteringData && (filteringData.departments)?.find((el: any) => el.ID === department.ID))
-              }
-              onChange={(e, value) => handleOnChange('departments', value)}
-              multiple
-              limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
+                }
+                label={
+                  <Typography variant="body2">
+                    Я постановщик
+                  </Typography>
+                }
+              />
+              <FormControlLabel
+                control={
                   <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
+                    size="small"
+                    checked={filteringData?.isPerformer ?? false}
+                    onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
                   />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Подразделение"
-                  placeholder="Выберите Подразделение"
-                />
-              )}
-              loading={departmentsFetching}
-              loadingText="Загрузка данных..."
-            />
-            <Autocomplete
-              options={employees}
-              value={
-                employees?.filter(employee => filteringData && (filteringData.performers)?.find((el: any) => el.ID === employee.ID))
-              }
-              onChange={(e, value) => handleOnChange('performers', value)}
-              multiple
-              limitTags={2}
-              getOptionLabel={option => option.NAME}
-              filterOptions={filterOptions(50, 'NAME')}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Исполнитель"
-                  placeholder="Выберите исполнителей"
-                />
-              )}
-              loading={employeesIsFetching}
-              loadingText="Загрузка данных..."
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filteringData?.isCreator ?? false}
-                  onChange={(e) => handleOnChange('isCreator', e.target.checked)}
-                />
-              }
-              label="Я постановщик"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filteringData?.isPerformer ?? false}
-                  onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
-                />
-              }
-              label="Я исполнитель"
-            />
-          </Stack>
-        </CardContent>
-        <CardActions
-          style={{
-            padding: '16px'
+                }
+                label={
+                  <Typography variant="body2">
+                    Я исполнитель
+                  </Typography>
+                }
+              />
+            </Stack>
+          </Box>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          sx={{
+            mb: 1.5
+          }}
+          variant="contained"
+          fullWidth
+          onClick={() => {
+            onFilterClear();
+            setDealNumber('');
+            onClose && onClose();
           }}
         >
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={() => {
-              onFilterClear();
-              setDealNumber('');
-              onClose && onClose();
-            }}
-          >
-            Очистить
-          </Button>
-        </CardActions>
-      </CustomizedCard>
+          Очистить фильтры
+        </Button>
+      </DialogActions>
     </CustomizedDialog>
   );
 }

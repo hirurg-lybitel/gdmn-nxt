@@ -5,7 +5,7 @@ import { Box, Typography } from '@mui/material';
 import { useEffect, useReducer, useState } from 'react';
 import { FileObject } from './types';
 import { convertBytesToMbsOrKbs, readFile } from './helpers';
-import { useSnackbar } from '../helpers/hooks/useSnackbar';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { PreviewList } from './components/PreviewList';
 
 const getFileAddedMessage = (fileName: string) =>

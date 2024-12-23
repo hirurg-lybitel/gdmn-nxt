@@ -40,6 +40,9 @@ export interface ICustomer extends IContactWithID {
   POSTADDRESS?: string;
   BUSINESSPROCESSES?: IBusinessProcess[];
   isFavorite?: boolean;
+  taskCount?: number;
+  agreementCount?: number;
+  debt?: number;
 };
 
 interface IMapOfArrays {
@@ -62,6 +65,38 @@ export interface ICustomerContract extends IWithID {
 };
 
 export type ICustomerContractWithID = ICustomerContract & IWithID;
+
+export interface IDealFeedbackResult {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedbackCompetence {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedbackSatisfaction {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedbackSatisfactionRate {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedback {
+  id: number;
+  dealId: number;
+  date?: string;
+  suggestion?: string;
+  response?: string;
+  result?: IDealFeedbackResult;
+  competence?: IDealFeedbackCompetence;
+  satisfaction?: IDealFeedbackSatisfaction;
+  satisfactionRate?: IDealFeedbackSatisfactionRate;
+};
 
 export interface IDeal extends IWithID {
   USR$NAME?: string;
@@ -88,6 +123,8 @@ export interface IDeal extends IWithID {
   DESCRIPTION?: string;
   USR$NUMBER?: number;
   PREPAID?: boolean;
+  ATTACHMENTS?: MailAttachment[];
+  feedback?: IDealFeedback;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -189,7 +226,8 @@ export type MessengerCode = 'facebook'
 | 'ok'
 | 'whatsApp'
 | 'github'
-| 'vk';
+| 'vk'
+| 'discord';
 
 export interface IMessenger extends IWithID {
   USR$CONTACTKEY?: number;
@@ -209,6 +247,7 @@ export interface IContactPerson extends IContactWithID {
   PHOTO?: string;
   COMPANY?: IContactWithID | null;
   isFavorite?: boolean;
+  nameInfo?: IContactName;
 };
 
 export interface IContract extends IWithID {
@@ -281,6 +320,7 @@ export interface IUserGroupLine extends IWithID {
   USERGROUP: IUserGroup;
   USER?: IUser;
   REQUIRED_2FA?: boolean;
+  STATUS?: boolean
 };
 
 export interface IPermissionByUser {
@@ -330,6 +370,7 @@ export type ActionName =
   'system' |
   'mailings' |
   'feedback' |
+  'time-tracking' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -449,6 +490,7 @@ export interface ICustomerFeedback extends IWithID {
   response?: string;
   toDo?: string;
   creationDate?: Date;
+  creator?: IUser
 }
 
 export enum WorkProjectStatus {
@@ -458,7 +500,23 @@ export enum WorkProjectStatus {
 }
 export interface IWorkProject extends IWithID {
   NAME: string;
-  STATUS?: WorkProjectStatus
+  STATUS?: WorkProjectStatus;
+  isFavorite?: boolean;
+}
+
+export interface IFavoriteWorkProject extends IWithID {
+  user?: number;
+  workProject?: IWorkProject;
+}
+
+export interface IFavoriteTask extends IWithID {
+  user?: number;
+  task?: IWorkProject;
+}
+
+export interface IFavoriteProject extends IWithID {
+  user?: number;
+  project?: IWorkProject;
 }
 
 export interface ITimeTrack extends IWithID {
@@ -467,15 +525,35 @@ export interface ITimeTrack extends IWithID {
   endTime?: Date | null;
   duration?: string;
   customer?: ICustomer | null;
-  // task?: IKanbanTask;
   description: string;
   inProgress?: boolean;
-  workProject?: IWorkProject;
   user?: IUser;
+  billable?: boolean;
+  task?: ITimeTrackTask;
 }
 
 export interface ITimeTrackGroup {
   date: Date,
   duration: string;
   items: ITimeTrack[];
+}
+
+export interface ITimeTrackProject extends IWithID {
+  name: string;
+  customer?: ICustomer;
+  tasks?: ITimeTrackTask[];
+  isFavorite?: boolean
+}
+
+export interface ITimeTrackTask extends IWithID {
+  name: string;
+  project?: ITimeTrackProject;
+  isFavorite?: boolean;
+}
+
+export interface IContactName {
+  lastName: string;
+  firstName?: string;
+  middleName?: string;
+  nickName: string;
 }

@@ -1,9 +1,10 @@
 import './confirm-dialog.module.less';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide, IconButton, Box } from '@mui/material';
 import useStyles from './styles';
 import { forwardRef, ReactElement, Ref } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import ReactMarkdown from 'react-markdown';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -26,10 +27,17 @@ export interface ConfirmDialogProps {
   dangerous?: boolean;
   confirmClick?: () => void;
   cancelClick?: () => void;
+  actions?: [string, string];
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const { open, text = '', title, dangerous = false } = props;
+  const {
+    open,
+    text = '',
+    title,
+    dangerous = false,
+    actions = ['Нет', 'Да'],
+  } = props;
   const { confirmClick, cancelClick } = props;
 
   const classes = useStyles();
@@ -37,6 +45,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   const handleOnClose = (event: object, reason: string) => {
     if (reason === 'escapeKeyDown') cancelClick && cancelClick();
   };
+
+  const closeClick = () => cancelClick && cancelClick();
 
   return (
     <Dialog
@@ -46,11 +56,18 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       onClose={handleOnClose}
       PaperProps={{
         style: {
-          maxWidth: '400px'
+          width: '400px'
         }
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>{title}</DialogTitle>
+      <DialogTitle className={classes.dialogTitle}>
+        {title}
+        <Box className={classes.closeButton}>
+          <IconButton onClick={closeClick}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
       <DialogContent dividers>
         <ReactMarkdown components={{ p: 'div' }}>
           {/** line break is a double space */}
@@ -64,7 +81,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           variant="outlined"
           color="primary"
         >
-          Нет
+          {actions[0]}
         </Button>
         <Button
           className={classes.button}
@@ -73,7 +90,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           variant="contained"
           color={dangerous ? 'error' : 'primary'}
         >
-          Да
+          {actions[1]}
         </Button>
       </DialogActions>
     </Dialog>

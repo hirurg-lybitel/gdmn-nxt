@@ -5,16 +5,17 @@ import { resultError } from '../responseMessages';
 import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, startTransaction, genId } from '@gdmn-nxt/db-connection';
 import { setPermissonsCache } from '../middlewares/permissions';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-import { forEachAsync } from '@gsbelarus/util-helpers';
+import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
-function getSessionIdByUserId(userId: number, sessions) {
+function getSessionsIdsByUserId(userId: number, sessions) {
   const keys = Object.keys(sessions);
+  const userSessions = [];
   for (const key of keys) {
-    if (sessions[key].userId === userId) return key;
+    if (sessions[key].userId === userId) userSessions.push(sessions[key].id);
   }
-  return null;
+  return userSessions;
 }
 
 const closeUserSession = async (req: Request, userIdToClose: number) => {
@@ -22,8 +23,10 @@ const closeUserSession = async (req: Request, userIdToClose: number) => {
   if (userId === userIdToClose) return;
 
   req.sessionStore.all((err, sessions) => {
-    const sessionID = getSessionIdByUserId(userIdToClose, sessions);
-    req.sessionStore.destroy(sessionID);
+    const userSessions = getSessionsIdsByUserId(userIdToClose, sessions);
+    for (const key of userSessions) {
+      req.sessionStore.destroy(key);
+    }
   });
 };
 
@@ -478,6 +481,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
 
     const rawUsers = await Promise.resolve(execQuery(query));
 
+
     const users: IUserGroupLine[] = [];
     await forEachAsync(rawUsers, async user => {
       const CONTACT = {
@@ -485,6 +489,9 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['CONTACT_NAME'],
         PHONE: user['CONTACT_PHONE']
       };
+
+      const avatarBlob = await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB']);
+
       const USER = {
         ID: user['USER_ID'],
         NAME: user['USER_NAME'],
@@ -492,7 +499,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT },
-        AVATAR: await getStringFromBlob(attachment, transaction, user['AVATAR_BLOB'])
+        AVATAR: bin2String(avatarBlob.split(','))
       };
 
       const USERGROUP = {
@@ -500,11 +507,14 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['GROUP_NAME'],
       };
 
+      const sessions: any = await req.sessionStore.all(async (err, sessions) => await getSessionsIdsByUserId(user['USER_ID'], sessions));
+
       users.push({
         ID: user['ID'],
         REQUIRED_2FA: user['REQUIRED_2FA'] === 1,
         USERGROUP: { ...USERGROUP },
-        USER: { ...USER }
+        USER: { ...USER },
+        STATUS: sessions?.length > 0
       });
     });
 
@@ -594,33 +604,26 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
     // if (isNaN(id)) return res.status(422).send(resultError('Поле "id" не указано или неверного типа'));
   };
 
-  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   try {
     const _schema = {};
-
-    // if (isInsertMode) {
-    //   const userExistsQuery = `
-    //     SELECT
-    //       ug.USR$NAME NAME
-    //     FROM USR$CRM_PERMISSIONS_UG_LINES ul
-    //     JOIN USR$CRM_PERMISSIONS_USERGROUPS ug ON ug.ID = ul.USR$GROUPKEY
-    //     WHERE
-    //       ul.USR$GROUPKEY != :groupId
-    //       AND ul.USR$USERKEY = :userId`;
-
-    //   const userExists = await fetchAsObject(userExistsQuery, { groupId: req.body['USERGROUP']['ID'], userId: req.body['USER']['ID'] });
-
-    //   if (userExists.length) {
-    //     return res.status(409).json(resultError(`Пользователь уже добавлен в группу ${userExists[0]['NAME']}`));
-    //   }
-    // };
 
     const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       return [name, data];
     };
+
+    const body: Array<any> = req.body;
+    const userGroup = await fetchAsSingletonObject(
+      `SELECT
+        USR$REQUIRED_2FA REQUIRED_2FA
+      FROM USR$CRM_PERMISSIONS_USERGROUPS
+      WHERE ID = :ID`,
+      {
+        ID: body[0].USERGROUP?.ID
+      });
 
     const { erModel } = await importedModels;
     const allFields = [...new Set(erModel.entities['TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_UG_LINES'].attributes.map(attr => attr.name))];
@@ -644,7 +647,7 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
       const paramsValues = actualFields.map(field => {
         switch (field) {
           case 'USR$REQUIRED_2FA':
-            return REQUIRED_2FA;
+            return userGroup['REQUIRED_2FA'] === 1 ? userGroup['REQUIRED_2FA'] : REQUIRED_2FA;
           case 'USR$USERKEY':
             return USER.ID;
           case 'USR$GROUPKEY':
@@ -694,6 +697,7 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
     return res.status(500).send(resultError(error.message));
   } finally {
     await releaseTransaction(res.statusCode === 200);
+    setPermissonsCache();
   };
 };
 
@@ -858,6 +862,16 @@ const getPermissionByUser: RequestHandler = async (req, res) => {
   };
 };
 
+const closeUserSessionById: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    await closeUserSession(req, id);
+    return res.status(200).json({ id });
+  } catch (error) {
+    return res.status(500).send(resultError(error.message));
+  }
+};
+
 export const PermissionsController = {
   getCross,
   upsertCross,
@@ -870,5 +884,6 @@ export const PermissionsController = {
   removeUserGroupLine,
   getUserGroupLine,
   getPermissionByUser,
-  upsertUsersGroupLine
+  upsertUsersGroupLine,
+  closeUserSessionById
 };

@@ -2,14 +2,11 @@ import styles from './notification-list.module.less';
 import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { IMessage, NotificationAction } from '@gdmn-nxt/socket';
 import ReactMarkdown from 'react-markdown';
-import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
-import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
-import { useGetKanbanDealsQuery } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanApi';
 import { ColorMode } from '@gsbelarus/util-api-types';
 
 /* eslint-disable-next-line */
@@ -35,6 +32,7 @@ export function NotificationList(props: NotificationListProps) {
 
   const handleOnClick = useCallback((message: IMessage) => () => {
     onClick && onClick(message.action, message.actionContent);
+    handleDelete(message.id)(null);
   }, [onClick]);
 
   return (

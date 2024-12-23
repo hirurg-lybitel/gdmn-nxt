@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { Box, Stack } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useExecuteScriptMutation, useGetHistoryQuery } from '../../../features/sql-editor/sqlEditorApi';
@@ -12,7 +13,7 @@ import command_history_large from './command-history-large.png';
 import command_undo_large from './command-undo-large.png';
 import { StyledSplit, StyledSplitPane } from '../../Styled/styled-split/styled-split';
 import { DGrid } from './dgrid';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
 import { ColorMode } from '@gsbelarus/util-api-types';
 

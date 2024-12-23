@@ -4,8 +4,8 @@ import { DateRangePickerProps } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useGetTopEarningQuery } from '../../../features/topEarning';
-import { RootState } from '../../../store';
-import { CircularIndeterminate } from '../../helpers/circular-indeterminate/circular-indeterminate';
+import { RootState } from '@gdmn-nxt/store';
+import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import styles from './top-earning.module.less';
 

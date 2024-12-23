@@ -240,7 +240,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10",
+									"raw": "{{baseUrl}}/contacts?pageNo=0&pageSize=10&withTasks=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -308,6 +308,10 @@
 											"description": "Метод сортировки asc | desc",
 											"type": "text",
 											"disabled": true
+										},
+										{
+											"key": "withTasks",
+											"value": "true"
 										}
 									]
 								}
@@ -1631,25 +1635,6 @@
 				}
 			],
 			"id": "03d288bd-51e5-40e4-b662-61b79a2daefc"
-		},
-		{
-			"name": "Mailer",
-			"item": [
-				{
-					"name": "New Request",
-					"id": "c841b0ad-d9d5-41c2-9e55-14a60e4d7c0e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": "{{baseUrl}}/send-email"
-					},
-					"response": []
-				}
-			],
-			"id": "e105c407-5dcd-4ee5-a72e-92a242c0e3bf"
 		},
 		{
 			"name": "Marketing",
@@ -3510,6 +3495,35 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Mailing History",
+							"id": "9410e992-060c-4e63-b789-2dd2cb4a3aab",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/history/:mailingId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"history",
+										":mailingId"
+									],
+									"variable": [
+										{
+											"key": "mailingId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"id": "0abcc61d-184e-4ecc-9cd9-57da11172e60"
@@ -4106,6 +4120,146 @@
 			"name": "Time Tracking",
 			"item": [
 				{
+					"name": "Типы работ",
+					"item": [
+						{
+							"name": "Work Projects",
+							"id": "aa8b7b8e-bb83-4218-aa0d-83d1041be595",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/work-projects"
+							},
+							"response": []
+						},
+						{
+							"name": "To Favorites",
+							"id": "d3e95bb1-949e-46c1-89ab-0ede852de455",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/work-projects/favorites/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"work-projects",
+										"favorites",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949749238"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "43315a6b-e72b-4376-8bba-72e4ff382f5c"
+				},
+				{
+					"name": "Проекты",
+					"item": [
+						{
+							"name": "Проекты",
+							"id": "d76713de-a1ce-4684-8ceb-ec2715b1a5b1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/time-tracking/projects",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"time-tracking",
+										"projects"
+									],
+									"query": [
+										{
+											"key": "customerId",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Задачи",
+							"id": "18b51b3b-5465-4510-b724-280798409f5d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/time-tracking/tasks?customerId=147350759",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"time-tracking",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "customerId",
+											"value": "147350759"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Задача",
+							"id": "03803ae5-365b-46bf-8087-89f30787d633",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/time-tracking/tasks/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"time-tracking",
+										"tasks",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949758753"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "8dbbd55d-3b63-46e8-9e59-07ba4adf7b24"
+				},
+				{
 					"name": "By group",
 					"id": "5ef995a6-d810-4bcb-b222-212d78fa0363",
 					"protocolProfileBehavior": {
@@ -4114,7 +4268,23 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{baseUrl}}/time-tracking/group"
+						"url": {
+							"raw": "{{baseUrl}}/time-tracking/group",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"time-tracking",
+								"group"
+							],
+							"query": [
+								{
+									"key": "allEmployees",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						}
 					},
 					"response": []
 				},
@@ -4155,7 +4325,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"ID\": -1,\r\n    \"date\": \"2024-08-20T12:22:26.000Z\",\r\n    \"customer\": {\r\n        \"ID\": 153677549,\r\n        \"NAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"PHONE\": \"+375 17 211 47 57\",\r\n        \"EMAIL\": \"\",\r\n        \"TAXID\": \"\",\r\n        \"ADDRESS\": \"\",\r\n        \"FULLNAME\": \"\\\"Балтика\\\" ООО\",\r\n        \"FAX\": null,\r\n        \"POSTADDRESS\": null,\r\n        \"LABELS\": [\r\n            {\r\n                \"ID\": 949746862,\r\n                \"USR$NAME\": \"Сомнительные\",\r\n                \"USR$COLOR\": \"#6e9931\",\r\n                \"USR$ICON\": \"\",\r\n                \"USR$DESCRIPTION\": \"\",\r\n                \"USR$CONTACTKEY\": 153677549\r\n            }\r\n        ],\r\n        \"BUSINESSPROCESSES\": null\r\n    },\r\n    \"startTime\": \"2024-08-28T07:00:00.000Z\",\r\n    \"endTime\": \"2024-08-28T11:22:00.000Z\",\r\n    \"description\": \"My Long Description\",\r\n    \"inProgress\": false,\r\n    \"workProject\": {\r\n        \"ID\": 949749345,\r\n        \"NAME\": \"Autotask\",\r\n        \"STATUS\": 0\r\n    },\r\n    \"duration\": \"PT4H22M\"\r\n}",
+							"raw": "{\r\n    \"ID\": -1,\r\n    \"date\": \"2024-09-26T21:20:27.405Z\",\r\n    \"customer\": {\r\n        \"ID\": 505704544,\r\n        \"NAME\": \"Комбинат школьного питания города Минска ТПКУП\",\r\n        \"PHONE\": \"+375 (17) 231-66-87\",\r\n        \"EMAIL\": \"kshpminsk@yandex.ru\",\r\n        \"TAXID\": \"100065492\",\r\n        \"ADDRESS\": \"г.Минск, Логойский тракт, д.3\",\r\n        \"FULLNAME\": \"ТПКУП \\\"Комбинат школьного питания города Минска\\\"\",\r\n        \"FAX\": \"221-49-43\",\r\n        \"POSTADDRESS\": null,\r\n        \"LABELS\": null,\r\n        \"BUSINESSPROCESSES\": null,\r\n        \"isFavorite\": true,\r\n        \"taskCount\": 1\r\n    },\r\n    \"startTime\": \"2024-09-26T21:20:27.405Z\",\r\n    \"endTime\": \"2024-09-26T22:20:27.405Z\",\r\n    \"description\": \"\",\r\n    \"inProgress\": false,\r\n    \"workProject\": {\r\n        \"ID\": 949749435,\r\n        \"NAME\": \"Общепит (абонентское)\",\r\n        \"STATUS\": 0,\r\n        \"isFavorite\": false\r\n    },\r\n    \"billable\": true,\r\n    \"task\": {\r\n        \"ID\": 949758753,\r\n        \"name\": \"Сопровождение (общепит)\"\r\n    },\r\n    \"duration\": \"PT1H\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4205,6 +4375,115 @@
 				}
 			],
 			"id": "b7f70b4c-c3ad-4c8e-a652-a6b1d1c8d409"
+		},
+		{
+			"name": "Фильтры",
+			"item": [
+				{
+					"name": "Фильтры пользователя",
+					"id": "70d83cd7-c79e-4eb0-b3fe-c9e0acccbb2c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/filters"
+					},
+					"response": []
+				}
+			],
+			"id": "fae59c26-9fa2-41bd-bae0-965343568664"
+		},
+		{
+			"name": "Сделки. Фидбэк",
+			"item": [
+				{
+					"name": "Каталоги",
+					"item": [
+						{
+							"name": "Обратная связь",
+							"id": "e070d8f9-08d3-4bc7-99f6-6d59e76ac25d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+							},
+							"response": []
+						},
+						{
+							"name": "Компетентность персонала",
+							"id": "d1edaff1-b0ec-47d4-afdf-cd14e97f2d24",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/competences"
+							},
+							"response": []
+						},
+						{
+							"name": "Удовлетворенность полученной информацией",
+							"id": "4fd117f1-ba4e-44cb-a2f2-594d435a33ff",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/satisfactions"
+							},
+							"response": []
+						},
+						{
+							"name": "Оценка удовлетворённости",
+							"id": "1a24fe09-1be9-426b-bf1f-a49d01cb4f10",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/satisfactionRates"
+							},
+							"response": []
+						}
+					],
+					"id": "b80323a8-1446-49eb-a408-6b7e40c33183"
+				},
+				{
+					"name": "Обратная связь по сделке",
+					"id": "e2f388c6-6936-4514-b529-95eea6fd52e6",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+					},
+					"response": []
+				},
+				{
+					"name": "Удалить Обратную связь",
+					"id": "a3b3db68-6e2a-449a-a262-d0f99d752fb8",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/deal-feedback/"
+					},
+					"response": []
+				}
+			],
+			"id": "38df05ce-519f-4365-b251-e9b769f361dc"
 		}
 	],
 	"auth": {

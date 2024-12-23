@@ -1,6 +1,6 @@
 import { Button, ButtonProps } from '@mui/material';
 import styles from './button-with-confirmation.module.less';
-import Confirmation from '../helpers/confirmation';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { ReactNode, useCallback } from 'react';
 
 export interface ButtonWithConfirmationProps extends ButtonProps {

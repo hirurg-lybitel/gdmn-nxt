@@ -7,8 +7,8 @@ import { makeStyles } from '@mui/styles';
 import { ColorMode, ContractType } from '@gsbelarus/util-api-types';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { columns } from './columns';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
-import useSystemSettings from '@gdmn-nxt/components/helpers/hooks/useSystemSettings';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
+import useSystemSettings from '@gdmn-nxt/helpers/hooks/useSystemSettings';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dataGrid: {

@@ -1,24 +1,24 @@
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import { useGetContractsListQuery } from '../../../features/contracts-list/contractsListApi';
 import { useCallback, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { columns } from './columns';
-import useSystemSettings from '@gdmn-nxt/components/helpers/hooks/useSystemSettings';
+import useSystemSettings from '@gdmn-nxt/helpers/hooks/useSystemSettings';
 import { ContractType, IContract, IFilteringData, ISortingData } from '@gsbelarus/util-api-types';
-import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import { GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import DetailContent from './detail-content';
-import CustomFilterButton from '@gdmn-nxt/components/helpers/custom-filter-button';
+import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import { ContractsFilter } from '@gdmn-nxt/components/contracts/contracts-filter';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 
 export interface ContractsProps {}
 

@@ -15,8 +15,9 @@ import { CustomerFeedbackType, ICustomerFeedback } from '@gsbelarus/util-api-typ
 import SendIcon from '@mui/icons-material/Send';
 import { FeedbackItem } from './feedback-item';
 import { useGetClientHistoryTypeQuery } from '../../../features/kanban/kanbanCatalogsApi';
-import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 
 export interface CustomerFeedbackProps {
   customerId: number
@@ -47,6 +48,8 @@ export function CustomerFeedback({
   const todoRef = useRef<HTMLTextAreaElement | null>(null);
   const typeRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const { id: userId = -1 } = useUserData();
+
   const [sendDisabled, setSendDisabled] = useReducer((_: any, d: boolean) => d, true);
 
   const sendFeedback = () => {
@@ -76,6 +79,10 @@ export function CustomerFeedback({
       toDo,
       customer: {
         ID: customerId,
+        NAME: ''
+      },
+      creator: {
+        ID: userId,
         NAME: ''
       }
     });
@@ -109,31 +116,12 @@ export function CustomerFeedback({
 
   return (
     <Stack flex={1} spacing={2}>
-      <CustomizedScrollBox>
-        <Timeline
-          sx={{
-            padding: 0,
-            [`& .${timelineOppositeContentClasses.root}`]: {
-              flex: 0.1,
-            },
-          }}
-        >
-          {feedback.map((f, idx) => (
-            <FeedbackItem
-              key={idx}
-              feedback={f}
-              isLast={idx === feedback.length - 1}
-              onSave={saveFeedback}
-              onDelete={removeFeedback(f.ID)}
-            />))}
-        </Timeline>
-      </CustomizedScrollBox>
       <CustomizedCard
         borders
         boxShadows
         style={{ minHeight: 138 }}
       >
-        <CardContent>
+        <CardContent style={{ padding: 16 }}>
           <Stack spacing={2}>
             <Stack direction="row">
               <Autocomplete
@@ -162,7 +150,7 @@ export function CustomerFeedback({
                     onClick={sendFeedback}
                     disabled={sendDisabled}
                   >
-                    Отправить
+                    Добавить
                   </Button>
                 </Box>
               </Tooltip>
@@ -191,6 +179,25 @@ export function CustomerFeedback({
           </Stack>
         </CardContent>
       </CustomizedCard>
+      <CustomizedScrollBox container={{ style: { flex: 1 } }}>
+        <Timeline
+          sx={{
+            padding: 0,
+            [`& .${timelineOppositeContentClasses.root}`]: {
+              flex: 0.1,
+            },
+          }}
+        >
+          {feedback.map((f, idx) => (
+            <FeedbackItem
+              key={idx}
+              feedback={f}
+              isLast={idx === feedback.length - 1}
+              onSave={saveFeedback}
+              onDelete={removeFeedback(f.ID)}
+            />))}
+        </Timeline>
+      </CustomizedScrollBox>
     </Stack>
   );
 }

@@ -11,17 +11,19 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useLocation } from 'react-router-dom';
 import SystemTab from './tabs/system';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import AccountTab from './tabs/account';
 import SecurityTab from './tabs/security';
 import NotificationsTab from './tabs/notifications';
 import LinkTab from '@gdmn-nxt/components/link-tab/link-tab';
+import TuneIcon from '@mui/icons-material/Tune';
+import OptionsTab from './tabs/options';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
 
-export const TABS = ['account', 'security', 'notifications', 'system'] as const;
+export const TABS = ['account', 'security', 'notifications', 'system', 'options'] as const;
 type TabIndex = typeof TABS[number];
 
 export function Profile(props: ProfileProps) {
@@ -77,6 +79,14 @@ export function Profile(props: ProfileProps) {
               icon={<SettingsSuggestIcon />}
               iconPosition="start"
             />
+            <LinkTab
+              label="Опции"
+              value="options"
+              href="/employee/system/settings/options"
+              className={!userPermissions?.system?.PUT ? styles.tabHeaderHide : ''}
+              icon={<TuneIcon />}
+              iconPosition="start"
+            />
           </TabList>
           <Divider style={{ margin: 0 }} />
           <TabPanel value="account" className={tabIndex === 'account' ? styles.tabPanel : ''}>
@@ -93,6 +103,9 @@ export function Profile(props: ProfileProps) {
               <SystemTab />
             </TabPanel>
           </PermissionsGate>
+          <TabPanel value="options" className={tabIndex === 'options' ? styles.tabPanel : ''}>
+            <OptionsTab />
+          </TabPanel>
         </TabContext>
       </CardContent>
     </CustomizedCard>

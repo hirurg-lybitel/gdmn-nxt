@@ -8,16 +8,27 @@ interface DateRangeButtonFieldProps extends SingleInputDateRangeFieldProps<Date>
   onClick: () => void;
 }
 
+const shortcutsLabels = [
+  'Эта неделя',
+  'Прошлая неделя',
+  'Последние 7 дней',
+  'Текущий месяц',
+  'Прошлый месяц',
+  'Следующий месяц',
+  'Сбросить'
+] as const;
+type ShortcutsLabel = typeof shortcutsLabels[number]
+
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
-    label: 'Эта неделя',
+    label: shortcutsLabels[0],
     getValue: () => {
       const today = dayjs();
       return [today.startOf('week').toDate(), today.endOf('week').toDate()];
     },
   },
   {
-    label: 'Прошлая неделя',
+    label: shortcutsLabels[1],
     getValue: () => {
       const today = dayjs();
       const prevWeek = today.subtract(7, 'day');
@@ -25,35 +36,37 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
     },
   },
   {
-    label: 'Последние 7 дней',
+    label: shortcutsLabels[2],
     getValue: () => {
       const today = dayjs();
       return [today.subtract(7, 'day').toDate(), today.toDate()];
     },
   },
   {
-    label: 'Текущий месяц',
+    label: shortcutsLabels[3],
     getValue: () => {
       const today = dayjs();
       return [today.startOf('month').toDate(), today.endOf('month').toDate()];
     },
   },
   {
-    label: 'Прошлый месяц',
+    label: shortcutsLabels[4],
     getValue: () => {
       const today = dayjs();
-      return [today.add(-1, 'M').startOf('month').toDate(), today.add(-1, 'M').endOf('month').toDate()];
+      return [today.add(-1, 'M').startOf('month')
+        .toDate(), today.add(-1, 'M').endOf('month')
+        .toDate()];
     },
   },
-  {
-    label: 'Следующий месяц',
-    getValue: () => {
-      const today = dayjs();
-      const startOfNextMonth = today.endOf('month').add(1, 'day');
-      return [startOfNextMonth.toDate(), startOfNextMonth.endOf('month').toDate()];
-    },
-  },
-  { label: 'Сбросить', getValue: () => [null, null] },
+  // {
+  //   label: shortcutsLabels[5],
+  //   getValue: () => {
+  //     const today = dayjs();
+  //     const startOfNextMonth = today.endOf('month').add(1, 'day');
+  //     return [startOfNextMonth.toDate(), startOfNextMonth.endOf('month').toDate()];
+  //   },
+  // },
+  { label: shortcutsLabels[6], getValue: () => [null, null] },
 ];
 
 type DateRangeButtonFieldComponent = ((
@@ -103,7 +116,7 @@ DateRangeButtonField.fieldType = 'single-input';
 
 const ButtonDateRangePicker = forwardRef(
   (
-    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'>,
+    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[] },
     ref: Ref<HTMLDivElement>
   ) => {
     const [open, setOpen] = useState(false);
@@ -120,7 +133,7 @@ const ButtonDateRangePicker = forwardRef(
         slotProps={{
           field: { onClick: buttonOnClick } as any,
           shortcuts: {
-            items: shortcutsItems,
+            items: props.options ? shortcutsItems.filter(({ label }) => props.options?.includes(label as ShortcutsLabel)) : shortcutsItems,
           },
         }}
         ref={ref}

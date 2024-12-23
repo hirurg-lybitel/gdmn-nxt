@@ -6,13 +6,13 @@ import StyledGrid from '../../Styled/styled-grid/styled-grid';
 import { GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import useDateComparator from '../../helpers/hooks/useDateComparator';
-import useDeadlineColor from '../../helpers/hooks/useDeadlineColor';
+import useDateComparator from '@gdmn-nxt/helpers/hooks/useDateComparator';
+import useDeadlineColor from '@gdmn-nxt/helpers/hooks/useDeadlineColor';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 
 interface ExpandedListProps {
   open: boolean;

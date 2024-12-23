@@ -20,6 +20,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-error': 'rgb(143, 64, 64)',
           '--color-disabled': 'rgba(255, 255, 255, 0.3)',
           '--border-radius': theme.mainContent.borderRadius,
+          '--btn-border-radius': '6px',
           '--label-border-radius': '2em',
           '--menu-width': `${theme.drawerWidth}px`,
           '--tabs-height': '40px',
@@ -104,6 +105,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
         size: 'small',
         style: {
           textTransform: 'none',
+          borderRadius: 'var(--btn-border-radius)'
         }
       },
       styleOverrides: {
@@ -214,5 +216,15 @@ export default function componentStyleOverrides(theme: Theme): Components {
         size: 'small'
       },
     },
+    MuiSelect: {
+      defaultProps: {
+        size: 'small'
+      }
+    },
+    MuiInputLabel: {
+      defaultProps: {
+        size: 'small'
+      }
+    }
   };
 }

@@ -1,11 +1,11 @@
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
-import useUserData from '@gdmn-nxt/components/helpers/hooks/useUserData';
+import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { Box, Button, Stack, TextField } from '@mui/material';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { IProfileSettings } from '@gsbelarus/util-api-types';
-import useObjectsComparator from '@gdmn-nxt/components/helpers/hooks/useObjectsComparator';
-import Confirmation from '@gdmn-nxt/components/helpers/confirmation';
+import useObjectsComparator from '@gdmn-nxt/helpers/hooks/useObjectsComparator';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
@@ -55,9 +55,14 @@ export default function AccountTab() {
               <Stack direction="row" spacing={2}>
                 <TextField
                   label="Имя"
-                  value={userProfile?.userName || ''}
+                  value={userProfile?.fullName || ''}
                   disabled
                   fullWidth
+                  inputProps={{
+                    style: {
+                      textTransform: 'capitalize'
+                    }
+                  }}
                 />
                 <TextField
                   label="Должность"
