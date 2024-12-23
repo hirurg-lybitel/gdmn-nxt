@@ -8,6 +8,7 @@ import CustomizedCard from '../../../components/Styled/customized-card/customize
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 import { DateRange } from '@mui/x-date-pickers-pro';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 
 
 const filterOptions = createFilterOptions({
@@ -82,37 +83,15 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
               <Grid
                 item
                 md={6}
-                sx={{ width: '50%' }}
+                sx={{ width: 'calc(50% - 12px)' }}
               >
-                <Autocomplete
-                  options={customers || []}
-                  filterOptions={filterOptions}
-                  getOptionLabel={option => option.NAME}
+                <CustomerSelect
                   value={customers?.find(customer => customer.ID === customerId) || null}
-                  onChange={(e, value) => {
+                  onChange={(value) => {
                     generate && setGenerate(false);
                     setCustomerId(value?.ID || null);
                   }}
-                  renderOption={(props, option) => {
-                    return (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Клиент"
-                      type="text"
-                      name="PARENT"
-                      placeholder="Выберите клиента"
-                      required
-                      value={customerId}
-                    />
-                  )}
-                  loading={customerFetching}
-                  loadingText="Загрузка данных..."
+                  required
                 />
               </Grid>
               <Grid item>

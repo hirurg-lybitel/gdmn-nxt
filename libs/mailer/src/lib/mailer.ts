@@ -4,27 +4,62 @@ import Mail = require('nodemailer/lib/mailer');
 
 dotenv.config({ path: '../../..' });
 
-export type IAttachment = Mail.Attachment
+export type IAttachment = Mail.Attachment;
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+const securePorts = [465, 587];
 
-export const sendEmail = async (
+export type SmtpOptions = {
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+}
+
+type SendEmailOpt = {
   from: string,
   to: string,
   subject: string,
   text?: string,
   html?: string,
-  attachments?: IAttachment[]
-) => {
+  attachments?: IAttachment[],
+  options?: SmtpOptions
+}
+
+export const sendEmail = async ({
+  from,
+  to,
+  subject,
+  text,
+  html,
+  attachments,
+  options = {}
+}: SendEmailOpt) => {
   try {
+    const {
+      host = process.env.SMTP_HOST,
+      port = 465,
+      user = process.env.SMTP_USER,
+      password: pass = process.env.SMTP_PASSWORD ?? ''
+    } = options;
+
+    const secure = securePorts.includes(port);
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: {
+        user,
+        pass,
+      },
+      ...(!secure ? {
+        requireTLS: false,
+        tls: {
+          rejectUnauthorized: false
+        }
+      } : {})
+    });
+
     return transporter.sendMail({
       from,
       to,

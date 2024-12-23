@@ -108,11 +108,16 @@ export interface IProfileSettings {
   REQUIRED_2FA?: boolean;
   SECRETKEY?: string;
   LAST_IP?: string;
+  SAVEFILTERS?: boolean
 }
 
 export interface ISystemSettings extends IWithID{
   CONTRACTTYPE: ContractType;
-  OURCOMPANY?: ICustomer
+  OURCOMPANY?: ICustomer;
+  smtpHost?: string;
+  smtpUser?: string;
+  smtpPassword?: string;
+  smtpPort?: number;
 }
 
 export enum ColorMode {
@@ -125,7 +130,9 @@ export type GedeminUser = {
   userName: string;
   contactkey: number;
   rank?: string;
-  colorMode?: ColorMode
+  colorMode?: ColorMode;
+  fullName?: string;
+  saveFilters: boolean
 }
 
 export interface IChanges {
@@ -134,7 +141,6 @@ export interface IChanges {
   oldValue: string | number | undefined;
   newValue: string | number | undefined;
 };
-
 
 export interface ISortingData {
   field: string;

@@ -19,10 +19,8 @@ export function Sidebar(props: SidebarProps) {
       <BrowserView style={{ position: 'relative', flex: 1 }}>
         <MenuList />
       </BrowserView>
-      <MobileView>
-        <Box sx={{ px: 2 }}>
-          <MenuList />
-        </Box>
+      <MobileView style={{ position: 'relative', flex: 1 }}>
+        <MenuList />
       </MobileView>
     </>
   );

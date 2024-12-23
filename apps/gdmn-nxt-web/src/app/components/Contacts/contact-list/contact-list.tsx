@@ -7,8 +7,8 @@ import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import { GridColDef, GridRenderCellParams, GridRowParams, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 
 export interface ContactListProps {
   contacts: IContactPerson[];

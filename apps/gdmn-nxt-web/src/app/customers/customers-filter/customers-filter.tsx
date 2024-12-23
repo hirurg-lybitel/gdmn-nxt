@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Dialog, InputAdornment, List, ListItem, Paper, RadioGroup, Slide, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import { makeStyles } from '@mui/styles';
@@ -15,9 +15,15 @@ import { Theme } from '@mui/material/styles';
 import { useGetWorkTypesQuery } from '../../features/work-types/workTypesApi';
 import { useGetLabelsQuery } from '../../features/labels';
 import LabelMarker from '../../components/Labels/label-marker/label-marker';
-import filterOptions from '../../components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
+import TagIcon from '@mui/icons-material/Tag';
+import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
+import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -109,36 +115,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
         <CardContent style={{ flex: 1 }}>
           <Stack spacing={2}>
             <Box>
-              <Autocomplete
+              <DepartmentsSelect
                 multiple
                 limitTags={2}
                 disableCloseOnSelect
-                options={departments || []}
-                onChange={(e, value) => handleOnChange('DEPARTMENTS', value)}
-                value={
-                  departments?.filter(department => filteringData && (filteringData.DEPARTMENTS)?.find((el: any) => el.ID === department.ID))
-                }
-                getOptionLabel={option => option.NAME}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Отдел"
-                    placeholder="Выберите отделы"
-                  />
-                )}
-                loading={departmentsIsFetching}
-                loadingText="Загрузка данных..."
+                value={filteringData.DEPARTMENTS}
+                onChange={(value) => handleOnChange('DEPARTMENTS', value)}
               />
               <Stack
                 direction="row"
@@ -161,36 +143,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
               </Stack>
             </Box>
             <Box>
-              <Autocomplete
+              <ContractsSelect
                 multiple
                 limitTags={2}
+                value={filteringData.CONTRACTS}
+                onChange={(value) => handleOnChange('CONTRACTS', value)}
                 disableCloseOnSelect
-                options={customerContracts || []}
-                onChange={(e, value) => handleOnChange('CONTRACTS', value)}
-                value={
-                  customerContracts?.filter(customerContract => filteringData && (filteringData.CONTRACTS)?.find((el: any) => el.ID === customerContract.ID))
-                }
-                getOptionLabel={option => option.USR$NUMBER}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.USR$NUMBER}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Заказы"
-                    placeholder="Выберите заказы"
-                  />
-                )}
-                loading={customerContractsIsFetching}
-                loadingText="Загрузка данных..."
               />
               <Stack
                 direction="row"
@@ -213,37 +171,12 @@ export function CustomersFilter(props: CustomersFilterProps) {
               </Stack>
             </Box>
             <Box>
-              <Autocomplete
+              <WorktypesSelect
                 multiple
                 limitTags={2}
                 disableCloseOnSelect
-                filterOptions={filterOptions(30, 'USR$NAME')}
-                options={workTypes || []}
-                onChange={(e, value) => handleOnChange('WORKTYPES', value)}
-                value={
-                  workTypes?.filter(wt => filteringData && (filteringData['WORKTYPES'])?.find((el: any) => el.ID === wt.ID))
-                }
-                getOptionLabel={option => option.USR$NAME || ''}
-                renderOption={(props, option, { selected }) => (
-                  <li {...props} key={option.ID}>
-                    <Checkbox
-                      icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                      checkedIcon={<CheckBoxIcon fontSize="small" />}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option.USR$NAME}
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Виды работ"
-                    placeholder="Выберите виды работ"
-                  />
-                )}
-                loading={workTypesIsFetching}
-                loadingText="Загрузка данных..."
+                onChange={(value) => handleOnChange('WORKTYPES', value)}
+                value={filteringData['WORKTYPES']}
               />
               <Stack
                 direction="row"
@@ -265,91 +198,23 @@ export function CustomersFilter(props: CustomersFilterProps) {
                 </Tooltip>
               </Stack>
             </Box>
-            <Autocomplete
-              multiple
-              limitTags={2}
-              disableCloseOnSelect
-              options={labels || []}
-              onChange={(e, value) => handleOnChange('LABELS', value)}
-              value={
-                labels?.filter(label => filteringData && (filteringData.LABELS)?.find((el: ILabel) => el.ID === label.ID))
-              }
-              getOptionLabel={option => option.USR$NAME}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ marginRight: 8 }}
-                    checked={selected}
-                  />
-                  <Stack direction="column">
-                    <Stack direction="row">
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: 'var(--border-radius)',
-                          mr: 1,
-                          alignSelf: 'center',
-                          backgroundColor: option.USR$COLOR
-                        }}
-                      />
-                      <Box>
-                        {option.USR$NAME}
-                      </Box>
-                    </Stack>
-                    <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
-                  </Stack>
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Метки"
-                  placeholder="Выберите метки"
-                />
-              )}
-              renderTags={(value: readonly ILabel[], getTagProps) =>
-                value.map((option: ILabel, index: number) =>
-                  <Box key={index} pr={0.5}>
-                    <LabelMarker label={option} {...getTagProps({ index })}/>
-                  </Box>
-                )
-              }
-              loading={labelsIsFetching}
-              loadingText="Загрузка данных..."
+            <LabelsSelect
+              onChange={(value) => handleOnChange('LABELS', value)}
+              labels={filteringData?.LABELS as ILabel[] ?? []}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="end">
+                    <TagIcon />
+                  </InputAdornment>
+                ),
+              }}
             />
-            <Autocomplete
+            <BusinessProcessesSelect
+              value={filteringData?.BUSINESSPROCESSES}
+              onChange={value => handleOnChange('BUSINESSPROCESSES', value)}
               multiple
               limitTags={2}
               disableCloseOnSelect
-              options={businessProcesses}
-              onChange={(e, value) => handleOnChange('BUSINESSPROCESSES', value)}
-              value={
-                businessProcesses?.filter(businessProcess => filteringData && (filteringData.BUSINESSPROCESSES)?.find((el: IBusinessProcess) => el.ID === businessProcess.ID))
-              }
-              getOptionLabel={option => option.NAME}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  <Checkbox
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    checked={selected}
-                  />
-                  {option.NAME}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Бизнес-процессы"
-                  placeholder="Выберите бизнес-процессы"
-                />
-              )}
-              loading={businessProcessesFetching}
-              loadingText="Загрузка данных..."
             />
           </Stack>
         </CardContent>

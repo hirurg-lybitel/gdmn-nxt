@@ -1,6 +1,6 @@
 import { config } from '@gdmn-nxt/config';
 import { KanbanEvent, SocketRoom, getSocketClient, setSocketClient } from '@gdmn-nxt/socket';
-import { IContactWithID, IDenyReason, IKanbanCard, IKanbanCardStatus, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult } from '@gsbelarus/util-api-types';
+import { IContactWithID, IDenyReason, IKanbanCard, IKanbanCardStatus, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
 import { createEntityAdapter } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import { io } from 'socket.io-client';
@@ -158,13 +158,19 @@ export const kanbanApi = createApi({
                       sourceColumn.CARDS?.splice(
                         0,
                         sourceColumn.CARDS?.length,
-                        ...sourceColumn.CARDS?.filter(c => c.ID !== Number(card.ID))
+                        ...sourceColumn.CARDS?.filter(c => c.ID !== Number(card.ID)) ?? {}
                       );
                     }
 
                     const targetColumn = columns.find(c => c.ID === card.USR$MASTERKEY);
                     if (targetColumn) {
-                      targetColumn.CARDS.unshift({ ...findedCard, ...card });
+                      targetColumn.CARDS.unshift({
+                        ...findedCard,
+                        ...{
+                          ...card,
+                          STATUS: { isRead: false }
+                        }
+                      });
                     }
                   } else {
                     column.CARDS[findCardIndex] = { ...column.CARDS[findCardIndex], ...card };
@@ -179,7 +185,7 @@ export const kanbanApi = createApi({
             updateCachedData((draft) => {
               draft.forEach(column => {
                 if (column.ID !== Number(columnId)) return;
-                column.CARDS?.splice(0, column.CARDS?.length, ...column.CARDS?.filter(card => card.ID !== Number(cardId)));
+                column.CARDS?.splice(0, column.CARDS?.length, ...column.CARDS?.filter(card => card.ID !== Number(cardId)) ?? {});
               });
             });
           };
@@ -222,7 +228,12 @@ export const kanbanApi = createApi({
                 const tasks = column.CARDS[findCardIndex].TASKS;
                 if (!tasks?.length) return;
 
-                tasks[findTaskIndex] = { ...tasks[findTaskIndex], ...task };
+                tasks[findTaskIndex] = {
+                  ...tasks[findTaskIndex],
+                  ...{
+                    ...task,
+                  }
+                };
               });
             });
           };
@@ -697,6 +708,10 @@ export const kanbanApi = createApi({
       },
       invalidatesTags: [{ type: 'Column', id: 'LIST' }, { type: 'Task', id: 'LIST' }]
     }),
+    getDealsFiles: builder.query< MailAttachment[], number>({
+      query: (id) => `kanban/cards/files/${id}`,
+      // transformResponse: (response: IRequestResult<{cards: MailAttachment[]}>) => response.queries?.cards,
+    }),
   })
 });
 
@@ -716,5 +731,6 @@ export const {
   useUpdateTaskMutation,
   useDeleteTaskMutation,
   useGetKanbanTasksQuery,
-  useSetCardStatusMutation
+  useSetCardStatusMutation,
+  useGetDealsFilesQuery
 } = kanbanApi;

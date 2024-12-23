@@ -14,6 +14,7 @@ export interface IMenuItem {
   url?: string;
   type: IType;
   icon?: React.ReactElement;
+  selectedIcon?: React.ReactElement;
   children?: IMenuItem[];
   checkAction?: number;
   actionCheck?: {

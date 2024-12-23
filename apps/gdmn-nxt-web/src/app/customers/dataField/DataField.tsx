@@ -93,9 +93,10 @@ const DataField = ({ name, data, masName, deleteField }: DataFieldProps) => {
           <div className={classes.childrenItem} key={item.ID}>
             <Tooltip placement="top" title={item.USR$NAME}>
               <Chip
+                size="small"
                 icon={
                   <div style={{ marginLeft: '5px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <IconByName name={item.USR$ICON}/>
+                    <IconByName name={item.USR$ICON} style={{ height: 14, width: 14 }} />
                   </div>}
                 style={{ maxWidth: '140px', margin: '0', display: 'flex' }}
                 label={item.NAME || item.USR$NUMBER || item.USR$NAME}
@@ -104,7 +105,6 @@ const DataField = ({ name, data, masName, deleteField }: DataFieldProps) => {
                 onDelete={onHandleDelete(item.NAME || item.USR$NUMBER || item.USR$NAME)}
               />
             </Tooltip>
-
           </div>
         ))}
       </div>

@@ -5,7 +5,8 @@ import { useTheme } from '@mui/material';
 /* eslint-disable-next-line */
 export interface LabelMarkerProps {
   label: ILabel;
-  icon?: string
+  icon?: string;
+  nowrap?: boolean
 }
 
 function hexToRGB(h: any) {
@@ -83,10 +84,16 @@ const getColors = (color: string | undefined, theme: 'dark' | 'light') => {
 
 export function LabelMarker(props: LabelMarkerProps) {
   const { USR$COLOR: color, USR$NAME: name, USR$ICON } = props.label;
-  const { icon } = props;
+  const { icon, nowrap } = props;
   const theme = useTheme();
 
   const colors = getColors(color, theme.palette.mode);
+
+  const noWrapStyles: any = nowrap ? {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textWrap: 'nowrap'
+  } : {};
 
   if (!name) return <></>;
   return (
@@ -110,7 +117,7 @@ export function LabelMarker(props: LabelMarkerProps) {
           <IconByName name={icon ?? USR$ICON} style={{ width: 14, height: 14 }} />
         </div>
       }
-      <span style={{ margin: '0 5px', marginTop: '-1px', textTransform: 'capitalize' }}>
+      <span style={{ margin: '0 5px', marginTop: '-1px', textTransform: 'capitalize', ...noWrapStyles }}>
         {name || 'Пример'}
       </span>
     </div>

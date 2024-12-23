@@ -41,8 +41,9 @@ import { segmentApi } from '../features/Marketing/segments/segmentsApi';
 import { filtersApi } from '../features/filters/filtersApi';
 import { mailingApi } from '../features/Marketing/mailing';
 import { customerFeedbackApi } from '../features/customer-feedback';
-import { workProjectsApi } from '../features/work-projects';
 import { timeTrackingApi } from '../features/time-tracking';
+import { securityApi } from '../features/security/securityApi';
+import { dealFeedbackApi } from '../features/deal-feedback';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -85,13 +86,21 @@ const reducers = combineReducers({
   [filtersApi.reducerPath]: filtersApi.reducer,
   [mailingApi.reducerPath]: mailingApi.reducer,
   [customerFeedbackApi.reducerPath]: customerFeedbackApi.reducer,
-  [workProjectsApi.reducerPath]: workProjectsApi.reducer,
-  [timeTrackingApi.reducerPath]: timeTrackingApi.reducer
+  [timeTrackingApi.reducerPath]: timeTrackingApi.reducer,
+  [securityApi.reducerPath]: securityApi.reducer,
+  [dealFeedbackApi.reducerPath]: dealFeedbackApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
   /** Очищаем весь стор при разлогине */
   if (action.type === 'user/logout/fulfilled') {
+    // Отменяем все запросы на сохранение фильтров
+    if (state) {
+      const debouncesMas = Object.values(state.filtersStorage.filterDebounce);
+      for (const element of debouncesMas) {
+        clearTimeout(element);
+      }
+    }
     state = undefined;
   }
   return reducers(state, action);
@@ -137,8 +146,9 @@ export const store = configureStore({
     .concat(filtersApi.middleware)
     .concat(mailingApi.middleware)
     .concat(customerFeedbackApi.middleware)
-    .concat(workProjectsApi.middleware)
     .concat(timeTrackingApi.middleware)
+    .concat(securityApi.middleware)
+    .concat(dealFeedbackApi.middleware)
 });
 
 setupListeners(store.dispatch);

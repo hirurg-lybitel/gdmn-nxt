@@ -2,7 +2,7 @@ import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { styled } from '@mui/material/styles';
 import { useMemo } from 'react';
-import Confirmation from '../helpers/confirmation';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
 
 export interface ItemButtonDeleteProps extends IconButtonProps {
   button?: boolean;
@@ -22,6 +22,7 @@ export function ItemButtonDelete({
   title = 'Удаление',
   text = 'Вы уверены, что хотите продолжить?',
   hint = 'Удалить',
+  disabled = false,
   ...rest
 }: ItemButtonDeleteProps) {
   const Container = useMemo(() =>
@@ -42,8 +43,12 @@ export function ItemButtonDelete({
   }
 
   const RootElement = (
-    <Container size="small" className="StyledDeleteButton">
-      <Tooltip title={hint} arrow>
+    <Container
+      disabled={disabled}
+      size="small"
+      className="StyledDeleteButton"
+    >
+      <Tooltip title={label ? '' : hint} arrow>
         <Stack
           direction="row"
           alignItems="center"
@@ -57,12 +62,16 @@ export function ItemButtonDelete({
   );
 
   return (
-    confirmation
+    confirmation && !disabled
       ? <Confirmation
         title={title}
         text={text}
         dangerous
         onConfirm={onClick}
+        actions={[
+          'Отменить',
+          'Удалить'
+        ]}
       >
         {RootElement}
       </Confirmation>

@@ -6,7 +6,7 @@ import SendMessage from '../send-message/send-message';
 import ViewUserNotifications from '../view-user-notifications/view-user-notifications';
 import NotificationsSettings from '../notifications-settings/notifications-settings';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { Permissions } from '@gsbelarus/util-api-types';
 import { Navigate } from 'react-router-dom';
 import { TabContext, TabList, TabPanel } from '@mui/lab';

@@ -22,14 +22,14 @@ export type FindOneHandler<T = object> = (sessionID: string, clause?: object) =>
  * @param id uniq id of the entity
  * @param metadata the entity
  */
-export type UpdateHandler<T = object> = (sessionID: string, id: number, metadata: Omit<Partial<T>, 'ID'>) => Promise<T>;
+export type UpdateHandler<T = object> = (sessionID: string, id: number, metadata: Omit<Partial<T>, 'ID' | 'id'>) => Promise<T>;
 
 /**
  * Save entity.
  * @param sessionID Session identifier
  * @param metadata the entity
  */
-export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID'>) => Promise<T>;
+export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID' | 'id'>) => Promise<T>;
 
 /**
  * Delete entity.

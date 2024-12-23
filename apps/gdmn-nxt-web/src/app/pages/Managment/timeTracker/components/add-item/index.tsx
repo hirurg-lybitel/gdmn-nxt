@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, InputAdornment, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,12 +8,19 @@ import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import StopIcon from '@mui/icons-material/Stop';
-import { CustomerSelect } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/customer-select';
-import { useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
-import { ICustomer, ITimeTrack, IWorkProject } from '@gsbelarus/util-api-types';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+// import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
+import { ICustomer, ITimeTrack, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
+import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
+import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
+import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 const durationMask = [
   /[0-9]/,
@@ -30,7 +37,7 @@ type CalcMode = 'calc' | 'manual';
 type SubmitMode = 'add' | 'update';
 
 interface AddItemProps {
-  initial?: ITimeTrack;
+  initial?: Partial<ITimeTrack>;
   onSubmit: (value: ITimeTrack, mode: SubmitMode) => void
 }
 
@@ -38,15 +45,11 @@ export const AddItem = ({
   initial,
   onSubmit
 }: AddItemProps) => {
-  const [calcMode, setCalcMode] = useState<CalcMode>('calc');
+  const [calcMode, setCalcMode] = useState<CalcMode>(initial?.inProgress ? 'calc' : 'manual');
   const [submitMode, setSubmitMode] = useState<SubmitMode>('add');
   const [isValidTimers, toggleValidTimers] = useState(true);
   const currentDate = useMemo(() => dayjs().toDate(), []);
-
-  const {
-    data: workProjects = [],
-    isFetching: workProjectsFetching
-  } = useGetWorkProjectsQuery();
+  const [onDate, setOnDate] = useState<Date>(currentDate);
 
   const calcModeChange = (
     event: MouseEvent<HTMLElement>,
@@ -55,20 +58,32 @@ export const AddItem = ({
     newAlignment && setCalcMode(newAlignment);
   };
 
-  const { STATUS, ...defaultWorkProject } = workProjects.length > 0 ? workProjects[0] : { } as IWorkProject;
+  const initialValues = {
+    ID: -1,
+    date: onDate,
+    customer: null,
+    startTime: currentDate,
+    endTime: null,
+    description: '',
+    inProgress: false,
+    billable: true,
+    task: undefined,
+  };
 
   const formik = useFormik<ITimeTrack>({
     enableReinitialize: true,
     initialValues: {
-      ID: -1,
-      date: currentDate,
-      customer: null,
-      startTime: currentDate,
-      endTime: null,
-      description: '',
-      inProgress: false,
-      workProject: Object.keys(defaultWorkProject).length > 0 ? defaultWorkProject : undefined,
-      ...initial
+      ...initialValues,
+      ...initial,
+      ...(initial?.date && {
+        date: dayjs(initial.date).toDate()
+      }),
+      ...(initial?.startTime && {
+        startTime: dayjs(initial.startTime).toDate()
+      }),
+      ...(initial?.endTime && {
+        endTime: dayjs(initial.endTime).toDate()
+      }),
     },
     validationSchema: yup.object().shape({
       date: yup.date().required('Не указана дата')
@@ -77,15 +92,21 @@ export const AddItem = ({
       if (!isValidTimers) {
         return;
       }
+
       onSubmit(values, submitMode);
       resetForm();
-    }
+
+      /** Запоминаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
+      setOnDate(values.date);
+    },
   });
 
   useEffect(() => {
     if (!formik.values.inProgress) {
       return;
     }
+
+    setCalcMode('calc');
 
     const clockId = setInterval(() => {
       const startTime = dayjs(formik.values.startTime);
@@ -121,6 +142,7 @@ export const AddItem = ({
     if (!endTime || !startTime) {
       return;
     }
+
     const dStartTime = dayjs(startTime);
     const dEndTime = dayjs(endTime);
 
@@ -138,10 +160,15 @@ export const AddItem = ({
     }
 
     formik.setFieldValue(fieldName, value);
+
+    formik.values.date?.setSeconds(0, 0);
+    formik.values.startTime?.setSeconds(0, 0);
+    formik.values.endTime?.setSeconds(0, 0);
   };
 
   const startClick = () => {
     setSubmitMode('add');
+    formik.setFieldValue('date', dayjs().toDate());
     formik.setFieldValue('startTime', dayjs().toDate());
     formik.setFieldValue('endTime', null);
     formik.setFieldValue('inProgress', true);
@@ -160,16 +187,14 @@ export const AddItem = ({
     const duration = dayjs.duration(endTime.diff(startTime));
     formik.setFieldValue('duration', duration.toISOString());
 
+    toggleValidTimers(true);
+
     formik.submitForm();
   };
 
   const addClick = () => {
     setSubmitMode('add');
     formik.submitForm();
-  };
-
-  const handleWorkProjectChange = (e: ChangeEvent<HTMLInputElement>) => {
-    formik.setFieldValue('workProject', JSON.parse(e.target.value));
   };
 
   const timePickerOnError = (e: TimeValidationError, v: Date | null) => toggleValidTimers(!e);
@@ -190,6 +215,19 @@ export const AddItem = ({
     formik.setFieldValue('endTime', startTime.add(newDuration).toDate());
   };
 
+  const billableChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => {
+    formik.setFieldValue('billable', checked);
+  };
+
+  const handleTaskSelected = async (task: ITimeTrackTask | null) => {
+    formik.setFieldValue('task', task);
+  };
+
+  const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -200,60 +238,46 @@ export const AddItem = ({
             alignItems="center"
           >
             <Stack spacing={1} flex={1}>
-              <TextField
-                placeholder="Над чем вы работали?"
-                name="description"
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                style={{
-                  flex: 1
-                }}
-                InputProps={{
-                  startAdornment:
-                  <InputAdornment position="start">
-                    <TextField
-                      select
-                      InputProps={{
-                        disableUnderline: true
-                      }}
-                      variant="standard"
-                      disabled={workProjectsFetching}
-                      name="workProject"
-                      value={workProjectsFetching ? 'Загрузка...' : (JSON.stringify(formik.values.workProject ?? defaultWorkProject) ?? '')}
-                      onChange={handleWorkProjectChange}
-                    >
-                      {workProjectsFetching
-                        ? <MenuItem value={'Загрузка...'}>
-                          Загрузка...
-                        </MenuItem>
-                        : workProjects.map(({ STATUS, ...w }) => (
-                          <MenuItem
-                            key={w.ID}
-                            value={JSON.stringify(w)}
-                          >
-                            {w.NAME}
-                          </MenuItem>
-                        ))}
-                    </TextField>
-                  </InputAdornment>,
-                }}
-              />
               <CustomerSelect
                 disableEdition
                 disableCaption
                 disableFavorite={false}
+                withTasks
+                debt
+                agreement
                 required
                 value={formik.values.customer}
                 onChange={handleCustomerChange}
+                task={formik.values.task}
+                onTaskSelected={handleTaskSelected}
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
+              <div style={{ height: '40px', width: '100%', position: 'relative' }}>
+                <TextField
+                  placeholder="Над чем вы работали?"
+                  name="description"
+                  multiline
+                  minRows={1}
+                  {...(!descriptionOnFocus && { rows: 1 })}
+                  fullWidth
+                  value={formik.values.description}
+                  onChange={formik.handleChange}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'var(--color-paper-bg)',
+                    zIndex: 2
+                  }}
+                  onFocus={() => setDescriptionOnFocus(true)}
+                  onBlur={() => setDescriptionOnFocus(false)}
+                />
+              </div>
             </Stack>
             {calcMode === 'manual' &&
               <Stack spacing={1} width={216}>
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
-                  value={formik.values.date}
+                  value={onDate}
                   onChange={handleDateTimeChange('date')}
                   sx={{
                     '& .MuiInputBase-root': {
@@ -277,6 +301,7 @@ export const AddItem = ({
                         }
                       },
                     }}
+                    views={['hours', 'minutes']}
                     name="startTime"
                     value={formik.values.startTime}
                     onChange={handleDateTimeChange('startTime')}
@@ -294,6 +319,7 @@ export const AddItem = ({
                         }
                       },
                     }}
+                    views={['hours', 'minutes']}
                     name="endTime"
                     minTime={formik.values.startTime ?? undefined}
                     value={formik.values.endTime}
@@ -331,7 +357,7 @@ export const AddItem = ({
                       className={styles.startButton}
                       variant="contained"
                       onClick={addClick}
-                      disabled={!formik.values.customer}
+                      disabled={!formik.values.customer || !formik.values.duration}
                     >
                       Добавить
                     </Button>}
@@ -364,12 +390,25 @@ export const AddItem = ({
                 <TextFieldMasked
                   label="Длительность"
                   style={{
-                    maxWidth: 159
+                    maxWidth: 117
                   }}
                   mask={durationMask}
                   value={durationFormat(formik.values.duration)}
                   onChange={durationOnChange}
                 />
+                <Tooltip title={formik.values.billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
+                  <Checkbox
+                    size="small"
+                    icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
+                    checkedIcon={<MonetizationOnIcon fontSize="medium" />}
+                    sx={{
+                      height: 34,
+                      width: 34,
+                    }}
+                    checked={formik.values.billable}
+                    onChange={billableChange}
+                  />
+                </Tooltip>
               </Stack>
             </Stack>
           </Stack>

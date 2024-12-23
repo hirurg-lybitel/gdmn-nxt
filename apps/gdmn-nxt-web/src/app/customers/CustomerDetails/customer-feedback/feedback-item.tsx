@@ -27,7 +27,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
 import FeedIcon from '@mui/icons-material/Feed';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 
 const Accordion = styled((props: AccordionProps) => (
@@ -179,10 +179,15 @@ export const FeedbackItem = ({
                     case CustomerFeedbackType.request:
                       return 'Заявка с сайта';
                     default:
-                      return '';
+                      return 'Иное';
                   }
                 })()}
               </Typography>
+              <div>
+                <Typography variant="caption" style={{ marginLeft: '16px' }}>
+                  {feedback?.creator?.CONTACT?.NAME}
+                </Typography>
+              </div>
               <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
                 <div onClick={handleStopPropagation}>
                   <ItemButtonDelete button onClick={onDelete} />

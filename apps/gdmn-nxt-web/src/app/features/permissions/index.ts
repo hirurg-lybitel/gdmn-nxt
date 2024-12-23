@@ -177,7 +177,14 @@ export const permissionsApi = createApi({
             { type: 'ActionByUser', id: 'LIST' }
           ]
           : [{ type: 'ActionByUser', id: 'LIST' }]
-    })
+    }),
+    closeSessionById: builder.mutation<null, number >({
+      query: (userID) => ({
+        url: `permissions/userGroups/closeSessionById/${userID}`,
+        method: 'POST'
+      }),
+      invalidatesTags: () => [{ type: 'Users', id: 'LIST' }]
+    }),
   })
 });
 
@@ -194,7 +201,8 @@ export const {
   useUpdateUserGroupMutation,
   useGetUserGroupLineQuery,
   useUpdateUserGroupLineMutation,
-  useGetPermissionByUserQuery
+  useGetPermissionByUserQuery,
+  useCloseSessionByIdMutation
 } = permissionsApi;
 
 

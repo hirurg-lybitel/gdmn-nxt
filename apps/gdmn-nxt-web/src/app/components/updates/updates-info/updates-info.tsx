@@ -1,8 +1,8 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import styles from './updates-info.module.less';
 import { useGetAllUpdatesQuery } from '../../../features/updates';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CloseIcon from '@mui/icons-material/Close';
@@ -55,9 +55,11 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       }}
     >
       <DialogTitle>
-        <span>Gedemin CRM обновилась до версии {lastUpdate?.VERSION}</span>
+        <Typography component={'span'} variant="h6">
+          Gedemin CRM обновилась до версии {lastUpdate?.VERSION}
+        </Typography>
         <IconButton
-          style={{ position: 'absolute', top: 3, right: 5 }}
+          style={{ float: 'right' }}
           onClick={onClose}
           size="small"
         >
@@ -67,21 +69,30 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       <DialogContent className={styles.content}>
         <div style={{ visibility: 'hidden' }}>
           <ReactMarkdown>
-            {lastUpdate?.CHANGES || ''}
+            {lastUpdate?.CHANGES ?? ''}
           </ReactMarkdown>
         </div>
         <div className={styles.scrollContainer}>
           <CustomizedScrollBox>
             <ReactMarkdown>
-              {lastUpdate?.CHANGES || ''}
+              {lastUpdate?.CHANGES ?? ''}
             </ReactMarkdown>
           </CustomizedScrollBox>
         </div>
       </DialogContent>
-      <DialogActions className={styles.action}>
-        <Button variant="contained" onClick={onClose}>Понятно</Button>
+      <DialogActions
+        className={styles.action}
+      >
+        <Button
+          variant="contained"
+          onClick={onClose}
+          sx={{
+            minWidth: '120px',
+          }}
+        >
+          Понятно
+        </Button>
       </DialogActions>
-
     </Dialog>
   );
 }

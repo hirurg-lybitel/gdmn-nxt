@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { Socket } from 'socket.io-client';
 import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 /* eslint-disable-next-line */
 export interface SendMessageProps {}
@@ -75,6 +76,7 @@ export function SendMessage(props: SendMessageProps) {
     });
   }, [socketClient]);
 
+  const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
     <CustomizedCard
@@ -99,6 +101,7 @@ export function SendMessage(props: SendMessageProps) {
               }}
             />
             <Autocomplete
+              ListboxComponent={ListboxComponent}
               options={users}
               multiple
               disableCloseOnSelect

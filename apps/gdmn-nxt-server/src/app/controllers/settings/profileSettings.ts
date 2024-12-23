@@ -7,11 +7,36 @@ import { bin2String, string2Bin } from '@gsbelarus/util-helpers';
 import { closeUserSession } from '../../utils/sessions-helper';
 import { setPermissonsCache } from '../../middlewares/permissions';
 
-const getSettings = async (userId: number, req: Request) => {
-  const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(req.sessionID);
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
+type GetSettingsParams = {
+  sessionId: string;
+} & ({
+  userId: number;
+  contactId?: number;
+} | {
+  userId?: number;
+  contactId: number;
+});
+
+const getSettings = async ({
+  sessionId,
+  userId: _userId,
+  contactId
+}: GetSettingsParams) => {
+  const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(sessionId);
+  const { attachment, transaction } = await getReadTransaction(sessionId);
 
   try {
+    const userId: number = await (async () => {
+      if (_userId) return _userId;
+
+      const userInfo = await fetchAsSingletonObject(`
+        SELECT ID
+        FROM GD_USER
+        WHERE CONTACTKEY = :contactId`, { contactId });
+
+      return userInfo?.ID ?? -1;
+    })();
+
     const check2FA = await fetchAsSingletonObject(`
       SELECT ug.USR$REQUIRED_2FA GROUP_2FA, ul.USR$REQUIRED_2FA USER_2FA
       FROM USR$CRM_PERMISSIONS_USERGROUPS ug
@@ -26,7 +51,8 @@ const getSettings = async (userId: number, req: Request) => {
         ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL,
         ps.USR$2FA_ENABLED AS ENABLED_2FA, ps.USR$SECRETKEY AS SECRETKEY,
         ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
-        ps.USR$LAST_IP as LAST_IP
+        ps.USR$LAST_IP as LAST_IP,
+        ps.USR$SAVEFILTERS as SAVEFILTERS
       FROM GD_USER u
       JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
       JOIN GD_CONTACT c ON c.ID = u.CONTACTKEY
@@ -55,7 +81,7 @@ const getSettings = async (userId: number, req: Request) => {
       r['PUSH_NOTIFICATIONS_ENABLED'] = (r['PUSH_NOTIFICATIONS_ENABLED'] ?? 0) === 1;
       r['ENABLED_2FA'] = r['ENABLED_2FA'] === 1;
       r['REQUIRED_2FA'] = required2fa;
-
+      r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
       delete r['AVATAR_BLOB'];
     };
 
@@ -75,14 +101,14 @@ const getSettings = async (userId: number, req: Request) => {
     };
   } finally {
     /** Так как используем две транзакции */
-    await releaseRT(req.sessionID);
+    await releaseRT(sessionId);
     await releaseReadTransaction();
   }
 };
 
 const get: RequestHandler = async (req, res) => {
   const userId = parseIntDef(req.params.userId, -1);
-  const data = await getSettings(userId, req);
+  const data = await getSettings({ userId, sessionId: req.sessionID });
 
   if (!data.OK) return res.status(500).send(resultError(data.error));
 
@@ -106,7 +132,8 @@ const set: RequestHandler = async (req, res) => {
     LASTVERSION: lastVersion,
     SEND_EMAIL_NOTIFICATIONS,
     PUSH_NOTIFICATIONS_ENABLED,
-    EMAIL
+    EMAIL,
+    SAVEFILTERS
   } = req.body;
 
   try {
@@ -124,8 +151,8 @@ const set: RequestHandler = async (req, res) => {
     { userId, EMAIL });
 
     const sqlResult = await fetchAsSingletonObject(`
-      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED)
-      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED)
+      UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
     {
@@ -134,7 +161,8 @@ const set: RequestHandler = async (req, res) => {
       colorMode,
       lastVersion,
       SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
-      PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED)
+      PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
+      SAVEFILTERS: (SAVEFILTERS ? 1 : 0)
     });
 
     const result: IRequestResult = {

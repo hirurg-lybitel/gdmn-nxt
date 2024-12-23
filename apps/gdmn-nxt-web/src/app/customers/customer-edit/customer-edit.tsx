@@ -22,21 +22,22 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useGetBusinessProcessesQuery } from '../../features/business-processes';
 import CustomizedDialog from '../../components/Styled/customized-dialog/customized-dialog';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import { LabelsSelect } from '@gdmn-nxt/components/Labels/labels-select';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import CustomerInfo from '../CustomerDetails/customer-info/customer-info';
 import ActCompletion from '../CustomerDetails/act-completion/act-completion';
 import BankStatement from '../CustomerDetails/bank-statement/bank-statement';
 import ContractsList from '../CustomerDetails/contracts-list/contracts-list';
 import CustomerDeals from '../CustomerDetails/customer-deals/customer-deals';
-import { emailValidation } from '@gdmn-nxt/components/helpers/validators';
+import { emailValidation } from '@gdmn-nxt/helpers/validators';
 import { CustomerContacts } from '../CustomerDetails/customer-contacts';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { CustomerFeedback } from '../CustomerDetails/customer-feedback/customer-feedback';
 import { CustomerTasks } from '../CustomerDetails/customer-tasks/customer-tasks';
+import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -194,39 +195,17 @@ export function CustomerEdit({
                   helperText={getIn(formik.touched, 'ADDRESS') && getIn(formik.errors, 'ADDRESS')}
                   error={getIn(formik.touched, 'ADDRESS') && Boolean(getIn(formik.errors, 'ADDRESS'))}
                 />
-                <Autocomplete
-                  multiple
-                  disableCloseOnSelect
-                  limitTags={2}
-                  options={businessProcesses}
-                  loading={businessProcessesFetching}
-                  getOptionLabel={option => option.NAME ?? ''}
-                  value={
-                    businessProcesses?.filter(bp => formik.values.BUSINESSPROCESSES?.find(el => el.ID === bp.ID))
-                  }
-                  onChange={(e, value) => {
+                <BusinessProcessesSelect
+                  value={formik.values.BUSINESSPROCESSES ?? null}
+                  onChange={value => {
                     formik.setFieldValue(
                       'BUSINESSPROCESSES',
                       value || initValue.BUSINESSPROCESSES
                     );
                   }}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        checked={selected}
-                      />
-                      {option.NAME}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Бизнес-процессы"
-                      placeholder="Выберите бизнес-процессы"
-                    />
-                  )}
+                  multiple
+                  limitTags={2}
+                  disableCloseOnSelect
                 />
                 <LabelsSelect labels={formik.values.LABELS} onChange={handleLabelsChange} />
               </Stack>

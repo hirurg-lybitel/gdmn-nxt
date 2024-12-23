@@ -7,7 +7,7 @@ import { config } from '@gdmn-nxt/config';
 import jwt from 'jsonwebtoken';
 import { jwtExpirationTime } from '../constants/params';
 import { generateSecret, verifyCode } from '@gdmn/2FA';
-import { sendEmail } from '@gdmn/mailer';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { confirmationsRepository } from '@gdmn-nxt/repositories/confirmations';
 import { randomFixedNumber } from '@gsbelarus/util-useful';
 import fs from 'fs';
@@ -15,6 +15,9 @@ import path from 'path';
 import Mustache from 'mustache';
 import svgCaptcha from 'svg-captcha';
 import { resultError } from '@gsbelarus/util-helpers';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { getGeoData } from '@gdmn-nxt/ip-info';
+import dayjs from '@gdmn-nxt/dayjs';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -52,12 +55,22 @@ const sendEmailConfirmation = async (userId: number, email: string, info?: Info)
 
   const renderedHtml = Mustache.render(confirmationCodeHtml, view);
 
-  await sendEmail(
+  const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne('mailer');
+
+  const smtpOpt: SmtpOptions = {
+    host: smtpHost,
+    port: smtpPort,
+    user: smtpUser,
+    password: smtpPassword
+  };
+
+  await sendEmail({
     from,
-    email,
+    to: email,
     subject,
-    '',
-    renderedHtml);
+    html: renderedHtml,
+    options: { ...smtpOpt }
+  });
 
   return true;
 };
@@ -68,10 +81,10 @@ const signIn: RequestHandler = async (req, res, next) => {
       return next(err);
     }
 
-    const { userName } = req.body;
+    const { userName, ip, device } = req.body;
 
     if (user) {
-      const result = await profileSettingsController.getSettings(user.id, req);
+      const result = await profileSettingsController.getSettings({ userId: user.id, sessionId: req.sessionID });
       const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
 
 
@@ -91,6 +104,10 @@ const signIn: RequestHandler = async (req, res, next) => {
         req.session.userId = user.id;
         req.session.email = EMAIL;
         req.session.userName = user.userName;
+
+        req.session.device = device;
+        req.session.location = await getGeoData(ip);
+        req.session.creationDate = dayjs().toDate();
 
         return res.json(authResult(
           'ENABLED_2FA',
@@ -133,11 +150,15 @@ const signIn: RequestHandler = async (req, res, next) => {
         }
 
         const prevSession = req.session;
-        req.session.regenerate((err) => {
+        req.session.regenerate(async (err) => {
           Object.assign(req.session, prevSession);
           req.session.userId = user.id;
           req.session.base32Secret = '';
           req.session.token = jwt.sign({ EMAIL }, config.jwtSecret, { expiresIn: jwtExpirationTime });
+
+          req.session.device = device;
+          req.session.location = await getGeoData(ip);
+          req.session.creationDate = dayjs().toDate();
 
           return res.json(authResult(
             'SUCCESS',
@@ -173,16 +194,23 @@ const signIn2fa: RequestHandler = async (req, res, next) => {
       ));
     }
 
+    const { device, location, creationDate } = req.session;
+
     return req.login(user, loginErr => {
       if (loginErr) {
         return next(loginErr);
       }
 
       const prevSession = req.session;
-      req.session.regenerate((err) => {
+      req.session.regenerate(async (err) => {
         Object.assign(req.session, prevSession);
+        req.session.userId = user.id;
         req.session.base32Secret = base32Secret;
         req.session.token = jwt.sign({ email }, config.jwtSecret, { expiresIn: jwtExpirationTime });
+
+        req.session.device = device;
+        req.session.location = location;
+        req.session.creationDate = creationDate;
 
         return res.json(authResult(
           'SUCCESS',
@@ -355,7 +383,7 @@ const disable2fa: RequestHandler = async (req, res) => {
   const userId = req.user['id'];
 
   try {
-    const result = await profileSettingsController.getSettings(userId, req);
+    const result = await profileSettingsController.getSettings({ userId, sessionId: req.sessionID });
     const { SECRETKEY, EMAIL } = result.settings;
 
     const checkCode = await verifyCode(EMAIL, code.toString(), SECRETKEY);

@@ -1,3 +1,4 @@
+import { IMenuItem } from '.';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import LabelIcon from '@mui/icons-material/Label';
@@ -5,8 +6,13 @@ import WorkIcon from '@mui/icons-material/Work';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
-import { IMenuItem } from '.';
-
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import ContactPhoneOutlinedIcon from '@mui/icons-material/ContactPhoneOutlined';
+import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import ContentPasteOutlinedIcon from '@mui/icons-material/ContentPasteOutlined';
+import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
 
 const managment: IMenuItem = {
   id: 'managment',
@@ -18,33 +24,38 @@ const managment: IMenuItem = {
       title: 'Учёт времени',
       url: 'managment/time-tracker',
       type: 'item',
-      icon: <AccessTimeFilledIcon color="secondary" />,
+      icon: <AccessTimeOutlinedIcon color="secondary" />,
+      selectedIcon: <AccessTimeFilledIcon color="secondary" />,
+
     },
     {
-      id: 'contactsGroup',
+      id: 'contacts',
       title: 'Контакты',
-      type: 'collapse',
-      icon: <ContactPhoneIcon color="secondary" />,
-      children: [
-        {
-          id: 'contacts',
-          title: 'Все',
-          type: 'item',
-          url: 'managment/contacts',
-        },
-        {
-          id: 'ourContacts',
-          title: 'Только наши',
-          type: 'item',
-          url: 'managment/ourContacts',
-        },
-      ]
+      type: 'item',
+      icon: <ContactPhoneOutlinedIcon color="secondary" />,
+      selectedIcon: <ContactPhoneIcon color="secondary" />,
+      url: 'managment/contacts',
+      // children: [
+      //   {
+      //     id: 'contacts',
+      //     title: 'Все',
+      //     type: 'item',
+      //     url: 'managment/contacts',
+      //   },
+      //   {
+      //     id: 'ourContacts',
+      //     title: 'Только наши',
+      //     type: 'item',
+      //     url: 'managment/ourContacts',
+      //   },
+      // ]
     },
     {
       id: 'dealsGroup',
       title: 'Сделки',
       type: 'collapse',
-      icon: <WorkIcon color="secondary" />,
+      icon: <WorkOutlineOutlinedIcon color="secondary" />,
+      selectedIcon: <WorkIcon color="secondary" />,
       children: [
         {
           id: 'deals',
@@ -70,7 +81,8 @@ const managment: IMenuItem = {
       id: 'tasksGroup',
       title: 'Задачи',
       type: 'collapse',
-      icon: <TaskAltIcon color="secondary" />,
+      icon: <TaskAltOutlinedIcon color="secondary" />,
+      selectedIcon: <TaskAltIcon color="secondary" />,
       children: [
         {
           id: 'tasks',
@@ -86,32 +98,20 @@ const managment: IMenuItem = {
         },
       ]
     },
-    // {
-    //   id: 'customers',
-    //   title: 'Клиенты',
-    //   type: 'collapse',
-    //   icon: <PeopleAltIcon color="secondary" />,
-    //   children: [
-    //     {
-    //       id: 'customers-list',
-    //       title: 'Список клиентов',
-    //       type: 'item',
-    //       url: 'managment/customers/list'
-    //     },
-    //   ]
-    // },
     {
       id: 'customers',
       title: 'Клиенты',
       type: 'item',
-      icon: <PeopleAltIcon color="secondary" />,
+      icon: <PeopleAltOutlinedIcon color="secondary" />,
+      selectedIcon: <PeopleAltIcon color="secondary" />,
       url: 'managment/customers/list'
     },
     {
       id: 'contracts',
       title: 'Договоры',
       type: 'item',
-      icon: <ContentPasteIcon color="secondary" />,
+      icon: <ContentPasteOutlinedIcon color="secondary" />,
+      selectedIcon: <ContentPasteIcon color="secondary" />,
       url: 'managment/contracts'
     },
     {
@@ -119,7 +119,8 @@ const managment: IMenuItem = {
       title: 'Метки',
       type: 'item',
       url: 'managment/labels',
-      icon: <LabelIcon color="secondary" />,
+      icon: <LabelOutlinedIcon color="secondary" />,
+      selectedIcon: <LabelIcon color="secondary" />,
     },
   ]
 };

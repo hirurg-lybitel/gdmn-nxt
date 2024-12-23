@@ -1,6 +1,10 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, ICustomer, IFavoriteContact } from '@gsbelarus/util-api-types';
+import { FindHandler, ICustomer, IFavoriteContact, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
+import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
+import task from '@gdmn-nxt/controllers/kanban/task';
+import { contractsService } from '@gdmn-nxt/modules/contracts/service';
+import { debtsRepository } from '../repository/debts';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
@@ -13,7 +17,10 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     NAME = '',
     customerId,
     isFavorite,
-    userId = -1
+    userId = -1,
+    withTasks,
+    withAgreements,
+    withDebt,
   } = clause as any;
 
   const sortField = Object.keys(order)[0] ?? 'NAME';
@@ -68,6 +75,23 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
         };
       });
 
+    const tasks = new Map<number, ITimeTrackTask[]>();
+    const withTasksBool = (withTasks as string)?.toLowerCase() === 'true';
+
+    if (withTasksBool) {
+      (await timeTrackerTasksService.findAll(sessionID, { userId }))
+        ?.forEach(({ project, ...task }) => {
+          const customerId = project.customer.ID;
+          if (tasks.has(customerId)) {
+            if (tasks.get(customerId)?.findIndex(({ ID }) => ID === task.ID) < 0) {
+              tasks.get(customerId)?.push(task);
+            }
+          } else {
+            tasks.set(customerId, [task]);
+          };
+        });
+    }
+
     const favoritesMap: Record<string, number[]> = {};
     const favorites = await cacheManager.getKey<IFavoriteContact[]>('favoriteContacts') ?? [];
     favorites.forEach(f => {
@@ -80,6 +104,42 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
         favoritesMap[f.USER] = [f.CONTACT.ID];
       }
     });
+
+    /** Действующие договоры по клиентам */
+    const agreements = new Map<number, number[]>();
+    const withAgreementsBool = (withAgreements as string)?.toLowerCase() === 'true';
+    if (withAgreementsBool) {
+      const contracts = (await contractsService.findAll(
+        sessionID,
+        null,
+        {
+          isActive: 'true'
+        }))
+        .contracts;
+
+      contracts.forEach(({ ID, customer: { ID: customerId } }) => {
+        if (agreements.has(customerId)) {
+          agreements.get(customerId)?.push(ID);
+        } else {
+          agreements.set(customerId, [ID]);
+        };
+      });
+    }
+
+    /** Задолженности */
+    const debts = new Map<number, number>();
+    const withDebtBool = (withDebt as string)?.toLowerCase() === 'true';
+    if (withDebtBool) {
+      const debtRecords = await debtsRepository.find(sessionID);
+
+      debtRecords.forEach(({ customerId, amount }) => {
+        if (debts.has(customerId)) {
+          debts.set(customerId, debts.get(customerId) + amount);
+        } else {
+          debts.set(customerId, amount);
+        }
+      });
+    }
 
     const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
     const depotIds = DEPARTMENTS ? (DEPARTMENTS as string).split(',').map(Number) ?? [] : [];
@@ -137,7 +197,16 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             NAME: c.NAME || '<не указано>',
             LABELS: customerLabels,
             BUSINESSPROCESSES,
-            isFavorite
+            isFavorite,
+            ...(withTasksBool ? {
+              taskCount: tasks.get(c.ID)?.length ?? 0,
+            } : {}),
+            ...(withAgreementsBool ? {
+              agreementCount: agreements.get(c.ID)?.length ?? 0
+            } : {}),
+            ...(withDebtBool ? {
+              debt: debts.get(c.ID) ?? 0
+            } : {})
           });
         }
         return filteredArray;

@@ -20,7 +20,7 @@ import {
   useUpdateColumnMutation,
   useUpdateTaskMutation
 } from '../../../features/kanban/kanbanApi';
-import { RootState } from '../../../store';
+import { RootState } from '@gdmn-nxt/store';
 import { UserState } from '../../../features/user/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { setError } from '../../../features/error-slice/error-slice';

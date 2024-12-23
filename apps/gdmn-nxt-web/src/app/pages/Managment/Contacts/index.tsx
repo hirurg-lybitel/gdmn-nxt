@@ -1,6 +1,6 @@
 import styles from './contacts.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import { Badge, Box, CardContent, CardHeader, Divider, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -15,14 +15,14 @@ import { IPaginationData } from '../../../features/customer/customerApi_new';
 import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
 import ContactList from '@gdmn-nxt/components/Contacts/contact-list/contact-list';
 import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contacts-filter';
-import CircularIndeterminate from '@gdmn-nxt/components/helpers/circular-indeterminate/circular-indeterminate';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
-import { useFilterStore } from '../../../components/helpers/hooks/useFilterStore';
+import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');

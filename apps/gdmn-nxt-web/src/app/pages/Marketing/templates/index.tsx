@@ -4,17 +4,17 @@ import EmailTemplateListItem from '../../../components/email-template-list-item/
 import EmailTemplateListItemEdit from '../../../components/email-template-list-item-edit/email-template-list-item-edit';
 import { IFilteringData, IPaginationData, ITemplate } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { saveFilterData } from '../../../store/filtersSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { templateApi, useAddTemplateMutation, useDeleteTemplateMutation, useUpdateTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import styles from './email-template-list.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import CustomAddButton from '@gdmn-nxt/components/helpers/custom-add-button';
-import CustomLoadingButton from '@gdmn-nxt/components/helpers/custom-loading-button/custom-loading-button';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
+import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import { useFilterStore } from '@gdmn-nxt/components/helpers/hooks/useFilterStore';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 interface EmailTemplateListProps {
 
 }

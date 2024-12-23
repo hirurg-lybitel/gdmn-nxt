@@ -7,21 +7,22 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { useGetAllSegmentsQuery, useGetCustomersCountMutation } from '../../../features/Marketing/segments/segmentsApi';
-import filterOptions from '@gdmn-nxt/components/helpers/filter-options';
+import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import usePermissions from '@gdmn-nxt/components/helpers/hooks/usePermissions';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import { useGetMailingByIdQuery, useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';
 import { LoadingButton } from '@mui/lab';
-import { useSnackbar } from '@gdmn-nxt/components/helpers/hooks/useSnackbar';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 const sendTypes = [
   {
@@ -246,7 +247,7 @@ export function MailingUpsert({
       return;
     }
     formik.setFieldValue('attachments', attachments);
-  }, []);
+  }, [formik.values.attachments]);
 
 
   const initialAttachments = useMemo(() => {
@@ -270,6 +271,47 @@ export function MailingUpsert({
       return [...res, file];
     }, [] as File[]);
   }, [attachments]);
+
+  const [ListboxComponent] = useAutocompleteVirtualization();
+
+  const segmentsSelect = useCallback((type: 'includeSegments' | 'excludeSegments') => {
+    return (
+      <Autocomplete
+        fullWidth
+        ListboxComponent={ListboxComponent}
+        options={segments}
+        getOptionLabel={option => option.NAME}
+        value={segments.filter(({ ID }) => (formik.values[`${type}`]?.findIndex(s => s.ID === ID) ?? 0) >= 0) ?? []}
+        loading={segmentsFetching}
+        loadingText="Загрузка данных..."
+        multiple
+        limitTags={3}
+        disableCloseOnSelect
+        onChange={(event, value) => {
+          formik.setFieldValue(type, value);
+        }}
+        renderOption={(props, option, { selected }) => (
+          <li {...props} key={option.ID}>
+            <Checkbox
+              icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+              checkedIcon={<CheckBoxIcon fontSize="small" />}
+              checked={selected}
+            />
+            <Stack>
+              <div>{option.NAME}</div>
+              <Typography variant="caption">клиентов: {option.QUANTITY ?? 0}</Typography>
+            </Stack>
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={type === 'includeSegments' ? 'Выбор сегмента получателей' : 'Выбор исключающих сегментов'}
+          />
+        )}
+      />
+    );
+  }, [ListboxComponent, formik, segments, segmentsFetching]);
 
   return (
     <CustomizedDialog
@@ -321,74 +363,8 @@ export function MailingUpsert({
                 direction="row"
                 spacing={2}
               >
-                <Autocomplete
-                  fullWidth
-                  options={segments}
-                  getOptionLabel={option => option.NAME}
-                  filterOptions={filterOptions(50, 'NAME')}
-                  value={segments.filter(({ ID }) => (formik.values.includeSegments?.findIndex(s => s.ID === ID) ?? 0) >= 0) ?? []}
-                  loading={segmentsFetching}
-                  loadingText="Загрузка данных..."
-                  multiple
-                  limitTags={3}
-                  disableCloseOnSelect
-                  onChange={(event, value) => {
-                    formik.setFieldValue('includeSegments', value);
-                  }}
-                  renderOption={(props, option: ISegment, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        checked={selected}
-                      />
-                      <Stack>
-                        <div>{option.NAME}</div>
-                        <Typography variant="caption">клиентов: {option.QUANTITY ?? 0}</Typography>
-                      </Stack>
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Выбор сегмента получателей"
-                    />
-                  )}
-                />
-                <Autocomplete
-                  fullWidth
-                  options={segments}
-                  getOptionLabel={option => option.NAME}
-                  filterOptions={filterOptions(50, 'NAME')}
-                  value={segments.filter(({ ID }) => (formik.values.excludeSegments?.findIndex(s => s.ID === ID) ?? 0) >= 0) ?? []}
-                  loading={segmentsFetching}
-                  loadingText="Загрузка данных..."
-                  multiple
-                  limitTags={3}
-                  disableCloseOnSelect
-                  onChange={(event, value) => {
-                    formik.setFieldValue('excludeSegments', value);
-                  }}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props} key={option.ID}>
-                      <Checkbox
-                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                        checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        checked={selected}
-                      />
-                      <Stack>
-                        <div>{option.NAME}</div>
-                        <Typography variant="caption">клиентов: {option.QUANTITY ?? 0}</Typography>
-                      </Stack>
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Выбор исключающих сегментов"
-                    />
-                  )}
-                />
+                {segmentsSelect('includeSegments')}
+                {segmentsSelect('excludeSegments')}
               </Stack>
               <Box
                 sx={{
