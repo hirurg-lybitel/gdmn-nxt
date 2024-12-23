@@ -32,8 +32,15 @@ export type UpdateHandler<T = object> = (sessionID: string, id: number, metadata
 export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID' | 'id'>) => Promise<T>;
 
 /**
+ * Delete entities by clause.
+ * @param sessionID Session identifier
+ * @param clause The find clause object
+ */
+export type RemoveHandler = (sessionID: string, clause?: object) => Promise<Boolean>;
+
+/**
  * Delete entity.
  * @param sessionID Session identifier
  * @param id uniq id of entity
  */
-export type RemoveHandler = (sessionID: string, id: number) => Promise<Boolean>;
+export type RemoveOneHandler = (sessionID: string, id: number) => Promise<Boolean>;

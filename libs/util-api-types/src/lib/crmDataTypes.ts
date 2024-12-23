@@ -460,6 +460,16 @@ export interface IMailing extends IWithID {
   excludeSegments?: ISegment[],
   testingEmails?: string[];
   attachments?: MailAttachment[];
+  recipientsCount?: number
+}
+
+export interface IMailingHistory {
+  id: number
+  date: string;
+  mailingId: number;
+  status: MailingStatus;
+  description: string;
+  customer: ICustomer;
 }
 
 export interface ITemplate extends IWithID {

@@ -1,6 +1,6 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IDealFeedback, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IDealFeedback, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import dayjs from '@gdmn-nxt/dayjs';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
@@ -181,7 +181,7 @@ const save: SaveHandler<IDealFeedback> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

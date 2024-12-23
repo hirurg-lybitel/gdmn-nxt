@@ -14,6 +14,7 @@ export const wrapForNamedParams = (attachment: Attachment, transaction: Transact
   };
 
   return {
+    execute: prepare(attachment.execute),
     executeQuery: prepare(attachment.executeQuery),
     executeSingleton: prepare(attachment.executeSingleton),
     executeSingletonAsObject: prepare(attachment.executeSingletonAsObject),

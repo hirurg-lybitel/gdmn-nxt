@@ -147,6 +147,34 @@ const testLaunchMailing: RequestHandler = async (req, res) => {
   }
 };
 
+const getMailingHistory: RequestHandler = async (req, res) => {
+  const mailingId = parseInt(req.params.mailingId);
+  if (isNaN(mailingId)) {
+    return res
+      .status(422)
+      .send(resultError('Field ID is not defined or is not numeric'));
+  }
+
+  try {
+    const { id: sessionID } = req.session;
+
+    const { history, count } = await mailingService.getHistory(sessionID, mailingId, { ...req.query });
+
+    const result: IRequestResult = {
+      queries: {
+        history,
+        count
+      },
+      _params: [{ mailingId }],
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const mailingController = {
   findAll,
   findOne,
@@ -154,5 +182,6 @@ export const mailingController = {
   createMailing,
   updateById,
   removeById,
-  testLaunchMailing
+  testLaunchMailing,
+  getMailingHistory
 };

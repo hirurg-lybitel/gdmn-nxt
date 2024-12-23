@@ -1,6 +1,6 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ITimeTrack, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ITimeTrack, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 
 const find: FindHandler<ITimeTrack> = async (
   sessionID,
@@ -239,7 +239,7 @@ const save: SaveHandler<ITimeTrack> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {
