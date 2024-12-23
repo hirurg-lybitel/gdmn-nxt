@@ -155,6 +155,39 @@ export const timeTrackingApi = createApi({
           ]
           : [{ type: 'Task', id: 'LIST' }],
     }),
+    addTimeTrackTask: builder.mutation<ITimeTrackTask, Partial<ITimeTrackTask>>({
+      query: (body) => ({
+        url: '/tasks',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ITimeTrackerTasksRequestResult) => response.queries?.timeTrackerTasks[0],
+      invalidatesTags: [{ type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }],
+    }),
+    updateTimeTrackTask: builder.mutation<ITimeTrackTask, Partial<ITimeTrackTask>>({
+      query: ({ ID, ...body }) => ({
+        url: `/tasks/${ID}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (result) =>
+        result
+          ? [{ type: 'Task', id: result?.ID }, { type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }]
+          : [{ type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }],
+    }),
+    deleteTimeTrackTask: builder.mutation<{ id: number }, number>({
+      query(id) {
+        return {
+          url: `/tasks/${id}`,
+          method: 'DELETE',
+        };
+      },
+      invalidatesTags: (result) => {
+        return result
+          ? [{ type: 'Task', id: result?.id }, { type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }]
+          : [{ type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }];
+      }
+    }),
     addFavoriteTask: builder.mutation<IFavoriteTask, {taskId: number, projectId: number}>({
       query: ({ taskId }) => ({
         url: `/tasks/favorites/${taskId}`,
@@ -323,6 +356,9 @@ export const {
   useGetProjectsQuery,
   useGetTasksQuery,
   useGetTaskQuery,
+  useAddTimeTrackTaskMutation,
+  useUpdateTimeTrackTaskMutation,
+  useDeleteTimeTrackTaskMutation,
   useAddFavoriteTaskMutation,
   useDeleteFavoriteTaskMutation,
   useAddFavoriteProjectMutation,

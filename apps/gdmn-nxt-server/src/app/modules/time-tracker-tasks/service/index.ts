@@ -1,6 +1,7 @@
 import { InternalServerErrorException, ITimeTrackTask, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackerTasksRepository } from '../repository';
 import { favoriteTimeTrackerTasksRepository } from '../repository/favoriteTimeTrackerTasks';
+import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
 const findAll = async (
   sessionID: string,
@@ -108,9 +109,71 @@ const removeFromFavorites = async (
   }
 };
 
+const update = async (
+  sessionID: string,
+  id: number,
+  body: Partial<ITimeTrackTask>
+) => {
+  try {
+    const task = await timeTrackerTasksRepository.findOne(sessionID, { id });
+    if (!task) {
+      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
+    }
+    const updatedTask =
+        await timeTrackerTasksRepository.update(
+          sessionID,
+          id,
+          body
+        );
+    if (!updatedTask) {
+      throw InternalServerErrorException(ERROR_MESSAGES.UPDATE_FAILED);
+    }
+
+    return await timeTrackerTasksRepository.findOne(sessionID, { id });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const create = async (
+  sessionID: string,
+  body: ITimeTrackTask
+) => {
+  try {
+    return await timeTrackerTasksRepository.save(sessionID, body);
+  } catch (error) {
+    throw error;
+  }
+};
+
+const remove = async (
+  sessionID: string,
+  id: number
+) => {
+  try {
+    const task = await timeTrackerTasksRepository.findOne(sessionID, { id });
+    if (!task) {
+      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
+    }
+
+    const isDeleted = await timeTrackerTasksRepository.remove(sessionID, id);
+
+    if (!isDeleted) {
+      throw InternalServerErrorException(ERROR_MESSAGES.DELETE_FAILED);
+    }
+
+    return isDeleted;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const timeTrackerTasksService = {
   findAll,
   findOne,
   addToFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  update,
+  create,
+  remove
 };

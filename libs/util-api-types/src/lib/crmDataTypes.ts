@@ -514,11 +514,13 @@ export interface ITimeTrackProject extends IWithID {
   name: string;
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
-  isFavorite?: boolean
+  isFavorite?: boolean,
+  employees?: IContactPerson[]
 }
 
 export interface ITimeTrackTask extends IWithID {
   name: string;
+  isActive: boolean,
   project?: ITimeTrackProject;
   isFavorite?: boolean;
 }

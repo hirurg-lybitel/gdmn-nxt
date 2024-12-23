@@ -14,7 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
-import { useAddFavoriteProjectMutation, useDeleteFavoriteProjectMutation, useGetFiltersQuery, useGetProjectsQuery } from '../../../features/time-tracking';
+import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -49,6 +49,11 @@ export function Projects(props: IProjectsProps) {
   const dispatch = useDispatch();
   const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, typeDefault ? { type: [typeDefault] } : null);
   const apiRef = useGridApiRef();
+  const [updateTask] = useUpdateTimeTrackTaskMutation();
+  const [deleteTask] = useDeleteTimeTrackTaskMutation();
+  const [addTask] = useAddTimeTrackTaskMutation();
+  const [addFavoriteTask] = useAddFavoriteTaskMutation();
+  const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
 
   const {
     data: projects = [],
@@ -144,8 +149,6 @@ export function Projects(props: IProjectsProps) {
   const onSubmit = (project: ITimeTrackProject) => {
 
   };
-
-  console.log(project);
 
   const handleEdit = (project: ITimeTrackProject) => {
     setProject(project);
@@ -261,7 +264,32 @@ export function Projects(props: IProjectsProps) {
     }
   ];
 
-  const getDetailPanelContent = useCallback(({ row }: GridRowParams<ITimeTrackProject>) => <DetailPanelContent row={row} />, []);
+  const taskSubmit = useCallback((task: ITimeTrackTask, isDeleting: boolean) => {
+    if (isDeleting)(
+      deleteTask(task.ID)
+    );
+    if (task.ID > 0) {
+      updateTask(task);
+    } else {
+      addTask(task);
+    };
+  }, [addTask, deleteTask, updateTask]);
+
+  const changeTaskFvorite = useCallback((data: {taskId: number, projectId: number}, favorite: boolean) => {
+    if (favorite) {
+      addFavoriteTask(data);
+    } else {
+      deleteFavoriteTask(data);
+    }
+  }, [addFavoriteTask, deleteFavoriteTask]);
+
+  const getDetailPanelContent = useCallback(({ row }: GridRowParams<ITimeTrackProject>) => (
+    <DetailPanelContent
+      onSubmit={taskSubmit}
+      project={row}
+      changeFavorite={changeTaskFvorite}
+    />
+  ), [changeTaskFvorite, taskSubmit]);
 
   return (
     <>

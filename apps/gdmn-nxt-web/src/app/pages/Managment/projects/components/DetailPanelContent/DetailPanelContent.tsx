@@ -1,7 +1,7 @@
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { IconButton, Stack, TextField } from '@mui/material';
-import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { Button, IconButton, Stack, TextField } from '@mui/material';
+import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -12,9 +12,11 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
-import { useAddFavoriteTaskMutation, useDeleteFavoriteTaskMutation } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAddFavoriteTaskMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteTaskMutation, useDeleteTimeTrackTaskMutation, useUpdateTimeTrackTaskMutation } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -29,7 +31,7 @@ interface ValidationShema {
 type ConfirmationMode = 'deleting' | 'cancel';
 
 const validationShema: ValidationShema = {
-  NAME: (value) => {
+  name: (value) => {
     if (value?.length > 60) return 'Слишком длинное наименование';
     if (!value) return 'Обязательное поле';
     return '';
@@ -50,13 +52,14 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
 
   const handleCellOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    apiRef.current.setEditCellValue({ id, field, value });apiRef.current.forceUpdate();
+    apiRef.current.setEditCellValue({ id, field, value });
   }, [apiRef, field, id]);
 
   return (
     <ErrorTooltip open={!!errorMessage} title={errorMessage} >
-      <div style={{ paddingLeft: '24px', paddingRight: '24px', flex: 1 }}>
+      <div style={{ paddingLeft: '10px', paddingRight: '0px', flex: 1 }}>
         <TextField
+          size="small"
           onFocus={() => clearError(field, id)}
           placeholder={`Введите ${colDef.headerName?.toLowerCase()}`}
           value={value ?? ''}
@@ -70,14 +73,14 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
 };
 
 interface IDetailPanelContent {
-  row: ITimeTrackProject
+  project: ITimeTrackProject,
+  separateGrid?: boolean,
+  onSubmit: (task: ITimeTrackTask, isDeleting: boolean) => void,
+  changeFavorite: (data: {taskId: number, projectId: number}, favorite: boolean) => void
 }
 
-export function DetailPanelContent({ row: project }: IDetailPanelContent) {
+export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavorite }: IDetailPanelContent) {
   const tasks = project.tasks || [];
-
-  const [addFavoriteTask] = useAddFavoriteTaskMutation();
-  const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
 
   const apiRef = useGridApiRef();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -114,26 +117,31 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
     setTitleAndMethod({ title, text, mode, method });
   };
 
-  const handleSubmit = useCallback((taskType: ITimeTrackTask) => {
-    if (taskType.ID > 0) {
-      console.log('update');
-    } else {
-      console.log('create');
-    };
-  }, []);
+  const stopAdding = useCallback(() => {
+    if (apiRef.current.getRowMode(0) === GridRowModes.Edit) {
+      apiRef.current.stopRowEditMode({ id: 0, ignoreModifications: true });
+    }
+  }, [apiRef]);
+
+  const handleSubmit = useCallback((task: ITimeTrackTask) => {
+    stopAdding();
+    onSubmit(task.ID > 0 ? task : { ...task, project: project }, false);
+  }, [onSubmit, project, stopAdding]);
 
   const [errors, setErrors] = useState<IErrorsObject>({});
 
-  const clearErrorByName = (name: string, id: GridRowId) => {
+  const clearErrorByName = useCallback((name: string, id: GridRowId) => {
     const newErrors = { ...errors };
     if (!newErrors[`${id}`]) return;
     newErrors[`${id}`][`${name}`] = '';
     setErrors(newErrors);
-  };
+  }, [errors]);
 
-  function RowMenuCell(props: GridRenderCellParams) {
-    const { id } = props;
+  const RowMenuCell = (props: GridRenderCellParams) => {
+    const { id, row } = props;
+
     const api = useGridApiContext();
+
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
     const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -146,11 +154,11 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
       const values = api.current.getRowWithUpdatedValues(id, '');
       const errorList: IErrors = {};
       let haveError = false;
-      Object.keys(values).map(value => {
+      for (const value of Object.keys(values)) {
         const errorMessage = validationShema[`${value}`]?.(values[`${value}`]);
         if (errorMessage) haveError = true;
         errorList[`${value}`] = errorMessage;
-      });
+      }
       const newErrors = { ...errors };
       newErrors[`${id}`] = errorList;
       setErrors(newErrors);
@@ -159,7 +167,7 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
       api.current.stopRowEditMode({ id });
       forceUpdate();
       const row = { ...values };
-      if (row!.ID === 0) delete row['ID'];
+      if (row?.ID === 0) delete row['ID'];
       handleSubmit(row as ITimeTrackTask);
     };
 
@@ -171,7 +179,8 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
 
     const handleDeleteClick = () => {
       setConfirmOpen(false);
-      console.log('delete');
+      stopAdding();
+      onSubmit({ ID: id } as ITimeTrackTask, true);
     };
 
     const handleConfirmCancelClick = () => {
@@ -194,12 +203,17 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
       newErrors[`${id}`] = {};
       setErrors(newErrors);
       api.current.stopRowEditMode({ id, ignoreModifications: true });
-      if (api.current.getRow(id)!.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
+      if (api.current.getRow(id)?.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
       forceUpdate();
     };
 
     const handleChangeVisible = () => {
-
+      if (isInEditMode && separateGrid) {
+        apiRef.current.setEditCellValue({ id, field: 'isActive', value: !row.isActive });
+        if (id === 0) return;
+      };
+      stopAdding();
+      onSubmit({ ...row, isActive: !row.isActive }, false);
     };
 
     return (
@@ -242,56 +256,22 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
           </>}
         <IconButton
           color={'primary'}
-          style={true ? { color: 'gray' } : {}}
+          style={!props.value ? { color: 'gray' } : {}}
           size="small"
           onClick={handleChangeVisible}
         >
-          {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+          {props.value ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
         </IconButton>
       </>
     );
-  }
+  };
 
-  const renderEditCell = (params: GridRenderEditCellParams) => (
+  const renderEditCell = useCallback((params: GridRenderEditCellParams) => (
     <CustomCellEditForm
       {...params}
       errors={errors}
       clearError={clearErrorByName}
-    />);
-
-  const columns: GridColDef<any>[] = [
-    {
-      width: 20,
-      field: 'isFavorite',
-      renderCell: ({ value, row }) => {
-        const handleSwitchFavorite = () => {
-          const data = { taskId: row.ID, projectId: project.ID };
-          if (row.isFavorite) {
-            deleteFavoriteTask(data);
-          } else {
-            addFavoriteTask(data);
-          }
-        };
-        return (
-          <SwitchStar selected={value} onClick={handleSwitchFavorite}/>
-        );
-      },
-      align: 'center',
-    },
-    {
-      field: 'name',
-      headerName: 'Наименование',
-      flex: 1,
-      editable: true,
-      renderEditCell
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      resizable: false,
-      renderCell: RowMenuCell
-    }
-  ];
+    />), [clearErrorByName, errors]);
 
   const memoConfirmDialog = useMemo(() =>
     <ConfirmDialog
@@ -303,6 +283,52 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
       cancelClick={() => setConfirmOpen(false)}
     />
   , [confirmOpen, titleAndMethod]);
+
+  const IsFavoriteCell = ({ value, row, field, id }: GridRenderCellParams<ITimeTrackTask, any, any, GridTreeNodeWithRender>) => {
+    const api = useGridApiContext();
+    const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
+    const handleSwitchFavorite = () => {
+      if (isInEditMode && separateGrid && id === 0) {
+        apiRef.current.setEditCellValue({ id, field, value: !value });
+        return;
+      }
+      stopAdding();
+      changeFavorite({ taskId: row.ID, projectId: project.ID }, !row.isFavorite);
+    };
+    return (
+      <SwitchStar selected={value} onClick={handleSwitchFavorite}/>
+    );
+  };
+
+  const columns: GridColDef<ITimeTrackTask>[] = [
+    {
+      width: 20,
+      headerName: '',
+      type: 'actions',
+      resizable: false,
+      field: 'isFavorite',
+      editable: separateGrid,
+      renderCell: IsFavoriteCell,
+      renderEditCell: IsFavoriteCell,
+      align: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Наименование',
+      flex: 1,
+      resizable: false,
+      editable: true,
+      renderEditCell
+    },
+    {
+      field: 'isActive',
+      type: 'actions',
+      editable: separateGrid,
+      resizable: false,
+      renderCell: RowMenuCell,
+      renderEditCell: RowMenuCell
+    }
+  ];
 
   const handleRowEditStart = (
     params: GridRowParams,
@@ -324,26 +350,71 @@ export function DetailPanelContent({ row: project }: IDetailPanelContent) {
     }
   };;
 
-  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 200 : recordsCount * 40, []);
+  const handleAddSource = () => {
+    if (apiRef.current.getRow(0)) return;
+    const id = 0;
+    apiRef.current.updateRows([{ ID: id, isActive: true }]);
+    apiRef.current.setRowIndex(id, 0);
+    apiRef.current.scrollToIndexes({
+      rowIndex: 0,
+    });
+    apiRef.current.startRowEditMode({ id });
+    forceUpdate();
+  };
+
+  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 200 : recordsCount * 50, []);
+
+  const grid = (
+    <StyledGrid
+      editMode="row"
+      apiRef={apiRef}
+      hideFooter
+      rowHeight={50}
+      hideColumnHeaders={!separateGrid}
+      rows={tasks}
+      columns={columns}
+      onRowEditStart={handleRowEditStart}
+      onRowEditStop={handleRowEditStop}
+      onCellKeyDown={handleCellKeyDown}
+    />
+  );
+
+  if (separateGrid) {
+    return (
+      <Stack
+        direction="column"
+        flex="1"
+        display="flex"
+        spacing={1}
+        height={'100%'}
+      >
+        {memoConfirmDialog}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <IconButton color="primary" onClick={handleAddSource}><AddCircleIcon/></IconButton>
+        </div>
+        <CustomizedCard
+          borders
+          style={{
+            flex: 1,
+          }}
+        >
+          {grid}
+        </CustomizedCard>
+      </Stack>
+    );
+  }
 
   return (
-    <div
-      style={{
-        height: getHeight(tasks.length),
-      }}
-    >
+    <>
       {memoConfirmDialog}
-      <StyledGrid
-        editMode="row"
-        apiRef={apiRef}
-        hideFooter
-        hideColumnHeaders
-        rows={tasks}
-        columns={columns}
-        onRowEditStart={handleRowEditStart}
-        onRowEditStop={handleRowEditStop}
-        onCellKeyDown={handleCellKeyDown}
-      />
-    </div>
+      <div
+        style={{
+          height: separateGrid ? '100%' : getHeight(tasks.length),
+          width: '100%'
+        }}
+      >
+        {grid}
+      </div>
+    </>
   );
 }

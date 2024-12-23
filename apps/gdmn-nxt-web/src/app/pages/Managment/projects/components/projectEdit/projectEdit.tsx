@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import styles from './projectEdit.module.less';
-import { IContactWithID, ITimeTrackProject } from '@gsbelarus/util-api-types';
+import { IContactWithID, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -9,50 +9,22 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { DetailPanelContent } from '../DetailPanelContent/DetailPanelContent';
+import { ProjectEmployees } from '../ProjectEmployees';
 const useStyles = makeStyles((theme: Theme) => ({
-  dialog: {
-    position: 'absolute',
-    right: 0,
-    margin: 0,
-    height: '100%',
-    maxHeight: '100%',
-    width: '30vw',
-    minWidth: 330,
-    maxWidth: '100%',
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0
-  },
   button: {
     width: '120px',
   },
-  piker: {
-    position: 'absolute',
-    zIndex: '1400 !important',
-    right: '10px',
-    moveTop: '10px',
-    top: 'top - 50px',
-    '& .sketch-picker ': {
-      backgroundColor: `${theme.mainContent.backgroundColor} !important`,
-      color: `${theme.textColor} !important`
-    },
-    '& .sketch-picker label': {
-      color: `${theme.textColor} !important`
-    },
-    '& .saturation-white div': {
-      pointerEvent: 'none !important',
-      cursor: 'pointer !important'
-    }
-  }
 }));
 
-export interface LabelListItemEditProps {
+export interface ProjectEditProps {
   open: boolean;
   project?: ITimeTrackProject;
   onSubmit: (project: ITimeTrackProject) => void;
   onCancelClick: () => void;
 };
 
-export function LabelListItemEdit(props: LabelListItemEditProps) {
+export function ProjectEdit(props: ProjectEditProps) {
   const classes = useStyles();
   const { open, project } = props;
   const { onSubmit, onCancelClick } = props;
@@ -62,7 +34,8 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     name: project?.name || '',
     isFavorite: project?.isFavorite || false,
     customer: project?.customer,
-    tasks: project?.tasks || []
+    tasks: project?.tasks || [],
+    employees: []
   };
 
   const formik = useFormik<ITimeTrackProject>({
@@ -92,7 +65,31 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
 
   const [tabIndex, setTabIndex] = useState<string>('1');
   const [privateProject, setPrivateProject] = useState(false);
-  const [employees, setEmploys] = useState<IContactWithID[]>([]);
+
+  const [lastId, setLastId] = useState(1);
+
+  const onTaskSubmit = (task: ITimeTrackTask, isDeleting: boolean) => {
+    const newTasks = formik.values.tasks ? [...formik.values.tasks] : [];
+    if (isDeleting) {
+      formik.setFieldValue('tasks', newTasks.filter(item => item.ID !== task.ID));
+      return;
+    }
+    if (task.ID > 0) {
+      const index = newTasks.findIndex(item => item.ID === task.ID);
+      newTasks[index] = task;
+      formik.setFieldValue('tasks', newTasks);
+      return;
+    }
+    formik.setFieldValue('tasks', [...newTasks, ...[{ ...task, ID: lastId }]]);
+    setLastId(lastId + 1);
+  };
+
+  const changeTaskFvorite = (data: {taskId: number, projectId: number}, favorite: boolean) => {
+    const newTasks = formik.values.tasks ? [...formik.values.tasks] : [];
+    const index = newTasks.findIndex(item => item.ID === data.taskId);
+    newTasks[index] = { ...newTasks[index], isFavorite: favorite };
+    formik.setFieldValue('tasks', newTasks);
+  };
 
   return (
     <CustomizedDialog
@@ -165,16 +162,31 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
                       label="Статистика"
                       value="3"
                     />
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Заметки"
+                      value="4"
+                    />
                   </TabList>
                   <Divider />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
-                    <div>tab1</div>
+                    <div style={{ width: '100%', height: '100%' }}>
+                      <DetailPanelContent
+                        project={formik.values}
+                        separateGrid
+                        onSubmit={onTaskSubmit}
+                        changeFavorite={changeTaskFvorite}
+                      />
+                    </div>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
-                    <div>tab2</div>
+                    <ProjectEmployees employees={formik.values.employees || []} onChange={(empls) => formik.setFieldValue('employees', empls)} />
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''} >
                     <div>tab3</div>
+                  </TabPanel>
+                  <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''} >
+                    <div>tab4</div>
                   </TabPanel>
                 </TabContext>
               </Stack>
@@ -208,4 +220,4 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
   );
 }
 
-export default LabelListItemEdit;
+export default ProjectEdit;

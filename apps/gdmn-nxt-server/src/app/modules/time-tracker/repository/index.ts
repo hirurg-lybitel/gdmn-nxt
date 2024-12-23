@@ -52,6 +52,7 @@ const find: FindHandler<ITimeTrack> = async (
         z.USR$BILLABLE BILLABLE,
         task.ID TASK_ID,
         task.USR$NAME TASK_NAME,
+        task.USR$ISACTIVE ISACTIVE,
         pr.ID PROJECT_ID,
         pr.USR$NAME PROJECT_NAME
       FROM USR$CRM_TIMETRACKER z
@@ -93,6 +94,7 @@ const find: FindHandler<ITimeTrack> = async (
         task: {
           ID: r['TASK_ID'],
           name: r['TASK_NAME'],
+          isActive: r['ISACTIVE'] === 1,
           project: {
             ID: r['PROJECT_ID'],
             name: r['PROJECT_NAME']
