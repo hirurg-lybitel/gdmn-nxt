@@ -22,6 +22,7 @@ router.put('/mailings/:id', mailingController.updateById);
 router.post('/mailings/launch/:id', mailingController.launchMailing);
 router.delete('/mailings/:id', mailingController.removeById);
 router.post('/mailings/launch-test', mailingController.testLaunchMailing);
+router.get('/mailings/history/:mailingId', mailingController.getMailingHistory);
 
 router.get('/templates', templatesController.findAll);
 router.get('/templates/:id', templatesController.findOne);

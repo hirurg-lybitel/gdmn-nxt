@@ -1,6 +1,7 @@
 import { baseUrlApi } from '@gdmn/constants/client';
-import { IMailing, IQueryOptions, IRequestResult, MailAttachment, MailingStatus, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { IMailing, IMailingHistory, IQueryOptions, IRequestResult, MailAttachment, MailingStatus, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { get } from 'http';
 
 export type IMailingRequestResult = IRequestResult<{mailings: IMailing[], count: number}>;
 
@@ -134,6 +135,36 @@ export const mailingApi = createApi({
           }
         });
       },
+    }),
+    getMailingHistory: builder.query<{history: IMailingHistory[], count: number}, Partial<IQueryOptions> | void>({
+      query: (options) => {
+        const mailingId = options?.filter?.mailingId ?? -1;
+
+        const params = queryOptionsToParamsString(options);
+
+        const lastOptions: Partial<IQueryOptions> = { ...options };
+
+        if (!cachedOptions.some(item => JSON.stringify(item) === JSON.stringify(lastOptions))) {
+          cachedOptions.push(lastOptions);
+        }
+
+        return {
+          url: `/history/${mailingId}${params ? `?${params}` : ''}`,
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: IRequestResult<{history: IMailingHistory[], count: number;}>) => {
+        if (!response.queries?.history) {
+          return {
+            count: 0,
+            history: []
+          };
+        }
+        return {
+          count: response.queries.count,
+          history: response.queries?.history
+        };
+      },
     })
   }),
 });
@@ -145,5 +176,6 @@ export const {
   useDeleteMailingMutation,
   useUpdateMailingMutation,
   useLaunchMailingMutation,
-  useLaunchTestMailingMutation
+  useLaunchTestMailingMutation,
+  useGetMailingHistoryQuery
 } = mailingApi;
