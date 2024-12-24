@@ -78,9 +78,101 @@ const getFilters: RequestHandler = async (req, res) => {
   }
 };
 
+const statistics: RequestHandler = async (req, res) => {
+  const { id: sessionID } = req.session;
+  try {
+    const projectId = parseInt(req.params.id);
+
+    if (isNaN(projectId)) {
+      throw UnprocessableEntityException('Field projectId is not defined or is not numeric');
+    }
+
+    const response = await timeTrackerProjectsService.statistics(
+      sessionID,
+      projectId
+    );
+
+    const result: IRequestResult = {
+      queries: { statistics: [...response] },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const create: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user['id'];
+
+    const timeTrack = await timeTrackerProjectsService.create(
+      req.sessionID,
+      {
+        user: {
+          ID: userId
+        },
+        ...req.body
+      }
+    );
+
+    const result: IRequestResult = {
+      queries: { timeTrackerProjects: [timeTrack] },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const update: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    throw UnprocessableEntityException('Field ID is not defined or is not numeric');
+  }
+
+  try {
+    const updatedTimeTrack = await timeTrackerProjectsService.update(
+      req.sessionID,
+      id,
+      req.body
+    );
+
+    const result: IRequestResult = {
+      queries: { timeTracking: [updatedTimeTrack] },
+      _params: [{ id }],
+      _schema: {}
+    };
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const remove: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    throw UnprocessableEntityException('Field ID is not defined or is not numeric');
+  }
+
+  try {
+    const isDeleted = await timeTrackerProjectsService.remove(req.sessionID, id);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const timeTrackerProjectsController = {
   findAll,
   addToFavorites,
   removeFromFavorites,
-  getFilters
+  getFilters,
+  statistics,
+  create,
+  update,
+  remove
 };

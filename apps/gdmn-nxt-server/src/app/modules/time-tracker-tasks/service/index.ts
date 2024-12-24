@@ -9,9 +9,13 @@ const findAll = async (
 ) => {
   const userId = filter?.userId;
   const customerId = filter?.customerId;
-
+  const projectId = filter?.projectId;
   try {
-    const tasks = await timeTrackerTasksRepository.find(sessionID);
+    const tasks = await timeTrackerTasksRepository.find(sessionID,
+      {
+        ...(projectId && { 'USR$PROJECT': projectId })
+      }
+    );
 
     const favorites = await favoriteTimeTrackerTasksRepository.find(sessionID, { 'USR$USER': userId });
 

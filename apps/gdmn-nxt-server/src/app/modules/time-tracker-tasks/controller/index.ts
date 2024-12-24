@@ -116,15 +116,7 @@ const create: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
 
-    const task = await timeTrackerTasksService.create(
-      req.sessionID,
-      {
-        user: {
-          ID: userId
-        },
-        ...req.body
-      }
-    );
+    const task = await timeTrackerTasksService.create(req.sessionID, req.body);
 
     const result: IRequestResult = {
       queries: { timeTrackerTasks: [task] },

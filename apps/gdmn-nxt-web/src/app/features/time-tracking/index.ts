@@ -1,4 +1,4 @@
-import { IFavoriteProject, IFavoriteTask, IProjectFilter, IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, ITimeTrackProject, ITimeTrackTask, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { IFavoriteProject, IFavoriteTask, IProjectFilter, IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, ITimeTrackProject, ITimeTrackTask, IProjectStatistics, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -6,7 +6,8 @@ type ITimeTrackingRequestResult = IRequestResult<{ timeTracking: ITimeTrack[] }>
 type ITimeTrackingGroupRequestResult = IRequestResult<{ timeTracking: ITimeTrackGroup[] }>;
 type ITimeTrackerProjectsRequestResult = IRequestResult<{ timeTrackerProjects: ITimeTrackProject[] }>;
 type ITimeTrackerTasksRequestResult = IRequestResult<{ timeTrackerTasks: ITimeTrackTask[] }>;
-type IFilterDeadlineRequestResult = IRequestResult<{filters: IProjectFilter[]}>;
+type IProjectFilterRequestResult = IRequestResult<{filters: IProjectFilter[]}>;
+type IProjectStatisticsRequestResult = IRequestResult<{statistics: IProjectStatistics[]}>
 
 const cachedOptions: Partial<IQueryOptions>[] = [];
 
@@ -123,6 +124,39 @@ export const timeTrackingApi = createApi({
             { type: 'Project', id: 'LIST' },
           ]
           : [{ type: 'Project', id: 'LIST' }],
+    }),
+    addProject: builder.mutation<ITimeTrack, ITimeTrackProject>({
+      query: (body) => ({
+        url: '/projects',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ITimeTrackingRequestResult) => response.queries?.timeTracking[0],
+      invalidatesTags: [{ type: 'TimeTrack', id: 'LIST' }],
+    }),
+    updateProject: builder.mutation<ITimeTrack, Partial<ITimeTrack>>({
+      query: ({ ID, ...body }) => ({
+        url: `/${ID}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (result) =>
+        result
+          ? [{ type: 'TimeTrack', id: result?.ID }, { type: 'TimeTrack', id: 'LIST' }]
+          : [{ type: 'TimeTrack', id: 'LIST' }],
+    }),
+    deleteProject: builder.mutation<{ id: number }, number>({
+      query(id) {
+        return {
+          url: `${id}`,
+          method: 'DELETE',
+        };
+      },
+      invalidatesTags: (result) => {
+        return result
+          ? [{ type: 'TimeTrack', id: result?.id }, { type: 'TimeTrack', id: 'LIST' }]
+          : [{ type: 'TimeTrack', id: 'LIST' }];
+      }
     }),
     getTasks: builder.query<ITimeTrackTask[], Partial<IQueryOptions> | void>({
       query: (options) => {
@@ -340,8 +374,12 @@ export const timeTrackingApi = createApi({
     }),
     getFilters: builder.query<IProjectFilter[], void>({
       query: () => '/projects/filters',
-      transformResponse: (response: IFilterDeadlineRequestResult) => response.queries.filters || [],
+      transformResponse: (response: IProjectFilterRequestResult) => response.queries.filters || [],
     }),
+    getStatistics: builder.query<IProjectStatistics[], number>({
+      query: (id) => `/projects/statistics/${id}`,
+      transformResponse: (response: IProjectStatisticsRequestResult) => response.queries.statistics || [],
+    })
   })
 });
 
@@ -354,6 +392,7 @@ export const {
   useGetTimeTrackingByDateQuery,
   useGetTimeTrackingInProgressQuery,
   useGetProjectsQuery,
+  useAddProjectMutation,
   useGetTasksQuery,
   useGetTaskQuery,
   useAddTimeTrackTaskMutation,
@@ -363,5 +402,6 @@ export const {
   useDeleteFavoriteTaskMutation,
   useAddFavoriteProjectMutation,
   useDeleteFavoriteProjectMutation,
-  useGetFiltersQuery
+  useGetFiltersQuery,
+  useGetStatisticsQuery
 } = timeTrackingApi;

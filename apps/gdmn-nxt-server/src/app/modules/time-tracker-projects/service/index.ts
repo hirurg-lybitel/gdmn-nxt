@@ -2,6 +2,8 @@ import { InternalServerErrorException, ITimeTrackProject, ITimeTrackTask, NotFou
 import { timeTrackerProjectsRepository } from '../repository';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import { favoriteTimeTrackerProjectsRepository } from '../repository/favoriteTimeTrackerProjects';
+import { timeTrackingService } from '@gdmn-nxt/modules/time-tracker/service';
+import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
 const findAll = async (
   sessionID: string,
@@ -141,9 +143,86 @@ const getFilters = async (
   }
 };
 
+const statistics = async (
+  sessionID: string,
+  projectId: number
+) => {
+  try {
+    const tasks = await timeTrackerTasksService.findAll(sessionID, { projectId });
+
+    const responce = Promise.all(tasks.map(async task => ({ ...task, timeTrack: await timeTrackingService.findAll(sessionID, { taskId: task.ID }) })));
+    return responce;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const create = async (
+  sessionID: string,
+  body: ITimeTrackProject
+) => {
+  try {
+    return await timeTrackerProjectsRepository.save(sessionID, body);
+  } catch (error) {
+    throw error;
+  }
+};
+
+const update = async (
+  sessionID: string,
+  id: number,
+  body: Partial<ITimeTrackProject>
+) => {
+  try {
+    const timeTrack = await timeTrackerProjectsRepository.findOne(sessionID, { id });
+    if (!timeTrack) {
+      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
+    }
+    const updatedTimeTrack =
+        await timeTrackerProjectsRepository.update(
+          sessionID,
+          id,
+          body,
+        );
+    if (!updatedTimeTrack) {
+      throw InternalServerErrorException(ERROR_MESSAGES.UPDATE_FAILED);
+    }
+
+    return await timeTrackerProjectsRepository.findOne(sessionID, { id });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const remove = async (
+  sessionID: string,
+  id: number
+) => {
+  try {
+    const timeTrack = await timeTrackerProjectsRepository.findOne(sessionID, { id });
+    if (!timeTrack) {
+      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
+    }
+    const isDeleted = await timeTrackerProjectsRepository.remove(sessionID, id);
+
+    if (!isDeleted) {
+      throw InternalServerErrorException(ERROR_MESSAGES.DELETE_FAILED);
+    }
+
+    return isDeleted;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 export const timeTrackerProjectsService = {
   findAll,
   addToFavorites,
   removeFromFavorites,
-  getFilters
+  getFilters,
+  statistics,
+  create,
+  update,
+  remove
 };

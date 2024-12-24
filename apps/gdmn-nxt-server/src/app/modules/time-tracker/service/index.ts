@@ -39,9 +39,11 @@ const findAll = async (
   filter?: { [key: string]: any }
 ) => {
   const userId = filter.userId;
+  const taskId = filter?.taskId;
   try {
     return await timeTrackingRepository.find(sessionID, {
       ...(userId && { 'USR$USERKEY': userId }),
+      ...(taskId && { 'USR$TASK': taskId })
     });
   } catch (error) {
     throw error;

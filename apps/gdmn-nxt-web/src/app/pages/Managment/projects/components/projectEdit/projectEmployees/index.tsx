@@ -13,12 +13,12 @@ import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-
 import ContactsChoose from '@gdmn-nxt/components/Contacts/contacts-choose';
 
 export interface ProjectEmployeesProps {
-  employees: IContactPerson[],
+  employees?: IContactPerson[],
   onChange: (empls: IContactPerson[]) => void
 }
 
 export function ProjectEmployees({
-  employees,
+  employees = [],
   onChange
 }: ProjectEmployeesProps) {
   const theme = useTheme();

@@ -510,12 +510,23 @@ export interface ITimeTrackGroup {
   items: ITimeTrack[];
 }
 
+export interface IProjectNote extends IWithID {
+  message: string
+}
+
+export interface IProjectStatistics extends ITimeTrackTask {
+  timeTrack: ITimeTrack[]
+}
+
 export interface ITimeTrackProject extends IWithID {
   name: string;
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
   isFavorite?: boolean,
-  employees?: IContactPerson[]
+  employees?: IContactPerson[],
+  notes?: IProjectNote[],
+  isPrivate?: boolean,
+  isDone?: boolean
 }
 
 export interface ITimeTrackTask extends IWithID {

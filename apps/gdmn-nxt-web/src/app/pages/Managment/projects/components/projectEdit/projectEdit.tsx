@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import styles from './projectEdit.module.less';
-import { IContactWithID, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { IContactWithID, IProjectNote, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -9,8 +9,11 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { DetailPanelContent } from './detailPanelContent/detailPanelContent';
+import { DetailPanelContent } from '../detailPanelContent/detailPanelContent';
 import { ProjectEmployees } from './projectEmployees';
+import ProjectNotes from './projectNotes/projectNotes';
+import ProjectStatistics from './projectStatistics/projectStatistics';
+
 const useStyles = makeStyles((theme: Theme) => ({
   button: {
     width: '120px',
@@ -33,16 +36,23 @@ export function ProjectEdit(props: ProjectEditProps) {
     ID: project?.ID || -1,
     name: project?.name || '',
     isFavorite: project?.isFavorite || false,
-    customer: project?.customer,
+    customer: project?.customer || {
+      ID: 339618017,
+      NAME: 'name'
+    },
     tasks: project?.tasks || [],
-    employees: []
+    employees: project?.employees || [],
+    notes: project?.notes || [],
+    isPrivate: project?.isPrivate || false,
+    isDone: project?.isDone || false,
   };
 
   const formik = useFormik<ITimeTrackProject>({
     enableReinitialize: true,
     validateOnBlur: false,
     initialValues: {
-      ...initValue
+      ...initValue,
+      ...project
     },
     validationSchema: yup.object().shape({
       name: yup.string().required('')
@@ -54,6 +64,7 @@ export function ProjectEdit(props: ProjectEditProps) {
   });
 
   useEffect(() => {
+    setTabIndex('1');
     if (!open) formik.resetForm();
   }, [open]);
 
@@ -64,7 +75,6 @@ export function ProjectEdit(props: ProjectEditProps) {
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
   const [tabIndex, setTabIndex] = useState<string>('1');
-  const [privateProject, setPrivateProject] = useState(false);
 
   const [lastId, setLastId] = useState(1);
 
@@ -100,7 +110,7 @@ export function ProjectEdit(props: ProjectEditProps) {
       width="calc(100% - var(--menu-width))"
     >
       <DialogTitle>
-        {project ? `Редактирование: ${project.name}` : 'Создание проекта'}
+        {project ? `Редактирование проекта: ${project.name}` : 'Создание проекта'}
       </DialogTitle>
       <DialogContent dividers>
         <FormikProvider value={formik}>
@@ -130,8 +140,8 @@ export function ProjectEdit(props: ProjectEditProps) {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={privateProject}
-                      onChange={(e) => setPrivateProject(e.target.checked)}
+                      checked={formik.values.isPrivate}
+                      onChange={(e) => formik.setFieldValue('isPrivate', e.target.checked)}
                     />
                   }
                   label="Приватный"
@@ -160,6 +170,7 @@ export function ProjectEdit(props: ProjectEditProps) {
                     <Tab
                       className={styles.tabHeader}
                       label="Статистика"
+                      disabled={!formik.values.ID || formik.values.ID === -1}
                       value="3"
                     />
                     <Tab
@@ -180,13 +191,13 @@ export function ProjectEdit(props: ProjectEditProps) {
                     </div>
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
-                    <ProjectEmployees employees={formik.values.employees || []} onChange={(empls) => formik.setFieldValue('employees', empls)} />
+                    <ProjectEmployees employees={formik.values.employees} onChange={(empls) => formik.setFieldValue('employees', empls)} />
                   </TabPanel>
                   <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''} >
-                    <div>tab3</div>
+                    <ProjectStatistics projectId={formik.values.ID !== -1 ? formik.values.ID : undefined} />
                   </TabPanel>
                   <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''} >
-                    <div>tab4</div>
+                    <ProjectNotes notes={formik.values.notes} onChange={(notes) => formik.setFieldValue('notes', notes)}/>
                   </TabPanel>
                 </TabContext>
               </Stack>

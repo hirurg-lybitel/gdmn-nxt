@@ -16,12 +16,13 @@ router.delete('/time-tracking/:id', timeTrackingController.remove);
 // projects routes
 
 router.get('/time-tracking/projects', timeTrackerProjectsController.findAll);
+router.post('/time-tracking/projects', timeTrackerProjectsController.create);
 
 router.post('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.addToFavorites);
 router.delete('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.removeFromFavorites);
 
 router.get('/time-tracking/projects/filters', timeTrackerProjectsController.getFilters);
-
+router.get('/time-tracking/projects/statistics/:id', timeTrackerProjectsController.statistics);
 // tasks routes
 
 router.get('/time-tracking/tasks', timeTrackerTasksController.findAll);
