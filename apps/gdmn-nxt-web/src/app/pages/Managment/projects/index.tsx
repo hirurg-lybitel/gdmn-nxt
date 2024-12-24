@@ -28,8 +28,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
-import { DetailPanelContent } from './components/DetailPanelContent/DetailPanelContent';
 import ProjectEdit from './components/projectEdit/projectEdit';
+import { DetailPanelContent } from './components/projectEdit/detailPanelContent/detailPanelContent';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -150,7 +150,7 @@ export function Projects(props: IProjectsProps) {
 
   };
 
-  const handleEdit = (project: ITimeTrackProject) => {
+  const handleEdit = (project: ITimeTrackProject) => () => {
     setProject(project);
     setOpenEditForm(true);
   };
@@ -208,36 +208,24 @@ export function Projects(props: IProjectsProps) {
         };
         if (row.tasks) {
           return (
-            <MenuBurger
-              items={({ closeMenu }) => [
-                <Stack
-                  key="edit"
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  onClick={() => {
-                    handleEdit(row);
-                    closeMenu();
-                  }}
-                >
-                  <EditIcon />
-                  <span>Редактировать</span>
-                </Stack>,
-                <Stack
-                  key="edit"
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  onClick={() => {
-                    handleChangeVisible();
-                    closeMenu();
-                  }}
-                >
-                  {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
-                  <span>{true ? 'Отключить' : 'Включить'}</span>
-                </Stack>
-              ]}
-            />
+            <>
+              <IconButton
+                role="menuitem"
+                color="primary"
+                size="small"
+                onClick={handleEdit(row)}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                color={'primary'}
+                style={false ? { color: 'gray' } : {}}
+                size="small"
+                onClick={handleChangeVisible}
+              >
+                {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+              </IconButton>
+            </>
           );
         }
 

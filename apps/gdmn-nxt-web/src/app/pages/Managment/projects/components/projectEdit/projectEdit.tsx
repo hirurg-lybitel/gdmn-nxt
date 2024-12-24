@@ -9,8 +9,8 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { DetailPanelContent } from '../DetailPanelContent/DetailPanelContent';
-import { ProjectEmployees } from '../ProjectEmployees';
+import { DetailPanelContent } from './detailPanelContent/detailPanelContent';
+import { ProjectEmployees } from './projectEmployees';
 const useStyles = makeStyles((theme: Theme) => ({
   button: {
     width: '120px',
