@@ -14,7 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
-import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
+import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -55,6 +55,7 @@ export function Projects(props: IProjectsProps) {
   const [addFavoriteTask] = useAddFavoriteTaskMutation();
   const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
   const [addProject] = useAddProjectMutation();
+  const [updateProject] = useUpdateProjectMutation();
 
   const {
     data: projects = [],
@@ -150,7 +151,8 @@ export function Projects(props: IProjectsProps) {
   const onSubmit = useCallback((project: ITimeTrackProject) => {
     setOpenEditForm(false);
     if (project.ID > 0) {
-      console.log('update');
+      updateProject(project);
+      return;
     }
     addProject(project);
   }, [addProject]);

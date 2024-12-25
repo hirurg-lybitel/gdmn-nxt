@@ -174,17 +174,17 @@ const update = async (
   body: Partial<ITimeTrackProject>
 ) => {
   try {
-    const timeTrack = await timeTrackerProjectsRepository.findOne(sessionID, { id });
-    if (!timeTrack) {
+    const project = await timeTrackerProjectsRepository.findOne(sessionID, { id });
+    if (!project) {
       throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
     }
-    const updatedTimeTrack =
+    const updatedProject =
         await timeTrackerProjectsRepository.update(
           sessionID,
           id,
           body,
         );
-    if (!updatedTimeTrack) {
+    if (!updatedProject) {
       throw InternalServerErrorException(ERROR_MESSAGES.UPDATE_FAILED);
     }
 

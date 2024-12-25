@@ -135,14 +135,14 @@ const update: RequestHandler = async (req, res) => {
   }
 
   try {
-    const updatedTimeTrack = await timeTrackerProjectsService.update(
+    const updatedProject = await timeTrackerProjectsService.update(
       req.sessionID,
       id,
       req.body
     );
 
     const result: IRequestResult = {
-      queries: { timeTracking: [updatedTimeTrack] },
+      queries: { timeTrackerProjects: [updatedProject] },
       _params: [{ id }],
       _schema: {}
     };

@@ -132,18 +132,18 @@ export const timeTrackingApi = createApi({
         body,
       }),
       transformResponse: (response: ITimeTrackingRequestResult) => response.queries?.timeTracking[0],
-      invalidatesTags: [{ type: 'TimeTrack', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Project', id: 'LIST' }],
     }),
     updateProject: builder.mutation<ITimeTrack, Partial<ITimeTrack>>({
       query: ({ ID, ...body }) => ({
-        url: `/${ID}`,
+        url: `/projects/${ID}`,
         method: 'PUT',
         body,
       }),
       invalidatesTags: (result) =>
         result
-          ? [{ type: 'TimeTrack', id: result?.ID }, { type: 'TimeTrack', id: 'LIST' }]
-          : [{ type: 'TimeTrack', id: 'LIST' }],
+          ? [{ type: 'Project', id: result?.ID }, { type: 'Project', id: 'LIST' }]
+          : [{ type: 'Project', id: 'LIST' }],
     }),
     deleteProject: builder.mutation<{ id: number }, number>({
       query(id) {
@@ -393,6 +393,7 @@ export const {
   useGetTimeTrackingInProgressQuery,
   useGetProjectsQuery,
   useAddProjectMutation,
+  useUpdateProjectMutation,
   useGetTasksQuery,
   useGetTaskQuery,
   useAddTimeTrackTaskMutation,

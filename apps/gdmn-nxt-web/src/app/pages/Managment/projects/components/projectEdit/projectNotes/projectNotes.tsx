@@ -1,19 +1,24 @@
 import { IProjectNote } from '@gsbelarus/util-api-types';
-import { Button, Stack, TextField, Typography } from '@mui/material';
+import { Button, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import styles from './projectNotes.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import SendIcon from '@mui/icons-material/Send';
+import { DeleteForever } from '@mui/icons-material';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import { useState } from 'react';
 
 interface IProjectNotesProps {
   notes?: IProjectNote[],
   onChange: (notes: IProjectNote[]) => void
 }
 export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProps) {
+  const [lastId, setLastId] = useState(1);
+
   const initValue: IProjectNote = {
-    ID: -1,
+    ID: lastId,
     message: ''
   };
 
@@ -28,11 +33,17 @@ export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProp
     }),
     onSubmit: (value) => {
       onChange([...notes, ...[formik.values]]);
+      setLastId(lastId + 1);
       formik.resetForm();
     }
   });
 
-  console.log(formik.errors);
+  const handleDelete = (id: number) => () => {
+    console.log(id);
+    console.log(notes);
+    const newNotes = notes.filter(note => Number(note.ID) !== Number(id));
+    onChange(newNotes);
+  };
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -83,6 +94,7 @@ export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProp
                 >
                   <div className={styles.message}>
                     {note.message}
+                    <ItemButtonDelete button onClick={handleDelete(note.ID)}/>
                   </div>
                 </CustomizedCard>
               ))}

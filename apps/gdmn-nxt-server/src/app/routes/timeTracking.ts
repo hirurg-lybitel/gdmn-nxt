@@ -17,6 +17,7 @@ router.delete('/time-tracking/:id', timeTrackingController.remove);
 
 router.get('/time-tracking/projects', timeTrackerProjectsController.findAll);
 router.post('/time-tracking/projects', timeTrackerProjectsController.create);
+router.put('/time-tracking/projects/:id', timeTrackerProjectsController.update);
 
 router.post('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.addToFavorites);
 router.delete('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.removeFromFavorites);
