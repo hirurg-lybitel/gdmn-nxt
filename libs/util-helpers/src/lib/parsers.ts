@@ -15,6 +15,14 @@ export const prepareClause = (clause: object, opt?: { prefix?: string }): { clau
         switch (expression.operator) {
           case 'LIKE':
             return ` UPPER(${prefix}.${f}) ${expression.value} `;
+          case 'LessThanOrEqual':
+            return `${prefix}.${f} ${expression.value}`;
+          case 'LessThan':
+            return `${prefix}.${f} ${expression.value}`;
+          case 'MoreThanOrEqual':
+            return `${prefix}.${f} ${expression.value}`;
+          case 'MoreThan':
+            return `${prefix}.${f} ${expression.value}`;
         }
       }
 

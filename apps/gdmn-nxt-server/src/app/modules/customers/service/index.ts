@@ -1,10 +1,11 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, ICustomer, IFavoriteContact, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { FindHandler, ICustomer, IFavoriteContact, ITimeTrackTask, LessThanOrEqual } from '@gsbelarus/util-api-types';
 import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import task from '@gdmn-nxt/controllers/kanban/task';
 import { contractsService } from '@gdmn-nxt/modules/contracts/service';
 import { debtsRepository } from '../repository/debts';
+import dayjs from '@gdmn-nxt/dayjs';
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
@@ -130,7 +131,15 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     const debts = new Map<number, number>();
     const withDebtBool = (withDebt as string)?.toLowerCase() === 'true';
     if (withDebtBool) {
-      const debtRecords = await debtsRepository.find(sessionID);
+      const debtRecords = await debtsRepository.find(
+        sessionID,
+        {
+          entrydate: LessThanOrEqual(
+            dayjs()
+              .subtract(1, 'month')
+              .endOf('month')
+              .format('DD-MM-YYYY')),
+        });
 
       debtRecords.forEach(({ customerId, amount }) => {
         if (debts.has(customerId)) {
