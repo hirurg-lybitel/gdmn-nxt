@@ -13,7 +13,7 @@ const find: FindHandler<{ customerId: number, amount: number }> = async (session
         SUM(z.debitncu - z.creditncu) as saldo
       FROM ac_entry z
       WHERE z.ACCOUNTKEY = 366200
-      ${clauseString}
+      ${clauseString.length > 0 ? ` AND ${clauseString}` : ''}
       GROUP BY 1
       HAVING SUM(z.debitncu - z.creditncu) > 0
       `);
