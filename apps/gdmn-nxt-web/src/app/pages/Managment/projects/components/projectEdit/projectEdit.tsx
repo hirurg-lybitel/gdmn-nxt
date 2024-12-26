@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './projectEdit.module.less';
-import { IContactWithID, IProjectNote, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { IContactWithID, IProjectNote, IProjectType, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -13,6 +13,9 @@ import { DetailPanelContent } from '../detailPanelContent/detailPanelContent';
 import { ProjectEmployees } from './projectEmployees';
 import ProjectNotes from './projectNotes/projectNotes';
 import ProjectStatistics from './projectStatistics/projectStatistics';
+import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
+import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 
 const useStyles = makeStyles((theme: Theme) => ({
   button: {
@@ -23,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 export interface ProjectEditProps {
   open: boolean;
   project?: ITimeTrackProject;
-  onSubmit: (project: ITimeTrackProject) => void;
+  onSubmit: (project: ITimeTrackProject, isDelete: boolean) => void;
   onCancelClick: () => void;
 };
 
@@ -36,10 +39,6 @@ export function ProjectEdit(props: ProjectEditProps) {
     ID: project?.ID || -1,
     name: project?.name || '',
     isFavorite: project?.isFavorite || false,
-    customer: project?.customer || {
-      ID: 339618017,
-      NAME: 'name'
-    },
     tasks: project?.tasks || [],
     employees: project?.employees || [],
     notes: project?.notes || [],
@@ -57,9 +56,10 @@ export function ProjectEdit(props: ProjectEditProps) {
     validationSchema: yup.object().shape({
       name: yup.string().required('')
         .max(30, 'Слишком длинное наименование'),
+      projectType: yup.object().required('')
     }),
     onSubmit: (value) => {
-      onSubmit(formik.values);
+      onSubmit(formik.values, false);
     }
   });
 
@@ -67,10 +67,6 @@ export function ProjectEdit(props: ProjectEditProps) {
     setTabIndex('1');
     if (!open) formik.resetForm();
   }, [open]);
-
-  const onCancel = () => {
-    onCancelClick();
-  };
 
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
@@ -100,6 +96,12 @@ export function ProjectEdit(props: ProjectEditProps) {
     newTasks[index] = { ...newTasks[index], isFavorite: favorite };
     formik.setFieldValue('tasks', newTasks);
   };
+
+  const handleDelete = () => {
+    onSubmit(formik.values, true);
+  };
+
+  const inUse = useMemo(() => project?.tasks?.findIndex(task => task.inUse) !== -1, [project?.tasks]);
 
   return (
     <CustomizedDialog
@@ -145,6 +147,18 @@ export function ProjectEdit(props: ProjectEditProps) {
                     />
                   }
                   label="Приватный"
+                />
+                <ProjectTypeSelect
+                  withCreate
+                  withEdit
+                  required
+                  value={formik.values.projectType || null}
+                  onChange={(value) => formik.setFieldValue('projectType', value as IProjectType)}
+                />
+                <CustomerSelect
+                  required
+                  value={formik.values.customer}
+                  onChange={(value) => formik.setFieldValue('customer', value)}
                 />
               </Stack>
               <Divider orientation="vertical" flexItem />
@@ -206,10 +220,16 @@ export function ProjectEdit(props: ProjectEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
+        <ItemButtonDelete
+          disabled={inUse}
+          title={'Удаление проекта'}
+          button
+          onClick={handleDelete}
+        />
         <Box flex={1}/>
         <ButtonWithConfirmation
           className={classes.button}
-          onClick={onCancel}
+          onClick={handleOnClose}
           variant="outlined"
           color="primary"
           title="Внимание"

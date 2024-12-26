@@ -207,7 +207,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const [ListboxComponent] = useAutocompleteVirtualization();
 
   const {
-    data: projects = [],
+    data,
     isLoading: projectsIsLoading,
     isFetching: projectsIsFetching
   } = useGetProjectsQuery({
@@ -217,6 +217,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   }, {
     skip: multiple || !value || !withTasks
   });
+
+  const projects = data?.projects || [];
 
   useEffect(() => {
     if (multiple) return;

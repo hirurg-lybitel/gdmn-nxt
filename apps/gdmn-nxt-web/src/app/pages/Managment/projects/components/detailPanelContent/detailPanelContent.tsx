@@ -249,6 +249,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
               role="menuitem"
               color="error"
               size="small"
+              disabled={row.inUse}
               onClick={handleConfirmDelete}
             >
               <DeleteForeverIcon fontSize="small" />

@@ -12,11 +12,28 @@ const findAll: RequestHandler = async (req, res) => {
       {
         userId,
         ...req.query
-      }
+      },
     );
 
+
+    let fromRecord = 0;
+    let toRecord: number;
+
+    const { pageSize, pageNo } = req.query;
+
+    if (pageNo && pageSize) {
+      fromRecord = Number(pageNo) * Number(pageSize);
+      toRecord = fromRecord + Number(pageSize);
+    };
+
+    const rowCount = response.length;
+    const contactsWithPagination = response.slice(fromRecord, toRecord);
+
     const result: IRequestResult = {
-      queries: { timeTrackerProjects: [...response] },
+      queries: {
+        projects: contactsWithPagination,
+        rowCount
+      },
       _schema: {}
     };
 

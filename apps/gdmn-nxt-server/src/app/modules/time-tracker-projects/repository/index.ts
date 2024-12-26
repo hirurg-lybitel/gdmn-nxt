@@ -43,9 +43,13 @@ const find: FindHandler<ITimeTrackProject> = async (
         z.USR$CUSTOMER CUSTOMER_ID,
         con.NAME CUSTOMER_NAME,
         z.USR$PRIVATE,
-        z.USR$DONE
+        z.USR$DONE,
+        type.ID PROJECT_TYPE_ID,
+        type.USR$PARENT PROJECT_TYPE_PARENT,
+        type.USR$NAME PROJECT_TYPE_NAME
       FROM USR$CRM_TIMETRACKER_PROJECTS z
       JOIN GD_CONTACT con ON con.ID = z.USR$CUSTOMER
+      LEFT JOIN USR$CRM_TT_PROJECT_TYPE type ON type.ID = z.USR$PROJECT_TYPE
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
       ${order ? ` ORDER BY z.${Object.keys(order)[0]} ${Object.values(order)[0]}` : ''}`,
       { ...whereClause });
@@ -63,7 +67,12 @@ const find: FindHandler<ITimeTrackProject> = async (
       isPrivate: r['USR$PRIVATE'] === 1,
       isDone: r['USR$DONE'] === 1,
       employees: employees[r['ID']] as IContactPerson[],
-      notes: notes[r['ID']]
+      notes: notes[r['ID']],
+      projectType: {
+        ID: r['PROJECT_TYPE_ID'],
+        name: r['PROJECT_TYPE_NAME'],
+        parent: r['PROJECT_TYPE_PARENT']
+      }
     }));
 
     return projects;
@@ -106,6 +115,7 @@ const update: UpdateHandler<ITimeTrackProject> = async (
       tasks = project.tasks,
       employees = project.employees,
       notes = project.notes,
+      projectType = project.projectType
     } = metadata;
 
 
@@ -123,7 +133,7 @@ const update: UpdateHandler<ITimeTrackProject> = async (
       }));
     };
 
-    if (JSON.stringify(employees) !== JSON.stringify(oldEmployees)) {
+    if (JSON.stringify(employees) !== JSON.stringify(project.employees)) {
       // delete old employees
       oldEmployees && await Promise.all(oldEmployees?.map(async empl => {
         return await projectEmployeesRepository.remove(sessionID, empl.ID);
@@ -134,25 +144,29 @@ const update: UpdateHandler<ITimeTrackProject> = async (
       }));
     };
 
-    const oldTasks = await timeTrackerTasksService.findAll(sessionID, { projectId: id });
+    const oldTasks = (await timeTrackerTasksService.findAll(sessionID, { projectId: id })).map(task => ({ ...task, project: undefined }));
 
-    await Promise.all(oldTasks?.map(async oldTask => {
-      const taskForDelete = tasks?.find(task => oldTask.ID === task.ID);
-      if (!taskForDelete) {
-        timeTrackerTasksService.remove(sessionID, oldTask.ID);
-      }
-    }));
+    if (JSON.stringify(tasks) !== JSON.stringify(oldTasks)) {
+      // find and delete tasks
+      await Promise.all(oldTasks?.map(async oldTask => {
+        const taskForDelete = tasks?.find(task => oldTask.ID === task.ID);
+        if (!taskForDelete) {
+          timeTrackerTasksService.remove(sessionID, oldTask.ID);
+        }
+      }));
 
-    tasks?.map(async task => {
-      const oldTask = oldTasks.find(({ ID }) => ID === task.ID);
-      if (!oldTask) {
-        return await timeTrackerTasksService.create(sessionID, { ...task, project: project });
-      };
+      // check all tasks and update or add
+      tasks?.map(async task => {
+        const oldTask = oldTasks.find(({ ID }) => ID === task.ID);
+        if (!oldTask) {
+          return await timeTrackerTasksService.create(sessionID, { ...task, project: project });
+        };
 
-      if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
-        return await timeTrackerTasksService.update(sessionID, task.ID, { ...task, project: project });
-      };
-    });
+        if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
+          return await timeTrackerTasksService.update(sessionID, task.ID, { ...task, project: project });
+        };
+      });
+    }
 
     const updatedPoject = await fetchAsSingletonObject<ITimeTrackProject>(
       `UPDATE USR$CRM_TIMETRACKER_PROJECTS z
@@ -160,7 +174,8 @@ const update: UpdateHandler<ITimeTrackProject> = async (
         z.USR$NAME = :name,
         z.USR$DONE = :isDone,
         z.USR$PRIVATE = :isPrivate,
-        z.USR$CUSTOMER = :customer
+        z.USR$CUSTOMER = :customer,
+        z.USR$PROJECT_TYPE = :projectType
       WHERE
         ID = :id
       RETURNING ID`,
@@ -170,6 +185,7 @@ const update: UpdateHandler<ITimeTrackProject> = async (
         isDone: isDone,
         isPrivate: isPrivate,
         customer: customer.ID,
+        projectType: projectType.ID
       }
     );
 
@@ -201,18 +217,20 @@ const save: SaveHandler<ITimeTrackProject> = async (
     tasks,
     employees,
     notes,
+    projectType
   } = metadata;
 
   try {
     const newProject = await fetchAsSingletonObject<ITimeTrackProject>(
-      `INSERT INTO USR$CRM_TIMETRACKER_PROJECTS(USR$NAME, USR$CUSTOMER, USR$DONE, USR$PRIVATE)
-      VALUES(:name, :customer, :isDone, :isPrivate)
+      `INSERT INTO USR$CRM_TIMETRACKER_PROJECTS(USR$NAME, USR$CUSTOMER, USR$DONE, USR$PRIVATE,USR$PROJECT_TYPE)
+      VALUES(:name, :customer, :isDone, :isPrivate, :projectType)
       RETURNING ID`,
       {
         name,
         customer: customer.ID,
         isDone,
-        isPrivate
+        isPrivate,
+        projectType: projectType.ID,
       }
     );
 
@@ -224,14 +242,17 @@ const save: SaveHandler<ITimeTrackProject> = async (
       return projectEmployeesRepository.save(sessionID, empl.ID, newProject.ID);
     }));
 
+    console.log(projectType);
+
     const newNotes = notes && await Promise.all(notes.map(async note => {
       return await fetchAsSingletonObject<IProjectNote>(
-        `INSERT INTO USR$CRM_TT_PROJECTS_NOTES(USR$PROJECT, USR$NOTE)
-        VALUES(:project, :note)
+        `INSERT INTO USR$CRM_TT_PROJECTS_NOTES(USR$PROJECT, USR$NOTE, USR$CUSTOMER)
+        VALUES(:project, :note, :customer)
         RETURNING ID`,
         {
           project: newProject.ID,
-          note: note.message
+          note: note.message,
+          customer: customer
         }
       );
     }));
@@ -256,8 +277,24 @@ const remove: RemoveHandler = async (
   } = await startTransaction(sessionID);
 
   try {
+    const notes: IProjectNote[] = ((await projectNotesRepository.find(sessionID))[`${id}`]);
+    const employees: IProjectEmployee[] = ((await projectEmployeesRepository.find(sessionID, true))[`${id}`]) as IProjectEmployee[];
+    const tasks = (await timeTrackerTasksService.findAll(sessionID, { projectId: id }));
+
+    notes && await Promise.all(notes?.map(async note => {
+      return await projectNotesRepository.remove(sessionID, note.ID);
+    }));
+
+    employees && await Promise.all(employees?.map(async empl => {
+      return await projectEmployeesRepository.remove(sessionID, empl.ID);
+    }));
+
+    tasks && await Promise.all(tasks?.map(async task => {
+      return await timeTrackerTasksService.remove(sessionID, task.ID);
+    }));
+
     const deletedEntity = await fetchAsSingletonObject<{ID: number}>(
-      `DELETE FROM USR$CRM_TIMETRACKER WHERE ID = :id
+      `DELETE FROM USR$CRM_TIMETRACKER_PROJECTS WHERE ID = :id
       RETURNING ID`,
       { id }
     );

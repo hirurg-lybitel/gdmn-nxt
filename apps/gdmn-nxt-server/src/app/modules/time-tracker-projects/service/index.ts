@@ -9,14 +9,25 @@ const findAll = async (
   sessionID: string,
   filter?: { [key: string]: any }
 ) => {
+  /** Sorting */
+  const sortField = filter?.field ?? 'NAME';
+  const sortMode = filter?.sort ?? 'ASC';
+  /** Filtering */
   const userId = filter.userId;
   const customerId = filter.customerId;
   const groupByFavorite = filter.groupByFavorite === 'true';
+  const projectType = filter.projectType;
+  const name = filter.name;
+  const type = filter.type;
+  const customer = filter.customer;
+
   try {
     const projects = await timeTrackerProjectsRepository.find(
       sessionID,
       {
         ...(customerId && { 'USR$CUSTOMER': customerId }),
+        ...(projectType && { 'USR$PROJECT_TYPE': projectType }),
+        ...(customer && { 'USR$CUSTOMER': customer })
       });
 
     const favorites = await favoriteTimeTrackerProjectsRepository.find(sessionID, { 'USR$USER': userId });
@@ -35,42 +46,86 @@ const findAll = async (
         };
       });
 
-    const response: ITimeTrackProject[] = [];
+    const sortedProjects = projects
+      .reduce<ITimeTrackProject[]>((filteredArray, project) => {
+        let checkConditions = true;
 
-    if (groupByFavorite) {
-      /** Split projects into favorite and non-favorite */
-      projects.forEach((project) => {
-        const projectTasks = tasks.get(project.ID) ?? [];
+        let newProject: ITimeTrackProject;
 
-        const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
-        const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
+        const checkType = () => {
+          if (type === '1') {
+            return !project.isDone;
+          }
+          if (type === '2') {
+            return project.isDone;
+          }
+          return true;
+        };
 
-        if (favoriteTasks.length > 0) {
-          response.push({
-            ...project,
-            isFavorite: true,
-            tasks: favoriteTasks
+        if (type) {
+          checkConditions = checkConditions && checkType();
+        }
+
+        if (groupByFavorite) {
+          /** Split projects into favorite and non-favorite */
+          const projectTasks = tasks.get(project.ID) ?? [];
+
+          const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
+          const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
+
+          if (favoriteTasks.length > 0) {
+            newProject = {
+              ...project,
+              isFavorite: true,
+              tasks: favoriteTasks
+            };
+          }
+
+          if (nonFavoriteTasks.length > 0) {
+            newProject = {
+              ...project,
+              isFavorite: false,
+              tasks: nonFavoriteTasks
+            };
+          }
+          ;
+        } else {
+          const projectTasks = tasks.get(project.ID) ?? [];
+          for (const task of projectTasks) {
+            if (task.isFavorite) newProject = { ...project, isFavorite: true, tasks: projectTasks };
+          }
+          if (!newProject) {
+            newProject = { ...project, isFavorite: false, tasks: projectTasks };
+          }
+        }
+
+        if (name) {
+          const lowerName = String(name).toLowerCase();
+          checkConditions = checkConditions && (
+            newProject.name?.toLowerCase().includes(lowerName) ||
+            newProject.tasks.findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1
+          );
+        }
+
+        if (checkConditions) {
+          filteredArray.push({
+            ...newProject
           });
         }
+        return filteredArray;
+      }, [])
+      .sort((a, b) => {
+        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
+        if (a.isFavorite === b.isFavorite) {
+          return String(sortMode).toUpperCase() === 'ASC'
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        }
+        return a.isFavorite ? -1 : 1;
+      });
 
-        if (nonFavoriteTasks.length > 0) {
-          response.push({
-            ...project,
-            isFavorite: false,
-            tasks: nonFavoriteTasks
-          });
-        }
-      });
-      return response.sort((a, b) => (a.isFavorite ? -1 : 1));
-    } else {
-      return projects.map((project) => {
-        const projectTasks = tasks.get(project.ID) ?? [];
-        for (const task of projectTasks) {
-          if (task.isFavorite) return { ...project, isFavorite: true, tasks: projectTasks };
-        }
-        return { ...project, isFavorite: false, tasks: projectTasks };
-      });
-    }
+    return sortedProjects;
   } catch (error) {
     throw error;
   }
@@ -199,8 +254,8 @@ const remove = async (
   id: number
 ) => {
   try {
-    const timeTrack = await timeTrackerProjectsRepository.findOne(sessionID, { id });
-    if (!timeTrack) {
+    const project = await timeTrackerProjectsRepository.findOne(sessionID, { id });
+    if (!project) {
       throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
     }
     const isDeleted = await timeTrackerProjectsRepository.remove(sessionID, id);

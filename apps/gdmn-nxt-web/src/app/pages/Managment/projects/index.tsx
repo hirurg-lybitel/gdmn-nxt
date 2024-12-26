@@ -3,7 +3,7 @@ import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { ChangeEvent, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { IFilteringData, IPaginationData, IProjectFilter, ISortingData, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { IFilteringData, IPaginationData, IProjectFilter, IProjectType, ISortingData, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import { DataGridProProps, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridGroupNode, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowParams, GridSortModel, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -14,7 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
-import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
+import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useDeleteProjectMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useGetProjectTypesQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -30,6 +30,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import ProjectEdit from './components/projectEdit/projectEdit';
 import { DetailPanelContent } from './components/detailPanelContent/detailPanelContent';
+import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -44,10 +45,10 @@ export function Projects(props: IProjectsProps) {
   const filterEntityName = 'projects';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const { data: projectTypeFilters = [] } = useGetFiltersQuery();
-  const typeDefault = projectTypeFilters?.find(f => f.CODE === 4);
+  const typeDefault = projectTypeFilters?.find(f => f.CODE === 0);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
-  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, typeDefault ? { type: [typeDefault] } : null);
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, typeDefault ? { type: typeDefault.CODE } : null);
   const apiRef = useGridApiRef();
   const [updateTask] = useUpdateTimeTrackTaskMutation();
   const [deleteTask] = useDeleteTimeTrackTaskMutation();
@@ -56,25 +57,21 @@ export function Projects(props: IProjectsProps) {
   const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
   const [addProject] = useAddProjectMutation();
   const [updateProject] = useUpdateProjectMutation();
+  const [deleteProject] = useDeleteProjectMutation();
 
-  const {
-    data: projects = [],
-    refetch,
-    isFetching: projectsIsFetching,
-    isLoading: projectsIsLoading,
-  } = useGetProjectsQuery(
-    // {
-    //   pagination: paginationData,
-    //   ...(filterData && { filter: filterData }),
-    //   ...(sortingData ? { sort: sortingData } : {})
-    // }
-  );
+  const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
+
+  useEffect(() => {
+    if (projectTypes.length === 0) return;
+    setProjectType(projectTypes[0]);
+  }, [projectTypesIsLoading]);
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
     pageSize: 20,
   });
   const [sortingData, setSortingData] = useState<ISortingData | null>();
+  const [projectType, setProjectType] = useState<IProjectType | null>(null);
 
   const rowPerPage = 20;
   const [pageOptions, setPageOptions] = useState<number[]>([
@@ -83,6 +80,25 @@ export function Projects(props: IProjectsProps) {
     rowPerPage * 5,
     rowPerPage * 10
   ]);
+
+  const {
+    data,
+    refetch,
+    isFetching: projectsIsFetching,
+    isLoading: projectsIsLoading,
+  } = useGetProjectsQuery(
+    {
+      pagination: paginationData,
+      ...(filterData && { filter: filterData }),
+      ...(sortingData ? { sort: sortingData } : {}),
+      ...({ projectType: projectType?.ID })
+    },
+    {
+      skip: !projectType
+    }
+  );
+
+  const projects = data?.projects || [];
 
   useEffect(() => {
     setPageOptions([
@@ -97,7 +113,7 @@ export function Projects(props: IProjectsProps) {
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
-  }, []);
+  }, [dispatch]);
 
   const handleSortModelChange = useCallback((sortModel: GridSortModel) => {
     setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null);
@@ -112,13 +128,13 @@ export function Projects(props: IProjectsProps) {
       ...newObject,
       ...(value !== '' ? { name: [value] } : {})
     });
-  }, []);
+  }, [filterData, handleFilteringDataChange]);
 
   const cancelSearch = useCallback(() => {
     const newObject = { ...filterData };
     delete newObject.name;
     handleFilteringDataChange(newObject);
-  }, []);
+  }, [filterData, handleFilteringDataChange]);
 
   const filterHandlers = {
     filterClick: useCallback(() => {
@@ -129,10 +145,8 @@ export function Projects(props: IProjectsProps) {
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
       dispatch(clearFilterData({ filterEntityName, saveFields: ['type'] }));
+      saveFilters({ ...filterData, type: typeDefault?.CODE });
     }, [dispatch]),
-    filterDeadlineChange: (e: SyntheticEvent<Element, Event>, value: IProjectFilter) => {
-      saveFilters({ ...filterData, deadline: [value] });
-    }
   };
 
   const memoFilter = useMemo(() =>
@@ -148,14 +162,19 @@ export function Projects(props: IProjectsProps) {
 
   const [openEditForm, setOpenEditForm] = useState(false);
   const [project, setProject] = useState<ITimeTrackProject>();
-  const onSubmit = useCallback((project: ITimeTrackProject) => {
+
+  const onSubmit = useCallback((project: ITimeTrackProject, isDelete: boolean) => {
     setOpenEditForm(false);
+    if (isDelete) {
+      deleteProject(project.ID);
+      return;
+    }
     if (project.ID > 0) {
       updateProject(project);
       return;
     }
     addProject(project);
-  }, [addProject]);
+  }, [addProject, deleteProject, updateProject]);
 
   const handleEdit = (project: ITimeTrackProject) => () => {
     setProject(project);
@@ -185,14 +204,15 @@ export function Projects(props: IProjectsProps) {
       ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
       width: 70,
       renderCell: ({ formattedValue, row }) => {
+        const disabled = row.tasks?.length === 0 || !row.tasks;
         return (
-          <>
+          <div style={{ display: 'flex', alignItems: 'center', pointerEvents: disabled ? 'none' : 'all' }}>
             {row.isFavorite ? <StarIcon style={{ color: '#faaf00' }} /> : <StarBorderIcon />}
             <div style={{ minWidth: '5px' }} />
-            <IconButton size="small">
+            <IconButton disabled={disabled} size="small">
               <ExpandMoreIcon style={{ transition: '0.1s', transform: formattedValue ? 'rotate(-90deg)' : 'none' }}/>
             </IconButton>
-          </>
+          </div>
         );
       },
       align: 'center',
@@ -206,54 +226,32 @@ export function Projects(props: IProjectsProps) {
       }
     },
     {
-      field: 'actions',
+      field: 'isDone',
       type: 'actions',
       resizable: false,
       renderCell: ({ value, row }: GridRenderCellParams) => {
         const handleChangeVisible = () => {
-          // updateWorkProject({ ...row, STATUS: value === 1 ? 0 : 1 });
+          updateProject({ ...row, isDone: !value });
         };
-        if (row.tasks) {
-          return (
-            <>
-              <IconButton
-                role="menuitem"
-                color="primary"
-                size="small"
-                onClick={handleEdit(row)}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                color={'primary'}
-                style={false ? { color: 'gray' } : {}}
-                size="small"
-                onClick={handleChangeVisible}
-              >
-                {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
-              </IconButton>
-            </>
-          );
-        }
-
         return (
-          <div>
+          <>
             <IconButton
-              color={'primary'}
+              role="menuitem"
+              color="primary"
               size="small"
-              onClick={() => {}}
+              onClick={handleEdit(row)}
             >
-              <EditIcon/>
+              <EditIcon fontSize="small" />
             </IconButton>
             <IconButton
               color={'primary'}
-              style={true ? { color: 'gray' } : {}}
+              style={value ? { color: 'gray' } : {}}
               size="small"
               onClick={handleChangeVisible}
             >
-              {true ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+              {value ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
             </IconButton>
-          </div>
+          </>
         );
       }
     }
@@ -285,6 +283,8 @@ export function Projects(props: IProjectsProps) {
       changeFavorite={changeTaskFvorite}
     />
   ), [changeTaskFvorite, taskSubmit]);
+
+  console.log(filterData);
 
   return (
     <>
@@ -320,7 +320,7 @@ export function Projects(props: IProjectsProps) {
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton
                   hint="Обновить данные"
-                  loading={projectsIsFetching}
+                  loading={projectsIsFetching || projectTypesIsFetching}
                   onClick={refreshClick}
                 />
               </Box>
@@ -328,37 +328,49 @@ export function Projects(props: IProjectsProps) {
                 <CustomFilterButton
                   onClick={filterHandlers.filterClick}
                   disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
-                  hasFilters={Object.keys(filterData || {}).filter(f => f !== 'type').length > 0}
+                  hasFilters={Object.keys(filterData || {}).filter(f => f !== 'type').length > 0 || filterData?.type !== typeDefault?.CODE}
                 />
               </Box>
             </Stack>
           }
         />
         <Divider />
-        <CardContent style={{ padding: 0 }}>
-          <StyledGrid
-            rows={projects}
-            rowCount={projects?.length ?? 0}
-            columns={columns}
-            loading={projectsIsFetching}
-            pagination
-            paginationMode="server"
-            pageSizeOptions={pageOptions}
-            onPaginationModelChange={(data: {page: number, pageSize: number}) => {
-              setPaginationData({
-                ...paginationData,
-                pageSize: data.pageSize,
-                pageNo: data.page
-              });
-            }}
-            apiRef={apiRef}
-            paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-            sortingMode="server"
-            onSortModelChange={handleSortModelChange}
-            rowThreshold={0}
-            getDetailPanelHeight={() => 'auto'}
-            getDetailPanelContent={getDetailPanelContent}
-          />
+        <CardContent style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '20px 20px' }}>
+            <ProjectTypeSelect
+              withCreate
+              withEdit
+              disableClearable
+              value={projectType}
+              onChange={(value) => setProjectType(value as IProjectType)}
+            />
+          </div>
+          <Divider/>
+          <div style={{ flex: '1' }}>
+            <StyledGrid
+              rows={projects}
+              rowCount={data?.count ?? 0}
+              columns={columns}
+              loading={projectsIsFetching}
+              pagination
+              paginationMode="server"
+              pageSizeOptions={pageOptions}
+              onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+                setPaginationData({
+                  ...paginationData,
+                  pageSize: data.pageSize,
+                  pageNo: data.page
+                });
+              }}
+              apiRef={apiRef}
+              paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
+              sortingMode="server"
+              onSortModelChange={handleSortModelChange}
+              rowThreshold={0}
+              getDetailPanelHeight={() => 'auto'}
+              getDetailPanelContent={getDetailPanelContent}
+            />
+          </div>
         </CardContent>
         {memoFilter}
       </CustomizedCard>

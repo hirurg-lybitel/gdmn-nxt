@@ -526,7 +526,8 @@ export interface ITimeTrackProject extends IWithID {
   employees?: IContactPerson[],
   notes?: IProjectNote[],
   isPrivate?: boolean,
-  isDone?: boolean
+  isDone?: boolean,
+  projectType?: IProjectType
 }
 
 export interface ITimeTrackTask extends IWithID {
@@ -534,6 +535,7 @@ export interface ITimeTrackTask extends IWithID {
   isActive: boolean,
   project?: ITimeTrackProject;
   isFavorite?: boolean;
+  inUse?: boolean
 }
 
 export interface IContactName {
@@ -541,4 +543,9 @@ export interface IContactName {
   firstName?: string;
   middleName?: string;
   nickName: string;
+}
+
+export interface IProjectType extends IWithID {
+  name: string,
+  parent?: string
 }

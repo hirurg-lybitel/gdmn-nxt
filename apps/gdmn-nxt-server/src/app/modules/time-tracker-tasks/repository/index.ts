@@ -46,6 +46,14 @@ const find: FindHandler<ITimeTrackTask> = async (
       ORDER BY z.USR$NAME`,
       { ...whereClause });
 
+    const timeTracker = await fetchAsObject(
+      `SELECT
+        task.ID
+      FROM USR$CRM_TIMETRACKER z
+      JOIN USR$CRM_TIMETRACKER_TASKS task ON task.ID = z.USR$TASK
+      `
+    );
+
     const tasks: ITimeTrackTask[] = rows.map(r => ({
       ID: r['ID'],
       name: r['NAME'],
@@ -57,7 +65,8 @@ const find: FindHandler<ITimeTrackTask> = async (
           ID: r['CONTACT_ID'],
           NAME: r['CONTACT_NAME'],
         }
-      }
+      },
+      inUse: timeTracker.findIndex(tt => tt['ID'] === r['ID']) !== -1
     }));
 
     return tasks;
