@@ -1,5 +1,5 @@
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
-import { ContractType, FindHandler, FindOneHandler, IContract, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { ContractType, FindHandler, FindOneHandler, IContract, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<IContract> = async (sessionID, clause = {}) => {
@@ -167,7 +167,7 @@ const save: SaveHandler = async (
   return new Promise((resolve) => resolve({}));
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

@@ -1,7 +1,7 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
-import { ArrayElement, FindHandler, FindOneHandler, FindOperator, ISegment, ISegmnentField, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { ArrayElement, FindHandler, FindOneHandler, FindOperator, ISegment, ISegmnentField, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<ISegment> = async (
@@ -248,7 +248,7 @@ const save: SaveHandler<ISegment> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

@@ -9,7 +9,7 @@ interface ISessions{
 
 type ISessionsRequestResult = IRequestResult<ISessions>
 
-export const sacurityApi = createApi({
+export const securityApi = createApi({
   reducerPath: 'security',
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'security', credentials: 'include' }),
   tagTypes: ['sessions'],
@@ -35,4 +35,4 @@ export const sacurityApi = createApi({
 export const {
   useGetActiveSessionsQuery,
   useCloseSessionBySessionIdMutation
-} = sacurityApi;
+} = securityApi;

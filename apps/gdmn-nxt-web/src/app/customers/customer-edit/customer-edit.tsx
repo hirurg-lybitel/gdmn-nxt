@@ -10,7 +10,8 @@ import {
   Stack,
   TextField,
   Box,
-  Tab
+  Tab,
+  Tooltip
 } from '@mui/material';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
 import { useEffect, useState } from 'react';
@@ -42,6 +43,7 @@ import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/business
 export interface CustomerEditProps {
   open: boolean;
   deleteable?: boolean;
+  readOnly?: boolean;
   customer: ICustomer | null;
   onSubmit: (arg1: ICustomer, arg2: boolean) => void;
   onCancel: () => void;
@@ -51,6 +53,7 @@ export function CustomerEdit({
   open,
   customer,
   deleteable,
+  readOnly = false,
   onCancel,
   onSubmit
 }: CustomerEditProps) {
@@ -314,15 +317,19 @@ export function CustomerEdit({
           Отменить
         </ButtonWithConfirmation>
         <PermissionsGate actionAllowed={userPermissions?.customers?.PUT} show>
-          <Button
-            className={styles.button}
-            variant="contained"
-            disabled={!userPermissions?.customers?.PUT}
-            form="customerEditForm"
-            type="submit"
-          >
-            Сохранить
-          </Button>
+          <Tooltip title={readOnly ? 'Карточка в режиме просмотра' : ''}>
+            <div>
+              <Button
+                className={styles.button}
+                variant="contained"
+                disabled={!userPermissions?.customers?.PUT || readOnly}
+                form="customerEditForm"
+                type="submit"
+              >
+                Сохранить
+              </Button>
+            </div>
+          </Tooltip>
         </PermissionsGate>
       </DialogActions>
     </CustomizedDialog>
