@@ -138,7 +138,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             dayjs()
               .subtract(1, 'month')
               .endOf('month')
-              .format('DD-MM-YYYY')),
+              .format('DD.MM.YYYY')),
         });
 
       debtRecords.forEach(({ customerId, amount }) => {
