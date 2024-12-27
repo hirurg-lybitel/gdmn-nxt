@@ -7,7 +7,7 @@ import { GridColDef } from '@mui/x-data-grid-pro';
 import { IProjectStatistics, ITimeTrack } from '@gsbelarus/util-api-types';
 import dayjs from 'dayjs';
 import { durationFormat } from '@gdmn-nxt/dayjs';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 interface IProjectStatisticsProps {
   projectId?: number
@@ -16,20 +16,7 @@ interface IProjectStatisticsProps {
 export default function ProjectStatistics({ projectId }: IProjectStatisticsProps) {
   const { data: statistics = [], isLoading, refetch } = useGetStatisticsQuery(projectId || -1, { skip: !projectId });
 
-  const getProjectDuration = (count: 'all' | 'billable' | 'nonbillable') => {
-    return durationFormat(statistics.map(({ timeTrack }) => getTaskDuration(timeTrack, count)).reduce((total: string, value: string) => {
-      const time = dayjs
-        .duration(total.length === 0 ? Object.assign({}) : total)
-        .add(
-          dayjs
-            .duration(value || 'PT0M')
-        )
-        .toISOString();
-      return time;
-    }, ''));
-  };
-
-  const getTaskDuration = (value: ITimeTrack[], count: 'all' | 'billable' | 'nonbillable') => {
+  const getTaskDuration = useCallback((value: ITimeTrack[], count: 'all' | 'billable' | 'nonbillable') => {
     return value.reduce((total: string, { duration, billable }: ITimeTrack) => {
       if (count === 'billable' && !billable) return 'PT0M';
       if (count === 'nonbillable' && billable) return 'PT0M';
@@ -42,7 +29,20 @@ export default function ProjectStatistics({ projectId }: IProjectStatisticsProps
         .toISOString();
       return time;
     }, '');
-  };
+  }, []);
+
+  const getProjectDuration = useCallback((count: 'all' | 'billable' | 'nonbillable') => {
+    return durationFormat(statistics.map(({ timeTrack }) => getTaskDuration(timeTrack, count)).reduce((total: string, value: string) => {
+      const time = dayjs
+        .duration(total.length === 0 ? Object.assign({}) : total)
+        .add(
+          dayjs
+            .duration(value || 'PT0M')
+        )
+        .toISOString();
+      return time;
+    }, ''));
+  }, [getTaskDuration, statistics]);
 
   const gridStatistics = useMemo(() => {
     return statistics.map(statistic => ({
@@ -51,7 +51,7 @@ export default function ProjectStatistics({ projectId }: IProjectStatisticsProps
       billable: durationFormat(getTaskDuration(statistic.timeTrack, 'billable')),
       all: durationFormat(getTaskDuration(statistic.timeTrack, 'all'))
     }));
-  }, [statistics]);
+  }, [getTaskDuration, statistics]);
 
   interface GridIProjectStatistics extends IProjectStatistics {
     nonbilleble: string

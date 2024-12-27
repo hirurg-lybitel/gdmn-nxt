@@ -77,7 +77,7 @@ export function ProjectEdit(props: ProjectEditProps) {
 
   const [lastId, setLastId] = useState(1);
 
-  const onTaskSubmit = (task: ITimeTrackTask, isDeleting: boolean) => {
+  const onTaskSubmit = useCallback((task: ITimeTrackTask, isDeleting: boolean) => {
     const newTasks = formik.values.tasks ? [...formik.values.tasks] : [];
     if (isDeleting) {
       formik.setFieldValue('tasks', newTasks.filter(item => item.ID !== task.ID));
@@ -91,18 +91,18 @@ export function ProjectEdit(props: ProjectEditProps) {
     }
     formik.setFieldValue('tasks', [...newTasks, ...[{ ...task, ID: lastId }]]);
     setLastId(lastId + 1);
-  };
+  }, [formik, lastId]);
 
-  const changeTaskFvorite = (data: {taskId: number, projectId: number}, favorite: boolean) => {
+  const changeTaskFvorite = useCallback((data: {taskId: number, projectId: number}, favorite: boolean) => {
     const newTasks = formik.values.tasks ? [...formik.values.tasks] : [];
     const index = newTasks.findIndex(item => item.ID === data.taskId);
     newTasks[index] = { ...newTasks[index], isFavorite: favorite };
     formik.setFieldValue('tasks', newTasks);
-  };
+  }, [formik]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     onSubmit(formik.values, true);
-  };
+  }, [formik.values, onSubmit]);
 
   const inUse = useMemo(() => project?.tasks?.findIndex(task => task.inUse) !== -1, [project?.tasks]);
 

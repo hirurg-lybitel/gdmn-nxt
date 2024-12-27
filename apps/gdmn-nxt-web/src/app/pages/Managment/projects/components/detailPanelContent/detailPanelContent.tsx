@@ -92,8 +92,10 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       }>({
         title: '', text: '', mode: 'cancel', method: () => {}
       });
+
   const [_, forceUpdate] = useReducer((x) => x + 1, 0);
-  const handleSetTitleAndMethod = (mode: ConfirmationMode, method: () => void) => {
+
+  const handleSetTitleAndMethod = useCallback((mode: ConfirmationMode, method: () => void) => {
     const title = (() => {
       switch (mode) {
         case 'cancel':
@@ -115,7 +117,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       }
     })();
     setTitleAndMethod({ title, text, mode, method });
-  };
+  }, []);
 
   const stopAdding = useCallback(() => {
     if (apiRef.current.getRowMode(0) === GridRowModes.Edit) {
@@ -144,13 +146,13 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
 
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
-    const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
+    const handleEditClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
       forceUpdate();
       event.stopPropagation();
       api.current.startRowEditMode({ id });
-    };
+    }, [api, id]);
 
-    const handleSave = (event: MouseEvent<HTMLButtonElement>) => {
+    const handleSave = useCallback((event: MouseEvent<HTMLButtonElement>) => {
       const values = api.current.getRowWithUpdatedValues(id, '');
       const errorList: IErrors = {};
       let haveError = false;
@@ -169,20 +171,30 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       const row = { ...values };
       if (row?.ID === 0) delete row['ID'];
       handleSubmit(row as ITimeTrackTask);
-    };
+    }, [api, id]);
 
-    const handleConfirmDelete = () => {
-      handleSetTitleAndMethod('deleting', handleDeleteClick);
-      setConfirmOpen(true);
-    };
-
-    const handleDeleteClick = () => {
+    const handleDeleteClick = useCallback(() => {
       setConfirmOpen(false);
       stopAdding();
       onSubmit({ ID: id } as ITimeTrackTask, true);
-    };
+    }, [id]);
 
-    const handleConfirmCancelClick = () => {
+    const handleConfirmDelete = useCallback(() => {
+      handleSetTitleAndMethod('deleting', handleDeleteClick);
+      setConfirmOpen(true);
+    }, [handleDeleteClick]);
+
+    const handleCancelClick = useCallback(() => {
+      setConfirmOpen(false);
+      const newErrors = { ...errors };
+      newErrors[`${id}`] = {};
+      setErrors(newErrors);
+      api.current.stopRowEditMode({ id, ignoreModifications: true });
+      if (api.current.getRow(id)?.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
+      forceUpdate();
+    }, [api, id]);
+
+    const handleConfirmCancelClick = useCallback(() => {
       function removeEmpty(obj: any) {
         return Object.fromEntries(Object.entries(obj).filter(([_, v]) => (v !== null && v !== '' && v !== undefined)));
       }
@@ -194,26 +206,16 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       }
 
       forceUpdate();
-    };
+    }, [api, handleCancelClick, id]);
 
-    const handleCancelClick = () => {
-      setConfirmOpen(false);
-      const newErrors = { ...errors };
-      newErrors[`${id}`] = {};
-      setErrors(newErrors);
-      api.current.stopRowEditMode({ id, ignoreModifications: true });
-      if (api.current.getRow(id)?.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
-      forceUpdate();
-    };
-
-    const handleChangeVisible = () => {
+    const handleChangeVisible = useCallback(() => {
       if (isInEditMode && separateGrid) {
         apiRef.current.setEditCellValue({ id, field: 'isActive', value: !row.isActive });
         if (id === 0) return;
       };
       stopAdding();
       onSubmit({ ...row, isActive: !row.isActive, project }, false);
-    };
+    }, [id, isInEditMode, row]);
 
     return (
       <>
@@ -290,14 +292,16 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
   const IsFavoriteCell = ({ value, row, field, id }: GridRenderCellParams<ITimeTrackTask, any, any, GridTreeNodeWithRender>) => {
     const api = useGridApiContext();
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
-    const handleSwitchFavorite = () => {
+
+    const handleSwitchFavorite = useCallback(() => {
       if (isInEditMode && separateGrid && id === 0) {
         apiRef.current.setEditCellValue({ id, field, value: !value });
         return;
       }
       stopAdding();
       changeFavorite({ taskId: row.ID, projectId: project.ID }, !row.isFavorite);
-    };
+    }, [field, id, isInEditMode, row.ID, row.isFavorite, value]);
+
     return (
       <SwitchStar selected={value} onClick={handleSwitchFavorite}/>
     );
@@ -333,27 +337,27 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     }
   ];
 
-  const handleRowEditStart = (
+  const handleRowEditStart = useCallback((
     params: GridRowParams,
     event: MuiEvent<SyntheticEvent>,
   ) => {
     event.defaultMuiPrevented = true;
-  };
+  }, []);
 
-  const handleRowEditStop = (
+  const handleRowEditStop = useCallback((
     params: GridRowParams,
     event: MuiEvent,
   ) => {
     event.defaultMuiPrevented = true;
-  };
+  }, []);
 
-  const handleCellKeyDown = (params: GridCellParams, event: MuiEvent<KeyboardEvent<HTMLElement>>) => {
+  const handleCellKeyDown = useCallback((params: GridCellParams, event: MuiEvent<KeyboardEvent<HTMLElement>>) => {
     if (event.key === 'Enter') {
       event.defaultMuiPrevented = true;
     }
-  };;
+  }, []);
 
-  const handleAddSource = () => {
+  const handleAddSource = useCallback(() => {
     if (apiRef.current.getRow(0)) return;
     const id = 0;
     apiRef.current.updateRows([{ ID: id, isActive: true }]);
@@ -363,7 +367,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     });
     apiRef.current.startRowEditMode({ id });
     forceUpdate();
-  };
+  }, [apiRef]);
 
   const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 200 : recordsCount * 50, []);
 
@@ -379,8 +383,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       onRowEditStart={handleRowEditStart}
       onRowEditStop={handleRowEditStop}
       onCellKeyDown={handleCellKeyDown}
-    />
-  );
+    />);
 
   if (separateGrid) {
     return (

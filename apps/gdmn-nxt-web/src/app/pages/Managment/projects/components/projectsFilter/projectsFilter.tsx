@@ -27,7 +27,7 @@ export function ProjectsFilter({
 
   const { data: projectTypeFilters = [] } = useGetFiltersQuery();
 
-  const handleChangeProjectType = (e: any, value: IProjectFilter) => {
+  const handleChangeProjectType = useCallback((e: any, value: IProjectFilter) => {
     const data = { ...filteringData };
     if (!value) {
       delete data['type'];
@@ -35,9 +35,9 @@ export function ProjectsFilter({
       data['type'] = value?.CODE;
     }
     onFilteringDataChange(data);
-  };
+  }, [filteringData, onFilteringDataChange]);
 
-  const handleCustomerChange = (value: ICustomer | undefined | null) => {
+  const handleCustomerChange = useCallback((value: ICustomer | undefined | null) => {
     const data = { ...filteringData };
     if (!value) {
       delete data['customer'];
@@ -45,7 +45,7 @@ export function ProjectsFilter({
       data['customer'] = value?.ID;
     }
     onFilteringDataChange(data);
-  };
+  }, [filteringData, onFilteringDataChange]);
 
   const { data: customersResponse } = useGetCustomersQuery({
   });
@@ -62,7 +62,7 @@ export function ProjectsFilter({
             options={projectTypeFilters}
             disableClearable
             getOptionLabel={option => option.NAME}
-            isOptionEqualToValue={(option, value) => option.ID === value.ID}
+            isOptionEqualToValue={(option, value) => option?.ID === value?.ID}
             value={projectTypeFilters.find(type => type.CODE === filteringData?.type)}
             onChange={handleChangeProjectType}
             renderOption={(props, option, { selected }) => (
@@ -78,7 +78,7 @@ export function ProjectsFilter({
               />
             )}
           />
-          <CustomerSelect value={customersResponse?.data.find(cus => cus.ID === filteringData?.customer)} onChange={handleCustomerChange} />
+          <CustomerSelect value={customersResponse?.data.find(cus => cus?.ID === filteringData?.customer)} onChange={handleCustomerChange} />
         </Stack>
       </CardContent>
       <CardActions style={{ padding: '16px' }}>

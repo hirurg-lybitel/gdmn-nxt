@@ -2,7 +2,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import './ProjectEmployees.module.css';
 import { IContactWithID, IPaginationData } from '@gsbelarus/util-api-types';
 import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateConstactPersonsMutation, useUpdateContactPersonMutation } from 'apps/gdmn-nxt-web/src/app/features/contact/contactApi';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
 import EditContact from '@gdmn-nxt/components/Contacts/edit-contact/edit-contact';
 import AddContact from '@gdmn-nxt/components/Contacts/add-contact/add-contact';
@@ -47,7 +47,6 @@ export function ProjectEmployees({
 
   const [addPerson] = useAddContactPersonMutation();
   const [updatePerson] = useUpdateContactPersonMutation();
-  const [updatePersons] = useUpdateConstactPersonsMutation();
   const [deletePerson] = useDeleteContactPersonMutation();
 
   const [upsertContact, setUpsertContact] = useState<{
@@ -59,26 +58,25 @@ export function ProjectEmployees({
     editContact: false
   });
 
-  const handleContactEdit = (contact: IContactWithID) => {
+  const handleContactEdit = useCallback((contact: IContactWithID) => {
     setUpsertContact({ editContact: true, contact });
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setUpsertContact({ addContact: false, editContact: false });
-  };
+  }, []);
 
-  const handlePersonEditSubmit = async (person: IContactWithID, deleting?: boolean) => {
+  const handlePersonEditSubmit = useCallback((person: IContactWithID, deleting?: boolean) => {
     deleting ? deletePerson(person.ID) : updatePerson(person);
     handleCancel();
-  };
+  }, [deletePerson, handleCancel, updatePerson]);
 
-  const handlePersonAddSubmit = async (person: IContactWithID) => {
+  const handlePersonAddSubmit = useCallback((person: IContactWithID) => {
     handleCancel();
-
     addPerson(person);
-  };
+  }, [addPerson, handleCancel]);
 
-  const handlePersonAdd = () => {
+  const handlePersonAdd = useCallback(() => {
     setUpsertContact({
       addContact: true,
       contact: {
@@ -86,7 +84,7 @@ export function ProjectEmployees({
         NAME: '',
       }
     });
-  };
+  }, []);
 
   const memoEditContact = useMemo(() =>
     <EditContact
@@ -95,7 +93,7 @@ export function ProjectEmployees({
       onSubmit={handlePersonEditSubmit}
       onCancel={handleCancel}
     />,
-  [upsertContact.contact, upsertContact.editContact]);
+  [handleCancel, handlePersonEditSubmit, upsertContact.contact, upsertContact.editContact]);
 
   const memoAddContact = useMemo(() =>
     <AddContact
@@ -104,7 +102,7 @@ export function ProjectEmployees({
       onSubmit={handlePersonAddSubmit}
       onCancel={handleCancel}
     />,
-  [upsertContact.addContact]);
+  [handleCancel, handlePersonAddSubmit, upsertContact.addContact, upsertContact.contact]);
 
   return (
     <Stack className="contacts-container">

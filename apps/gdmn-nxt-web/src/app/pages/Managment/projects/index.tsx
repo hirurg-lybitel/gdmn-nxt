@@ -95,7 +95,7 @@ export function Projects(props: IProjectsProps) {
     ]);
   }, [paginationData]);
 
-  const refreshClick = useCallback(() => refetch(), []);
+  const refreshClick = useCallback(() => refetch(), [refetch]);
 
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
@@ -131,8 +131,8 @@ export function Projects(props: IProjectsProps) {
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
       dispatch(clearFilterData({ filterEntityName, saveFields: ['type'] }));
-      saveFilters({ ...filterData, type: typeDefault?.CODE });
-    }, [dispatch]),
+      saveFilters({ type: typeDefault?.CODE });
+    }, [dispatch, saveFilters, typeDefault?.CODE]),
   };
 
   const memoFilter = useMemo(() =>
@@ -142,7 +142,6 @@ export function Projects(props: IProjectsProps) {
       filteringData={filterData}
       onFilteringDataChange={handleFilteringDataChange}
       onClear={filterHandlers.filterClear}
-
     />,
   [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
@@ -162,19 +161,19 @@ export function Projects(props: IProjectsProps) {
     addProject(project);
   }, [addProject, deleteProject, updateProject]);
 
-  const handleEdit = (project: ITimeTrackProject) => () => {
+  const handleEdit = useCallback((project: ITimeTrackProject) => () => {
     setProject(project);
     setOpenEditForm(true);
-  };
+  }, []);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setProject(undefined);
     setOpenEditForm(true);
-  };
+  }, []);
 
-  const onCancelClick = () => {
+  const onCancelClick = useCallback(() => {
     setOpenEditForm(false);
-  };
+  }, []);
 
   const memoProjectEdit = useMemo(() => (
     <ProjectEdit

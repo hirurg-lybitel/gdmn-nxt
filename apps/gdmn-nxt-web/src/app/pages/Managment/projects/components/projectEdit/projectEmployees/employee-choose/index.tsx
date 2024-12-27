@@ -1,7 +1,7 @@
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { Button, CardActions, CardContent, ClickAwayListener, Fade, IconButton, Popper, Tooltip } from '@mui/material';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { IContactWithID } from '@gsbelarus/util-api-types';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 
@@ -27,23 +27,23 @@ export default function EmployeesChoose({
     setEmployees(value);
   }, [anchorEl]);
 
-  const handleEmployeesSelect = (event: MouseEvent<HTMLElement>) => {
+  const handleEmployeesSelect = useCallback((event: MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
-  };
+  }, [anchorEl]);
 
-  const handleOnClose = () => {
+  const handleOnClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
 
-  const handleEmployeesChange = (values: IContactWithID[] | IContactWithID | null) => {
+  const handleEmployeesChange = useCallback((values: IContactWithID[] | IContactWithID | null) => {
     if (!values) return;
     setEmployees(values as IContactWithID[]);
-  };
+  }, []);
 
-  const handleOnSubmit = () => {
+  const handleOnSubmit = useCallback(() => {
     handleOnClose();
     onSubmit(employees);
-  };
+  }, [employees, handleOnClose, onSubmit]);
 
   return (
     <div>

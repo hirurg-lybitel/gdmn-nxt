@@ -7,7 +7,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import SendIcon from '@mui/icons-material/Send';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 interface IProjectNotesProps {
   notes?: IProjectNote[],
@@ -37,10 +37,10 @@ export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProp
     }
   });
 
-  const handleDelete = (id: number) => () => {
+  const handleDelete = useCallback((id: number) => () => {
     const newNotes = notes.filter(note => Number(note.ID) !== Number(id));
     onChange(newNotes);
-  };
+  }, [notes, onChange]);
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
