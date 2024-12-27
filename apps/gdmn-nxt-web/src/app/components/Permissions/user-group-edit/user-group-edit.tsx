@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import * as yup from 'yup';
 import styles from './user-group-edit.module.less';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 

@@ -2,8 +2,6 @@ import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
 import { IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Close';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
@@ -11,11 +9,13 @@ import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-to
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
-import ItemButtonVisible from '../item-button-visible/item-button-visible';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import ItemButtonVisible from '../../../../../components/customButtons/item-button-visible/item-button-visible';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
+import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
+import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -220,26 +220,8 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     return (
       <>
         {isInEditMode ? <>
-          <Tooltip title={'Сохранить'}>
-            <IconButton
-              role="menuitem"
-              color="primary"
-              size="small"
-              onClick={handleSave}
-            >
-              <SaveIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={'Отменить'}>
-            <IconButton
-              role="menuitem"
-              color="primary"
-              size="small"
-              onClick={handleConfirmCancelClick}
-            >
-              <CancelIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          <ItemButtonSave onClick={handleSave}/>
+          <ItemButtonCancel onClick={handleConfirmCancelClick}/>
         </>
           : <>
             <ItemButtonEdit

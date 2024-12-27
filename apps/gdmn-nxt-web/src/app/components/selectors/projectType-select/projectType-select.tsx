@@ -8,7 +8,7 @@ import { maxVirtualizationList } from '@gdmn/constants/client';
 import { useAddProjectTypeMutation, useDeleteProjectTypeMutation, useGetProjectTypesQuery, useUpdateProjectTypeMutation } from '../../../features/time-tracking';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import ProjectTypeEdit from './projectTypeEdit/projectTypeEdit';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { RootState } from '@gdmn-nxt/store';

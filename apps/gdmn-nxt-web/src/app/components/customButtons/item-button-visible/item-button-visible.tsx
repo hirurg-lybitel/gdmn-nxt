@@ -1,24 +1,22 @@
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, IconButtonProps, Tooltip } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
-interface IItemButtonVisibleProps {
+interface IItemButtonVisibleProps extends IconButtonProps {
   selected: boolean,
   onClick: () => void,
-  title?: {
-    active: string,
-    disable: string
-  }
-  disabled?: boolean
+  activeTitle?: string
+  disabledTitle?: string
 }
-export default function ItemButtonVisible({ onClick, selected, title, disabled }: IItemButtonVisibleProps) {
+
+export default function ItemButtonVisible({ onClick, selected, activeTitle, disabledTitle, ...rest }: IItemButtonVisibleProps) {
   return (
-    <Tooltip title={selected ? (title?.disable || 'Отключить') : (title?.active || 'Включить')}>
+    <Tooltip title={selected ? (disabledTitle || 'Отключить') : (activeTitle || 'Включить')}>
       <IconButton
+        {...rest}
         color={'primary'}
         style={!selected ? { color: 'gray' } : {}}
         size="small"
-        disabled={disabled}
         onClick={onClick}
       >
         {selected ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}

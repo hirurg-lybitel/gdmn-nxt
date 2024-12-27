@@ -10,7 +10,7 @@ import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useDeleteTaskMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 
 export interface KanbanTasksListProps {
   columns: IKanbanColumn[];

@@ -15,7 +15,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import { useGetMailingByIdQuery, useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';

@@ -12,7 +12,7 @@ import { DetailPanelContent } from '../detailPanelContent/detailPanelContent';
 import { ProjectEmployees } from './projectEmployees';
 import ProjectNotes from './projectNotes/projectNotes';
 import ProjectStatistics from './projectStatistics/projectStatistics';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';

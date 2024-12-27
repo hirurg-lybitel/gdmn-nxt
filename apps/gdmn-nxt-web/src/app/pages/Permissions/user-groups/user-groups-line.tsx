@@ -6,7 +6,7 @@ import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation, useCloseSessionByIdMutation } from '../../../features/permissions';
 import { ChangeEvent, useMemo } from 'react';
 import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import { useResetProfileSettingsMutation } from '../../../features/profileSettings';

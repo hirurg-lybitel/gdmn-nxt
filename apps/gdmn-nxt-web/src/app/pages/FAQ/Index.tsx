@@ -24,8 +24,8 @@ import { RootState } from '../../store';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {

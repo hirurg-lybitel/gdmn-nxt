@@ -20,8 +20,8 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import ProjectEdit from './components/projectEdit/projectEdit';
 import { DetailPanelContent } from './components/detailPanelContent/detailPanelContent';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
-import ItemButtonVisible from './components/item-button-visible/item-button-visible';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import ItemButtonVisible from '../../../components/customButtons/item-button-visible/item-button-visible';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 
 export interface IProjectsProps {}
