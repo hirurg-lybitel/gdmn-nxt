@@ -1,6 +1,6 @@
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
-import { IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Divider, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
@@ -407,6 +407,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       >
         {grid}
       </div>
+      <Divider/>
     </>
   );
 }
