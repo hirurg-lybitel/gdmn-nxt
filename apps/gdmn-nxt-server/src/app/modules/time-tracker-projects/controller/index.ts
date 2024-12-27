@@ -6,6 +6,7 @@ import { resultError } from '@gsbelarus/util-helpers';
 const findAll: RequestHandler = async (req, res) => {
   const { id: sessionID } = req.session;
   const userId = req.user['id'];
+  const showAll = req.user['permissions']['time-tracking/projects']['ALL'];
   try {
     const response = await timeTrackerProjectsService.findAll(
       sessionID,
@@ -15,6 +16,7 @@ const findAll: RequestHandler = async (req, res) => {
       },
     );
 
+    const projects = showAll ? response : response.filter(project => !project.isPrivate || project?.employees?.find(empl => empl.ID === req.user['contactkey']));
 
     let fromRecord = 0;
     let toRecord: number;
@@ -26,12 +28,12 @@ const findAll: RequestHandler = async (req, res) => {
       toRecord = fromRecord + Number(pageSize);
     };
 
-    const rowCount = response.length;
-    const contactsWithPagination = response.slice(fromRecord, toRecord);
+    const rowCount = projects.length;
+    const projectsWithPagination = projects.slice(fromRecord, toRecord);
 
     const result: IRequestResult = {
       queries: {
-        projects: contactsWithPagination,
+        projects: projectsWithPagination,
         rowCount
       },
       _schema: {}

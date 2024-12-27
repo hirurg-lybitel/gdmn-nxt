@@ -10,10 +10,13 @@ const findAll = async (
   const userId = filter?.userId;
   const customerId = filter?.customerId;
   const projectId = filter?.projectId;
+  const isActive = filter?.isActive;
+
   try {
     const tasks = await timeTrackerTasksRepository.find(sessionID,
       {
-        ...(projectId && { 'USR$PROJECT': projectId })
+        ...(projectId && { 'USR$PROJECT': projectId }),
+        ...(isActive ? { 'USR$ISACTIVE': isActive === 'true' ? 1 : 0 } : {})
       }
     );
 

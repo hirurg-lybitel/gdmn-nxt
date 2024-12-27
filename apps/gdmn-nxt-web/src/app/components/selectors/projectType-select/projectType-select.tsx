@@ -1,4 +1,4 @@
-import { IProjectType } from '@gsbelarus/util-api-types';
+import { IProjectType, Permissions } from '@gsbelarus/util-api-types';
 import { Autocomplete, Button, Checkbox, createFilterOptions, FilterOptionsState, InputAdornment, ListItem, TextField, TextFieldVariants } from '@mui/material';
 import { HTMLAttributes, MouseEventHandler, useCallback, useMemo, useState } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
@@ -10,6 +10,9 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import ProjectTypeEdit from './projectTypeEdit/projectTypeEdit';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import { RootState } from '@gdmn-nxt/store';
+import { useSelector } from 'react-redux';
 
 interface IProjectTypeSelect{
   value: IProjectType[] | IProjectType | null;
@@ -115,18 +118,20 @@ export function ProjectTypeSelect({
     />
   ), [editOpen, projectType]);
 
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+
+  const createAllow = withCreate && userPermissions?.['time-tracking/projectTypes']?.POST;
+
   const memoPaperFooter = useMemo(() =>
     <div>
-      {withCreate
-        ? <Button
-          startIcon={<AddCircleRoundedIcon />}
-          onClick={handleAdd}
-        >
-          Создать тип проекта
-        </Button>
-        : <></>}
+      <Button
+        startIcon={<AddCircleRoundedIcon />}
+        onClick={handleAdd}
+      >
+        Создать тип проекта
+      </Button>
     </div>,
-  [withCreate]);
+  []);
 
   return (
     <>
@@ -141,7 +146,7 @@ export function ProjectTypeSelect({
         disableCloseOnSelect={disableCloseOnSelect}
         value={getProjectType()}
         ListboxComponent={ListboxComponent}
-        PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
+        PaperComponent={createAllow ? CustomPaperComponent({ footer: memoPaperFooter }) : undefined}
         onChange={handleOnChange}
         multiple={multiple}
         limitTags={limitTags}
@@ -151,7 +156,7 @@ export function ProjectTypeSelect({
             {...props}
             key={option.ID}
             sx={{
-              height: '42px',
+              height: createAllow ? '42px' : 'auto',
               '&:hover .action': {
                 display: 'block !important',
               }
@@ -197,7 +202,7 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
     e.stopPropagation();
     onChange && onChange(projectType);
   };
-
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
       <div>
@@ -217,10 +222,12 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
           display: 'none',
         }}
       >
-        <ItemButtonEdit
-          color="primary"
-          onClick={handleEdit(option)}
-        />
+        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.PUT}>
+          <ItemButtonEdit
+            color="primary"
+            onClick={handleEdit(option)}
+          />
+        </PermissionsGate>
       </div>}
     </div>
   );

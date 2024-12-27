@@ -1,9 +1,9 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { Box, CardContent, CardHeader, Divider, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Divider, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { ChangeEvent, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { IFilteringData, IPaginationData, IProjectFilter, IProjectType, ISortingData, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { IFilteringData, IPaginationData, IProjectFilter, IProjectType, ISortingData, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
 import { DataGridProProps, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridGroupNode, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowParams, GridSortModel, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -31,6 +31,9 @@ import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-to
 import ProjectEdit from './components/projectEdit/projectEdit';
 import { DetailPanelContent } from './components/detailPanelContent/detailPanelContent';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
+import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonVisible from './components/item-button-visible/item-button-visible';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -60,6 +63,7 @@ export function Projects(props: IProjectsProps) {
   const [deleteProject] = useDeleteProjectMutation();
 
   const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   useEffect(() => {
     if (projectTypes.length === 0) return;
@@ -89,7 +93,7 @@ export function Projects(props: IProjectsProps) {
   } = useGetProjectsQuery(
     {
       pagination: paginationData,
-      ...(filterData && { filter: filterData }),
+      ...(filterData && { filter: { ...filterData } }),
       ...(sortingData ? { sort: sortingData } : {}),
       ...({ projectType: projectType?.ID })
     },
@@ -235,22 +239,19 @@ export function Projects(props: IProjectsProps) {
         };
         return (
           <>
-            <IconButton
-              role="menuitem"
-              color="primary"
-              size="small"
-              onClick={handleEdit(row)}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              color={'primary'}
-              style={value ? { color: 'gray' } : {}}
-              size="small"
-              onClick={handleChangeVisible}
-            >
-              {value ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
-            </IconButton>
+            <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.PUT}>
+              <ItemButtonEdit
+                color={'primary'}
+                size={'small'}
+                onClick={handleEdit(row)}
+              />
+            </PermissionsGate>
+            <div style={{ pointerEvents: userPermissions?.['time-tracking/projects']?.PUT ? 'all' : 'none' }}>
+              <ItemButtonVisible
+                selected={!value}
+                onClick={handleChangeVisible}
+              />
+            </div>
           </>
         );
       }
@@ -284,8 +285,6 @@ export function Projects(props: IProjectsProps) {
     />
   ), [changeTaskFvorite, taskSubmit]);
 
-  console.log(filterData);
-
   return (
     <>
       {memoProjectEdit}
@@ -308,14 +307,13 @@ export function Projects(props: IProjectsProps) {
                 }
               />
               <Box display="inline-flex" alignSelf="center">
-                {/* <PermissionsGate actionAllowed={userPermissions?.project?.POST}> */}
-                <CustomAddButton
-                // disabled={projectsIsFetching}
-                  onClick={handleAdd}
-                  disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
-                  label="Создать договор"
-                />
-                {/* </PermissionsGate> */}
+                <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.POST}>
+                  <CustomAddButton
+                    onClick={handleAdd}
+                    disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
+                    label="Создать проект"
+                  />
+                </PermissionsGate>
               </Box>
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton

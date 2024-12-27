@@ -20,6 +20,7 @@ const findAll = async (
   const name = filter.name;
   const type = filter.type;
   const customer = filter.customer;
+  const taskisActive = filter.taskisActive;
 
   try {
     const projects = await timeTrackerProjectsRepository.find(
@@ -34,7 +35,7 @@ const findAll = async (
 
     const tasks = new Map<number, ITimeTrackTask[]>();
 
-    (await timeTrackerTasksService.findAll(sessionID, { userId }))
+    (await timeTrackerTasksService.findAll(sessionID, { userId, isActive: taskisActive }))
       ?.forEach(({ project, ...task }) => {
         const projectId = project.ID;
         if (tasks.has(projectId)) {

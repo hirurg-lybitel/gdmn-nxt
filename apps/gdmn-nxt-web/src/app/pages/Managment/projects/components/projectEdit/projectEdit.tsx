@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './projectEdit.module.less';
-import { IContactWithID, IProjectNote, IProjectType, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
+import { IContactWithID, IProjectNote, IProjectType, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -16,6 +16,9 @@ import ProjectStatistics from './projectStatistics/projectStatistics';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import { RootState } from '@gdmn-nxt/store';
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles((theme: Theme) => ({
   button: {
@@ -34,6 +37,7 @@ export function ProjectEdit(props: ProjectEditProps) {
   const classes = useStyles();
   const { open, project } = props;
   const { onSubmit, onCancelClick } = props;
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
   const initValue: ITimeTrackProject = {
     ID: project?.ID || -1,
@@ -220,12 +224,14 @@ export function ProjectEdit(props: ProjectEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <ItemButtonDelete
-          disabled={inUse}
-          title={'Удаление проекта'}
-          button
-          onClick={handleDelete}
-        />
+        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.DELETE}>
+          <ItemButtonDelete
+            disabled={inUse}
+            title={'Удаление проекта'}
+            button
+            onClick={handleDelete}
+          />
+        </PermissionsGate>
         <Box flex={1}/>
         <ButtonWithConfirmation
           className={classes.button}

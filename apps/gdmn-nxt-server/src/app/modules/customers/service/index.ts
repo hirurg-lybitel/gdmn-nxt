@@ -79,7 +79,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     const withTasksBool = (withTasks as string)?.toLowerCase() === 'true';
 
     if (withTasksBool) {
-      (await timeTrackerTasksService.findAll(sessionID, { userId }))
+      (await timeTrackerTasksService.findAll(sessionID, { userId, isActive: true }))
         ?.forEach(({ project, ...task }) => {
           const customerId = project.customer.ID;
           if (tasks.has(customerId)) {

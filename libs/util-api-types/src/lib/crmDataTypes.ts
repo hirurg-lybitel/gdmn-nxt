@@ -338,6 +338,9 @@ export type ActionName =
   'mailings' |
   'feedback' |
   'time-tracking' |
+  'time-tracking/projects' |
+  'time-tracking/projectTypes' |
+  'time-tracking/tasks' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 

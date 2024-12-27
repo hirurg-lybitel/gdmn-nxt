@@ -1,12 +1,15 @@
 import { Box, Button, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 import { useCallback, useEffect } from 'react';
 import styles from './projectTypeEdit.module.less';
-import { IProjectType } from '@gsbelarus/util-api-types';
+import { IProjectType, Permissions } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import { useSelector } from 'react-redux';
+import { RootState } from '@gdmn-nxt/store';
 
 
 export interface ProjectTypeEditProps {
@@ -19,7 +22,7 @@ export interface ProjectTypeEditProps {
 export function ProjectTypeEdit(props: ProjectTypeEditProps) {
   const { open, projectType } = props;
   const { onSubmit, onCancelClick } = props;
-
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const initValue: IProjectType = {
     ID: projectType?.ID || -1,
     name: projectType?.name || '',
@@ -88,11 +91,13 @@ export function ProjectTypeEdit(props: ProjectTypeEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <ItemButtonDelete
-          title={'Удаление типа проекта'}
-          button
-          onClick={handleDelete}
-        />
+        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.DELETE}>
+          <ItemButtonDelete
+            title={'Удаление типа проекта'}
+            button
+            onClick={handleDelete}
+          />
+        </PermissionsGate>
         <Box flex={1}/>
         <ButtonWithConfirmation
           className={styles.button}
