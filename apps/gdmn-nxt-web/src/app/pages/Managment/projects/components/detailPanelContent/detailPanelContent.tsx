@@ -152,7 +152,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       api.current.startRowEditMode({ id });
     }, [api, id]);
 
-    const handleSave = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const handleSave = (event: MouseEvent<HTMLButtonElement>) => {
       const values = api.current.getRowWithUpdatedValues(id, '');
       const errorList: IErrors = {};
       let haveError = false;
@@ -171,20 +171,20 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       const row = { ...values };
       if (row?.ID === 0) delete row['ID'];
       handleSubmit(row as ITimeTrackTask);
-    }, [api, id]);
+    };
 
-    const handleDeleteClick = useCallback(() => {
+    const handleDeleteClick = () => {
       setConfirmOpen(false);
       stopAdding();
       onSubmit({ ID: id } as ITimeTrackTask, true);
-    }, [id]);
+    };
 
-    const handleConfirmDelete = useCallback(() => {
+    const handleConfirmDelete = () => {
       handleSetTitleAndMethod('deleting', handleDeleteClick);
       setConfirmOpen(true);
-    }, [handleDeleteClick]);
+    };
 
-    const handleCancelClick = useCallback(() => {
+    const handleCancelClick = () => {
       setConfirmOpen(false);
       const newErrors = { ...errors };
       newErrors[`${id}`] = {};
@@ -192,9 +192,9 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       api.current.stopRowEditMode({ id, ignoreModifications: true });
       if (api.current.getRow(id)?.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
       forceUpdate();
-    }, [api, id]);
+    };
 
-    const handleConfirmCancelClick = useCallback(() => {
+    const handleConfirmCancelClick = () => {
       function removeEmpty(obj: any) {
         return Object.fromEntries(Object.entries(obj).filter(([_, v]) => (v !== null && v !== '' && v !== undefined)));
       }
@@ -206,16 +206,16 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       }
 
       forceUpdate();
-    }, [api, handleCancelClick, id]);
+    };
 
-    const handleChangeVisible = useCallback(() => {
+    const handleChangeVisible = () => {
       if (isInEditMode && separateGrid) {
         apiRef.current.setEditCellValue({ id, field: 'isActive', value: !row.isActive });
         if (id === 0) return;
       };
       stopAdding();
       onSubmit({ ...row, isActive: !row.isActive, project }, false);
-    }, [id, isInEditMode, row]);
+    };
 
     return (
       <>
