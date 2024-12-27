@@ -71,7 +71,7 @@ const findAll = async (
           const lowerName = String(name).toLowerCase();
           checkConditions = checkConditions && (
             project.name?.toLowerCase().includes(lowerName) ||
-            tasks.get(project.ID).findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1
+            (tasks.get(project.ID) && tasks.get(project.ID)?.findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1)
           );
         }
 
