@@ -26,7 +26,7 @@ const find: FindHandler<ITimeTrackTask> = async (
         }
 
         whereClause[adjustRelationName(f)] = clause[f];
-        return ` z.${f} = :${adjustRelationName(f)}`;
+        return ` ${f.includes('.') ? '' : 'z.'}${f} = :${adjustRelationName(f)}`;
       })
       .join(' AND ');
 
@@ -37,6 +37,7 @@ const find: FindHandler<ITimeTrackTask> = async (
         z.USR$PROJECT PROJECT_ID,
         z.USR$ISACTIVE ISACTIVE,
         p.USR$NAME PROJECT_NAME,
+        p.USR$DONE,
         con.ID CONTACT_ID,
         con.NAME CONTACT_NAME
       FROM USR$CRM_TIMETRACKER_TASKS z

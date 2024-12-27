@@ -11,14 +11,18 @@ const findAll = async (
   const customerId = filter?.customerId;
   const projectId = filter?.projectId;
   const isActive = filter?.isActive;
+  const considerProjectStatus = filter?.considerProjectStatus;
 
   try {
     const tasks = await timeTrackerTasksRepository.find(sessionID,
       {
         ...(projectId && { 'USR$PROJECT': projectId }),
-        ...(isActive ? { 'USR$ISACTIVE': isActive === 'true' ? 1 : 0 } : {})
+        ...(isActive ? { 'USR$ISACTIVE': isActive === 'true' ? 1 : 0 } : {}),
+        ...(considerProjectStatus && { 'p.USR$DONE': 0 })
       }
     );
+
+    console.log(tasks);
 
     const favorites = await favoriteTimeTrackerTasksRepository.find(sessionID, { 'USR$USER': userId });
 

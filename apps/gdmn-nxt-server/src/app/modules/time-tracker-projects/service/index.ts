@@ -13,14 +13,15 @@ const findAll = async (
   const sortField = filter?.field ?? 'NAME';
   const sortMode = filter?.sort ?? 'ASC';
   /** Filtering */
-  const userId = filter.userId;
-  const customerId = filter.customerId;
-  const groupByFavorite = filter.groupByFavorite === 'true';
-  const projectType = filter.projectType;
-  const name = filter.name;
-  const type = filter.type;
-  const customer = filter.customer;
-  const taskisActive = filter.taskisActive;
+  const userId = filter?.userId;
+  const customerId = filter?.customerId;
+  const groupByFavorite = filter?.groupByFavorite === 'true';
+  const projectType = filter?.projectType;
+  const name = filter?.name;
+  const type = filter?.type;
+  const customer = filter?.customer;
+  const taskisActive = filter?.taskisActive;
+  const isDone = filter?.isDone;
 
   try {
     const projects = await timeTrackerProjectsRepository.find(
@@ -28,8 +29,11 @@ const findAll = async (
       {
         ...(customerId && { 'USR$CUSTOMER': customerId }),
         ...(projectType && { 'USR$PROJECT_TYPE': projectType }),
-        ...(customer && { 'USR$CUSTOMER': customer })
+        ...(customer && { 'USR$CUSTOMER': customer }),
+        ...(isDone && { 'USR$DONE': isDone === 'true' ? 1 : 0 })
       });
+
+    console.log(projects);
 
     const favorites = await favoriteTimeTrackerProjectsRepository.find(sessionID, { 'USR$USER': userId });
 
@@ -51,8 +55,6 @@ const findAll = async (
       .reduce<ITimeTrackProject[]>((filteredArray, project) => {
         let checkConditions = true;
 
-        let newProject: ITimeTrackProject;
-
         const checkType = () => {
           if (type === '1') {
             return !project.isDone;
@@ -67,51 +69,50 @@ const findAll = async (
           checkConditions = checkConditions && checkType();
         }
 
-        if (groupByFavorite) {
-          /** Split projects into favorite and non-favorite */
-          const projectTasks = tasks.get(project.ID) ?? [];
-
-          const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
-          const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
-
-          if (favoriteTasks.length > 0) {
-            newProject = {
-              ...project,
-              isFavorite: true,
-              tasks: favoriteTasks
-            };
-          }
-
-          if (nonFavoriteTasks.length > 0) {
-            newProject = {
-              ...project,
-              isFavorite: false,
-              tasks: nonFavoriteTasks
-            };
-          }
-          ;
-        } else {
-          const projectTasks = tasks.get(project.ID) ?? [];
-          for (const task of projectTasks) {
-            if (task.isFavorite) newProject = { ...project, isFavorite: true, tasks: projectTasks };
-          }
-          if (!newProject) {
-            newProject = { ...project, isFavorite: false, tasks: projectTasks };
-          }
-        }
-
         if (name) {
           const lowerName = String(name).toLowerCase();
           checkConditions = checkConditions && (
-            newProject.name?.toLowerCase().includes(lowerName) ||
-            newProject.tasks.findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1
+            project.name?.toLowerCase().includes(lowerName) ||
+            tasks.get(project.ID).findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1
           );
         }
 
         if (checkConditions) {
-          filteredArray.push({
-            ...newProject
-          });
+          if (groupByFavorite) {
+            /** Split projects into favorite and non-favorite */
+            const projectTasks = tasks.get(project.ID) ?? [];
+
+            const favoriteTasks = projectTasks.filter(({ isFavorite }) => isFavorite);
+            const nonFavoriteTasks = projectTasks.filter(({ isFavorite }) => !isFavorite);
+
+            if (favoriteTasks.length > 0) {
+              filteredArray.push({
+                ...project,
+                isFavorite: true,
+                tasks: favoriteTasks
+              });
+            }
+
+            if (nonFavoriteTasks.length > 0) {
+              filteredArray.push({
+                ...project,
+                isFavorite: false,
+                tasks: nonFavoriteTasks
+              });
+            }
+          } else {
+            const projectTasks = tasks.get(project.ID) ?? [];
+            let newProject;
+            for (const task of projectTasks) {
+              if (task.isFavorite) newProject = { ...project, isFavorite: true, tasks: projectTasks };
+            }
+            if (!newProject) {
+              newProject = { ...project, isFavorite: false, tasks: projectTasks };
+            }
+            filteredArray.push({
+              ...newProject
+            });
+          }
         }
         return filteredArray;
       }, [])
@@ -125,6 +126,8 @@ const findAll = async (
         }
         return a.isFavorite ? -1 : 1;
       });
+
+    console.log(sortedProjects);
 
     return sortedProjects;
   } catch (error) {
