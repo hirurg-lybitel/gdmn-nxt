@@ -22,8 +22,6 @@ const findAll = async (
       }
     );
 
-    console.log(tasks);
-
     const favorites = await favoriteTimeTrackerTasksRepository.find(sessionID, { 'USR$USER': userId });
 
     return tasks.reduce((filteredArray, t) => {

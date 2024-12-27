@@ -1,18 +1,12 @@
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
-import { Button, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
-import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
-import { useAddFavoriteTaskMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteTaskMutation, useDeleteTimeTrackTaskMutation, useUpdateTimeTrackTaskMutation } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -218,7 +212,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
         if (id === 0) return;
       };
       stopAdding();
-      onSubmit({ ...row, isActive: !row.isActive }, false);
+      onSubmit({ ...row, isActive: !row.isActive, project }, false);
     };
 
     return (

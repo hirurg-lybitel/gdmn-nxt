@@ -190,8 +190,6 @@ const remove: RemoveHandler = async (
       }
     );
 
-    console.log(deletedTaskFromFavorite);
-
     const deletedEntity = await fetchAsSingletonObject<{ID: number}>(
       `DELETE FROM USR$CRM_TIMETRACKER_TASKS WHERE ID = :id
       RETURNING ID`,

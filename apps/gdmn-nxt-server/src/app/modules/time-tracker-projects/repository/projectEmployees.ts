@@ -1,7 +1,7 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';
-import { IContactPerson, IProjectNote, IWithID } from '@gsbelarus/util-api-types';
+import { IContactPerson, IWithID } from '@gsbelarus/util-api-types';
 
 export interface IProjectEmployee extends IWithID {
   person: IContactPerson
@@ -72,7 +72,6 @@ const remove = async (sessionID: string, id: number) => {
     releaseTransaction,
   } = await startTransaction(sessionID);
   try {
-    console.log('asd');
     const deletedEmpls = await fetchAsSingletonObject<{ID: number}>(
       `DELETE FROM USR$CRM_TT_PROJECTS_EMPLOYEES WHERE ID = :id
       RETURNING ID`,

@@ -1,46 +1,28 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { Box, CardContent, CardHeader, Divider, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import { ChangeEvent, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { IFilteringData, IPaginationData, IProjectFilter, IProjectType, ISortingData, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridGroupNode, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowParams, GridSortModel, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { IFilteringData, IPaginationData, IProjectType, ISortingData, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
+import { GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridRenderCellParams, GridRowId, GridRowParams, GridSortModel, useGridApiRef } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
-import EditIcon from '@mui/icons-material/Edit';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
-import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useDeleteProjectMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useGetProjectTypesQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
+import { useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteTaskMutation, useDeleteProjectMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useGetProjectTypesQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import Confirmation from '@gdmn-nxt/helpers/confirmation';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Close';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import ProjectEdit from './components/projectEdit/projectEdit';
 import { DetailPanelContent } from './components/detailPanelContent/detailPanelContent';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
 import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import ItemButtonVisible from './components/item-button-visible/item-button-visible';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-
-interface IErrors {
-  [key: string]: string | undefined
-}
-interface IErrorsObject {
-  [key: GridRowId]: IErrors
-}
 
 export interface IProjectsProps {}
 
@@ -259,14 +241,15 @@ export function Projects(props: IProjectsProps) {
   ];
 
   const taskSubmit = useCallback((task: ITimeTrackTask, isDeleting: boolean) => {
-    if (isDeleting)(
-      deleteTask(task.ID)
-    );
+    if (isDeleting) {
+      deleteTask(task.ID);
+      return;
+    }
     if (task.ID > 0) {
       updateTask(task);
     } else {
       addTask(task);
-    };
+    }
   }, [addTask, deleteTask, updateTask]);
 
   const changeTaskFvorite = useCallback((data: {taskId: number, projectId: number}, favorite: boolean) => {

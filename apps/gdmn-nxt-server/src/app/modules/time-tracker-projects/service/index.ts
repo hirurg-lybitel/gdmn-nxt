@@ -33,8 +33,6 @@ const findAll = async (
         ...(isDone && { 'USR$DONE': isDone === 'true' ? 1 : 0 })
       });
 
-    console.log(projects);
-
     const favorites = await favoriteTimeTrackerProjectsRepository.find(sessionID, { 'USR$USER': userId });
 
     const tasks = new Map<number, ITimeTrackTask[]>();
@@ -126,8 +124,6 @@ const findAll = async (
         }
         return a.isFavorite ? -1 : 1;
       });
-
-    console.log(sortedProjects);
 
     return sortedProjects;
   } catch (error) {

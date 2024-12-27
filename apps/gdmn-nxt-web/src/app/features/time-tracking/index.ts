@@ -126,16 +126,35 @@ export const timeTrackingApi = createApi({
           ]
           : [{ type: 'Project', id: 'LIST' }],
     }),
-    addProject: builder.mutation<ITimeTrack, ITimeTrackProject>({
+    addProject: builder.mutation<ITimeTrackProject, ITimeTrackProject>({
       query: (body) => ({
         url: '/projects',
         method: 'POST',
         body,
       }),
-      transformResponse: (response: ITimeTrackingRequestResult) => response.queries?.timeTracking[0],
+      transformResponse: (response: ITimeTrackerProjectsRequestResult) => response.queries.timeTrackerProjects[0],
       invalidatesTags: [{ type: 'Project', id: 'LIST' }],
+      async onQueryStarted({ ID, ...patch }, { dispatch, queryFulfilled }) {
+        try {
+          const { data: addedProject } = await queryFulfilled;
+          cachedOptions.forEach(async opt => {
+            const options = Object.keys(opt).length > 0 ? opt : undefined;
+            dispatch(
+              timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+                const findIndex = draft?.projects.findIndex(({ ID }) => ID === addedProject.ID);
+                if (findIndex > 0) return;
+
+                draft?.projects.unshift(addedProject);
+                if (draft.count) draft.count += 1;
+              })
+            );
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      },
     }),
-    updateProject: builder.mutation<ITimeTrack, Partial<ITimeTrack>>({
+    updateProject: builder.mutation<ITimeTrackProject, ITimeTrackProject>({
       query: ({ ID, ...body }) => ({
         url: `/projects/${ID}`,
         method: 'PUT',
@@ -145,6 +164,27 @@ export const timeTrackingApi = createApi({
         result
           ? [{ type: 'Project', id: result?.ID }, { type: 'Project', id: 'LIST' }]
           : [{ type: 'Project', id: 'LIST' }],
+      async onQueryStarted(project, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              if (Array.isArray(draft.projects)) {
+                const projectIndex = draft.projects?.findIndex(c => c.ID === project.ID);
+
+                if (projectIndex < 0) return;
+
+                draft.projects[projectIndex] = { ...project };
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     deleteProject: builder.mutation<{ id: number }, number>({
       query(id) {
@@ -157,7 +197,29 @@ export const timeTrackingApi = createApi({
         return result
           ? [{ type: 'Project', id: result?.id }, { type: 'Project', id: 'LIST' }]
           : [{ type: 'Project', id: 'LIST' }];
-      }
+      },
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              if (Array.isArray(draft.projects)) {
+                const projectIndex = draft.projects?.findIndex(c => c.ID === id);
+
+                if (projectIndex < 0) return;
+
+                draft?.projects.splice(projectIndex, 1);
+                if (draft.count) draft.count -= 1;
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     getProjectTypes: builder.query<IProjectType[], void>({
       query: () => '/projectTypes',
@@ -243,7 +305,7 @@ export const timeTrackingApi = createApi({
       transformResponse: (response: ITimeTrackerTasksRequestResult) => response.queries?.timeTrackerTasks[0],
       invalidatesTags: [{ type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }],
     }),
-    updateTimeTrackTask: builder.mutation<ITimeTrackTask, Partial<ITimeTrackTask>>({
+    updateTimeTrackTask: builder.mutation<ITimeTrackTask, ITimeTrackTask>({
       query: ({ ID, ...body }) => ({
         url: `/tasks/${ID}`,
         method: 'PUT',
@@ -253,6 +315,45 @@ export const timeTrackingApi = createApi({
         result
           ? [{ type: 'Task', id: result?.ID }, { type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }]
           : [{ type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }],
+      async onQueryStarted(task, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              if (Array.isArray(draft.projects)) {
+                const projectIndex = draft.projects.findIndex(c => c.ID === task.project?.ID);
+                const tasks = draft.projects[projectIndex]?.tasks;
+
+                if (!tasks) {
+                  return;
+                }
+
+                if (projectIndex < 0) {
+                  return;
+                }
+
+                const taskIndex = tasks?.findIndex(c => c.ID === task.ID);
+                if (taskIndex < 0) {
+                  return;
+                }
+
+                const newTasks = draft.projects[projectIndex]?.tasks;
+
+                if (!newTasks) {
+                  return;
+                }
+                newTasks[taskIndex] = task;
+                draft.projects[projectIndex] = { ...draft.projects[projectIndex], tasks: newTasks };
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     deleteTimeTrackTask: builder.mutation<{ id: number }, number>({
       query(id) {
@@ -265,7 +366,49 @@ export const timeTrackingApi = createApi({
         return result
           ? [{ type: 'Task', id: result?.id }, { type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }]
           : [{ type: 'Task', id: 'LIST' }, { type: 'Project', id: 'LIST' }];
-      }
+      },
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        projectsCachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            timeTrackingApi.util.updateQueryData('getProjects', options, (draft) => {
+              if (Array.isArray(draft.projects)) {
+                const projectIndex = draft.projects.findIndex(project => project.tasks?.findIndex(task => task.ID === id) !== -1);
+                const tasks = draft.projects[projectIndex]?.tasks;
+
+                if (!tasks) {
+                  return;
+                }
+
+                if (projectIndex < 0) {
+                  return;
+                }
+
+                const taskIndex = tasks?.findIndex((c, i) => c.ID === id);
+
+                if (taskIndex < 0) {
+                  return;
+                }
+
+                const newTasks = draft.projects[projectIndex]?.tasks;
+
+                if (!newTasks) {
+                  return;
+                }
+
+                newTasks.splice(taskIndex, 1);
+
+                draft.projects[projectIndex] = { ...draft.projects[projectIndex], tasks: newTasks };
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
     }),
     addFavoriteTask: builder.mutation<IFavoriteTask, {taskId: number, projectId: number}>({
       query: ({ taskId }) => ({

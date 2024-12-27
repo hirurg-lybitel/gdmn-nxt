@@ -1,8 +1,6 @@
-import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
-import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';
 import { FindHandler, FindOneHandler, FindOperator, IContactPerson, IProjectNote, ITimeTrackProject, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { projectNotesRepository } from './projectNotes';
 import { IProjectEmployee, projectEmployeesRepository } from './projectEmployees';
@@ -241,8 +239,6 @@ const save: SaveHandler<ITimeTrackProject> = async (
     const newEmployees = employees && await Promise.all(employees.map(async empl => {
       return projectEmployeesRepository.save(sessionID, empl.ID, newProject.ID);
     }));
-
-    console.log(projectType);
 
     const newNotes = notes && await Promise.all(notes.map(async note => {
       return await fetchAsSingletonObject<IProjectNote>(

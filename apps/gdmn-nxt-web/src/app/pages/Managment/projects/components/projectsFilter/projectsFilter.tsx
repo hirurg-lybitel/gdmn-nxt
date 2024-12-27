@@ -1,10 +1,8 @@
 import { ICustomer, IFilteringData, IProjectFilter } from '@gsbelarus/util-api-types';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { Autocomplete, Button, CardActions, CardContent, Stack, TextField } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
-import { DateRange } from '@mui/lab';
-import dayjs from '@gdmn-nxt/dayjs';
 import { useGetFiltersQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useGetCustomersQuery } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 

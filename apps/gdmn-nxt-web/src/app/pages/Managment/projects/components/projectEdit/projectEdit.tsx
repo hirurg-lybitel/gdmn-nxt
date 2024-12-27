@@ -1,13 +1,12 @@
 import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './projectEdit.module.less';
-import { IContactWithID, IProjectNote, IProjectType, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
+import { IProjectType, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
 import { makeStyles } from '@mui/styles';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { DetailPanelContent } from '../detailPanelContent/detailPanelContent';
 import { ProjectEmployees } from './projectEmployees';

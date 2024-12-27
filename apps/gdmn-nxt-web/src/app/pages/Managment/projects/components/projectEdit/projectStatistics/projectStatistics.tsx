@@ -1,7 +1,7 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { useGetStatisticsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import styles from './projectStatistics.module.less';
-import { Box, Divider, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Divider, Stack, Tooltip } from '@mui/material';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { GridColDef } from '@mui/x-data-grid-pro';
 import { IProjectStatistics, ITimeTrack } from '@gsbelarus/util-api-types';
