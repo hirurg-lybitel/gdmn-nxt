@@ -102,7 +102,7 @@ export const timeTrackingApi = createApi({
           : [{ type: 'TimeTrack', id: 'LIST' }];
       }
     }),
-    getProjects: builder.query<{projects: ITimeTrackProject[], count: number}, Partial<IQueryOptions> | void>({
+    getProjects: builder.query<{projects: ITimeTrackProject[], rowCount: number}, Partial<IQueryOptions> | void>({
       query: (options) => {
         const lastOptions: Partial<IQueryOptions> = { ...options };
 
@@ -117,7 +117,7 @@ export const timeTrackingApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: IRequestResult<{projects: ITimeTrackProject[], count: number}>) => response.queries,
+      transformResponse: (response: IRequestResult<{projects: ITimeTrackProject[], rowCount: number}>) => response.queries,
       providesTags: (result) =>
         result
           ? [
@@ -145,7 +145,7 @@ export const timeTrackingApi = createApi({
                 if (findIndex > 0) return;
 
                 draft?.projects.unshift(addedProject);
-                if (draft.count) draft.count += 1;
+                if (draft.rowCount) draft.rowCount += 1;
               })
             );
           });
@@ -209,7 +209,7 @@ export const timeTrackingApi = createApi({
                 if (projectIndex < 0) return;
 
                 draft?.projects.splice(projectIndex, 1);
-                if (draft.count) draft.count -= 1;
+                if (draft.rowCount) draft.rowCount -= 1;
               }
             })
           );

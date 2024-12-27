@@ -330,7 +330,7 @@ export function Projects(props: IProjectsProps) {
           <div style={{ flex: '1' }}>
             <StyledGrid
               rows={projects}
-              rowCount={data?.count ?? 0}
+              rowCount={data?.rowCount ?? 0}
               columns={columns}
               loading={projectsIsFetching}
               pagination

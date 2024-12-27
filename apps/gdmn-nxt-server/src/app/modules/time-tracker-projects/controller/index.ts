@@ -128,6 +128,7 @@ const create: RequestHandler = async (req, res) => {
 
     const timeTrack = await timeTrackerProjectsService.create(
       req.sessionID,
+      userId,
       {
         user: {
           ID: userId
@@ -149,6 +150,8 @@ const create: RequestHandler = async (req, res) => {
 
 const update: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
+  const userId = req.user['id'];
+
   if (isNaN(id)) {
     throw UnprocessableEntityException('Field ID is not defined or is not numeric');
   }
@@ -156,6 +159,7 @@ const update: RequestHandler = async (req, res) => {
   try {
     const updatedProject = await timeTrackerProjectsService.update(
       req.sessionID,
+      userId,
       id,
       req.body
     );

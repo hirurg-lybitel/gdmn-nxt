@@ -214,10 +214,17 @@ const statistics = async (
 
 const create = async (
   sessionID: string,
+  userId: number,
   body: ITimeTrackProject
 ) => {
   try {
-    return await timeTrackerProjectsRepository.save(sessionID, body);
+    const project = await timeTrackerProjectsRepository.save(sessionID, body);
+    const favorites = Promise.all(project.tasks.map(async task => {
+      if (task.isFavorite) {
+        return await timeTrackerTasksService.addToFavorites(sessionID, userId, task.ID);
+      }
+    }));
+    return project;
   } catch (error) {
     throw error;
   }
@@ -225,6 +232,7 @@ const create = async (
 
 const update = async (
   sessionID: string,
+  userId: number,
   id: number,
   body: Partial<ITimeTrackProject>
 ) => {
@@ -233,12 +241,12 @@ const update = async (
     if (!project) {
       throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
     }
-    const updatedProject =
-        await timeTrackerProjectsRepository.update(
-          sessionID,
-          id,
-          body,
-        );
+    const updatedProject = await timeTrackerProjectsRepository.update(
+      sessionID,
+      userId,
+      id,
+      body,
+    );
     if (!updatedProject) {
       throw InternalServerErrorException(ERROR_MESSAGES.UPDATE_FAILED);
     }

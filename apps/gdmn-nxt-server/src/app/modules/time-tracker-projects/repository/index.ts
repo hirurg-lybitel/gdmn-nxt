@@ -1,7 +1,7 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
-import { FindHandler, FindOneHandler, FindOperator, IContactPerson, IProjectNote, ITimeTrackProject, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IContactPerson, IProjectNote, ITimeTrackProject, ITimeTrackTask, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { projectNotesRepository } from './projectNotes';
 import { IProjectEmployee, projectEmployeesRepository } from './projectEmployees';
 
@@ -92,11 +92,12 @@ const findOne: FindOneHandler<ITimeTrackProject> = async (
   return rows[0];
 };
 
-const update: UpdateHandler<ITimeTrackProject> = async (
-  sessionID,
-  id,
-  metadata
-) => {
+const update = async (
+  sessionID: string,
+  userId: number,
+  id: number,
+  metadata: Partial<ITimeTrackProject>
+): Promise<ITimeTrackProject> => {
   const {
     fetchAsSingletonObject,
     releaseTransaction,
@@ -116,10 +117,8 @@ const update: UpdateHandler<ITimeTrackProject> = async (
       projectType = project.projectType
     } = metadata;
 
-
     const oldNotes = project.notes;
     const oldEmployees: IProjectEmployee[] = ((await projectEmployeesRepository.find(sessionID, true))[`${id}`]) as IProjectEmployee[];
-
     if (JSON.stringify(notes) !== JSON.stringify(oldNotes)) {
       // delete old notes
       oldNotes && await Promise.all(oldNotes?.map(async note => {
@@ -142,7 +141,7 @@ const update: UpdateHandler<ITimeTrackProject> = async (
       }));
     };
 
-    const oldTasks = (await timeTrackerTasksService.findAll(sessionID, { projectId: id })).map(task => ({ ...task, project: undefined }));
+    const oldTasks = (await timeTrackerTasksService.findAll(sessionID, { projectId: id, userId })).map(task => ({ ...task, project: undefined }));
 
     if (JSON.stringify(tasks) !== JSON.stringify(oldTasks)) {
       // find and delete tasks
@@ -157,11 +156,22 @@ const update: UpdateHandler<ITimeTrackProject> = async (
       tasks?.map(async task => {
         const oldTask = oldTasks.find(({ ID }) => ID === task.ID);
         if (!oldTask) {
-          return await timeTrackerTasksService.create(sessionID, { ...task, project: project });
+          const newTask = await timeTrackerTasksService.create(sessionID, { ...task, project: project });
+          if (task.isFavorite) {
+            await timeTrackerTasksService.addToFavorites(sessionID, userId, newTask.ID);
+          }
+          return newTask;
         };
-
         if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
-          return await timeTrackerTasksService.update(sessionID, task.ID, { ...task, project: project });
+          const newTask = await timeTrackerTasksService.update(sessionID, task.ID, { ...task, project: project });
+          if (task.isFavorite !== oldTask.isFavorite) {
+            if (task.isFavorite) {
+              await timeTrackerTasksService.addToFavorites(sessionID, userId, newTask.ID);
+            } else {
+              await timeTrackerTasksService.removeFromFavorites(sessionID, userId, newTask.ID);
+            }
+          }
+          return newTask;
         };
       });
     }
@@ -232,31 +242,54 @@ const save: SaveHandler<ITimeTrackProject> = async (
       }
     );
 
-    const newTasks = tasks && await Promise.all(tasks.map(async task => {
-      return await timeTrackerTasksService.create(sessionID, { ...task, project: newProject });
+    const newTasks = tasks && await Promise.all(tasks.map(async (task) => {
+      const newTask = await fetchAsSingletonObject<ITimeTrackTask>(
+        `INSERT INTO USR$CRM_TIMETRACKER_TASKS(USR$NAME, USR$PROJECT, USR$ISACTIVE)
+            VALUES(:name, :project, :isActive)
+            RETURNING ID`,
+        {
+          name: task.name,
+          project: newProject.ID,
+          isActive: task.isActive
+        }
+      );
+      return { ...task, ID: newTask.ID };
     }));
 
+    // const newTasks = newTasksResp.map((task, index) => {
+    //   return { ...tasks[index], ID: task.ID };
+    // });
+
     const newEmployees = employees && await Promise.all(employees.map(async empl => {
-      return projectEmployeesRepository.save(sessionID, empl.ID, newProject.ID);
+      const newEmpl = await fetchAsSingletonObject<IContactPerson>(
+        `INSERT INTO USR$CRM_TT_PROJECTS_EMPLOYEES(USR$PROJECT, USR$CONTACTKEY)
+        VALUES(:projectId, :contactKey)
+        RETURNING ID`,
+        {
+          projectId: newProject.ID,
+          contactKey: empl.ID
+        }
+      );
+      return newEmpl;
     }));
 
     const newNotes = notes && await Promise.all(notes.map(async note => {
-      return await fetchAsSingletonObject<IProjectNote>(
-        `INSERT INTO USR$CRM_TT_PROJECTS_NOTES(USR$PROJECT, USR$NOTE, USR$CUSTOMER)
-        VALUES(:project, :note, :customer)
+      const newNote = await fetchAsSingletonObject<IProjectNote>(
+        `INSERT INTO USR$CRM_TT_PROJECTS_NOTES(USR$PROJECT, USR$NOTE)
+        VALUES(:project, :note)
         RETURNING ID`,
         {
           project: newProject.ID,
-          note: note.message,
-          customer: customer
+          note: note.message
         }
       );
+      return newNote;
     }));
 
     await releaseTransaction();
     const project = await findOne(sessionID, { ID: newProject.ID });
 
-    return project;
+    return { ...project, tasks: newTasks };
   } catch (error) {
     await releaseTransaction(false);
     throw new Error(error);

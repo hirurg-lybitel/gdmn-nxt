@@ -38,7 +38,7 @@ const findAll = async (
       }
 
       return filteredArray;
-    }, [] as ITimeTrackTask[]);
+    }, [] as ITimeTrackTask[]).sort((a, b) => a.isFavorite ? -1 : 1);
   } catch (error) {
     throw error;
   }

@@ -1,6 +1,6 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import './ProjectEmployees.module.css';
-import { IContactPerson, IPaginationData } from '@gsbelarus/util-api-types';
+import { IContactWithID, IPaginationData } from '@gsbelarus/util-api-types';
 import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateConstactPersonsMutation, useUpdateContactPersonMutation } from 'apps/gdmn-nxt-web/src/app/features/contact/contactApi';
 import { useMemo, useState } from 'react';
 import ContactCards from '@gdmn-nxt/components/Contacts/contact-cards/contact-cards';
@@ -10,11 +10,11 @@ import { Box, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/m
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
-import ContactsChoose from '@gdmn-nxt/components/Contacts/contacts-choose';
+import EmployeesChoose from './employee-choose';
 
 export interface ProjectEmployeesProps {
-  employees?: IContactPerson[],
-  onChange: (empls: IContactPerson[]) => void
+  employees?: IContactWithID[],
+  onChange: (empls: IContactWithID[]) => void
 }
 
 export function ProjectEmployees({
@@ -53,13 +53,13 @@ export function ProjectEmployees({
   const [upsertContact, setUpsertContact] = useState<{
     addContact?: boolean;
     editContact?: boolean;
-    contact?: IContactPerson
+    contact?: IContactWithID
   }>({
     addContact: false,
     editContact: false
   });
 
-  const handleContactEdit = (contact: IContactPerson) => {
+  const handleContactEdit = (contact: IContactWithID) => {
     setUpsertContact({ editContact: true, contact });
   };
 
@@ -67,12 +67,12 @@ export function ProjectEmployees({
     setUpsertContact({ addContact: false, editContact: false });
   };
 
-  const handlePersonEditSubmit = async (person: IContactPerson, deleting?: boolean) => {
+  const handlePersonEditSubmit = async (person: IContactWithID, deleting?: boolean) => {
     deleting ? deletePerson(person.ID) : updatePerson(person);
     handleCancel();
   };
 
-  const handlePersonAddSubmit = async (person: IContactPerson) => {
+  const handlePersonAddSubmit = async (person: IContactWithID) => {
     handleCancel();
 
     addPerson(person);
@@ -86,36 +86,6 @@ export function ProjectEmployees({
         NAME: '',
       }
     });
-  };
-
-  const handleContactsChooseSubmit = (values: IContactPerson[]) => {
-    const contacts = employees ?? [];
-
-    const addedContacts = values?.reduce((acc, contact) => {
-      if (contacts.findIndex(({ ID }) => ID === contact.ID) < 0) {
-        const { ID, NAME } = contact;
-        acc.push({
-          ID,
-          NAME
-        });
-      }
-      return acc;
-    }, [] as Partial<IContactPerson[]>);
-
-    const deletedContacts = contacts.reduce((acc, contact) => {
-      if (values.findIndex(({ ID }) => ID === contact.ID) < 0) {
-        const { ID, NAME } = contact;
-        acc.push({
-          ID,
-          NAME,
-          COMPANY: null
-        });
-      }
-      return acc;
-    }, [] as Partial<IContactPerson[]>);
-
-    updatePersons(addedContacts);
-    updatePersons(deletedContacts);
   };
 
   const memoEditContact = useMemo(() =>
@@ -139,7 +109,9 @@ export function ProjectEmployees({
   return (
     <Stack className="contacts-container">
       <Stack direction="row" spacing={1}>
-        <ContactsChoose
+        <EmployeesChoose
+          label={'Сотрудники'}
+          placeholder={'Выберите сотрудников'}
           value={employees ?? []}
           disabled={personsIsFetching}
           onSubmit={onChange}

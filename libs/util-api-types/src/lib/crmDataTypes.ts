@@ -526,7 +526,7 @@ export interface ITimeTrackProject extends IWithID {
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
   isFavorite?: boolean,
-  employees?: IContactPerson[],
+  employees?: IContactWithID[],
   notes?: IProjectNote[],
   isPrivate?: boolean,
   isDone?: boolean,
