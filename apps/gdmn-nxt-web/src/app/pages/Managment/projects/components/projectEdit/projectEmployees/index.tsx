@@ -31,17 +31,26 @@ export function ProjectEmployees({
     refetch: personsRefetch
   } = useGetContactPersonsQuery();
 
-  const sortPersons = useMemo(() => persons?.records?.filter(person => {
-    for (const empl of employees) {
-      if (empl.ID === person.ID) return true;
-    }
-    return false;
-  }), [employees, persons?.records]) || [];
+  const sortPersons = useMemo(() => {
+    return persons?.records?.filter(person => {
+      for (const empl of employees) {
+        if (empl.ID === person.ID) return true;
+      }
+      return false;
+    }) || [];
+  }, [employees, persons?.records]);
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
     pageSize: matchUpUW ? 16 : 9,
   });
+
+  const personsWithPagination = useMemo(() => {
+    const fromRecord = Number(paginationData.pageNo) * Number(paginationData.pageSize);
+    const toRecord = fromRecord + Number(paginationData.pageSize);
+
+    return sortPersons.slice(fromRecord, toRecord);
+  }, [paginationData.pageNo, paginationData.pageSize, sortPersons]);
 
   const userPermissions = usePermissions();
 
@@ -136,7 +145,7 @@ export function ProjectEmployees({
         </Box>
       </Stack>
       <ContactCards
-        contacts={sortPersons}
+        contacts={personsWithPagination}
         contactsCount={sortPersons.length ?? 0}
         onEditClick={handleContactEdit}
         paginationData={paginationData}

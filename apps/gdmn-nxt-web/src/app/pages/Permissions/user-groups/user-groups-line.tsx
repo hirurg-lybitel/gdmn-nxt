@@ -12,7 +12,6 @@ import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import { useResetProfileSettingsMutation } from '../../../features/profileSettings';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { makeStyles } from '@mui/styles';
-import { Height } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme: Theme) => ({
   statusIcon: {
