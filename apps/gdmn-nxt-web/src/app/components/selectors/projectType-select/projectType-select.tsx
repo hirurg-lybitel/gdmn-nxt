@@ -151,7 +151,7 @@ export function ProjectTypeSelect({
       <Autocomplete
         filterOptions={filterOptions}
         style={style}
-        disableClearable={disableClearable}
+        disableClearable={disableClearable || notNull}
         readOnly={readOnly}
         disabled={disabled || (notNull && projectTypesIsFetching)}
         options={(filter ? projectTypes.filter(projectType => filter(projectType)) : projectTypes) ?? []}
