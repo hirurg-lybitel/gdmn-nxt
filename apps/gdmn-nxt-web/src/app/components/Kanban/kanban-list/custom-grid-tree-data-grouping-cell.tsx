@@ -16,99 +16,52 @@ interface CustomGridTreeDataGroupingCellProps extends GridRenderCellParams<any, 
 }
 
 export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGroupingCellProps) => {
-  const { id, field, rowNode, value, row, columns = [], disableAddCard = false, onCardAddClick } = props;
+  const { rowNode, value, row, disableAddCard = false, onCardAddClick, formattedValue } = props;
 
   const userPermissions = usePermissions();
 
-  const column = columns?.find(c => c.ID === Number(value));
-
-  const apiRef = useGridApiContext();
-  const filteredDescendantCountLookup = useGridSelector(
-    apiRef,
-    gridFilteredDescendantCountLookupSelector,
-  );
-  const filteredDescendantCount = filteredDescendantCountLookup[rowNode.id] ?? 0;
-
-  const isNavigationKey = useCallback((key: string) =>
-    key === 'Home' ||
-    key === 'End' ||
-    key.indexOf('Arrow') === 0 ||
-    key.indexOf('Page') === 0 ||
-    key === ' '
-  , []);
-
-  const handleKeyDown: ButtonProps['onKeyDown'] = (event) => {
-    if (event.key === ' ') {
-      event.stopPropagation();
-    }
-    if (isNavigationKey(event.key) && !event.shiftKey) {
-      apiRef.current.publishEvent('cellNavigationKeyDown' as any, props, event);
-    }
-  };
-
-  const handleClick: ButtonProps['onClick'] = (event) => {
-    apiRef.current.setRowChildrenExpansion(id, !rowNode.childrenExpanded);
-    apiRef.current.setCellFocus(id, field);
-    event.stopPropagation();
-  };
-
-  const handleCardAdd = useCallback(() => {
+  const handleCardAdd = useCallback((e: any) => {
+    e.stopPropagation();
     onCardAddClick && onCardAddClick(Number(value));
   }, [onCardAddClick, value]);
-
-  /** For indent */
-  if (filteredDescendantCount === 0) {
-    return (
-      <>
-        <div style={{ marginLeft: '48px' }} />
-        {renderCellExpand(props, row.USR$NAME || '')}
-      </>
-    );
-  }
 
   return (
     <Box sx={{ ml: rowNode.depth * 4 }}>
       <div>
-        {filteredDescendantCount > 0 ? (
-          <Stack direction="row" alignItems="center">
-            {!disableAddCard &&
-              <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
-                <IconButton
-                  onClick={handleCardAdd}
-                  color="primary"
-                  size="small"
-                  {...(() => column?.USR$INDEX !== 0
-                    ? {
-                      disabled: true
-                    }
-                    : {})()}
-                >
-                  <AddCircleIcon />
-                </IconButton>
-              </PermissionsGate>}
+        <Stack
+          direction="row"
+          alignItems="center"
+          onClick={(e) => row?.CARDS.length < 1 && e.stopPropagation()}
+        >
+          <PermissionsGate actionAllowed={userPermissions?.deals.POST}>
             <IconButton
-              onClick={handleClick}
-              onKeyDown={handleKeyDown}
+              onClick={handleCardAdd}
+              color="primary"
               size="small"
-              tabIndex={-1}
+              // disabled={row?.USR$INDEX !== 0 || disableAddCard}
             >
-              {rowNode.childrenExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              <AddCircleIcon />
             </IconButton>
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={2}
-              mt={0.5}
-            >
-              <Box>
-                {column?.USR$NAME || ''}
-              </Box>
-              <Chip label={filteredDescendantCount} size="small" />
-            </Stack>
+          </PermissionsGate>
+          <IconButton
+            size="small"
+            disabled={row?.CARDS.length < 1}
+          >
+            {formattedValue ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+          </IconButton>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={2}
+            mt={0.5}
+            style={{ pointerEvents: 'none' }}
+          >
+            <Box>
+              {row?.USR$NAME || ''}
+            </Box>
+            <Chip label={row?.CARDS.length.toString()} size="small" />
           </Stack>
-        ) : (
-          <span />
-        )}
+        </Stack>
       </div>
     </Box>
   );
