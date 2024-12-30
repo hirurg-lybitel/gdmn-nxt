@@ -223,14 +223,14 @@ export function ProjectEdit(props: ProjectEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.DELETE}>
+        {project && <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.DELETE}>
           <ItemButtonDelete
             disabled={inUse}
             title={'Удаление проекта'}
             button
             onClick={handleDelete}
           />
-        </PermissionsGate>
+        </PermissionsGate>}
         <Box flex={1}/>
         <ButtonWithConfirmation
           className={classes.button}
