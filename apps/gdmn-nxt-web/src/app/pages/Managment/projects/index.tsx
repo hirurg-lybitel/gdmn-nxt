@@ -44,13 +44,7 @@ export function Projects(props: IProjectsProps) {
   const [updateProject] = useUpdateProjectMutation();
   const [deleteProject] = useDeleteProjectMutation();
 
-  const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
-
-  useEffect(() => {
-    if (projectTypes.length === 0) return;
-    setProjectType(projectTypes[0]);
-  }, [projectTypesIsLoading]);
 
   const [paginationData, setPaginationData] = useState<IPaginationData>({
     pageNo: 0,
@@ -300,7 +294,7 @@ export function Projects(props: IProjectsProps) {
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton
                   hint="Обновить данные"
-                  loading={projectsIsFetching || projectTypesIsFetching}
+                  loading={projectsIsFetching}
                   onClick={refreshClick}
                 />
               </Box>
@@ -320,6 +314,7 @@ export function Projects(props: IProjectsProps) {
             <ProjectTypeSelect
               withCreate
               withEdit
+              notNull
               disableClearable
               value={projectType}
               onChange={(value) => setProjectType(value as IProjectType)}

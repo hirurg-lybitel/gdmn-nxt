@@ -1,6 +1,6 @@
 import { IProjectType, Permissions } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, Checkbox, createFilterOptions, FilterOptionsState, InputAdornment, ListItem, TextField, TextFieldVariants } from '@mui/material';
-import { HTMLAttributes, MouseEventHandler, useCallback, useMemo, useState } from 'react';
+import { Autocomplete, Button, Checkbox, createFilterOptions, FilterOptionsState, ListItem, TextField, TextFieldVariants } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -33,7 +33,8 @@ interface IProjectTypeSelect{
   readOnly?: boolean,
   withCreate?: boolean,
   withEdit: boolean,
-  disableClearable?: boolean
+  disableClearable?: boolean,
+  notNull?: boolean
 }
 export function ProjectTypeSelect({
   value,
@@ -53,10 +54,16 @@ export function ProjectTypeSelect({
   readOnly,
   withCreate = false,
   withEdit = false,
-  disableClearable = false
+  disableClearable = false,
+  notNull
 }: Readonly<IProjectTypeSelect>) {
-  const { data: projectTypes = [], isFetching: projectTypesIsFetching } = useGetProjectTypesQuery();
+  const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IProjectType[] | IProjectType | null) => onChange(value), [onChange]);
+
+  useEffect(() => {
+    if (projectTypes.length === 0 && notNull) return;
+    onChange(projectTypes[0]);
+  }, [projectTypesIsLoading]);
 
   const [addProjectType] = useAddProjectTypeMutation();
   const [updateProjectType] = useUpdateProjectTypeMutation();
@@ -82,32 +89,37 @@ export function ProjectTypeSelect({
   const [projectType, setProjectType] = useState<IProjectType>();
   const [editOpen, setEditOpen] = useState(false);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setProjectType(undefined);
     setEditOpen(true);
-  };
+  }, []);
 
-  const handleChange = (projectType: IProjectType) => {
+  const handleChange = useCallback((projectType: IProjectType) => {
     setProjectType(projectType);
     setEditOpen(true);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setEditOpen(false);
-  };
+  }, []);
 
-  const onSubmit = (projectType: IProjectType, isDelete: boolean) => {
+  const onSubmit = useCallback(async (projectType: IProjectType, isDelete: boolean) => {
     handleClose();
     if (isDelete) {
       deleteProjectType(projectType.ID);
+      if (!multiple && notNull && (value as IProjectType).ID === projectType.ID) {
+        onChange(projectTypes[0]);
+      }
       return;
     }
     if (projectType.ID < 0) {
-      addProjectType(projectType);
+      const newProjectType: any = await addProjectType(projectType);
+      if (newProjectType.error) return;
+      onChange(newProjectType.data);
       return;
     }
     updateProjectType(projectType);
-  };
+  }, [addProjectType, deleteProjectType, handleClose, multiple, notNull, onChange, projectTypes, updateProjectType, value]);
 
   const memoEditForm = useMemo(() => (
     <ProjectTypeEdit
@@ -116,7 +128,7 @@ export function ProjectTypeSelect({
       onSubmit={onSubmit}
       onCancelClick={handleClose}
     />
-  ), [editOpen, projectType]);
+  ), [editOpen, handleClose, onSubmit, projectType]);
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
@@ -141,7 +153,7 @@ export function ProjectTypeSelect({
         style={style}
         disableClearable={disableClearable}
         readOnly={readOnly}
-        disabled={disabled}
+        disabled={disabled || (notNull && projectTypesIsFetching)}
         options={(filter ? projectTypes.filter(projectType => filter(projectType)) : projectTypes) ?? []}
         disableCloseOnSelect={disableCloseOnSelect}
         value={getProjectType()}
@@ -216,19 +228,21 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
         )}
         {option.name}
       </div>
-      {withEdit && <div
-        className="action"
-        style={{
-          display: 'none',
-        }}
-      >
-        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.PUT}>
-          <ItemButtonEdit
-            color="primary"
-            onClick={handleEdit(option)}
-          />
-        </PermissionsGate>
-      </div>}
+      {withEdit && (
+        <div
+          className="action"
+          style={{
+            display: 'none',
+          }}
+        >
+          <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.PUT}>
+            <ItemButtonEdit
+              color="primary"
+              onClick={handleEdit(option)}
+            />
+          </PermissionsGate>
+        </div>
+      )}
     </div>
   );
 };
