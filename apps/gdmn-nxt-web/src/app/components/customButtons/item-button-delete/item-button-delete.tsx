@@ -48,15 +48,17 @@ export function ItemButtonDelete({
       size="small"
       className="StyledDeleteButton"
     >
-      <Tooltip title={label ? '' : hint} arrow>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <DeleteForeverIcon fontSize="small" />
-          {label && <span>{label}</span>}
-        </Stack>
+      <Tooltip title={(label || disabled) ? '' : hint} arrow>
+        <span>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+          >
+            <DeleteForeverIcon fontSize="small" />
+            {label && <span>{label}</span>}
+          </Stack>
+        </span>
       </Tooltip>
     </Container>
   );

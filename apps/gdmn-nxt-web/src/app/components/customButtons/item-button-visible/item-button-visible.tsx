@@ -9,18 +9,21 @@ interface IItemButtonVisibleProps extends IconButtonProps {
   disabledTitle?: string
 }
 
-export default function ItemButtonVisible({ onClick, selected, activeTitle, disabledTitle, ...rest }: IItemButtonVisibleProps) {
+export default function ItemButtonVisible({ onClick, selected, activeTitle, disabledTitle, disabled, ...rest }: IItemButtonVisibleProps) {
   return (
-    <Tooltip title={selected ? (disabledTitle || 'Отключить') : (activeTitle || 'Включить')}>
-      <IconButton
-        {...rest}
-        color={'primary'}
-        style={!selected ? { color: 'gray' } : {}}
-        size="small"
-        onClick={onClick}
-      >
-        {selected ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
-      </IconButton>
+    <Tooltip title={disabled ? '' : (selected ? (disabledTitle || 'Отключить') : (activeTitle || 'Включить'))}>
+      <span>
+        <IconButton
+          {...rest}
+          disabled={disabled}
+          color={'primary'}
+          style={!selected ? { color: 'gray' } : {}}
+          size="small"
+          onClick={onClick}
+        >
+          {selected ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+        </IconButton>
+      </span>
     </Tooltip>
   );
 }

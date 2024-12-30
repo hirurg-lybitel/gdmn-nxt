@@ -176,7 +176,7 @@ export function Projects(props: IProjectsProps) {
       onSubmit={onSubmit}
       onCancelClick={onCancelClick}
     />
-  ), [onSubmit, openEditForm, project]);
+  ), [onCancelClick, onSubmit, openEditForm, project]);
 
   const columns: GridColDef<ITimeTrackProject>[] = [
     {

@@ -231,14 +231,16 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
             />
             <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.DELETE}>
               <Tooltip title={'Удалить'}>
-                <IconButton
-                  color="error"
-                  size="small"
-                  disabled={row.inUse}
-                  onClick={handleConfirmDelete}
-                >
-                  <DeleteForeverIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton
+                    color="error"
+                    size="small"
+                    disabled={row.inUse}
+                    onClick={handleConfirmDelete}
+                  >
+                    <DeleteForeverIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
             </PermissionsGate>
           </>}

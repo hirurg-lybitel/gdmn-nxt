@@ -6,17 +6,20 @@ interface IItemButtonSaveProps extends IconButtonProps {
   title?: string,
 }
 
-export default function ItemButtonSave({ onClick, title, ...rest }: IItemButtonSaveProps) {
+export default function ItemButtonSave({ onClick, title, disabled, ...rest }: IItemButtonSaveProps) {
   return (
-    <Tooltip title={title || 'Сохранить'}>
-      <IconButton
-        {...rest}
-        color="primary"
-        size="small"
-        onClick={onClick}
-      >
-        <SaveIcon fontSize="small" />
-      </IconButton>
+    <Tooltip title={disabled ? '' : (title || 'Сохранить')}>
+      <span>
+        <IconButton
+          {...rest}
+          disabled={disabled}
+          color="primary"
+          size="small"
+          onClick={onClick}
+        >
+          <SaveIcon fontSize="small" />
+        </IconButton>
+      </span>
     </Tooltip>
   );
 }
