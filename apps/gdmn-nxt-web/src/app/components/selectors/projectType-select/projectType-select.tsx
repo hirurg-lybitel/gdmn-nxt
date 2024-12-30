@@ -55,13 +55,13 @@ export function ProjectTypeSelect({
   withCreate = false,
   withEdit = false,
   disableClearable = false,
-  notNull
+  notNull = false
 }: Readonly<IProjectTypeSelect>) {
   const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
   const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IProjectType[] | IProjectType | null) => onChange(value), [onChange]);
 
   useEffect(() => {
-    if (projectTypes.length === 0 && notNull) return;
+    if (projectTypes.length === 0 || !notNull) return;
     onChange(projectTypes[0]);
   }, [projectTypesIsLoading]);
 
