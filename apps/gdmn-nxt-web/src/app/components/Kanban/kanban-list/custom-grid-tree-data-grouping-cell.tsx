@@ -38,7 +38,7 @@ export const CustomGridTreeDataGroupingCell = (props: CustomGridTreeDataGrouping
               onClick={handleCardAdd}
               color="primary"
               size="small"
-              // disabled={row?.USR$INDEX !== 0 || disableAddCard}
+              disabled={row?.USR$INDEX !== 0 || disableAddCard}
             >
               <AddCircleIcon />
             </IconButton>
