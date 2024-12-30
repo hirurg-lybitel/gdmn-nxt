@@ -153,6 +153,13 @@ export function TaskTypes(props: TaskTypesProps) {
 
     const [first, setFirst] = useState(true);
 
+    const cancelAdding = () => {
+      const addIsEdit = api.current.getRowMode(0) === GridRowModes.Edit;
+      if (id !== 0 && addIsEdit) {
+        apiRef.current.stopRowEditMode({ id: 0, ignoreModifications: true });
+      }
+    };
+
     useEffect(() => {
       if (first) {
         setFirst(false);
@@ -182,6 +189,7 @@ export function TaskTypes(props: TaskTypesProps) {
       newErrors[`${id}`] = errorList;
       setErrors(newErrors);
       if (haveError) return;
+      cancelAdding();
       setConfirmOpen(false);
       api.current.stopRowEditMode({ id });
       forceUpdate();
@@ -195,6 +203,7 @@ export function TaskTypes(props: TaskTypesProps) {
 
     const handleDeleteClick = () => {
       setConfirmOpen(false);
+      cancelAdding();
       deleteTaskType(Number(id));
     };
 
