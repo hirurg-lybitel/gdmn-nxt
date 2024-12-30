@@ -168,7 +168,6 @@ export function ProjectEdit(props: ProjectEditProps) {
               <Stack flex={1}>
                 <TabContext value={tabIndex}>
                   <TabList
-                    centered
                     className={styles.tabHeaderRoot}
                     onChange={(e, index) => setTabIndex(index)}
                     variant="scrollable"

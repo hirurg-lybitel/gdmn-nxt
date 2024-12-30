@@ -17,6 +17,7 @@ interface IProjectNotesProps {
   notes?: IProjectNote[],
   onChange: (notes: IProjectNote[]) => void
 }
+
 export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProps) {
   const [lastId, setLastId] = useState(1);
 
@@ -25,21 +26,22 @@ export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProp
     message: ''
   };
 
-  const formik = useFormik<IProjectNote>({
-    enableReinitialize: true,
-    validateOnBlur: false,
-    initialValues: {
-      ...initValue
-    },
-    validationSchema: yup.object().shape({
-      message: yup.string().required('Обязательное поле')
-    }),
-    onSubmit: (value) => {
-      onChange([...notes, ...[formik.values]]);
-      setLastId(lastId + 1);
-      formik.resetForm();
+  const [note, setNote] = useState<IProjectNote>(initValue);
+  const [errors, setErrors] = useState<{[key: string]: string}>();
+  const [isTouched, setIsTouched] = useState(false);
+
+  const validate = useCallback((values: IProjectNote) => {
+    let withoutErrors = true;
+    if (values.message.trim() === '') {
+      setErrors({ ...errors, message: 'обязательное поле' });
+      withoutErrors = false;
+    } else {
+      const newErrors = { ...errors };
+      delete newErrors.message;
+      setErrors(newErrors);
     }
-  });
+    return withoutErrors;
+  }, [errors]);
 
   const handleDelete = useCallback((id: number) => {
     const newNotes = notes.filter(note => Number(note.ID) !== Number(id));
@@ -50,68 +52,73 @@ export default function ProjectNotes({ notes = [], onChange }: IProjectNotesProp
     const index = notes.findIndex(note => note.ID === newNote.ID);
     const newNotes = [...notes];
     newNotes[index] = newNote;
-    console.log(newNotes);
     onChange(newNotes);
   }, [notes, onChange]);
 
+  const messageChange = useCallback((e: any) => {
+    setNote({ ...note, message: e.target.value });
+    isTouched && validate({ ...note, message: e.target.value });
+  }, [isTouched, note, validate]);
+
+  const onSubmit = useCallback(async () => {
+    setIsTouched(true);
+    if (!validate(note)) return;
+    onChange([...notes, ...[note]]);
+    setLastId(lastId + 1);
+    setIsTouched(false);
+    setNote({ ID: lastId, message: '' });
+  }, [lastId, note, notes, onChange, validate]);
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <FormikProvider value={formik}>
-        <Form
-          style={{ height: '100%' }}
-          id="notesForm"
-          onSubmit={formik.handleSubmit}
-        >
-          <Stack
-            direction="column"
-            flex="1"
-            display="flex"
-            spacing={1}
-            height={'100%'}
+      <Stack
+        direction="column"
+        flex="1"
+        display="flex"
+        spacing={1}
+        height={'100%'}
+      >
+        <TextField
+          rows={4}
+          style={{
+            borderRadius: '15px',
+            width: '100%',
+            fontSize: '20px !important'
+          }}
+          name="message"
+          onChange={messageChange}
+          value={note.message}
+          placeholder="Заметка"
+          error={isTouched && !!errors?.message}
+          multiline
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Typography color="rgb(205, 92, 92)" fontSize={'12px'}>{isTouched && errors?.message}</Typography>
+          <Button
+            variant="contained"
+            endIcon={<SendIcon />}
+            form="notesForm"
+            onClick={onSubmit}
           >
-            <TextField
-              rows={4}
-              style={{
-                borderRadius: '15px',
-                width: '100%',
-                fontSize: '20px !important'
-              }}
-              name="message"
-              onChange={formik.handleChange}
-              value={formik.values.message}
-              placeholder="Заметка"
-              error={formik.touched.message && !!formik.errors.message}
-              multiline
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography color="rgb(205, 92, 92)" fontSize={'12px'}>{formik.touched.message && formik.errors.message}</Typography>
-              <Button
-                variant="contained"
-                endIcon={<SendIcon />}
-                form="notesForm"
-                onClick={() => formik.handleSubmit()}
-              >
                 Добавить
-              </Button>
-            </div>
-            <CustomizedScrollBox style={{ flex: 1, marginTop: '20px' }}>
-              {notes.map(note => (
-                <CustomizedCard
-                  key={note.ID}
-                  sx={{ boxShadow: 3 }}
-                  className={styles.messageContainer}
-                >
-                  <Item
-                    note={note}
-                    handleDelete={handleDelete}
-                    onChange={handleChange}
-                  />
-                </CustomizedCard>
-              ))}
-            </CustomizedScrollBox>
-          </Stack>
-        </Form>
-      </FormikProvider>
+          </Button>
+        </div>
+        <CustomizedScrollBox style={{ flex: 1, marginTop: '20px' }}>
+          {notes.map(note => (
+            <CustomizedCard
+              key={note.ID}
+              sx={{ boxShadow: 3 }}
+              className={styles.messageContainer}
+            >
+              <Item
+                note={note}
+                handleDelete={handleDelete}
+                onChange={handleChange}
+              />
+            </CustomizedCard>
+          ))}
+        </CustomizedScrollBox>
+      </Stack>
     </div>
   );
 }
