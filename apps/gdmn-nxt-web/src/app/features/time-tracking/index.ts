@@ -567,6 +567,13 @@ export const timeTrackingApi = createApi({
     getStatistics: builder.query<IProjectStatistics[], number>({
       query: (id) => `/projects/statistics/${id}`,
       transformResponse: (response: IProjectStatisticsRequestResult) => response.queries.statistics || [],
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ ID }) => ({ type: 'TimeTrack' as const, id: ID })),
+            { type: 'TimeTrack', id: 'LIST' },
+          ]
+          : [{ type: 'TimeTrack', id: 'LIST' }]
     })
   })
 });

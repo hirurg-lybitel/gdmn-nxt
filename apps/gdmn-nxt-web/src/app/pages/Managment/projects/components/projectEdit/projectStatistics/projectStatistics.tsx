@@ -18,8 +18,8 @@ export default function ProjectStatistics({ projectId }: IProjectStatisticsProps
 
   const getTaskDuration = useCallback((value: ITimeTrack[], count: 'all' | 'billable' | 'nonbillable') => {
     return value.reduce((total: string, { duration, billable }: ITimeTrack) => {
-      if (count === 'billable' && !billable) return 'PT0M';
-      if (count === 'nonbillable' && billable) return 'PT0M';
+      if (count === 'billable' && !billable) return total;
+      if (count === 'nonbillable' && billable) return total;
       const time = dayjs
         .duration(total.length === 0 ? Object.assign({}) : total)
         .add(
