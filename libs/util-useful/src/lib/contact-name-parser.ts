@@ -28,7 +28,3 @@ export const parseContactName = (value: Omit<IContactName, 'nickName'>): IContac
     nickName
   };
 };
-
-export const parseContactNameToString = (value: IContactName): string => {
-  return value.nickName;
-};
