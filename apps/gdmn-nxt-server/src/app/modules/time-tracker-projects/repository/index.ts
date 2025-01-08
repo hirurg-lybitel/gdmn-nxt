@@ -1,7 +1,7 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
-import { FindHandler, FindOneHandler, FindOperator, IContactPerson, IProjectNote, ITimeTrackProject, ITimeTrackTask, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IContactPerson, IProjectNote, ITimeTrackProject, ITimeTrackTask, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { projectNotesRepository } from './projectNotes';
 import { IProjectEmployee, projectEmployeesRepository } from './projectEmployees';
 
@@ -296,7 +296,7 @@ const save: SaveHandler<ITimeTrackProject> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

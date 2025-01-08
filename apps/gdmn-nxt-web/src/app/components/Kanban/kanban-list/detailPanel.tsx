@@ -3,9 +3,9 @@ import { IDeal, IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-
 import { useCallback, useMemo } from 'react';
 import { GridColDef, GridRowParams } from '@mui/x-data-grid-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
 import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 
 interface IGridCard extends IDeal{
   card: IKanbanCard

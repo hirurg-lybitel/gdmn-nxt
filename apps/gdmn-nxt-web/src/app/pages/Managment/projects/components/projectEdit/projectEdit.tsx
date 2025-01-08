@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme } from '@mui/material';
+import { Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, Stack, Tab, TextField, Theme, Tooltip } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './projectEdit.module.less';
 import { IProjectType, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
@@ -223,12 +223,15 @@ export function ProjectEdit(props: ProjectEditProps) {
       </DialogContent>
       <DialogActions>
         {project && <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.DELETE}>
-          <ItemButtonDelete
-            disabled={inUse}
-            title={'Удаление проекта'}
-            button
-            onClick={handleDelete}
-          />
+          <Tooltip title={`${inUse ? 'Нельзя удалить использующийся проект' : ''}`} arrow>
+            <div>
+              <ItemButtonDelete
+                disabled={inUse}
+                title={inUse ? 'Нельзя удалить использующийся проект' : 'Удаление проекта'}
+                button
+                onClick={handleDelete}
+              /></div>
+          </Tooltip>
         </PermissionsGate>}
         <Box flex={1}/>
         <ButtonWithConfirmation

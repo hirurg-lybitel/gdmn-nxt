@@ -224,13 +224,15 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
           <ItemButtonCancel onClick={handleConfirmCancelClick}/>
         </>
           : <>
-            <ItemButtonEdit
-              color={'primary'}
-              size={'small'}
-              onClick={handleEditClick}
-            />
+            <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.PUT}>
+              <ItemButtonEdit
+                button
+                size={'small'}
+                onClick={handleEditClick}
+              />
+            </PermissionsGate>
             <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.DELETE}>
-              <Tooltip title={'Удалить'}>
+              <Tooltip title={row.inUse ? 'Нельзя удалить использующуюся задачу' : 'Удалить'}>
                 <span>
                   <IconButton
                     color="error"
@@ -246,6 +248,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
           </>}
         <div style={{ pointerEvents: userPermissions?.['time-tracking/tasks']?.PUT ? 'all' : 'none' }}>
           <ItemButtonVisible
+            button
             selected={props.value}
             onClick={handleChangeVisible}
           />
@@ -316,6 +319,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       type: 'actions',
       editable: separateGrid,
       resizable: false,
+      width: 138,
       renderCell: RowMenuCell,
       renderEditCell: RowMenuCell
     }

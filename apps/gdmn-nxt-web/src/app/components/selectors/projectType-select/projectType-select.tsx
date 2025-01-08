@@ -76,7 +76,7 @@ export function ProjectTypeSelect({
       return projectTypes?.filter(projectType => (value as IProjectType[])?.find((el) => el.ID === projectType.ID)) ?? [];
     }
     if (!value || !projectTypes) return null;
-    return projectTypes[projectTypes.findIndex(projectType => (value as IProjectType).ID === projectType.ID)];
+    return projectTypes[projectTypes.findIndex(projectType => (value as IProjectType).ID === projectType.ID)] || null;
   }, [multiple, projectTypes, value]);
 
   const filterOptions = createFilterOptions({

@@ -1,6 +1,6 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IProjectType, ITimeTrack, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IProjectType, ITimeTrack, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 
 const find: FindHandler<IProjectType> = async (
   sessionID,
@@ -142,7 +142,7 @@ const save: SaveHandler<IProjectType> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

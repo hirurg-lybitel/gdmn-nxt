@@ -23,6 +23,8 @@ import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-se
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import ItemButtonVisible from '../../../components/customButtons/item-button-visible/item-button-visible';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 export interface IProjectsProps {}
 
@@ -155,7 +157,7 @@ export function Projects(props: IProjectsProps) {
     addProject(project);
   }, [addProject, deleteProject, updateProject]);
 
-  const handleEdit = useCallback((project: ITimeTrackProject) => () => {
+  const handleEdit = useCallback((project: ITimeTrackProject) => {
     setProject(project);
     setOpenEditForm(true);
   }, []);
@@ -185,7 +187,7 @@ export function Projects(props: IProjectsProps) {
       renderCell: ({ formattedValue, row }) => {
         const disabled = row.tasks?.length === 0 || !row.tasks;
         return (
-          <div style={{ display: 'flex', alignItems: 'center', pointerEvents: disabled ? 'none' : 'all' }}>
+          <div style={{ paddingLeft: '14px', display: 'flex', alignItems: 'center', pointerEvents: disabled ? 'none' : 'all' }}>
             {row.isFavorite ? <StarIcon style={{ color: '#faaf00' }} /> : <StarBorderIcon />}
             <div style={{ minWidth: '5px' }} />
             <IconButton disabled={disabled} size="small">
@@ -197,37 +199,63 @@ export function Projects(props: IProjectsProps) {
       align: 'center',
     },
     {
-      field: 'name', headerName: 'Наименование', flex: 1,
+      field: 'name',
+      headerName: 'Наименование',
+      flex: 1,
+      renderCell: ({ value, row }) => {
+        return <span style={{ color: row.isDone ? 'gray' : 'inherit' }}>{value}</span>;
+      },
     },
     { field: 'customer', headerName: 'Клиент', flex: 1,
       renderCell: ({ value, row }) => {
-        return value?.NAME || '';
+        return <span style={{ color: row.isDone ? 'gray' : 'inherit' }}>{value?.NAME || ''}</span>;
       }
     },
     {
       field: 'isDone',
       type: 'actions',
+      align: 'right',
+      width: 138,
       resizable: false,
       renderCell: ({ value, row }: GridRenderCellParams) => {
         const handleChangeVisible = () => {
           updateProject({ ...row, isDone: !value });
         };
         return (
-          <>
-            <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.PUT}>
-              <ItemButtonEdit
-                color={'primary'}
-                size={'small'}
-                onClick={handleEdit(row)}
-              />
-            </PermissionsGate>
-            <div style={{ pointerEvents: userPermissions?.['time-tracking/projects']?.PUT ? 'all' : 'none' }}>
-              <ItemButtonVisible
-                selected={!value}
-                onClick={handleChangeVisible}
-              />
-            </div>
-          </>
+          <MenuBurger
+            items={({ closeMenu }) => [
+              userPermissions?.['time-tracking/projects']?.PUT
+                ? (
+                  <div key="edit">
+                    <ItemButtonEdit
+                      color={'inherit'}
+                      size={'small'}
+                      label="Редактировать"
+                      onClick={() => {
+                        handleEdit(row);
+                        closeMenu();
+                      }}
+                    />
+                  </div>
+                )
+                : <></>,
+              userPermissions?.['time-tracking/projects']?.PUT
+                ? (
+                  <div key="visible">
+                    <ItemButtonVisible
+                      color={'inherit'}
+                      label={!value ? 'Отключить' : 'Включить'}
+                      selected={!value}
+                      onClick={() => {
+                        handleChangeVisible();
+                        closeMenu();
+                      }}
+                    />
+                  </div>
+                )
+                : <></>
+            ]}
+          />
         );
       }
     }

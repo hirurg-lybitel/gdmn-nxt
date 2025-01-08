@@ -91,13 +91,15 @@ export function ProjectTypeEdit(props: ProjectTypeEditProps) {
         </FormikProvider>
       </DialogContent>
       <DialogActions>
-        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.DELETE}>
-          <ItemButtonDelete
-            title={'Удаление типа проекта'}
-            button
-            onClick={handleDelete}
-          />
-        </PermissionsGate>
+        {formik.values.ID !== -1 &&
+          <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.DELETE}>
+            <ItemButtonDelete
+              title={'Удаление типа проекта'}
+              button
+              onClick={handleDelete}
+            />
+          </PermissionsGate>
+        }
         <Box flex={1}/>
         <ButtonWithConfirmation
           className={styles.button}
