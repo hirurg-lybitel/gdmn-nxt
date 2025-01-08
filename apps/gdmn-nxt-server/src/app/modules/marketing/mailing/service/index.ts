@@ -16,8 +16,9 @@ import { mailingRepository } from '../repository';
 import fs from 'fs/promises';
 import path from 'path';
 import { segmentsService } from '../../segments/service';
-import { feedbackService } from '@gdmn-nxt/modules/feedback/service';
+import { feedbackService } from '@gdmn-nxt/modules/customer-feedback/service';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { mailingHistoryRepository } from '../repository/results';
 
 function extractImgSrc(htmlString: string) {
   const imgTags = htmlString.match(/<img [^>]*src="[^"]*"/g);
@@ -231,7 +232,7 @@ const launchMailing = async (
           response.accepted.push({ [ID]: accepted.toString() });
         }
         if (rejected.length > 0) {
-          response.rejected.push({ [ID]: 'Не доставлено' });
+          response.rejected.push({ [ID]: 'Не отправлено' });
         }
       } catch (error) {
         await updateStatus(sessionID, id, MailingStatus.error, error.message);
@@ -242,6 +243,8 @@ const launchMailing = async (
     await updateStatus(sessionID, id, MailingStatus.completed, 'Рассылка выполнена');
 
     try {
+      await mailingHistoryRepository.removeAll(sessionID, { 'USR$MAILING': mailing.ID });
+
       await forEachAsync(response.accepted, async r => {
         const customerId = Object.keys(r).length > 0 ? Number(Object.keys(r)[0]) : -1;
         await feedbackService.createFeedback(sessionID, {
@@ -252,9 +255,35 @@ const launchMailing = async (
           },
           mailing
         });
+
+        await mailingHistoryRepository.save(sessionID, {
+          date: dayjs().toISOString(),
+          customer: {
+            ID: customerId,
+            NAME: ''
+          },
+          mailingId: mailing.ID,
+          status: MailingStatus.completed,
+          description: 'Рассылка выполнена'
+        });
+      });
+
+      await forEachAsync(response.rejected, async r => {
+        const customerId = Object.keys(r).length > 0 ? Number(Object.keys(r)[0]) : -1;
+
+        await mailingHistoryRepository.save(sessionID, {
+          date: dayjs().toISOString(),
+          customer: {
+            ID: customerId,
+            NAME: ''
+          },
+          mailingId: mailing.ID,
+          status: MailingStatus.error,
+          description: r[customerId]
+        });
       });
     } catch (error) {
-      console.error('Error while creating email feedback');
+      console.error('[ ERROR ]', 'While creating email feedback', error.message);
       // throw error;
     }
 
@@ -442,6 +471,50 @@ const testLaunchMailing = async (
   }
 };
 
+const getHistory = async (
+  sessionID: string,
+  mailingId: number,
+  query?: { [key: string]: any }
+) => {
+  try {
+    const {
+      pageSize,
+      pageNo,
+      field: sortField = 'NAME',
+      sort: sortMode = 'ASC',
+      name
+    } = query;
+
+    const entites = await mailingHistoryRepository.find(
+      sessionID,
+      {
+        'USR$MAILING': mailingId
+      },
+      {
+        [sortField]: sortMode
+      }
+    );
+
+    let fromRecord = 0;
+    let toRecord: number;
+
+    if (pageNo && pageSize) {
+      fromRecord = Number(pageNo) * Number(pageSize);
+      toRecord = fromRecord + Number(pageSize);
+    };
+
+    const mailingsWithPagination = entites.slice(fromRecord, toRecord);
+    const count = entites.length;
+
+    return {
+      history: mailingsWithPagination,
+      count
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const mailingService = {
   findAll,
   findOne,
@@ -449,5 +522,6 @@ export const mailingService = {
   createMailing,
   updateById,
   removeById,
-  testLaunchMailing
+  testLaunchMailing,
+  getHistory
 };

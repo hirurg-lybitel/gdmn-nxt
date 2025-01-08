@@ -9,6 +9,7 @@ import { sendEmail } from '@gdmn/mailer';
 import { config } from '@gdmn-nxt/config';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { profileSettingsController } from '../settings/profileSettings';
+import { dealFeedbackService } from '@gdmn-nxt/modules/deal-feedback/service';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -306,6 +307,16 @@ const upsert: RequestHandler = async (req, res) => {
 
     const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
+    /** Обновление отзывов */
+    if (deal.feedback) {
+      if (deal.feedback.id > 0) {
+        await dealFeedbackService.updateFeedback(req.sessionID, deal.feedback.id, deal.feedback);
+      } else {
+        await dealFeedbackService.createFeedback(req.sessionID, deal.feedback);
+      }
+    }
+
+    /** Обновление вложений */
     const updateAttachments = async () => {
       if (!deal['ATTACHMENTS']) return;
       const deleteAttachments = await executeSingleton(
@@ -429,7 +440,6 @@ const upsert: RequestHandler = async (req, res) => {
     changes.forEach(c => addHistory(req.sessionID, c));
 
     try {
-      console.log('call_sendNewDealEmail', { isInsertMode, bool: deal.PERFORMERS?.length > 0 });
       if (isInsertMode && deal.PERFORMERS?.length > 0) {
         await sendNewDealEmail(req.sessionID, deal, deal.PERFORMERS);
       }

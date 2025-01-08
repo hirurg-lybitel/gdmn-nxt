@@ -216,5 +216,15 @@ export default function componentStyleOverrides(theme: Theme): Components {
         size: 'small'
       },
     },
+    MuiSelect: {
+      defaultProps: {
+        size: 'small'
+      }
+    },
+    MuiInputLabel: {
+      defaultProps: {
+        size: 'small'
+      }
+    }
   };
 }

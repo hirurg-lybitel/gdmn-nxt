@@ -1637,25 +1637,6 @@
 			"id": "03d288bd-51e5-40e4-b662-61b79a2daefc"
 		},
 		{
-			"name": "Mailer",
-			"item": [
-				{
-					"name": "New Request",
-					"id": "c841b0ad-d9d5-41c2-9e55-14a60e4d7c0e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": "{{baseUrl}}/send-email"
-					},
-					"response": []
-				}
-			],
-			"id": "e105c407-5dcd-4ee5-a72e-92a242c0e3bf"
-		},
-		{
 			"name": "Marketing",
 			"item": [
 				{
@@ -3514,6 +3495,35 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Mailing History",
+							"id": "9410e992-060c-4e63-b789-2dd2cb4a3aab",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/marketing/history/:mailingId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"marketing",
+										"history",
+										":mailingId"
+									],
+									"variable": [
+										{
+											"key": "mailingId",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"id": "0abcc61d-184e-4ecc-9cd9-57da11172e60"
@@ -4384,6 +4394,96 @@
 				}
 			],
 			"id": "fae59c26-9fa2-41bd-bae0-965343568664"
+		},
+		{
+			"name": "Сделки. Фидбэк",
+			"item": [
+				{
+					"name": "Каталоги",
+					"item": [
+						{
+							"name": "Обратная связь",
+							"id": "e070d8f9-08d3-4bc7-99f6-6d59e76ac25d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+							},
+							"response": []
+						},
+						{
+							"name": "Компетентность персонала",
+							"id": "d1edaff1-b0ec-47d4-afdf-cd14e97f2d24",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/competences"
+							},
+							"response": []
+						},
+						{
+							"name": "Удовлетворенность полученной информацией",
+							"id": "4fd117f1-ba4e-44cb-a2f2-594d435a33ff",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/satisfactions"
+							},
+							"response": []
+						},
+						{
+							"name": "Оценка удовлетворённости",
+							"id": "1a24fe09-1be9-426b-bf1f-a49d01cb4f10",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/deal-feedback/catalogs/satisfactionRates"
+							},
+							"response": []
+						}
+					],
+					"id": "b80323a8-1446-49eb-a408-6b7e40c33183"
+				},
+				{
+					"name": "Обратная связь по сделке",
+					"id": "e2f388c6-6936-4514-b529-95eea6fd52e6",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/deal-feedback/catalogs/results"
+					},
+					"response": []
+				},
+				{
+					"name": "Удалить Обратную связь",
+					"id": "a3b3db68-6e2a-449a-a262-d0f99d752fb8",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/deal-feedback/"
+					},
+					"response": []
+				}
+			],
+			"id": "38df05ce-519f-4365-b251-e9b769f361dc"
 		}
 	],
 	"auth": {

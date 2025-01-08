@@ -66,6 +66,38 @@ export interface ICustomerContract extends IWithID {
 
 export type ICustomerContractWithID = ICustomerContract & IWithID;
 
+export interface IDealFeedbackResult {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedbackCompetence {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedbackSatisfaction {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedbackSatisfactionRate {
+  id: number;
+  name: string;
+}
+
+export interface IDealFeedback {
+  id: number;
+  dealId: number;
+  date?: string;
+  suggestion?: string;
+  response?: string;
+  result?: IDealFeedbackResult;
+  competence?: IDealFeedbackCompetence;
+  satisfaction?: IDealFeedbackSatisfaction;
+  satisfactionRate?: IDealFeedbackSatisfactionRate;
+};
+
 export interface IDeal extends IWithID {
   USR$NAME?: string;
   USR$AMOUNT?: number;
@@ -91,7 +123,8 @@ export interface IDeal extends IWithID {
   DESCRIPTION?: string;
   USR$NUMBER?: number;
   PREPAID?: boolean;
-  ATTACHMENTS?: MailAttachment[]
+  ATTACHMENTS?: MailAttachment[];
+  feedback?: IDealFeedback;
 };
 
 export interface IKanbanCard extends IWithID {
@@ -430,6 +463,16 @@ export interface IMailing extends IWithID {
   excludeSegments?: ISegment[],
   testingEmails?: string[];
   attachments?: MailAttachment[];
+  recipientsCount?: number
+}
+
+export interface IMailingHistory {
+  id: number
+  date: string;
+  mailingId: number;
+  status: MailingStatus;
+  description: string;
+  customer: ICustomer;
 }
 
 export interface ITemplate extends IWithID {
