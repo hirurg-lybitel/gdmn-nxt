@@ -16,7 +16,12 @@ const findAll: RequestHandler = async (req, res) => {
       },
     );
 
-    const projects = showAll ? response : response.filter(project => !project.isPrivate || project?.employees?.find(empl => empl.ID === req.user['contactkey']));
+    const projects = showAll
+      ? response
+      : response.filter(project => !project.isPrivate
+        || project?.employees?.findIndex(empl => empl.ID === req.user['contactkey']) !== 1
+        || project.creator.ID === req.user['contactkey']
+      );
 
     let fromRecord = 0;
     let toRecord: number;
@@ -75,23 +80,6 @@ const removeFromFavorites: RequestHandler = async (req, res) => {
 
     const isDeleted = await timeTrackerProjectsService.removeFromFavorites(sessionID, userId, projectId);
     res.sendStatus(200);
-  } catch (error) {
-    res.status(error.code ?? 500).send(resultError(error.message));
-  }
-};
-
-const getFilters: RequestHandler = async (req, res) => {
-  try {
-    const { id: sessionID } = req.session;
-
-    const response = await timeTrackerProjectsService.getFilters(sessionID);
-
-    const result: IRequestResult = {
-      queries: { filters: [...response] },
-      _schema: {}
-    };
-
-    return res.status(200).json(result);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
   }
@@ -193,7 +181,6 @@ export const timeTrackerProjectsController = {
   findAll,
   addToFavorites,
   removeFromFavorites,
-  getFilters,
   statistics,
   create,
   update,

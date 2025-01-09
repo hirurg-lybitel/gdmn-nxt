@@ -18,8 +18,7 @@ const findAll = async (
   const groupByFavorite = filter?.groupByFavorite === 'true';
   const projectType = filter?.projectType;
   const name = filter?.name;
-  const type = filter?.type;
-  const customer = filter?.customer;
+  const customers = filter?.customers;
   const taskisActive = filter?.taskisActive;
   const isDone = filter?.isDone;
 
@@ -29,7 +28,6 @@ const findAll = async (
       {
         ...(customerId && { 'USR$CUSTOMER': customerId }),
         ...(projectType && { 'USR$PROJECT_TYPE': projectType }),
-        ...(customer && { 'USR$CUSTOMER': customer }),
         ...(isDone && { 'USR$DONE': isDone === 'true' ? 1 : 0 })
       });
 
@@ -53,26 +51,17 @@ const findAll = async (
       .reduce<ITimeTrackProject[]>((filteredArray, project) => {
         let checkConditions = true;
 
-        const checkType = () => {
-          if (type === '1') {
-            return !project.isDone;
-          }
-          if (type === '2') {
-            return project.isDone;
-          }
-          return true;
-        };
-
-        if (type) {
-          checkConditions = checkConditions && checkType();
-        }
-
         if (name) {
           const lowerName = String(name).toLowerCase();
           checkConditions = checkConditions && (
             project.name?.toLowerCase().includes(lowerName) ||
-            (tasks.get(project.ID) && tasks.get(project.ID)?.findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1)
+            (tasks.get(project.ID) && tasks.get(project.ID)?.findIndex(task => task.name.toLowerCase().includes(lowerName)) !== -1) ||
+            project.customer.NAME.toLowerCase().includes(lowerName)
           );
+        }
+
+        if (customers) {
+          checkConditions = checkConditions && (customers.split(',').findIndex(cus => cus === project.customer.ID.toString()) !== -1);
         }
 
         if (checkConditions) {
@@ -187,17 +176,6 @@ const removeFromFavorites = async (
   }
 };
 
-const getFilters = async (
-  sessionID: string
-) => {
-  try {
-    const filters = await favoriteTimeTrackerProjectsRepository.getFilters(sessionID);
-    return filters;
-  } catch (error) {
-    throw error;
-  }
-};
-
 const statistics = async (
   sessionID: string,
   projectId: number
@@ -283,7 +261,6 @@ export const timeTrackerProjectsService = {
   findAll,
   addToFavorites,
   removeFromFavorites,
-  getFilters,
   statistics,
   create,
   update,

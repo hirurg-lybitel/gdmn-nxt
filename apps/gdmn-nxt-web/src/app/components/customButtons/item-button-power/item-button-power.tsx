@@ -3,10 +3,11 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useMemo } from 'react';
 import { styled } from '@mui/material/styles';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 
-interface IItemButtonVisibleProps extends IconButtonProps {
+interface IItemButtonPowerProps extends IconButtonProps {
   selected: boolean,
-  onClick: () => void,
+  onClick: (e: React.MouseEvent<HTMLButtonElement & HTMLDivElement, MouseEvent>) => void,
   activeTitle?: string
   disabledTitle?: string,
   label?: string,
@@ -14,7 +15,7 @@ interface IItemButtonVisibleProps extends IconButtonProps {
   button?: boolean
 }
 
-export default function ItemButtonVisible({
+export default function ItemButtonPower({
   onClick,
   selected,
   activeTitle,
@@ -25,15 +26,15 @@ export default function ItemButtonVisible({
   button,
   color,
   ...rest
-}: Readonly<IItemButtonVisibleProps>) {
+}: Readonly<IItemButtonPowerProps>) {
   const Container = useMemo(() =>
     button
       ? styled(IconButton)(({ theme }) => ({
-        color: color ?? (!selected ? 'gray' : theme.palette.primary.main),
+        color: color ?? theme.palette.primary.main,
         ...rest,
       }))
       : styled('div')(({ theme }) => ({
-        color: color ?? (!selected ? 'gray' : theme.palette.primary.main),
+        color: color ?? theme.palette.primary.main,
       }))
   , [button, selected]);
 
@@ -43,17 +44,17 @@ export default function ItemButtonVisible({
     <Container
       disabled={disabled}
       size="small"
-      className="StyledVisibleButton"
-      onClick={onClick as any}
+      className="StyledPowerButton"
+      onClick={onClick}
     >
-      <Tooltip title={(label || disabled) ? '' : (hint ?? defaultTitle)}>
+      <Tooltip title={(label || disabled) ? '' : (hint ?? defaultTitle)} arrow>
         <span>
           <Stack
             direction="row"
             alignItems="center"
             spacing={1}
           >
-            {selected ? <VisibilityIcon/> : <VisibilityOffOutlinedIcon fontSize="small" />}
+            <PowerSettingsNewIcon fontSize="small"/>
             {label && <span>{label}</span>}
           </Stack>
         </span>

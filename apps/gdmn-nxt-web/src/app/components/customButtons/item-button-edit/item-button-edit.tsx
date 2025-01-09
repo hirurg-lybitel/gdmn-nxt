@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 
 export interface ItemButtonEditProps extends IconButtonProps {
+  onClick: (e: React.MouseEvent<HTMLButtonElement & HTMLDivElement, MouseEvent>) => void,
   label?: string,
   hint?: string,
   button?: boolean
@@ -21,11 +22,11 @@ export function ItemButtonEdit({
   const Container = useMemo(() =>
     button
       ? styled(IconButton)(({ theme }) => ({
-        color: color ?? theme.palette.primary.main,
+        color: color ?? (button ? theme.palette.primary.main : 'inherit'),
         ...rest,
       }))
       : styled('div')(({ theme }) => ({
-        color: color ?? theme.palette.primary.main,
+        color: color ?? (button ? theme.palette.primary.main : 'inherit'),
       }))
   , [button]);
 
@@ -34,7 +35,7 @@ export function ItemButtonEdit({
       disabled={disabled}
       size="small"
       className="StyledEditButton"
-      onClick={onClick as any}
+      onClick={onClick}
     >
       <Tooltip title={(label || disabled) ? '' : hint} arrow>
         <span>

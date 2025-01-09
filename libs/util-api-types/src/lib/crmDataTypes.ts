@@ -506,11 +506,6 @@ export interface ICustomerFeedback extends IWithID {
   creator?: IUser
 }
 
-export interface IProjectFilter extends IWithID {
-  CODE: number;
-  NAME: string;
-}
-
 export enum WorkProjectStatus {
   active = 0,
   suspended = 1,
@@ -556,10 +551,6 @@ export interface ITimeTrackGroup {
   items: ITimeTrack[];
 }
 
-export interface IProjectNote extends IWithID {
-  message: string
-}
-
 export interface IProjectStatistics extends ITimeTrackTask {
   timeTrack: ITimeTrack[]
 }
@@ -570,10 +561,11 @@ export interface ITimeTrackProject extends IWithID {
   tasks?: ITimeTrackTask[];
   isFavorite?: boolean,
   employees?: IContactWithID[],
-  notes?: IProjectNote[],
+  note?: string,
   isPrivate?: boolean,
   isDone?: boolean,
-  projectType?: IProjectType
+  projectType?: IProjectType,
+  creator?: IContactWithID
 }
 
 export interface ITimeTrackTask extends IWithID {

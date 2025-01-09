@@ -1,25 +1,54 @@
-import { IconButton, IconButtonProps, Tooltip } from '@mui/material';
+import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
+import { useMemo } from 'react';
+import { styled } from '@mui/material/styles';
 
 interface IItemButtonSaveProps extends IconButtonProps {
-  onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void,
-  title?: string,
+  onClick: (e: React.MouseEvent<HTMLButtonElement & HTMLDivElement, MouseEvent>) => void,
+  label?: string,
+  hint?: string,
+  button?: boolean
 }
 
-export default function ItemButtonSave({ onClick, title, disabled, ...rest }: IItemButtonSaveProps) {
+export default function ItemButtonSave({
+  label = '',
+  hint = 'Редактировать',
+  disabled,
+  button = false,
+  color,
+  onClick,
+  ...rest
+}: Readonly<IItemButtonSaveProps>) {
+  const Container = useMemo(() =>
+    button
+      ? styled(IconButton)(({ theme }) => ({
+        color: color ?? (button ? theme.palette.primary.main : 'inherit'),
+        ...rest,
+      }))
+      : styled('div')(({ theme }) => ({
+        color: color ?? (button ? theme.palette.primary.main : 'inherit'),
+      }))
+  , [button]);
+
   return (
-    <Tooltip title={disabled ? '' : (title || 'Сохранить')}>
-      <span>
-        <IconButton
-          {...rest}
-          disabled={disabled}
-          color="primary"
-          size="small"
-          onClick={onClick}
-        >
-          <SaveIcon fontSize="small" />
-        </IconButton>
-      </span>
-    </Tooltip>
+    <Container
+      disabled={disabled}
+      size="small"
+      className="StyledEditButton"
+      onClick={onClick}
+    >
+      <Tooltip title={(label || disabled) ? '' : hint} arrow>
+        <span>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+          >
+            <SaveIcon fontSize="small" />
+            {label && <span>{label}</span>}
+          </Stack>
+        </span>
+      </Tooltip>
+    </Container>
   );
 }

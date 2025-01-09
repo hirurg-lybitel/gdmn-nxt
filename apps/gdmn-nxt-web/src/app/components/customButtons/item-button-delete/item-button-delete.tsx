@@ -45,6 +45,7 @@ export function ItemButtonDelete({
   const RootElement = (
     <Container
       disabled={disabled}
+      style={{ pointerEvents: disabled ? 'none' : 'all' }}
       size="small"
       className="StyledDeleteButton"
     >
@@ -55,8 +56,8 @@ export function ItemButtonDelete({
             alignItems="center"
             spacing={1}
           >
-            <DeleteForeverIcon fontSize="small" />
-            {label && <span>{label}</span>}
+            <DeleteForeverIcon color={disabled ? 'disabled' : undefined} fontSize="small" />
+            {label && <span style={disabled ? { color: 'gray' } : {}}>{label}</span>}
           </Stack>
         </span>
       </Tooltip>

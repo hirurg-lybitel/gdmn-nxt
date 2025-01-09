@@ -1,6 +1,6 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { IFavoriteProject, IProjectFilter } from '@gsbelarus/util-api-types';
+import { IFavoriteProject } from '@gsbelarus/util-api-types';
 
 const find = async (
   sessionID: string,
@@ -101,29 +101,8 @@ const remove = async (
   }
 };
 
-const getFilters = async (
-  sessionID: string,
-): Promise<IProjectFilter[]> => {
-  const { fetchAsObject, releaseTransaction } = await startTransaction(sessionID);
-  try {
-    const sql = `
-      SELECT
-        ID,
-        USR$NAME as name,
-        USR$CODE as code
-      FROM USR$CRM_PROJECTS_FILTERS
-      `;
-    const results = await fetchAsObject<IProjectFilter>(sql);
-    return results;
-  } catch (error) {
-    await releaseTransaction(false);
-    throw new Error(error);
-  }
-};
-
 export const favoriteTimeTrackerProjectsRepository = {
   find,
   save,
   remove,
-  getFilters
 };

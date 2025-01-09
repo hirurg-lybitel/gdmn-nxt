@@ -1,8 +1,7 @@
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
-import { Divider, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Button, Divider, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
@@ -10,12 +9,15 @@ import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dial
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
-import ItemButtonVisible from '../../../../../components/customButtons/item-button-visible/item-button-visible';
+import ItemButtonVisible from '../../../../../components/customButtons/item-button-power/item-button-power';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
 import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -58,6 +60,7 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
     <ErrorTooltip open={!!errorMessage} title={errorMessage} >
       <div style={{ paddingLeft: '10px', paddingRight: '0px', flex: 1 }}>
         <TextField
+          autoFocus
           size="small"
           onFocus={() => clearError(field, id)}
           placeholder={`Введите ${colDef.headerName?.toLowerCase()}`}
@@ -146,7 +149,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
 
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
-    const handleEditClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const handleEditClick = useCallback((event: React.MouseEvent<HTMLButtonElement & HTMLDivElement>) => {
       forceUpdate();
       event.stopPropagation();
       api.current.startRowEditMode({ id });
@@ -218,43 +221,83 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     };
 
     return (
-      <>
-        {isInEditMode ? <>
-          <ItemButtonSave onClick={handleSave}/>
-          <ItemButtonCancel onClick={handleConfirmCancelClick}/>
-        </>
-          : <>
-            <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.PUT}>
-              <ItemButtonEdit
-                button
+      <MenuBurger
+        items={({ closeMenu }) => [
+          isInEditMode ? (
+            <div key="save">
+              <ItemButtonSave
                 size={'small'}
-                onClick={handleEditClick}
+                label="Сохранить"
+                onClick={(e) => {
+                  handleSave(e);
+                  closeMenu();
+                }}
               />
-            </PermissionsGate>
-            <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.DELETE}>
-              <Tooltip title={row.inUse ? 'Нельзя удалить использующуюся задачу' : 'Удалить'}>
-                <span>
-                  <IconButton
-                    color="error"
-                    size="small"
+            </div>
+          )
+            : <></>,
+          isInEditMode
+            ? (
+              <div key="cancel">
+                <ItemButtonCancel
+                  label={'Отменить'}
+                  onClick={(e) => {
+                    handleConfirmCancelClick();
+                    closeMenu();
+                  }}
+                />
+              </div>
+            )
+            : <></>,
+          userPermissions?.['time-tracking/tasks']?.PUT && !isInEditMode
+            ? (
+              <div key="edit">
+                <ItemButtonEdit
+                  size={'small'}
+                  label="Редактировать"
+                  onClick={(e) => {
+                    handleEditClick(e);
+                    closeMenu();
+                  }}
+                />
+              </div>
+            )
+            : <></>,
+          userPermissions?.['time-tracking/tasks']?.PUT
+            ? (
+              <div key="visible">
+                <ItemButtonVisible
+                  color="inherit"
+                  label={props.value ? 'Отключить' : 'Включить'}
+                  selected={props.value}
+                  onClick={() => {
+                    handleChangeVisible();
+                    closeMenu();
+                  }}
+                />
+              </div>
+            )
+            : <></>,
+          userPermissions?.['time-tracking/tasks']?.DELETE
+            ? (
+              <Tooltip key={'delete'} title={row.inUse ? 'Нельзя удалить использующуюся задачу' : ''}>
+                <div>
+                  <ItemButtonDelete
+                    label="Удалить"
+                    confirmation={false}
                     disabled={row.inUse}
-                    onClick={handleConfirmDelete}
-                  >
-                    <DeleteForeverIcon fontSize="small" />
-                  </IconButton>
-                </span>
+                    onClick={() => {
+                      handleConfirmDelete();
+                      closeMenu();
+                    }}
+                  />
+                </div>
               </Tooltip>
-            </PermissionsGate>
-          </>}
-        <div style={{ pointerEvents: userPermissions?.['time-tracking/tasks']?.PUT ? 'all' : 'none' }}>
-          <ItemButtonVisible
-            button
-            selected={props.value}
-            onClick={handleChangeVisible}
-          />
-        </div>
-
-      </>
+            )
+            : <></>
+          ,
+        ]}
+      />
     );
   };
 
@@ -312,6 +355,9 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       flex: 1,
       resizable: false,
       editable: true,
+      renderCell: ({ value, row }: GridRenderCellParams<ITimeTrackTask, any, any, GridTreeNodeWithRender>) => {
+        return <span style={{ color: !row.isActive ? 'gray' : 'inherit' }}>{value}</span>;
+      },
       renderEditCell
     },
     {
@@ -319,7 +365,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       type: 'actions',
       editable: separateGrid,
       resizable: false,
-      width: 138,
+      width: 78,
       renderCell: RowMenuCell,
       renderEditCell: RowMenuCell
     }
@@ -357,10 +403,16 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     forceUpdate();
   }, [apiRef]);
 
-  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 200 : recordsCount * 50, []);
+  const footerPadding = 10;
+  const footerHeight = userPermissions?.['time-tracking/tasks']?.POST ? 30.75 + 10 * 2 : 0;
+
+  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 0 : recordsCount * 50 + footerHeight, []);
 
   const grid = (
     <StyledGrid
+      sx={{ '& .MuiDataGrid-withBorderColor': {
+        borderBottomColor: 'var(--color-grid-borders) !important'
+      } }}
       editMode="row"
       apiRef={apiRef}
       hideFooter
@@ -407,13 +459,21 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       {memoConfirmDialog}
       <div
         style={{
-          height: separateGrid ? '100%' : getHeight(tasks.length),
-          width: '100%'
+          height: getHeight(tasks.length),
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
-        {grid}
+        <div style={{ flex: 1 }}>
+          {grid}
+        </div>
+        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
+          <div style={{ display: 'flex', padding: `${footerPadding}px` }}>
+            <Button onClick={handleAddSource} startIcon={<AddCircleRoundedIcon />}>Создать задачу</Button>
+          </div>
+        </PermissionsGate>
       </div>
-      <Divider/>
     </>
   );
 }

@@ -10,7 +10,6 @@ import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/cust
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { DetailPanelContent } from '../detailPanelContent/detailPanelContent';
 import { ProjectEmployees } from './projectEmployees';
-import ProjectNotes from './projectNotes/projectNotes';
 import ProjectStatistics from './projectStatistics/projectStatistics';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
@@ -18,6 +17,8 @@ import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/c
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
+import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
+import ProjectNote from './projectNote/projectNote';
 
 const useStyles = makeStyles((theme: Theme) => ({
   button: {
@@ -37,16 +38,20 @@ export function ProjectEdit(props: ProjectEditProps) {
   const { open, project } = props;
   const { onSubmit, onCancelClick } = props;
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const user = useSelector<RootState, UserState>(state => state.user);
 
   const initValue: ITimeTrackProject = {
-    ID: project?.ID || -1,
-    name: project?.name || '',
-    isFavorite: project?.isFavorite || false,
-    tasks: project?.tasks || [],
-    employees: project?.employees || [],
-    notes: project?.notes || [],
+    ID: project?.ID ?? -1,
+    name: project?.name ?? '',
+    isFavorite: project?.isFavorite ?? false,
+    tasks: project?.tasks ?? [],
+    employees: project?.employees ?? [],
     isPrivate: project?.isPrivate || false,
-    isDone: project?.isDone || false,
+    isDone: project?.isDone ?? false,
+    creator: project?.creator ?? {
+      ID: user.userProfile?.contactkey ?? -1,
+      NAME: user.userProfile?.fullName ?? ''
+    }
   };
 
   const formik = useFormik<ITimeTrackProject>({
@@ -213,7 +218,7 @@ export function ProjectEdit(props: ProjectEditProps) {
                     <ProjectStatistics projectId={formik.values.ID !== -1 ? formik.values.ID : undefined} />
                   </TabPanel>
                   <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''} >
-                    <ProjectNotes notes={formik.values.notes} onChange={(notes) => formik.setFieldValue('notes', notes)}/>
+                    <ProjectNote message={formik.values.note} onChange={(note) => formik.setFieldValue('note', note)}/>
                   </TabPanel>
                 </TabContext>
               </Stack>

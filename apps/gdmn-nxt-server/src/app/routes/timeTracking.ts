@@ -24,7 +24,6 @@ router.delete('/time-tracking/projects/:id', timeTrackerProjectsController.remov
 router.post('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.addToFavorites);
 router.delete('/time-tracking/projects/favorites/:id', timeTrackerProjectsController.removeFromFavorites);
 
-router.get('/time-tracking/projects/filters', timeTrackerProjectsController.getFilters);
 router.get('/time-tracking/projects/statistics/:id', timeTrackerProjectsController.statistics);
 
 // project types routes

@@ -1,22 +1,54 @@
-import { IconButton, IconButtonProps, Tooltip } from '@mui/material';
+import { IconButton, IconButtonProps, Stack, Tooltip } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Close';
+import { MouseEventHandler, useMemo } from 'react';
+import { styled } from '@mui/material/styles';
 
 interface IItemButtonCancelProps extends IconButtonProps {
-  onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void,
-  title?: string,
+  onClick: (e: React.MouseEvent<HTMLButtonElement & HTMLDivElement, MouseEvent>) => void,
+  label?: string,
+  hint?: string,
+  button?: boolean
 }
 
-export default function ItemButtonCancel({ onClick, title, ...rest }: IItemButtonCancelProps) {
+export default function ItemButtonCancel({
+  label = '',
+  hint = 'Редактировать',
+  disabled,
+  button = false,
+  color,
+  onClick,
+  ...rest
+}: Readonly<IItemButtonCancelProps>) {
+  const Container = useMemo(() =>
+    button
+      ? styled(IconButton)(({ theme }) => ({
+        color: color ?? (button ? theme.palette.primary.main : 'inherit'),
+        ...rest,
+      }))
+      : styled('div')(({ theme }) => ({
+        color: color ?? (button ? theme.palette.primary.main : 'inherit'),
+      }))
+  , [button]);
+
   return (
-    <Tooltip title={title || 'Отменить'}>
-      <IconButton
-        {...rest}
-        color="primary"
-        size="small"
-        onClick={onClick}
-      >
-        <CancelIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
+    <Container
+      disabled={disabled}
+      size="small"
+      className="StyledEditButton"
+      onClick={onClick}
+    >
+      <Tooltip title={(label || disabled) ? '' : hint} arrow>
+        <span>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+          >
+            <CancelIcon fontSize="small" />
+            {label && <span>{label}</span>}
+          </Stack>
+        </span>
+      </Tooltip>
+    </Container>
   );
 }

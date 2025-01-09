@@ -1,4 +1,4 @@
-import { IFavoriteProject, IFavoriteTask, IProjectFilter, IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, ITimeTrackProject, ITimeTrackTask, IProjectStatistics, queryOptionsToParamsString, IProjectType } from '@gsbelarus/util-api-types';
+import { IFavoriteProject, IFavoriteTask, IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, ITimeTrackProject, ITimeTrackTask, IProjectStatistics, queryOptionsToParamsString, IProjectType } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -6,7 +6,6 @@ type ITimeTrackingRequestResult = IRequestResult<{ timeTracking: ITimeTrack[] }>
 type ITimeTrackingGroupRequestResult = IRequestResult<{ timeTracking: ITimeTrackGroup[] }>;
 type ITimeTrackerProjectsRequestResult = IRequestResult<{ timeTrackerProjects: ITimeTrackProject[] }>;
 type ITimeTrackerTasksRequestResult = IRequestResult<{ timeTrackerTasks: ITimeTrackTask[] }>;
-type IProjectFilterRequestResult = IRequestResult<{filters: IProjectFilter[]}>;
 type IProjectStatisticsRequestResult = IRequestResult<{statistics: IProjectStatistics[]}>
 type IProjectTypeRequestResult = IRequestResult<{timeTrackingProjectsTypes: IProjectType[]}>
 
@@ -560,10 +559,6 @@ export const timeTrackingApi = createApi({
         });
       },
     }),
-    getFilters: builder.query<IProjectFilter[], void>({
-      query: () => '/projects/filters',
-      transformResponse: (response: IProjectFilterRequestResult) => response.queries.filters || [],
-    }),
     getStatistics: builder.query<IProjectStatistics[], number>({
       query: (id) => `/projects/statistics/${id}`,
       transformResponse: (response: IProjectStatisticsRequestResult) => response.queries.statistics || [],
@@ -603,6 +598,5 @@ export const {
   useDeleteFavoriteTaskMutation,
   useAddFavoriteProjectMutation,
   useDeleteFavoriteProjectMutation,
-  useGetFiltersQuery,
   useGetStatisticsQuery
 } = timeTrackingApi;

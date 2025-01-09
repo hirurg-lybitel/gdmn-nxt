@@ -10,7 +10,7 @@ import { RootState } from '../../../store';
 import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
-import { useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteTaskMutation, useDeleteProjectMutation, useDeleteTimeTrackTaskMutation, useGetFiltersQuery, useGetProjectsQuery, useGetProjectTypesQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
+import { useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteTaskMutation, useDeleteProjectMutation, useDeleteTimeTrackTaskMutation, useGetProjectsQuery, useGetProjectTypesQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -21,21 +21,19 @@ import ProjectEdit from './components/projectEdit/projectEdit';
 import { DetailPanelContent } from './components/detailPanelContent/detailPanelContent';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
-import ItemButtonVisible from '../../../components/customButtons/item-button-visible/item-button-visible';
+import ItemButtonVisible from '../../../components/customButtons/item-button-power/item-button-power';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 
 export interface IProjectsProps {}
 
 export function Projects(props: IProjectsProps) {
   const filterEntityName = 'projects';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
-  const { data: projectTypeFilters = [] } = useGetFiltersQuery();
-  const typeDefault = projectTypeFilters?.find(f => f.CODE === 0);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
-  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, typeDefault ? { type: typeDefault.CODE } : null);
+  const defaultIsDone = false;
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { isDone: defaultIsDone });
   const apiRef = useGridApiRef();
   const [updateTask] = useUpdateTimeTrackTaskMutation();
   const [deleteTask] = useDeleteTimeTrackTaskMutation();
@@ -45,6 +43,7 @@ export function Projects(props: IProjectsProps) {
   const [addProject] = useAddProjectMutation();
   const [updateProject] = useUpdateProjectMutation();
   const [deleteProject] = useDeleteProjectMutation();
+  const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
@@ -53,7 +52,6 @@ export function Projects(props: IProjectsProps) {
     pageSize: 20,
   });
   const [sortingData, setSortingData] = useState<ISortingData | null>();
-  const [projectType, setProjectType] = useState<IProjectType | null>(null);
 
   const rowPerPage = 20;
   const [pageOptions, setPageOptions] = useState<number[]>([
@@ -72,11 +70,10 @@ export function Projects(props: IProjectsProps) {
     {
       pagination: paginationData,
       ...(filterData && { filter: { ...filterData } }),
-      ...(sortingData ? { sort: sortingData } : {}),
-      ...({ projectType: projectType?.ID })
+      ...(sortingData ? { sort: sortingData } : {})
     },
     {
-      skip: !projectType
+      skip: !filterData?.projectType
     }
   );
 
@@ -126,9 +123,9 @@ export function Projects(props: IProjectsProps) {
       setOpenFilters(false);
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      dispatch(clearFilterData({ filterEntityName, saveFields: ['type'] }));
-      saveFilters({ type: typeDefault?.CODE });
-    }, [dispatch, saveFilters, typeDefault?.CODE]),
+      dispatch(clearFilterData({ filterEntityName, saveFields: ['projectType'] }));
+      saveFilters({ projectType: filterData?.projectType, isDone: defaultIsDone });
+    }, [defaultIsDone, dispatch, filterData, saveFilters]),
   };
 
   const memoFilter = useMemo(() =>
@@ -215,7 +212,7 @@ export function Projects(props: IProjectsProps) {
       field: 'isDone',
       type: 'actions',
       align: 'right',
-      width: 138,
+      width: 78,
       resizable: false,
       renderCell: ({ value, row }: GridRenderCellParams) => {
         const handleChangeVisible = () => {
@@ -228,7 +225,6 @@ export function Projects(props: IProjectsProps) {
                 ? (
                   <div key="edit">
                     <ItemButtonEdit
-                      color={'inherit'}
                       size={'small'}
                       label="Редактировать"
                       onClick={() => {
@@ -289,6 +285,11 @@ export function Projects(props: IProjectsProps) {
     />
   ), [changeTaskFvorite, taskSubmit]);
 
+  const setProjectType = (projectType: IProjectType | null) => {
+    if (!projectType) return;
+    handleFilteringDataChange({ ...filterData, projectType: [projectType] });
+  };
+
   return (
     <>
       {memoProjectEdit}
@@ -322,15 +323,15 @@ export function Projects(props: IProjectsProps) {
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton
                   hint="Обновить данные"
-                  loading={projectsIsFetching}
+                  loading={projectsIsFetching || projectTypesIsFetching || projectTypesIsLoading}
                   onClick={refreshClick}
                 />
               </Box>
               <Box display="inline-flex" alignSelf="center">
                 <CustomFilterButton
                   onClick={filterHandlers.filterClick}
-                  disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
-                  hasFilters={Object.keys(filterData || {}).filter(f => f !== 'type').length > 0 || filterData?.type !== typeDefault?.CODE}
+                  disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching || projectTypesIsFetching || projectTypesIsLoading}
+                  hasFilters={Object.keys(filterData || {}).filter(f => f !== 'isDone' && f !== 'projectType').length > 0 || (filtersIsLoading ? defaultIsDone : filterData?.isDone) !== defaultIsDone}
                 />
               </Box>
             </Stack>
@@ -342,16 +343,16 @@ export function Projects(props: IProjectsProps) {
             <ProjectTypeSelect
               withCreate
               withEdit
-              notNull
               disableClearable
-              value={projectType}
-              onChange={(value) => setProjectType(value as IProjectType)}
+              value={filterData?.projectType?.[0] ?? projectTypes?.[0] ?? null}
+              onChange={setProjectType}
             />
           </div>
           <Divider/>
           <div style={{ flex: '1' }}>
             <StyledGrid
               rows={projects}
+              rowHeight={50}
               rowCount={data?.rowCount ?? 0}
               columns={columns}
               loading={projectsIsFetching}

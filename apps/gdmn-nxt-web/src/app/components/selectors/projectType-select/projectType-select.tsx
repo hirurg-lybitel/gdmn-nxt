@@ -14,13 +14,15 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
 
-interface IProjectTypeSelect{
-  value: IProjectType[] | IProjectType | null;
-  onChange: (value: IProjectType[] | IProjectType | null) => void;
+type Value<Multiple> = (Multiple extends true ? IProjectType[] : IProjectType) | null;
+
+interface IProjectTypeSelect<Multiple extends boolean | undefined>{
+  value: Value<Multiple>;
+  onChange: (value: Value<Multiple>) => void;
   label?: string;
   placeholder?: string;
   limitTags?: number;
-  multiple?: boolean,
+  multiple?: Multiple,
   disableCloseOnSelect?: boolean,
   filterOptions?: (options: IProjectType, state: FilterOptionsState<IProjectType>) => boolean,
   filter?: (projectType: IProjectType) => boolean,
@@ -36,7 +38,8 @@ interface IProjectTypeSelect{
   disableClearable?: boolean,
   notNull?: boolean
 }
-export function ProjectTypeSelect({
+
+export function ProjectTypeSelect<Multiple extends boolean | undefined = false>({
   value,
   onChange,
   label = 'Тип проекта',
@@ -56,13 +59,13 @@ export function ProjectTypeSelect({
   withEdit = false,
   disableClearable = false,
   notNull = false
-}: Readonly<IProjectTypeSelect>) {
+}: Readonly<IProjectTypeSelect<Multiple>>) {
   const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
-  const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IProjectType[] | IProjectType | null) => onChange(value), [onChange]);
+  const handleOnChange = useCallback((e: React.SyntheticEvent<Element, Event>, value: IProjectType[] | IProjectType | null) => onChange(value as Value<Multiple>), [onChange]);
 
   useEffect(() => {
-    if (projectTypes.length === 0 || !notNull) return;
-    onChange(projectTypes[0]);
+    if (projectTypes.length === 0 || !notNull || multiple) return;
+    onChange(projectTypes[0] as Value<Multiple>);
   }, [projectTypesIsLoading]);
 
   const [addProjectType] = useAddProjectTypeMutation();
@@ -108,7 +111,7 @@ export function ProjectTypeSelect({
     if (isDelete) {
       deleteProjectType(projectType.ID);
       if (!multiple && notNull && (value as IProjectType).ID === projectType.ID) {
-        onChange(projectTypes[0]);
+        onChange(projectTypes[0] as Value<Multiple>);
       }
       return;
     }
@@ -237,7 +240,7 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
         >
           <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.PUT}>
             <ItemButtonEdit
-              color="primary"
+              button
               onClick={handleEdit(option)}
             />
           </PermissionsGate>

@@ -1,17 +1,43 @@
-import { ICustomer, IFilteringData, IProjectFilter } from '@gsbelarus/util-api-types';
+import { ICustomer, IFilteringData, IWithID } from '@gsbelarus/util-api-types';
 import { useCallback } from 'react';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { Autocomplete, Button, CardActions, CardContent, Stack, TextField } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
-import { useGetFiltersQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useGetCustomersQuery } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
+
+export interface IProjectFilter extends IWithID {
+  code: number;
+  name: string;
+  value?: boolean
+}
+
+const isDoneSelectItems: IProjectFilter[] = [
+  {
+    ID: 0,
+    code: 0,
+    name: 'Все',
+    value: undefined
+  },
+  {
+    ID: 1,
+    code: 1,
+    name: 'Активные',
+    value: false
+  },
+  {
+    ID: 2,
+    code: 2,
+    name: 'Закрытые',
+    value: true
+  }
+];
 
 export interface IProjectsFilterProps {
   open: boolean;
   filteringData: IFilteringData;
   onClose: () => void;
   onFilteringDataChange: (arg: IFilteringData) => void;
-  onClear: () => void
+  onClear: () => void,
 }
 
 export function ProjectsFilter({
@@ -19,36 +45,36 @@ export function ProjectsFilter({
   filteringData,
   onClose,
   onFilteringDataChange,
-  onClear
-}: IProjectsFilterProps) {
+  onClear,
+}: Readonly<IProjectsFilterProps>) {
   const filterClear = useCallback(() => {
     onClear();
   }, [onClear]);
 
-  const { data: projectTypeFilters = [] } = useGetFiltersQuery();
-
   const handleChangeProjectType = useCallback((e: any, value: IProjectFilter) => {
     const data = { ...filteringData };
-    if (!value) {
-      delete data['type'];
+
+    if (!value || value.value === undefined) {
+      delete data['isDone'];
     } else {
-      data['type'] = value?.CODE;
+      data['isDone'] = value.value;
     }
+
     onFilteringDataChange(data);
   }, [filteringData, onFilteringDataChange]);
 
-  const handleCustomerChange = useCallback((value: ICustomer | undefined | null) => {
+  const handleCustomerChange = (customers: ICustomer[] | undefined | null) => {
     const data = { ...filteringData };
-    if (!value) {
-      delete data['customer'];
-    } else {
-      data['customer'] = value?.ID;
-    }
-    onFilteringDataChange(data);
-  }, [filteringData, onFilteringDataChange]);
 
-  const { data: customersResponse } = useGetCustomersQuery({
-  });
+    if (!customers || customers.length < 1) {
+      delete data['customers'];
+      return;
+    } else {
+      data['customers'] = customers;
+    }
+
+    onFilteringDataChange(data);
+  };
 
   return (
     <CustomizedDialog
@@ -59,15 +85,15 @@ export function ProjectsFilter({
       <CardContent style={{ flex: 1 }}>
         <Stack spacing={2}>
           <Autocomplete
-            options={projectTypeFilters}
+            options={isDoneSelectItems}
             disableClearable
-            getOptionLabel={option => option.NAME}
+            getOptionLabel={option => option.name}
             isOptionEqualToValue={(option, value) => option?.ID === value?.ID}
-            value={projectTypeFilters.find(type => type.CODE === filteringData?.type)}
+            value={isDoneSelectItems.find(item => item.value === filteringData?.isDone)}
             onChange={handleChangeProjectType}
             renderOption={(props, option, { selected }) => (
               <li {...props} key={option.ID}>
-                {option.NAME}
+                {option.name}
               </li>
             )}
             renderInput={(params) => (
@@ -78,7 +104,12 @@ export function ProjectsFilter({
               />
             )}
           />
-          <CustomerSelect value={customersResponse?.data.find(cus => cus?.ID === filteringData?.customer)} onChange={handleCustomerChange} />
+          <CustomerSelect
+            multiple
+            disableCloseOnSelect
+            value={filteringData?.customers ?? []}
+            onChange={handleCustomerChange}
+          />
         </Stack>
       </CardContent>
       <CardActions style={{ padding: '16px' }}>
