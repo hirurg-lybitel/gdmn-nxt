@@ -17,13 +17,14 @@ export default function ItemButtonCancel({
   button = false,
   color,
   onClick,
+  style,
   ...rest
 }: Readonly<IItemButtonCancelProps>) {
   const Container = useMemo(() =>
     button
       ? styled(IconButton)(({ theme }) => ({
         color: color ?? (button ? theme.palette.primary.main : 'inherit'),
-        ...rest,
+        ...rest
       }))
       : styled('div')(({ theme }) => ({
         color: color ?? (button ? theme.palette.primary.main : 'inherit'),
@@ -36,6 +37,7 @@ export default function ItemButtonCancel({
       size="small"
       className="StyledEditButton"
       onClick={onClick}
+      style={style}
     >
       <Tooltip title={(label || disabled) ? '' : hint} arrow>
         <span>

@@ -223,31 +223,29 @@ export function Projects(props: IProjectsProps) {
             items={({ closeMenu }) => [
               userPermissions?.['time-tracking/projects']?.PUT
                 ? (
-                  <div key="edit">
-                    <ItemButtonEdit
-                      size={'small'}
-                      label="Редактировать"
-                      onClick={() => {
-                        handleEdit(row);
-                        closeMenu();
-                      }}
-                    />
-                  </div>
+                  <ItemButtonEdit
+                    key="edit"
+                    size={'small'}
+                    label="Редактировать"
+                    onClick={() => {
+                      handleEdit(row);
+                      closeMenu();
+                    }}
+                  />
                 )
                 : <></>,
               userPermissions?.['time-tracking/projects']?.PUT
                 ? (
-                  <div key="visible">
-                    <ItemButtonVisible
-                      color={'inherit'}
-                      label={!value ? 'Отключить' : 'Включить'}
-                      selected={!value}
-                      onClick={() => {
-                        handleChangeVisible();
-                        closeMenu();
-                      }}
-                    />
-                  </div>
+                  <ItemButtonVisible
+                    color={'inherit'}
+                    label={!value ? 'Отключить' : 'Включить'}
+                    selected={!value}
+                    key="visible"
+                    onClick={() => {
+                      handleChangeVisible();
+                      closeMenu();
+                    }}
+                  />
                 )
                 : <></>
             ]}

@@ -16,6 +16,7 @@ export function ItemButtonEdit({
   disabled,
   button = false,
   color,
+  style,
   onClick,
   ...rest
 }: Readonly<ItemButtonEditProps>) {
@@ -23,7 +24,7 @@ export function ItemButtonEdit({
     button
       ? styled(IconButton)(({ theme }) => ({
         color: color ?? (button ? theme.palette.primary.main : 'inherit'),
-        ...rest,
+        ...rest
       }))
       : styled('div')(({ theme }) => ({
         color: color ?? (button ? theme.palette.primary.main : 'inherit'),
@@ -36,6 +37,7 @@ export function ItemButtonEdit({
       size="small"
       className="StyledEditButton"
       onClick={onClick}
+      style={style}
     >
       <Tooltip title={(label || disabled) ? '' : hint} arrow>
         <span>

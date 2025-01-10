@@ -291,73 +291,67 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     return (
       <MenuBurger
         items={({ closeMenu }) => [
-          isInEditMode ? (
-            <div key="save">
-              <ItemButtonSave
-                size={'small'}
-                label="Сохранить"
-                onClick={(e) => {
-                  handleSave(e);
-                  closeMenu();
-                }}
-              />
-            </div>
-          )
+          isInEditMode ? <ItemButtonSave
+            key="save"
+            size={'small'}
+            label="Сохранить"
+            onClick={(e) => {
+              handleSave(e);
+              closeMenu();
+            }}
+          />
             : <></>,
           isInEditMode
-            ? (
-              <div key="cancel">
-                <ItemButtonCancel
-                  label={'Отменить'}
-                  onClick={(e) => {
-                    handleConfirmCancelClick();
-                    closeMenu();
-                  }}
-                />
-              </div>
-            )
+            ? <ItemButtonCancel
+              key="cancel"
+              label={'Отменить'}
+              onClick={(e) => {
+                handleConfirmCancelClick();
+                closeMenu();
+              }}
+            />
             : <></>,
           userPermissions?.['time-tracking/tasks']?.PUT && !isInEditMode
-            ? (
-              <div key="edit">
-                <ItemButtonEdit
-                  size={'small'}
-                  label="Редактировать"
-                  onClick={(e) => {
-                    handleEditClick(e);
-                    closeMenu();
-                  }}
-                />
-              </div>
-            )
+            ? <ItemButtonEdit
+              key="edit"
+              size={'small'}
+              label="Редактировать"
+              onClick={(e) => {
+                handleEditClick(e);
+                closeMenu();
+              }}
+            />
             : <></>,
           userPermissions?.['time-tracking/tasks']?.PUT
-            ? (
-              <div key="visible">
-                <ItemButtonVisible
-                  color="inherit"
-                  label={props.value ? 'Отключить' : 'Включить'}
-                  selected={props.value}
-                  onClick={() => {
-                    handleChangeVisible();
-                    closeMenu();
-                  }}
-                />
-              </div>
-            )
+            ? <ItemButtonVisible
+              key="visible"
+              color="inherit"
+              label={props.value ? 'Отключить' : 'Включить'}
+              selected={props.value}
+              onClick={() => {
+                handleChangeVisible();
+                closeMenu();
+              }}
+            />
             : <></>,
           userPermissions?.['time-tracking/tasks']?.DELETE
             ? (
-              <Tooltip key={'delete'} title={row.inUse ? 'Нельзя удалить использующуюся задачу' : ''}>
+              <Tooltip
+                onClick={() => {
+                  if (!row.inUse) {
+                    handleConfirmDelete();
+                    closeMenu();
+                  }
+                }}
+                key={'delete'}
+                title={row.inUse ? 'Нельзя удалить использующуюся задачу' : ''}
+              >
                 <div>
                   <ItemButtonDelete
                     label="Удалить"
                     confirmation={false}
                     disabled={row.inUse}
-                    onClick={() => {
-                      handleConfirmDelete();
-                      closeMenu();
-                    }}
+                    onClick={() => {}}
                   />
                 </div>
               </Tooltip>
@@ -460,6 +454,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
   }, []);
 
   const handleAddSource = useCallback(() => {
+    forceUpdate();
     if (apiRef.current.getRow(0)) return;
     const id = 0;
     apiRef.current.updateRows([{ ID: id, isActive: true }]);
@@ -468,7 +463,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       rowIndex: 0,
     });
     apiRef.current.startRowEditMode({ id });
-    forceUpdate();
+    console.log('asd');
   }, [apiRef]);
 
   const footerPadding = 10;
@@ -476,14 +471,14 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
 
   const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 0 : recordsCount * 50 + footerHeight, []);
 
-  const filteredTasks = tasks.reduce<ITimeTrackTask[]>((filteredArray, task) => {
+  const filteredTasks = tasks?.reduce<ITimeTrackTask[]>((filteredArray, task) => {
     let checkConditions = true;
-    if (filterData.name) {
+    if (filterData?.name) {
       const lowerName = String(filterData.name).toLowerCase();
       checkConditions = checkConditions && task.name.toLowerCase().includes(lowerName);
     }
     if (filterData?.isActive !== 'all') {
-      checkConditions = checkConditions && (task.isActive === filterData.isActive);
+      checkConditions = checkConditions && (task.isActive === filterData?.isActive);
     }
     if (checkConditions) {
       filteredArray.push(task);
@@ -551,9 +546,11 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
                   : undefined
               }
             />
-            <Tooltip title={'Создать задачу'}>
-              <IconButton color="primary" onClick={handleAddSource}><AddCircleIcon/></IconButton>
-            </Tooltip>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Tooltip title={'Создать задачу'}>
+                <IconButton color="primary" onClick={handleAddSource}><AddCircleIcon/></IconButton>
+              </Tooltip>
+            </div>
           </Stack>
         </PermissionsGate>
         <CustomizedCard

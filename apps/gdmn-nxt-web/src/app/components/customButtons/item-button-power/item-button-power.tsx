@@ -25,6 +25,7 @@ export default function ItemButtonPower({
   hint,
   button,
   color,
+  style,
   ...rest
 }: Readonly<IItemButtonPowerProps>) {
   const Container = useMemo(() =>
@@ -46,6 +47,7 @@ export default function ItemButtonPower({
       size="small"
       className="StyledPowerButton"
       onClick={onClick}
+      style={style}
     >
       <Tooltip title={(label || disabled) ? '' : (hint ?? defaultTitle)} arrow>
         <span>
