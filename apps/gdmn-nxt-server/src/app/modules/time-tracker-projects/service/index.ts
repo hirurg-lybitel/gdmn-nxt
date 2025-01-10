@@ -28,7 +28,7 @@ const findAll = async (
       {
         ...(customerId && { 'USR$CUSTOMER': customerId }),
         ...(projectType && { 'USR$PROJECT_TYPE': projectType }),
-        ...(isDone && { 'USR$DONE': isDone === 'true' ? 1 : 0 })
+        ...(isDone && isDone !== 'all' && { 'USR$DONE': isDone === 'true' ? 1 : 0 })
       });
 
     const favorites = await favoriteTimeTrackerProjectsRepository.find(sessionID, { 'USR$USER': userId });

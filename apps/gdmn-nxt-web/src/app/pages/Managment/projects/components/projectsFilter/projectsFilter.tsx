@@ -3,12 +3,11 @@ import { useCallback } from 'react';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import { Autocomplete, Button, CardActions, CardContent, Stack, TextField } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
-import { useGetCustomersQuery } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 
 export interface IProjectFilter extends IWithID {
   code: number;
   name: string;
-  value?: boolean
+  value?: boolean | string
 }
 
 const isDoneSelectItems: IProjectFilter[] = [
@@ -16,7 +15,7 @@ const isDoneSelectItems: IProjectFilter[] = [
     ID: 0,
     code: 0,
     name: 'Все',
-    value: undefined
+    value: 'all'
   },
   {
     ID: 1,
@@ -54,7 +53,7 @@ export function ProjectsFilter({
   const handleChangeProjectType = useCallback((e: any, value: IProjectFilter) => {
     const data = { ...filteringData };
 
-    if (!value || value.value === undefined) {
+    if (value?.value === undefined) {
       delete data['isDone'];
     } else {
       data['isDone'] = value.value;

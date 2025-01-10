@@ -300,7 +300,6 @@ export function Projects(props: IProjectsProps) {
             <Stack direction="row" spacing={1}>
               <Box paddingX={'4px'} />
               <SearchBar
-                disabled={projectsIsLoading}
                 onCancelSearch={cancelSearch}
                 onRequestSearch={requestSearch}
                 fullWidth

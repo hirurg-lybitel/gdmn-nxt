@@ -1,6 +1,6 @@
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
-import { Button, Divider, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { IFilteringData, ITimeTrackProject, ITimeTrackTask, IWithID, Permissions } from '@gsbelarus/util-api-types';
+import { Autocomplete, Button, Divider, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
@@ -11,13 +11,16 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import ItemButtonVisible from '../../../../../components/customButtons/item-button-power/item-button-power';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
 import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
+import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -38,6 +41,33 @@ const validationShema: ValidationShema = {
     return '';
   },
 };
+
+export interface ITaskFilter extends IWithID {
+  code: number;
+  name: string;
+  value?: boolean | string
+}
+
+const isActiveSelectItems: ITaskFilter[] = [
+  {
+    ID: 0,
+    code: 0,
+    name: 'Все',
+    value: 'all'
+  },
+  {
+    ID: 1,
+    code: 1,
+    name: 'Активные',
+    value: true
+  },
+  {
+    ID: 2,
+    code: 2,
+    name: 'Закрытые',
+    value: false
+  }
+];
 
 interface CustomCellEditFormProps extends GridRenderEditCellParams {
   errors: IErrorsObject,
@@ -81,12 +111,50 @@ interface IDetailPanelContent {
   changeFavorite: (data: {taskId: number, projectId: number}, favorite: boolean) => void
 }
 
-export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavorite }: IDetailPanelContent) {
+export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavorite }: Readonly<IDetailPanelContent>) {
   const tasks = project.tasks || [];
-
+  const filterEntityName = 'project-tasks';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const apiRef = useGridApiRef();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const dispatch = useDispatch();
+  const defaultIsDone = true;
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { isActive: defaultIsDone });
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
+  }, [dispatch]);
+
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+
+  const requestSearch = useCallback((value: string) => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange({
+      ...newObject,
+      ...(value !== '' ? { name: [value] } : {})
+    });
+  }, [filterData, handleFilteringDataChange]);
+
+  const cancelSearch = useCallback(() => {
+    const newObject = { ...filterData };
+    delete newObject.name;
+    handleFilteringDataChange(newObject);
+  }, [filterData, handleFilteringDataChange]);
+
+  const handleChangeProjectType = useCallback((e: any, value: ITaskFilter) => {
+    const data = { ...filterData };
+
+    if (value?.value === undefined) {
+      delete data['isActive'];
+    } else {
+      data['isActive'] = value.value;
+    }
+
+    handleFilteringDataChange(data);
+  }, [filterData, handleFilteringDataChange]);
+
   const [titleAndMethod, setTitleAndMethod] = useState<{
     title: string,
     text: string,
@@ -408,6 +476,21 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
 
   const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 0 : recordsCount * 50 + footerHeight, []);
 
+  const filteredTasks = tasks.reduce<ITimeTrackTask[]>((filteredArray, task) => {
+    let checkConditions = true;
+    if (filterData.name) {
+      const lowerName = String(filterData.name).toLowerCase();
+      checkConditions = checkConditions && task.name.toLowerCase().includes(lowerName);
+    }
+    if (filterData?.isActive !== 'all') {
+      checkConditions = checkConditions && (task.isActive === filterData.isActive);
+    }
+    if (checkConditions) {
+      filteredArray.push(task);
+    }
+    return filteredArray;
+  }, []);
+
   const grid = (
     <StyledGrid
       sx={{ '& .MuiDataGrid-withBorderColor': {
@@ -418,7 +501,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       hideFooter
       rowHeight={50}
       hideColumnHeaders={!separateGrid}
-      rows={tasks}
+      rows={filteredTasks}
       columns={columns}
       onRowEditStart={handleRowEditStart}
       onRowEditStop={handleRowEditStop}
@@ -436,11 +519,42 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       >
         {memoConfirmDialog}
         <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Stack direction="row" spacing={1}>
+            <Autocomplete
+              options={isActiveSelectItems}
+              disableClearable
+              getOptionLabel={option => option.name}
+              value={isActiveSelectItems.find(item => item.value === filterData?.isActive) ?? isActiveSelectItems[1]}
+              onChange={handleChangeProjectType}
+              style={{ width: '200px' }}
+              renderOption={(props, option, { selected }) => (
+                <li {...props} key={option.ID}>
+                  {option.name}
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  placeholder="Фильтр по типу"
+                />
+              )}
+            />
+            <SearchBar
+              onCancelSearch={cancelSearch}
+              onRequestSearch={requestSearch}
+              fullWidth
+              cancelOnEscape
+              value={
+                filterData?.name
+                  ? filterData.name?.[0]
+                  : undefined
+              }
+            />
             <Tooltip title={'Создать задачу'}>
               <IconButton color="primary" onClick={handleAddSource}><AddCircleIcon/></IconButton>
             </Tooltip>
-          </div>
+          </Stack>
         </PermissionsGate>
         <CustomizedCard
           borders

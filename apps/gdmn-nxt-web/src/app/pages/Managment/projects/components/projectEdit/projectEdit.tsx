@@ -128,6 +128,11 @@ export function ProjectEdit(props: ProjectEditProps) {
             style={{ height: '100%' }}
             id="mainForm"
             onSubmit={formik.handleSubmit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }}
           >
             <Stack
               direction="row"
