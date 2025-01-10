@@ -67,7 +67,6 @@ export function ProjectsFilter({
 
     if (!customers || customers.length < 1) {
       delete data['customers'];
-      return;
     } else {
       data['customers'] = customers;
     }

@@ -399,7 +399,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
     const handleSwitchFavorite = useCallback(() => {
-      if (isInEditMode && (id === 0 || !separateGrid)) {
+      if (isInEditMode) {
         apiRef.current.setEditCellValue({ id, field, value: !value });
         return;
       }
@@ -479,7 +479,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
   }, [apiRef]);
 
   const footerPadding = 10;
-  const footerHeight = userPermissions?.['time-tracking/tasks']?.POST ? 30.75 + 10 * 2 : 0;
+  const footerHeight = userPermissions?.['time-tracking/tasks']?.POST ? 31.75 + 10 * 2 : 0;
 
   const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 0 : recordsCount * 50 + footerHeight, []);
 
@@ -547,7 +547,12 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
             />
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Tooltip title={'Создать задачу'}>
-                <IconButton color="primary" onClick={handleAddSource}><AddCircleIcon/></IconButton>
+                <IconButton
+                  color="primary"
+                  onClick={handleAddSource}
+                >
+                  <AddCircleIcon/>
+                </IconButton>
               </Tooltip>
             </div>
           </Stack>
@@ -583,6 +588,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
             <Button onClick={handleAddSource} startIcon={<AddCircleRoundedIcon />}>Создать задачу</Button>
           </div>
         </PermissionsGate>
+        <Divider/>
       </div>
     </>
   );

@@ -91,7 +91,7 @@ export default function ProjectNote({ message, onChange }: Readonly<IProjectNote
               rows={rowCount}
               name="message"
               onChange={(e) => onChange(e.target.value)}
-              value={message}
+              value={message ?? ''}
               label="Заметка"
               multiline
             />

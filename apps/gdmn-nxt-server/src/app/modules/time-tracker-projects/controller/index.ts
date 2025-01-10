@@ -18,9 +18,13 @@ const findAll: RequestHandler = async (req, res) => {
 
     const projects = showAll
       ? response
-      : response.filter(project => !project.isPrivate
-        || project?.employees?.findIndex(empl => empl.ID === req.user['contactkey']) !== 1
-        || project.creator.ID === req.user['contactkey']
+      : response.filter(project => {
+        console.log(project.name);
+        console.log(!project.isPrivate, (project?.employees && project?.employees?.findIndex(empl => empl.ID === req.user['contactkey']) > -1), project.creator.ID === req.user['contactkey']);
+        return !project.isPrivate
+        || project?.employees?.findIndex(empl => empl.ID === req.user['contactkey']) > -1
+        || project.creator.ID === req.user['contactkey'];
+      }
       );
 
     let fromRecord = 0;
