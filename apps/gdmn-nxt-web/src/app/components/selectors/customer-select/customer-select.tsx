@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -249,8 +249,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         ref={taskSelectAreaRef}
         style={{
           position: 'absolute',
-          left: '14px',
+          right: '14px',
           top: '9px',
+          maxWidth: '50%',
           zIndex: 99,
         }}
       >
@@ -259,7 +260,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             display: (projects.length === 0) ? 'none' : 'inline-flex',
             position: 'relative',
             zIndex: 2,
-            color: 'transparent'
+            color: 'transparent',
+            width: '100%'
           }}
         >
           <Stack direction={'row'}>
@@ -270,6 +272,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             <Box width={34} />
           </Stack>
           <CustomerTasks
+            sx={{ '& .MuiInputBase-input': {
+              marginRight: '16px'
+            },
+            '& .MuiAutocomplete-endAdornment': {
+              top: '40%'
+            }
+            }}
             projects={projects}
             task={selectedTask}
             onSelect={handleTaskSelect}
@@ -354,22 +363,12 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
+            sx={{ '& .MuiAutocomplete-endAdornment': {
+              right: (taskSelectAreaWidth ? taskSelectAreaWidth + 26 : 9) + 'px !important'
+            } }}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
-              startAdornment: (
-                <>
-                  <InputAdornment
-                    position="start"
-                    style={{
-                      display: projects.length === 0 ? 'none' : 'inline-flex'
-                    }}
-                  >
-                    <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
-                  </InputAdornment>
-                  {params.InputProps.startAdornment}
-                </>
-              ),
               endAdornment: (
                 <>
                   {(value && (!Array.isArray(value))) && !disableEdition &&
@@ -571,12 +570,14 @@ const ListboxComponent = forwardRef<
 interface CustomerTasksProps {
   projects: ITimeTrackProject[];
   task: ITimeTrackTask | null;
+  sx?: SxProps<Theme>;
   onSelect: (task: ITimeTrackTask) => void;
 };
 
 const CustomerTasks = ({
   projects,
   task,
+  sx,
   onSelect
 }: Readonly<CustomerTasksProps>) => {
   const [addFavoriteProject] = useAddFavoriteProjectMutation();
@@ -710,6 +711,7 @@ const CustomerTasks = ({
         top: -2,
         width: '100%',
         '& .MuiInput-root::before': { borderBottom: 0 },
+        ...sx
       }}
       slotProps={{
         paper: {
