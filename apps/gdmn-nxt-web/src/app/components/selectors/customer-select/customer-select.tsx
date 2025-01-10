@@ -296,6 +296,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
+        sx={{
+          '& .MuiInputBase-root': {
+            paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 58) : '39') + 'px !important'
+          }
+        }}
         {
           ...(!disableFavorite && {
             groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
