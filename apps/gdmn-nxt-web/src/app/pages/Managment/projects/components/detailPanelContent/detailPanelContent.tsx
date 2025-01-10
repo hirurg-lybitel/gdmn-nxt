@@ -75,7 +75,7 @@ interface CustomCellEditFormProps extends GridRenderEditCellParams {
 }
 
 const CustomCellEditForm = (props: CustomCellEditFormProps) => {
-  const { colDef, value, id, field, error, errors, clearError } = props;
+  const { colDef, value, id, field, error, errors, clearError, row } = props;
 
   const errorMessage = errors[`${id}`]?.[`${field}`];
 
@@ -90,6 +90,7 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
     <ErrorTooltip open={!!errorMessage} title={errorMessage} >
       <div style={{ paddingLeft: '10px', paddingRight: '0px', flex: 1 }}>
         <TextField
+          style={{ textDecoration: !row.isActive ? 'line-through' : 'none' }}
           autoFocus
           size="small"
           onFocus={() => clearError(field, id)}
@@ -112,9 +113,25 @@ interface IDetailPanelContent {
 }
 
 export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavorite }: Readonly<IDetailPanelContent>) {
-  const tasks = project.tasks || [];
   const filterEntityName = 'project-tasks';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+
+  const tasks = useMemo(() => (separateGrid ? project.tasks?.reduce<ITimeTrackTask[]>((filteredArray, task) => {
+    let checkConditions = true;
+    if (filterData?.name) {
+      const lowerName = String(filterData.name).toLowerCase();
+      checkConditions = checkConditions && task.name.toLowerCase().includes(lowerName);
+    }
+    if (filterData?.isActive !== 'all') {
+      checkConditions = checkConditions && (task.isActive === filterData?.isActive);
+    }
+    if (checkConditions) {
+      filteredArray.push(task);
+    }
+    return filteredArray;
+  }, []) : project.tasks) || [],
+  [filterData?.isActive, filterData?.name, project.tasks, separateGrid]) ;
+
   const apiRef = useGridApiRef();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -190,16 +207,9 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     setTitleAndMethod({ title, text, mode, method });
   }, []);
 
-  const stopAdding = useCallback(() => {
-    if (apiRef.current.getRowMode(0) === GridRowModes.Edit) {
-      apiRef.current.stopRowEditMode({ id: 0, ignoreModifications: true });
-    }
-  }, [apiRef]);
-
   const handleSubmit = useCallback((task: ITimeTrackTask) => {
-    stopAdding();
     onSubmit(task.ID > 0 ? task : { ...task, project: project }, false);
-  }, [onSubmit, project, stopAdding]);
+  }, [onSubmit, project]);
 
   const [errors, setErrors] = useState<IErrorsObject>({});
 
@@ -246,7 +256,6 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
 
     const handleDeleteClick = () => {
       setConfirmOpen(false);
-      stopAdding();
       onSubmit({ ID: id } as ITimeTrackTask, true);
     };
 
@@ -280,61 +289,65 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     };
 
     const handleChangeVisible = () => {
-      if (isInEditMode && separateGrid) {
+      if (isInEditMode) {
         apiRef.current.setEditCellValue({ id, field: 'isActive', value: !row.isActive });
-        if (id === 0) return;
+        forceUpdate();
+        if (id === 0 || !separateGrid) return;
       };
-      stopAdding();
       onSubmit({ ...row, isActive: !row.isActive, project }, false);
     };
 
     return (
       <MenuBurger
         items={({ closeMenu }) => [
-          isInEditMode ? <ItemButtonSave
-            key="save"
-            size={'small'}
-            label="Сохранить"
-            onClick={(e) => {
-              handleSave(e);
-              closeMenu();
-            }}
-          />
+          isInEditMode ? (
+            <ItemButtonSave
+              key="save"
+              size={'small'}
+              label="Сохранить"
+              onClick={(e) => {
+                handleSave(e);
+                closeMenu();
+              }}
+            />)
             : <></>,
           isInEditMode
-            ? <ItemButtonCancel
-              key="cancel"
-              label={'Отменить'}
-              onClick={(e) => {
-                handleConfirmCancelClick();
-                closeMenu();
-              }}
-            />
+            ? (
+              <ItemButtonCancel
+                key="cancel"
+                label={'Отменить'}
+                onClick={(e) => {
+                  handleConfirmCancelClick();
+                  closeMenu();
+                }}
+              />)
             : <></>,
           userPermissions?.['time-tracking/tasks']?.PUT && !isInEditMode
-            ? <ItemButtonEdit
-              key="edit"
-              size={'small'}
-              label="Редактировать"
-              onClick={(e) => {
-                handleEditClick(e);
-                closeMenu();
-              }}
-            />
+            ? (
+              <ItemButtonEdit
+                key="edit"
+                size={'small'}
+                label="Редактировать"
+                onClick={(e) => {
+                  handleEditClick(e);
+                  closeMenu();
+                }}
+              />)
             : <></>,
           userPermissions?.['time-tracking/tasks']?.PUT
-            ? <ItemButtonVisible
-              key="visible"
-              color="inherit"
-              label={props.value ? 'Отключить' : 'Включить'}
-              selected={props.value}
-              onClick={() => {
-                handleChangeVisible();
-                closeMenu();
-              }}
-            />
+            ? (
+              <ItemButtonVisible
+                key="visible"
+                color="inherit"
+                label={props.value ? 'Отключить' : 'Включить'}
+                selected={props.value}
+                onClick={() => {
+                  handleChangeVisible();
+                  closeMenu();
+                }}
+              />)
             : <></>,
-          userPermissions?.['time-tracking/tasks']?.DELETE
+          userPermissions?.['time-tracking/tasks']?.DELETE && row.ID !== 0
             ? (
               <Tooltip
                 onClick={() => {
@@ -386,11 +399,10 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     const isInEditMode = api.current.getRowMode(id) === GridRowModes.Edit;
 
     const handleSwitchFavorite = useCallback(() => {
-      if (isInEditMode && separateGrid && id === 0) {
+      if (isInEditMode && (id === 0 || !separateGrid)) {
         apiRef.current.setEditCellValue({ id, field, value: !value });
         return;
       }
-      stopAdding();
       changeFavorite({ taskId: row.ID, projectId: project.ID }, !row.isFavorite);
     }, [field, id, isInEditMode, row.ID, row.isFavorite, value]);
 
@@ -406,7 +418,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       type: 'actions',
       resizable: false,
       field: 'isFavorite',
-      editable: separateGrid,
+      editable: true,
       renderCell: IsFavoriteCell,
       renderEditCell: IsFavoriteCell,
       align: 'center',
@@ -425,7 +437,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     {
       field: 'isActive',
       type: 'actions',
-      editable: separateGrid,
+      editable: true,
       resizable: false,
       width: 78,
       renderCell: RowMenuCell,
@@ -462,29 +474,14 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     apiRef.current.scrollToIndexes({
       rowIndex: 0,
     });
+    if (apiRef.current.getRowMode(0) === GridRowModes.Edit) return;
     apiRef.current.startRowEditMode({ id });
-    console.log('asd');
   }, [apiRef]);
 
   const footerPadding = 10;
   const footerHeight = userPermissions?.['time-tracking/tasks']?.POST ? 30.75 + 10 * 2 : 0;
 
   const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 0 : recordsCount * 50 + footerHeight, []);
-
-  const filteredTasks = tasks?.reduce<ITimeTrackTask[]>((filteredArray, task) => {
-    let checkConditions = true;
-    if (filterData?.name) {
-      const lowerName = String(filterData.name).toLowerCase();
-      checkConditions = checkConditions && task.name.toLowerCase().includes(lowerName);
-    }
-    if (filterData?.isActive !== 'all') {
-      checkConditions = checkConditions && (task.isActive === filterData?.isActive);
-    }
-    if (checkConditions) {
-      filteredArray.push(task);
-    }
-    return filteredArray;
-  }, []);
 
   const grid = (
     <StyledGrid
@@ -496,7 +493,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       hideFooter
       rowHeight={50}
       hideColumnHeaders={!separateGrid}
-      rows={filteredTasks}
+      rows={tasks}
       columns={columns}
       onRowEditStart={handleRowEditStart}
       onRowEditStop={handleRowEditStop}
@@ -516,6 +513,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
         <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
           <Stack direction="row" spacing={1}>
             <Autocomplete
+              disabled={filtersIsLoading}
               options={isActiveSelectItems}
               disableClearable
               getOptionLabel={option => option.name}
@@ -536,6 +534,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
               )}
             />
             <SearchBar
+              disabled={filtersIsLoading}
               onCancelSearch={cancelSearch}
               onRequestSearch={requestSearch}
               fullWidth

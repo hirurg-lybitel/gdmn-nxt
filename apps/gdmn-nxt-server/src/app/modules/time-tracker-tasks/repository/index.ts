@@ -1,6 +1,7 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { FindHandler, FindOneHandler, FindOperator, ITimeTrackTask, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { favoriteTimeTrackerTasksRepository } from './favoriteTimeTrackerTasks';
 
 const find: FindHandler<ITimeTrackTask> = async (
   sessionID,
@@ -145,7 +146,8 @@ const save: SaveHandler<ITimeTrackTask> = async (
   const {
     name,
     project,
-    isActive = true
+    isActive = true,
+    isFavorite = false
   } = metadata;
 
   try {
@@ -163,7 +165,7 @@ const save: SaveHandler<ITimeTrackTask> = async (
     await releaseTransaction();
     const task = await findOne(sessionID, { ID: newTask.ID });
 
-    return task;
+    return { ...task, isFavorite };
   } catch (error) {
     await releaseTransaction(false);
     throw new Error(error);

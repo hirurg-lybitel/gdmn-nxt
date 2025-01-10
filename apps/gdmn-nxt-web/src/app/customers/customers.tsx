@@ -310,8 +310,8 @@ export function Customers(props: CustomersProps) {
           <Box>
             <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
               <ItemButtonEdit
+                button
                 onClick={handleCustomerEdit(customerId)}
-                color="primary"
                 disabled={customerFetching}
               />
             </PermissionsGate>

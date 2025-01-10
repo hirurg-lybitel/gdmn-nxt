@@ -505,7 +505,7 @@ const CustomerItem = ({
             }}
           >
             <ItemButtonEdit
-              color="primary"
+              button
               onClick={editCustomer(customer)}
             />
           </div>

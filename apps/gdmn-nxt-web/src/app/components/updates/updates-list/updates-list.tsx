@@ -123,7 +123,7 @@ export function UpdatesList(props: UpdatesListProps) {
                       <Typography variant="body2">{new Date(u.ONDATE).toLocaleDateString()}</Typography>
                       <PermissionsGate actionAllowed={userPermissions?.updates.PUT}>
                         <ItemButtonEdit
-                          color="primary"
+                          button
                           size="small"
                           onClick={handleEditSource(u)}
                         />

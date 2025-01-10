@@ -36,7 +36,7 @@ export default function DetailPanel({ column, onEditClick, gridColumns, editable
       Object.keys(params.row).length > 0
         ? <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
           <ItemButtonEdit
-            color="primary"
+            button
             onClick={handleEditClick(params.row)}
           />
         </PermissionsGate>

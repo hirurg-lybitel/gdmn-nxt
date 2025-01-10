@@ -115,7 +115,7 @@ export function KanbanTasksList(props: KanbanTasksListProps) {
         Object.keys(params.row).length > 0
           ? <PermissionsGate actionAllowed={userPermissions?.tasks?.PUT}>
             <ItemButtonEdit
-              color="primary"
+              button
               onClick={handleTaskEdit(params.row)}
             />
           </PermissionsGate>

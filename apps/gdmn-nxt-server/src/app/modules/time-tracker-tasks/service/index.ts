@@ -121,6 +121,7 @@ const removeFromFavorites = async (
 const update = async (
   sessionID: string,
   id: number,
+  userId: number,
   body: Partial<ITimeTrackTask>
 ) => {
   try {
@@ -134,6 +135,14 @@ const update = async (
           id,
           body
         );
+    if (body.isFavorite !== task.isFavorite) {
+      if (body.isFavorite === true) {
+        await timeTrackerTasksService.addToFavorites(sessionID, userId, task.ID);
+      }
+      if (body.isFavorite === false) {
+        await timeTrackerTasksService.removeFromFavorites(sessionID, userId, task.ID);
+      }
+    }
     if (!updatedTask) {
       throw InternalServerErrorException(ERROR_MESSAGES.UPDATE_FAILED);
     }
@@ -146,10 +155,15 @@ const update = async (
 
 const create = async (
   sessionID: string,
+  userId: number,
   body: ITimeTrackTask
 ) => {
   try {
-    return await timeTrackerTasksRepository.save(sessionID, body);
+    const task = await timeTrackerTasksRepository.save(sessionID, body);
+    if (task.isFavorite) {
+      await timeTrackerTasksService.addToFavorites(sessionID, userId, task.ID);
+    }
+    return task;
   } catch (error) {
     throw error;
   }

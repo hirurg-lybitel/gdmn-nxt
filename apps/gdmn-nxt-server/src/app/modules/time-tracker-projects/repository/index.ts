@@ -149,21 +149,11 @@ const update = async (
       tasks?.map(async task => {
         const oldTask = oldTasks.find(({ ID }) => ID === task.ID);
         if (!oldTask) {
-          const newTask = await timeTrackerTasksService.create(sessionID, { ...task, project: project });
-          if (task.isFavorite) {
-            await timeTrackerTasksService.addToFavorites(sessionID, userId, newTask.ID);
-          }
+          const newTask = await timeTrackerTasksService.create(sessionID, userId, { ...task, project: project });
           return newTask;
         };
         if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
-          const newTask = await timeTrackerTasksService.update(sessionID, task.ID, { ...task, project: project });
-          if (task.isFavorite !== oldTask.isFavorite) {
-            if (task.isFavorite) {
-              await timeTrackerTasksService.addToFavorites(sessionID, userId, newTask.ID);
-            } else {
-              await timeTrackerTasksService.removeFromFavorites(sessionID, userId, newTask.ID);
-            }
-          }
+          const newTask = await timeTrackerTasksService.update(sessionID, task.ID, userId, { ...task, project: project });
           return newTask;
         };
       });

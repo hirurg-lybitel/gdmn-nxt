@@ -168,8 +168,8 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
               }}
             >
               <ItemButtonEdit
+                button
                 disabled={isFetching}
-                color="primary"
                 onClick={handleOpenLabelEdit(option)}
               />
             </div>

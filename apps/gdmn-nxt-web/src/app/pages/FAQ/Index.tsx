@@ -189,7 +189,11 @@ export default function FAQ() {
                         <AccordionSummary
                           expandIcon={<ExpandMoreIcon />}
                         >
-                          <Stack direction={'row'} flex={1} alignItems={'center'}>
+                          <Stack
+                            direction={'row'}
+                            flex={1}
+                            alignItems={'center'}
+                          >
                             <Typography variant="h6">
                               <ReactMarkdown>
                                 {item.USR$QUESTION}
@@ -200,6 +204,7 @@ export default function FAQ() {
                                 <Box flex={1} />
                                 <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
                                   <ItemButtonEdit
+                                    button
                                     disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
                                     onClick={handleOpenEditPopup(item)}
                                   />

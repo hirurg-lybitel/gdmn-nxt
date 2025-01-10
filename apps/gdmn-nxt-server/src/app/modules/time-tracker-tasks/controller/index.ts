@@ -90,6 +90,8 @@ const removeFromFavorites: RequestHandler = async (req, res) => {
 
 const update: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
+  const userId = req.user['id'];
+
   if (isNaN(id)) {
     throw UnprocessableEntityException('Field ID is not defined or is not numeric');
   }
@@ -98,6 +100,7 @@ const update: RequestHandler = async (req, res) => {
     const updatedTimeTrack = await timeTrackerTasksService.update(
       req.sessionID,
       id,
+      userId,
       req.body
     );
 
@@ -116,7 +119,7 @@ const create: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
 
-    const task = await timeTrackerTasksService.create(req.sessionID, req.body);
+    const task = await timeTrackerTasksService.create(req.sessionID, userId, req.body);
 
     const result: IRequestResult = {
       queries: { timeTrackerTasks: [task] },
