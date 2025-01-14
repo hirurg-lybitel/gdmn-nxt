@@ -129,7 +129,7 @@ export function ProjectEdit(props: ProjectEditProps) {
             id="mainForm"
             onSubmit={formik.handleSubmit}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && (e.target as any).id === 'search') {
                 e.preventDefault();
               }
             }}
