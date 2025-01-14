@@ -118,7 +118,6 @@ const update = async (
       employees = project.employees,
       note = project.note,
       projectType = project.projectType,
-      creator
     } = metadata;
 
     const oldEmployees: IProjectEmployee[] = ((await projectEmployeesRepository.find(sessionID, true))[`${id}`]) as IProjectEmployee[];
@@ -159,13 +158,6 @@ const update = async (
       });
     }
 
-    const creatorId = project.creator.ID ?? creator.ID ?? (await fetchAsSingletonObject(`
-      SELECT CONTACTKEY
-      FROM GD_USER
-      WHERE ID = :userId`,
-    { userId }
-    ))['CONTACTKEY'];
-
     const updatedPoject = await fetchAsSingletonObject<ITimeTrackProject>(
       `UPDATE USR$CRM_TIMETRACKER_PROJECTS z
       SET
@@ -174,7 +166,6 @@ const update = async (
         z.USR$PRIVATE = :isPrivate,
         z.USR$CUSTOMER = :customer,
         z.USR$PROJECT_TYPE = :projectType,
-        z.USR$CREATOR = :creator,
         z.USR$NOTE = :note
       WHERE
         ID = :id
@@ -186,7 +177,6 @@ const update = async (
         isPrivate: isPrivate,
         customer: customer.ID,
         projectType: projectType.ID,
-        creator: creatorId,
         note: note
       }
     );

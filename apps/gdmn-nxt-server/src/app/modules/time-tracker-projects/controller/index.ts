@@ -21,7 +21,7 @@ const findAll: RequestHandler = async (req, res) => {
       : response.filter(project => {
         return !project.isPrivate
         || project?.employees?.findIndex(empl => empl.ID === req.user['contactkey']) > -1
-        || project.creator.ID === req.user['contactkey'];
+        || project.creator?.ID === req.user['contactkey'];
       }
       );
 
