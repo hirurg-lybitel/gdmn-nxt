@@ -20,7 +20,7 @@ const findAll = async (
   const name = filter?.name;
   const customers = filter?.customers;
   const taskisActive = filter?.taskisActive;
-  const isDone = filter?.isDone;
+  const status = filter?.status;
 
   try {
     const projects = await timeTrackerProjectsRepository.find(
@@ -28,7 +28,7 @@ const findAll = async (
       {
         ...(customerId && { 'USR$CUSTOMER': customerId }),
         ...(projectType && { 'USR$PROJECT_TYPE': projectType }),
-        ...(isDone && isDone !== 'all' && { 'USR$DONE': isDone === 'true' ? 1 : 0 })
+        ...(status && status !== 'all' && { 'USR$DONE': status === 'active' ? 0 : 1 })
       });
 
     const favorites = await favoriteTimeTrackerProjectsRepository.find(sessionID, { 'USR$USER': userId });

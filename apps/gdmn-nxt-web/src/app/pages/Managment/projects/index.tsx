@@ -3,27 +3,26 @@ import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { IFilteringData, IPaginationData, IProjectType, ISortingData, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
-import { GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridRenderCellParams, GridRowId, GridRowParams, GridSortModel, useGridApiRef } from '@mui/x-data-grid-pro';
+import { IFilteringData, IPaginationData, ISortingData, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
+import { GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridRenderCellParams, GridRowParams, GridSortModel, useGridApiRef } from '@mui/x-data-grid-pro';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { clearFilterData, saveFilterData } from '../../../store/filtersSlice';
+import { saveFilterData } from '../../../store/filtersSlice';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ProjectsFilter } from './components/projectsFilter/projectsFilter';
 import { useAddFavoriteTaskMutation, useAddProjectMutation, useAddTimeTrackTaskMutation, useDeleteFavoriteTaskMutation, useDeleteProjectMutation, useDeleteTimeTrackTaskMutation, useGetProjectsQuery, useGetProjectTypesQuery, useUpdateProjectMutation, useUpdateTimeTrackTaskMutation } from '../../../features/time-tracking';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
-import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import ProjectEdit from './components/projectEdit/projectEdit';
 import { DetailPanelContent } from './components/detailPanelContent/detailPanelContent';
-import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
-import ItemButtonVisible from '../../../components/customButtons/item-button-power/item-button-power';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import { MenuItemDisable } from '@gdmn-nxt/helpers/menu-burger/items/item-disable';
+import CardToolbar from '@gdmn-nxt/components/Styled/card-toolbar/card-toolbar';
 
 export interface IProjectsProps {}
 
@@ -32,8 +31,8 @@ export function Projects(props: IProjectsProps) {
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const [openFilters, setOpenFilters] = useState(false);
   const dispatch = useDispatch();
-  const defaultIsDone = false;
-  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { isDone: defaultIsDone });
+  const defaultStatus = 'all';
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { status: defaultStatus });
   const apiRef = useGridApiRef();
   const [updateTask] = useUpdateTimeTrackTaskMutation();
   const [deleteTask] = useDeleteTimeTrackTaskMutation();
@@ -43,7 +42,18 @@ export function Projects(props: IProjectsProps) {
   const [addProject] = useAddProjectMutation();
   const [updateProject] = useUpdateProjectMutation();
   const [deleteProject] = useDeleteProjectMutation();
-  const { data: projectTypes = [], isFetching: projectTypesIsFetching, isLoading: projectTypesIsLoading } = useGetProjectTypesQuery();
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (filterData?.status) {
+      return;
+    }
+    saveFilters({ ...filterData, status: defaultStatus });
+  }, [filterData, saveFilters]);
+
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
@@ -65,7 +75,6 @@ export function Projects(props: IProjectsProps) {
     data,
     refetch,
     isFetching: projectsIsFetching,
-    isLoading: projectsIsLoading,
   } = useGetProjectsQuery(
     {
       pagination: paginationData,
@@ -73,7 +82,7 @@ export function Projects(props: IProjectsProps) {
       ...(sortingData ? { sort: sortingData } : {})
     },
     {
-      skip: !filterData?.projectType
+      skip: !filterData?.status
     }
   );
 
@@ -89,10 +98,6 @@ export function Projects(props: IProjectsProps) {
   }, [paginationData]);
 
   const refreshClick = useCallback(() => refetch(), [refetch]);
-
-  const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
-  }, [dispatch]);
 
   const handleSortModelChange = useCallback((sortModel: GridSortModel) => {
     setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null);
@@ -123,20 +128,9 @@ export function Projects(props: IProjectsProps) {
       setOpenFilters(false);
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      dispatch(clearFilterData({ filterEntityName, saveFields: ['projectType'] }));
-      saveFilters({ projectType: filterData?.projectType, isDone: defaultIsDone });
-    }, [defaultIsDone, dispatch, filterData, saveFilters]),
+      saveFilters({ projectType: filterData?.projectType, status: defaultStatus });
+    }, [defaultStatus, filterData, saveFilters]),
   };
-
-  const memoFilter = useMemo(() =>
-    <ProjectsFilter
-      open={openFilters}
-      onClose={filterHandlers.filterClose}
-      filteringData={filterData}
-      onFilteringDataChange={handleFilteringDataChange}
-      onClear={filterHandlers.filterClear}
-    />,
-  [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
   const [openEditForm, setOpenEditForm] = useState(false);
   const [project, setProject] = useState<ITimeTrackProject>();
@@ -188,7 +182,7 @@ export function Projects(props: IProjectsProps) {
             {row.isFavorite ? <StarIcon style={{ color: '#faaf00' }} /> : <StarBorderIcon />}
             <div style={{ minWidth: '5px' }} />
             <IconButton disabled={disabled} size="small">
-              <ExpandMoreIcon style={{ transition: '0.1s', transform: formattedValue ? 'rotate(-90deg)' : 'none' }}/>
+              <ExpandMoreIcon style={{ transition: '0.1s', transform: !formattedValue ? 'rotate(-90deg)' : 'none' }}/>
             </IconButton>
           </div>
         );
@@ -236,11 +230,9 @@ export function Projects(props: IProjectsProps) {
                 : <></>,
               userPermissions?.['time-tracking/projects']?.PUT
                 ? (
-                  <ItemButtonVisible
-                    color={'inherit'}
-                    label={!value ? 'Отключить' : 'Включить'}
-                    selected={!value}
-                    key="visible"
+                  <MenuItemDisable
+                    key="disable"
+                    disabled={value}
                     onClick={() => {
                       handleChangeVisible();
                       closeMenu();
@@ -277,16 +269,12 @@ export function Projects(props: IProjectsProps) {
 
   const getDetailPanelContent = useCallback(({ row }: GridRowParams<ITimeTrackProject>) => (
     <DetailPanelContent
+      light
       onSubmit={taskSubmit}
       project={row}
       changeFavorite={changeTaskFvorite}
     />
   ), [changeTaskFvorite, taskSubmit]);
-
-  const setProjectType = (projectType: IProjectType | null) => {
-    if (!projectType) return;
-    handleFilteringDataChange({ ...filterData, projectType: [projectType] });
-  };
 
   return (
     <>
@@ -296,19 +284,20 @@ export function Projects(props: IProjectsProps) {
           title={<Typography variant="pageHeader">Проекты</Typography>}
           action={
             <Stack direction="row" spacing={1}>
-              <Box paddingX={'4px'} />
-              <SearchBar
-                disabled={filtersIsLoading}
-                onCancelSearch={cancelSearch}
-                onRequestSearch={requestSearch}
-                fullWidth
-                cancelOnEscape
-                value={
-                  filterData?.name
-                    ? filterData.name?.[0]
-                    : undefined
-                }
-              />
+              <Box flex={1} />
+              <Box>
+                <SearchBar
+                  disabled={filtersIsLoading}
+                  onCancelSearch={cancelSearch}
+                  onRequestSearch={requestSearch}
+                  cancelOnEscape
+                  value={
+                    filterData?.name
+                      ? filterData.name?.[0]
+                      : undefined
+                  }
+                />
+              </Box>
               <Box display="inline-flex" alignSelf="center">
                 <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.POST}>
                   <CustomAddButton
@@ -321,31 +310,30 @@ export function Projects(props: IProjectsProps) {
               <Box display="inline-flex" alignSelf="center">
                 <CustomLoadingButton
                   hint="Обновить данные"
-                  loading={projectsIsFetching || projectTypesIsFetching || projectTypesIsLoading}
+                  loading={projectsIsFetching}
                   onClick={refreshClick}
-                />
-              </Box>
-              <Box display="inline-flex" alignSelf="center">
-                <CustomFilterButton
-                  onClick={filterHandlers.filterClick}
-                  disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching || projectTypesIsFetching || projectTypesIsLoading}
-                  hasFilters={Object.keys(filterData || {}).filter(f => f !== 'isDone' && f !== 'projectType').length > 0 || (filtersIsLoading ? defaultIsDone : filterData?.isDone) !== defaultIsDone}
                 />
               </Box>
             </Stack>
           }
         />
         <Divider />
-        <CardContent style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '20px 20px' }}>
-            <ProjectTypeSelect
-              withCreate
-              withEdit
-              disableClearable
-              value={filterData?.projectType?.[0] ?? projectTypes?.[0] ?? null}
-              onChange={setProjectType}
+        <CardToolbar>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ width: '100%' }}
+          >
+            <ProjectsFilter
+              open={openFilters}
+              onClose={filterHandlers.filterClose}
+              filteringData={filterData}
+              onFilteringDataChange={handleFilteringDataChange}
+              onClear={filterHandlers.filterClear}
             />
-          </div>
+          </Stack>
+        </CardToolbar>
+        <CardContent style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
           <Divider/>
           <div style={{ flex: '1' }}>
             <StyledGrid
@@ -374,7 +362,6 @@ export function Projects(props: IProjectsProps) {
             />
           </div>
         </CardContent>
-        {memoFilter}
       </CustomizedCard>
     </>
   );

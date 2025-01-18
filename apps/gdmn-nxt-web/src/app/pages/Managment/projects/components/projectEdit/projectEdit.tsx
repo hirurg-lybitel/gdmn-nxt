@@ -237,10 +237,11 @@ export function ProjectEdit(props: ProjectEditProps) {
             <div>
               <ItemButtonDelete
                 disabled={inUse}
-                title={inUse ? 'Нельзя удалить использующийся проект' : 'Удаление проекта'}
+                title="Удаление проекта"
                 button
                 onClick={handleDelete}
-              /></div>
+              />
+            </div>
           </Tooltip>
         </PermissionsGate>}
         <Box flex={1}/>
@@ -253,7 +254,7 @@ export function ProjectEdit(props: ProjectEditProps) {
           text={'Изменения будут утеряны. Продолжить?'}
           confirmation={formik.dirty}
         >
-            Отменить
+          Отменить
         </ButtonWithConfirmation>
         <Button
           className={classes.button}
@@ -261,7 +262,7 @@ export function ProjectEdit(props: ProjectEditProps) {
           form="mainForm"
           type="submit"
         >
-            Сохранить
+          Сохранить
         </Button>
       </DialogActions>
     </CustomizedDialog>

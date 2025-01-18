@@ -92,7 +92,6 @@ export default function ProjectNote({ message, onChange }: Readonly<IProjectNote
               name="message"
               onChange={(e) => onChange(e.target.value)}
               value={message ?? ''}
-              label="Заметка"
               multiline
             />
           </TabPanel>

@@ -1,35 +1,9 @@
-import { ICustomer, IFilteringData, IWithID } from '@gsbelarus/util-api-types';
+import { ICustomer, IFilteringData, IProjectType } from '@gsbelarus/util-api-types';
 import { useCallback } from 'react';
-import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import { Autocomplete, Button, CardActions, CardContent, Stack, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, Stack, TextField } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
-
-export interface IProjectFilter extends IWithID {
-  code: number;
-  name: string;
-  value?: boolean | string
-}
-
-const isDoneSelectItems: IProjectFilter[] = [
-  {
-    ID: 0,
-    code: 0,
-    name: 'Все',
-    value: 'all'
-  },
-  {
-    ID: 1,
-    code: 1,
-    name: 'Активные',
-    value: false
-  },
-  {
-    ID: 2,
-    code: 2,
-    name: 'Закрытые',
-    value: true
-  }
-];
+import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
+import { IStatusFilter, statusItems } from '../../constants';
 
 export interface IProjectsFilterProps {
   open: boolean;
@@ -50,13 +24,13 @@ export function ProjectsFilter({
     onClear();
   }, [onClear]);
 
-  const handleChangeProjectType = useCallback((e: any, value: IProjectFilter) => {
+  const handleChangeProjectStatus = useCallback((e: any, value: IStatusFilter) => {
     const data = { ...filteringData };
 
     if (value?.value === undefined) {
-      delete data['isDone'];
+      delete data['status'];
     } else {
-      data['isDone'] = value.value;
+      data['status'] = value.value;
     }
 
     onFilteringDataChange(data);
@@ -74,46 +48,58 @@ export function ProjectsFilter({
     onFilteringDataChange(data);
   };
 
+  const handleChangeProjectType = useCallback((value: IProjectType | null) => {
+    const data = { ...filteringData };
+
+    data['projectType'] = [value];
+
+    onFilteringDataChange(data);
+  }, [filteringData, onFilteringDataChange]);
+
   return (
-    <CustomizedDialog
-      open={open}
-      onClose={onClose}
-      width={400}
+    <Stack
+      direction="row"
+      spacing={2}
+      flex={1}
     >
-      <CardContent style={{ flex: 1 }}>
-        <Stack spacing={2}>
-          <Autocomplete
-            options={isDoneSelectItems}
-            disableClearable
-            getOptionLabel={option => option.name}
-            isOptionEqualToValue={(option, value) => option?.ID === value?.ID}
-            value={isDoneSelectItems.find(item => item.value === filteringData?.isDone)}
-            onChange={handleChangeProjectType}
-            renderOption={(props, option, { selected }) => (
-              <li {...props} key={option.ID}>
-                {option.name}
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                size="small"
-                placeholder="Фильтр по типу"
-              />
-            )}
+      <Autocomplete
+        options={statusItems}
+        size="small"
+        sx={{ width: 150 }}
+        disableClearable
+        getOptionLabel={option => option.name}
+        value={statusItems.find(item => item.value === filteringData?.status) ?? statusItems[0]}
+        onChange={handleChangeProjectStatus}
+        renderOption={(props, option, { selected }) => (
+          <li {...props} key={option.id}>
+            {option.name}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            size="small"
+            placeholder="Статус"
           />
-          <CustomerSelect
-            multiple
-            disableCloseOnSelect
-            value={filteringData?.customers ?? []}
-            onChange={handleCustomerChange}
-          />
-        </Stack>
-      </CardContent>
-      <CardActions style={{ padding: '16px' }}>
+        )}
+      />
+      <ProjectTypeSelect
+        style={{ width: 250 }}
+        withCreate
+        withEdit
+        value={filteringData?.projectType ? filteringData?.projectType[0] : null}
+        onChange={handleChangeProjectType}
+      />
+      <CustomerSelect
+        sx={{ width: 370 }}
+        multiple
+        disableCloseOnSelect
+        value={filteringData?.customers ?? []}
+        onChange={handleCustomerChange}
+      />
+      <Box alignContent="center">
         <Button
-          variant="contained"
-          fullWidth
+          variant="outlined"
           onClick={() => {
             filterClear();
             onClose();
@@ -121,7 +107,7 @@ export function ProjectsFilter({
         >
             Очистить
         </Button>
-      </CardActions>
-    </CustomizedDialog>
+      </Box>
+    </Stack>
   );
 };

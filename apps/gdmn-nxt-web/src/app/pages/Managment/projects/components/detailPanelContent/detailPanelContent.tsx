@@ -1,26 +1,26 @@
-import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
+import StyledGrid, { ROW_HEIGHT } from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { IFilteringData, ITimeTrackProject, ITimeTrackTask, IWithID, Permissions } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, Divider, IconButton, Stack, TextField, Tooltip } from '@mui/material';
-import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { Box, IconButton, Paper, Stack, TextField, Tooltip } from '@mui/material';
+import { GridCellModes, GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
-import ItemButtonVisible from '../../../../../components/customButtons/item-button-power/item-button-power';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
 import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
-import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
-import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Close';
+import { MenuItemDisable } from '@gdmn-nxt/helpers/menu-burger/items/item-disable';
+import TasksFilter from '../tasksFilter';
+import { statusItems } from '../../constants';
 
 interface IErrors {
   [key: string]: string | undefined
@@ -48,34 +48,13 @@ export interface ITaskFilter extends IWithID {
   value?: boolean | string
 }
 
-const isActiveSelectItems: ITaskFilter[] = [
-  {
-    ID: 0,
-    code: 0,
-    name: 'Все',
-    value: 'all'
-  },
-  {
-    ID: 1,
-    code: 1,
-    name: 'Активные',
-    value: true
-  },
-  {
-    ID: 2,
-    code: 2,
-    name: 'Закрытые',
-    value: false
-  }
-];
-
 interface CustomCellEditFormProps extends GridRenderEditCellParams {
   errors: IErrorsObject,
   clearError: (name: string, id: GridRowId) => void
 }
 
 const CustomCellEditForm = (props: CustomCellEditFormProps) => {
-  const { colDef, value, id, field, error, errors, clearError, row } = props;
+  const { colDef, value, id, field, errors, clearError, row } = props;
 
   const errorMessage = errors[`${id}`]?.[`${field}`];
 
@@ -84,6 +63,20 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
   const handleCellOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     apiRef.current.setEditCellValue({ id, field, value });
+  }, [apiRef, field, id]);
+
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+
+      const rows = apiRef.current.getRowModels().values();
+      apiRef.current.setEditCellValue({ id, field, value: null });
+      if (id === 0) {
+        apiRef.current.setRows(Array.from(rows).filter((row) => row.ID !== 0));
+        return;
+      }
+      apiRef.current.stopRowEditMode({ id, ignoreModifications: true });
+    }
   }, [apiRef, field, id]);
 
   return (
@@ -99,6 +92,7 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
           onChange={handleCellOnChange}
           fullWidth
           error={!!errorMessage}
+          onKeyDown={handleKeyDown}
         />
       </div>
     </ErrorTooltip>
@@ -106,71 +100,49 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
 };
 
 interface IDetailPanelContent {
+  light?: boolean,
   project: ITimeTrackProject,
   separateGrid?: boolean,
   onSubmit: (task: ITimeTrackTask, isDeleting: boolean) => void,
   changeFavorite: (data: {taskId: number, projectId: number}, favorite: boolean) => void
 }
 
-export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavorite }: Readonly<IDetailPanelContent>) {
-  const filterEntityName = 'project-tasks';
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+export function DetailPanelContent({
+  light = false,
+  project,
+  separateGrid = true,
+  onSubmit,
+  changeFavorite
+}: Readonly<IDetailPanelContent>) {
+  const [filterData, setFilterData] = useState<IFilteringData>({ status: statusItems[1].value });
 
-  const tasks = useMemo(() => (separateGrid ? project.tasks?.reduce<ITimeTrackTask[]>((filteredArray, task) => {
-    let checkConditions = true;
-    if (filterData?.name) {
-      const lowerName = String(filterData.name).toLowerCase();
-      checkConditions = checkConditions && task.name.toLowerCase().includes(lowerName);
-    }
-    if (filterData?.isActive !== 'all') {
-      checkConditions = checkConditions && (task.isActive === filterData?.isActive);
-    }
-    if (checkConditions) {
-      filteredArray.push(task);
-    }
-    return filteredArray;
-  }, []) : project.tasks) || [],
-  [filterData?.isActive, filterData?.name, project.tasks, separateGrid]) ;
+  const tasks = useMemo(() => {
+    return (project.tasks ?? []).reduce<ITimeTrackTask[]>((filteredArray, task) => {
+      let checkConditions = true;
+
+      if (filterData?.name) {
+        const lowerName = String(filterData.name).toLowerCase();
+        checkConditions = checkConditions && task.name.toLowerCase().includes(lowerName);
+      }
+
+      if (filterData?.status !== 'all') {
+        checkConditions = checkConditions && task.isActive === (filterData.status === 'active');
+      }
+
+      if (checkConditions) {
+        filteredArray.push(task);
+      }
+      return filteredArray;
+    }, []);
+  }, [project.tasks, filterData]);
 
   const apiRef = useGridApiRef();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const dispatch = useDispatch();
-  const defaultIsDone = true;
-  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { isActive: defaultIsDone });
 
-  const saveFilters = useCallback((filteringData: IFilteringData) => {
-    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
-  }, [dispatch]);
-
-  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
-
-  const requestSearch = useCallback((value: string) => {
-    const newObject = { ...filterData };
-    delete newObject.name;
-    handleFilteringDataChange({
-      ...newObject,
-      ...(value !== '' ? { name: [value] } : {})
-    });
-  }, [filterData, handleFilteringDataChange]);
-
-  const cancelSearch = useCallback(() => {
-    const newObject = { ...filterData };
-    delete newObject.name;
-    handleFilteringDataChange(newObject);
-  }, [filterData, handleFilteringDataChange]);
-
-  const handleChangeProjectType = useCallback((e: any, value: ITaskFilter) => {
-    const data = { ...filterData };
-
-    if (value?.value === undefined) {
-      delete data['isActive'];
-    } else {
-      data['isActive'] = value.value;
-    }
-
-    handleFilteringDataChange(data);
-  }, [filterData, handleFilteringDataChange]);
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => {
+    setFilterData(newValue);
+  }, []);
 
   const [titleAndMethod, setTitleAndMethod] = useState<{
     title: string,
@@ -297,6 +269,33 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       onSubmit({ ...row, isActive: !row.isActive, project }, false);
     };
 
+    if (isInEditMode) {
+      return (
+        <>
+          <Tooltip title="Сохранить">
+            <IconButton
+              role="menuitem"
+              color="primary"
+              size="small"
+              onClick={handleSave}
+            >
+              <SaveIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Отменить">
+            <IconButton
+              role="menuitem"
+              color="primary"
+              size="small"
+              onClick={handleConfirmCancelClick}
+            >
+              <CancelIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
+      );
+    }
+
     return (
       <MenuBurger
         items={({ closeMenu }) => [
@@ -336,16 +335,15 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
             : <></>,
           userPermissions?.['time-tracking/tasks']?.PUT
             ? (
-              <ItemButtonVisible
-                key="visible"
-                color="inherit"
-                label={props.value ? 'Отключить' : 'Включить'}
-                selected={props.value}
+              <MenuItemDisable
+                key="disable"
+                disabled={!row.isActive}
                 onClick={() => {
                   handleChangeVisible();
                   closeMenu();
                 }}
-              />)
+              />
+            )
             : <></>,
           userPermissions?.['time-tracking/tasks']?.DELETE && row.ID !== 0
             ? (
@@ -429,6 +427,7 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
       flex: 1,
       resizable: false,
       editable: true,
+      cellClassName: 'name-cell',
       renderCell: ({ value, row }: GridRenderCellParams<ITimeTrackTask, any, any, GridTreeNodeWithRender>) => {
         return <span style={{ color: !row.isActive ? 'gray' : 'inherit' }}>{value}</span>;
       },
@@ -478,118 +477,91 @@ export function DetailPanelContent({ project, separateGrid, onSubmit, changeFavo
     apiRef.current.startRowEditMode({ id });
   }, [apiRef]);
 
-  const footerPadding = 10;
-  const footerHeight = userPermissions?.['time-tracking/tasks']?.POST ? 31.75 + 10 * 2 : 0;
+  const getHeight = useCallback((recordsCount = 0) => {
+    const rowHeight = ROW_HEIGHT;
+    const minHeight = ROW_HEIGHT;
+    const maxHeight = ROW_HEIGHT * 5;
 
-  const getHeight = useCallback((recordsCount = 0) => recordsCount === 0 ? 0 : recordsCount * 50 + footerHeight, []);
+    /** We need a space for No data message */
+    if (recordsCount === 0) return minHeight * 5;
+
+    const calculatedHeight = recordsCount * rowHeight;
+    return Math.max(Math.min(calculatedHeight, maxHeight), minHeight);
+  }, []);
 
   const grid = (
     <StyledGrid
-      sx={{ '& .MuiDataGrid-withBorderColor': {
-        borderBottomColor: 'var(--color-grid-borders) !important'
-      } }}
+      sx={{
+        flex: 1,
+        minHeight: '200px',
+        '& .name-cell': {
+          paddingLeft: 0,
+        },
+      }}
       editMode="row"
       apiRef={apiRef}
       hideFooter
-      rowHeight={50}
-      hideColumnHeaders={!separateGrid}
+      getRowHeight={({ id, ...p }) => {
+        const mode = apiRef.current.getCellMode(id, 'name');
+
+        if (mode === GridCellModes.Edit) {
+          return ROW_HEIGHT + 10;
+        }
+
+        return ROW_HEIGHT;
+      }}
+      hideColumnHeaders={light}
       rows={tasks}
       columns={columns}
       onRowEditStart={handleRowEditStart}
       onRowEditStop={handleRowEditStop}
       onCellKeyDown={handleCellKeyDown}
-    />);
-
-  if (separateGrid) {
-    return (
-      <Stack
-        direction="column"
-        flex="1"
-        display="flex"
-        spacing={1}
-        height={'100%'}
-      >
-        {memoConfirmDialog}
-        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
-          <Stack direction="row" spacing={1}>
-            <Autocomplete
-              disabled={filtersIsLoading}
-              options={isActiveSelectItems}
-              disableClearable
-              getOptionLabel={option => option.name}
-              value={isActiveSelectItems.find(item => item.value === filterData?.isActive) ?? isActiveSelectItems[1]}
-              onChange={handleChangeProjectType}
-              style={{ width: '200px' }}
-              renderOption={(props, option, { selected }) => (
-                <li {...props} key={option.ID}>
-                  {option.name}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  placeholder="Фильтр по типу"
-                />
-              )}
-            />
-            <SearchBar
-              disabled={filtersIsLoading}
-              onCancelSearch={cancelSearch}
-              onRequestSearch={requestSearch}
-              fullWidth
-              cancelOnEscape
-              value={
-                filterData?.name
-                  ? filterData.name?.[0]
-                  : undefined
-              }
-            />
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip title={'Создать задачу'}>
-                <IconButton
-                  color="primary"
-                  onClick={handleAddSource}
-                >
-                  <AddCircleIcon/>
-                </IconButton>
-              </Tooltip>
-            </div>
-          </Stack>
-        </PermissionsGate>
-        <CustomizedCard
-          borders
-          style={{
-            flex: 1,
-          }}
-        >
-          {grid}
-        </CustomizedCard>
-      </Stack>
-    );
-  }
+    />
+  );
 
   return (
     <>
       {memoConfirmDialog}
-      <div
-        style={{
-          height: getHeight(tasks.length),
-          width: '100%',
+      <Paper
+        sx={{
           display: 'flex',
-          flexDirection: 'column'
+          height: '100%',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          borderRadius: 0,
+          ...(light ? {
+            p: 2,
+            backgroundColor: 'var(--color-main-bg)',
+          } : {})
         }}
       >
-        <div style={{ flex: 1 }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ pb: 2 }}
+        >
+          <TasksFilter
+            light={light}
+            filteringData={filterData}
+            onFilteringDataChange={handleFilteringDataChange}
+          />
+          <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
+            <Box alignContent="center">
+              <CustomAddButton label="Создать задачу" onClick={handleAddSource} />
+            </Box>
+          </PermissionsGate>
+        </Stack>
+        <CustomizedCard
+          borders
+          style={{
+            flex: 1,
+            minHeight: getHeight(tasks.length),
+            display: 'flex'
+          }}
+        >
           {grid}
-        </div>
-        <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
-          <div style={{ display: 'flex', padding: `${footerPadding}px` }}>
-            <Button onClick={handleAddSource} startIcon={<AddCircleRoundedIcon />}>Создать задачу</Button>
-          </div>
-        </PermissionsGate>
-        <Divider/>
-      </div>
+        </CustomizedCard>
+      </Paper>
     </>
   );
 }
