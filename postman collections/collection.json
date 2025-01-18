@@ -3506,14 +3506,29 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/marketing/history/:mailingId",
+									"raw": "{{baseUrl}}/marketing/mailings/history/:mailingId?pageNo=0&pageSize=20&mailingId=949747611",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"marketing",
+										"mailings",
 										"history",
 										":mailingId"
+									],
+									"query": [
+										{
+											"key": "pageNo",
+											"value": "0"
+										},
+										{
+											"key": "pageSize",
+											"value": "20"
+										},
+										{
+											"key": "mailingId",
+											"value": "949747611"
+										}
 									],
 									"variable": [
 										{
@@ -4258,6 +4273,42 @@
 						}
 					],
 					"id": "8dbbd55d-3b63-46e8-9e59-07ba4adf7b24"
+				},
+				{
+					"name": "Статистика",
+					"item": [
+						{
+							"name": "По проекту",
+							"id": "a08c74da-f3ab-4be8-90c0-1fd3715f9563",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/time-tracking/projects/statistics/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"time-tracking",
+										"projects",
+										"statistics",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "949759079"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "5b67e02b-a74c-4f6a-84cd-a82e917691d4"
 				},
 				{
 					"name": "By group",
