@@ -98,7 +98,8 @@ const statistics: RequestHandler = async (req, res) => {
 
     const response = await timeTrackerProjectsService.statistics(
       sessionID,
-      projectId
+      projectId,
+      req.query
     );
 
     const result: IRequestResult = {

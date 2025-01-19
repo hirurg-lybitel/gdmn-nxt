@@ -551,8 +551,12 @@ export interface ITimeTrackGroup {
   items: ITimeTrack[];
 }
 
-export interface IProjectStatistics extends ITimeTrackTask {
-  timeTrack: ITimeTrack[]
+export interface IProjectStatistics {
+  id: number;
+  name: string;
+  totalDuration: string;
+  billableDuration: string;
+  nonBillableDuration: string;
 }
 
 export interface ITimeTrackProject extends IWithID {

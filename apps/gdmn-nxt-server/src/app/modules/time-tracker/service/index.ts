@@ -1,4 +1,4 @@
-import { In, InternalServerErrorException, ITimeTrack, ITimeTrackGroup, NotFoundException } from '@gsbelarus/util-api-types';
+import { Between, In, InternalServerErrorException, ITimeTrack, ITimeTrackGroup, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackingRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import dayjs from '@gdmn-nxt/dayjs';
@@ -38,12 +38,19 @@ const findAll = async (
   sessionID: string,
   filter?: { [key: string]: any }
 ) => {
-  const userId = filter.userId;
-  const taskId = filter?.taskId;
   try {
+    const userId = filter?.userId;
+    const taskId = filter?.taskId;
+    const projectId = filter?.projectId;
+    const dateRange = filter?.period;
+    const period = dateRange ? (dateRange as string).split(',').map(date => dayjs(+date).format('YYYY-MM-DD')) : null;
+
     return await timeTrackingRepository.find(sessionID, {
       ...(userId && { 'USR$USERKEY': userId }),
-      ...(taskId && { 'USR$TASK': taskId })
+      ...(taskId && { 'USR$TASK': taskId }),
+      ...(projectId && { 'USR$PROJECT': projectId }),
+      'USR$INPROGRESS': 0,
+      ...(period && { 'USR$DATE': Between(period) })
     });
   } catch (error) {
     throw error;
@@ -60,8 +67,8 @@ const findAllByGroup = async (
   const period = dateRange ? (dateRange as string).split(',').map(date => dayjs(+date)) : [];
   const employees: string = filter.employees;
   const customers: string = filter.customers;
-  const billableOnly = (filter.billableOnly as string)?.toLowerCase() === 'true';
-  const allEmployees = (filter.allEmployees as string)?.toLowerCase() === 'true';
+  const billableOnly = (filter?.billableOnly as string)?.toLowerCase() === 'true';
+  const allEmployees = (filter?.allEmployees as string)?.toLowerCase() === 'true';
 
   try {
     const timeTracking = await timeTrackingRepository.find(sessionID, {

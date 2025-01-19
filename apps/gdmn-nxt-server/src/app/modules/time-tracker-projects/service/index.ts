@@ -4,6 +4,7 @@ import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/se
 import { favoriteTimeTrackerProjectsRepository } from '../repository/favoriteTimeTrackerProjects';
 import { timeTrackingService } from '@gdmn-nxt/modules/time-tracker/service';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
+import dayjs from '@gdmn-nxt/dayjs';
 
 const findAll = async (
   sessionID: string,
@@ -178,13 +179,67 @@ const removeFromFavorites = async (
 
 const statistics = async (
   sessionID: string,
-  projectId: number
+  projectId: number,
+  filter?: { [key: string]: any }
 ) => {
   try {
-    const tasks = await timeTrackerTasksService.findAll(sessionID, { projectId });
+    const timeTrackings = await timeTrackingService.findAll(sessionID, {
+      projectId,
+      ...filter
+    });
 
-    const responce = Promise.all(tasks.map(async task => ({ ...task, timeTrack: await timeTrackingService.findAll(sessionID, { taskId: task.ID }) })));
-    return responce;
+    /** Группируем записи по задачам */
+    const taskGroups = timeTrackings.reduce((groups, track) => {
+      const taskId = track.task.ID;
+      if (!groups[taskId]) {
+        groups[taskId] = {
+          id: taskId,
+          name: track.task.name,
+          tracks: []
+        };
+      }
+      groups[taskId].tracks.push(track);
+      return groups;
+    }, {} as { [key: number]: { id: number; name: string; tracks: typeof timeTrackings } });
+
+    /** Вычисляем статистику для каждой задачи */
+    const response = Object.values(taskGroups).map(({ id, name, tracks }) => {
+      const durations = tracks.reduce((acc, track) => {
+        const duration = track.duration ?? 'PT0M';
+        if (track.billable) {
+          acc.billableDuration = dayjs
+            .duration(acc.billableDuration ?? 'PT0M')
+            .add(dayjs.duration(duration))
+            .toISOString();
+        } else {
+          acc.nonBillableDuration = dayjs
+            .duration(acc.nonBillableDuration ?? 'PT0M')
+            .add(dayjs.duration(duration))
+            .toISOString();
+        }
+        return acc;
+      }, {
+        billableDuration: 'PT0M',
+        nonBillableDuration: 'PT0M'
+      });
+
+      const totalDuration = tracks.reduce((total, track) => {
+        return dayjs
+          .duration(total)
+          .add(dayjs.duration(track.duration || 'PT0M'))
+          .toISOString();
+      }, 'PT0M');
+
+      return {
+        id,
+        name,
+        billableDuration: durations.billableDuration,
+        nonBillableDuration: durations.nonBillableDuration,
+        totalDuration
+      };
+    });
+
+    return response;
   } catch (error) {
     throw error;
   }

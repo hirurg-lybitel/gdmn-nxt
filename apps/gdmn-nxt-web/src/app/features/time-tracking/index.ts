@@ -1,4 +1,4 @@
-import { IFavoriteProject, IFavoriteTask, IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, ITimeTrackProject, ITimeTrackTask, IProjectStatistics, queryOptionsToParamsString, IProjectType } from '@gsbelarus/util-api-types';
+import { IFavoriteProject, IFavoriteTask, IQueryOptions, IRequestResult, ITimeTrack, ITimeTrackGroup, ITimeTrackProject, ITimeTrackTask, IProjectStatistics, queryOptionsToParamsString, IProjectType, IResponse } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -559,13 +559,16 @@ export const timeTrackingApi = createApi({
         });
       },
     }),
-    getStatistics: builder.query<IProjectStatistics[], number>({
-      query: (id) => `/projects/statistics/${id}`,
-      transformResponse: (response: IProjectStatisticsRequestResult) => response.queries.statistics || [],
+    getStatistics: builder.query<IProjectStatistics[], {projectId: number, options: Partial<IQueryOptions> | void}>({
+      query: ({ projectId, options }) => {
+        const params = queryOptionsToParamsString(options);
+        return `/projects/statistics/${projectId}${params ? `?${params}` : ''}`;
+      },
+      transformResponse: (response: IResponse<'statistics', IProjectStatistics[]>) => response.queries.statistics || [],
       providesTags: (result) =>
         result
           ? [
-            ...result.map(({ ID }) => ({ type: 'TimeTrack' as const, id: ID })),
+            ...result.map(({ id }) => ({ type: 'TimeTrack' as const, id })),
             { type: 'TimeTrack', id: 'LIST' },
           ]
           : [{ type: 'TimeTrack', id: 'LIST' }]
