@@ -1,5 +1,5 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import './ProjectEmployees.module.css';
+import './projectEmployees.module.css';
 import { IContactWithID, IPaginationData } from '@gsbelarus/util-api-types';
 import { useAddContactPersonMutation, useDeleteContactPersonMutation, useGetContactPersonsQuery, useUpdateConstactPersonsMutation, useUpdateContactPersonMutation } from 'apps/gdmn-nxt-web/src/app/features/contact/contactApi';
 import { useCallback, useMemo, useState } from 'react';
