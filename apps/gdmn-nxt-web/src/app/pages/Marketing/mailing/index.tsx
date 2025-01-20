@@ -13,7 +13,7 @@ import { GridColDef, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useLaunchMailingMutation, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import WarningIcon from '@mui/icons-material/Warning';

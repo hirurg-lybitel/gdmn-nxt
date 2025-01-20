@@ -27,7 +27,7 @@ import DataField from './dataField/DataField';
 import StyledGrid from '../components/Styled/styled-grid/styled-grid';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '../components/Permissions/permission-gate/permission-gate';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
@@ -310,8 +310,8 @@ export function Customers(props: CustomersProps) {
           <Box>
             <PermissionsGate actionAllowed={userPermissions?.customers.PUT}>
               <ItemButtonEdit
+                button
                 onClick={handleCustomerEdit(customerId)}
-                color="primary"
                 disabled={customerFetching}
               />
             </PermissionsGate>
@@ -382,7 +382,7 @@ export function Customers(props: CustomersProps) {
       setOpenFilters(false);
     }, []),
     handleFilterClear: useCallback(() => {
-      dispatch(clearFilterData(filterEntityName));
+      dispatch(clearFilterData({ filterEntityName }));
     }, [dispatch])
   };
 

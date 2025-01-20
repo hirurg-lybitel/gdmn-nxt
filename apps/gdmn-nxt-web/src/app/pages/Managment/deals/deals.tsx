@@ -102,7 +102,7 @@ export function Deals(props: DealsProps) {
       setOpenFilters(false);
     }, []),
     filterClear: useCallback(() => {
-      dispatch(clearFilterData(filterEntityName));
+      dispatch(clearFilterData({ filterEntityName, saveFields: ['deadline'] }));
     }, [dispatch]),
     filteringDataChange: async(newValue: IFilteringData) => {
       saveFilters(newValue);

@@ -226,6 +226,7 @@ export function SearchBar(props: SearchBarProps) {
       <div className={classes.searchContainer}>
         <Input
           {...inputProps}
+          id="search"
           inputRef={inputRef}
           onBlur={handleBlur}
           value={searchValue}

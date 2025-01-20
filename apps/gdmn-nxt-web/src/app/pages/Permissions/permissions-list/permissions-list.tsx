@@ -81,7 +81,7 @@ export function PermissionsList(props: PermissionsListProps) {
   const groupingColDef: DataGridProProps<IPermissionsAction>['groupingColDef'] = {
     headerName: 'Действие',
     width: 300,
-    minWidth: 250,
+    minWidth: 300,
     flex: 1,
     renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<IPermissionsAction, any, any, GridGroupNode>} />,
   };

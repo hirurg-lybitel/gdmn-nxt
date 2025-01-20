@@ -157,7 +157,7 @@ export default function Contacts() {
     }, []),
     filterClear: useCallback(() => {
       setOpenFilters(false);
-      dispatch(clearFilterData(filterEntityName));
+      dispatch(clearFilterData({ filterEntityName }));
     }, [dispatch])
   };
 

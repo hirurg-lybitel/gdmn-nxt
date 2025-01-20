@@ -1,6 +1,6 @@
-import { IKanbanCard, IKanbanColumn, Permissions } from '@gsbelarus/util-api-types';
-import { DataGridProProps, GridColDef, GridGroupNode, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
-import { useMemo, useState } from 'react';
+import { IKanbanCard, IKanbanColumn, ITimeTrackProject, Permissions } from '@gsbelarus/util-api-types';
+import { DataGridProProps, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridGroupNode, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid-pro';
+import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import StyledGrid, { renderCellExpand } from '../../Styled/styled-grid/styled-grid';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
@@ -11,7 +11,8 @@ import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import { IconButton } from '@mui/material';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import DetailPanel from './detailPanel';
 
 export interface KanbanListProps {
   columns?: IKanbanColumn[]
@@ -64,59 +65,66 @@ export function KanbanList(props: KanbanListProps) {
   const [insertCard, { isSuccess: addCardSuccess, data: addedCard, isLoading: insertIsLoading }] = useAddCardMutation();
   const [updateCard, { isSuccess: updateCardSuccess, isLoading: updateIsLoading }] = useUpdateCardMutation();
   const [deleteCard, { isLoading: deleteIsLoading }] = useDeleteCardMutation();
-  const [deletingCardIDs, setDeletingCardIDs] = useState<number[]>([]);
-  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
 
+  const handleCardAdd = useCallback((columnId: number) => {
+    setColumn(columns.find(c => c.ID === columnId));
+    setAddCard(true);
+  }, [columns]);
 
-  const actionColumn: GridColDef<any, any, any> = useMemo(() => ({
-    field: 'actions',
-    type: 'actions',
-    resizable: false,
-    getActions: (params: GridRowParams) => [
-      Object.keys(params.row).length > 0
-        ? <PermissionsGate actionAllowed={userPermissions?.deals.PUT}>
-          <ItemButtonEdit
-            color="primary"
-            onClick={handleCardEdit(params.row)}
-          />
-        </PermissionsGate>
-        : <></>
-    ]
-  }), [userPermissions?.deals.PUT]);
-
-  const cols: GridColDef[] = useMemo(() => ([
+  const cols: GridColDef<IKanbanColumn>[] = useMemo(() => ([
+    {
+      ...GRID_DETAIL_PANEL_TOGGLE_COL_DEF,
+      headerName: 'Сделка',
+      flex: 1,
+      width: 320,
+      maxWidth: 320,
+      minWidth: 320,
+      renderHeader: () => 'Сделка',
+      renderCell: (params) => (
+        <CustomGridTreeDataGroupingCell
+          {...params as GridRenderCellParams<any, any, any, GridGroupNode>}
+          columns={columns}
+          onCardAddClick={handleCardAdd}
+          disableAddCard={disableAddCard}
+        />
+      )
+    },
     ...gridColumns,
-    ...(editable ? [{ ...actionColumn }] : [])
-  ]), [actionColumn, editable, gridColumns]);
+    {
+      field: 'actions',
+      type: 'actions',
+      width: 100,
+      renderCell: (params) => <div />
+    }
+  ]), [columns, disableAddCard, gridColumns, handleCardAdd]);
 
-  const rows: IKanbanCard[] = useMemo(() => {
-    const newRows: any[] = [];
-    columns?.forEach(col => col.CARDS.forEach(card => {
-      if (!deletingCardIDs.includes(card.ID)) {
-        newRows.push({ ...card, ...card.DEAL, ID: card.ID, hierarchy: [col.ID, card.ID] });
-      }
-    }));
-    return newRows;
-  }, [columns, deletingCardIDs]);
-
-  const deleteTasks = (newCard: IKanbanCard) => {
-    const findIndex = rows.findIndex(r => r.ID === newCard.ID);
-    if (findIndex < 0) return;
-
-    const oldCard: IKanbanCard = rows[findIndex];
+  const deleteTasks = useCallback((newCard: IKanbanCard) => {
+    let cardIndex = 0;
+    const columnIndex = columns.findIndex(r => {
+      const index = r.CARDS.findIndex(card => card.ID === newCard.ID);
+      if (index < 0) return true;
+      cardIndex = index;
+      return true;
+    });
+    if (columnIndex < 0 || cardIndex < 0) return;
+    const oldCard: IKanbanCard = columns[columnIndex].CARDS[cardIndex];
     const deletedTasks = oldCard.TASKS?.filter(task => (newCard.TASKS?.findIndex(({ ID }) => ID === task.ID) ?? -1) < 0) ?? [];
     deletedTasks.forEach(task => deleteTask(task.ID));
-  };
+  }, [columns, deleteTask]);
 
-  const upsertTasks = (newCard: IKanbanCard) => {
-    const findIndex = rows.findIndex(r => r.ID === newCard.ID);
-    if (findIndex < 0) return;
-
-    const oldCard: IKanbanCard = rows[findIndex];
-
+  const upsertTasks = useCallback((newCard: IKanbanCard) => {
+    let cardIndex = 0;
+    const columnIndex = columns.findIndex(r => {
+      const index = r.CARDS.findIndex(card => card.ID === newCard.ID);
+      if (index < 0) return true;
+      cardIndex = index;
+      return true;
+    });
+    if (columnIndex < 0 || cardIndex < 0) return;
+    const oldCard: IKanbanCard = columns[columnIndex].CARDS[cardIndex];
     newCard.TASKS?.forEach(task => {
       const oldTask = oldCard.TASKS?.find(({ ID }) => ID === task.ID);
       if (!oldTask) {
@@ -128,9 +136,9 @@ export function KanbanList(props: KanbanListProps) {
         updateTask(task);
       };
     });
-  };
+  }, [addTask, columns, updateTask]);
 
-  const onEditCard = async (newCard: IKanbanCard) => {
+  const onEditCard = useCallback(async (newCard: IKanbanCard) => {
     updateCard(newCard);
 
     let oldCard: IKanbanCard = newCard;
@@ -144,19 +152,14 @@ export function KanbanList(props: KanbanListProps) {
 
       return true;
     });
-  };
+  }, [columns, updateCard]);
 
-  const onDelete = async (deletingCard: IKanbanCard) => {
-    deleteCard(deletingCard);
-    setDeletingCardIDs(prev => prev.concat(deletingCard.ID));
-  };
+  const onDelete = useCallback(async (deletingCard: IKanbanCard) => deleteCard(deletingCard), [deleteCard]);
 
-  const onAddCard = async (newCard: IKanbanCard) => {
-    insertCard(newCard);
-  };
+  const onAddCard = useCallback(async (newCard: IKanbanCard) => insertCard(newCard), [insertCard]);
 
   const cardHandlers = {
-    handleSubmit: async (newCard: IKanbanCard, deleting: boolean) => {
+    handleSubmit: useCallback(async (newCard: IKanbanCard, deleting: boolean) => {
       if (deleting) {
         onDelete(newCard);
       } else {
@@ -173,8 +176,8 @@ export function KanbanList(props: KanbanListProps) {
       };
       editCard && setEditCard(false);
       addCard && setAddCard(false);
-    },
-    handleCancel: async (newCard: IKanbanCard) => {
+    }, [addCard, deleteTasks, editCard, onAddCard, onDelete, onEditCard, upsertTasks]),
+    handleCancel: useCallback(async (newCard: IKanbanCard) => {
       editCard && setEditCard(false);
       addCard && setAddCard(false);
 
@@ -182,18 +185,13 @@ export function KanbanList(props: KanbanListProps) {
         deleteTasks(newCard);
         upsertTasks(newCard);
       }
-    },
+    }, [addCard, deleteTasks, editCard, upsertTasks]),
   };
 
-  const handleCardEdit = (id: any): any => () => {
-    setCard(id);
+  const handleCardEdit = useCallback((card: IKanbanCard) => {
+    setCard(card);
     setEditCard(true);
-  };
-
-  const handleCardAdd = (columnId: number) => {
-    setColumn(columns.find(c => c.ID === columnId));
-    setAddCard(true);
-  };
+  }, []);
 
   const memoEditCard = useMemo(() => {
     return (
@@ -206,7 +204,7 @@ export function KanbanList(props: KanbanListProps) {
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [editCard]);
+  }, [card, cardHandlers.handleCancel, cardHandlers.handleSubmit, columns, editCard]);
 
   const memoAddCard = useMemo(() => {
     return (
@@ -218,24 +216,16 @@ export function KanbanList(props: KanbanListProps) {
         onCancelClick={cardHandlers.handleCancel}
       />
     );
-  }, [addCard]);
+  }, [addCard, cardHandlers.handleCancel, cardHandlers.handleSubmit, column, columns]);
 
-
-  const groupingColDef: DataGridProProps['groupingColDef'] = {
-    headerName: 'Сделка',
-    flex: 1,
-    minWidth: 280,
-    renderCell: (params) => <CustomGridTreeDataGroupingCell
-      {...params as GridRenderCellParams<any, any, any, GridGroupNode>}
-      columns={columns}
-      onCardAddClick={handleCardAdd}
-      disableAddCard={disableAddCard}
-    />,
-  };
-
-  const getTreeDataPath: DataGridProProps['getTreeDataPath'] = (row) => {
-    return row?.hierarchy || [];
-  };
+  const getDetailPanelContent = useCallback(({ row }: GridRowParams<IKanbanColumn>) =>
+    <DetailPanel
+      column={row}
+      onEditClick={handleCardEdit}
+      gridColumns={gridColumns}
+      editable={editable}
+    />
+  , [editable, gridColumns, handleCardEdit]);
 
   return (
     <CustomizedCard
@@ -245,12 +235,11 @@ export function KanbanList(props: KanbanListProps) {
       }}
     >
       <StyledGrid
-        treeData
-        rows={rows || []}
+        rows={columns || []}
         columns={cols}
         loading={loading}
-        getTreeDataPath={getTreeDataPath}
-        groupingColDef={groupingColDef}
+        getDetailPanelHeight={() => 'auto'}
+        getDetailPanelContent={getDetailPanelContent}
         hideFooter
         hideHeaderSeparator
       />

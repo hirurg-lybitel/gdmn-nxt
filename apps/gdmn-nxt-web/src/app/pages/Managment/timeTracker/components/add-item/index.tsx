@@ -49,7 +49,6 @@ export const AddItem = ({
   const [submitMode, setSubmitMode] = useState<SubmitMode>('add');
   const [isValidTimers, toggleValidTimers] = useState(true);
   const currentDate = useMemo(() => dayjs().toDate(), []);
-  const [onDate, setOnDate] = useState<Date>(currentDate);
 
   const calcModeChange = (
     event: MouseEvent<HTMLElement>,
@@ -60,7 +59,7 @@ export const AddItem = ({
 
   const initialValues = {
     ID: -1,
-    date: onDate,
+    date: currentDate,
     customer: null,
     startTime: currentDate,
     endTime: null,
@@ -96,8 +95,8 @@ export const AddItem = ({
       onSubmit(values, submitMode);
       resetForm();
 
-      /** Запоминаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
-      setOnDate(values.date);
+      /** Устанавливаем выбранную дату, чтобы можно было добавить несколько записей за прошедший день без перевыбора даты*/
+      formik.setFieldValue('date', values.date);
     },
   });
 
@@ -277,7 +276,7 @@ export const AddItem = ({
               <Stack spacing={1} width={216}>
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
-                  value={onDate}
+                  value={formik.values.date}
                   onChange={handleDateTimeChange('date')}
                   sx={{
                     '& .MuiInputBase-root': {

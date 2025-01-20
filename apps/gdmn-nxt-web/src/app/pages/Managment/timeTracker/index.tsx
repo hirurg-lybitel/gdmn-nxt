@@ -26,7 +26,7 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import { AddItem } from './components/add-item';
 import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTrackingByDateQuery, useGetTimeTrackingInProgressQuery, useUpdateTimeTrackingMutation } from '../../../features/time-tracking';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';

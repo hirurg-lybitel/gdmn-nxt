@@ -1,0 +1,14 @@
+.contacts-container {
+  flex: 1;
+}
+
+.contacts-container .list {
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0;
+}
+
+@media (min-width: 1920px) {
+  .contacts-container .list {
+      grid-template-columns: repeat(4, 1fr);
+  }
+}

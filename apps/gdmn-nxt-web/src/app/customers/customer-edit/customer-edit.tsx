@@ -25,7 +25,7 @@ import CustomizedDialog from '../../components/Styled/customized-dialog/customiz
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import CustomerInfo from '../CustomerDetails/customer-info/customer-info';
 import ActCompletion from '../CustomerDetails/act-completion/act-completion';

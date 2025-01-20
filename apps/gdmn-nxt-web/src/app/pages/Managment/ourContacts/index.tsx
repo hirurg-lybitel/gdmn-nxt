@@ -9,7 +9,7 @@ export default function OurContacts () {
   useEffect(() => {
     dispatch(saveFilterData({ 'contacts': { isOur: true } }));
     return () => {
-      dispatch(clearFilterData('contacts'));
+      dispatch(clearFilterData({ filterEntityName: 'contacts' }));
     };
   }, []);
 

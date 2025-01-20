@@ -52,7 +52,7 @@ export function EmployeesSelect({
       return employees?.filter(employee => (value as IContactWithID[])?.find((el) => el.ID === employee.ID)) ?? [];
     }
     if (!value || !employees) return null;
-    return employees[employees.findIndex(employee => (value as IContactWithID).ID === employee.ID)];
+    return employees[employees.findIndex(employee => (value as IContactWithID).ID === employee.ID)] || null;
   }, [multiple, employees, value]);
 
   const filterOptions = createFilterOptions({

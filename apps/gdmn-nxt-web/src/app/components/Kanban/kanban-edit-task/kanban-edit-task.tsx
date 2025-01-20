@@ -15,7 +15,7 @@ import { useGetTaskTypesQuery } from '../../../features/kanban/kanbanCatalogsApi
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';

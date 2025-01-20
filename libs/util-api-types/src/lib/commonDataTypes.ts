@@ -169,6 +169,7 @@ export interface IQueryOptions {
 
 export function queryOptionsToParamsString(options?: IQueryOptions | void) {
   if (!options) return '';
+  if (Object.keys(options).length === 0) return '';
 
   const params: string[] = [];
 
@@ -220,3 +221,5 @@ interface JSONObject {
 }
 
 export interface JSONArray extends Array<JSONValue> { }
+
+export type IResponse<K extends string, T> = IRequestResult<{ [key in K]: T }>;

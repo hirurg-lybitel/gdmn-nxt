@@ -1,24 +1,24 @@
-import { Attachment, Transaction, Blob } from "node-firebird-driver-native";
-import { IAtField, IAtFields, IAtRelation, IAtRelationField, IAtRelationFields, IAtRelations, IGedeminDocType } from "./at-types";
+import { Attachment, Transaction, Blob } from 'node-firebird-driver-native';
+import { IAtField, IAtFields, IAtRelation, IAtRelationField, IAtRelationFields, IAtRelations, IGedeminDocType } from './at-types';
 
 export const loadAtFields = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
-    SELECT 
+    SELECT
       TRIM(FIELDNAME) AS FIELDNAME,
-      LNAME, 
-      DESCRIPTION, 
-      TRIM(REFTABLE) AS REFTABLE, 
-      TRIM(REFLISTFIELD) AS REFLISTFIELD, 
-      TRIM(REFCONDITION) AS REFCONDITION, 
+      LNAME,
+      DESCRIPTION,
+      TRIM(REFTABLE) AS REFTABLE,
+      TRIM(REFLISTFIELD) AS REFLISTFIELD,
+      TRIM(REFCONDITION) AS REFCONDITION,
       TRIM(SETTABLE) AS SETTABLE,
-      TRIM(SETLISTFIELD) AS SETLISTFIELD, 
-      TRIM(SETCONDITION) AS SETCONDITION, 
+      TRIM(SETLISTFIELD) AS SETLISTFIELD,
+      TRIM(SETCONDITION) AS SETCONDITION,
       ALIGNMENT,
-      FORMAT, 
-      COALESCE(VISIBLE, 0) AS VISISBLE, 
-      COLWIDTH, 
-      COALESCE(READONLY, 0) AS READONLY, 
-      TRIM(GDCLASSNAME) AS GDCLASSNAME, 
+      FORMAT,
+      COALESCE(VISIBLE, 0) AS VISISBLE,
+      COLWIDTH,
+      COALESCE(READONLY, 0) AS READONLY,
+      TRIM(GDCLASSNAME) AS GDCLASSNAME,
       TRIM(GDSUBTYPE) AS GDSUBTYPE,
       NUMERATION
     FROM
@@ -26,18 +26,18 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
   try {
     const res: IAtFields = {};
     const rows = await rs.fetchAsObject<IAtField>();
-    const decoder = new TextDecoder('windows-1251');   
+    const decoder = new TextDecoder('windows-1251');
 
     for (const r of rows) {
       if (r.NUMERATION !== null && typeof r.NUMERATION === 'object') {
         const blob = r.NUMERATION as Blob;
         const blobStream = await attachment.openBlob(transaction, blob);
         const buffer = Buffer.alloc(await blobStream.length);
-        await blobStream.read(buffer); 
-        await blobStream.close();     
-        res[r.FIELDNAME] = { ...r, NUMERATION: decoder.decode(buffer) }; 
+        await blobStream.read(buffer);
+        await blobStream.close();
+        res[r.FIELDNAME] = { ...r, NUMERATION: decoder.decode(buffer) };
       } else {
-        res[r.FIELDNAME] = r; 
+        res[r.FIELDNAME] = r;
       }
     }
 
@@ -49,20 +49,20 @@ export const loadAtFields = async (attachment: Attachment, transaction: Transact
 
 export const loadAtRelations = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
-    SELECT 
-      TRIM(RELATIONNAME) AS RELATIONNAME, 
-      LNAME, 
-      LSHORTNAME, 
-      DESCRIPTION, 
-      TRIM(LISTFIELD) AS LISTFIELD, 
-      TRIM(EXTENDEDFIELDS) AS EXTENDEDFIELDS, 
-      SEMCATEGORY, 
-      TRIM(GENERATORNAME) AS GENERATORNAME 
-    FROM 
-      AT_RELATIONS 
+    SELECT
+      TRIM(RELATIONNAME) AS RELATIONNAME,
+      LNAME,
+      LSHORTNAME,
+      DESCRIPTION,
+      TRIM(LISTFIELD) AS LISTFIELD,
+      TRIM(EXTENDEDFIELDS) AS EXTENDEDFIELDS,
+      SEMCATEGORY,
+      TRIM(GENERATORNAME) AS GENERATORNAME
+    FROM
+      AT_RELATIONS
   `);
   try {
-    return (await rs.fetchAsObject<IAtRelation>()).reduce( (p, r) => (p[r.RELATIONNAME] = r, p), {} as IAtRelations);
+    return (await rs.fetchAsObject<IAtRelation>()).reduce((p, r) => (p[r.RELATIONNAME] = r, p), {} as IAtRelations);
   } finally {
     await rs.close();
   }
@@ -70,22 +70,22 @@ export const loadAtRelations = async (attachment: Attachment, transaction: Trans
 
 export const loadAtRelationFields = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
-    SELECT 
+    SELECT
       TRIM(FIELDNAME) AS FIELDNAME,
-      TRIM(RELATIONNAME) AS RELATIONNAME, 
-      TRIM(FIELDSOURCE) AS FIELDSOURCE, 
-      TRIM(CROSSTABLE) AS CROSSTABLE, 
-      TRIM(CROSSFIELD) AS CROSSFIELD, 
+      TRIM(RELATIONNAME) AS RELATIONNAME,
+      TRIM(FIELDSOURCE) AS FIELDSOURCE,
+      TRIM(CROSSTABLE) AS CROSSTABLE,
+      TRIM(CROSSFIELD) AS CROSSFIELD,
       LNAME,
-      LSHORTNAME, 
-      DESCRIPTION, 
-      COALESCE(VISIBLE, 0) AS VISIBLE, 
-      FORMAT, 
-      ALIGNMENT, 
-      COLWIDTH, 
-      COALESCE(READONLY, 0) AS READONLY, 
-      TRIM(GDCLASSNAME) AS GDCLASSNAME, 
-      TRIM(GDSUBTYPE) AS GDSUBTYPE, 
+      LSHORTNAME,
+      DESCRIPTION,
+      COALESCE(VISIBLE, 0) AS VISIBLE,
+      FORMAT,
+      ALIGNMENT,
+      COLWIDTH,
+      COALESCE(READONLY, 0) AS READONLY,
+      TRIM(GDCLASSNAME) AS GDCLASSNAME,
+      TRIM(GDSUBTYPE) AS GDSUBTYPE,
       DELETERULE,
       SEMCATEGORY,
       (
@@ -109,12 +109,12 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
           rf.rdb$relation_name = relationname
           AND
           rf.rdb$field_name = fieldname
-     ) AS REF   
+     ) AS REF
     FROM
-      AT_RELATION_FIELDS 
+      AT_RELATION_FIELDS
   `);
   try {
-    return (await rs.fetchAsObject<IAtRelationField>()).reduce( (p, r) => {
+    return (await rs.fetchAsObject<IAtRelationField>()).reduce((p, r) => {
       if (!p[r.RELATIONNAME]) {
         p[r.RELATIONNAME] = [r];
       } else {
@@ -129,7 +129,7 @@ export const loadAtRelationFields = async (attachment: Attachment, transaction: 
 
 export const loadGdDocumentType = async (attachment: Attachment, transaction: Transaction) => {
   const rs = await attachment.executeQuery(transaction, `
-    SELECT 
+    SELECT
       DT.ID,
       DT.PARENT,
       DT.LB,
@@ -160,5 +160,5 @@ export const loadGdDocumentType = async (attachment: Attachment, transaction: Tr
  * @param r relation name.
  * @returns adjusted relation name.
  */
-export const adjustRelationName = (r: string) => r ? r.replaceAll('$', '_') : '';
+export const adjustRelationName = (r: string) => r ? r.replaceAll('$', '_',).replaceAll('.', '') : '';
 

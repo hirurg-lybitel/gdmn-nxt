@@ -6,13 +6,12 @@ import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useDeleteUserGroupLineMutation, useGetUserGroupLineQuery, useUpdateUserGroupLineMutation, useCloseSessionByIdMutation } from '../../../features/permissions';
 import { ChangeEvent, useMemo } from 'react';
 import { IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import { useResetProfileSettingsMutation } from '../../../features/profileSettings';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { makeStyles } from '@mui/styles';
-import { Height } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme: Theme) => ({
   statusIcon: {

@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -11,7 +11,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { makeStyles } from '@mui/styles';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { GroupHeader, GroupItems } from '../../Kanban/kanban-edit-card/components/group';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
@@ -21,18 +21,6 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useDispatch } from 'react-redux';
-
-const useStyles = makeStyles(() => ({
-  root: {
-    '& .editIcon': {
-      visibility: 'hidden',
-      padding: '4px'
-    },
-    '&:hover .editIcon, &:focus-within .editIcon': {
-      visibility: 'visible',
-    }
-  },
-}));
 
 function preventAction<T>(e: MouseEvent<T>) {
   e.stopPropagation();
@@ -86,8 +74,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     agreement = false,
     ...rest
   } = props;
-
-  const classes = useStyles();
 
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery({
     filter: {
@@ -207,16 +193,18 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const [ListboxComponent] = useAutocompleteVirtualization();
 
   const {
-    data: projects = [],
+    data,
     isLoading: projectsIsLoading,
     isFetching: projectsIsFetching
   } = useGetProjectsQuery({
     ...(!Array.isArray(value)
-      ? { filter: { customerId: value?.ID } }
+      ? { filter: { customerId: value?.ID, groupByFavorite: true, taskisActive: true, status: 'active' } }
       : {}),
   }, {
     skip: multiple || !value || !withTasks
   });
+
+  const projects = data?.projects || [];
 
   useEffect(() => {
     if (multiple) return;
@@ -249,8 +237,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         ref={taskSelectAreaRef}
         style={{
           position: 'absolute',
-          left: '14px',
+          right: '14px',
           top: '9px',
+          maxWidth: '50%',
           zIndex: 99,
         }}
       >
@@ -259,7 +248,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             display: (projects.length === 0) ? 'none' : 'inline-flex',
             position: 'relative',
             zIndex: 2,
-            color: 'transparent'
+            color: 'transparent',
+            width: '100%'
           }}
         >
           <Stack direction={'row'}>
@@ -270,6 +260,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             <Box width={34} />
           </Stack>
           <CustomerTasks
+            sx={{ '& .MuiInputBase-input': {
+              marginRight: '16px'
+            },
+            '& .MuiAutocomplete-endAdornment': {
+              top: '40%'
+            }
+            }}
             projects={projects}
             task={selectedTask}
             onSelect={handleTaskSelect}
@@ -277,7 +274,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         </div>
       </div>
       <Autocomplete
-        className={classes.root}
         style={style}
         fullWidth
         ListboxComponent={ListboxComponent}
@@ -287,6 +283,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
+        sx={{
+          '& .MuiInputBase-root': {
+            paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 74) : '39') + 'px !important'
+          }
+        }}
         {
           ...(!disableFavorite && {
             groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
@@ -325,9 +326,15 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               sx={{
                 py: '2px !important',
                 '&:hover .action': {
-                  display: 'block !important',
+                  display: 'flex !important',
                 },
-                padding: '0px !important'
+                padding: '0px !important',
+                '& .StyledEditButton': {
+                  visibility: 'hidden',
+                },
+                '&:hover .StyledEditButton, &:focus-within .StyledEditButton': {
+                  visibility: 'visible',
+                }
               }}
             >
               <CustomerItem
@@ -354,22 +361,12 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
+            sx={{ '& .MuiAutocomplete-endAdornment': {
+              right: (taskSelectAreaWidth ? taskSelectAreaWidth + 26 : 9) + 'px !important'
+            } }}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
-              startAdornment: (
-                <>
-                  <InputAdornment
-                    position="start"
-                    style={{
-                      display: projects.length === 0 ? 'none' : 'inline-flex'
-                    }}
-                  >
-                    <div style={{ color: 'transparent', width: taskSelectAreaWidth }} />
-                  </InputAdornment>
-                  {params.InputProps.startAdornment}
-                </>
-              ),
               endAdornment: (
                 <>
                   {(value && (!Array.isArray(value))) && !disableEdition &&
@@ -495,36 +492,43 @@ const CustomerItem = ({
             <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
           </Stack>
         }
-        {!disableEdition &&
-          <div
+        {!(disableEdition && !agreement && !debt && disableFavorite) &&
+          <Stack
             className="action"
-            style={{
-              display: 'none',
+            direction="row"
+            spacing={0.5}
+            alignItems="center"
+            sx={{
+              display: 'flex',
             }}
           >
-            <ItemButtonEdit
-              color="primary"
-              onClick={editCustomer(customer)}
-            />
-          </div>
+            {!disableEdition &&
+              <ItemButtonEdit
+                button
+                onClick={editCustomer(customer)}
+              />
+            }
+            {agreement && (customer.agreementCount ?? 0) > 0 && (
+              <Tooltip title="Действует договор">
+                <IconButton onClick={agreementClick}>
+                  <ContentPasteIcon fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {debt && (customer.debt ?? 0) > 0 && (
+              <Tooltip
+                title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
+                onClick={preventAction<HTMLDivElement>}
+              >
+                <WarningIcon fontSize="small" color="warning" />
+              </Tooltip>
+            )}
+            {!disableFavorite &&
+              <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />
+            }
+
+          </Stack>
         }
-        {agreement && (customer.agreementCount ?? 0) > 0 && (
-          <Tooltip title="Действует договор">
-            <IconButton onClick={agreementClick}>
-              <ContentPasteIcon fontSize="small" color="primary" />
-            </IconButton>
-          </Tooltip>
-        )}
-        {debt && (customer.debt ?? 0) > 0 && (
-          <Tooltip
-            title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
-            onClick={preventAction<HTMLDivElement>}
-          >
-            <WarningIcon fontSize="small" color="warning" />
-          </Tooltip>
-        )}
-        {!disableFavorite &&
-          <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
     </Stack>
   );
@@ -571,12 +575,14 @@ const ListboxComponent = forwardRef<
 interface CustomerTasksProps {
   projects: ITimeTrackProject[];
   task: ITimeTrackTask | null;
+  sx?: SxProps<Theme>;
   onSelect: (task: ITimeTrackTask) => void;
 };
 
 const CustomerTasks = ({
   projects,
   task,
+  sx,
   onSelect
 }: Readonly<CustomerTasksProps>) => {
   const [addFavoriteProject] = useAddFavoriteProjectMutation();
@@ -710,6 +716,7 @@ const CustomerTasks = ({
         top: -2,
         width: '100%',
         '& .MuiInput-root::before': { borderBottom: 0 },
+        ...sx
       }}
       slotProps={{
         paper: {
