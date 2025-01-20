@@ -298,7 +298,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         filterOptions={filterOptions}
         sx={{
           '& .MuiInputBase-root': {
-            paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 58) : '39') + 'px !important'
+            paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 74) : '39') + 'px !important'
           }
         }}
         {
