@@ -128,7 +128,7 @@ const removeAll: RemoveHandler = async (
 
   try {
     const prefix = 'z';
-    const { clauseString, whereClause } = prepareClause(clause, { prefix });
+    const { clauseString, whereClause } = prepareClause(clause, { prefix: () => prefix });
 
     await execute(
       `DELETE FROM USR$CRM_MARKETING_MAILING_RES ${prefix}

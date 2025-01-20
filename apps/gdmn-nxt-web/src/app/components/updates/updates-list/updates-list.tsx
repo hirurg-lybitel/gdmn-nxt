@@ -14,7 +14,7 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import UpdatesEdit from '../updates-edit/updates-edit';
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 
 /* eslint-disable-next-line */
 export interface UpdatesListProps {}
@@ -123,7 +123,7 @@ export function UpdatesList(props: UpdatesListProps) {
                       <Typography variant="body2">{new Date(u.ONDATE).toLocaleDateString()}</Typography>
                       <PermissionsGate actionAllowed={userPermissions?.updates.PUT}>
                         <ItemButtonEdit
-                          color="primary"
+                          button
                           size="small"
                           onClick={handleEditSource(u)}
                         />

@@ -26,7 +26,7 @@ import PhoneInTalkIcon from '@mui/icons-material/PhoneInTalk';
 import ChatIcon from '@mui/icons-material/Chat';
 import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
 import FeedIcon from '@mui/icons-material/Feed';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 

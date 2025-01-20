@@ -51,7 +51,7 @@ import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOu
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';

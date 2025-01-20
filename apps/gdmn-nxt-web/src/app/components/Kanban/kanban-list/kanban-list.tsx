@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import { IconButton } from '@mui/material';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import DetailPanel from './detailPanel';
 
 export interface KanbanListProps {

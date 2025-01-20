@@ -105,7 +105,7 @@ export function Contracts(props: ContractsProps) {
       setOpenFilters(false);
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      dispatch(clearFilterData(filterEntityName));
+      dispatch(clearFilterData({ filterEntityName }));
     }, [dispatch]),
   };
 

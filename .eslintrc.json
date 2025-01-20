@@ -58,7 +58,7 @@
         "space-before-blocks": "error",
         "keyword-spacing": "error",
         "space-infix-ops": "error",
-        "newline-per-chained-call": "error",
+        "newline-per-chained-call": "warn",
         "no-whitespace-before-property": "error",
         "padded-blocks": ["error", "never"],
         "no-multiple-empty-lines": "error",

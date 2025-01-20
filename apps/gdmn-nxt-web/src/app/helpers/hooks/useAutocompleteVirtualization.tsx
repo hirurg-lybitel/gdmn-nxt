@@ -89,9 +89,9 @@ export function useAutocompleteVirtualization(props?: IAutocompleteVirtualizatio
       }
 
       return (
-        <li style={style} {...dataSet?.optionProps}>
+        <div style={style} {...dataSet?.optionProps}>
           <div ref={rowRef}>{dataSet}</div>
-        </li>
+        </div>
       );
     };
 

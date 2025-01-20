@@ -23,7 +23,7 @@ import CustomNoData from '../../Styled/Icons/CustomNoData';
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import ContactsDeals from '../contacts-deals';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import ContactsTasks from '../contact-tasks';

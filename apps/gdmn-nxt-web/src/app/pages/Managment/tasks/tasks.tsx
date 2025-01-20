@@ -56,7 +56,7 @@ export function Tasks(props: TasksProps) {
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
 
   const filterClear = useCallback(() => {
-    dispatch(clearFilterData(filterEntityName));
+    dispatch(clearFilterData({ filterEntityName }));
   }, [dispatch]);
 
   const filterClose = useCallback((event: any) => {

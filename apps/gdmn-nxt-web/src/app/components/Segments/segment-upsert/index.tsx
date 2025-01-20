@@ -1,5 +1,5 @@
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { useGetBusinessProcessesQuery } from '../../../features/business-processes';

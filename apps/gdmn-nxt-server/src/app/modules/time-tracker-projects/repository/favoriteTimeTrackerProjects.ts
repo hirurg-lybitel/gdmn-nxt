@@ -104,5 +104,5 @@ const remove = async (
 export const favoriteTimeTrackerProjectsRepository = {
   find,
   save,
-  remove
+  remove,
 };

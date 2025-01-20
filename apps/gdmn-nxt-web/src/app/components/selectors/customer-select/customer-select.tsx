@@ -11,7 +11,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { makeStyles } from '@mui/styles';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { GroupHeader, GroupItems } from '../../Kanban/kanban-edit-card/components/group';
-import ItemButtonEdit from '@gdmn-nxt/components/item-button-edit/item-button-edit';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import { useAddFavoriteProjectMutation, useAddFavoriteTaskMutation, useDeleteFavoriteProjectMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
@@ -207,16 +207,18 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const [ListboxComponent] = useAutocompleteVirtualization();
 
   const {
-    data: projects = [],
+    data,
     isLoading: projectsIsLoading,
     isFetching: projectsIsFetching
   } = useGetProjectsQuery({
     ...(!Array.isArray(value)
-      ? { filter: { customerId: value?.ID } }
+      ? { filter: { customerId: value?.ID, groupByFavorite: true, taskisActive: true, status: false } }
       : {}),
   }, {
     skip: multiple || !value || !withTasks
   });
+
+  const projects = data?.projects || [];
 
   useEffect(() => {
     if (multiple) return;
@@ -503,7 +505,7 @@ const CustomerItem = ({
             }}
           >
             <ItemButtonEdit
-              color="primary"
+              button
               onClick={editCustomer(customer)}
             />
           </div>

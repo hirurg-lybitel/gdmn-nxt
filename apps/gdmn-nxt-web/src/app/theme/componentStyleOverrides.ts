@@ -16,6 +16,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-main-bg': theme.palette.background.default,
           '--color-paper-bg': theme.palette.background.paper,
           '--color-borders': theme.mainContent.borderColor,
+          '--color-grid-borders': theme.palette.mode === 'dark' ? 'rgba(81, 81, 81, 1)' : 'rgba(224, 224, 224, 1)',
           '--color-hihglight-bg': 'yellow',
           '--color-error': 'rgb(143, 64, 64)',
           '--color-disabled': 'rgba(255, 255, 255, 0.3)',

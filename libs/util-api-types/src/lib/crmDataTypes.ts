@@ -371,6 +371,9 @@ export type ActionName =
   'mailings' |
   'feedback' |
   'time-tracking' |
+  'time-tracking/projects' |
+  'time-tracking/projectTypes' |
+  'time-tracking/tasks' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -548,17 +551,33 @@ export interface ITimeTrackGroup {
   items: ITimeTrack[];
 }
 
+export interface IProjectStatistics {
+  id: number;
+  name: string;
+  totalDuration: string;
+  billableDuration: string;
+  nonBillableDuration: string;
+}
+
 export interface ITimeTrackProject extends IWithID {
   name: string;
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
-  isFavorite?: boolean
+  isFavorite?: boolean,
+  employees?: IContactWithID[],
+  note?: string,
+  isPrivate?: boolean,
+  isDone?: boolean,
+  projectType?: IProjectType,
+  creator?: IContactWithID
 }
 
 export interface ITimeTrackTask extends IWithID {
   name: string;
+  isActive: boolean,
   project?: ITimeTrackProject;
   isFavorite?: boolean;
+  inUse?: boolean
 }
 
 export interface IContactName {
@@ -566,4 +585,9 @@ export interface IContactName {
   firstName?: string;
   middleName?: string;
   nickName: string;
+}
+
+export interface IProjectType extends IWithID {
+  name: string,
+  parent?: string
 }

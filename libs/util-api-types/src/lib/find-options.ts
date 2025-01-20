@@ -9,7 +9,8 @@ interface BaseExpression {
     'MoreThan' |
     'MoreThanOrEqual' |
     'LessThan' |
-    'LessThanOrEqual';
+    'LessThanOrEqual' |
+    'Between';
 };
 
 interface ExpressionWithValue extends BaseExpression {
@@ -23,7 +24,6 @@ interface ExpressionLike extends BaseExpression {
 interface ExpressionIn extends BaseExpression {
   value: string
 };
-
 
 interface ExpressionIsNull extends BaseExpression {};
 interface ExpressionIsNotNull extends BaseExpression {};
@@ -65,4 +65,9 @@ export const LessThan = (value: string): ExpressionWithValue => ({
 export const LessThanOrEqual = <T>(value: T): ExpressionWithValue => ({
   operator: 'LessThanOrEqual',
   value: `<= '${value}'`
+});
+
+export const Between = (value: string[]): ExpressionWithValue => ({
+  operator: 'Between',
+  value: ` BETWEEN '${value[0]}' AND '${value[1]}'`
 });
