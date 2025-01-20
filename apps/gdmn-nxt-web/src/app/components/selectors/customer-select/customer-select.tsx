@@ -22,18 +22,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useDispatch } from 'react-redux';
 
-const useStyles = makeStyles(() => ({
-  root: {
-    '& .editIcon': {
-      visibility: 'hidden',
-      padding: '4px'
-    },
-    '&:hover .editIcon, &:focus-within .editIcon': {
-      visibility: 'visible',
-    }
-  },
-}));
-
 function preventAction<T>(e: MouseEvent<T>) {
   e.stopPropagation();
   e.preventDefault();
@@ -86,8 +74,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     agreement = false,
     ...rest
   } = props;
-
-  const classes = useStyles();
 
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery({
     filter: {
@@ -279,7 +265,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         </div>
       </div>
       <Autocomplete
-        className={classes.root}
         style={style}
         fullWidth
         ListboxComponent={ListboxComponent}
@@ -329,7 +314,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 '&:hover .action': {
                   display: 'block !important',
                 },
-                padding: '0px !important'
+                padding: '0px !important',
+                '& .StyledEditButton': {
+                  visibility: 'hidden',
+                },
+                '&:hover .StyledEditButton, &:focus-within .StyledEditButton': {
+                  visibility: 'visible',
+                }
               }}
             >
               <CustomerItem
@@ -471,7 +462,6 @@ const CustomerItem = ({
         flex={1}
         direction="row"
         alignItems="center"
-        spacing={1}
         style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
@@ -501,7 +491,7 @@ const CustomerItem = ({
           <div
             className="action"
             style={{
-              display: 'none',
+              display: disableEdition ? 'none' : 'inline-flex',
             }}
           >
             <ItemButtonEdit
