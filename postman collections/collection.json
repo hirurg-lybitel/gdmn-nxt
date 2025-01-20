@@ -4195,7 +4195,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/time-tracking/projects",
+									"raw": "{{baseUrl}}/time-tracking/projects?customerId=153588716&groupByFavorite=true&taskisActive=true&status=active",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -4206,8 +4206,19 @@
 									"query": [
 										{
 											"key": "customerId",
-											"value": "1",
-											"disabled": true
+											"value": "153588716"
+										},
+										{
+											"key": "groupByFavorite",
+											"value": "true"
+										},
+										{
+											"key": "taskisActive",
+											"value": "true"
+										},
+										{
+											"key": "status",
+											"value": "active"
 										}
 									]
 								}
