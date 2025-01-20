@@ -312,7 +312,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               sx={{
                 py: '2px !important',
                 '&:hover .action': {
-                  display: 'block !important',
+                  display: 'flex !important',
                 },
                 padding: '0px !important',
                 '& .StyledEditButton': {
@@ -462,6 +462,7 @@ const CustomerItem = ({
         flex={1}
         direction="row"
         alignItems="center"
+        spacing={1}
         style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
@@ -487,36 +488,43 @@ const CustomerItem = ({
             <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
           </Stack>
         }
-        {!disableEdition &&
-          <div
+        {!(disableEdition && !agreement && !debt && disableFavorite) &&
+          <Stack
             className="action"
-            style={{
-              display: disableEdition ? 'none' : 'inline-flex',
+            direction="row"
+            spacing={0.5}
+            alignItems="center"
+            sx={{
+              display: 'flex',
             }}
           >
-            <ItemButtonEdit
-              button
-              onClick={editCustomer(customer)}
-            />
-          </div>
+            {!disableEdition &&
+              <ItemButtonEdit
+                button
+                onClick={editCustomer(customer)}
+              />
+            }
+            {agreement && (customer.agreementCount ?? 0) > 0 && (
+              <Tooltip title="Действует договор">
+                <IconButton onClick={agreementClick}>
+                  <ContentPasteIcon fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {debt && (customer.debt ?? 0) > 0 && (
+              <Tooltip
+                title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
+                onClick={preventAction<HTMLDivElement>}
+              >
+                <WarningIcon fontSize="small" color="warning" />
+              </Tooltip>
+            )}
+            {!disableFavorite &&
+              <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />
+            }
+
+          </Stack>
         }
-        {agreement && (customer.agreementCount ?? 0) > 0 && (
-          <Tooltip title="Действует договор">
-            <IconButton onClick={agreementClick}>
-              <ContentPasteIcon fontSize="small" color="primary" />
-            </IconButton>
-          </Tooltip>
-        )}
-        {debt && (customer.debt ?? 0) > 0 && (
-          <Tooltip
-            title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
-            onClick={preventAction<HTMLDivElement>}
-          >
-            <WarningIcon fontSize="small" color="warning" />
-          </Tooltip>
-        )}
-        {!disableFavorite &&
-          <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />}
       </Stack>
     </Stack>
   );
