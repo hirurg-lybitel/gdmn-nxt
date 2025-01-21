@@ -197,6 +197,7 @@ export default function ProjectStatistics({ projectId }: Readonly<IProjectStatis
     >
       <Stack direction="row" spacing={1}>
         <ButtonDateRangePicker
+          options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
           value={dateRange}
           onChange={dateRangeOnChange}
         />
