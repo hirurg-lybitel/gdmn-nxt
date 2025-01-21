@@ -171,9 +171,8 @@ export function ProjectTypeSelect<Multiple extends boolean | undefined = false>(
             {...props}
             key={option.ID}
             sx={{
-              height: createAllow ? '42px' : 'auto',
               '&:hover .action': {
-                display: 'block !important',
+                visibility: 'visible !important',
               }
             }}
           >
@@ -235,7 +234,7 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
         <div
           className="action"
           style={{
-            display: 'none',
+            visibility: 'hidden',
           }}
         >
           <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.PUT}>
