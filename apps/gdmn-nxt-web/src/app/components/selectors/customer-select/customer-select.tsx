@@ -361,9 +361,12 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             placeholder={`${insertCustomerIsLoading ? 'Создание...' : 'Выберите клиента'}`}
             {...params}
             {...rest}
-            sx={{ '& .MuiAutocomplete-endAdornment': {
-              right: (taskSelectAreaWidth ? taskSelectAreaWidth + 26 : 9) + 'px !important'
-            } }}
+            sx={{
+              ...rest.sx,
+              '& .MuiAutocomplete-endAdornment': {
+                right: (taskSelectAreaWidth ? taskSelectAreaWidth + 26 : 9) + 'px !important'
+              }
+            }}
             InputProps={{
               ...params.InputProps,
               ...rest.InputProps,
