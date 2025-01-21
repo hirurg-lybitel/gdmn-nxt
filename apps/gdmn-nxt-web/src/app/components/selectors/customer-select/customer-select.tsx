@@ -283,11 +283,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
-        sx={{
+        sx={withTasks ? {
           '& .MuiInputBase-root': {
             paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 74) : '39') + 'px !important'
           }
-        }}
+        } : {}}
         {
           ...(!disableFavorite && {
             groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
@@ -363,9 +363,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             {...rest}
             sx={{
               ...rest.sx,
-              '& .MuiAutocomplete-endAdornment': {
+              '& .MuiAutocomplete-endAdornment': withTasks ? {
                 right: (taskSelectAreaWidth ? taskSelectAreaWidth + 26 : 9) + 'px !important'
-              }
+              } : {}
             }}
             InputProps={{
               ...params.InputProps,
