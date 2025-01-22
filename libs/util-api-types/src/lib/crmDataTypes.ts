@@ -96,7 +96,7 @@ export interface IDealFeedback {
   competence?: IDealFeedbackCompetence;
   satisfaction?: IDealFeedbackSatisfaction;
   satisfactionRate?: IDealFeedbackSatisfactionRate;
-  replyEmail: boolean;
+  replyEmail?: boolean;
 };
 
 export interface IDeal extends IWithID {

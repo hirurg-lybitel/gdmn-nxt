@@ -129,41 +129,43 @@ export function TabFeedback({ formik }: Readonly<TabFeedbackProps>) {
           )}
         />
 
-        <Autocomplete
-          fullWidth
-          options={feedbackResults}
-          getOptionLabel={(option) => option.name}
-          value={formik.values.DEAL?.feedback?.result ?? null}
-          onChange={(e, value) => {
-            formik.setFieldValue(
-              'DEAL',
-              { ...formik.values.DEAL, feedback: { ...formik.values.DEAL?.feedback, result: value } }
-            );
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Обратная связь"
-            />
-          )}
-        />
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formik.values.DEAL?.feedback?.replyEmail ?? false}
-              onChange={e => formik.setFieldValue(
+        <Stack direction="row" spacing={2}>
+          <Autocomplete
+            fullWidth
+            options={feedbackResults}
+            getOptionLabel={(option) => option.name}
+            value={formik.values.DEAL?.feedback?.result ?? null}
+            onChange={(e, value) => {
+              formik.setFieldValue(
                 'DEAL',
-                { ...formik.values.DEAL, feedback: { ...formik.values.DEAL?.feedback, replyEmail: e.target.checked } }
-              )}
-            />
-          }
-          label={
-            <Typography width={'max-content'} variant="body2">
+                { ...formik.values.DEAL, feedback: { ...formik.values.DEAL?.feedback, result: value } }
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Обратная связь"
+              />
+            )}
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formik.values.DEAL?.feedback?.replyEmail ?? false}
+                onChange={e => formik.setFieldValue(
+                  'DEAL',
+                  { ...formik.values.DEAL, feedback: { ...formik.values.DEAL?.feedback, replyEmail: e.target.checked } }
+                )}
+              />
+            }
+            label={
+              <Typography width={'max-content'} variant="body2">
                 Ответ по e-mail
-            </Typography>
-          }
-        />
+              </Typography>
+            }
+          />
+        </Stack>
 
         <TextField
           label="Ответ специалиста"
