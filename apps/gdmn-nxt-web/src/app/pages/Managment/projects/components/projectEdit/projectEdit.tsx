@@ -175,6 +175,15 @@ export function ProjectEdit(props: ProjectEditProps) {
                   value={formik.values.customer}
                   onChange={(value) => formik.setFieldValue('customer', value)}
                 />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formik.values.isDone}
+                      onChange={(e) => formik.setFieldValue('isDone', e.target.checked)}
+                    />
+                  }
+                  label="Отключен"
+                />
               </Stack>
               <Divider orientation="vertical" flexItem />
               <Stack flex={1}>
