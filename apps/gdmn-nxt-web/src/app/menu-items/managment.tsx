@@ -13,8 +13,9 @@ import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import ContentPasteOutlinedIcon from '@mui/icons-material/ContentPasteOutlined';
 import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
-import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
-import EngineeringIcon from '@mui/icons-material/EngineeringOutlined';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+
 const managment: IMenuItem = {
   id: 'managment',
   title: 'Управление',
@@ -128,8 +129,8 @@ const managment: IMenuItem = {
       title: 'Проекты',
       type: 'item',
       url: 'managment/projects',
-      icon: <EngineeringOutlinedIcon color="secondary" />,
-      selectedIcon: <EngineeringIcon color="secondary" />
+      icon: <AccountTreeOutlinedIcon color="secondary" />,
+      selectedIcon: <AccountTreeIcon color="secondary" />
     }
   ]
 };

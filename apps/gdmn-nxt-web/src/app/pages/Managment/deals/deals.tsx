@@ -2,7 +2,7 @@ import styles from './deals.module.less';
 import KanbanBoard from '../../../components/Kanban/kanban-board/kanban-board';
 import { useDispatch, useSelector } from 'react-redux';
 import { SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAddCardMutation, useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
+import { useAddCardMutation, useAddTaskMutation, useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
 import { RootState } from '@gdmn-nxt/store';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { Autocomplete, Badge, IconButton, Skeleton, Stack, TextField, Tooltip, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
@@ -53,6 +53,9 @@ export function Deals(props: DealsProps) {
 
   const [upsertCard, setUpsertCard] = useState(false);
 
+  const addingCard = useRef<IKanbanCard>();
+  const [addTask, { isSuccess: addTaskSuccess }] = useAddTaskMutation();
+
   // useEffect(() => {
   //   if (lastCardDateFilterLoading) return;
   //   if (filterData?.deadline) return;
@@ -80,7 +83,7 @@ export function Deals(props: DealsProps) {
     skip: Object.keys(filterData || {}).length === 0
   });
 
-  const [addCard] = useAddCardMutation();
+  const [addCard, { isSuccess: addCardSuccess, data: addedCard }] = useAddCardMutation();
 
   const saveFilters = (filteringData: IFilteringData) => {
     dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
@@ -132,6 +135,7 @@ export function Deals(props: DealsProps) {
 
   const cardHandlers = {
     handleSubmit: async (newCard: IKanbanCard, deleting: boolean) => {
+      addingCard.current = newCard;
       addCard(newCard);
       setUpsertCard(false);
     },
@@ -309,6 +313,21 @@ export function Deals(props: DealsProps) {
       parent.style.maxWidth = oldMaxWidth;
     };
   }, []);
+
+  useEffect(() => {
+    if (!addedCard) return;
+    const cardId = addedCard[0].ID;
+    const cardParentId = addedCard[0].USR$MASTERKEY;
+
+    const column = columns.find(({ ID }) => ID === cardParentId);
+    const cardFindIndex = column?.CARDS?.findIndex(({ ID }) => ID === cardId) ?? -1;
+    const cachedCard = column?.CARDS[cardFindIndex];
+
+
+    if (!((addingCard.current?.TASKS?.length ?? 0) > (cachedCard?.TASKS?.length ?? 0))) return;
+
+    addingCard.current?.TASKS?.forEach(task => addTask({ ...task, USR$CARDKEY: cardId }));
+  }, [addCardSuccess, addedCard, columns]);
 
   return (
     <Stack
