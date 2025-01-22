@@ -152,31 +152,17 @@ export function ProjectEdit(props: ProjectEditProps) {
                   error={getIn(formik.touched, 'name') && Boolean(getIn(formik.errors, 'name'))}
                   helperText={getIn(formik.touched, 'name') && getIn(formik.errors, 'name')}
                 />
-                <Stack
-                  spacing={2}
-                  direction={'row'}
-                >
-                  <Tooltip title="Приватный проект будет отображаться только для привязанных к проекту сотрудников">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={formik.values.isPrivate}
-                          onChange={(e) => formik.setFieldValue('isPrivate', e.target.checked)}
-                        />
-                      }
-                      label="Приватный"
-                    />
-                  </Tooltip>
+                <Tooltip title="Приватный проект будет отображаться только для привязанных к проекту сотрудников">
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={formik.values.isDone}
-                        onChange={(e) => formik.setFieldValue('isDone', e.target.checked)}
+                        checked={formik.values.isPrivate}
+                        onChange={(e) => formik.setFieldValue('isPrivate', e.target.checked)}
                       />
                     }
-                    label="Отключен"
+                    label="Приватный"
                   />
-                </Stack>
+                </Tooltip>
                 <ProjectTypeSelect
                   withCreate
                   withEdit
