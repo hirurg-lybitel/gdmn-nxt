@@ -307,15 +307,6 @@ const upsert: RequestHandler = async (req, res) => {
 
     const dealRecord: IDeal = await fetchAsSingletonObject(sql, paramsValues);
 
-    /** Обновление отзывов */
-    if (deal.feedback) {
-      if (deal.feedback.id > 0) {
-        await dealFeedbackService.updateFeedback(req.sessionID, deal.feedback.id, deal.feedback);
-      } else {
-        await dealFeedbackService.createFeedback(req.sessionID, deal.feedback);
-      }
-    }
-
     /** Обновление вложений */
     const updateAttachments = async () => {
       if (!deal['ATTACHMENTS']) return;
@@ -435,6 +426,19 @@ const upsert: RequestHandler = async (req, res) => {
     };
 
     await releaseTransaction();
+
+    /** Обновление отзывов */
+    try {
+      if (deal.feedback) {
+        if (deal.feedback.id > 0) {
+          await dealFeedbackService.updateFeedback(req.sessionID, deal.feedback.id, deal.feedback);
+        } else {
+          await dealFeedbackService.createFeedback(req.sessionID, { ...deal.feedback, dealId: dealRecord.ID });
+        }
+      }
+    } catch (error) {
+      console.error('[ dealFeedback ]', error);
+    }
 
     /** Сохранение истории изменений */
     changes.forEach(c => addHistory(req.sessionID, c));

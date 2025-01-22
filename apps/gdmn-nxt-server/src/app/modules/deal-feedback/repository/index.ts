@@ -35,6 +35,7 @@ const find: FindHandler<IDealFeedback> = async (
         f.USR$DEAL,
         f.USR$ANSWER ,
         f.USR$SUGGESTION,
+        f.USR$REPLYEMAIL,
         res.ID RES_ID, res.USR$NAME RES_NAME,
         comp.ID COMP_ID, comp.USR$NAME COMP_NAME,
         sat.ID SAT_ID, sat.USR$NAME SAT_NAME,
@@ -61,6 +62,7 @@ const find: FindHandler<IDealFeedback> = async (
         ...(r['COMP_ID'] && { competence: { id: r['COMP_ID'], name: r['COMP_NAME'] } }),
         ...(r['SAT_ID'] && { satisfaction: { id: r['SAT_ID'], name: r['SAT_NAME'] } }),
         ...(r['RATE_ID'] && { satisfactionRate: { id: r['RATE_ID'], name: r['RATE_NAME'] } }),
+        replyEmail: r['USR$REPLYEMAIL'] === 1
       });
     });
 
@@ -101,6 +103,7 @@ const update: UpdateHandler<IDealFeedback> = async (
       competence = feedback.competence,
       satisfaction = feedback.satisfaction,
       satisfactionRate = feedback.satisfactionRate,
+      replyEmail
     } = metadata;
 
     const updatedFeedback = await fetchAsSingletonObject<IDealFeedback>(
@@ -112,7 +115,8 @@ const update: UpdateHandler<IDealFeedback> = async (
         USR$RESULT = :result,
         USR$COMPETENCE = :competence,
         USR$SATISFACTION = :satisfaction,
-        USR$SATISFACTION_RATING = :satisfactionRate
+        USR$SATISFACTION_RATING = :satisfactionRate,
+        USR$REPLYEMAIL = :replyEmail
       WHERE
         ID = :id
       RETURNING ID`,
@@ -125,6 +129,7 @@ const update: UpdateHandler<IDealFeedback> = async (
         competence: competence?.id ?? null,
         satisfaction: satisfaction?.id ?? null,
         satisfactionRate: satisfactionRate?.id ?? null,
+        replyEmail: replyEmail ?? false
       }
     );
     await releaseTransaction();
@@ -150,13 +155,14 @@ const save: SaveHandler<IDealFeedback> = async (
     result,
     competence,
     satisfaction,
-    satisfactionRate
+    satisfactionRate,
+    replyEmail
   } = metadata;
 
   try {
     const newFeedback = await fetchAsSingletonObject<IDealFeedback>(
-      `INSERT INTO USR$CRM_DEAL_FEEDBACK(USR$ONDATE, USR$ANSWER, USR$SUGGESTION, USR$RESULT, USR$COMPETENCE, USR$SATISFACTION, USR$SATISFACTION_RATING, USR$DEAL)
-      VALUES(:date, :response, :suggestion, :result, :competence, :satisfaction, :satisfactionRate, :dealId)
+      `INSERT INTO USR$CRM_DEAL_FEEDBACK(USR$ONDATE, USR$ANSWER, USR$SUGGESTION, USR$RESULT, USR$COMPETENCE, USR$SATISFACTION, USR$SATISFACTION_RATING, USR$DEAL, USR$REPLYEMAIL)
+      VALUES(:date, :response, :suggestion, :result, :competence, :satisfaction, :satisfactionRate, :dealId, :replyEmail)
       RETURNING ID`,
       {
         date: date ? dayjs(date).toDate() : dayjs().toDate(),
@@ -166,7 +172,8 @@ const save: SaveHandler<IDealFeedback> = async (
         competence: competence?.id ?? null,
         satisfaction: satisfaction?.id ?? null,
         satisfactionRate: satisfactionRate?.id ?? null,
-        dealId
+        dealId,
+        replyEmail
       }
     );
 
