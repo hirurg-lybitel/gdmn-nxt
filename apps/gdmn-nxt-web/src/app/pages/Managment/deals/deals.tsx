@@ -327,7 +327,7 @@ export function Deals(props: DealsProps) {
     if (!((addingCard.current?.TASKS?.length ?? 0) > (cachedCard?.TASKS?.length ?? 0))) return;
 
     addingCard.current?.TASKS?.forEach(task => addTask({ ...task, USR$CARDKEY: cardId }));
-  }, [addCardSuccess, addedCard, columns]);
+  }, [addCardSuccess, addedCard]);
 
   return (
     <Stack
