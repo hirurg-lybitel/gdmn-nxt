@@ -317,6 +317,7 @@ export function TimeTracker() {
       />
       <Stack direction="row">
         <ButtonDateRangePicker
+          options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
           onChange={dateRangeOnChange}
         />
