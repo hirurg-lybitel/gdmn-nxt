@@ -34,6 +34,8 @@ interface ValidationShema {
 
 type ConfirmationMode = 'deleting' | 'cancel';
 
+export const ROW_HEIGHT_EDIT_DELTA = 12;
+
 const validationShema: ValidationShema = {
   name: (value) => {
     if (value?.length > 60) return 'Слишком длинное наименование';
@@ -139,6 +141,7 @@ export function DetailPanelContent({
   const apiRef = useGridApiRef();
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const handleFilteringDataChange = useCallback((newValue: IFilteringData) => {
     setFilterData(newValue);
@@ -475,19 +478,23 @@ export function DetailPanelContent({
     });
     if (apiRef.current.getRowMode(0) === GridRowModes.Edit) return;
     apiRef.current.startRowEditMode({ id });
+    setEditMode(true);
   }, [apiRef]);
 
   const getHeight = useCallback((recordsCount = 0) => {
+    const extraHeight = editMode ? ROW_HEIGHT_EDIT_DELTA : 0;
+
     const rowHeight = ROW_HEIGHT;
-    const minHeight = ROW_HEIGHT;
+    const minHeight = ROW_HEIGHT + extraHeight;
     const maxHeight = ROW_HEIGHT * 5;
+
 
     /** We need a space for No data message */
     if (recordsCount === 0) return minHeight * 5;
 
     const calculatedHeight = recordsCount * rowHeight;
     return Math.max(Math.min(calculatedHeight, maxHeight), minHeight);
-  }, []);
+  }, [editMode]);
 
   const grid = (
     <StyledGrid
@@ -505,7 +512,7 @@ export function DetailPanelContent({
         const mode = apiRef.current.getCellMode(id, 'name');
 
         if (mode === GridCellModes.Edit) {
-          return ROW_HEIGHT + 10;
+          return ROW_HEIGHT + ROW_HEIGHT_EDIT_DELTA;
         }
 
         return ROW_HEIGHT;
@@ -516,6 +523,7 @@ export function DetailPanelContent({
       onRowEditStart={handleRowEditStart}
       onRowEditStop={handleRowEditStop}
       onCellKeyDown={handleCellKeyDown}
+      onRowModesModelChange={(model) => setEditMode(Object.keys(model).length !== 0)}
     />
   );
 
