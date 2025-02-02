@@ -33,11 +33,19 @@ export const filtersSlice = createSlice({
     saveFilterModel: (state, action: PayloadAction<{ [key: string]: GridFilterModel | undefined }>) => {
       return { ...state, filterModels: { ...state.filterModels, ...action.payload } };
     },
-    clearFilterData: (state, action: PayloadAction<string>) => {
-      /** Никогда не удаляем deals.deadline  */
-      const deadline = [...(state.filterData[action.payload]?.deadline || [])];
-      const { [action.payload]: deletedData, ...clearedFilterData } = state.filterData;
-      const newFilterData = { ...clearedFilterData, ...(deadline.length > 0 ? { [action.payload]: { deadline } } : {}) };
+    clearFilterData: (state, action: PayloadAction<{filterEntityName: string, saveFields?: string[]}>) => {
+      const { filterEntityName, saveFields } = action.payload;
+      const fields: any = {};
+
+      if (saveFields) {
+        for (let i = 0;i < saveFields?.length;i++) {
+          const fieldName = saveFields[i];
+          fields[fieldName] = state.filterData[filterEntityName]?.[fieldName];
+        }
+      }
+
+      const { [filterEntityName]: deletedData, ...clearedFilterData } = state.filterData;
+      const newFilterData = { ...clearedFilterData, ...{ [filterEntityName]: fields } };
 
       return { ...state, filterData: newFilterData };
     },

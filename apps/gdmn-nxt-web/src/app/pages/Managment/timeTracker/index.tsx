@@ -26,7 +26,7 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import { AddItem } from './components/add-item';
 import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTrackingByDateQuery, useGetTimeTrackingInProgressQuery, useUpdateTimeTrackingMutation } from '../../../features/time-tracking';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
@@ -221,10 +221,6 @@ export function TimeTracker() {
       return;
     }
     addTimeTrack(value);
-
-    setAddTimeTrackInitial({
-      date: value.date
-    });
   };
 
   const onDelete = (id: number) => () => {
@@ -317,6 +313,7 @@ export function TimeTracker() {
       />
       <Stack direction="row">
         <ButtonDateRangePicker
+          options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
           onChange={dateRangeOnChange}
         />

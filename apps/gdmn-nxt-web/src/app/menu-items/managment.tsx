@@ -13,6 +13,8 @@ import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import ContentPasteOutlinedIcon from '@mui/icons-material/ContentPasteOutlined';
 import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 
 const managment: IMenuItem = {
   id: 'managment',
@@ -122,6 +124,14 @@ const managment: IMenuItem = {
       icon: <LabelOutlinedIcon color="secondary" />,
       selectedIcon: <LabelIcon color="secondary" />,
     },
+    {
+      id: 'projects',
+      title: 'Проекты',
+      type: 'item',
+      url: 'managment/projects',
+      icon: <AccountTreeOutlinedIcon color="secondary" />,
+      selectedIcon: <AccountTreeIcon color="secondary" />
+    }
   ]
 };
 

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { htmlToTemplateObject, objectToHtml } from '@gdmn-nxt/components/email-template/html-to-object';
 import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import { ITemplate } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';

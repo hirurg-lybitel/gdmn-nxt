@@ -96,6 +96,7 @@ export interface IDealFeedback {
   competence?: IDealFeedbackCompetence;
   satisfaction?: IDealFeedbackSatisfaction;
   satisfactionRate?: IDealFeedbackSatisfactionRate;
+  replyEmail?: boolean;
 };
 
 export interface IDeal extends IWithID {
@@ -371,6 +372,9 @@ export type ActionName =
   'mailings' |
   'feedback' |
   'time-tracking' |
+  'time-tracking/projects' |
+  'time-tracking/projectTypes' |
+  'time-tracking/tasks' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -460,6 +464,16 @@ export interface IMailing extends IWithID {
   excludeSegments?: ISegment[],
   testingEmails?: string[];
   attachments?: MailAttachment[];
+  recipientsCount?: number
+}
+
+export interface IMailingHistory {
+  id: number
+  date: string;
+  mailingId: number;
+  status: MailingStatus;
+  description: string;
+  customer: ICustomer;
 }
 
 export interface ITemplate extends IWithID {
@@ -538,17 +552,33 @@ export interface ITimeTrackGroup {
   items: ITimeTrack[];
 }
 
+export interface IProjectStatistics {
+  id: number;
+  name: string;
+  totalDuration: string;
+  billableDuration: string;
+  nonBillableDuration: string;
+}
+
 export interface ITimeTrackProject extends IWithID {
   name: string;
   customer?: ICustomer;
   tasks?: ITimeTrackTask[];
-  isFavorite?: boolean
+  isFavorite?: boolean,
+  employees?: IContactWithID[],
+  note?: string,
+  isPrivate?: boolean,
+  isDone?: boolean,
+  projectType?: IProjectType,
+  creator?: IContactWithID
 }
 
 export interface ITimeTrackTask extends IWithID {
   name: string;
+  isActive: boolean,
   project?: ITimeTrackProject;
   isFavorite?: boolean;
+  inUse?: boolean
 }
 
 export interface IContactName {
@@ -556,4 +586,9 @@ export interface IContactName {
   firstName?: string;
   middleName?: string;
   nickName: string;
+}
+
+export interface IProjectType extends IWithID {
+  name: string,
+  parent?: string
 }

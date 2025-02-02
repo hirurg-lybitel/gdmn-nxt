@@ -12,7 +12,7 @@ import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-s
 import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 
 export interface UpdatesEditProps {
   open: boolean;

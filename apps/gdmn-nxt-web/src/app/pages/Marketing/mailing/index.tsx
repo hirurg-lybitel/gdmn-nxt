@@ -8,12 +8,12 @@ import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { IFilteringData, IMailing, IPaginationData, ISortingData, ITemplate, MailingStatus } from '@gsbelarus/util-api-types';
-import { Box, CardContent, CardHeader, Chip, ChipOwnProps, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Chip, ChipOwnProps, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { GridColDef, GridSortModel } from '@mui/x-data-grid-pro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAddMailingMutation, useDeleteMailingMutation, useGetAllMailingQuery, useLaunchMailingMutation, useUpdateMailingMutation } from '../../../features/Marketing/mailing';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -24,6 +24,11 @@ import dayjs from '@gdmn-nxt/dayjs';
 import { RootState } from '@gdmn-nxt/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+
+import { Recipients } from './recipients';
+
 interface StatusChipProps extends ChipOwnProps {
   onClick?: () => void;
 }
@@ -44,6 +49,8 @@ const StatusChip = ({
   );
 };
 
+const filterEntityName = 'mailing';
+
 export default function Mailing() {
   const userPermissions = usePermissions();
 
@@ -53,10 +60,7 @@ export default function Mailing() {
   });
 
   const [sortingData, setSortingData] = useState<ISortingData | null>();
-
-  const filterEntityName = 'mailing';
-
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[filterEntityName]);
 
   const {
     data: {
@@ -117,7 +121,7 @@ export default function Mailing() {
 
   const columns: GridColDef<IMailing>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, },
-    { field: 'STARTDATE', headerName: 'Дата запуска', width: 200,
+    { field: 'STARTDATE', headerName: 'Дата запуска', width: 180,
       valueFormatter: ({ value }) => dayjs(value).isValid() ? dayjs(value).format('MMM DD, YYYY HH:mm') : ''
     },
     { field: 'STATUS', headerName: 'Статус', width: 170,
@@ -170,7 +174,27 @@ export default function Mailing() {
         }
       },
     },
-    { field: 'STATUS_DESCRIPTION', headerName: 'Описание', flex: 1 },
+    { field: 'STATUS_DESCRIPTION', headerName: 'Описание', flex: 1, minWidth: 320,
+      renderCell({ value, row }) {
+        return (
+          <Stack
+            direction={'row'}
+            spacing={1}
+            alignItems={'center'}
+          >
+            <Typography variant="body2">{value}</Typography>
+            {
+              row.STATUS === MailingStatus.completed &&
+              <Recipients
+                mailingId={row.ID}
+                quantity={row.recipientsCount ?? 0}
+              />
+            }
+          </Stack>
+
+        );
+      }
+    },
     {
       field: 'ACTIONS',
       headerName: '',

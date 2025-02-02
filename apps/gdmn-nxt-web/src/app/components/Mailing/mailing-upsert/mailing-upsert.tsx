@@ -1,13 +1,12 @@
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import styles from './mailing-upsert.module.less';
 import EmailTemplate from '@gdmn-nxt/components/email-template/email-template';
-import { ArrayElement, IMailing, ISegment, MailingStatus } from '@gsbelarus/util-api-types';
-import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { ArrayElement, IMailing, MailingStatus } from '@gsbelarus/util-api-types';
+import { Autocomplete, Box, Button, Checkbox, DialogActions, DialogContent, DialogTitle, FormControlLabel, InputAdornment, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { useGetAllSegmentsQuery, useGetCustomersCountMutation } from '../../../features/Marketing/segments/segmentsApi';
-import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -15,7 +14,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { useAddTemplateMutation } from '../../../features/Marketing/templates/templateApi';
 import { useGetMailingByIdQuery, useLaunchTestMailingMutation } from '../../../features/Marketing/mailing';
@@ -53,7 +52,7 @@ export function MailingUpsert({
   onCancel,
   onSubmit,
   mailing
-}: MailingUpsertProps) {
+}: Readonly<MailingUpsertProps>) {
   const userPermissions = usePermissions();
 
   // uwc-debug-below
@@ -121,7 +120,7 @@ export function MailingUpsert({
       }, false);
     },
     onReset: (values) => {
-      setSelectedSendType(sendTypes[1]);
+      // setSelectedSendType(sendTypes[1]);
       setSaveTemplate(false);
     },
   });

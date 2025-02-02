@@ -1,6 +1,7 @@
 import { InternalServerErrorException, ITimeTrackTask, NotFoundException } from '@gsbelarus/util-api-types';
 import { timeTrackerTasksRepository } from '../repository';
 import { favoriteTimeTrackerTasksRepository } from '../repository/favoriteTimeTrackerTasks';
+import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
 const findAll = async (
   sessionID: string,
@@ -8,9 +9,18 @@ const findAll = async (
 ) => {
   const userId = filter?.userId;
   const customerId = filter?.customerId;
+  const projectId = filter?.projectId;
+  const isActive = filter?.isActive;
+  const considerProjectStatus = filter?.considerProjectStatus;
 
   try {
-    const tasks = await timeTrackerTasksRepository.find(sessionID);
+    const tasks = await timeTrackerTasksRepository.find(sessionID,
+      {
+        ...(projectId && { 'USR$PROJECT': projectId }),
+        ...(isActive ? { 'USR$ISACTIVE': isActive === 'true' ? 1 : 0 } : {}),
+        ...(considerProjectStatus && { 'p.USR$DONE': 0 })
+      }
+    );
 
     const favorites = await favoriteTimeTrackerTasksRepository.find(sessionID, { 'USR$USER': userId });
 
@@ -28,7 +38,7 @@ const findAll = async (
       }
 
       return filteredArray;
-    }, [] as ITimeTrackTask[]);
+    }, [] as ITimeTrackTask[]).sort((a, b) => a.isFavorite ? -1 : 1);
   } catch (error) {
     throw error;
   }
@@ -108,9 +118,85 @@ const removeFromFavorites = async (
   }
 };
 
+const update = async (
+  sessionID: string,
+  id: number,
+  userId: number,
+  body: Partial<ITimeTrackTask>
+) => {
+  try {
+    const task = await timeTrackerTasksRepository.findOne(sessionID, { id });
+    if (!task) {
+      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
+    }
+    const updatedTask =
+        await timeTrackerTasksRepository.update(
+          sessionID,
+          id,
+          body
+        );
+    if (body.isFavorite !== task.isFavorite) {
+      if (body.isFavorite === true) {
+        await timeTrackerTasksService.addToFavorites(sessionID, userId, task.ID);
+      }
+      if (body.isFavorite === false) {
+        await timeTrackerTasksService.removeFromFavorites(sessionID, userId, task.ID);
+      }
+    }
+    if (!updatedTask) {
+      throw InternalServerErrorException(ERROR_MESSAGES.UPDATE_FAILED);
+    }
+
+    return await timeTrackerTasksRepository.findOne(sessionID, { id });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const create = async (
+  sessionID: string,
+  userId: number,
+  body: ITimeTrackTask
+) => {
+  try {
+    const task = await timeTrackerTasksRepository.save(sessionID, body);
+    if (task.isFavorite) {
+      await timeTrackerTasksService.addToFavorites(sessionID, userId, task.ID);
+    }
+    return task;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const remove = async (
+  sessionID: string,
+  id: number
+) => {
+  try {
+    const task = await timeTrackerTasksRepository.findOne(sessionID, { id });
+    if (!task) {
+      throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND_WITH_ID(id));
+    }
+
+    const isDeleted = await timeTrackerTasksRepository.remove(sessionID, id);
+
+    if (!isDeleted) {
+      throw InternalServerErrorException(ERROR_MESSAGES.DELETE_FAILED);
+    }
+
+    return isDeleted;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const timeTrackerTasksService = {
   findAll,
   findOne,
   addToFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  update,
+  create,
+  remove
 };

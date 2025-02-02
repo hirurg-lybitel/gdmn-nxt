@@ -56,6 +56,7 @@ import Mailing from './app/pages/Marketing/mailing';
 import CustomersSegments from './app/pages/Marketing/segments';
 import Templates from './app/pages/Marketing/templates';
 import { TimeTracker } from './app/pages/Managment/timeTracker';
+import { Projects } from './app/pages/Managment/projects';
 
 registerMUI();
 
@@ -144,6 +145,7 @@ const Main = () => {
                             </Route>
                             <Route path="contracts" element={<Contracts />} />
                             <Route path="time-tracker" element={<TimeTracker />} />
+                            <Route path="projects" element={<Projects />} />
                           </Route>
                           <Route path="marketing">
                             <Route path="" element={<Navigate to="mailing" />} />

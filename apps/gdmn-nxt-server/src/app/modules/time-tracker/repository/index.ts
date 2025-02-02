@@ -1,6 +1,7 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ITimeTrack, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ITimeTrack, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { prepareClause } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<ITimeTrack> = async (
   sessionID,
@@ -13,25 +14,14 @@ const find: FindHandler<ITimeTrack> = async (
   } = await acquireReadTransaction(sessionID);
 
   try {
-    const whereClause = {};
-    const clauseString = Object
-      .keys({
-        ...clause })
-      .map(f => {
-        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
-          const expression = clause[f] as FindOperator;
-          switch (expression.operator) {
-            case 'LIKE':
-              return ` UPPER(z.${f}) ${expression.value} `;
-            case 'IN':
-              return ` UPPER(z.${f}) ${expression.value} `;
-          }
-        }
+    const getPrefix = (f: string) => {
+      if (f === 'USR$PROJECT') {
+        return 'task';
+      }
 
-        whereClause[adjustRelationName(f)] = clause[f];
-        return ` z.${f} = :${adjustRelationName(f)}`;
-      })
-      .join(' AND ');
+      return 'z';
+    };
+    const { clauseString, whereClause } = prepareClause(clause, { prefix: getPrefix });
 
     const rows = await fetchAsObject(
       `SELECT
@@ -52,6 +42,7 @@ const find: FindHandler<ITimeTrack> = async (
         z.USR$BILLABLE BILLABLE,
         task.ID TASK_ID,
         task.USR$NAME TASK_NAME,
+        task.USR$ISACTIVE ISACTIVE,
         pr.ID PROJECT_ID,
         pr.USR$NAME PROJECT_NAME
       FROM USR$CRM_TIMETRACKER z
@@ -93,6 +84,7 @@ const find: FindHandler<ITimeTrack> = async (
         task: {
           ID: r['TASK_ID'],
           name: r['TASK_NAME'],
+          isActive: r['ISACTIVE'] === 1,
           project: {
             ID: r['PROJECT_ID'],
             name: r['PROJECT_NAME']
@@ -102,6 +94,9 @@ const find: FindHandler<ITimeTrack> = async (
     })));
 
     return timeTracking;
+  } catch (e) {
+    console.error('Error in find time tracking', e);
+    throw e;
   } finally {
     releaseReadTransaction();
   }
@@ -239,7 +234,7 @@ const save: SaveHandler<ITimeTrack> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

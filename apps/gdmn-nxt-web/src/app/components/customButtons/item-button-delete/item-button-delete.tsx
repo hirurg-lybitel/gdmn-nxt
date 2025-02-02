@@ -45,18 +45,21 @@ export function ItemButtonDelete({
   const RootElement = (
     <Container
       disabled={disabled}
+      style={{ pointerEvents: disabled ? 'none' : 'all' }}
       size="small"
       className="StyledDeleteButton"
     >
-      <Tooltip title={label ? '' : hint} arrow>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <DeleteForeverIcon fontSize="small" />
-          {label && <span>{label}</span>}
-        </Stack>
+      <Tooltip title={(label || disabled) ? '' : hint} arrow>
+        <span>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+          >
+            <DeleteForeverIcon color={disabled ? 'disabled' : undefined} fontSize="small" />
+            {label && <span style={disabled ? { color: 'gray' } : {}}>{label}</span>}
+          </Stack>
+        </span>
       </Tooltip>
     </Container>
   );

@@ -1,8 +1,6 @@
 import { baseUrlApi } from '@gdmn/constants/client';
-import { IDealFeedback, IDealFeedbackCompetence, IDealFeedbackResult, IDealFeedbackSatisfaction, IDealFeedbackSatisfactionRate, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDealFeedback, IDealFeedbackCompetence, IDealFeedbackResult, IDealFeedbackSatisfaction, IDealFeedbackSatisfactionRate, IResponse } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-
-type Response<K extends string, T> = IRequestResult<{ [key in K]: T }>;
 
 export const dealFeedbackApi = createApi({
   reducerPath: 'dealFeedback',
@@ -11,7 +9,7 @@ export const dealFeedbackApi = createApi({
   endpoints: (builder) => ({
     getDealFeedback: builder.query<IDealFeedback, number>({
       query: (dealId) => `/dealId/${dealId}`,
-      transformResponse: (response: Response<'feedback', IDealFeedback[]>) => response.queries.feedback[0],
+      transformResponse: (response: IResponse<'feedback', IDealFeedback[]>) => response.queries.feedback[0],
       providesTags: (result) =>
         result
           ? [
@@ -26,7 +24,7 @@ export const dealFeedbackApi = createApi({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: Response<'feedback', IDealFeedback[]>) => response.queries.feedback[0],
+      transformResponse: (response: IResponse<'feedback', IDealFeedback[]>) => response.queries.feedback[0],
       invalidatesTags: ['DealFeedback'],
     }),
     updateDealFeedback: builder.mutation<IDealFeedback, Partial<IDealFeedback>>({
@@ -35,7 +33,7 @@ export const dealFeedbackApi = createApi({
         method: 'PUT',
         body,
       }),
-      transformResponse: (response: Response<'feedback', IDealFeedback[]>) => response.queries.feedback[0],
+      transformResponse: (response: IResponse<'feedback', IDealFeedback[]>) => response.queries.feedback[0],
       invalidatesTags: ['DealFeedback'],
     }),
     deleteDealFeedback: builder.mutation<IDealFeedback, number>({
@@ -47,19 +45,19 @@ export const dealFeedbackApi = createApi({
     }),
     getFeedbackResults: builder.query<IDealFeedbackResult[], void>({
       query: () => '/catalogs/results',
-      transformResponse: (response: Response<'results', IDealFeedbackResult[]>) => response.queries.results,
+      transformResponse: (response: IResponse<'results', IDealFeedbackResult[]>) => response.queries.results,
     }),
     getFeedbackCompetences: builder.query<IDealFeedbackCompetence[], void>({
       query: () => '/catalogs/competences',
-      transformResponse: (response: Response<'competences', IDealFeedbackCompetence[]>) => response.queries.competences,
+      transformResponse: (response: IResponse<'competences', IDealFeedbackCompetence[]>) => response.queries.competences,
     }),
     getFeedbackSatisfactions: builder.query<IDealFeedbackSatisfaction[], void>({
       query: () => '/catalogs/satisfactions',
-      transformResponse: (response: Response<'satisfactions', IDealFeedbackSatisfaction[]>) => response.queries.satisfactions,
+      transformResponse: (response: IResponse<'satisfactions', IDealFeedbackSatisfaction[]>) => response.queries.satisfactions,
     }),
     getFeedbackSatisfactionRates: builder.query<IDealFeedbackSatisfactionRate[], void>({
       query: () => '/catalogs/satisfactionRates',
-      transformResponse: (response: Response<'satisfactionRates', IDealFeedbackSatisfactionRate[]>) => response.queries.satisfactionRates,
+      transformResponse: (response: IResponse<'satisfactionRates', IDealFeedbackSatisfactionRate[]>) => response.queries.satisfactionRates,
     }),
   }),
 });
