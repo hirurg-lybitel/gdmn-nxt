@@ -4,7 +4,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { ChangeEvent, useCallback, useRef, useState } from 'react';
 import { IContactName } from '@gsbelarus/util-api-types';
-import { parseContactName, parseContactNameToString, parseStringToContactName } from '@gsbelarus/util-useful';
+import { parseContactName, parseStringToContactName } from '@gsbelarus/util-useful';
 
 export interface IContactNameProps extends Omit<OutlinedInputProps, 'value' | 'onChange'>{
   value?: IContactName;
@@ -13,41 +13,37 @@ export interface IContactNameProps extends Omit<OutlinedInputProps, 'value' | 'o
 }
 
 function ContactName ({
-  value,
+  value = {
+    lastName: '',
+    nickName: ''
+  },
   onChange,
   helperText = '',
   ...props
-}: IContactNameProps) {
+}: Readonly<IContactNameProps>) {
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
 
   const ref = useRef(null);
 
-  const [contactName, setContactName] = useState<IContactName>(value ?? {
-    lastName: '',
-    nickName: ''
-  });
-
   const handleChange = useCallback(
     (type: 'lastName' | 'firstName' | 'middleName' | 'fullName') =>
       (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const value = e.target.value;
+        const fieldValue = e.target.value;
 
         if (type === 'fullName') {
-          const newContactName = parseStringToContactName(value);
-          setContactName(newContactName);
+          const newContactName = parseStringToContactName(fieldValue);
 
           onChange && onChange(newContactName);
           return;
         }
         const newContactName: IContactName = parseContactName({
-          ...contactName,
-          [type]: value.trim()
+          ...value,
+          [type]: fieldValue.trim()
         });
-        setContactName(newContactName);
 
         onChange && onChange(newContactName);
-      }, [contactName, onChange]);
+      }, [onChange, value]);
 
   const expandClick = () => setOpen(prev => !prev);
 
@@ -65,7 +61,7 @@ function ContactName ({
           label={props.label}
           {...props}
           onChange={handleChange('fullName')}
-          value={parseContactNameToString(contactName) ?? null}
+          value={value?.nickName ?? null}
           endAdornment={
             <InputAdornment position="end">
               <IconButton onClick={expandClick}>

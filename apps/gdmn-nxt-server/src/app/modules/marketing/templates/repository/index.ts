@@ -1,6 +1,6 @@
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ITemplate, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ITemplate, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 
 const find: FindHandler<ITemplate> = async (sessionID, clause = {}) => {
@@ -126,7 +126,7 @@ const save: SaveHandler<ITemplate> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {

@@ -15,6 +15,8 @@ const shortcutsLabels = [
   'Текущий месяц',
   'Прошлый месяц',
   'Следующий месяц',
+  'Текущий год',
+  'Прошлый год',
   'Сбросить'
 ] as const;
 type ShortcutsLabel = typeof shortcutsLabels[number]
@@ -66,7 +68,21 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   //     return [startOfNextMonth.toDate(), startOfNextMonth.endOf('month').toDate()];
   //   },
   // },
-  { label: shortcutsLabels[6], getValue: () => [null, null] },
+  {
+    label: shortcutsLabels[6],
+    getValue: () => {
+      const today = dayjs();
+      return [today.startOf('year').toDate(), today.endOf('year').toDate()];
+    }
+  },
+  {
+    label: shortcutsLabels[7],
+    getValue: () => {
+      const today = dayjs();
+      return [today.add(-1, 'year').startOf('year').toDate(), today.add(-1, 'year').endOf('year').toDate()];
+    }
+  },
+  { label: shortcutsLabels[shortcutsLabels.length - 1], getValue: () => [null, null] },
 ];
 
 type DateRangeButtonFieldComponent = ((

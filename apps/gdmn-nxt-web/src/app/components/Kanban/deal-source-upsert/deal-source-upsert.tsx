@@ -6,7 +6,7 @@ import { ChangeEvent, useCallback, useEffect } from 'react';
 import * as yup from 'yup';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 
 export interface DealSourceUpsertProps {
   open: boolean;

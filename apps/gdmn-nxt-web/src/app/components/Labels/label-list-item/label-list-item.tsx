@@ -4,7 +4,7 @@ import styles from './label-list-item.module.less';
 import { useCallback, useState } from 'react';
 import LabelListItemEdit from '../label-list-item-edit/label-list-item-edit';
 import LabelMarker from '../label-marker/label-marker';
-import ItemButtonDelete from '@gdmn-nxt/components/item-button-delete/item-button-delete';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import EditIcon from '@mui/icons-material/Edit';

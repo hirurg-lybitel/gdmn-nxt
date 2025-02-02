@@ -8,7 +8,7 @@ import CustomizedCard from '../customized-card/customized-card';
 import { useTheme } from '@mui/material/styles';
 import CustomCircularLoadingOverlay from './DataGridProOverlay/CustomCircularLoadingOverlay';
 
-const defaultRowHeight = 40;
+export const ROW_HEIGHT = 40;
 const stylelessRowHeight = 31;
 
 interface IStyledGridProps extends DataGridProProps{
@@ -45,7 +45,7 @@ const disableLicenseError = () => {
 
 export default function StyledGrid(props: IStyledGridProps) {
   const theme = useTheme();
-  const defaultTheme = ({ hideHeaderSeparator, rowHeight = defaultRowHeight }: IStyledGridProps) => ({
+  const defaultTheme = ({ hideHeaderSeparator, rowHeight = ROW_HEIGHT }: IStyledGridProps) => ({
     border: 'none',
     padding: '0px',
     flex: 1,
@@ -125,7 +125,7 @@ export default function StyledGrid(props: IStyledGridProps) {
             if (isAutoHeight) {
               return 'auto';
             }
-            return props.rowHeight ?? defaultRowHeight;
+            return props.rowHeight ?? ROW_HEIGHT;
           }}
           {...props}
           sx={{

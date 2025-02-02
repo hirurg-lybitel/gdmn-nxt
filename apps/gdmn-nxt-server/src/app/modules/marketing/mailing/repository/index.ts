@@ -1,5 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, MailAttachment, MailingStatus, RemoveHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IMailing, ISegment, IsNotNull, IsNull, MailAttachment, MailingStatus, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { adjustRelationName } from '@gdmn-nxt/controllers/er/at-utils';
 import { segmentsRepository } from '@gdmn-nxt/modules/marketing/segments/repository';
@@ -43,9 +43,12 @@ const find: FindHandler<IMailing> = async (
         COALESCE(m.USR$STATUS, 0) AS STATUS,
         m.USR$STATUS_DESCRIPTION STATUS_DESCRIPTION,
         USR$TEMPLATE TEMPLATE_BLOB,
-        USR$TESTING_EMAILS TESTING_EMAILS
+        USR$TESTING_EMAILS TESTING_EMAILS,
+        COUNT(res.ID) AS RECIPIENTS_COUNT
       FROM USR$CRM_MARKETING_MAILING m
+      LEFT JOIN USR$CRM_MARKETING_MAILING_RES res ON res.USR$MAILING = m.ID
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
+      GROUP BY 1,2,3,4,5,6,7,8,9
       ${order ? ` ORDER BY ${Object.keys(order)[0]} ${Object.values(order)[0]}` : ''}`;
 
     const mailing = await fetchAsObject<Omit<IMailing, 'includeSegments' | 'excludeSegments'>>(sql, { ...whereClause });
@@ -98,12 +101,16 @@ const find: FindHandler<IMailing> = async (
       const arrayEmails = (m['TESTING_EMAILS'] as string)?.split(',') ?? [];
       delete m['TESTING_EMAILS'];
 
+      const recipientsCount = m['RECIPIENTS_COUNT'];
+      delete m['RECIPIENTS_COUNT'];
+
       result.push({
         ...m,
         TEMPLATE: convertedTemplate,
         includeSegments,
         excludeSegments,
         testingEmails: arrayEmails,
+        recipientsCount,
       });
     });
 
@@ -354,7 +361,7 @@ const save: SaveHandler<IMailing> = async (
   }
 };
 
-const remove: RemoveHandler = async (
+const remove: RemoveOneHandler = async (
   sessionID,
   id
 ) => {
