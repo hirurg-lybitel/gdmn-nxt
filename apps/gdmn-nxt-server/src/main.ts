@@ -173,7 +173,7 @@ passport.use(new Strategy({
   passwordField: 'password',
   passReqToCallback: true
 },
-async (req: Request, userName: string, password: string, done) => {
+async (req, userName, password, done) => {
   const { employeeMode } = req.body;
   try {
     if (employeeMode) {
