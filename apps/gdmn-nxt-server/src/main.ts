@@ -167,12 +167,12 @@ function isIGedeminUser(u: IUser): u is IGedeminUser {
 
 const userName2Key = (userName: string) => userName.toLowerCase();
 
-const loginStrategy = new Strategy({
+passport.use(new Strategy({
   usernameField: 'userName',
   passwordField: 'password',
   passReqToCallback: true
 },
-async (req, userName, password, done) => {
+async (req: Request, userName: string, password: string, done) => {
   const { employeeMode } = req.body;
   try {
     if (employeeMode) {
@@ -223,9 +223,8 @@ async (req, userName, password, done) => {
     console.error('Passport error:', err);
     done(err);
   }
-});
-
-passport.use(loginStrategy);
+}
+));
 
 passport.serializeUser((user: IUser, done) => {
   // console.log('passport serialize');
