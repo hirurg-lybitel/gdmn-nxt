@@ -116,11 +116,10 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
             style={{ justifyContent: 'space-between', lineHeight: '.4em' }}
           >
             <Typography
-              variant="subtitle1"
-              lineHeight="1.2em"
-              fontWeight={400}
+              variant="body2"
+              component="span"
             >
-              {card.TASK?.TASKTYPE?.NAME && <i>{card.TASK?.TASKTYPE?.NAME} - </i>}{truncate(card.TASK?.USR$NAME ?? '', 39)}
+              {card.DEAL?.CONTACT?.NAME}
             </Typography>
             <Typography
               className="number"
@@ -129,22 +128,39 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               {'#' + card.TASK?.USR$NUMBER}
             </Typography>
           </Stack>
-          <Box style={{ lineHeight: '1em' }}>
-            {/* <Typography
-              display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
-              variant="body2"
-              component="span"
-            >
-              {`${card.DEAL?.CONTACT_NAME}, `}
-            </Typography> */}
+          <Typography
+            variant="subtitle1"
+            lineHeight="1.2em"
+            fontWeight={400}
+            color="primary"
+          >
+            {card.DEAL?.USR$NAME}
+          </Typography>
+          <Tooltip
+            title={'Срок выполнения'}
+            placement="bottom-start"
+          >
             <Typography
-              variant="body2"
-              component="span"
-              sx={{ display: 'inline', lineHeight: 'inherit' }}
+              variant="subtitle2"
+              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
+              style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
+                ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)' }
+                : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
+                  ? { color: 'orange' }
+                  : {})}
             >
-              {truncate(card.DEAL?.CONTACT?.NAME ?? '', 50)}
+              {card.TASK?.USR$DEADLINE
+                ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
+                  {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
+                : '-/-'}
             </Typography>
-          </Box>
+          </Tooltip>
           {(!!card.TASK?.PERFORMER?.NAME || !!card.TASK?.CREATOR?.NAME) &&
           <Stack
             direction="row"
@@ -175,36 +191,21 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
               }
             </Typography>
           </Stack>}
-          <Typography
-            variant="body2"
-          >
-            {card.DEAL?.USR$NAME}
-          </Typography>
-          <Tooltip
-            title={'Срок выполнения'}
-            placement="bottom-start"
-          >
-            <Typography
-              variant="subtitle2"
-              color={colorModeIsLight ? 'GrayText' : 'lightgray'}
-              style={card.TASK?.USR$DEADLINE && (new Date(card.TASK?.USR$DEADLINE) < new Date()
-                ? { color: colorModeIsLight ? 'red' : 'rgb(254, 115, 105)' }
-                : getDayFrom(new Date(card.TASK?.USR$DEADLINE)) === getDayFrom(new Date())
-                  ? { color: 'orange' }
-                  : {})}
+          <Box style={{ lineHeight: '1em' }}>
+            {/* <Typography
+              display={!card.DEAL?.CONTACT_NAME ? 'none' : 'inline'}
+              variant="body2"
+              component="span"
             >
-              {card.TASK?.USR$DEADLINE
-                ? (new Date(card.TASK?.USR$DEADLINE)).toLocaleString('default',
-                  {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    ...((new Date(card.TASK?.USR$DEADLINE).getHours() !== 0) && { hour: '2-digit', minute: '2-digit' }) })
-                : '-/-'}
+              {`${card.DEAL?.CONTACT_NAME}, `}
+            </Typography> */}
+            <Typography
+              variant="body2"
+              fontWeight={600}
+            >
+              {card.TASK?.TASKTYPE?.NAME && `${card.TASK?.TASKTYPE?.NAME} - ${truncate(card.TASK?.USR$NAME ?? '', 39)}`}
             </Typography>
-          </Tooltip>
+          </Box>
         </Stack>
       </CustomizedCard>
       <PermissionsGate actionAllowed={userPermissions?.tasks.PUT}>
