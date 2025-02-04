@@ -1203,6 +1203,28 @@
 							"response": []
 						},
 						{
+							"name": "Task",
+							"id": "7a135443-8161-4fb7-a18f-a4cbe9fc51db",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"ID\": -1,\r\n    \"USR$CARDKEY\": 365056393,\r\n    \"USR$NAME\": \"test 1\",\r\n    \"CREATOR\": {\r\n        \"ID\": 159661087,\r\n        \"NAME\": \"administrator\"\r\n    },\r\n    \"USR$CLOSED\": false,\r\n    \"TASKTYPE\": {\r\n        \"ID\": 363147447,\r\n        \"NAME\": \"Связаться\"\r\n    },\r\n    \"USR$INPROGRESS\": false,\r\n    \"DESCRIPTION\": \"\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/kanban/tasks"
+							},
+							"response": []
+						},
+						{
 							"name": "Tasks",
 							"id": "ff8ecaa2-f58b-424a-bf7c-c1baaa4fc7cf",
 							"protocolProfileBehavior": {
