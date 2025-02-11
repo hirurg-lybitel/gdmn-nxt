@@ -29,7 +29,7 @@ const get: RequestHandler = async (req, res) => {
     const documentsQuery = `
         SELECT
           doc.ID,
-          'Заявка ЦРМ №' || doc.NUMBER || ' от ' || doc.DOCUMENTDATE AS DESCRIPTION
+          'Заявка CRM №' || doc.NUMBER || ' от ' || doc.DOCUMENTDATE AS DESCRIPTION
         FROM
           GD_DOCUMENT doc
           JOIN USR$BG_REQUESTOW r on r.DOCUMENTKEY = doc.id
