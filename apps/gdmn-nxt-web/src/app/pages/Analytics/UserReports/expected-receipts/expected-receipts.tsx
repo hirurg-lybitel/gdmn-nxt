@@ -30,6 +30,7 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
       direction="column"
       flex={1}
       spacing={2}
+      width={'100%'}
     >
       <CustomizedCard>
         <CardHeader title={<Typography variant="pageHeader">Ожидаемые поступления</Typography>} />
@@ -66,9 +67,8 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
 
       </CustomizedCard>
       {generate && onDate && onDate[0] && onDate[1]
-        ? <CustomizedCard >
-          <ExpectedReceiptsReport onDate={onDate} />
-        </CustomizedCard>
+        ?
+        <ExpectedReceiptsReport onDate={onDate} />
         : null}
     </Stack>
   );

@@ -136,7 +136,239 @@ const testData = [
     },
     amount: 4560,
     valAmount: 1394
-  }
+  },
+  {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  }, {
+    customer: 'Березовский мясокомбинат',
+    respondent: 'МШ, ИА',
+    count: 1,
+    perMouthPayment: {
+      baseValues: 32,
+      amount: 3480
+    },
+    workstationPayment: {
+      count: 15,
+      baseValues: 7,
+      amount: 280
+    },
+    perTimePayment: {
+      baseValues: 1,
+      perHour: 40,
+      hoursAvarage: 20,
+      amount: 800
+    },
+    amount: 4560,
+    valAmount: 1394
+  },
 ];
 
 export const getExpectedReceipts: RequestHandler = async (req, res) => {
