@@ -594,8 +594,8 @@ export interface IProjectType extends IWithID {
 }
 
 export interface IExpectedReceipt {
-  customer: string,
-  respondent: string,
+  customer?: ICustomer,
+  respondents?: string[],
   count: number,
   perMouthPayment: {
     baseValues?: number,
