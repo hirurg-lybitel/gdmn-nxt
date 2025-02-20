@@ -79,16 +79,27 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
             <table className={styles.table}>
               <thead>
                 <tr className={styles.tableRow} style={{ borderTop: 'none' }}>
-                  <th className={styles.noTopBorder} colSpan={3} />
+                  <th className={styles.noTopBorder} rowSpan={2}>Клиент</th>
+                  <ThTooltip
+                    className={styles.noTopBorder}
+                    rowSpan={2}
+                    title={'Ответственные лица'}
+                  >
+                    Отв.
+                  </ThTooltip>
+                  <ThTooltip
+                    className={styles.noTopBorder}
+                    rowSpan={2}
+                    title={'Количество договоров попавших в выбранный период'}
+                  >
+                    Кол-во
+                  </ThTooltip>
                   <th className={styles.noTopBorder} colSpan={2} >Фиксированная ежемесячная оплата</th>
                   <th className={styles.noTopBorder} colSpan={3}>Оплата за рабочие места</th>
                   <th className={styles.noTopBorder} colSpan={4}>Повременная оплата</th>
                   <th className={styles.noTopBorder} colSpan={2}>Всего</th>
                 </tr>
                 <tr className={styles.tableRow}>
-                  <th>Клиент</th>
-                  <ThTooltip title={'Ответственные лица'}>Отв.</ThTooltip>
-                  <ThTooltip title={'Количество договоров попавших в выбранный период'}>Кол-во</ThTooltip>
                   <ThTooltip title={'Базовые величины'}>Б/в</ThTooltip>
                   <th>Руб</th>
                   <ThTooltip title={'Количество рабочих мест'}>Кол-во р/м</ThTooltip>
