@@ -37,19 +37,19 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
       return {
         count: (count.count ?? 0) + (item.count ?? 0),
         perMouthPayment: {
-          baseValues: (count.perMouthPayment.baseValues ?? 0) + (item.perMouthPayment.baseValues ?? 0),
-          amount: (count.perMouthPayment.amount ?? 0) + (item.perMouthPayment.amount ?? 0)
+          baseValues: (count.perMouthPayment?.baseValues ?? 0) + (item.perMouthPayment?.baseValues ?? 0),
+          amount: (count.perMouthPayment?.amount ?? 0) + (item.perMouthPayment?.amount ?? 0)
         },
         workstationPayment: {
           count: (count.workstationPayment.count ?? 0) + (item.workstationPayment.count ?? 0),
           baseValues: (count.workstationPayment.baseValues ?? 0) + (item.workstationPayment.baseValues ?? 0),
           amount: (count.workstationPayment.amount ?? 0) + (item.workstationPayment.amount ?? 0)
         },
-        perTimePayment: {
-          baseValues: (count.perTimePayment.baseValues ?? 0) + (item.perTimePayment.baseValues ?? 0),
-          perHour: (count.perTimePayment.perHour ?? 0) + (item.perTimePayment.perHour ?? 0),
-          hoursAvarage: (count.perTimePayment.hoursAvarage ?? 0) + (item.perTimePayment.hoursAvarage ?? 0),
-          amount: (count.perTimePayment.amount ?? 0) + (item.perTimePayment.amount ?? 0)
+        fixedPayment: {
+          baseValues: (count.fixedPayment?.baseValues ?? 0) + (item.fixedPayment?.baseValues ?? 0),
+          perHour: (count.fixedPayment?.perHour ?? 0) + (item.fixedPayment?.perHour ?? 0),
+          hoursAvarage: (count.fixedPayment?.hoursAvarage ?? 0) + (item.fixedPayment?.hoursAvarage ?? 0),
+          amount: (count.fixedPayment?.amount ?? 0) + (item.fixedPayment?.amount ?? 0)
         },
         amount: count.amount + item.amount,
         valAmount: count.valAmount + item.valAmount
@@ -119,15 +119,15 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                     <th>{contact?.customer?.NAME}</th>
                     <th>{contact.respondents?.map((r, i) => i === 0 ? r : `, ${r}`)}</th>
                     <th>{contact.count}</th>
-                    <th>{contact.perMouthPayment.baseValues}</th>
-                    <th>{contact.perMouthPayment.amount}</th>
+                    <th>{contact.perMouthPayment?.baseValues}</th>
+                    <th>{contact.perMouthPayment?.amount}</th>
                     <th>{contact.workstationPayment.count}</th>
                     <th>{contact.workstationPayment.baseValues}</th>
                     <th>{contact.workstationPayment.amount}</th>
-                    <th>{contact.perTimePayment.baseValues}</th>
-                    <th>{contact.perTimePayment.perHour}</th>
-                    <th>{contact.perTimePayment.hoursAvarage}</th>
-                    <th>{contact.perTimePayment.amount}</th>
+                    <th>{contact.fixedPayment?.baseValues}</th>
+                    <th>{contact.fixedPayment?.perHour}</th>
+                    <th>{contact.fixedPayment?.hoursAvarage}</th>
+                    <th>{contact.fixedPayment?.amount}</th>
                     <th>{contact.amount}</th>
                     <th>{contact.valAmount}</th>
                   </tr>
@@ -136,15 +136,15 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                   <th className={styles.noBottomBorder}>Итого</th>
                   <th className={styles.noBottomBorder}>-</th>
                   <th className={styles.noBottomBorder}>{total?.count}</th>
-                  <th className={styles.noBottomBorder}>{total?.perMouthPayment.baseValues}</th>
-                  <th className={styles.noBottomBorder}>{total?.perMouthPayment.amount}</th>
+                  <th className={styles.noBottomBorder}>{total?.perMouthPayment?.baseValues}</th>
+                  <th className={styles.noBottomBorder}>{total?.perMouthPayment?.amount}</th>
                   <th className={styles.noBottomBorder}>{total?.workstationPayment.count}</th>
                   <th className={styles.noBottomBorder}>{total?.workstationPayment.baseValues}</th>
                   <th className={styles.noBottomBorder}>{total?.workstationPayment.amount}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment.baseValues}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment.perHour}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment.hoursAvarage}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment.amount}</th>
+                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.baseValues}</th>
+                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.perHour}</th>
+                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.hoursAvarage}</th>
+                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.amount}</th>
                   <th className={styles.noBottomBorder}>{total?.amount}</th>
                   <th className={styles.noBottomBorder}>{total?.valAmount}</th>
                 </tr>
