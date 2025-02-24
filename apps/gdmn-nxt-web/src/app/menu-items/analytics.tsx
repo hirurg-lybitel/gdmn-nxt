@@ -34,6 +34,12 @@ const analytics: IMenuItem = {
           title: 'ТОП по выручке',
           url: 'analytics/reports/topEarning',
           type: 'item',
+        },
+        {
+          id: 'expectedreceipts',
+          title: 'Ожидаемые поступления',
+          url: 'analytics/reports/expectedreceipts',
+          type: 'item',
         }
       ]
     },
