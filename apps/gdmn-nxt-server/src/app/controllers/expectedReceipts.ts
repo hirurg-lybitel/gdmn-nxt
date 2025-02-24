@@ -23,7 +23,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         doc.ID,
         (select SUM(l.USR$SUMNCU) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMNCU,
         (select SUM(l.USR$SUMCURR) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMCURNCU,
-        kind.ID as KINDID,
+        kind.ID as KINDID
       FROM usr$bnf_contract h
         LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
         LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
