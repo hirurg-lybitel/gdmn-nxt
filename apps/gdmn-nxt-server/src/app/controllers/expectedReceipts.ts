@@ -22,7 +22,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
   ]; // ruid услуг по обслуживанию ПО
 
 
-  const serviceIdRuidToRequest = (fieldName: string) => {
+  const serviceRuidToRequest = (fieldName: string) => {
     let request = '';
     serviceId.forEach(s => {
       request += (request === '' ? '' : ' OR ') + `${fieldName}.XID = ${s[0]} AND ${fieldName}.DBID = ${s[1]}`;
@@ -86,7 +86,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
       LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
-    WHERE ${serviceIdRuidToRequest('ruid')}
+    WHERE ${serviceRuidToRequest('ruid')}
     ORDER BY
       cl.MASTERKEY, good.NAME`;
 
@@ -132,7 +132,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       MASTERKEY
     FROM USR$BNF_ACTSLINE
       LEFT JOIN gd_ruid ruid ON ruid.id = USR$BENEFITSNAME
-    WHERE ${serviceIdRuidToRequest('ruid')}
+    WHERE ${serviceRuidToRequest('ruid')}
     `;
 
     // Получение услуг акта
