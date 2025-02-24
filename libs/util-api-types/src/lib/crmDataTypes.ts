@@ -597,7 +597,7 @@ export interface IExpectedReceipt {
   customer?: ICustomer,
   respondents?: string[],
   count: number,
-  perMouthPayment?: {
+  fixedPayment?: {
     baseValues?: number,
     amount: number
   },
@@ -606,7 +606,7 @@ export interface IExpectedReceipt {
     baseValues?: number,
     amount: number
   },
-  fixedPayment?: {
+  perTimePayment?: {
     baseValues?: number,
     perHour: number,
     hoursAvarage: number,
