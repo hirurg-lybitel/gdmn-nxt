@@ -7,10 +7,28 @@ import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 export const getExpectedReceipts: RequestHandler = async (req, res) => {
   const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date().getTime()));
   const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date().getTime()));
-  const perTimePaymentСontractTypeID = 358056837; // id вида договора с почасовой оплатой
-  const fixedPaymentСontractTypeID = 358056835; // id вида договора с фиксированной оплатой
-  const contractTypeId = -1; // id типа догоора на абонентское обслуживание
-  const serviceId = []; // id услуг по обслуживанию ПО
+  const perTimePaymentСontractTypeID = [764683309, 1511199483]; // ruid вида договора с почасовой оплатой
+  const fixedPaymentСontractTypeID = [764683308, 1511199483]; // ruid вида договора с фиксированной оплатой
+  const contractTypeId = [154913796, 747560394]; // ruid типа договора на абонентское обслуживание
+  const serviceId = [
+    [147100633, 17],
+    [154265279, 17],
+    [360427363, 1511199483],
+    [360427364, 1511199483],
+    [986962823, 119040821],
+    [986962825, 119040821],
+    [986962827, 119040821],
+    [986962829, 119040821]
+  ]; // ruid услуг по обслуживанию ПО
+
+
+  const serviceIdRuidToRequest = (fieldName: string) => {
+    let request = '';
+    serviceId.forEach(s => {
+      request += (request === '' ? '' : ' OR ') + `${fieldName}.XID = ${s[0]} AND ${fieldName}.DBID = ${s[1]}`;
+    });
+    return request;
+  };
 
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
@@ -23,22 +41,29 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         doc.ID,
         (select SUM(l.USR$SUMNCU) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMNCU,
         (select SUM(l.USR$SUMCURR) from usr$bnf_contractline l where l.MASTERKEY = h.DOCUMENTKEY) as SUMCURNCU,
-        kind.ID as KINDID
+        kind.ID as KINDID,
+        kruid.XID as KXID,
+        kruid.DBID as KDBID
       FROM usr$bnf_contract h
         LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
         LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
+        LEFT JOIN gd_companycode cc ON con.id = cc.companykey
+        LEFT JOIN gd_company comp ON con.id = comp.contactkey
+        LEFT JOIN USR$MGAZ_TYPECONTRACT  doctype on doctype.ID = h.USR$TYPECONTRACTKEY
+        LEFT JOIN gd_curr curr on curr.ID = h.USR$CURRKEY
         LEFT JOIN USR$GS_CONTRACTKIND kind on kind.ID = h.USR$CONTRACTKINDKEY
+        LEFT JOIN gd_ruid kruid ON kruid.id = kind.ID
+        LEFT JOIN gd_ruid ruid ON ruid.id = h.USR$TYPECONTRACTKEY
+      WHERE
+        (h.USR$FROMDATE BETWEEN :dateBegin AND :dateEnd
+        OR h.USR$EXPIRYDATE BETWEEN :dateBegin AND :dateEnd)
+        AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
       ORDER BY
         doc.DOCUMENTDATE asc
     `;
 
-    // WHERE h.USR$FROMDATE BETWEEN :dateBegin AND :dateEnd
-    // OR h.USR$EXPIRYDATE BETWEEN :dateBegin AND :dateEnd
-    // AND h.USR$TYPECONTRACTKEY = contractTypeId
-
-
     // Получение договоров за период
-    const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd });
+    const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd, contractTypeXID: contractTypeId[0], contractTypeDBID: contractTypeId[1] });
 
     const sortedData = {};
 
@@ -60,10 +85,10 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       cl.USR$SUMNCU AMOUNT
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
+      LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
+    WHERE ${serviceIdRuidToRequest('ruid')}
     ORDER BY
       cl.MASTERKEY, good.NAME`;
-
-    // WHERE cl.USR$BENEFITSNAME = serviceId
 
     // Получение услуг(Обслуживание ПО) договора
     const datails = await fetchAsObject(sql);
@@ -83,13 +108,12 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       USR$CONTRACT,
       DOCUMENTKEY
     FROM USR$BNF_ACTS
+    WHERE USR$BEGINDATE BETWEEN :dateBegin AND :dateEnd
+      OR USR$ENDDATE BETWEEN :dateBegin AND :dateEnd
     `;
 
-    // WHERE USR$BEGINDATE BETWEEN :dateBegin AND :dateEnd
-    // OR USR$ENDDATE BETWEEN :dateBegin AND :dateEnd
-
     // Получение актов ыполненных работ за период
-    const acts = await fetchAsObject(sql);
+    const acts = await fetchAsObject(sql, { dateBegin, dateEnd });
 
     const sortedActs = {};
 
@@ -107,9 +131,9 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       USR$COST,
       MASTERKEY
     FROM USR$BNF_ACTSLINE
+      LEFT JOIN gd_ruid ruid ON ruid.id = USR$BENEFITSNAME
+    WHERE ${serviceIdRuidToRequest('ruid')}
     `;
-
-    // WHERE USR$BENEFITSNAME = serviceId
 
     // Получение услуг акта
     const actsLines = await fetchAsObject(sql);
@@ -137,9 +161,17 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
 
     const months = calculateFullMonthsBetweenDates(dateBegin, dateEnd);
 
-    const contracts = Object.values(sortedData).map((contracts: any[]) => {
-      const perTimeContract = contracts.find(contract => contract.KINDID === perTimePaymentСontractTypeID);
-      const perMouthContract = contracts.find(contract => contract.KINDID === fixedPaymentСontractTypeID);
+    const contracts = [];
+
+    Object.values(sortedData).forEach((contractsEls: any[]) => {
+      const perTimeContract = contractsEls.find(contract => contract['KXID'] === perTimePaymentСontractTypeID[0]
+        && contract['KDBID'] === perTimePaymentСontractTypeID[1]
+        && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
+      );
+      const perMouthContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
+        && contract['KDBID'] === fixedPaymentСontractTypeID[1]
+        && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
+      );
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
       const contractsActLines = contractActs && contractActs.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
@@ -156,10 +188,10 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       const perHour = contractsActLinesSum.USR$COSTSUM / contractsActLinesSum.linesCount;
       const hoursAvarage = contractsActLinesSum.quantitySum / months;
 
-      return {
+      const contract = {
         customer: {
-          ID: contracts[0]['CUSTOMER_ID'],
-          NAME: contracts[0]['CUSTOMER_NAME']
+          ID: contractsEls[0]['CUSTOMER_ID'],
+          NAME: contractsEls[0]['CUSTOMER_NAME']
         },
         respondents: [],
         count: (perTimeContract ? 1 : 0) + (perMouthContract ? 1 : 0),
@@ -181,6 +213,9 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         amount: (perTimeContract?.SUMNCU ?? 0) + (perMouthContract?.SUMNCU ?? 0),
         valAmount: (perTimeContract?.SUMCURNCU ?? 0) + (perMouthContract?.SUMCURNCU ?? 0)
       };
+
+      if (contract.amount <= 0 && contract.valAmount <= 0) return;
+      contracts.push(contract);
     });
 
     const result: IRequestResult = {
