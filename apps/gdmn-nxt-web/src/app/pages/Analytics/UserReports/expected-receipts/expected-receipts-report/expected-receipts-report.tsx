@@ -73,7 +73,8 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
               height: 'fit-content',
               width: 'fit-content',
               marginBottom: '10px',
-              background: 'var(--color-paper-bg)'
+              background: 'var(--color-paper-bg)',
+              flex: 1
             }}
           >
             <table className={styles.table}>
