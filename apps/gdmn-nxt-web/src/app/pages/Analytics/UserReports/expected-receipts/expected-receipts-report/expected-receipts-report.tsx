@@ -116,38 +116,42 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
               </thead>
               <tbody>
                 {data.map((contact, index) => (
-                  <tr className={styles.tableRow} key={index}>
-                    <th>{contact?.customer?.NAME}</th>
+                  <tr
+                    className={styles.tableRow}
+                    style={index % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
+                    key={index}
+                  >
+                    <th>{contact?.customer?.NAME ?? 0}</th>
                     <th>{contact.respondents?.map((r, i) => i === 0 ? r : `, ${r}`)}</th>
-                    <th>{contact.count}</th>
-                    <th>{contact.fixedPayment?.baseValues}</th>
-                    <th>{contact.fixedPayment?.amount}</th>
-                    <th>{contact.workstationPayment.count}</th>
-                    <th>{contact.workstationPayment.baseValues}</th>
-                    <th>{contact.workstationPayment.amount}</th>
-                    <th>{contact.perTimePayment?.baseValues}</th>
-                    <th>{contact.perTimePayment?.perHour}</th>
-                    <th>{contact.perTimePayment?.hoursAvarage}</th>
-                    <th>{contact.perTimePayment?.amount}</th>
-                    <th>{contact.amount}</th>
-                    <th>{contact.valAmount}</th>
+                    <th>{(contact.count ?? 0).toLocaleString()}</th>
+                    <th>{(contact.fixedPayment?.baseValues ?? 0).toLocaleString()}</th>
+                    <th>{(contact.fixedPayment?.amount ?? 0).toLocaleString()}</th>
+                    <th>{contact.workstationPayment.count ?? 0}</th>
+                    <th>{(contact.workstationPayment.baseValues ?? 0).toLocaleString()}</th>
+                    <th>{(contact.workstationPayment.amount ?? 0).toLocaleString()}</th>
+                    <th>{((contact.perTimePayment?.baseValues ?? 0).toLocaleString())}</th>
+                    <th>{(contact.perTimePayment?.perHour ?? 0).toLocaleString()}</th>
+                    <th>{(contact.perTimePayment?.hoursAvarage ?? 0).toLocaleString()}</th>
+                    <th>{(contact.perTimePayment?.amount ?? 0).toLocaleString()}</th>
+                    <th>{(contact.amount ?? 0).toLocaleString()}</th>
+                    <th>{(contact.valAmount ?? 0).toLocaleString()}</th>
                   </tr>
                 ))}
-                <tr className={styles.tableRow}>
+                <tr className={styles.tableRow} style={data.length % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
                   <th className={styles.noBottomBorder}>Итого</th>
                   <th className={styles.noBottomBorder}>-</th>
-                  <th className={styles.noBottomBorder}>{total?.count}</th>
-                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.baseValues}</th>
-                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.amount}</th>
-                  <th className={styles.noBottomBorder}>{total?.workstationPayment.count}</th>
-                  <th className={styles.noBottomBorder}>{total?.workstationPayment.baseValues}</th>
-                  <th className={styles.noBottomBorder}>{total?.workstationPayment.amount}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.baseValues}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.perHour}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.hoursAvarage}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.amount}</th>
-                  <th className={styles.noBottomBorder}>{total?.amount}</th>
-                  <th className={styles.noBottomBorder}>{total?.valAmount}</th>
+                  <th className={styles.noBottomBorder}>{total?.count.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.baseValues?.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.amount.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.workstationPayment.count.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.workstationPayment.baseValues?.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.workstationPayment.amount.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.baseValues?.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.perHour.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.hoursAvarage.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.amount.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.amount.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder}>{total?.valAmount.toLocaleString()}</th>
                 </tr>
               </tbody>
             </table>
