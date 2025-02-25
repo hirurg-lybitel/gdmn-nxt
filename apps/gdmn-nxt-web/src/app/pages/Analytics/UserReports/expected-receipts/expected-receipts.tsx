@@ -31,6 +31,7 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
       flex={1}
       spacing={2}
       width={'100%'}
+      className={styles.expectedreceipts}
     >
       <CustomizedCard>
         <CardHeader title={<Typography variant="pageHeader">Ожидаемые поступления</Typography>} />
