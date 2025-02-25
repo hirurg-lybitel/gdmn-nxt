@@ -215,18 +215,22 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
       const contractsActLines = contractActs && contractActs.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
 
-      const contractsActLinesSum = { quantitySum: 0, USR$COSTSUM: 0, linesCount: 0 };
+      const contractsActLinesSum = { quantitySum: 0, costsum: 0 };
+
+      let lastQuantity = 0;
+
       contractsActLines?.forEach(actLines => {
         actLines?.forEach(actLine => {
           contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
-          contractsActLinesSum.USR$COSTSUM += actLine['USR$COST'];
-          contractsActLinesSum.linesCount += 1;
+          contractsActLinesSum.costsum = lastQuantity === 0 ? actLine['USR$COST']
+            : ((contractsActLinesSum.costsum * lastQuantity) + (actLine['USR$COST'] * actLine['USR$QUANTITY'])) / (lastQuantity + actLine['USR$QUANTITY']);
+          lastQuantity = actLine['USR$QUANTITY'];
         });
       });
 
       const hoursAvarage = contractsActLinesSum.quantitySum / months;
 
-      const amount = ((perTimeContractDetailsSum['PRICE'] ?? 0) * hoursAvarage) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const amount = (contractsActLinesSum.costsum * hoursAvarage) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
       const contract = {
         customer: {
@@ -236,10 +240,10 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         respondents: [],
         count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
         perTimePayment: perTimeContract ? {
-          baseValues: perTimeContractDetailsSum['QUANTITY'],
-          perHour: perTimeContractDetailsSum['PRICE'],
+          baseValues: contractsActLinesSum.quantitySum,
+          perHour: Number((contractsActLinesSum.costsum ?? 0).toFixed(2)),
           hoursAvarage: Number((hoursAvarage).toFixed(2)),
-          amount: Number((perTimeContractDetailsSum['PRICE'] * hoursAvarage).toFixed(2))
+          amount: Number((contractsActLinesSum.costsum * hoursAvarage).toFixed(2))
         } : {},
         fixedPayment: {
           baseValues: fixedPaymentContract?.['USR$BASEVALUE'],
