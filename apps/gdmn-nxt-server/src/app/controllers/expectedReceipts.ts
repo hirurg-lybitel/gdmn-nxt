@@ -86,7 +86,6 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
       LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
-    WHERE ${serviceRuidToRequest('ruid')}
     ORDER BY
       cl.MASTERKEY, good.NAME`;
 
@@ -132,7 +131,6 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       MASTERKEY
     FROM USR$BNF_ACTSLINE
       LEFT JOIN gd_ruid ruid ON ruid.id = USR$BENEFITSNAME
-    WHERE ${serviceRuidToRequest('ruid')}
     `;
 
     // Получение услуг акта
@@ -163,20 +161,36 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
 
     const contracts = [];
 
+    const detailsSum = (details: any[]) => {
+      if (!details || details.length <= 0) return { QUANTITY: 0, PRICE: 0, AMOUNT: 0 };
+      const sum = details.reduce((count, item) => {
+        return {
+          ...item,
+          QUANTITY: count.QUANTITY + item.QUANTITY,
+          PRICE: count.PRICE + item.PRICE,
+          AMOUNT: count.AMOUNT + item.AMOUNT,
+        };
+      });
+      return { QUANTITY: sum.QUANTITY, PRICE: sum.PRICE / details.length, AMOUNT: sum.AMOUNT };
+    };
+
     Object.values(sortedData).forEach((contractsEls: any[]) => {
       const perTimeContract = contractsEls.find(contract => contract['KXID'] === perTimePaymentСontractTypeID[0]
         && contract['KDBID'] === perTimePaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
-      const perMouthContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
+      const fixedPaymentContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
         && contract['KDBID'] === fixedPaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
+      const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
+      const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
+      const fixedPaymentContractDetailsSum = detailsSum(fixedPaymentContractDetails);
       const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
       const contractsActLines = contractActs && contractActs.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
-      const contractsActLinesSum = { quantitySum: 0, USR$COSTSUM: 0, linesCount: 0 };
 
+      const contractsActLinesSum = { quantitySum: 0, USR$COSTSUM: 0, linesCount: 0 };
       contractsActLines?.forEach(actLines => {
         actLines?.forEach(actLine => {
           contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
@@ -185,7 +199,6 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         });
       });
 
-      const perHour = contractsActLinesSum.USR$COSTSUM / contractsActLinesSum.linesCount;
       const hoursAvarage = contractsActLinesSum.quantitySum / months;
 
       const contract = {
@@ -194,24 +207,24 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           NAME: contractsEls[0]['CUSTOMER_NAME']
         },
         respondents: [],
-        count: (perTimeContract ? 1 : 0) + (perMouthContract ? 1 : 0),
-        perTimePayment: {
-          baseValues: hoursAvarage,
-          perHour: perHour,
+        count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
+        perTimePayment: perTimeContract ? {
+          baseValues: perTimeContractDetailsSum['QUANTITY'],
+          perHour: perTimeContractDetailsSum['PRICE'],
           hoursAvarage: Number((hoursAvarage).toFixed(2)),
-          amount: perHour * hoursAvarage
-        },
+          amount: Number((perTimeContractDetailsSum['PRICE'] * hoursAvarage).toFixed(2))
+        } : {},
         fixedPayment: {
-          baseValues: perMouthContract?.['USR$BASEVALUE'],
-          amount: perMouthContract?.SUMNCU
+          baseValues: fixedPaymentContract?.['USR$BASEVALUE'],
+          amount: fixedPaymentContract?.SUMNCU
         },
         workstationPayment: {
-          count: perTimeContractDetails?.[0]?.['QUANTITY'],
-          baseValues: perTimeContractDetails?.[0]?.['PRICE'],
-          amount: perTimeContractDetails?.[0]?.['AMOUNT']
+          count: (perTimeContractDetailsSum['QUANTITY'] ?? 0) + (fixedPaymentContractDetailsSum['QUANTITY'] ?? 0),
+          baseValues: (perTimeContractDetailsSum['PRICE'] ?? 0) + (fixedPaymentContractDetailsSum['PRICE'] ?? 0),
+          amount: (perTimeContractDetailsSum['AMOUNT'] ?? 0) + (fixedPaymentContractDetailsSum['AMOUNT'] ?? 0)
         },
-        amount: (perTimeContract?.SUMNCU ?? 0) + (perMouthContract?.SUMNCU ?? 0),
-        valAmount: (perTimeContract?.SUMCURNCU ?? 0) + (perMouthContract?.SUMCURNCU ?? 0)
+        amount: (perTimeContract?.SUMNCU ?? 0) + (fixedPaymentContract?.SUMNCU ?? 0),
+        valAmount: (perTimeContract?.SUMCURNCU ?? 0) + (fixedPaymentContract?.SUMCURNCU ?? 0)
       };
 
       if (contract.amount <= 0 && contract.valAmount <= 0) return;
