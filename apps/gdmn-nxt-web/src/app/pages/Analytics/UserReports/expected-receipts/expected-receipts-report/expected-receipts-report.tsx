@@ -57,6 +57,11 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
     });
   }, [data]);
 
+  const numberFormat = (number?: number) => {
+    if (!number || number <= 0) return '';
+    return number.toLocaleString();
+  };
+
   return (
     <div style={{ flex: 1 }}>
       <PerfectScrollbar
@@ -114,44 +119,44 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                   <th>USD</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={styles.lines}>
                 {data.map((contact, index) => (
                   <tr
                     className={styles.tableRow}
                     style={index % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
                     key={index}
                   >
-                    <th>{contact?.customer?.NAME ?? 0}</th>
+                    <th>{contact?.customer?.NAME}</th>
                     <th>{contact.respondents?.map((r, i) => i === 0 ? r : `, ${r}`)}</th>
-                    <th>{(contact.count ?? 0).toLocaleString()}</th>
-                    <th>{(contact.fixedPayment?.baseValues ?? 0).toLocaleString()}</th>
-                    <th>{(contact.fixedPayment?.amount ?? 0).toLocaleString()}</th>
-                    <th>{contact.workstationPayment.count ?? 0}</th>
-                    <th>{(contact.workstationPayment.baseValues ?? 0).toLocaleString()}</th>
-                    <th>{(contact.workstationPayment.amount ?? 0).toLocaleString()}</th>
-                    <th>{((contact.perTimePayment?.baseValues ?? 0).toLocaleString())}</th>
-                    <th>{(contact.perTimePayment?.perHour ?? 0).toLocaleString()}</th>
-                    <th>{(contact.perTimePayment?.hoursAvarage ?? 0).toLocaleString()}</th>
-                    <th>{(contact.perTimePayment?.amount ?? 0).toLocaleString()}</th>
-                    <th>{(contact.amount ?? 0).toLocaleString()}</th>
-                    <th>{(contact.valAmount ?? 0).toLocaleString()}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.count)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.fixedPayment?.baseValues)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.fixedPayment?.amount)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.count)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.baseValues)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.amount)}</th>
+                    <th className={styles.numberTh}>{numberFormat((contact.perTimePayment?.baseValues))}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.perHour)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.hoursAvarage)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.amount)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.amount)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.valAmount)}</th>
                   </tr>
                 ))}
                 <tr className={styles.tableRow} style={data.length % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
                   <th className={styles.noBottomBorder}>Итого</th>
-                  <th className={styles.noBottomBorder}>-</th>
-                  <th className={styles.noBottomBorder}>{total?.count.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.baseValues?.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.fixedPayment?.amount.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.workstationPayment.count.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.workstationPayment.baseValues?.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.workstationPayment.amount.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.baseValues?.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.perHour.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.hoursAvarage.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.perTimePayment?.amount.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.amount.toLocaleString()}</th>
-                  <th className={styles.noBottomBorder}>{total?.valAmount.toLocaleString()}</th>
+                  <th className={styles.noBottomBorder} />
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.count)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.fixedPayment?.baseValues)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.fixedPayment?.amount)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.count)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.baseValues)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.amount)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.baseValues)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.perHour)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.hoursAvarage)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.amount)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.amount)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.valAmount)}</th>
                 </tr>
               </tbody>
             </table>

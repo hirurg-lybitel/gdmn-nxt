@@ -147,6 +147,33 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       }
     });
 
+    const getMidpointDate = (date1, date2) => {
+      const startDate = new Date(date1);
+      const endDate = new Date(date2);
+
+      const midpointTime = (startDate.getTime() + endDate.getTime()) / 2;
+
+      const midpointDate = new Date(midpointTime);
+
+      midpointDate.setDate(midpointDate.getDate() + 1);
+
+      midpointDate.setUTCHours(0, 0, 0, 0);
+
+      return midpointDate;
+    };
+
+    const midpointDate = new Date(getMidpointDate(dateBegin, dateEnd));
+
+    sql = `SELECT
+    VAL
+    FROM GD_CURRRATE
+    WHERE FORDATE <= :midpointDate AND FROMCURR = 200020
+    ORDER BY
+      FORDATE desc
+    `;
+
+    const currrate = (await fetchAsObject(sql, { midpointDate }))[0]['VAL'];
+
     const calculateFullMonthsBetweenDates = (date1, date2) => {
       const startDate = new Date(date1);
       const endDate = new Date(date2);
@@ -185,8 +212,6 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       );
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
-      const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
-      const fixedPaymentContractDetailsSum = detailsSum(fixedPaymentContractDetails);
       const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
       const contractsActLines = contractActs && contractActs.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
 
@@ -200,6 +225,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       });
 
       const hoursAvarage = contractsActLinesSum.quantitySum / months;
+
+      const amount = ((perTimeContractDetailsSum['PRICE'] ?? 0) * hoursAvarage) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
       const contract = {
         customer: {
@@ -219,15 +246,16 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           amount: fixedPaymentContract?.SUMNCU
         },
         workstationPayment: {
-          count: (perTimeContractDetailsSum['QUANTITY'] ?? 0) + (fixedPaymentContractDetailsSum['QUANTITY'] ?? 0),
-          baseValues: (perTimeContractDetailsSum['PRICE'] ?? 0) + (fixedPaymentContractDetailsSum['PRICE'] ?? 0),
-          amount: (perTimeContractDetailsSum['AMOUNT'] ?? 0) + (fixedPaymentContractDetailsSum['AMOUNT'] ?? 0)
+          count: perTimeContractDetailsSum['QUANTITY'],
+          baseValues: perTimeContractDetailsSum['PRICE'],
+          amount: perTimeContractDetailsSum['AMOUNT']
         },
-        amount: (perTimeContract?.SUMNCU ?? 0) + (fixedPaymentContract?.SUMNCU ?? 0),
-        valAmount: (perTimeContract?.SUMCURNCU ?? 0) + (fixedPaymentContract?.SUMCURNCU ?? 0)
+        amount: Number(amount.toFixed(2)),
+        valAmount: Number((amount / currrate).toFixed(2))
       };
 
       if (contract.amount <= 0 && contract.valAmount <= 0) return;
+
       contracts.push(contract);
     });
 
