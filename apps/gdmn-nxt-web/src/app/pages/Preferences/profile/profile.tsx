@@ -83,7 +83,6 @@ export function Profile(props: ProfileProps) {
               label="Опции"
               value="options"
               href="/employee/system/settings/options"
-              className={!userPermissions?.system?.PUT ? styles.tabHeaderHide : ''}
               icon={<TuneIcon />}
               iconPosition="start"
             />
