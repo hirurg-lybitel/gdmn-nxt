@@ -55,8 +55,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         LEFT JOIN gd_ruid kruid ON kruid.id = kind.ID
         LEFT JOIN gd_ruid ruid ON ruid.id = h.USR$TYPECONTRACTKEY
       WHERE
-        (h.USR$FROMDATE BETWEEN :dateBegin AND :dateEnd
-        OR h.USR$EXPIRYDATE BETWEEN :dateBegin AND :dateEnd)
+        h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE
         AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
       ORDER BY
         doc.DOCUMENTDATE asc
@@ -65,9 +64,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     // Получение договоров за период
     const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd, contractTypeXID: contractTypeId[0], contractTypeDBID: contractTypeId[1] });
 
-    const sortedData = {};
-
     // Сортировка договоров по ID клиента
+    const sortedData = {};
     data.forEach(c => {
       if (sortedData[c['CUSTOMER_ID']]) {
         sortedData[c['CUSTOMER_ID']].push(c);
@@ -82,7 +80,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       good.NAME,
       cl.USR$QUANTITY QUANTITY,
       cl.USR$COST PRICE,
-      cl.USR$SUMNCU AMOUNT
+      cl.USR$SUMNCU AMOUNT,
+      cl.USR$COSTBV PRICEBV
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
       LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
@@ -92,9 +91,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     // Получение услуг(Обслуживание ПО) договора
     const datails = await fetchAsObject(sql);
 
-    const sortedDetails = {};
-
     // Сортировка услуг по ключу чтобы потом получить услуги договора по id(MASTERKEY)
+    const sortedDetails = {};
     datails.forEach(d => {
       if (sortedDetails[d['MASTERKEY']]) {
         sortedDetails[d['MASTERKEY']].push(d);
@@ -107,16 +105,14 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       USR$CONTRACT,
       DOCUMENTKEY
     FROM USR$BNF_ACTS
-    WHERE USR$BEGINDATE BETWEEN :dateBegin AND :dateEnd
-      OR USR$ENDDATE BETWEEN :dateBegin AND :dateEnd
+    WHERE USR$BEGINDATE <= :dateEnd AND :dateBegin <= USR$ENDDATE
     `;
 
-    // Получение актов ыполненных работ за период
+    // Получение актов выполненных работ за период
     const acts = await fetchAsObject(sql, { dateBegin, dateEnd });
 
-    const sortedActs = {};
-
     // Сортировка актов чтобы потом получить акты договора по id(USR$CONTRACT)
+    const sortedActs = {};
     acts.forEach(a => {
       if (sortedActs[a['USR$CONTRACT']]) {
         sortedActs[a['USR$CONTRACT']].push(a);
@@ -136,9 +132,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     // Получение услуг акта
     const actsLines = await fetchAsObject(sql);
 
-    const sortedActsLines = {};
-
     // Сортировка услуг чтобы потом получить услуги акта по id(MASTERKEY)
+    const sortedActsLines = {};
     actsLines.forEach(a => {
       if (sortedActsLines[a['MASTERKEY']]) {
         sortedActsLines[a['MASTERKEY']].push(a);
@@ -147,59 +142,104 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       }
     });
 
-    const calculateFullMonthsBetweenDates = (date1, date2) => {
-      const startDate = new Date(date1);
-      const endDate = new Date(date2);
+    // Средняя дата между датами заданного периода
+    const midpointDate = (() => {
+      const startDate = new Date(dateBegin);
+      const endDate = new Date(dateEnd);
 
-      const yearsDifference = endDate.getFullYear() - startDate.getFullYear();
-      const monthsDifference = endDate.getMonth() - startDate.getMonth();
+      const midpointTime = (startDate.getTime() + endDate.getTime()) / 2;
 
-      return yearsDifference * 12 + monthsDifference + 1;
-    };
+      const midpointDate = new Date(midpointTime);
 
-    const months = calculateFullMonthsBetweenDates(dateBegin, dateEnd);
+      midpointDate.setDate(midpointDate.getDate() + 1);
 
-    const contracts = [];
+      midpointDate.setUTCHours(0, 0, 0, 0);
+
+      return midpointDate;
+    })();
+
+    sql = `SELECT
+    VAL
+    FROM GD_CURRRATE
+    WHERE FORDATE <= :midpointDate AND FROMCURR = 200020
+    ORDER BY
+      FORDATE desc
+    `;
+
+    // Курс валюты на среднюю дату между датами заданного периода
+    const currrate = (await fetchAsObject(sql, { midpointDate }))[0]['VAL'];
 
     const detailsSum = (details: any[]) => {
-      if (!details || details.length <= 0) return { QUANTITY: 0, PRICE: 0, AMOUNT: 0 };
+      if (!details || details.length <= 0) return { QUANTITY: 0, AMOUNT: 0, PRICEBV: 0 };
+
       const sum = details.reduce((count, item) => {
+        const lastBV = count.lastBV ?? details[0].PRICEBV ?? 0;
+
         return {
           ...item,
           QUANTITY: count.QUANTITY + item.QUANTITY,
-          PRICE: count.PRICE + item.PRICE,
+          PRICEBV: lastBV === 0 ? (count.PRICEBV ?? item?.PRICEBV)
+            : ((count.PRICEBV * lastBV) + (item?.PRICEBV * item.QUANTITY)) / (lastBV + item.QUANTITY),
           AMOUNT: count.AMOUNT + item.AMOUNT,
+          lastBV: item?.PRICEBV || 0
         };
       });
-      return { QUANTITY: sum.QUANTITY, PRICE: sum.PRICE / details.length, AMOUNT: sum.AMOUNT };
+
+      return { QUANTITY: sum.QUANTITY, AMOUNT: sum.AMOUNT, PRICEBV: sum.PRICEBV };
     };
 
+    const numberFix = (number: number) => {
+      return Number((number ?? 0).toFixed(2));
+    };
+
+    const contracts = [];
+
     Object.values(sortedData).forEach((contractsEls: any[]) => {
+      // Ближайший договор с клиентом на повременную оплату
       const perTimeContract = contractsEls.find(contract => contract['KXID'] === perTimePaymentСontractTypeID[0]
         && contract['KDBID'] === perTimePaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
+      // Ближайший договор с клиентом на фиксированную оплату
       const fixedPaymentContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
         && contract['KDBID'] === fixedPaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
+      // Услуги позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
-      const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
-      const fixedPaymentContractDetailsSum = detailsSum(fixedPaymentContractDetails);
-      const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
-      const contractsActLines = contractActs && contractActs.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
 
-      const contractsActLinesSum = { quantitySum: 0, USR$COSTSUM: 0, linesCount: 0 };
+      // Акты выполненых работ договора на повременную оплату
+      const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
+
+      // Позиции актов выполненых работ договора на повременную оплату
+      const contractsActLines = contractActs?.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
+      const contractsActLinesSum = { quantitySum: 0, costsum: null };
+      let lastQuantity = 0;
       contractsActLines?.forEach(actLines => {
         actLines?.forEach(actLine => {
           contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
-          contractsActLinesSum.USR$COSTSUM += actLine['USR$COST'];
-          contractsActLinesSum.linesCount += 1;
+          contractsActLinesSum.costsum = lastQuantity === 0 ? (contractsActLinesSum.costsum ?? actLine['USR$COST'])
+            : ((contractsActLinesSum.costsum * lastQuantity) + (actLine['USR$COST'] * actLine['USR$QUANTITY'])) / (lastQuantity + actLine['USR$QUANTITY']);
+          lastQuantity = actLine['USR$QUANTITY'];
         });
       });
 
-      const hoursAvarage = contractsActLinesSum.quantitySum / months;
+      // Количество месяцев в заданном периоде включая неполные
+      const fullMonthsCount = (() => {
+        const startDate = new Date(dateBegin);
+        const endDate = new Date(dateEnd);
+
+        const yearsDifference = endDate.getFullYear() - startDate.getFullYear();
+        const monthsDifference = endDate.getMonth() - startDate.getMonth();
+
+        return yearsDifference * 12 + monthsDifference + 1;
+      })();
+
+      // Часов среднемесячно
+      const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
+
+      const amount = (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
       const contract = {
         customer: {
@@ -208,26 +248,27 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         },
         respondents: [],
         count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
-        perTimePayment: perTimeContract ? {
-          baseValues: perTimeContractDetailsSum['QUANTITY'],
-          perHour: perTimeContractDetailsSum['PRICE'],
-          hoursAvarage: Number((hoursAvarage).toFixed(2)),
-          amount: Number((perTimeContractDetailsSum['PRICE'] * hoursAvarage).toFixed(2))
-        } : {},
         fixedPayment: {
-          baseValues: fixedPaymentContract?.['USR$BASEVALUE'],
-          amount: fixedPaymentContract?.SUMNCU
+          baseValues: numberFix(fixedPaymentContract?.['USR$BASEVALUE']),
+          amount: numberFix(fixedPaymentContract?.SUMNCU)
         },
         workstationPayment: {
-          count: (perTimeContractDetailsSum['QUANTITY'] ?? 0) + (fixedPaymentContractDetailsSum['QUANTITY'] ?? 0),
-          baseValues: (perTimeContractDetailsSum['PRICE'] ?? 0) + (fixedPaymentContractDetailsSum['PRICE'] ?? 0),
-          amount: (perTimeContractDetailsSum['AMOUNT'] ?? 0) + (fixedPaymentContractDetailsSum['AMOUNT'] ?? 0)
+          count: numberFix(perTimeContractDetailsSum['QUANTITY']),
+          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+          amount: numberFix(perTimeContractDetailsSum['AMOUNT'])
         },
-        amount: (perTimeContract?.SUMNCU ?? 0) + (fixedPaymentContract?.SUMNCU ?? 0),
-        valAmount: (perTimeContract?.SUMCURNCU ?? 0) + (fixedPaymentContract?.SUMCURNCU ?? 0)
+        perTimePayment: perTimeContract ? {
+          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+          perHour: numberFix(contractsActLinesSum.costsum),
+          hoursAvarage: numberFix(hoursAvarage),
+          amount: numberFix(contractsActLinesSum.costsum * hoursAvarage)
+        } : {},
+        amount: numberFix(amount),
+        valAmount: numberFix(amount / currrate)
       };
 
       if (contract.amount <= 0 && contract.valAmount <= 0) return;
+
       contracts.push(contract);
     });
 
