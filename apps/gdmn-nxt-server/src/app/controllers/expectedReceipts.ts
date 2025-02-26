@@ -82,7 +82,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       good.NAME,
       cl.USR$QUANTITY QUANTITY,
       cl.USR$COST PRICE,
-      cl.USR$SUMNCU AMOUNT
+      cl.USR$SUMNCU AMOUNT,
+      cl.USR$COSTBV PRICEBV
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
       LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
@@ -189,16 +190,22 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     const contracts = [];
 
     const detailsSum = (details: any[]) => {
-      if (!details || details.length <= 0) return { QUANTITY: 0, PRICE: 0, AMOUNT: 0 };
+      if (!details || details.length <= 0) return { QUANTITY: 0, AMOUNT: 0, PRICEBV: 0 };
+
       const sum = details.reduce((count, item) => {
+        const lastBV = count.lastBV ?? details[0].PRICEBV ?? 0;
+
         return {
           ...item,
           QUANTITY: count.QUANTITY + item.QUANTITY,
-          PRICE: count.PRICE + item.PRICE,
+          PRICEBV: lastBV === 0 ? (count.PRICEBV ?? item?.PRICEBV)
+            : ((count.PRICEBV * lastBV) + (item?.PRICEBV * item.QUANTITY)) / (lastBV + item.QUANTITY),
           AMOUNT: count.AMOUNT + item.AMOUNT,
+          lastBV: item?.PRICEBV || 0
         };
       });
-      return { QUANTITY: sum.QUANTITY, PRICE: sum.PRICE / details.length, AMOUNT: sum.AMOUNT };
+
+      return { QUANTITY: sum.QUANTITY, AMOUNT: sum.AMOUNT, PRICEBV: sum.PRICEBV };
     };
 
     Object.values(sortedData).forEach((contractsEls: any[]) => {
@@ -215,14 +222,14 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
       const contractsActLines = contractActs && contractActs.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
 
-      const contractsActLinesSum = { quantitySum: 0, costsum: 0 };
+      const contractsActLinesSum = { quantitySum: 0, costsum: null };
 
       let lastQuantity = 0;
 
       contractsActLines?.forEach(actLines => {
         actLines?.forEach(actLine => {
           contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
-          contractsActLinesSum.costsum = lastQuantity === 0 ? actLine['USR$COST']
+          contractsActLinesSum.costsum = lastQuantity === 0 ? (contractsActLinesSum.costsum ?? actLine['USR$COST'])
             : ((contractsActLinesSum.costsum * lastQuantity) + (actLine['USR$COST'] * actLine['USR$QUANTITY'])) / (lastQuantity + actLine['USR$QUANTITY']);
           lastQuantity = actLine['USR$QUANTITY'];
         });
@@ -230,7 +237,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
 
       const hoursAvarage = contractsActLinesSum.quantitySum / months;
 
-      const amount = (contractsActLinesSum.costsum * hoursAvarage) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const amount = (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
       const contract = {
         customer: {
@@ -239,21 +246,21 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         },
         respondents: [],
         count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
-        perTimePayment: perTimeContract ? {
-          baseValues: contractsActLinesSum.quantitySum,
-          perHour: Number((contractsActLinesSum.costsum ?? 0).toFixed(2)),
-          hoursAvarage: Number((hoursAvarage).toFixed(2)),
-          amount: Number((contractsActLinesSum.costsum * hoursAvarage).toFixed(2))
-        } : {},
         fixedPayment: {
           baseValues: fixedPaymentContract?.['USR$BASEVALUE'],
           amount: fixedPaymentContract?.SUMNCU
         },
         workstationPayment: {
           count: perTimeContractDetailsSum['QUANTITY'],
-          baseValues: perTimeContractDetailsSum['PRICE'],
+          baseValues: perTimeContractDetailsSum['PRICEBV'],
           amount: perTimeContractDetailsSum['AMOUNT']
         },
+        perTimePayment: perTimeContract ? {
+          baseValues: Number((perTimeContractDetailsSum['PRICEBV'] ?? 0).toFixed(2)),
+          perHour: Number((contractsActLinesSum.costsum ?? 0).toFixed(2)),
+          hoursAvarage: Number((hoursAvarage ?? 0).toFixed(2)),
+          amount: Number((contractsActLinesSum.costsum * hoursAvarage).toFixed(2))
+        } : {},
         amount: Number(amount.toFixed(2)),
         valAmount: Number((amount / currrate).toFixed(2))
       };
