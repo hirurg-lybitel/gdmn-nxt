@@ -155,7 +155,7 @@ export const MainLayout = (props: MainLayoutProps) => {
           onToogle={handleDrawerToggle}
         />
         <Main menuOpened={!matchDownMd} style={{ display: 'flex' }}>
-          <ContentContainer>
+          <ContentContainer className="contentContainer">
             <Outlet />
           </ContentContainer>
         </Main>
