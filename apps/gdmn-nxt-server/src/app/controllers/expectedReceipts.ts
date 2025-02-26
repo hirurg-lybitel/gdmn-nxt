@@ -208,6 +208,10 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       return { QUANTITY: sum.QUANTITY, AMOUNT: sum.AMOUNT, PRICEBV: sum.PRICEBV };
     };
 
+    const numberFix = (number: number) => {
+      return Number((number ?? 0).toFixed(2));
+    };
+
     Object.values(sortedData).forEach((contractsEls: any[]) => {
       const perTimeContract = contractsEls.find(contract => contract['KXID'] === perTimePaymentСontractTypeID[0]
         && contract['KDBID'] === perTimePaymentСontractTypeID[1]
@@ -247,22 +251,22 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         respondents: [],
         count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
         fixedPayment: {
-          baseValues: fixedPaymentContract?.['USR$BASEVALUE'],
-          amount: fixedPaymentContract?.SUMNCU
+          baseValues: numberFix(fixedPaymentContract?.['USR$BASEVALUE']),
+          amount: numberFix(fixedPaymentContract?.SUMNCU)
         },
         workstationPayment: {
-          count: perTimeContractDetailsSum['QUANTITY'],
-          baseValues: perTimeContractDetailsSum['PRICEBV'],
-          amount: perTimeContractDetailsSum['AMOUNT']
+          count: numberFix(perTimeContractDetailsSum['QUANTITY']),
+          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+          amount: numberFix(perTimeContractDetailsSum['AMOUNT'])
         },
         perTimePayment: perTimeContract ? {
-          baseValues: Number((perTimeContractDetailsSum['PRICEBV'] ?? 0).toFixed(2)),
-          perHour: Number((contractsActLinesSum.costsum ?? 0).toFixed(2)),
-          hoursAvarage: Number((hoursAvarage ?? 0).toFixed(2)),
-          amount: Number((contractsActLinesSum.costsum * hoursAvarage).toFixed(2))
+          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+          perHour: numberFix(contractsActLinesSum.costsum),
+          hoursAvarage: numberFix(hoursAvarage),
+          amount: numberFix(contractsActLinesSum.costsum * hoursAvarage)
         } : {},
-        amount: Number(amount.toFixed(2)),
-        valAmount: Number((amount / currrate).toFixed(2))
+        amount: numberFix(amount),
+        valAmount: numberFix(amount / currrate)
       };
 
       if (contract.amount <= 0 && contract.valAmount <= 0) return;
