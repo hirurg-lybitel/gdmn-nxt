@@ -55,8 +55,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         LEFT JOIN gd_ruid kruid ON kruid.id = kind.ID
         LEFT JOIN gd_ruid ruid ON ruid.id = h.USR$TYPECONTRACTKEY
       WHERE
-        (h.USR$FROMDATE BETWEEN :dateBegin AND :dateEnd
-        OR h.USR$EXPIRYDATE BETWEEN :dateBegin AND :dateEnd)
+        h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE
         AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
       ORDER BY
         doc.DOCUMENTDATE asc
@@ -108,8 +107,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       USR$CONTRACT,
       DOCUMENTKEY
     FROM USR$BNF_ACTS
-    WHERE USR$BEGINDATE BETWEEN :dateBegin AND :dateEnd
-      OR USR$ENDDATE BETWEEN :dateBegin AND :dateEnd
+    WHERE USR$BEGINDATE <= :dateEnd AND :dateBegin <= USR$ENDDATE
     `;
 
     // Получение актов ыполненных работ за период
