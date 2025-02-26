@@ -108,7 +108,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     WHERE USR$BEGINDATE <= :dateEnd AND :dateBegin <= USR$ENDDATE
     `;
 
-    // Получение актов ыполненных работ за период
+    // Получение актов выполненных работ за период
     const acts = await fetchAsObject(sql, { dateBegin, dateEnd });
 
     // Сортировка актов чтобы потом получить акты договора по id(USR$CONTRACT)
@@ -142,7 +142,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       }
     });
 
-    // Дата между датами заданного периода
+    // Средняя дата между датами заданного периода
     const midpointDate = (() => {
       const startDate = new Date(dateBegin);
       const endDate = new Date(dateEnd);
@@ -166,7 +166,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       FORDATE desc
     `;
 
-    // Курс валюты на дату между датами заданного периода
+    // Курс валюты на среднюю дату между датами заданного периода
     const currrate = (await fetchAsObject(sql, { midpointDate }))[0]['VAL'];
 
     const detailsSum = (details: any[]) => {
