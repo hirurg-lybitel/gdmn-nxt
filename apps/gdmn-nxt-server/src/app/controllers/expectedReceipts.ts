@@ -21,7 +21,6 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     [986962829, 119040821]
   ]; // ruid услуг по обслуживанию ПО
 
-
   const serviceRuidToRequest = (fieldName: string) => {
     let request = '';
     serviceId.forEach(s => {
@@ -58,7 +57,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE
         AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
       ORDER BY
-        doc.DOCUMENTDATE asc
+        doc.DOCUMENTDATE desc
     `;
 
     // Получение договоров за период
@@ -200,11 +199,13 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         && contract['KDBID'] === perTimePaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
+
       // Ближайший договор с клиентом на фиксированную оплату
       const fixedPaymentContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
         && contract['KDBID'] === fixedPaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
+
       // Услуги позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
