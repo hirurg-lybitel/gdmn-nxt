@@ -240,7 +240,9 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       // Часов среднемесячно
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
-      const amount = (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
+
+      const amount = perTimeAmount + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
       const contract: IExpectedReceipt = {
         customer: {
@@ -262,7 +264,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
           perHour: numberFix(contractsActLinesSum.costsum),
           hoursAvarage: numberFix(hoursAvarage),
-          amount: numberFix(contractsActLinesSum.costsum * hoursAvarage)
+          amount: numberFix(perTimeAmount)
         } : undefined,
         amount: numberFix(amount),
         valAmount: numberFix(amount / currrate)
