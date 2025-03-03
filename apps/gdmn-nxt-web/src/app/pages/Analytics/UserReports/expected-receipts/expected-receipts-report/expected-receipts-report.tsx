@@ -85,6 +85,7 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
             <table className={styles.table}>
               <thead>
                 <tr className={styles.tableRow} style={{ borderTop: 'none' }}>
+                  <th className={styles.noTopBorder} rowSpan={2}>№</th>
                   <th className={styles.noTopBorder} rowSpan={2}>Клиент</th>
                   <ThTooltip
                     className={styles.noTopBorder}
@@ -126,6 +127,7 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                     style={index % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
                     key={index}
                   >
+                    <th style={{ textAlign: 'center' }}>{index + 1}</th>
                     <th>{contact?.customer?.NAME}</th>
                     <th>{contact.respondents?.map((r, i) => i === 0 ? r : `, ${r}`)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.count)}</th>
