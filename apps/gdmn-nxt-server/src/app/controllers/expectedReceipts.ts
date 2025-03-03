@@ -1,4 +1,4 @@
-import { IRequestResult, IContract } from '@gsbelarus/util-api-types';
+import { IRequestResult, IContract, IExpectedReceipt } from '@gsbelarus/util-api-types';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { RequestHandler } from 'express';
 import { resultError } from '../responseMessages';
@@ -191,7 +191,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       return Number((number ?? 0).toFixed(2));
     };
 
-    const contracts = [];
+    const contracts: IExpectedReceipt[] = [];
 
     Object.values(sortedData).forEach((contractsEls: any[]) => {
       // Ближайший договор с клиентом на повременную оплату
@@ -242,7 +242,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
 
       const amount = (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
-      const contract = {
+      const contract: IExpectedReceipt = {
         customer: {
           ID: contractsEls[0]['CUSTOMER_ID'],
           NAME: contractsEls[0]['CUSTOMER_NAME']
@@ -263,7 +263,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           perHour: numberFix(contractsActLinesSum.costsum),
           hoursAvarage: numberFix(hoursAvarage),
           amount: numberFix(contractsActLinesSum.costsum * hoursAvarage)
-        } : {},
+        } : undefined,
         amount: numberFix(amount),
         valAmount: numberFix(amount / currrate)
       };
@@ -271,6 +271,16 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       if (contract.amount <= 0 && contract.valAmount <= 0) return;
 
       contracts.push(contract);
+    });
+
+    contracts.sort((a, b) => {
+      if (a.amount > b.amount) {
+        return -1;
+      }
+      if (a.amount < b.amount) {
+        return 1;
+      }
+      return 0;
     });
 
     const result: IRequestResult = {
