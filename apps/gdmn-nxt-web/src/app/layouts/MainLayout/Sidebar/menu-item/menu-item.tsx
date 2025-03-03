@@ -91,15 +91,17 @@ export function MenuItem(props: MenuItemProps) {
   };
 
   type MyNavLinkProps = Omit<NavLinkProps, 'to'>;
+  // eslint-disable-next-line react/display-name
   const MyNavLink = useMemo(() => forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
     const { className: previousClasses, ...rest } = navLinkProps;
     const elementClasses = previousClasses?.toString() ?? '';
-    return (<NavLink
-      {...rest}
-      ref={ref}
-      to={item.url || ''}
-      className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
-    />);
+    return (
+      <NavLink
+        {...rest}
+        ref={ref}
+        to={item.url || ''}
+        className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
+      />);
   }), [item.url]);
 
   return (
@@ -109,6 +111,7 @@ export function MenuItem(props: MenuItemProps) {
       sx={{
         pl: `${level * 12 - level > 0 ? 12 : 0}px`
       }}
+      disableGutters
     >
       <ListItemIcon sx={{ minWidth: !item?.icon && level > 1 ? 18 : 36 }}>
         <div className="SelectedIcon">{selectedItemIcon}</div>
@@ -116,7 +119,13 @@ export function MenuItem(props: MenuItemProps) {
       </ListItemIcon>
       <ListItemText
         primary={
-          <Typography variant="subtitle1" color="inherit">
+          <Typography
+            variant="body1"
+            color="inherit"
+            noWrap
+            textOverflow="ellipsis"
+            overflow="hidden"
+          >
             {item.title}
           </Typography>
         }
