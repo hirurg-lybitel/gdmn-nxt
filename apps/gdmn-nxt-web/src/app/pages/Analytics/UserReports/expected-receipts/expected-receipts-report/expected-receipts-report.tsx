@@ -57,6 +57,8 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
     });
   }, [data]);
 
+  const procents = useMemo(() => data?.map((item => ((item.amount / (total?.amount ?? 1)) * 100).toFixed(1))), [data, total]);
+
   const numberFormat = (number?: number) => {
     if (!number || number <= 0) return '';
     return number.toLocaleString();
@@ -104,7 +106,7 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                   <th className={styles.noTopBorder} colSpan={2} >Фиксированная ежемесячная оплата</th>
                   <th className={styles.noTopBorder} colSpan={3}>Оплата за рабочие места</th>
                   <th className={styles.noTopBorder} colSpan={4}>Повременная оплата</th>
-                  <th className={styles.noTopBorder} colSpan={2}>Всего</th>
+                  <th className={styles.noTopBorder} colSpan={3}>Всего</th>
                 </tr>
                 <tr className={styles.tableRow}>
                   <ThTooltip title={'Базовые величины'}>Б/в</ThTooltip>
@@ -118,6 +120,7 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                   <th>Руб</th>
                   <th>Руб</th>
                   <th>USD</th>
+                  <th>%</th>
                 </tr>
               </thead>
               <tbody className={styles.lines}>
@@ -142,10 +145,12 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.valAmount)}</th>
+                    <th className={styles.numberTh}>{procents?.[index]}%</th>
                   </tr>
                 ))}
                 <tr className={styles.tableRow} style={data.length % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
                   <th className={styles.noBottomBorder}>Итого</th>
+                  <th className={styles.noBottomBorder}/>
                   <th className={styles.noBottomBorder} />
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.count)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.fixedPayment?.baseValues)}</th>
@@ -159,6 +164,7 @@ export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.amount)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.amount)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.valAmount)}</th>
+                  <th className={styles.noBottomBorder} />
                 </tr>
               </tbody>
             </table>
