@@ -7,6 +7,7 @@ import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 export const getExpectedReceipts: RequestHandler = async (req, res) => {
   const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date().getTime()));
   const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date().getTime()));
+  const includePerTime = req.query.includePerTime === 'true';
   const perTimePaymentСontractTypeID = [764683309, 1511199483]; // ruid вида договора с почасовой оплатой
   const fixedPaymentСontractTypeID = [764683308, 1511199483]; // ruid вида договора с фиксированной оплатой
   const contractTypeId = [154913796, 747560394]; // ruid типа договора на абонентское обслуживание
@@ -217,7 +218,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       const contractsActLines = contractActs?.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
       const contractsActLinesSum = { quantitySum: 0, costsum: null };
       let lastQuantity = 0;
-      contractsActLines?.forEach(actLines => {
+
+      includePerTime && contractsActLines?.forEach(actLines => {
         actLines?.forEach(actLine => {
           contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
           contractsActLinesSum.costsum = lastQuantity === 0 ? (contractsActLinesSum.costsum ?? actLine['USR$COST'])
@@ -242,7 +244,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
 
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
 
-      const amount = perTimeAmount + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const amount = (includePerTime ? perTimeAmount : 0) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
 
       const contract: IExpectedReceipt = {
         customer: {
@@ -260,7 +262,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
           amount: numberFix(perTimeContractDetailsSum['AMOUNT'])
         },
-        perTimePayment: perTimeContract ? {
+        perTimePayment: includePerTime && perTimeContract ? {
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
           perHour: numberFix(contractsActLinesSum.costsum),
           hoursAvarage: numberFix(hoursAvarage),

@@ -24,11 +24,11 @@ const ThTooltip = ({ title, children, ...rest }: ThTooltipProps) => {
 
 export interface ExpectedReceiptsReportProps {
   onDate: DateRange<Date>;
+  includePerTime: boolean
 }
 
-export function ExpectedReceiptsReport(props: ExpectedReceiptsReportProps) {
-  const { onDate } = props;
-  const { data, isFetching } = useGetExpectedReceiptsQuery({ onDate });
+export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<ExpectedReceiptsReportProps>) {
+  const { data, isFetching } = useGetExpectedReceiptsQuery({ onDate, includePerTime });
 
   const total = useMemo(() => {
     if ((data?.length ?? 0) < 1) return;
