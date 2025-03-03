@@ -188,7 +188,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     };
 
     const numberFix = (number: number) => {
-      return Number((number ?? 0).toFixed(2));
+      return Number((number ?? 0).toFixed());
     };
 
     const contracts: IExpectedReceipt[] = [];
