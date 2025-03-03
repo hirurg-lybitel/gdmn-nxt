@@ -1,4 +1,4 @@
-import { IRequestResult, IContract } from '@gsbelarus/util-api-types';
+import { IRequestResult, IContract, IExpectedReceipt } from '@gsbelarus/util-api-types';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { RequestHandler } from 'express';
 import { resultError } from '../responseMessages';
@@ -7,6 +7,7 @@ import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 export const getExpectedReceipts: RequestHandler = async (req, res) => {
   const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date().getTime()));
   const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date().getTime()));
+  const includePerTime = req.query.includePerTime === 'true';
   const perTimePaymentСontractTypeID = [764683309, 1511199483]; // ruid вида договора с почасовой оплатой
   const fixedPaymentСontractTypeID = [764683308, 1511199483]; // ruid вида договора с фиксированной оплатой
   const contractTypeId = [154913796, 747560394]; // ruid типа договора на абонентское обслуживание
@@ -20,7 +21,6 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     [986962827, 119040821],
     [986962829, 119040821]
   ]; // ruid услуг по обслуживанию ПО
-
 
   const serviceRuidToRequest = (fieldName: string) => {
     let request = '';
@@ -58,7 +58,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE
         AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
       ORDER BY
-        doc.DOCUMENTDATE asc
+        doc.DOCUMENTDATE desc
     `;
 
     // Получение договоров за период
@@ -189,10 +189,10 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     };
 
     const numberFix = (number: number) => {
-      return Number((number ?? 0).toFixed(2));
+      return Number((number ?? 0).toFixed());
     };
 
-    const contracts = [];
+    const contracts: IExpectedReceipt[] = [];
 
     Object.values(sortedData).forEach((contractsEls: any[]) => {
       // Ближайший договор с клиентом на повременную оплату
@@ -200,11 +200,13 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         && contract['KDBID'] === perTimePaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
+
       // Ближайший договор с клиентом на фиксированную оплату
       const fixedPaymentContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
         && contract['KDBID'] === fixedPaymentСontractTypeID[1]
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
+
       // Услуги позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
@@ -216,7 +218,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       const contractsActLines = contractActs?.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
       const contractsActLinesSum = { quantitySum: 0, costsum: null };
       let lastQuantity = 0;
-      contractsActLines?.forEach(actLines => {
+
+      includePerTime && contractsActLines?.forEach(actLines => {
         actLines?.forEach(actLine => {
           contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
           contractsActLinesSum.costsum = lastQuantity === 0 ? (contractsActLinesSum.costsum ?? actLine['USR$COST'])
@@ -239,9 +242,11 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       // Часов среднемесячно
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
-      const amount = (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
 
-      const contract = {
+      const amount = (includePerTime ? perTimeAmount : 0) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+
+      const contract: IExpectedReceipt = {
         customer: {
           ID: contractsEls[0]['CUSTOMER_ID'],
           NAME: contractsEls[0]['CUSTOMER_NAME']
@@ -257,12 +262,12 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
           amount: numberFix(perTimeContractDetailsSum['AMOUNT'])
         },
-        perTimePayment: perTimeContract ? {
+        perTimePayment: includePerTime && perTimeContract ? {
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
           perHour: numberFix(contractsActLinesSum.costsum),
           hoursAvarage: numberFix(hoursAvarage),
-          amount: numberFix(contractsActLinesSum.costsum * hoursAvarage)
-        } : {},
+          amount: numberFix(perTimeAmount)
+        } : undefined,
         amount: numberFix(amount),
         valAmount: numberFix(amount / currrate)
       };
@@ -270,6 +275,16 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       if (contract.amount <= 0 && contract.valAmount <= 0) return;
 
       contracts.push(contract);
+    });
+
+    contracts.sort((a, b) => {
+      if (a.amount > b.amount) {
+        return -1;
+      }
+      if (a.amount < b.amount) {
+        return 1;
+      }
+      return 0;
     });
 
     const result: IRequestResult = {
