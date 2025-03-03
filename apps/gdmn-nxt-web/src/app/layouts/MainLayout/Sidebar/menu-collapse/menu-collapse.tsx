@@ -107,7 +107,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
         <ListItemText
           primary={
             <Typography
-              variant="subtitle1"
+              variant="body1"
               color="inherit"
               sx={{ my: 'auto' }}
             >

@@ -20,6 +20,9 @@ export default function typography(theme: ThemeOptions): Partial<Typography> {
   return {
     fontFamily: theme.fontFamily,
     fontWeightMedium: 600,
+    body1: {
+      lineHeight: 1.3,
+    },
     caption: {
       fontSize: '0.75rem',
       fontWeight: 400,

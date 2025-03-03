@@ -45,6 +45,8 @@ export function MenuGroup(props: MenuGroupProps) {
   return (
     <>
       <List
+        dense
+        disablePadding
         subheader={
           item.title && (
             <Typography

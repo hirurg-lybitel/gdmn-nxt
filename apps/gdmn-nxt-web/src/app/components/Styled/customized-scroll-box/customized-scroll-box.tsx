@@ -1,6 +1,6 @@
 import styles from './customized-scroll-box.module.less';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PerfectScrollbar, { ScrollBarProps } from 'react-perfect-scrollbar';
 import { CSSProperties } from '@mui/styles';
 
@@ -46,6 +46,26 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     handleScroll();
   }, []);
 
+  const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
+  const wheelEvent = useMemo(() => 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
+
+  const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
+  const preventDefaultForScrollKeys = useCallback((e: KeyboardEvent) => {
+    if (keys[e.key]) {
+      preventDefault(e);
+      return false;
+    }
+    return true;
+  }, []);
+
+  const omMouseEnter = () => {
+    window.addEventListener(wheelEvent, preventDefault, { passive: false });
+  };
+
+  const onMouseLeave = () => {
+    window.removeEventListener(wheelEvent, preventDefault, false);
+  };
+
   return (
     <div
       aria-label="CustomizedScrollBox"
@@ -68,6 +88,8 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
           {...style}
           containerRef={(ref) => containerRef.current = ref}
           onScrollY={handleScroll}
+          onMouseEnter={omMouseEnter}
+          onMouseLeave={onMouseLeave}
         >
           {children}
         </PerfectScrollbar>

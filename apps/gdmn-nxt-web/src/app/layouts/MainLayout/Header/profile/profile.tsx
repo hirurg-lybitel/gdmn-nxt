@@ -163,7 +163,11 @@ export function Profile(props: ProfileProps) {
                   <List disablePadding>
                     <ListItem>
                       <Stack direction="column">
-                        <Stack direction="row" spacing={0.5}>
+                        <Stack
+                          direction="row"
+                          spacing={0.5}
+                          alignItems="center"
+                        >
                           <Typography variant="subtitle1">{welcomeText()}</Typography>
                           <Typography variant="body1" textTransform={'capitalize'}>
                             {user.userProfile?.fullName ?? 'Неизвестный пользователь'}
