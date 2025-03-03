@@ -57,7 +57,13 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
     });
   }, [data]);
 
-  const procents = useMemo(() => data?.map((item => ((item.amount / (total?.amount ?? 1)) * 100).toFixed(1))), [data, total]);
+  const procents = useMemo(() => data?.map((item => {
+    const procent = ((item.amount / (total?.amount ?? 1)) * 100);
+    if (procent < 0.1) {
+      return '<0.1%';
+    }
+    return procent.toFixed(1) + '%';
+  })), [data, total]);
 
   const numberFormat = (number?: number) => {
     if (!number || number <= 0) return '';
@@ -145,7 +151,7 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.valAmount)}</th>
-                    <th className={styles.numberTh}>{procents?.[index]}%</th>
+                    <th className={styles.numberTh}>{procents?.[index]}</th>
                   </tr>
                 ))}
                 <tr className={styles.tableRow} style={data.length % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>

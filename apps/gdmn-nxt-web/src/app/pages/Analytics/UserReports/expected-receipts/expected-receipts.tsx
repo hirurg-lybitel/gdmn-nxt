@@ -5,6 +5,7 @@ import styles from './expected-receipts.module.less';
 import { useState } from 'react';
 import ExpectedReceiptsReport from './expected-receipts-report/expected-receipts-report';
 import { DateRange } from '@mui/lab';
+import { SingleInputDateRangeField } from '@mui/x-date-pickers-pro/SingleInputDateRangeField';
 
 export interface ExpectedReceiptsProps {}
 
@@ -35,7 +36,7 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
     <Stack
       direction="column"
       flex={1}
-      spacing={2}
+      spacing={1}
       width={'100%'}
       className={styles.expectedreceipts}
     >
@@ -44,11 +45,11 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <DateRangePicker
-            label="На дату"
-            sx={{ width: '625px' }}
+            label="Период"
             value={onDate}
             onChange={handleChange}
-            calendars={2}
+            calendars={1}
+            slots={{ field: SingleInputDateRangeField }}
             slotProps={{ textField: { variant: 'outlined' } }}
           />
           <FormControlLabel
