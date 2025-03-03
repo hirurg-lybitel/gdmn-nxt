@@ -42,12 +42,13 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
       <CustomizedCard>
         <CardHeader title={<Typography variant="pageHeader">Ожидаемые поступления</Typography>} />
         <Divider />
-        <CardContent style={{ display: 'flex', gap: 20 }}>
+        <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <DateRangePicker
             label="На дату"
+            sx={{ width: '625px' }}
             value={onDate}
             onChange={handleChange}
-            calendars={1}
+            calendars={2}
             slotProps={{ textField: { variant: 'outlined' } }}
           />
           <FormControlLabel
