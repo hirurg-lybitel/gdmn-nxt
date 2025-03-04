@@ -214,8 +214,8 @@ const find: FindHandler<IExpectedReceipt> = async (
       );
 
       // Ближайший договор с клиентом на фиксированную оплату
-      const fixedPaymentContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
-        && contract['KDBID'] === fixedPaymentСontractTypeID[1]
+      const fixedPaymentContract = contractsEls.find(contract => ((contract['KXID'] === fixedPaymentСontractTypeID[0]
+        && contract['KDBID'] === fixedPaymentСontractTypeID[1]) || (!contract['KXID'] && !contract['KDBID']))
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
 
