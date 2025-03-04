@@ -22,7 +22,15 @@ const find: FindHandler<IExpectedReceipt> = async (
     [986962829, 119040821]
   ]; // ruid услуг по обслуживанию ПО
 
-  const quarterRuid = [147071928, 141260635]; // ruid квартальной переодичности выставления
+  // ruid переодичностей выставления и функция корректировки суммы
+  const actPeriodicity = [
+    { XID: 147071927, DBID: 141260635, action: (amount: number) => amount }, // месяц
+    { XID: 147071929, DBID: 141260635, action: (amount: number) => amount / 12 }, // год
+    { XID: 147071928, DBID: 141260635, action: (amount: number) => amount / 3 }, // квартал
+    { XID: 147071926, DBID: 141260635, action: (amount: number) => amount }, // неделя
+    { XID: 147071925, DBID: 141260635, action: (amount: number) => amount }, // день
+    { XID: 147071930, DBID: 141260635, action: (amount: number) => amount }, // произвольный
+  ];
 
   const serviceRuidToRequest = (fieldName: string) => {
     let request = '';
@@ -227,8 +235,10 @@ const find: FindHandler<IExpectedReceipt> = async (
       // Позиции договора на фиксированную оплату
       const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
 
-      // Оплата указана за квартал
-      const quarterPayment = fixedPaymentContractDetails?.[0].APXID === quarterRuid[0] && fixedPaymentContractDetails?.[0].APDBID === quarterRuid[1];
+      const periodicityСorrectionFun = (actPeriodicity.find(item => fixedPaymentContractDetails?.[0].APXID === item.XID
+        && fixedPaymentContractDetails?.[0].APDBID === item.DBID)?.action) ?? function (amount: number) {
+        return amount;
+      };
 
       // Позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
@@ -266,7 +276,7 @@ const find: FindHandler<IExpectedReceipt> = async (
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
       // Расчет сумм по договорам
-      const fixedPaymentAmount = (fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0) / (quarterPayment ? 3 : 1);
+      const fixedPaymentAmount = periodicityСorrectionFun((fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0));
       const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
       const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
