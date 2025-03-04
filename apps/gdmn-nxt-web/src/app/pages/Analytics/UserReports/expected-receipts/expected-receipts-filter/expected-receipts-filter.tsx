@@ -16,10 +16,8 @@ export function ExpectedReceiptsFilter({ filterData, saveFilters, disabled }: IE
     saveFilters(data);
   }, [filterData, saveFilters]);
 
-  const handleChangeProjectStatus = useCallback((e: any, value: IFieldsSort) => {
+  const handleChangeSort = useCallback((e: any, value: IFieldsSort) => {
     const data = { ...filterData };
-
-    console.log(value);
 
     if (value?.value === undefined) {
       delete data['sortField'];
@@ -55,7 +53,7 @@ export function ExpectedReceiptsFilter({ filterData, saveFilters, disabled }: IE
           return item.value === filterData?.sortField &&
           item.sort === filterData?.sort;
         }) ?? sortFields[0]}
-        onChange={handleChangeProjectStatus}
+        onChange={handleChangeSort}
         renderOption={(props, option, { selected }) => (
           <li {...props} key={option.id}>
             {option.name}
