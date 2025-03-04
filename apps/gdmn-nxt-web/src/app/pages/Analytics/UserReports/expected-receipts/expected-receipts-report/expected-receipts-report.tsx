@@ -85,6 +85,7 @@ export function ExpectedReceiptsReport({ onDate, filterData }: Readonly<Expected
   return (
     <div style={{ flex: 1 }}>
       <PerfectScrollbar
+        options={{ suppressScrollY: true }}
         style={{
           display: 'flex',
           paddingBottom: '10px'
