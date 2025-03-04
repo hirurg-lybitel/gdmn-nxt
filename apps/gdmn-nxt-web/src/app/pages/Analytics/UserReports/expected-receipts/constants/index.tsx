@@ -8,25 +8,19 @@ export interface IFieldsSort {
 export const sortFields: IFieldsSort[] = [
   {
     id: 0,
-    name: 'В алфавитном порядке',
+    name: 'По алфавиту',
     value: 'customer',
     sort: 'asc'
   },
   {
-    id: 0,
-    name: 'В алфавитном обратном порядке',
-    value: 'customer',
-    sort: 'desc'
-  },
-  {
     id: 1,
-    name: 'Сумма по убыванию',
+    name: 'Сначала большие суммы',
     value: 'amount',
     sort: 'desc'
   },
   {
     id: 1,
-    name: 'Сумма по возрастанию',
+    name: 'Сначала маленькие суммы',
     value: 'amount',
     sort: 'asc'
   }
