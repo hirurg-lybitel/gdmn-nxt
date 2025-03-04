@@ -22,6 +22,8 @@ const find: FindHandler<IExpectedReceipt> = async (
     [986962829, 119040821]
   ]; // ruid услуг по обслуживанию ПО
 
+  const quarterRuid = [147071928, 141260635]; // ruid квартальной переодичности выставления
+
   const serviceRuidToRequest = (fieldName: string) => {
     let request = '';
     serviceId.forEach(s => {
@@ -81,17 +83,20 @@ const find: FindHandler<IExpectedReceipt> = async (
       cl.USR$QUANTITY QUANTITY,
       cl.USR$COST PRICE,
       cl.USR$SUMNCU AMOUNT,
-      cl.USR$COSTBV PRICEBV
+      cl.USR$COSTBV PRICEBV,
+      apRuid.XID as APXID,
+      apRuid.DBID as APDBID
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
       LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
+      LEFT JOIN gd_ruid apRuid ON apRuid.ID = cl.USR$ACTPERIODICITY
     ORDER BY
       cl.MASTERKEY, good.NAME`;
 
-    // Получение услуг(Обслуживание ПО) договора
+    // Получение позиций договора
     const datails = await fetchAsObject(sql);
 
-    // Сортировка услуг по ключу чтобы потом получить услуги договора по id(MASTERKEY)
+    // Сортировка позиций по ключу чтобы потом получить услуги договора по id(MASTERKEY)
     const sortedDetails = {};
     datails.forEach(d => {
       if (sortedDetails[d['MASTERKEY']]) {
@@ -219,6 +224,12 @@ const find: FindHandler<IExpectedReceipt> = async (
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
 
+      // Позиции договора на фиксированную оплату
+      const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
+
+      // Оплата указана за квартал
+      const quarterPayment = fixedPaymentContractDetails?.[0].APXID === quarterRuid[0] && fixedPaymentContractDetails?.[0].APDBID === quarterRuid[1];
+
       // Позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
@@ -255,7 +266,7 @@ const find: FindHandler<IExpectedReceipt> = async (
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
       // Расчет сумм по договорам
-      const fixedPaymentAmount = fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0;
+      const fixedPaymentAmount = (fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0) / (quarterPayment ? 3 : 1);
       const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
       const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
