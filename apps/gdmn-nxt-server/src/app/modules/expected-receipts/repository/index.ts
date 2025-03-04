@@ -1,13 +1,13 @@
-import { IRequestResult, IContract, IExpectedReceipt } from '@gsbelarus/util-api-types';
-import { parseIntDef } from '@gsbelarus/util-useful';
-import { RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
+import { IContract, IExpectedReceipt, FindHandler } from '@gsbelarus/util-api-types';
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 
-export const getExpectedReceipts: RequestHandler = async (req, res) => {
-  const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date().getTime()));
-  const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date().getTime()));
-  const includePerTime = req.query.includePerTime === 'true';
+const find: FindHandler<IExpectedReceipt> = async (
+  sessionID,
+  clause
+) => {
+  const dateBegin = clause['dateBegin'];
+  const dateEnd = clause['dateEnd'];
+  const includePerTime = clause['includePerTime'];
   const perTimePaymentСontractTypeID = [764683309, 1511199483]; // ruid вида договора с почасовой оплатой
   const fixedPaymentСontractTypeID = [764683308, 1511199483]; // ruid вида договора с фиксированной оплатой
   const contractTypeId = [154913796, 747560394]; // ruid типа договора на абонентское обслуживание
@@ -30,7 +30,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     return request;
   };
 
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
   const baseValuesTable = [147035098, 9802323];
 
@@ -221,7 +221,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
 
-      // Услуги позиции договора на повременную оплату
+      // Позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
 
@@ -256,6 +256,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       // Часов среднемесячно
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
+      // Расчет сумм по договорам
       const fixedPaymentAmount = (fixedPaymentContract?.['USR$BASEVALUE'] ?? 0) * baseValue;
       const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
@@ -291,28 +292,12 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       contracts.push(contract);
     });
 
-    contracts.sort((a, b) => {
-      if (a.amount > b.amount) {
-        return -1;
-      }
-      if (a.amount < b.amount) {
-        return 1;
-      }
-      return 0;
-    });
-
-    const result: IRequestResult = {
-      queries: {
-        expectedReceipts: contracts
-      },
-      _params: [{ dateBegin: dateBegin, dateEnd: dateEnd }],
-      _schema: {}
-    };
-
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).send(resultError(error.message));
+    return contracts;
   } finally {
     await releaseReadTransaction();
   }
+};
+
+export const expectedReceiptsRepository = {
+  find
 };
