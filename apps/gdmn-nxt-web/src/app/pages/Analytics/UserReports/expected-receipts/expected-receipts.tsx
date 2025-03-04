@@ -1,5 +1,5 @@
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
-import { DateRangePicker } from '@mui/x-date-pickers-pro';
+import { DateRangePicker, PickersShortcutsItem } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './expected-receipts.module.less';
 import { useCallback, useState } from 'react';
@@ -13,6 +13,57 @@ import { IFilteringData } from '@gsbelarus/util-api-types';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { ExpectedReceiptsFilter } from './expected-receipts-filter/expected-receipts-filter';
 import { sortFields } from './constants';
+import dayjs, { Dayjs } from 'dayjs';
+
+const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
+  {
+    label: 'Текущий месяц',
+    getValue: () => {
+      const today = dayjs();
+      return [today.startOf('month').toDate(), today.endOf('month').toDate()];
+    },
+  },
+  {
+    label: 'Следующий месяц',
+    getValue: () => {
+      const today = dayjs();
+      const startOfNextMonth = today.endOf('month').add(1, 'day');
+      return [startOfNextMonth.toDate(), startOfNextMonth.endOf('month').toDate()];
+    },
+  },
+  {
+    label: 'Предыдущий месяц',
+    getValue: () => {
+      const today = dayjs();
+      const startOfLastMonth = today.subtract(1, 'month').startOf('month');
+      return [startOfLastMonth.toDate(), startOfLastMonth.endOf('month').toDate()];
+    },
+  },
+  {
+    label: 'Текущий год',
+    getValue: () => {
+      const today = dayjs();
+      return [today.startOf('year').toDate(), today.endOf('year').toDate()];
+    },
+  },
+  {
+    label: 'Следующий год',
+    getValue: () => {
+      const today = dayjs();
+      const startOfNextMonth = today.endOf('year').add(1, 'day');
+      return [startOfNextMonth.toDate(), startOfNextMonth.endOf('year').toDate()];
+    },
+  },
+  {
+    label: 'Предыдущий год',
+    getValue: () => {
+      const today = dayjs();
+      const startOfLastMonth = today.subtract(1, 'year').startOf('year');
+      return [startOfLastMonth.toDate(), startOfLastMonth.endOf('year').toDate()];
+    },
+  },
+  { label: 'Сбросить', getValue: () => [null, null] },
+];
 
 export interface ExpectedReceiptsProps {}
 
@@ -62,7 +113,11 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
             onChange={handleChange}
             calendars={1}
             slots={{ field: SingleInputDateRangeField }}
-            slotProps={{ textField: { variant: 'outlined' } }}
+            slotProps={{
+              shortcuts: {
+                items: shortcutsItems,
+              },
+              textField: { variant: 'outlined' } }}
           />
           <ExpectedReceiptsFilter
             filterData={filterData}

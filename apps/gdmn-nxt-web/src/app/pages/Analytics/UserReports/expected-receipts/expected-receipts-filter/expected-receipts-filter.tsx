@@ -42,7 +42,7 @@ export function ExpectedReceiptsFilter({ filterData, saveFilters, disabled }: IE
             onChange={handleIncludePerTimeChange}
           />
         }
-        label="Учитывать поверменную оплату"
+        label="Учитывать повременную оплату"
       />
       <Autocomplete
         disabled={disabled}
