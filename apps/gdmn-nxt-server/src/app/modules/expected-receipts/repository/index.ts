@@ -32,8 +32,6 @@ const find: FindHandler<IExpectedReceipt> = async (
 
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
-  const baseValuesTable = [147035098, 9802323];
-
   try {
     let sql = `
       SELECT
@@ -257,7 +255,7 @@ const find: FindHandler<IExpectedReceipt> = async (
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
       // Расчет сумм по договорам
-      const fixedPaymentAmount = (fixedPaymentContract?.['USR$BASEVALUE'] ?? 0) * baseValue;
+      const fixedPaymentAmount = fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0;
       const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
       const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
@@ -268,7 +266,7 @@ const find: FindHandler<IExpectedReceipt> = async (
           NAME: contractsEls[0]['CUSTOMER_NAME']
         },
         respondents: [],
-        count: (hoursAvarage ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
+        count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
         fixedPayment: {
           baseValues: numberFix(fixedPaymentContract?.['USR$BASEVALUE']),
           amount: numberFix(fixedPaymentAmount)

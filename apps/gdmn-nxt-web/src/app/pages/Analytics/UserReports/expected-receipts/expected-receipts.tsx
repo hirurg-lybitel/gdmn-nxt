@@ -1,18 +1,35 @@
-import { Box, Button, CardActions, CardContent, CardHeader, Checkbox, Divider, FormControlLabel, Stack, Typography } from '@mui/material';
+import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
 import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './expected-receipts.module.less';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import ExpectedReceiptsReport from './expected-receipts-report/expected-receipts-report';
 import { DateRange } from '@mui/lab';
 import { SingleInputDateRangeField } from '@mui/x-date-pickers-pro/SingleInputDateRangeField';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@gdmn-nxt/store';
+import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import { IFilteringData } from '@gsbelarus/util-api-types';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
+import { ExpectedReceiptsFilter } from './expected-receipts-filter/expected-receipts-filter';
+import { sortFields } from './constants';
 
 export interface ExpectedReceiptsProps {}
 
 export function ExpectedReceipts(props: ExpectedReceiptsProps) {
   const [generate, setGenerate] = useState(false);
   const [onDate, setOnDate] = useState<DateRange<Date> | undefined>();
-  const [includePerTime, setIncludePerTime] = useState(false);
+
+  const filterEntityName = 'expectedReceipts';
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
+  const [filtersIsLoading] = useFilterStore(filterEntityName, { includePerTime: true, sortField: sortFields[0].value, sort: sortFields[0].sort });
+
+  const dispatch = useDispatch();
+
+  const saveFilters = useCallback((filteringData: IFilteringData) => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: filteringData }));
+    generate && setGenerate(false);
+  }, [dispatch, generate]);
 
   const handleChange = (newValue: DateRange<Date> | undefined) => {
     setOnDate(newValue);
@@ -25,11 +42,6 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
 
   const handelClear = () => {
     setGenerate(false);
-  };
-
-  const handleIncludePerTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIncludePerTime(e.target.checked);
-    generate && setGenerate(false);
   };
 
   return (
@@ -52,14 +64,10 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
             slots={{ field: SingleInputDateRangeField }}
             slotProps={{ textField: { variant: 'outlined' } }}
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={includePerTime}
-                onChange={handleIncludePerTimeChange}
-              />
-            }
-            label="Учитывать поверменную оплату"
+          <ExpectedReceiptsFilter
+            filterData={filterData}
+            saveFilters={saveFilters}
+            disabled={filtersIsLoading}
           />
         </CardContent>
         <Divider />
@@ -70,23 +78,27 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
             flex={1}
           >
             <Box flex={1} />
-            <Button onClick={handelClear} variant="outlined">
+            <Button
+              onClick={handelClear}
+              disabled={!onDate?.[0] || !onDate?.[1]}
+              variant="outlined"
+            >
                   Очистить
             </Button>
             <Button
               variant="contained"
+              disabled={!onDate?.[0] || !onDate?.[1]}
               onClick={handleGenerate}
             >
                   Сформировать
             </Button>
-
           </Stack>
         </CardActions>
 
       </CustomizedCard>
       {generate && onDate && onDate[0] && onDate[1]
         ?
-        <ExpectedReceiptsReport onDate={onDate} includePerTime={includePerTime} />
+        <ExpectedReceiptsReport onDate={onDate} filterData={filterData} />
         : null}
     </Stack>
   );
