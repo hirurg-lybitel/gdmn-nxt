@@ -111,7 +111,7 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                   </ThTooltip>
                   <th className={styles.noTopBorder} colSpan={2} >Фиксированная ежемесячная оплата</th>
                   <th className={styles.noTopBorder} colSpan={3}>Оплата за рабочие места</th>
-                  <th className={styles.noTopBorder} colSpan={4}>Повременная оплата</th>
+                  <th className={styles.noTopBorder} colSpan={3}>Повременная оплата</th>
                   <th className={styles.noTopBorder} colSpan={3}>Всего</th>
                 </tr>
                 <tr className={styles.tableRow}>
@@ -120,7 +120,6 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                   <ThTooltip title={'Количество рабочих мест'}>Кол-во р/м</ThTooltip>
                   <ThTooltip style={{ minWidth: '44px' }} title={'Базовая величина за одно рабочее место'}>Б/в за 1 р/м</ThTooltip>
                   <th>Руб</th>
-                  <ThTooltip style={{ minWidth: '42px' }} title={'Базовая величина за час'}>За час б/в</ThTooltip>
                   <th>За час руб</th>
                   <ThTooltip title={'Часов среднемесячно'}>часов см</ThTooltip>
                   <th>Руб</th>
@@ -145,7 +144,6 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                     <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.count)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.baseValues)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.amount)}</th>
-                    <th className={styles.numberTh}>{numberFormat((contact.perTimePayment?.baseValues))}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.perHour)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.hoursAvarage)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.amount)}</th>
@@ -164,7 +162,6 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.count)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.baseValues)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.amount)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.baseValues)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.perHour)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.hoursAvarage)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.amount)}</th>

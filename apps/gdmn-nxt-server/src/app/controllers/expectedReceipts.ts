@@ -32,6 +32,8 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
 
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
 
+  const baseValuesTable = [147035098, 9802323];
+
   try {
     let sql = `
       SELECT
@@ -169,6 +171,18 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     // Курс валюты на среднюю дату между датами заданного периода
     const currrate = (await fetchAsObject(sql, { midpointDate }))[0]['VAL'];
 
+    sql = `SELECT
+      CONSTVALUE
+    FROM GD_CONST c
+      JOIN GD_CONSTVALUE cv ON cv.CONSTKEY = c.id
+      LEFT JOIN gd_ruid ruid ON ruid.XID = 147035098 AND ruid.DBID = 9802323
+    WHERE c.id = ruid.id AND cv.CONSTDATE <= :dateEnd
+    ORDER BY cv.CONSTDATE desc
+    `;
+
+    // Базовая величина на конец периода
+    const baseValue = (await fetchAsObject(sql, { dateEnd }))[0]['CONSTVALUE'];
+
     const detailsSum = (details: any[]) => {
       if (!details || details.length <= 0) return { QUANTITY: 0, AMOUNT: 0, PRICEBV: 0 };
 
@@ -242,9 +256,10 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       // Часов среднемесячно
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
+      const fixedPaymentAmount = (fixedPaymentContract?.['USR$BASEVALUE'] ?? 0) * baseValue;
+      const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
-
-      const amount = (includePerTime ? perTimeAmount : 0) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
 
       const contract: IExpectedReceipt = {
         customer: {
@@ -252,18 +267,17 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
           NAME: contractsEls[0]['CUSTOMER_NAME']
         },
         respondents: [],
-        count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
+        count: (hoursAvarage ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
         fixedPayment: {
           baseValues: numberFix(fixedPaymentContract?.['USR$BASEVALUE']),
-          amount: numberFix(fixedPaymentContract?.SUMNCU)
+          amount: numberFix(fixedPaymentAmount)
         },
         workstationPayment: {
           count: numberFix(perTimeContractDetailsSum['QUANTITY']),
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
-          amount: numberFix(perTimeContractDetailsSum['AMOUNT'])
+          amount: numberFix(workstationAmount)
         },
-        perTimePayment: includePerTime && perTimeContract ? {
-          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+        perTimePayment: includePerTime && hoursAvarage ? {
           perHour: numberFix(contractsActLinesSum.costsum),
           hoursAvarage: numberFix(hoursAvarage),
           amount: numberFix(perTimeAmount)
