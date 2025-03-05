@@ -2,13 +2,16 @@ import { RequestHandler } from 'express';
 import { expectedReceiptsService } from '../service';
 import { IRequestResult } from '@gsbelarus/util-api-types';
 import { resultError } from '@gsbelarus/util-helpers';
-import { parseIntDef } from '@gsbelarus/util-useful';
 
 const findAll: RequestHandler = async (req, res) => {
   const { id: sessionID } = req.session;
-  const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date().getTime()));
-  const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date().getTime()));
+  const dateBegin = new Date(Number(req.params.dateBegin));
+  const dateEnd = new Date(Number(req.params.dateEnd));
   try {
+    if (isNaN(dateBegin.getTime()) || isNaN(dateEnd.getTime())) {
+      return res.send(resultError('Некорретная дата в периоде'));
+    }
+
     const response = await expectedReceiptsService.findAll(
       sessionID,
       {
