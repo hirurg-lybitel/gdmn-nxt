@@ -23,9 +23,9 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
     const methods = permissions[name as ActionName] ;
     const regEx = (() => 'forGroup' in methods
       ? new RegExp(`\\/[^\/]*\\b${name}\\b`)
-      : new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?\\d*$`))();
+      : new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\d-]*$`))();
 
-    if (!regEx.test(url)) continue;
+    if (!regEx.test(url.split('?')[0])) continue;
 
     // /** Если это групповое право и оно true */
     // if (methods.forGroup) {

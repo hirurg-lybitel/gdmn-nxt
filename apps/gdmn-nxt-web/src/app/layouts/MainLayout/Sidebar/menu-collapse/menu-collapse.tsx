@@ -8,6 +8,10 @@ import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 import { makeStyles } from '@mui/styles';
 import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
+import { useSelector } from 'react-redux';
+import { Permissions } from '@gsbelarus/util-api-types';
+import { RootState } from '@gdmn-nxt/store';
 
 const useStyles = makeStyles((theme: Theme) => ({
   menuCollapse: {
@@ -42,14 +46,23 @@ export function MenuCollapse(props: MenuCollapseProps) {
     setOpen(!open);
   };
 
+  const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+
   const menus = menu.children?.map((item: IMenuItem) => {
     switch (item.type) {
       case 'item':
-        return <MenuItem
-          key={item.id}
-          item={item}
-          level={level + 1}
-        />;
+        return (
+          <PermissionsGate
+            key={item.id}
+            actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? '']}
+          >
+            <MenuItem
+              key={item.id}
+              item={item}
+              level={level + 1}
+            />
+          </PermissionsGate>
+        );
       case 'collapse':
         return <MenuCollapse
           key={item.id}
