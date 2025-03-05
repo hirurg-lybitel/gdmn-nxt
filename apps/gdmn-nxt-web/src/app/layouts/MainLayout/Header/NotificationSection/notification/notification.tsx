@@ -1,4 +1,3 @@
-import './notification.module.less';
 import {
   Badge,
   Box,
@@ -33,7 +32,6 @@ import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
-import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -79,6 +77,19 @@ const useStyles = makeStyles((theme: Theme) => ({
     animationName: '$fadeOut',
     animationDuration: '1000ms',
   },
+  bellContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+    width: '25px',
+    height: '25px',
+    borderRadius: '50%',
+    border: '2px solid white',
+    animation: '$ring-animation 1.5s infinite ease-out',
+  },
   '@keyframes fadeIn': {
     '0%': {
       opacity: 0
@@ -94,6 +105,16 @@ const useStyles = makeStyles((theme: Theme) => ({
     '100%': {
       opacity: 0
     }
+  },
+  '@keyframes ring-animation': {
+    '0%': {
+      opacity: 0.8,
+      transform: 'scale(1)',
+    },
+    '100%': {
+      opacity: 0,
+      transform: 'scale(3)',
+    },
   }
 }));
 
@@ -278,8 +299,14 @@ export function Notification(props: NotificationProps) {
             color="error"
             variant="standard"
             badgeContent={messages.length}
+            className={classes.bellContainer}
           >
             <NotificationsOutlinedIcon color="secondary" />
+            {messages.length > 0 &&
+            <>
+              <div className={classes.ring} />
+              <div className={classes.ring} style={{ animationDelay: '0.5s' }} />
+            </>}
           </Badge>
         </IconButton>
       </Tooltip>

@@ -1,13 +1,13 @@
-import { IRequestResult, IContract, IExpectedReceipt } from '@gsbelarus/util-api-types';
-import { parseIntDef } from '@gsbelarus/util-useful';
-import { RequestHandler } from 'express';
-import { resultError } from '../responseMessages';
+import { IContract, IExpectedReceipt, FindHandler } from '@gsbelarus/util-api-types';
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 
-export const getExpectedReceipts: RequestHandler = async (req, res) => {
-  const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date().getTime()));
-  const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date().getTime()));
-  const includePerTime = req.query.includePerTime === 'true';
+const find: FindHandler<IExpectedReceipt> = async (
+  sessionID,
+  clause
+) => {
+  const dateBegin = clause['dateBegin'];
+  const dateEnd = clause['dateEnd'];
+  const includePerTime = clause['includePerTime'];
   const perTimePaymentСontractTypeID = [764683309, 1511199483]; // ruid вида договора с почасовой оплатой
   const fixedPaymentСontractTypeID = [764683308, 1511199483]; // ruid вида договора с фиксированной оплатой
   const contractTypeId = [154913796, 747560394]; // ruid типа договора на абонентское обслуживание
@@ -22,6 +22,16 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     [986962829, 119040821]
   ]; // ruid услуг по обслуживанию ПО
 
+  // ruid переодичностей выставления и функция корректировки суммы
+  const actPeriodicity = [
+    { XID: 147071927, DBID: 141260635, action: (amount: number) => amount }, // месяц
+    { XID: 147071929, DBID: 141260635, action: (amount: number) => amount / 12 }, // год
+    { XID: 147071928, DBID: 141260635, action: (amount: number) => amount / 3 }, // квартал
+    { XID: 147071926, DBID: 141260635, action: (amount: number) => amount }, // неделя
+    { XID: 147071925, DBID: 141260635, action: (amount: number) => amount }, // день
+    { XID: 147071930, DBID: 141260635, action: (amount: number) => amount }, // произвольный
+  ];
+
   const serviceRuidToRequest = (fieldName: string) => {
     let request = '';
     serviceId.forEach(s => {
@@ -30,7 +40,7 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     return request;
   };
 
-  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(req.sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
   try {
     let sql = `
@@ -81,17 +91,20 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       cl.USR$QUANTITY QUANTITY,
       cl.USR$COST PRICE,
       cl.USR$SUMNCU AMOUNT,
-      cl.USR$COSTBV PRICEBV
+      cl.USR$COSTBV PRICEBV,
+      apRuid.XID as APXID,
+      apRuid.DBID as APDBID
     FROM USR$BNF_CONTRACTLINE cl
       JOIN GD_GOOD good ON good.ID = cl.USR$BENEFITSNAME
       LEFT JOIN gd_ruid ruid ON ruid.id = cl.USR$BENEFITSNAME
+      LEFT JOIN gd_ruid apRuid ON apRuid.ID = cl.USR$ACTPERIODICITY
     ORDER BY
       cl.MASTERKEY, good.NAME`;
 
-    // Получение услуг(Обслуживание ПО) договора
+    // Получение позиций договора
     const datails = await fetchAsObject(sql);
 
-    // Сортировка услуг по ключу чтобы потом получить услуги договора по id(MASTERKEY)
+    // Сортировка позиций по ключу чтобы потом получить услуги договора по id(MASTERKEY)
     const sortedDetails = {};
     datails.forEach(d => {
       if (sortedDetails[d['MASTERKEY']]) {
@@ -169,6 +182,18 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
     // Курс валюты на среднюю дату между датами заданного периода
     const currrate = (await fetchAsObject(sql, { midpointDate }))[0]['VAL'];
 
+    sql = `SELECT
+      CONSTVALUE
+    FROM GD_CONST c
+      JOIN GD_CONSTVALUE cv ON cv.CONSTKEY = c.id
+      LEFT JOIN gd_ruid ruid ON ruid.XID = 147035098 AND ruid.DBID = 9802323
+    WHERE c.id = ruid.id AND cv.CONSTDATE <= :dateEnd
+    ORDER BY cv.CONSTDATE desc
+    `;
+
+    // Базовая величина на конец периода
+    const baseValue = (await fetchAsObject(sql, { dateEnd }))[0]['CONSTVALUE'];
+
     const detailsSum = (details: any[]) => {
       if (!details || details.length <= 0) return { QUANTITY: 0, AMOUNT: 0, PRICEBV: 0 };
 
@@ -202,12 +227,20 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       );
 
       // Ближайший договор с клиентом на фиксированную оплату
-      const fixedPaymentContract = contractsEls.find(contract => contract['KXID'] === fixedPaymentСontractTypeID[0]
-        && contract['KDBID'] === fixedPaymentСontractTypeID[1]
+      const fixedPaymentContract = contractsEls.find(contract => ((contract['KXID'] === fixedPaymentСontractTypeID[0]
+        && contract['KDBID'] === fixedPaymentСontractTypeID[1]) || (!contract['KXID'] && !contract['KDBID']))
         && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
       );
 
-      // Услуги позиции договора на повременную оплату
+      // Позиции договора на фиксированную оплату
+      const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
+
+      const periodicityСorrectionFun = (actPeriodicity.find(item => fixedPaymentContractDetails?.[0].APXID === item.XID
+        && fixedPaymentContractDetails?.[0].APDBID === item.DBID)?.action) ?? function (amount: number) {
+        return amount;
+      };
+
+      // Позиции договора на повременную оплату
       const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
       const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
 
@@ -242,9 +275,11 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       // Часов среднемесячно
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
+      // Расчет сумм по договорам
+      const fixedPaymentAmount = periodicityСorrectionFun((fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0));
+      const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
-
-      const amount = (includePerTime ? perTimeAmount : 0) + (fixedPaymentContract?.SUMNCU ?? 0) + (perTimeContractDetailsSum['AMOUNT'] ?? 0);
+      const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
 
       const contract: IExpectedReceipt = {
         customer: {
@@ -255,15 +290,14 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
         count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
         fixedPayment: {
           baseValues: numberFix(fixedPaymentContract?.['USR$BASEVALUE']),
-          amount: numberFix(fixedPaymentContract?.SUMNCU)
+          amount: numberFix(fixedPaymentAmount)
         },
         workstationPayment: {
           count: numberFix(perTimeContractDetailsSum['QUANTITY']),
           baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
-          amount: numberFix(perTimeContractDetailsSum['AMOUNT'])
+          amount: numberFix(workstationAmount)
         },
-        perTimePayment: includePerTime && perTimeContract ? {
-          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+        perTimePayment: includePerTime && hoursAvarage ? {
           perHour: numberFix(contractsActLinesSum.costsum),
           hoursAvarage: numberFix(hoursAvarage),
           amount: numberFix(perTimeAmount)
@@ -277,28 +311,12 @@ export const getExpectedReceipts: RequestHandler = async (req, res) => {
       contracts.push(contract);
     });
 
-    contracts.sort((a, b) => {
-      if (a.amount > b.amount) {
-        return -1;
-      }
-      if (a.amount < b.amount) {
-        return 1;
-      }
-      return 0;
-    });
-
-    const result: IRequestResult = {
-      queries: {
-        expectedReceipts: contracts
-      },
-      _params: [{ dateBegin: dateBegin, dateEnd: dateEnd }],
-      _schema: {}
-    };
-
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).send(resultError(error.message));
+    return contracts;
   } finally {
     await releaseReadTransaction();
   }
+};
+
+export const expectedReceiptsRepository = {
+  find
 };

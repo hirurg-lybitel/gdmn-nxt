@@ -5,6 +5,7 @@ import { useGetExpectedReceiptsQuery } from 'apps/gdmn-nxt-web/src/app/features/
 import { DateRange } from '@mui/x-date-pickers-pro';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useMemo } from 'react';
+import { IFilteringData } from '@gsbelarus/util-api-types';
 
 interface ThTooltipProps extends React.DetailedHTMLProps<React.ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement> {
   title: string
@@ -24,11 +25,22 @@ const ThTooltip = ({ title, children, ...rest }: ThTooltipProps) => {
 
 export interface ExpectedReceiptsReportProps {
   onDate: DateRange<Date>;
-  includePerTime: boolean
+  filterData: IFilteringData
 }
 
-export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<ExpectedReceiptsReportProps>) {
-  const { data, isFetching } = useGetExpectedReceiptsQuery({ onDate, includePerTime });
+export function ExpectedReceiptsReport({ onDate, filterData }: Readonly<ExpectedReceiptsReportProps>) {
+  const options = useMemo(() => {
+    const filter = { ...filterData };
+    const sort = { field: filter.sortField, sort: filter.sort };
+    delete filter['sortField'];
+    delete filter['sort'];
+    return {
+      ...(filter && filter),
+      ...(sort && sort)
+    };
+  }, [filterData]);
+
+  const { data, isFetching } = useGetExpectedReceiptsQuery({ onDate, options });
 
   const total = useMemo(() => {
     if ((data?.length ?? 0) < 1) return;
@@ -73,6 +85,7 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
   return (
     <div style={{ flex: 1 }}>
       <PerfectScrollbar
+        options={{ suppressScrollY: true }}
         style={{
           display: 'flex',
           paddingBottom: '10px'
@@ -111,16 +124,15 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                   </ThTooltip>
                   <th className={styles.noTopBorder} colSpan={2} >Фиксированная ежемесячная оплата</th>
                   <th className={styles.noTopBorder} colSpan={3}>Оплата за рабочие места</th>
-                  <th className={styles.noTopBorder} colSpan={4}>Повременная оплата</th>
+                  <th className={styles.noTopBorder} colSpan={3}>Повременная оплата</th>
                   <th className={styles.noTopBorder} colSpan={3}>Всего</th>
                 </tr>
                 <tr className={styles.tableRow}>
                   <ThTooltip title={'Базовые величины'}>Б/в</ThTooltip>
                   <th>Руб</th>
                   <ThTooltip title={'Количество рабочих мест'}>Кол-во р/м</ThTooltip>
-                  <ThTooltip style={{ minWidth: '44px' }} title={'Базовая величина за одно рабочее место'}>Б/в за 1 р/м</ThTooltip>
+                  <ThTooltip style={{ minWidth: '44px' }} title={'Базовых величин за одно рабочее место'}>Б/в за 1 р/м</ThTooltip>
                   <th>Руб</th>
-                  <ThTooltip style={{ minWidth: '42px' }} title={'Базовая величина за час'}>За час б/в</ThTooltip>
                   <th>За час руб</th>
                   <ThTooltip title={'Часов среднемесячно'}>часов см</ThTooltip>
                   <th>Руб</th>
@@ -145,7 +157,6 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                     <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.count)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.baseValues)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.amount)}</th>
-                    <th className={styles.numberTh}>{numberFormat((contact.perTimePayment?.baseValues))}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.perHour)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.hoursAvarage)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.amount)}</th>
@@ -164,7 +175,6 @@ export function ExpectedReceiptsReport({ onDate, includePerTime }: Readonly<Expe
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.count)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.baseValues)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.amount)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.baseValues)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.perHour)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.hoursAvarage)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.amount)}</th>
