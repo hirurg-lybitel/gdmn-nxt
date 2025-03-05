@@ -375,6 +375,7 @@ export type ActionName =
   'time-tracking/projects' |
   'time-tracking/projectTypes' |
   'time-tracking/tasks' |
+  'reports/expected-receipts' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 

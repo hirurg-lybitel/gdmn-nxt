@@ -40,6 +40,10 @@ const analytics: IMenuItem = {
           title: 'Ожидаемые поступления',
           url: 'analytics/reports/expectedreceipts',
           type: 'item',
+          actionCheck: {
+            name: 'reports/expected-receipts',
+            method: 'GET'
+          },
         }
       ]
     },
