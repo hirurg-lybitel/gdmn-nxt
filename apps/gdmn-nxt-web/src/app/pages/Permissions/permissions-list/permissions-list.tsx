@@ -93,6 +93,7 @@ export function PermissionsList(props: PermissionsListProps) {
         display: 'flex',
         flexDirection: 'column',
       }}
+      className={styles.permissionsList}
     >
       <CardHeader title={<Typography variant="pageHeader">Права групп пользователей</Typography>} />
       <CardContent
