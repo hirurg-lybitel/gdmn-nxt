@@ -13,7 +13,8 @@ const get: RequestHandler = async (req, res) => {
       SELECT con.ID, con.NAME
       FROM GD_CONTACT con
       JOIN GD_EMPLOYEE emp ON emp.CONTACTKEY = con.ID
-      WHERE con.DISABLED = 0 ${id ? 'AND con.ID = :id' : ''}`, { id });
+      LEFT JOIN GD_USER u on u.CONTACTKEY = con.ID
+      WHERE con.DISABLED = 0 AND u.disabled = 0 ${id ? 'AND con.ID = :id' : ''}`, { id });
 
 
     const result: IRequestResult = {

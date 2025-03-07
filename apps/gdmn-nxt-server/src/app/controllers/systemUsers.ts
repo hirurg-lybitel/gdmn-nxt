@@ -40,7 +40,7 @@ export const get: RequestHandler = async(req, res) => {
             con.NAME AS CONTACT_NAME
           FROM GD_USER u
           JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
-          ${id ? ' WHERE u.ID = ?' : ''}`,
+          WHERE u.disabled = 0 ${id ? 'AND u.ID = ?' : ''}`,
       params: id ? [id] : undefined,
     }];
 

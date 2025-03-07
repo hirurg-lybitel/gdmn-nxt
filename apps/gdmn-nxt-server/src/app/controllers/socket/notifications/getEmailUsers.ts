@@ -24,7 +24,8 @@ export const getEmailUsers = async (sessionId: string): Promise<IUser[]> => {
       JOIN USR$CRM_PROFILE_SETTINGS p ON p.USR$USERKEY = u.ID
       WHERE
         COALESCE(p.USR$SEND_EMAIL_NOTIFICATIONS, 0) = 1
-        AND COALESCE(c.EMAIL, '') != ''`;
+        AND COALESCE(c.EMAIL, '') != ''
+        AND u.disabled = 0`;
 
     const users = fetchAsObject(query) as Promise<IUser[]>;
 

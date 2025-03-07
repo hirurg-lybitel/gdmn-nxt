@@ -125,7 +125,8 @@ const find = async (
       LEFT JOIN GD_CONTACT comp ON comp.ID = p.WCOMPANYKEY
       LEFT JOIN GD_CONTACT respondent ON respondent.ID = con.USR$CRM_RESPONDENT
       LEFT JOIN WG_POSITION w ON w.ID = p.WPOSITIONKEY
-    ${clauseString.length > 0 ? `WHERE ${clauseString}` : ''}`;
+      LEFT JOIN GD_USER u on u.CONTACTKEY = con.ID
+    ${clauseString.length > 0 ? `WHERE u.disabled = 0 AND ${clauseString}` : ''}`;
 
     const persons = await fetchAsObject<Omit<IContactPerson, 'PHONES' | 'USR$BG_OTDEL'>>(sql, { ...defaultClause, ...clause });
 
