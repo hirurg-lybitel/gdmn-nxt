@@ -12,7 +12,7 @@ const ContentContainer = styled(Box)(() => ({
   marginRight: 'auto',
   boxSizing: 'border-box',
   padding: '0',
-  maxWidth: '1200px'
+  // maxWidth: '1200px'
 }));
 
 export default ContentContainer;

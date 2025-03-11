@@ -220,35 +220,49 @@ const find: FindHandler<IExpectedReceipt> = async (
     const contracts: IExpectedReceipt[] = [];
 
     Object.values(sortedData).forEach((contractsEls: any[]) => {
-      // Ближайший договор с клиентом на повременную оплату
-      const perTimeContract = contractsEls.find(contract => contract['KXID'] === perTimePaymentСontractTypeID[0]
-        && contract['KDBID'] === perTimePaymentСontractTypeID[1]
-        && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
-      );
+      // Договоры с клиентом
+      const [fixedPaymentContracts, perTimeContracts] = (() => {
+        const fixed = [];
+        const perTime = [];
+        contractsEls.forEach((contract) => {
+          if ((contract['KXID'] === fixedPaymentСontractTypeID[0] && contract['KDBID'] === fixedPaymentСontractTypeID[1])
+            || (!contract['KXID'] && !contract['KDBID'])
+          ) {
+            fixed.push(contract);
+          }
+          if (contract['KXID'] === perTimePaymentСontractTypeID[0]
+            && contract['KDBID'] === perTimePaymentСontractTypeID[1]) {
+            perTime.push(contract);
+          }
+        });
+        return [fixed, perTime];
+      })();
 
-      // Ближайший договор с клиентом на фиксированную оплату
-      const fixedPaymentContract = contractsEls.find(contract => ((contract['KXID'] === fixedPaymentСontractTypeID[0]
-        && contract['KDBID'] === fixedPaymentСontractTypeID[1]) || (!contract['KXID'] && !contract['KDBID']))
-        && (contract['SUMNCU'] > 0 || contract['SUMCURNCU'] > 0)
-      );
+      // Позиции договоров на повременную оплату
+      const perTimeContractsDetails = (() => {
+        if (!perTimeContracts) return;
+        let details = [];
+        perTimeContracts.forEach(contract => {
+          if (!sortedDetails[contract?.ID]) return;
+          details = details.concat(sortedDetails[contract?.ID]);
+        });
+        return details;
+      })();
+      const perTimeContractDetailsSum = detailsSum(perTimeContractsDetails);
 
-      // Позиции договора на фиксированную оплату
-      const fixedPaymentContractDetails = fixedPaymentContract && sortedDetails[fixedPaymentContract?.ID];
+      // Акты выполненых работ договоров на повременную оплату
+      const contractsActs = (() => {
+        if (!perTimeContracts) return;
+        let acts = [];
+        perTimeContracts.forEach(contract => {
+          if (!sortedActs[contract?.ID]) return;
+          acts = acts.concat(sortedActs[contract?.ID]);
+        });
+        return acts;
+      })();
 
-      const periodicityСorrectionFun = (actPeriodicity.find(item => fixedPaymentContractDetails?.[0].APXID === item.XID
-        && fixedPaymentContractDetails?.[0].APDBID === item.DBID)?.action) ?? function (amount: number) {
-        return amount;
-      };
-
-      // Позиции договора на повременную оплату
-      const perTimeContractDetails = perTimeContract && sortedDetails[perTimeContract?.ID];
-      const perTimeContractDetailsSum = detailsSum(perTimeContractDetails);
-
-      // Акты выполненых работ договора на повременную оплату
-      const contractActs = perTimeContract && sortedActs[perTimeContract.ID];
-
-      // Позиции актов выполненых работ договора на повременную оплату
-      const contractsActLines = contractActs?.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
+      // Позиции актов выполненых работ договоров на повременную оплату
+      const contractsActLines = contractsActs?.map((act: any) => sortedActsLines?.[act.DOCUMENTKEY]);
       const contractsActLinesSum = { quantitySum: 0, costsum: null };
       let lastQuantity = 0;
 
@@ -276,7 +290,19 @@ const find: FindHandler<IExpectedReceipt> = async (
       const hoursAvarage = contractsActLinesSum.quantitySum / fullMonthsCount;
 
       // Расчет сумм по договорам
-      const fixedPaymentAmount = periodicityСorrectionFun((fixedPaymentContract?.['USR$BASEVALUE'] ? fixedPaymentContract?.['USR$BASEVALUE'] * baseValue : fixedPaymentContract?.SUMNCU ?? 0));
+      const fixedPaymentAmount = (() => {
+        let sum = 0;
+        fixedPaymentContracts.forEach(contract => {
+          const datails = sortedDetails[contract?.ID];
+          const periodicityСorrectionFun = (actPeriodicity.find(item => datails?.[0].APXID === item.XID
+            && datails?.[0].APDBID === item.DBID)?.action) ?? function (amount: number) {
+            return amount;
+          };
+          sum += periodicityСorrectionFun((contract?.['USR$BASEVALUE'] ? contract?.['USR$BASEVALUE'] * baseValue : contract?.SUMNCU ?? 0));
+        });
+        return sum;
+      })();
+
       const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
       const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
@@ -287,14 +313,19 @@ const find: FindHandler<IExpectedReceipt> = async (
           NAME: contractsEls[0]['CUSTOMER_NAME']
         },
         respondents: [],
-        count: (perTimeContract ? 1 : 0) + (fixedPaymentContract ? 1 : 0),
+        count: (perTimeContracts.length) + (fixedPaymentContracts.length),
         fixedPayment: {
-          baseValues: numberFix(fixedPaymentContract?.['USR$BASEVALUE']),
+          baseValues: fixedPaymentContracts.length > 0 && numberFix(fixedPaymentContracts?.reduce((count, item) => {
+            return {
+              ...item,
+              USR$BASEVALUE: (count.USR$BASEVALUE ?? 0) + (item.USR$BASEVALUE ?? 0),
+            };
+          })?.['USR$BASEVALUE']),
           amount: numberFix(fixedPaymentAmount)
         },
         workstationPayment: {
           count: numberFix(perTimeContractDetailsSum['QUANTITY']),
-          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV']),
+          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV'] ?? 1),
           amount: numberFix(workstationAmount)
         },
         perTimePayment: includePerTime && hoursAvarage ? {
