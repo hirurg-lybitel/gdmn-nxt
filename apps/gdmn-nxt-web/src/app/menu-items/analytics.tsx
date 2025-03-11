@@ -37,14 +37,24 @@ const analytics: IMenuItem = {
         },
         {
           id: 'expectedreceipts',
-          title: 'Ожидаемые поступления',
+          title: 'Абоненское (Ожидаемые поступления)',
           url: 'analytics/reports/expectedreceipts',
           type: 'item',
           actionCheck: {
             name: 'reports/expected-receipts',
             method: 'GET'
           },
-        }
+        },
+        {
+          id: 'expectedreceiptsdevelopment',
+          title: 'Разработка (Ожидаемые поступления)',
+          url: 'analytics/reports/expectedreceiptsdev',
+          type: 'item',
+          actionCheck: {
+            name: 'reports/expected-receipts-dev',
+            method: 'GET'
+          },
+        },
       ]
     },
     {

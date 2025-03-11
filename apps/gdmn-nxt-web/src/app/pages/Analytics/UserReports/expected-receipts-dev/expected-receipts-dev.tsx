@@ -1,9 +1,8 @@
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
 import { DateRangePicker, PickersShortcutsItem } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
-import styles from './expected-receipts.module.less';
+import styles from './expected-receipts-dev.module.less';
 import { useCallback, useState } from 'react';
-import ExpectedReceiptsReport from './expected-receipts-report/expected-receipts-report';
 import { DateRange } from '@mui/lab';
 import { SingleInputDateRangeField } from '@mui/x-date-pickers-pro/SingleInputDateRangeField';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,9 +10,10 @@ import { RootState } from '@gdmn-nxt/store';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import { IFilteringData } from '@gsbelarus/util-api-types';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
-import { ExpectedReceiptsFilter } from './expected-receipts-filter/expected-receipts-filter';
 import { sortFields } from './constants';
 import dayjs, { Dayjs } from 'dayjs';
+import { ExpectedReceiptsDevFilter } from './expected-receipts-dev-filter/expected-receipts-dev-filter';
+import ExpectedReceiptsDevReport from './expected-receipts-dev-report/expected-receipts-dev-report';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -65,13 +65,13 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   { label: 'Сбросить', getValue: () => [null, null] },
 ];
 
-export interface ExpectedReceiptsProps {}
+export interface ExpectedReceiptsDevProps {}
 
-export function ExpectedReceipts(props: ExpectedReceiptsProps) {
+export function ExpectedReceiptsDev(props: ExpectedReceiptsDevProps) {
   const [generate, setGenerate] = useState(false);
   const [onDate, setOnDate] = useState<DateRange<Date> | undefined>();
 
-  const filterEntityName = 'expectedReceipts';
+  const filterEntityName = 'expectedReceiptsDev';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
   const [filtersIsLoading] = useFilterStore(filterEntityName, { includePerTime: true, sortField: sortFields[0].value, sort: sortFields[0].sort });
 
@@ -104,7 +104,7 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
       className={styles.expectedreceipts}
     >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Абоненское (Ожидаемые поступления)</Typography>} />
+        <CardHeader title={<Typography variant="pageHeader">Разработка (Ожидаемые поступления)</Typography>} />
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <DateRangePicker
@@ -119,7 +119,7 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
               },
               textField: { variant: 'outlined' } }}
           />
-          <ExpectedReceiptsFilter
+          <ExpectedReceiptsDevFilter
             filterData={filterData}
             saveFilters={saveFilters}
             disabled={filtersIsLoading}
@@ -153,10 +153,10 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
       </CustomizedCard>
       {generate && onDate && onDate[0] && onDate[1]
         ?
-        <ExpectedReceiptsReport onDate={onDate} filterData={filterData} />
+        <ExpectedReceiptsDevReport onDate={onDate} filterData={filterData} />
         : null}
     </Stack>
   );
 }
 
-export default ExpectedReceipts;
+export default ExpectedReceiptsDev;
