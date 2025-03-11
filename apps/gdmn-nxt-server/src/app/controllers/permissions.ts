@@ -475,7 +475,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
         WHERE
-          ug.ID = ?`,
+          ug.ID = ? AND u.disabled = 0`,
       params: [groupId]
     };
 
@@ -567,7 +567,7 @@ const getUserByGroup: RequestHandler = async (req, res) => {
         JOIN GD_USER u ON u.ID = ul.USR$USERKEY
         JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
         WHERE
-          ug.ID = ?`,
+          ug.ID = ? AND u.disabled = 0`,
       params: [id]
     };
 
