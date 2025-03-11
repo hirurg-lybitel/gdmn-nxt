@@ -1,13 +1,17 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
-import { Box, CardContent, CardHeader, Checkbox, Stack, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Checkbox, IconButton, Stack, Typography } from '@mui/material';
 import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridRowId } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery, useUpdateMatrixMutation } from '../../../features/permissions';
 import styles from './permissions-list.module.less';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { logoutUser } from '../../../features/user/userSlice';
+import { AppDispatch } from '@gdmn-nxt/store';
+import { useDispatch } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface PermissionsListProps {}
@@ -16,11 +20,12 @@ const initialStateDataGrid: GridInitialStatePro = {
   pinnedColumns: { left: [GRID_TREE_DATA_GROUPING_FIELD] }
 };
 
-const GridItem = ({ id, row, ug }: { id: GridRowId, row: IPermissionsAction, ug: IUserGroup }) => {
+const GridItem = ({ id, row, ug, callback }: { id: GridRowId, row: IPermissionsAction, ug: IUserGroup, callback: () => void }) => {
   const { data: matrix, isFetching: matrixFetching, isLoading: matrixLoading } = useGetMatrixQuery();
   const [updateMatrix] = useUpdateMatrixMutation();
 
   const CheckBoxOnChange = (matrixID: number | undefined, action: IPermissionsAction, userGroup: IUserGroup) => (e: any, checked: boolean) => {
+    callback();
     updateMatrix({
       ID: matrixID,
       ACTION: action,
@@ -58,6 +63,9 @@ export function PermissionsList(props: PermissionsListProps) {
           id={id}
           row={row}
           ug={ug}
+          callback={() => {
+            setChanged(true);
+          }}
         />
       );
     },
@@ -86,6 +94,34 @@ export function PermissionsList(props: PermissionsListProps) {
     renderCell: (params) => <CustomGridTreeDataGroupingCell {...params as GridRenderCellParams<IPermissionsAction, any, any, GridGroupNode>} />,
   };
 
+  const [changed, setChanged] = useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const logout = () => {
+    dispatch(logoutUser());
+  };
+
+  const memoGrid = useMemo(() => (
+    <StyledGrid
+      treeData
+      getTreeDataPath={getTreeDataPath}
+      groupingColDef={groupingColDef}
+      columns={columns}
+      rows={rows || []}
+      loading={actionsLoading || userGroupsLoading}
+      getRowId={row => row.ID}
+      hideFooter
+      disableColumnReorder
+      disableColumnMenu
+      initialState={initialStateDataGrid}
+      sortModel={[
+        { field: GRID_TREE_DATA_GROUPING_FIELD, sort: 'asc' }
+      ]}
+      disableChildrenSorting
+    />
+  ), [rows]);
+
   return (
     <CustomizedCard
       style={{
@@ -105,24 +141,24 @@ export function PermissionsList(props: PermissionsListProps) {
         }}
       >
         <Stack flex={1}>
-          <Box style={{ height: '40px' }} />
-          <StyledGrid
-            treeData
-            getTreeDataPath={getTreeDataPath}
-            groupingColDef={groupingColDef}
-            columns={columns}
-            rows={rows || []}
-            loading={actionsLoading || userGroupsLoading}
-            getRowId={row => row.ID}
-            hideFooter
-            disableColumnReorder
-            disableColumnMenu
-            initialState={initialStateDataGrid}
-            sortModel={[
-              { field: GRID_TREE_DATA_GROUPING_FIELD, sort: 'asc' }
-            ]}
-            disableChildrenSorting
-          />
+          <Box style={{ minHeight: '40px', display: 'flex', justifyContent: 'flex-end', padding: '0px 24px', alignItems: 'center', gap: '15px' }}>
+            {changed && (
+              <>
+                <Typography>
+                Изменения вступят в силу после переавторизации
+                </Typography>
+                <div >
+                  <Button
+                    style={{ gap: '10px' }}
+                    color="primary"
+                    variant="contained"
+                    onClick={logout}
+                  ><span>Выйти</span><LogoutIcon/></Button>
+                </div>
+              </>
+            )}
+          </Box>
+          {memoGrid}
         </Stack>
       </CardContent>
     </CustomizedCard>

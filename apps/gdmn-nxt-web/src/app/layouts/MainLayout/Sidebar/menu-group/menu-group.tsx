@@ -22,20 +22,30 @@ export function MenuGroup(props: MenuGroupProps) {
       case 'collapse':
         return <PermissionsGate
           key={menu.id}
-          actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || '']}
+          actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || ''] ?? !menu.actionCheck}
         >
+          {userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? '']}
           <MenuCollapse menu={menu} level={1} />
         </PermissionsGate>;
       case 'item':
         return <PermissionsGate
           key={menu.id}
-          actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || '']}
+          actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || ''] ?? !menu.actionCheck}
         >
-          <MenuItem key={menu.id} item={menu} level={1} />
+          <MenuItem
+            key={menu.id}
+            item={menu}
+            level={1}
+          />
         </PermissionsGate>;
       default:
         return (
-          <Typography key={menu.id} variant="h6" color="error" align="center">
+          <Typography
+            key={menu.id}
+            variant="h6"
+            color="error"
+            align="center"
+          >
               Ошибка отображения
           </Typography>
         );

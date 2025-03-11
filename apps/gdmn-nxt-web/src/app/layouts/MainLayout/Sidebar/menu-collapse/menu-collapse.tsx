@@ -54,7 +54,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
         return (
           <PermissionsGate
             key={item.id}
-            actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? '']}
+            actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck}
           >
             <MenuItem
               key={item.id}

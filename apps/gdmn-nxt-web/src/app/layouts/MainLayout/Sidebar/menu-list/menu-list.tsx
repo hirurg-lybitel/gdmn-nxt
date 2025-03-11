@@ -59,14 +59,20 @@ export function MenuList(props: MenuListProps) {
     .map((item) => {
       switch (item.type) {
         case 'collapse':
-          return <MenuCollapse key={item.id} menu={item} level={1} />;
+          return (
+            <MenuCollapse
+              key={item.id}
+              menu={item}
+              level={1}
+            />
+          );
         case 'group':
           return <MenuGroup key={item.id} item={item} />;
         case 'item':
           return (
             <PermissionsGate
               key={item.id}
-              actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? '']}
+              actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck}
             >
               <MenuItem
                 key={item.id}
