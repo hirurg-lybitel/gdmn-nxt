@@ -1,3 +1,4 @@
+import { Customer } from '@gdmn-nxt/server/utils/cachedRequests';
 import { IContract, IExpectedReceipt, FindHandler } from '@gsbelarus/util-api-types';
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 
@@ -198,15 +199,10 @@ const find: FindHandler<IExpectedReceipt> = async (
       if (!details || details.length <= 0) return { QUANTITY: 0, AMOUNT: 0, PRICEBV: 0 };
 
       const sum = details.reduce((count, item) => {
-        const lastBV = count.lastBV ?? details[0].PRICEBV ?? 0;
-
         return {
           ...item,
           QUANTITY: count.QUANTITY + item.QUANTITY,
-          PRICEBV: lastBV === 0 ? (count.PRICEBV ?? item?.PRICEBV)
-            : ((count.PRICEBV * lastBV) + (item?.PRICEBV * item.QUANTITY)) / (lastBV + item.QUANTITY),
-          AMOUNT: count.AMOUNT + item.AMOUNT,
-          lastBV: item?.PRICEBV || 0
+          AMOUNT: count.AMOUNT + (item?.PRICEBV ? item?.PRICEBV * baseValue : item.AMOUNT),
         };
       });
 
@@ -248,6 +244,7 @@ const find: FindHandler<IExpectedReceipt> = async (
         });
         return details;
       })();
+
       const perTimeContractDetailsSum = detailsSum(perTimeContractsDetails);
 
       // Акты выполненых работ договоров на повременную оплату
@@ -303,7 +300,7 @@ const find: FindHandler<IExpectedReceipt> = async (
         return sum;
       })();
 
-      const workstationAmount = (perTimeContractDetailsSum['QUANTITY'] ?? 0) * (perTimeContractDetailsSum['PRICEBV'] ?? 1) * baseValue;
+      const workstationAmount = perTimeContractDetailsSum.AMOUNT;
       const perTimeAmount = contractsActLinesSum.costsum * hoursAvarage;
       const amount = (includePerTime ? perTimeAmount : 0) + workstationAmount + fixedPaymentAmount;
 
@@ -325,7 +322,7 @@ const find: FindHandler<IExpectedReceipt> = async (
         },
         workstationPayment: {
           count: numberFix(perTimeContractDetailsSum['QUANTITY']),
-          baseValues: numberFix(perTimeContractDetailsSum['PRICEBV'] ?? 1),
+          baseValues: Number((workstationAmount / perTimeContractDetailsSum['QUANTITY'] / baseValue).toFixed(2)),
           amount: numberFix(workstationAmount)
         },
         perTimePayment: includePerTime && hoursAvarage ? {
