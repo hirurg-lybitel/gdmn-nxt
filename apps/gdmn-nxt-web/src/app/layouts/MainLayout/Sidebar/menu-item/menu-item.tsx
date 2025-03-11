@@ -52,29 +52,13 @@ export function MenuItem(props: MenuItemProps) {
 
   const itemIcon = item?.icon ||
     (level > 1
-      ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }}>
-        <FiberManualRecordOutlinedIcon
-          sx={{
-            width: 6,
-            height: 6
-          }}
-          color="secondary"
-        />
-      </div>
+      ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }} />
       : <></>);
 
   const selectedItemIcon = item?.selectedIcon ||
-    (level > 1
-      ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }}>
-        <FiberManualRecordIcon
-          sx={{
-            width: 6,
-            height: 6
-          }}
-          color="secondary"
-        />
-      </div>
-      : <></>);
+  (level > 1
+    ? <div style={{ width: '36px', justifyContent: 'center', display: 'flex' }} />
+    : <></>);
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
