@@ -60,6 +60,7 @@ export function MenuGroup(props: MenuGroupProps) {
           <Typography
             color="inherit"
             variant="subtitle1"
+            fontSize={'16.5px'}
             display="block"
             gutterBottom
           >
