@@ -202,7 +202,7 @@ const find: FindHandler<IExpectedReceipt> = async (
         return {
           ...item,
           QUANTITY: count.QUANTITY + item.QUANTITY,
-          AMOUNT: count.AMOUNT + (item?.PRICEBV ? item?.PRICEBV * baseValue : item.AMOUNT),
+          AMOUNT: count.AMOUNT + (item?.PRICEBV ? item?.PRICEBV * baseValue * item.QUANTITY : item.AMOUNT),
         };
       });
 
