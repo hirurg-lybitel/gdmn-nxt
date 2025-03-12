@@ -12,6 +12,7 @@ const find: FindHandler<IExpectedReceipt> = async (
   const perTimePaymentСontractTypeID = [764683309, 1511199483]; // ruid вида договора с почасовой оплатой
   const fixedPaymentСontractTypeID = [764683308, 1511199483]; // ruid вида договора с фиксированной оплатой
   const contractTypeId = [154913796, 747560394]; // ruid типа договора на абонентское обслуживание
+  const actLinePerTimeRuid = [[764622427, 764622427], [-1, -1]]; // ruid почасовых типов актов
   const serviceId = [
     [147100633, 17],
     [154265279, 17],
@@ -187,7 +188,9 @@ const find: FindHandler<IExpectedReceipt> = async (
             al.MASTERKEY
           FROM USR$BNF_ACTSLINE al
             LEFT JOIN USR$BNF_ACTS ac ON USR$BEGINDATE <= :dateEnd AND :dateBegin <= USR$ENDDATE AND USR$CONTRACT = :contractId
-          WHERE al.MASTERKEY = ac.DOCUMENTKEY
+            LEFT JOIN GD_GOOD g ON g.ID = al.USR$BENEFITSNAME
+          WHERE al.MASTERKEY = ac.DOCUMENTKEY AND ((ruid.XID = ${actLinePerTimeRuid[0][0]} AND ruid.DBID = ${actLinePerTimeRuid[0][1]})
+          OR (ruid.XID = ${actLinePerTimeRuid[1][0]} AND ruid.DBID = ${actLinePerTimeRuid[1][1]}))
           `;
           const acts = await fetchAsObject(sql, { dateBegin, dateEnd, contractId: contract?.ID });
           actsCount = actsCount.concat(acts);
