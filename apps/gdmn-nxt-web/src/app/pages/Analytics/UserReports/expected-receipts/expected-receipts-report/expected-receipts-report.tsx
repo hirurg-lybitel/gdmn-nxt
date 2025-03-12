@@ -53,9 +53,9 @@ export function ExpectedReceiptsReport({ onDate, filterData }: Readonly<Expected
           amount: (count.fixedPayment?.amount ?? 0) + (item.fixedPayment?.amount ?? 0)
         },
         workstationPayment: {
-          count: (count.workstationPayment.count ?? 0) + (item.workstationPayment.count ?? 0),
-          baseValues: (count.workstationPayment.baseValues ?? 0) + (item.workstationPayment.baseValues ?? 0),
-          amount: (count.workstationPayment.amount ?? 0) + (item.workstationPayment.amount ?? 0)
+          count: (count.workstationPayment?.count ?? 0) + (item.workstationPayment?.count ?? 0),
+          baseValues: (count.workstationPayment?.baseValues ?? 0) + (item.workstationPayment?.baseValues ?? 0),
+          amount: (count.workstationPayment?.amount ?? 0) + (item.workstationPayment?.amount ?? 0)
         },
         perTimePayment: {
           baseValues: (count.perTimePayment?.baseValues ?? 0) + (item.perTimePayment?.baseValues ?? 0),
@@ -154,9 +154,9 @@ export function ExpectedReceiptsReport({ onDate, filterData }: Readonly<Expected
                     <th className={styles.numberTh}>{numberFormat(contact.count)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.fixedPayment?.baseValues)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.fixedPayment?.amount)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.count)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.baseValues)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment.amount)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment?.count)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment?.baseValues)}</th>
+                    <th className={styles.numberTh}>{numberFormat(contact.workstationPayment?.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.perHour)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.hoursAvarage)}</th>
                     <th className={styles.numberTh}>{numberFormat(contact.perTimePayment?.amount)}</th>
@@ -172,9 +172,9 @@ export function ExpectedReceiptsReport({ onDate, filterData }: Readonly<Expected
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.count)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.fixedPayment?.baseValues)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.fixedPayment?.amount)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.count)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.baseValues)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment.amount)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment?.count)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment?.baseValues)}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.workstationPayment?.amount)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.perHour)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.hoursAvarage)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.perTimePayment?.amount)}</th>
