@@ -31,7 +31,7 @@ export const sortFields: IFieldsSort[] = [
     sort: 'desc'
   },
   {
-    id: 3,
+    id: 4,
     name: 'Сумма остатка по возрастанию',
     value: 'rest',
     sort: 'asc'

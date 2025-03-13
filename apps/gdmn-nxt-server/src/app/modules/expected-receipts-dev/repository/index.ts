@@ -15,15 +15,30 @@ const find: FindHandler<IExpectedReceiptDev> = async (
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
-    const sql = `SELECT
+    let sql = `
+    SELECT
       con.ID as CUSTOMER_ID,
       con.NAME as CUSTOMER_NAME,
       h.USR$FROMDATE,
       h.USR$EXPIRYDATE,
       h.USR$CONTRACTTEXT,
       SUM(cl.USR$SUMNCU) as AMOUNT,
+      SUM(cl.USR$SUMNCU) /
+      (
+        SELECT
+          VAL
+        FROM GD_CURRRATE
+        WHERE FORDATE <= MAX(doc.DOCUMENTDATE)
+          AND FROMCURR = 200020
+          AND TOCURR = 200010
+        ORDER BY FORDATE DESC
+        ROWS 1
+      ) AS AMOUNT_VAL,
       stateRuid.XID as STATE_XID,
-      stateRuid.DBID as STATE_DBID
+      stateRuid.DBID as STATE_DBID,
+      MAX(doc.ID) as CONTRACTID,
+      MAX(doc.NUMBER) as NUMBER,
+      MAX(doc.DOCUMENTDATE) as DOCUMENTDATE
     FROM usr$bnf_contract h
       LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
       LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
@@ -37,8 +52,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
       con.ID, con.NAME, h.USR$FROMDATE, h.USR$EXPIRYDATE, h.USR$CONTRACTTEXT,
       stateRuid.XID, stateRuid.DBID
     ORDER BY
-      MAX(doc.DOCUMENTDATE) DESC
-    `;
+      MAX(doc.DOCUMENTDATE) DESC`;
 
     // Получение договоров за период
     const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd, contractTypeXID: contractTypeId[0], contractTypeDBID: contractTypeId[1] });
@@ -52,8 +66,6 @@ const find: FindHandler<IExpectedReceiptDev> = async (
         sortedData[c['CUSTOMER_ID']] = [c];
       }
     });
-
-    const clients: IExpectedReceiptDev[] = [];
 
     const expiredCalc = (date: string) => {
       const dateEnd = new Date(date);
@@ -70,8 +82,28 @@ const find: FindHandler<IExpectedReceiptDev> = async (
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
 
-      return `${day}.${month}.${year}`;
+      const numberFix = (number: number) => number < 10 ? `0${number}` : number;
+
+      return `${numberFix(day)}.${numberFix(month)}.${year}`;
     };
+
+    sql = `SELECT
+    VAL
+    FROM GD_CURRRATE
+    WHERE FORDATE <= :dateEnd AND FROMCURR = 200020 AND TOCURR = 200010
+    ORDER BY
+      FORDATE desc
+    `;
+
+    // Ближайший курс валюты на последнюю дату периода
+    const currrate = (await fetchAsObject(sql, { dateEnd }))[0]['VAL'];
+
+
+    const numberFix = (number: number) => {
+      return Number((number ?? 0).toFixed());
+    };
+
+    const clients: IExpectedReceiptDev[] = [];
 
     const sortedClients: any[] = Object.values(sortedData);
 
@@ -82,93 +114,68 @@ const find: FindHandler<IExpectedReceiptDev> = async (
           NAME: contracts[0]['CUSTOMER_NAME']
         },
         contracts: await Promise.all(contracts.map(async (contract) => {
+          // Оплнируемый договор
           const planned = !((contract['STATE_XID'] === filedState[0] && contract['STATE_DBID'] === filedState[1]) ||
           (contract['STATE_XID'] === signedState[0] && contract['STATE_DBID'] === signedState[1]));
 
+          const sql = `
+          SELECT
+            SUM(al.USR$SUMNCU) as AMOUNT,
+            SUM(al.USR$SUMNCU) /
+            (
+              SELECT
+                VAL
+              FROM GD_CURRRATE
+              WHERE FORDATE <= ac.USR$PAYMENTDATE
+                AND FROMCURR = 200020
+                AND TOCURR = 200010
+              ORDER BY FORDATE DESC
+              ROWS 1
+            ) AS AMOUNT_VAL
+          FROM
+            USR$BNF_ACTS ac
+          LEFT JOIN
+            USR$BNF_ACTSLINE al ON al.MASTERKEY = ac.DOCUMENTKEY
+          WHERE
+            ac.USR$CONTRACT = :contractId
+          GROUP BY
+            ac.USR$PAYMENTDATE;
+          `;
+
+          // Сумма оплаты за выполненые работы по договору
+          const done = planned ? undefined : (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
+
           return {
-            number: '№ 23 10.01.2010',
+            customer: {
+              ID: contracts[0]['CUSTOMER_ID'],
+              NAME: contracts[0]['CUSTOMER_NAME']
+            },
+            number: `№ ${contract['NUMBER']} ${formatDate(contract['DOCUMENTDATE'])} `,
             dateBegin: formatDate(contract['USR$FROMDATE']),
             dateEnd: formatDate(contract['USR$EXPIRYDATE']),
             expired: planned ? undefined : expiredCalc(contract['USR$EXPIRYDATE']),
             planned: planned,
             subject: await blob2String(contract['USR$CONTRACTTEXT']),
             amount: {
-              value: contract['AMOUNT'],
-              currency: 50000
+              value: numberFix(contract['AMOUNT']),
+              currency: numberFix(contract['AMOUNT_VAL'])
             },
             done: planned ? undefined : {
-              value: 0,
-              currency: 0
+              value: numberFix(done?.['AMOUNT']),
+              currency: numberFix(done?.['AMOUNT_VAL'])
             },
             paid: planned ? undefined : {
               value: 0,
               currency: 0
             },
             rest: {
-              value: 100000,
-              currency: 40000
+              value: numberFix(planned ? contract['AMOUNT'] / 2 : 0),
+              currency: numberFix(planned ? contract['AMOUNT'] / 2 / currrate : 0)
             }
           };
         }))
       });
     };
-
-    const testData: IExpectedReceiptDev[] = [{
-      customer: {
-        NAME: 'БМКК',
-        ID: -1
-      },
-      contracts: [
-        {
-          number: '№ 23 10.01.2010',
-          dateBegin: '16.01.2010',
-          dateEnd: '30.06.2010',
-          expired: 0,
-          planned: false,
-          subject: 'Автоматизация отгрузки',
-          amount: {
-            value: 100000,
-            currency: 50000
-          },
-          done: {
-            value: 0,
-            currency: 0
-          },
-          paid: {
-            value: 0,
-            currency: 0
-          },
-          rest: {
-            value: 100000,
-            currency: 40000
-          }
-        },
-        {
-          number: '№ 23 10.01.2010',
-          dateBegin: '16.01.2010',
-          dateEnd: '30.06.2010',
-          expired: 0,
-          planned: false,
-          subject: 'Автоматизация отгрузки',
-          amount: {
-            value: 100000,
-            currency: 50000
-          },
-          done: {
-            value: 0,
-            currency: 0
-          },
-          paid: {
-            value: 0,
-            currency: 0
-          },
-          rest: {
-            value: 100000,
-            currency: 40000
-          }
-        }
-      ]
-    }];
 
     return clients;
   } finally {

@@ -69,7 +69,7 @@ export interface ExpectedReceiptsProps {}
 
 export function ExpectedReceipts(props: ExpectedReceiptsProps) {
   const [generate, setGenerate] = useState(false);
-  const [onDate, setOnDate] = useState<DateRange<Date> | undefined>();
+  const [onDate, setOnDate] = useState<DateRange<Date> | undefined>([null, null]);
 
   const filterEntityName = 'expectedReceipts';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);

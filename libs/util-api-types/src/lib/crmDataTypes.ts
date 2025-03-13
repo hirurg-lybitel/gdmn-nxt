@@ -619,6 +619,7 @@ export interface IExpectedReceipt {
 }
 
 export interface IExpectedReceiptDevContract {
+  customer?: ICustomer,
   number: string,
   dateBegin: string,
   dateEnd: string,
@@ -629,11 +630,11 @@ export interface IExpectedReceiptDevContract {
     value: number,
     currency: number
   },
-  done: {
+  done?: {
     value: number,
     currency: number
   },
-  paid: {
+  paid?: {
     value: number,
     currency: number
   },

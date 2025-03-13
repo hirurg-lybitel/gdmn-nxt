@@ -4,7 +4,7 @@ import styles from './expected-receipts-dev-report.module.less';
 import { useGetExpectedReceiptsDevQuery } from 'apps/gdmn-nxt-web/src/app/features/expected-receipts/expectedReceiptsApi';
 import { DateRange } from '@mui/x-date-pickers-pro';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { IFilteringData } from '@gsbelarus/util-api-types';
 import CheckIcon from '@mui/icons-material/Check';
 
@@ -72,10 +72,10 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
       total.expired += contract.expired ?? 0;
       total.amount.value += contract.amount.value ?? 0;
       total.amount.currency += contract.amount.currency ?? 0;
-      total.done.value += contract.done.value ?? 0;
-      total.done.currency += contract.done.currency ?? 0;
-      total.paid.value += contract.paid.value ?? 0;
-      total.paid.currency += contract.paid.currency ?? 0;
+      total.done.value += contract.done?.value ?? 0;
+      total.done.currency += contract.done?.currency ?? 0;
+      total.paid.value += contract.paid?.value ?? 0;
+      total.paid.currency += contract.paid?.currency ?? 0;
       total.rest.value += contract.rest.value ?? 0;
       total.rest.currency += contract.rest.currency ?? 0;
     }));
@@ -83,18 +83,20 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
     return total;
   }, [data]);
 
-  const procents = useMemo(() => data?.map((client => client.contracts.map(contract => {
-    const procent = ((contract.rest.value / (total?.rest.value ?? 1)) * 100);
-    if (procent < 0.1) {
-      return '<0.1%';
+  const procentCalc = useCallback((value: number) => {
+    const procent = ((value / (total?.rest.value ?? 1)) * 100);
+    if (procent < 1) {
+      return '<1%';
     }
-    return procent.toFixed(1) + '%';
-  }))), [data, total]);
+    return procent.toFixed() + '%';
+  }, [total?.rest.value]);
 
-  const numberFormat = (number?: number) => {
+  const numberFormat = useCallback((number?: number) => {
     if (!number || number <= 0) return '';
     return number.toLocaleString();
-  };
+  }, []);
+
+  let rowCount = 0;
 
   return (
     <div style={{ flex: 1 }}>
@@ -152,32 +154,36 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
                 </tr>
               </thead>
               <tbody className={styles.lines}>
-                {data.map((client, index) => client.contracts.map((contract, iindex) => (
-                  <tr
-                    className={styles.tableRow}
-                    style={index + iindex % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
-                    key={`${index}${iindex}`}
-                  >
-                    <th>{iindex === 0 && client?.customer?.NAME}</th>
-                    <th>{contract.number}</th>
-                    <th>{contract.dateBegin}</th>
-                    <th>{contract.dateEnd}</th>
-                    <th className={styles.numberTh}>{contract.expired}</th>
-                    <th>{contract.planned &&
+                {data.map((client, index) => client.contracts.map((contract, iindex) => {
+                  rowCount ++;
+                  return (
+                    <tr
+                      className={styles.tableRow}
+                      style={(rowCount - 1) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
+                      key={`${index}${iindex}`}
+                    >
+                      <th>{iindex === 0 && client?.customer?.NAME}</th>
+                      <th>{contract.number}</th>
+                      <th>{contract.dateBegin}</th>
+                      <th>{contract.dateEnd}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.expired)}</th>
+                      <th>{contract.planned &&
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{<CheckIcon/>}</div>
-                    }</th>
-                    <th>{contract.subject}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.amount.value)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.amount.currency)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.done.value)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.done.currency)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.paid.value)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.paid.currency)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.rest.value)}</th>
-                    <th className={styles.numberTh}>{numberFormat(contract.rest.currency)}</th>
-                    <th className={styles.numberTh}>{procents?.[index]?.[iindex]}</th>
-                  </tr>
-                )))}
+                      }</th>
+                      <th>{contract.subject}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.amount.value)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.amount.currency)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.done?.value)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.done?.currency)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.paid?.value)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.paid?.currency)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.rest.value)}</th>
+                      <th className={styles.numberTh}>{numberFormat(contract.rest.currency)}</th>
+                      <th className={styles.numberTh}>{procentCalc(contract.rest.value)}</th>
+                    </tr>
+                  );
+                })
+                )}
                 <tr className={styles.tableRow} style={(total?.length ?? 0) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
                   <th className={styles.noBottomBorder}>Итого</th>
                   <th className={styles.noBottomBorder}/>
