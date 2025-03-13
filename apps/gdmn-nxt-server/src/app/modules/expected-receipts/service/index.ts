@@ -21,7 +21,7 @@ const findAll = async (
       }
     );
 
-    contracts.sort((a, b) => {
+    contracts?.sort((a, b) => {
       const dataType = typeof (a[String(sortField).toLowerCase()] ?? b[String(sortField).toLowerCase()]);
 
       const nameA = (() => {

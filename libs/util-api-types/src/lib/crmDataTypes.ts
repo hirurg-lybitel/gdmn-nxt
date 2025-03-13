@@ -602,7 +602,7 @@ export interface IExpectedReceipt {
     baseValues?: number,
     amount: number
   },
-  workstationPayment: {
+  workstationPayment?: {
     count: number,
     baseValues?: number,
     amount: number
