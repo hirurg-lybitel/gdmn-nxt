@@ -177,8 +177,7 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
                     <th className={styles.numberTh}>{numberFormat(contract.rest.currency)}</th>
                     <th className={styles.numberTh}>{procents?.[index]?.[iindex]}</th>
                   </tr>
-                ))
-                )}
+                )))}
                 <tr className={styles.tableRow} style={(total?.length ?? 0) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
                   <th className={styles.noBottomBorder}>Итого</th>
                   <th className={styles.noBottomBorder}/>

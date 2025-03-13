@@ -622,7 +622,7 @@ export interface IExpectedReceiptDevContract {
   number: string,
   dateBegin: string,
   dateEnd: string,
-  expired: number,
+  expired?: number,
   planned: boolean,
   subject: string,
   amount: {
