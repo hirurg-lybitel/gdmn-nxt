@@ -10,6 +10,7 @@ const findAll = async (
   const sortMode = filter?.sort ?? 'ASC';
   /** Filtering */
   const includeZeroRest = filter.includeZeroRest === 'true';
+  const includePlanned = filter.includePlanned === 'true';
   const dateBegin = filter.dateBegin;
   const dateEnd = filter.dateEnd;
 
@@ -19,6 +20,7 @@ const findAll = async (
         dateBegin,
         dateEnd,
         includeZeroRest,
+        includePlanned
       }
     );
 

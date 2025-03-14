@@ -40,7 +40,7 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
             onChange={(e) => handleChange(e, 'includeZeroRest')}
           />
         }
-        label="Включить договоры с остатком 0"
+        label="Договоры с остатком 0"
       />
       <FormControlLabel
         disabled={disabled}
@@ -50,7 +50,7 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
             onChange={(e) => handleChange(e, 'includePlanned')}
           />
         }
-        label="Включить планируемые договоры"
+        label="Планируемые договоры"
       />
       <Autocomplete
         disabled={disabled}

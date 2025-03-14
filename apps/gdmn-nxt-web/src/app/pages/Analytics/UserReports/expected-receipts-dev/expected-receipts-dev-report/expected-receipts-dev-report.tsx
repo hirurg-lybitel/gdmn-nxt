@@ -84,7 +84,9 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
   }, [data]);
 
   const procentCalc = useCallback((value: number) => {
-    const procent = ((value / (total?.rest.value ?? 1)) * 100);
+    if (!total?.rest.value || total?.rest.value > 1) return '';
+    if (value < 1) return '0%';
+    const procent = ((value / total?.rest.value) * 100);
     if (procent < 1) {
       return '<1%';
     }
