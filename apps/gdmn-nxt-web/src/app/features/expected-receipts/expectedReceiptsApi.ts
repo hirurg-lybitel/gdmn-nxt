@@ -25,6 +25,7 @@ export const expectedReceiptsApi = createApi({
         return `reports/expected-receipts/${onDate[0]?.getTime()}-${onDate[1]?.getTime()}${params ? `?${params}` : ''}`;
       },
       transformResponse: (res: IExpectedReceiptsRequestResult) => res.queries?.expectedReceipts || [],
+      keepUnusedDataFor: 0
     }),
     getExpectedReceiptsDev: builder.query<IExpectedReceiptDev[], { onDate: DateRange<Date>, options: Partial<IQueryOptions> | void }>({
       query: ({ onDate, options }) => {
@@ -32,6 +33,7 @@ export const expectedReceiptsApi = createApi({
         return `reports/expected-receipts-dev/${onDate[0]?.getTime()}-${onDate[1]?.getTime()}${params ? `?${params}` : ''}`;
       },
       transformResponse: (res: IExpectedReceiptsDevRequestResult) => res.queries?.expectedReceiptsDev || [],
+      keepUnusedDataFor: 0
     }),
   }),
 });

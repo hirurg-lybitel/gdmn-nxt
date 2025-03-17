@@ -145,15 +145,18 @@ const find: FindHandler<IExpectedReceiptDev> = async (
 
         sql = `
         SELECT
-          SUM(CSUMNCU) as AMOUNT
-        FROM BN_BANKSTATEMENTLINE bs
-          LEFT JOIN gd_document d ON l.id = d.id
-        WHERE bs.COMPANYKEY = :contactId and bs.USR$BN_CONTRACTKEY = :contractId
+          SUM(bsl.CSUMNCU) as AMOUNT,
+          (SUM(bsl.CSUMNCU) / bs.RATE) as AMOUNT_CURRENCY
+        FROM BN_BANKSTATEMENTLINE bsl
+          LEFT JOIN gd_document d ON d.id = bsl.id
+          LEFT JOIN BN_BANKSTATEMENT bs ON bs.DOCUMENTKEY = bsl.DOCUMENTKEY
+        WHERE bsl.USR$BN_CONTRACTKEY = :contractId
+        GROUP BY bs.RATE
         `;
 
         const paid = (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
 
-        const rest = planned ? contract['AMOUNT'] / 2 : 0;
+        const rest = planned ? (contract['AMOUNT'] ?? 0) / 2 : (contract['AMOUNT'] ?? 0) - (paid['AMOUNT'] ?? 0);
 
         if (rest < 1 && !includeZeroRest) continue;
 
@@ -178,7 +181,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
           },
           paid: planned ? undefined : {
             value: paid['AMOUNT'],
-            currency: 0
+            currency: paid['AMOUNT_CURRENCY']
           },
           rest: {
             value: numberFix(rest),
