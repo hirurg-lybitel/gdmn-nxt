@@ -71,7 +71,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
       const dateEnd = new Date(date);
       const now = new Date();
       const timeDifference = now.getTime() - dateEnd.getTime();
-      const expired = Number((timeDifference / (1000 * 60 * 60 * 24)).toFixed());
+      const expired = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
       if (expired < 0) return 0;
       return expired;
     };
