@@ -176,32 +176,35 @@ const find: FindHandler<IExpectedReceipt> = async (
       ${contractsIds}
       `;
 
-      const perTimeContractDetailsSum = contractsIds !== '' ? (await fetchAsObject(sql, { dateEnd }))[0] : undefined;
+      const perTimeContractDetailsSum = contractsIds !== '' ? (await fetchAsObject(sql, { dateEnd }))[0] : undefined; 
 
       // Акты выполненых работ договоров на повременную оплату
       const contractsActLines = await (async () => {
-        let actsCount = [];
-        for (const contract of perTimeContracts) {
-          const sql = `SELECT
+        if (!includePerTime) return;
+        const actLineRuidsWhere = (() => {
+          let req = '';
+          actLinePerTimeRuid.forEach((ruid) => req += ` ${req === '' ? '' : 'OR'} (ruid.XID = ${ruid[0]} AND ruid.DBID = ${ruid[1]})`);
+          return req;
+        })();
+
+        const sql = `SELECT
             al.USR$QUANTITY,
             al.USR$COST,
             al.MASTERKEY
           FROM USR$BNF_ACTSLINE al
-            LEFT JOIN USR$BNF_ACTS ac ON USR$BEGINDATE <= :dateEnd AND :dateBegin <= USR$ENDDATE AND USR$CONTRACT = :contractId
+            LEFT JOIN USR$BNF_ACTS ac ON USR$BEGINDATE <= :dateEnd AND :dateBegin <= USR$ENDDATE AND USR$CONTACTKEY = :customerId
             LEFT JOIN GD_RUID ruid ON ruid.ID = al.USR$BENEFITSNAME
-          WHERE al.MASTERKEY = ac.DOCUMENTKEY AND ((ruid.XID = ${actLinePerTimeRuid[0][0]} AND ruid.DBID = ${actLinePerTimeRuid[0][1]})
-          OR (ruid.XID = ${actLinePerTimeRuid[1][0]} AND ruid.DBID = ${actLinePerTimeRuid[1][1]}))
+          WHERE al.MASTERKEY = ac.DOCUMENTKEY AND (${actLineRuidsWhere})
           `;
-          const acts = await fetchAsObject(sql, { dateBegin, dateEnd, contractId: contract?.ID });
-          actsCount = actsCount.concat(acts);
-        };
-        return actsCount;
+        const acts = await fetchAsObject(sql, { dateBegin, dateEnd, customerId: contractsEls[0]['CUSTOMER_ID'] });
+
+        return acts;
       })();
 
       const contractsActLinesSum = { quantitySum: 0, costsum: null };
       let lastQuantity = 0;
 
-      includePerTime && contractsActLines?.forEach(actLine => {
+      contractsActLines?.forEach(actLine => {
         contractsActLinesSum.quantitySum += actLine['USR$QUANTITY'];
         contractsActLinesSum.costsum = lastQuantity === 0 ? (contractsActLinesSum.costsum ?? actLine['USR$COST'])
           : ((contractsActLinesSum.costsum * lastQuantity) + (actLine['USR$COST'] * actLine['USR$QUANTITY'])) / (lastQuantity + actLine['USR$QUANTITY']);
