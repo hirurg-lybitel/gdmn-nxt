@@ -112,7 +112,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
 
       for (const contract of contracts) {
         // Оплнируемый договор
-        const planned = !((contract['STATE_XID'] === filedState[0] && contract['STATE_DBID'] === filedState[1]));
+        const planned = contract['STATE_XID'] === filedState[0] && contract['STATE_DBID'] === filedState[1];
 
         if (planned && !includePlanned) continue;
 
@@ -146,17 +146,25 @@ const find: FindHandler<IExpectedReceiptDev> = async (
         sql = `
         SELECT
           SUM(bsl.CSUMNCU) as AMOUNT,
-          (SUM(bsl.CSUMNCU) / bs.RATE) as AMOUNT_CURRENCY
+          SUM(bsl.CSUMNCU) /
+          (
+            SELECT
+              VAL
+            FROM GD_CURRRATE
+            WHERE FORDATE <= d.DOCUMENTDATE
+              AND FROMCURR = 200020
+              AND TOCURR = 200010
+            ORDER BY FORDATE DESC
+            ROWS 1
+          ) AS AMOUNT_VAL
         FROM BN_BANKSTATEMENTLINE bsl
           LEFT JOIN gd_document d ON d.id = bsl.id
-          LEFT JOIN BN_BANKSTATEMENT bs ON bs.DOCUMENTKEY = bsl.DOCUMENTKEY
         WHERE bsl.USR$BN_CONTRACTKEY = :contractId
-        GROUP BY bs.RATE
+        GROUP BY d.DOCUMENTDATE
         `;
 
         const paid = (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
-
-        const rest = planned ? (contract['AMOUNT'] ?? 0) / 2 : (contract['AMOUNT'] ?? 0) - (paid['AMOUNT'] ?? 0);
+        const rest = planned ? (contract?.['AMOUNT'] ?? 0) / 2 : (contract?.['AMOUNT'] ?? 0) - (paid?.['AMOUNT'] ?? 0);
 
         if (rest < 1 && !includeZeroRest) continue;
 
@@ -165,23 +173,23 @@ const find: FindHandler<IExpectedReceiptDev> = async (
             ID: contracts[0]['CUSTOMER_ID'],
             NAME: contracts[0]['CUSTOMER_NAME']
           },
-          number: `№ ${contract['NUMBER']} ${formatDate(contract['DOCUMENTDATE'])} `,
-          dateBegin: formatDate(contract['USR$FROMDATE']),
-          dateEnd: formatDate(contract['USR$EXPIRYDATE']),
-          expired: planned ? undefined : expiredCalc(contract['USR$EXPIRYDATE']),
+          number: `№ ${contract?.['NUMBER']} ${formatDate(contract?.['DOCUMENTDATE'])} `,
+          dateBegin: formatDate(contract?.['USR$FROMDATE']),
+          dateEnd: formatDate(contract?.['USR$EXPIRYDATE']),
+          expired: planned ? undefined : expiredCalc(contract?.['USR$EXPIRYDATE']),
           planned: planned,
-          subject: await blob2String(contract['USR$CONTRACTTEXT']),
+          subject: await blob2String(contract?.['USR$CONTRACTTEXT']),
           amount: {
-            value: numberFix(contract['AMOUNT']),
-            currency: numberFix(contract['AMOUNT_VAL'])
+            value: numberFix(contract?.['AMOUNT']),
+            currency: numberFix(contract?.['AMOUNT_VAL'])
           },
           done: planned ? undefined : {
             value: numberFix(done?.['AMOUNT']),
             currency: numberFix(done?.['AMOUNT_VAL'])
           },
           paid: planned ? undefined : {
-            value: paid['AMOUNT'],
-            currency: paid['AMOUNT_CURRENCY']
+            value:  numberFix(paid?.['AMOUNT']),
+            currency:  numberFix(paid?.['AMOUNT_VAL'])
           },
           rest: {
             value: numberFix(rest),
