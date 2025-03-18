@@ -58,6 +58,7 @@ import Templates from './app/pages/Marketing/templates';
 import { TimeTracker } from './app/pages/Managment/timeTracker';
 import { Projects } from './app/pages/Managment/projects';
 import ExpectedReceipts from './app/pages/Analytics/UserReports/expected-receipts/expected-receipts';
+import ExpectedReceiptsDev from './app/pages/Analytics/UserReports/expected-receipts-dev/expected-receipts-dev';
 
 registerMUI();
 
@@ -162,6 +163,7 @@ const Main = () => {
                               <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
                               <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
                               <Route path="expectedreceipts" element={<ExpectedReceipts/>}/>
+                              <Route path="expectedreceiptsdev" element={<ExpectedReceiptsDev/>}/>
                               <Route path="topEarning" element={<TopEarningPage />} />
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />

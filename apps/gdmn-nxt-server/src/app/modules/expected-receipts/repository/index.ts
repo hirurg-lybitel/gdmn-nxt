@@ -101,7 +101,7 @@ const find: FindHandler<IExpectedReceipt> = async (
     sql = `SELECT
     VAL
     FROM GD_CURRRATE
-    WHERE FORDATE <= :midpointDate AND FROMCURR = 200020
+    WHERE FORDATE <= :midpointDate AND FROMCURR = 200020 AND TOCURR = 200010
     ORDER BY
       FORDATE desc
     `;

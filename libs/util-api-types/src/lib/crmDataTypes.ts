@@ -376,6 +376,7 @@ export type ActionName =
   'time-tracking/projectTypes' |
   'time-tracking/tasks' |
   'reports/expected-receipts' |
+  'reports/expected-receipts-dev' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -615,4 +616,35 @@ export interface IExpectedReceipt {
   },
   amount: number,
   valAmount: number
+}
+
+export interface IExpectedReceiptDevContract {
+  customer?: ICustomer,
+  number: string,
+  dateBegin: string,
+  dateEnd: string,
+  expired?: number,
+  planned: boolean,
+  subject: string,
+  amount: {
+    value: number,
+    currency: number
+  },
+  done?: {
+    value: number,
+    currency: number
+  },
+  paid?: {
+    value: number,
+    currency: number
+  },
+  rest: {
+    value: number,
+    currency: number
+  }
+}
+
+export interface IExpectedReceiptDev {
+  customer?: ICustomer,
+  contracts: IExpectedReceiptDevContract[]
 }
