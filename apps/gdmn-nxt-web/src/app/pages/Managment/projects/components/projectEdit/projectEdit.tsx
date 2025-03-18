@@ -63,7 +63,7 @@ export function ProjectEdit(props: ProjectEditProps) {
     },
     validationSchema: yup.object().shape({
       name: yup.string().required('')
-        .max(30, 'Слишком длинное наименование'),
+        .max(60, 'Слишком длинное наименование'),
       projectType: yup.object().required('')
     }),
     onSubmit: (value) => {
