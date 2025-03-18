@@ -19,7 +19,7 @@ export const sortFields: IFieldsSort[] = [
     sort: 'desc'
   },
   {
-    id: 1,
+    id: 2,
     name: 'Сначала маленькие суммы',
     value: 'amount',
     sort: 'asc'
