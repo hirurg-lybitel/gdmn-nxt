@@ -651,7 +651,7 @@ export interface IExpectedReceiptDev {
 }
 
 export interface IExpense {
-  article: string,
+  expenseName: string,
   amount: number,
   valAmount: number
 }

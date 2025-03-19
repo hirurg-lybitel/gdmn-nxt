@@ -8,32 +8,51 @@ const find: FindHandler<IExpense> = async (
   const dateBegin = clause['dateBegin'];
   const dateEnd = clause['dateEnd'];
 
-  const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
   try {
-    // let sql = `${'asd'}`;
+    const sql = `
+      SELECT
+        COALESCE(e.USR$NAME, 'Прочее') AS EXPENSENAME,
+        SUM(bsl.DSUMNCU) AS AMOUNT,
+        SUM(
+          bsl.DSUMNCU / (
+            SELECT
+              VAL
+            FROM GD_CURRRATE
+            WHERE FORDATE <= doc.DOCUMENTDATE
+              AND FROMCURR = 200020
+              AND TOCURR = 200010
+            ORDER BY FORDATE DESC
+            ROWS 1
+          )
+        ) AS VALAMOUNT
+      FROM
+        BN_BANKSTATEMENT bs
+      LEFT JOIN
+        GD_DOCUMENT doc ON doc.ID = bs.DOCUMENTKEY
+      LEFT JOIN
+        BN_BANKSTATEMENTLINE bsl ON bsl.BANKSTATEMENTKEY = doc.ID
+      LEFT JOIN
+        USR$ACC_EXPENSES e ON e.ID = bsl.USR$GS_EXPENSESKEY
+      WHERE
+        doc.DOCUMENTDATE BETWEEN :dateBegin AND :dateEnd
+        AND bsl.DSUMNCU > 0
+      GROUP BY
+        EXPENSENAME
+      ORDER BY
+        EXPENSENAME
+      `;
 
-    // const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd });
+    const data = await fetchAsObject<any>(sql, { dateBegin, dateEnd });
 
-    const test: IExpense[] = [
-      {
-        article: 'Статья1',
-        amount: 1000,
-        valAmount: 300
-      },
-      {
-        article: 'бббббб',
-        amount: 800,
-        valAmount: 200
-      },
-      {
-        article: 'Ааааа',
-        amount: 2000,
-        valAmount: 600
-      }
-    ];
+    const result: IExpense[] = data.map(expence => ({
+      expenseName: expence['EXPENSENAME'],
+      amount: expence['AMOUNT'],
+      valAmount: expence['VALAMOUNT']
+    }));
 
-    return test;
+    return result;
   } finally {
     await releaseReadTransaction();
   }

@@ -87,7 +87,7 @@ export function ExpensesReport({ onDate, filterData }: Readonly<ExpensesReportPr
                     style={index % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
                     key={index}
                   >
-                    <th>{item.article}</th>
+                    <th>{item.expenseName}</th>
                     <th className={styles.numberTh}>{numberFormat(item.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(item.valAmount)}</th>
                     <th className={styles.numberTh}>{procents?.[index]}</th>
