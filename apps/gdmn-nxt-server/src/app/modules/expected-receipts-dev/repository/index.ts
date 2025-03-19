@@ -19,44 +19,47 @@ const find: FindHandler<IExpectedReceiptDev> = async (
 
   try {
     let sql = `
-    WITH Rate AS (
-      SELECT
-        VAL
-      FROM GD_CURRRATE
-      WHERE FORDATE <= :dateEnd
-        AND FROMCURR = 200020
-        AND TOCURR = 200010
-      ORDER BY FORDATE DESC
-      ROWS 1
-    )
     SELECT
-      con.ID as CUSTOMER_ID,
-      con.NAME as CUSTOMER_NAME,
+      con.ID AS CUSTOMER_ID,
+      con.NAME AS CUSTOMER_NAME,
       h.USR$FROMDATE,
       h.USR$EXPIRYDATE,
       h.USR$CONTRACTTEXT,
-      SUM(COALESCE(cl.USR$SUMNCU, cl.USR$SUMCURR * (SELECT VAL FROM Rate))) AS AMOUNT,
-      SUM(COALESCE(cl.USR$SUMNCU / (SELECT VAL FROM Rate), cl.USR$SUMCURR)) AS AMOUNT_VAL,
-      stateRuid.XID as STATE_XID,
-      stateRuid.DBID as STATE_DBID,
-      MAX(doc.ID) as CONTRACTID,
-      MAX(doc.NUMBER) as NUMBER,
-      MAX(doc.DOCUMENTDATE) as DOCUMENTDATE
+      stateRuid.XID AS STATE_XID,
+      stateRuid.DBID AS STATE_DBID,
+      doc.ID AS CONTRACTID,
+      doc.NUMBER AS NUMBER,
+      doc.DOCUMENTDATE AS DOCUMENTDATE,
+      SUM(COALESCE(cl.USR$SUMNCU, cl.USR$SUMCURR * rate.VAL)) AS AMOUNT,
+      SUM(COALESCE(cl.USR$SUMNCU / rate.VAL, cl.USR$SUMCURR)) AS AMOUNT_VAL
     FROM usr$bnf_contract h
       LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
       LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
       LEFT JOIN gd_ruid ruid ON ruid.id = h.USR$TYPECONTRACTKEY
       LEFT JOIN gd_ruid stateRuid ON stateRuid.id = h.USR$STATEKEY
       LEFT JOIN USR$BNF_CONTRACTLINE cl ON cl.MASTERKEY = doc.ID
+      LEFT JOIN (
+        SELECT
+          docInner.ID AS DOC_ID,
+          (SELECT VAL
+            FROM GD_CURRRATE
+            WHERE FORDATE <= docInner.DOCUMENTDATE
+              AND FROMCURR = 200020
+              AND TOCURR = 200010
+            ORDER BY FORDATE DESC
+            ROWS 1
+          ) AS VAL
+        FROM gd_document docInner
+        ) rate ON rate.DOC_ID = doc.ID
     WHERE
       ${endsInPeriod ? 'h.USR$EXPIRYDATE BETWEEN :dateBegin AND :dateEnd' : 'h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE'}
       AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
       AND NOT (stateRuid.XID = ${annulledState[0]} AND stateRuid.DBID = ${annulledState[1]})
     GROUP BY
-      con.ID, con.NAME, h.USR$FROMDATE, h.USR$EXPIRYDATE, h.USR$CONTRACTTEXT,
-      stateRuid.XID, stateRuid.DBID
-    ORDER BY
-      MAX(doc.DOCUMENTDATE) DESC`;
+      con.ID, con.NAME, h.USR$FROMDATE, h.USR$EXPIRYDATE,
+      h.USR$CONTRACTTEXT, stateRuid.XID, stateRuid.DBID,
+      doc.ID, doc.NUMBER, doc.DOCUMENTDATE
+    `;
 
     // Получение договоров за период
     const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd, contractTypeXID: contractTypeId[0], contractTypeDBID: contractTypeId[1] });
