@@ -74,10 +74,10 @@ export function ExpensesReport({ onDate, filterData }: Readonly<ExpensesReportPr
             <table className={styles.table}>
               <thead>
                 <tr className={styles.tableRow} style={{ borderTop: 'none' }}>
-                  <th>Статья</th>
-                  <th>Сумма, руб</th>
-                  <th>Сумма, USD</th>
-                  <th>%</th>
+                  <th className={styles.noTopBorder}>Статья</th>
+                  <th className={styles.noTopBorder}>Сумма, руб</th>
+                  <th className={styles.noTopBorder}>Сумма, USD</th>
+                  <th className={styles.noTopBorder}>%</th>
                 </tr>
               </thead>
               <tbody className={styles.lines}>
