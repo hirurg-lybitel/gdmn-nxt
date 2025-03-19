@@ -11,6 +11,7 @@ const findAll = async (
   /** Filtering */
   const includeZeroRest = filter.includeZeroRest === 'true';
   const includePlanned = filter.includePlanned === 'true';
+  const endsInPeriod = filter.endsInPeriod === 'true';
   const dateBegin = filter.dateBegin;
   const dateEnd = filter.dateEnd;
 
@@ -20,7 +21,8 @@ const findAll = async (
         dateBegin,
         dateEnd,
         includeZeroRest,
-        includePlanned
+        includePlanned,
+        endsInPeriod
       }
     );
 

@@ -9,9 +9,12 @@ const find: FindHandler<IExpectedReceiptDev> = async (
   const dateEnd = clause['dateEnd'];
   const includeZeroRest = clause['includeZeroRest'];
   const includePlanned = clause['includePlanned'];
+  const endsInPeriod = clause['endsInPeriod'];
 
   const contractTypeId = [154913797, 987283565]; // ruid типа договора на разработку
   const filedState = [155412701, 1751673956]; // ruid статуса договора подшит
+  const annulledState = [257953333, 1751673956];// ruid статуса договора анулированно
+
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
   try {
@@ -46,8 +49,9 @@ const find: FindHandler<IExpectedReceiptDev> = async (
       LEFT JOIN gd_ruid stateRuid ON stateRuid.id = h.USR$STATEKEY
       LEFT JOIN USR$BNF_CONTRACTLINE cl ON cl.MASTERKEY = doc.ID
     WHERE
-      h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE
+      ${endsInPeriod ? 'h.USR$EXPIRYDATE BETWEEN :dateBegin AND :dateEnd' : 'h.USR$FROMDATE <= :dateEnd AND :dateBegin <= h.USR$EXPIRYDATE'}
       AND ruid.XID = :contractTypeXID AND ruid.DBID = :contractTypeDBID
+      AND NOT (stateRuid.XID = ${annulledState[0]} AND stateRuid.DBID = ${annulledState[1]})
     GROUP BY
       con.ID, con.NAME, h.USR$FROMDATE, h.USR$EXPIRYDATE, h.USR$CONTRACTTEXT,
       stateRuid.XID, stateRuid.DBID
@@ -146,7 +150,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
         sql = `
         SELECT
           SUM(bsl.CSUMNCU) as AMOUNT,
-          SUM(bsl.CSUMNCU) /
+          SUM(bsl.CSUMNCU /
           (
             SELECT
               VAL
@@ -156,7 +160,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
             ROWS 1
-          ) AS AMOUNT_VAL
+          )) AS AMOUNT_VAL
         FROM BN_BANKSTATEMENTLINE bsl
           LEFT JOIN gd_document d ON d.id = bsl.id
         WHERE bsl.USR$BN_CONTRACTKEY = :contractId
@@ -188,8 +192,8 @@ const find: FindHandler<IExpectedReceiptDev> = async (
             currency: numberFix(done?.['AMOUNT_VAL'])
           },
           paid: planned ? undefined : {
-            value:  numberFix(paid?.['AMOUNT']),
-            currency:  numberFix(paid?.['AMOUNT_VAL'])
+            value: numberFix(paid?.['AMOUNT']),
+            currency: numberFix(paid?.['AMOUNT_VAL'])
           },
           rest: {
             value: numberFix(rest),

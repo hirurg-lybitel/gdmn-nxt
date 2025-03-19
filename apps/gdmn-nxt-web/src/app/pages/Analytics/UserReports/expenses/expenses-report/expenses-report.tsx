@@ -18,8 +18,8 @@ export function ExpensesReport({ onDate, filterData }: Readonly<ExpensesReportPr
     delete filter['sortField'];
     delete filter['sort'];
     return {
-      ...(filter && filter),
-      ...(sort && sort)
+      ...filter,
+      ...sort
     };
   }, [filterData]);
 

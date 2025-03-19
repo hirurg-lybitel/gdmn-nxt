@@ -36,8 +36,8 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
     delete filter['sortField'];
     delete filter['sort'];
     return {
-      ...(filter && filter),
-      ...(sort && sort)
+      ...filter,
+      ...sort
     };
   }, [filterData]);
 
@@ -164,7 +164,7 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
                       style={(rowCount - 1) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
                       key={`${index}${iindex}`}
                     >
-                      <th>{iindex === 0 && client?.customer?.NAME}</th>
+                      <th>{rowCount} - {iindex === 0 && client?.customer?.NAME}</th>
                       <th>{contract.number}</th>
                       <th>{contract.dateBegin}</th>
                       <th>{contract.dateEnd}</th>

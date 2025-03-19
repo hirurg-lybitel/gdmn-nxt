@@ -32,21 +32,11 @@ export function ExpectedReceiptsFilter({ filterData, saveFilters, disabled }: IE
 
   return (
     <>
-      <FormControlLabel
-        disabled={disabled}
-        control={
-          <Checkbox
-            checked={filterData?.includePerTime ?? false}
-            onChange={handleIncludePerTimeChange}
-          />
-        }
-        label="Учитывать повременную оплату"
-      />
       <Autocomplete
         disabled={disabled}
         options={sortFields}
         size="small"
-        sx={{ width: 280 }}
+        sx={{ width: 260 }}
         disableClearable
         getOptionLabel={option => option.name}
         value={sortFields.find(item => {
@@ -67,6 +57,16 @@ export function ExpectedReceiptsFilter({ filterData, saveFilters, disabled }: IE
             placeholder="Сортировка"
           />
         )}
+      />
+      <FormControlLabel
+        disabled={disabled}
+        control={
+          <Checkbox
+            checked={filterData?.includePerTime ?? false}
+            onChange={handleIncludePerTimeChange}
+          />
+        }
+        label="Учитывать повременную оплату"
       />
     </>
   );
