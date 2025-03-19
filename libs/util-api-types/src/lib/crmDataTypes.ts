@@ -2,8 +2,7 @@
  *  These types are intended for use in the CRM web and back server.
  */
 
-import { IRequestResult } from '..';
-import { IContactWithID, IDataRecord, IWithID, JSONArray } from './commonDataTypes';
+import { IContactWithID, IDataRecord, IWithID } from './commonDataTypes';
 
 export interface IReconciliationStatement {
   customerDebt: IDataRecord[];
@@ -14,8 +13,6 @@ export interface IReconciliationStatement {
   payment: IDataRecord[];
   firm: IDataRecord[];
 };
-
-export type IReconciliationStatementRequestResult = IRequestResult<IReconciliationStatement>;
 
 export interface ILabelsContact extends IWithID {
   USR$CONTACTKEY: number;
@@ -377,6 +374,10 @@ export type ActionName =
   'time-tracking/tasks' |
   'reports/expected-receipts' |
   'reports/expected-receipts-dev' |
+  'reports/expenses' |
+  'reports/topEarning' |
+  'reports/remains-by-invoices' |
+  'reports/reconciliation-statement' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -647,4 +648,10 @@ export interface IExpectedReceiptDevContract {
 export interface IExpectedReceiptDev {
   customer?: ICustomer,
   contracts: IExpectedReceiptDevContract[]
+}
+
+export interface IExpense {
+  expenseName: string,
+  amount: number,
+  valAmount: number
 }

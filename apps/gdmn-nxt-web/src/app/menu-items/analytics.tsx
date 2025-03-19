@@ -22,18 +22,30 @@ const analytics: IMenuItem = {
           title: 'Акт сверки',
           url: 'analytics/reports/reconciliation',
           type: 'item',
+          actionCheck: {
+            name: 'reports/reconciliation-statement',
+            method: 'GET'
+          },
         },
         {
           id: 'remainbyinvoices',
           title: 'Остатки по р/с',
           url: 'analytics/reports/remainbyinvoices',
           type: 'item',
+          actionCheck: {
+            name: 'reports/remains-by-invoices',
+            method: 'GET'
+          },
         },
         {
           id: 'topEarning',
           title: 'ТОП по выручке',
           url: 'analytics/reports/topEarning',
           type: 'item',
+          actionCheck: {
+            name: 'reports/topEarning',
+            method: 'GET'
+          },
         },
         {
           id: 'expectedreceipts',
@@ -52,6 +64,15 @@ const analytics: IMenuItem = {
           type: 'item',
           actionCheck: {
             name: 'reports/expected-receipts-dev',
+            method: 'GET'
+          },
+        }, {
+          id: 'expenses',
+          title: 'Расходы',
+          url: 'analytics/reports/expenses',
+          type: 'item',
+          actionCheck: {
+            name: 'reports/expenses',
             method: 'GET'
           },
         },

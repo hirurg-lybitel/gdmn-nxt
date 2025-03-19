@@ -59,6 +59,7 @@ import { TimeTracker } from './app/pages/Managment/timeTracker';
 import { Projects } from './app/pages/Managment/projects';
 import ExpectedReceipts from './app/pages/Analytics/UserReports/expected-receipts/expected-receipts';
 import ExpectedReceiptsDev from './app/pages/Analytics/UserReports/expected-receipts-dev/expected-receipts-dev';
+import Expenses from './app/pages/Analytics/UserReports/expenses/expenses';
 
 registerMUI();
 
@@ -164,6 +165,7 @@ const Main = () => {
                               <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
                               <Route path="expectedreceipts" element={<ExpectedReceipts/>}/>
                               <Route path="expectedreceiptsdev" element={<ExpectedReceiptsDev/>}/>
+                              <Route path="expenses" element={<Expenses/>}/>
                               <Route path="topEarning" element={<TopEarningPage />} />
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />

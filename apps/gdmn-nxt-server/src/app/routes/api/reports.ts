@@ -1,3 +1,4 @@
+import { expensesController } from '@gdmn-nxt/modules/expenses/controller';
 import express from 'express';
 import { getRemainsInvoices } from '../../controllers/remainInvoices';
 import { getTopEarning } from '../../controllers/reports/topEarning';
@@ -7,9 +8,10 @@ import { expectedReceiptsDevController } from '@gdmn-nxt/modules/expected-receip
 
 const router = express.Router();
 
+router.get('/expenses/:dateBegin-:dateEnd', expensesController.findAll);
 router.get('/expected-receipts/:dateBegin-:dateEnd', expectedReceiptsController.findAll);
 router.get('/expected-receipts-dev/:dateBegin-:dateEnd', expectedReceiptsDevController.findAll);
-router.get('/reconciliation-statement/:custId/:dateBegin-:dateEnd', getReconciliationStatement);
+router.get('/reconciliation-statement/:dateBegin-:dateEnd', getReconciliationStatement);
 router.get('/remains-by-invoices/:onDate', getRemainsInvoices);
 router.post('/topEarning', getTopEarning);
 
