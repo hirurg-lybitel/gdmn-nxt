@@ -19,24 +19,24 @@ const find: FindHandler<IExpectedReceiptDev> = async (
 
   try {
     let sql = `
+    WITH Rate AS (
+      SELECT
+        VAL
+      FROM GD_CURRRATE
+      WHERE FORDATE <= :dateEnd
+        AND FROMCURR = 200020
+        AND TOCURR = 200010
+      ORDER BY FORDATE DESC
+      ROWS 1
+    )
     SELECT
       con.ID as CUSTOMER_ID,
       con.NAME as CUSTOMER_NAME,
       h.USR$FROMDATE,
       h.USR$EXPIRYDATE,
       h.USR$CONTRACTTEXT,
-      SUM(cl.USR$SUMNCU) as AMOUNT,
-      SUM(cl.USR$SUMNCU) /
-      (
-        SELECT
-          VAL
-        FROM GD_CURRRATE
-        WHERE FORDATE <= MAX(doc.DOCUMENTDATE)
-          AND FROMCURR = 200020
-          AND TOCURR = 200010
-        ORDER BY FORDATE DESC
-        ROWS 1
-      ) AS AMOUNT_VAL,
+      SUM(COALESCE(cl.USR$SUMNCU, cl.USR$SUMCURR * (SELECT VAL FROM Rate))) AS AMOUNT,
+      SUM(COALESCE(cl.USR$SUMNCU / (SELECT VAL FROM Rate), cl.USR$SUMCURR)) AS AMOUNT_VAL,
       stateRuid.XID as STATE_XID,
       stateRuid.DBID as STATE_DBID,
       MAX(doc.ID) as CONTRACTID,
