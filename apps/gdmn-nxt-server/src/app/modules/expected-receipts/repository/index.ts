@@ -176,9 +176,9 @@ const find: FindHandler<IExpectedReceipt> = async (
       ${contractsIds}
       `;
 
-      const perTimeContractDetailsSum = contractsIds !== '' ? (await fetchAsObject(sql, { dateEnd }))[0] : undefined; 
+      const perTimeContractDetailsSum = contractsIds !== '' ? (await fetchAsObject(sql, { dateEnd }))[0] : undefined;
 
-      // Акты выполненых работ договоров на повременную оплату
+      // Акты выполненых работ клиента на повременную оплату
       const contractsActLines = await (async () => {
         if (!includePerTime) return;
         const actLineRuidsWhere = (() => {
