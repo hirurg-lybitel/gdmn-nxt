@@ -32,31 +32,11 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
 
   return (
     <>
-      <FormControlLabel
-        disabled={disabled}
-        control={
-          <Checkbox
-            checked={filterData?.includeZeroRest ?? false}
-            onChange={(e) => handleChange(e, 'includeZeroRest')}
-          />
-        }
-        label="Договоры с остатком 0"
-      />
-      <FormControlLabel
-        disabled={disabled}
-        control={
-          <Checkbox
-            checked={filterData?.includePlanned ?? false}
-            onChange={(e) => handleChange(e, 'includePlanned')}
-          />
-        }
-        label="Планируемые договоры"
-      />
       <Autocomplete
         disabled={disabled}
         options={sortFields}
         size="small"
-        sx={{ width: 280 }}
+        sx={{ width: 310 }}
         disableClearable
         getOptionLabel={option => option.name}
         value={sortFields.find(item => {
@@ -77,6 +57,36 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
             placeholder="Сортировка"
           />
         )}
+      />
+      <FormControlLabel
+        disabled={disabled}
+        control={
+          <Checkbox
+            checked={filterData?.includeZeroRest ?? false}
+            onChange={(e) => handleChange(e, 'includeZeroRest')}
+          />
+        }
+        label="Договоры с остатком 0"
+      />
+      <FormControlLabel
+        disabled={disabled}
+        control={
+          <Checkbox
+            checked={filterData?.includePlanned ?? false}
+            onChange={(e) => handleChange(e, 'includePlanned')}
+          />
+        }
+        label="Планируемые договоры"
+      />
+      <FormControlLabel
+        disabled={disabled}
+        control={
+          <Checkbox
+            checked={filterData?.endsInPeriod ?? false}
+            onChange={(e) => handleChange(e, 'endsInPeriod')}
+          />
+        }
+        label="Оканчиваются в периоде"
       />
     </>
   );

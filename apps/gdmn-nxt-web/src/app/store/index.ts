@@ -3,7 +3,6 @@ import { Action, combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { accountApi } from '../features/account/accountApi';
 import { contactApi } from '../features/contact/contactApi';
-import { reconciliationStatementApi } from '../features/reconciliation-statement/reconciliationStatementApi';
 import userReducer from '../features/user/userSlice';
 import nlpReducer from '../features/nlp/nlpSlice';
 import { contactGroupApi } from '../features/contact/contactGroupApi';
@@ -23,12 +22,10 @@ import { sqlEditorApi } from '../features/sql-editor/sqlEditorApi';
 import { customerApi } from '../features/customer/customerApi_new';
 import filtersReducer from './filtersSlice';
 import { contractsListApi } from '../features/contracts-list/contractsListApi';
-import { remainsInvoicesApi } from '../features/remains-by-invoices/remainsInvoicesApi';
 import { workTypesApi } from '../features/work-types/workTypesApi';
 import { labelsApi } from '../features/labels';
 import { permissionsApi } from '../features/permissions';
 import { systemUsers } from '../features/systemUsers';
-import { topEarningApi } from '../features/topEarning';
 import { businessProcessesApi } from '../features/business-processes';
 import { profileSettingsApi } from '../features/profileSettings';
 import { kanbanCatalogsApi } from '../features/kanban/kanbanCatalogsApi';
@@ -44,7 +41,7 @@ import { customerFeedbackApi } from '../features/customer-feedback';
 import { timeTrackingApi } from '../features/time-tracking';
 import { securityApi } from '../features/security/securityApi';
 import { dealFeedbackApi } from '../features/deal-feedback';
-import { expectedReceiptsApi } from '../features/expected-receipts/expectedReceiptsApi';
+import { reportsApi } from '../features/reports/reportsApi';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -57,7 +54,6 @@ const reducers = combineReducers({
   [accountApi.reducerPath]: accountApi.reducer,
   [labelsApi.reducerPath]: labelsApi.reducer,
   [contactGroupApi.reducerPath]: contactGroupApi.reducer,
-  [reconciliationStatementApi.reducerPath]: reconciliationStatementApi.reducer,
   [erModelApi.reducerPath]: erModelApi.reducer,
   [departmentsApi.reducerPath]: departmentsApi.reducer,
   [customerContractsApi.reducerPath]: customerContractsApi.reducer,
@@ -69,11 +65,9 @@ const reducers = combineReducers({
   [sqlEditorApi.reducerPath]: sqlEditorApi.reducer,
   [customerApi.reducerPath]: customerApi.reducer,
   [contractsListApi.reducerPath]: contractsListApi.reducer,
-  [remainsInvoicesApi.reducerPath]: remainsInvoicesApi.reducer,
   [workTypesApi.reducerPath]: workTypesApi.reducer,
   [permissionsApi.reducerPath]: permissionsApi.reducer,
   [systemUsers.reducerPath]: systemUsers.reducer,
-  [topEarningApi.reducerPath]: topEarningApi.reducer,
   [businessProcessesApi.reducerPath]: businessProcessesApi.reducer,
   [profileSettingsApi.reducerPath]: profileSettingsApi.reducer,
   [faqApi.reducerPath]: faqApi.reducer,
@@ -90,7 +84,7 @@ const reducers = combineReducers({
   [timeTrackingApi.reducerPath]: timeTrackingApi.reducer,
   [securityApi.reducerPath]: securityApi.reducer,
   [dealFeedbackApi.reducerPath]: dealFeedbackApi.reducer,
-  [expectedReceiptsApi.reducerPath]: expectedReceiptsApi.reducer
+  [reportsApi.reducerPath]: reportsApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
@@ -117,7 +111,6 @@ export const store = configureStore({
     .concat(accountApi.middleware)
     .concat(labelsApi.middleware)
     .concat(contactGroupApi.middleware)
-    .concat(reconciliationStatementApi.middleware)
     .concat(erModelApi.middleware)
     .concat(departmentsApi.middleware)
     .concat(customerContractsApi.middleware)
@@ -129,12 +122,10 @@ export const store = configureStore({
     .concat(sqlEditorApi.middleware)
     .concat(customerApi.middleware)
     .concat(contractsListApi.middleware)
-    .concat(remainsInvoicesApi.middleware)
     .concat(workTypesApi.middleware)
     .concat(labelsApi.middleware)
     .concat(permissionsApi.middleware)
     .concat(systemUsers.middleware)
-    .concat(topEarningApi.middleware)
     .concat(businessProcessesApi.middleware)
     .concat(profileSettingsApi.middleware)
     .concat(faqApi.middleware)
@@ -151,7 +142,7 @@ export const store = configureStore({
     .concat(timeTrackingApi.middleware)
     .concat(securityApi.middleware)
     .concat(dealFeedbackApi.middleware)
-    .concat(expectedReceiptsApi.middleware)
+    .concat(reportsApi.middleware)
 });
 
 setupListeners(store.dispatch);

@@ -19,18 +19,25 @@ export function MenuGroup(props: MenuGroupProps) {
 
   const items = item.children?.map((menu: IMenuItem) => {
     switch (menu.type) {
-      case 'collapse':
+      case 'collapse': {
+        const itemsPermission = menu.children?.findIndex(children => {
+          return userPermissions?.[children.actionCheck?.name ?? '']?.[children.actionCheck?.method ?? ''] || !children.actionCheck;
+        }) !== -1;
+
         return <PermissionsGate
           key={menu.id}
-          actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || ''] ?? !menu.actionCheck}
+          actionAllowed={
+            (menu.actionCheck ? userPermissions?.[menu.actionCheck.name ?? '']?.[menu.actionCheck.method ?? ''] : itemsPermission)
+          }
         >
           {userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? '']}
           <MenuCollapse menu={menu} level={1} />
         </PermissionsGate>;
+      };
       case 'item':
         return <PermissionsGate
           key={menu.id}
-          actionAllowed={userPermissions?.[menu.actionCheck?.name || '']?.[menu.actionCheck?.method || ''] ?? !menu.actionCheck}
+          actionAllowed={userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? ''] ?? !menu.actionCheck}
         >
           <MenuItem
             key={menu.id}

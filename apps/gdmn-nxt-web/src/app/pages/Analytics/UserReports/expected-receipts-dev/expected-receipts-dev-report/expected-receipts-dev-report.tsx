@@ -1,7 +1,7 @@
 import { Tooltip } from '@mui/material';
 import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import styles from './expected-receipts-dev-report.module.less';
-import { useGetExpectedReceiptsDevQuery } from 'apps/gdmn-nxt-web/src/app/features/expected-receipts/expectedReceiptsApi';
+import { useGetExpectedReceiptsDevQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
 import { DateRange } from '@mui/x-date-pickers-pro';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useCallback, useMemo, useState } from 'react';
@@ -36,8 +36,8 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
     delete filter['sortField'];
     delete filter['sort'];
     return {
-      ...(filter && filter),
-      ...(sort && sort)
+      ...filter,
+      ...sort
     };
   }, [filterData]);
 

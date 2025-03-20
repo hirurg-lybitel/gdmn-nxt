@@ -3,11 +3,11 @@ import { Box, Grid, Typography } from '@mui/material';
 import { DateRangePickerProps } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useGetTopEarningQuery } from '../../../features/topEarning';
 import { RootState } from '@gdmn-nxt/store';
 import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import CustomNoData from '../../Styled/Icons/CustomNoData';
 import styles from './top-earning.module.less';
+import { useGetTopEarningQuery } from '../../../features/reports/reportsApi';
 
 /* eslint-disable-next-line */
 export interface ITopEarningParams {

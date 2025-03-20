@@ -1,13 +1,12 @@
-import { IDataSchema, IQuery, IDataRecord, IRequestResult } from "@gsbelarus/util-api-types";
-import { parseIntDef } from "@gsbelarus/util-useful";
-import { RequestHandler } from "express";
-import { getReadTransaction, releaseReadTransaction } from "@gdmn-nxt/db-connection";
+import { IDataSchema, IQuery, IDataRecord, IRequestResult } from '@gsbelarus/util-api-types';
+import { parseIntDef } from '@gsbelarus/util-useful';
+import { RequestHandler } from 'express';
+import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
 
 export const getReconciliationStatement: RequestHandler = async (req, res) => {
-
   const dateBegin = new Date(parseIntDef(req.params.dateBegin, new Date(2021, 0, 1).getTime()));
   const dateEnd = new Date(parseIntDef(req.params.dateEnd, new Date(2021, 2, 1).getTime()));
-  const customerId = parseIntDef(req.params.custId, 148_333_193);
+  const customerId = parseIntDef(req.query.custId.toString(), 148_333_193);
   const holdingId = 148_284_864;
   const account_id = 148529707;
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -104,7 +103,7 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
       },
       {
         name: 'contact',
-        query: `select * from gd_contact where id = ?`,
+        query: 'select * from gd_contact where id = ?',
         params: [customerId]
       },
       {
@@ -217,7 +216,7 @@ export const getReconciliationStatement: RequestHandler = async (req, res) => {
 
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map( q => execQuery(q) )))
+        ...Object.fromEntries(await Promise.all(queries.map(q => execQuery(q))))
       },
       _params: [{ dateBegin: dateBegin.getTime(), dateEnd: dateEnd.getTime() }],
       _schema

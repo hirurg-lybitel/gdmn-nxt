@@ -1,9 +1,9 @@
 import { useMemo, Fragment, useEffect, useRef } from 'react';
 import styles from './reconciliation-statement.module.less';
 import numberToWordsRu from 'number-to-words-ru';
-import { useGetReconciliationStatementQuery } from '../features/reconciliation-statement/reconciliationStatementApi';
 import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { Box } from '@mui/material';
+import { useGetReconciliationStatementQuery } from '../features/reports/reportsApi';
 
 const shortenName = (s: string) => {
   const arr = s.split(' ')
