@@ -29,7 +29,7 @@ export function ExpensesFilter({ filterData, saveFilters, disabled }: IExpensesF
       disabled={disabled}
       options={sortFields}
       size="small"
-      sx={{ width: 280 }}
+      sx={{ width: 260 }}
       disableClearable
       getOptionLabel={option => option.name}
       value={sortFields.find(item => {

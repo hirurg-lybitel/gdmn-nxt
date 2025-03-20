@@ -36,8 +36,8 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
     delete filter['sortField'];
     delete filter['sort'];
     return {
-      ...(filter && filter),
-      ...(sort && sort)
+      ...filter,
+      ...sort
     };
   }, [filterData]);
 
