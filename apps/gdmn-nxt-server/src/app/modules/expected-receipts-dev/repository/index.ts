@@ -30,8 +30,8 @@ const find: FindHandler<IExpectedReceiptDev> = async (
       doc.ID AS CONTRACTID,
       doc.NUMBER AS NUMBER,
       doc.DOCUMENTDATE AS DOCUMENTDATE,
-      SUM(COALESCE(cl.USR$SUMNCU, cl.USR$SUMCURR * rate.VAL)) AS AMOUNT,
-      SUM(COALESCE(cl.USR$SUMNCU / rate.VAL, cl.USR$SUMCURR)) AS AMOUNT_VAL
+      SUM(COALESCE(cl.USR$SUMNCU, cl.USR$SUMCURR * CAST(rate.VAL AS NUMERIC(18, 2)))) AS AMOUNT,
+      SUM(COALESCE(cl.USR$SUMNCU / CAST(rate.VAL AS NUMERIC(18, 2)), cl.USR$SUMCURR)) AS AMOUNT_VAL
     FROM usr$bnf_contract h
       LEFT JOIN gd_document doc ON doc.id = h.DOCUMENTKEY
       LEFT JOIN gd_contact con ON con.id = h.usr$contactkey
