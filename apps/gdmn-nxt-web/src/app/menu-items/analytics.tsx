@@ -44,7 +44,7 @@ const analytics: IMenuItem = {
           type: 'item',
           actionCheck: {
             name: 'reports/topEarning',
-            method: 'GET'
+            method: 'POST'
           },
         },
         {

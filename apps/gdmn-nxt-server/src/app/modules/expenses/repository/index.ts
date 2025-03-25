@@ -10,13 +10,17 @@ const find: FindHandler<IExpense> = async (
 
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
+  const numberFix = (number: number) => {
+    return Number((number ?? 0).toFixed());
+  };
+
   try {
     const sql = `
       SELECT
         COALESCE(e.USR$NAME, 'Прочее') AS EXPENSENAME,
         SUM(bsl.DSUMNCU) AS AMOUNT,
         SUM(
-          bsl.DSUMNCU / (
+          bsl.DSUMNCU / CAST((
             SELECT
               VAL
             FROM GD_CURRRATE
@@ -25,7 +29,7 @@ const find: FindHandler<IExpense> = async (
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
             ROWS 1
-          )
+          ) AS NUMERIC(18,2))
         ) AS VALAMOUNT
       FROM
         BN_BANKSTATEMENT bs
@@ -48,8 +52,8 @@ const find: FindHandler<IExpense> = async (
 
     const result: IExpense[] = data.map(expence => ({
       expenseName: expence['EXPENSENAME'],
-      amount: expence['AMOUNT'],
-      valAmount: expence['VALAMOUNT']
+      amount: numberFix(expence['AMOUNT']),
+      valAmount: numberFix(expence['VALAMOUNT'])
     }));
 
     return result;
