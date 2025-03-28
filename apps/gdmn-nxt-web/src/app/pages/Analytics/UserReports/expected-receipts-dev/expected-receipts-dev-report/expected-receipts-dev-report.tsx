@@ -5,7 +5,7 @@ import { useGetExpectedReceiptsDevQuery } from 'apps/gdmn-nxt-web/src/app/featur
 import { DateRange } from '@mui/x-date-pickers-pro';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useCallback, useMemo, useState } from 'react';
-import { IFilteringData } from '@gsbelarus/util-api-types';
+import { IExpectedReceiptDev, IFilteringData } from '@gsbelarus/util-api-types';
 import CheckIcon from '@mui/icons-material/Check';
 
 interface ThTooltipProps extends React.DetailedHTMLProps<React.ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement> {
@@ -25,24 +25,11 @@ const ThTooltip = ({ title, children, ...rest }: ThTooltipProps) => {
 };
 
 export interface ExpectedReceiptsDevReportProps {
-  onDate: DateRange<Date>;
-  filterData: IFilteringData
+  data: IExpectedReceiptDev[] | undefined;
+  isFetching: boolean
 }
 
-export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<ExpectedReceiptsDevReportProps>) {
-  const options = useMemo(() => {
-    const filter = { ...filterData };
-    const sort = { field: filter.sortField, sort: filter.sort };
-    delete filter['sortField'];
-    delete filter['sort'];
-    return {
-      ...filter,
-      ...sort
-    };
-  }, [filterData]);
-
-  const { data, isFetching } = useGetExpectedReceiptsDevQuery({ onDate, options });
-
+export function ExpectedReceiptsDevReport({ data, isFetching }: Readonly<ExpectedReceiptsDevReportProps>) {
   const total = useMemo(() => {
     if ((data?.length ?? 0) < 1) return;
 
@@ -109,7 +96,7 @@ export function ExpectedReceiptsDevReport({ onDate, filterData }: Readonly<Expec
           paddingBottom: '10px'
         }}
       >
-        {data
+        {data && !isFetching
           ? <div
             style={{
               borderRadius: 'var(--border-radius)',
