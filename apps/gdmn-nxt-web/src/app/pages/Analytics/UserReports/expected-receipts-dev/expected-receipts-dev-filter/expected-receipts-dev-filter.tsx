@@ -36,7 +36,7 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
         disabled={disabled}
         options={sortFields}
         size="small"
-        sx={{ width: 310 }}
+        sx={{ width: 330 }}
         disableClearable
         getOptionLabel={option => option.name}
         value={sortFields.find(item => {

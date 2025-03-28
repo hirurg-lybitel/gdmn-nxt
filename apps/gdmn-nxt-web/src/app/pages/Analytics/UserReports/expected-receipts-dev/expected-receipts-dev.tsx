@@ -112,7 +112,7 @@ export function ExpectedReceiptsDev(props: ExpectedReceiptsDevProps) {
   const handelClear = useCallback(() => {
     dispatch(saveFilterData({ [`${filterEntityName}`]: defaultFilterOptions }));
     setOnDate([null, null]);
-  }, [defaultFilterOptions, dispatch]);
+  }, [dispatch]);
 
   return (
     <Stack

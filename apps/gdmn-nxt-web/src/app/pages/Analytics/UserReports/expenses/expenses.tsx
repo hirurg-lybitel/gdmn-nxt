@@ -112,7 +112,7 @@ export function Expenses(props: ExpensesProps) {
   const handelClear = useCallback(() => {
     dispatch(saveFilterData({ [`${filterEntityName}`]: defaultFilterOptions }));
     setOnDate([null, null]);
-  }, [defaultFilterOptions, dispatch]);
+  }, [dispatch]);
 
   return (
     <Stack

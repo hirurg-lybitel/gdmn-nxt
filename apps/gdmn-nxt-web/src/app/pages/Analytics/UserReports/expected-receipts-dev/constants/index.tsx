@@ -14,26 +14,37 @@ export const sortFields: IFieldsSort[] = [
   },
   {
     id: 1,
-    name: 'Сумма договора по убыванию',
+    name: 'Сумма договора (Сначала большие)',
     value: 'amount',
     sort: 'desc'
   },
   {
     id: 2,
-    name: 'Сумма договора по возрастанию',
+    name: 'Сумма договора (Сначала маленькие)',
     value: 'amount',
     sort: 'asc'
   },
   {
     id: 3,
-    name: 'Сумма остатка по убыванию',
+    name: 'Остаток (Сначала большие суммы)',
     value: 'rest',
     sort: 'desc'
   },
   {
     id: 4,
-    name: 'Сумма остатка по возрастанию',
+    name: 'Остаток (Сначала маленькие суммы)',
     value: 'rest',
     sort: 'asc'
-  }
+  },
+  {
+    id: 5,
+    name: 'Дата договора (сначала старые)',
+    value: 'number',
+    sort: 'asc'
+  }, {
+    id: 6,
+    name: 'Дата договора (сначала новые)',
+    value: 'number',
+    sort: 'desc'
+  },
 ];

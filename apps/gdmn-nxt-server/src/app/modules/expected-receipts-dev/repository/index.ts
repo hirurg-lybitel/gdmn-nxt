@@ -192,7 +192,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
             ID: contracts[0]['CUSTOMER_ID'],
             NAME: contracts[0]['CUSTOMER_NAME']
           },
-          number: `№ ${contract?.['NUMBER']} ${formatDate(contract?.['DOCUMENTDATE'])} `,
+          number: `№ ${contract?.['NUMBER']} ${formatDate(contract?.['DOCUMENTDATE'])}`,
           dateBegin: formatDate(contract?.['USR$FROMDATE']),
           dateEnd: formatDate(contract?.['USR$EXPIRYDATE']),
           expired: planned ? undefined : expiredCalc(contract?.['USR$EXPIRYDATE']),

@@ -31,6 +31,12 @@ const findAll = async (
     const sortFun = (a, b): number => {
       const dataType = typeof (a[String(sortField).toLowerCase()] ?? b[String(sortField).toLowerCase()]);
 
+      const getDate = (str: string) => {
+        const dateString = str.substring(str.length - 10, str.length);
+        const [day, month, year] = dateString.split('.');
+        return new Date(`${year}-${month}-${day}`);
+      };
+
       const nameA = (() => {
         const fieldValue = a[String(sortField).toLowerCase()];
         if (dataType === 'string') {
@@ -46,6 +52,14 @@ const findAll = async (
         }
         return fieldValue;
       })();
+
+      if (String(sortField).toLowerCase() === 'number') {
+        const dateA = getDate(nameA);
+        const dateB = getDate(nameB);
+        return String(sortMode).toUpperCase() === 'ASC'
+          ? dateA?.getTime() - dateB?.getTime()
+          : dateB?.getTime() - dateA?.getTime();
+      }
 
       if (dataType === 'object') {
         const dataType = typeof (nameA[sortValueNames[sortField]] ?? nameB[sortValueNames[sortField]]);
@@ -112,9 +126,11 @@ const findAll = async (
           : nameB?.localeCompare(nameA);
       }
 
+
       const sumFun = (count: IExpectedReceiptDevContract, contract: IExpectedReceiptDevContract) => {
         return {
           ...contract,
+          number: count.number === '' ? contract.number : count.number,
           amount: {
             value: count.amount.value + contract.amount.value,
             currency: count.amount.currency + contract.amount.currency
@@ -164,6 +180,8 @@ const findAll = async (
 
       const aSum = a.contracts.reduce(sumFun, init);
       const bSum = b.contracts.reduce(sumFun, init);
+
+      console.log('123');
 
       return sortFun(aSum, bSum);
     });
