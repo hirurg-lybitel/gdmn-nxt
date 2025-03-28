@@ -29,6 +29,7 @@ export function Sidebar(props: SidebarProps) {
     <Box
       component="nav"
       sx={{ flexShrink: { md: 0 }, width: theme.drawerWidth }}
+      id="sidebar"
     >
       {
         matchDownMd &&

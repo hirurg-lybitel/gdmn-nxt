@@ -29,10 +29,37 @@
   cursor: pointer;
 }
 
+@media (max-width:470px) {
+  .input {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 input + input {
   background-color: red;
 }
 
 .input + .input {
   margin-left: 12px;
+}
+
+@media (max-width:380px) {
+  .input + .input {
+    margin-left: 8px;
+  }
+  .input {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width:330px) {
+  .input + .input {
+    margin-left: 6px;
+  }
+  .input {
+    width: 30px;
+    height: 30px;
+  }
 }

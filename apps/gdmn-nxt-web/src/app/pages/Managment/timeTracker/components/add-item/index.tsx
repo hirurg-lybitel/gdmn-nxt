@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -227,16 +227,22 @@ export const AddItem = ({
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
+  const matches = useMediaQuery('(max-width:755px)');
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
         <Form id="timeTrackingForm" onSubmit={formik.handleSubmit}>
           <Stack
-            direction="row"
+            direction={matches ? 'column' : 'row'}
             spacing={2}
             alignItems="center"
           >
-            <Stack spacing={1} flex={1}>
+            <Stack
+              width={matches ? '100%' : undefined}
+              spacing={1}
+              flex={1}
+            >
               <CustomerSelect
                 disableEdition
                 disableCaption
@@ -273,7 +279,11 @@ export const AddItem = ({
               </div>
             </Stack>
             {calcMode === 'manual' &&
-              <Stack spacing={1} width={216}>
+              <Stack
+                width={matches ? '100%' : 216}
+                spacing={1}
+                direction={matches ? 'row' : 'column'}
+              >
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
                   value={formik.values.date}
@@ -328,8 +338,12 @@ export const AddItem = ({
                 </Stack>
               </Stack>
             }
-            <Stack spacing={2}>
-              <Stack spacing={1} direction="row">
+            <Stack
+              direction={matches ? 'row-reverse' : 'column'}
+              width={matches ? '100%' : undefined}
+              spacing={2}
+            >
+              <Stack spacing={1} direction={matches ? 'row-reverse' : 'row'}>
                 <Box display="inline-flex" alignSelf="center">
                   {calcMode === 'calc'
                     ? (formik.values.inProgress)
@@ -382,9 +396,9 @@ export const AddItem = ({
                 </ToggleButtonGroup>
               </Stack>
               <Stack
-                direction="row"
                 alignItems="center"
                 spacing={1}
+                direction={matches ? 'row-reverse' : 'row'}
               >
                 <TextFieldMasked
                   label="Длительность"

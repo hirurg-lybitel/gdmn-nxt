@@ -140,6 +140,38 @@ export const MainLayout = (props: MainLayoutProps) => {
     navigate(savedPathname);
   }, [filterData?.path]);
 
+  useEffect(() => {
+    let x: number;
+    let swipeTimeout: NodeJS.Timeout;
+    let targetId: undefined | string | number;
+    const touchstartFun = (e: TouchEvent) => {
+      targetId = (e.target as any)?.id;
+      x = e.changedTouches[0].clientX;
+      swipeTimeout = setTimeout(() => {
+        x = NaN;
+      }, 1000);
+    };
+    const touchendFun = (e: TouchEvent) => {
+      clearTimeout(swipeTimeout);
+      if (e.changedTouches[0].clientX - x < -50) swipeLeft();
+      if (e.changedTouches[0].clientX - x > 50 && targetId === 'sidebar') swipeRight();
+    };
+    document.addEventListener('touchstart', touchstartFun);
+    document.addEventListener('touchend', touchendFun);
+
+    const swipeLeft = () => {
+      dispatch(toggleMenu(false));
+    };
+
+    const swipeRight = () => {
+      dispatch(toggleMenu(true));
+    };
+
+    return () => {
+      document.removeEventListener('touchstart', touchstartFun);
+      document.removeEventListener('touchend', touchendFun);
+    };
+  }, []);
 
   useEffect(() => {
     // сохранение последнего открытого пути
