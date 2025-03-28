@@ -181,8 +181,6 @@ const findAll = async (
       const aSum = a.contracts.reduce(sumFun, init);
       const bSum = b.contracts.reduce(sumFun, init);
 
-      console.log('123');
-
       return sortFun(aSum, bSum);
     });
 
