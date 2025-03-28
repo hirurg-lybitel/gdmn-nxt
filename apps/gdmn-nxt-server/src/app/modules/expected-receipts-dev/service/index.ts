@@ -12,6 +12,7 @@ const findAll = async (
   const includeZeroRest = filter.includeZeroRest === 'true';
   const includePlanned = filter.includePlanned === 'true';
   const endsInPeriod = filter.endsInPeriod === 'true';
+  const inculdeFreezing = filter.inculdeFreezing === 'true';
   const dateBegin = filter.dateBegin;
   const dateEnd = filter.dateEnd;
 
@@ -22,7 +23,8 @@ const findAll = async (
         dateEnd,
         includeZeroRest,
         includePlanned,
-        endsInPeriod
+        endsInPeriod,
+        inculdeFreezing
       }
     );
 

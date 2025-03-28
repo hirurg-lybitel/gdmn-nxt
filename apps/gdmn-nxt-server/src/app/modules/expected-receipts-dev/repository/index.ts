@@ -10,6 +10,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
   const includeZeroRest = clause['includeZeroRest'];
   const includePlanned = clause['includePlanned'];
   const endsInPeriod = clause['endsInPeriod'];
+  const inculdeFreezing = clause['inculdeFreezing'];
 
   const contractTypeId = [154913797, 987283565]; // ruid типа договора на разработку
   const filedState = [155412701, 1751673956]; // ruid статуса договора подшит
@@ -136,7 +137,8 @@ const find: FindHandler<IExpectedReceiptDev> = async (
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
             ROWS 1
-          ) AS AMOUNT_VAL
+          ) AS AMOUNT_VAL,
+          MAX(ac.USR$PAYMENTDATE) AS LASTACT
         FROM
           USR$BNF_ACTS ac
         LEFT JOIN
@@ -163,7 +165,8 @@ const find: FindHandler<IExpectedReceiptDev> = async (
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
             ROWS 1
-          )) AS AMOUNT_VAL
+          )) AS AMOUNT_VAL,
+          MAX(d.DOCUMENTDATE) AS LASTPAYMENT
         FROM BN_BANKSTATEMENTLINE bsl
           LEFT JOIN gd_document d ON d.id = bsl.id
         WHERE bsl.USR$BN_CONTRACTKEY = :contractId
@@ -171,9 +174,18 @@ const find: FindHandler<IExpectedReceiptDev> = async (
         `;
 
         const paid = (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
+
         const rest = planned ? (contract?.['AMOUNT'] ?? 0) / 2 : (contract?.['AMOUNT'] ?? 0) - (paid?.['AMOUNT'] ?? 0);
 
-        if (rest < 1 && !includeZeroRest) continue;
+        const lastAct = done?.['LASTACT'] ? new Date(done?.['LASTACT']) : new Date();
+        const lastPayment = paid?.['LASTPAYMENT'] ? new Date(paid?.['LASTPAYMENT']) : new Date();
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        twoYearsAgo.setDate(twoYearsAgo.getDate() - 1);
+
+        const feezing = lastAct < twoYearsAgo || lastPayment < twoYearsAgo;
+
+        if ((rest < 1 && !includeZeroRest) || (feezing && !inculdeFreezing)) continue;
 
         clientContracts.push({
           customer: {
