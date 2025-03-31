@@ -2,7 +2,7 @@ import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typo
 import { DateRangePicker, PickersShortcutsItem } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './expenses.module.less';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DateRange } from '@mui/lab';
 import { SingleInputDateRangeField } from '@mui/x-date-pickers-pro/SingleInputDateRangeField';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,6 +14,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { sortFields } from './constants';
 import { ExpensesFilter } from './expenses-filter/expenses-filter';
 import ExpensesReport from './expenses-report/expenses-report';
+import { useGetExpensesQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -73,7 +74,23 @@ export function Expenses(props: ExpensesProps) {
 
   const filterEntityName = 'expenses';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
-  const [filtersIsLoading] = useFilterStore(filterEntityName, { includePerTime: true, sortField: sortFields[0].value, sort: sortFields[0].sort });
+  const defaultFilterOptions = { sortField: sortFields[0].value, sort: sortFields[0].sort };
+  const [filtersIsLoading] = useFilterStore(filterEntityName, defaultFilterOptions);
+
+  const show = generate && !!onDate && !!onDate[0] && !!onDate[1];
+
+  const options = useMemo(() => {
+    const filter = { ...filterData };
+    const sort = { field: filter.sortField, sort: filter.sort };
+    delete filter['sortField'];
+    delete filter['sort'];
+    return {
+      ...filter,
+      ...sort
+    };
+  }, [filterData]);
+
+  const { data, isFetching, refetch } = useGetExpensesQuery({ onDate: onDate || [new Date(), new Date()], options }, { skip: !show });
 
   const dispatch = useDispatch();
 
@@ -82,18 +99,20 @@ export function Expenses(props: ExpensesProps) {
     generate && setGenerate(false);
   }, [dispatch, generate]);
 
-  const handleChange = (newValue: DateRange<Date> | undefined) => {
+  const handleChange = useCallback((newValue: DateRange<Date> | undefined) => {
     setOnDate(newValue);
     generate && setGenerate(false);
-  };
+  }, [generate]);
 
-  const handleGenerate = () => {
+  const handleGenerate = useCallback(() => {
     setGenerate(true);
-  };
+    generate && refetch();
+  }, [generate, refetch]);
 
-  const handelClear = () => {
-    setGenerate(false);
-  };
+  const handelClear = useCallback(() => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: defaultFilterOptions }));
+    setOnDate([null, null]);
+  }, [dispatch]);
 
   return (
     <Stack
@@ -134,7 +153,6 @@ export function Expenses(props: ExpensesProps) {
             <Box flex={1} />
             <Button
               onClick={handelClear}
-              disabled={!onDate?.[0] || !onDate?.[1]}
               variant="outlined"
             >
                   Очистить
@@ -150,10 +168,7 @@ export function Expenses(props: ExpensesProps) {
         </CardActions>
 
       </CustomizedCard>
-      {generate && onDate && onDate[0] && onDate[1]
-        ?
-        <ExpensesReport onDate={onDate} filterData={filterData} />
-        : null}
+      {show ? <ExpensesReport data={data} isFetching={isFetching} /> : null}
     </Stack>
   );
 }

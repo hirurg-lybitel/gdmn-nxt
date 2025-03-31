@@ -7,6 +7,7 @@ const findAll: RequestHandler = async (req, res) => {
   const { id: sessionID } = req.session;
   const dateBegin = new Date(Number(req.params.dateBegin));
   const dateEnd = new Date(Number(req.params.dateEnd));
+  dateEnd.setHours(23, 59, 59);
   try {
     if (isNaN(dateBegin.getTime()) || isNaN(dateEnd.getTime())) {
       return res.send(resultError('Некорретная дата в периоде'));

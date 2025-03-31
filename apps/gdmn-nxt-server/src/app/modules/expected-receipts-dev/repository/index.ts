@@ -1,4 +1,4 @@
-import { FindHandler, IContract, IExpectedReceiptDev, IExpectedReceiptDevContract } from '@gsbelarus/util-api-types';
+import { FindHandler, IContract, IExpectedReceiptDev } from '@gsbelarus/util-api-types';
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 
 const find: FindHandler<IExpectedReceiptDev> = async (
@@ -10,6 +10,7 @@ const find: FindHandler<IExpectedReceiptDev> = async (
   const includeZeroRest = clause['includeZeroRest'];
   const includePlanned = clause['includePlanned'];
   const endsInPeriod = clause['endsInPeriod'];
+  const inculdeFreezing = clause['inculdeFreezing'];
 
   const contractTypeId = [154913797, 987283565]; // ruid типа договора на разработку
   const filedState = [155412701, 1751673956]; // ruid статуса договора подшит
@@ -64,16 +65,6 @@ const find: FindHandler<IExpectedReceiptDev> = async (
     // Получение договоров за период
     const data = await fetchAsObject<IContract>(sql, { dateBegin, dateEnd, contractTypeXID: contractTypeId[0], contractTypeDBID: contractTypeId[1] });
 
-    // Сортировка договоров по ID клиента
-    const sortedData = {};
-    data.forEach(c => {
-      if (sortedData[c['CUSTOMER_ID']]) {
-        sortedData[c['CUSTOMER_ID']].push(c);
-      } else {
-        sortedData[c['CUSTOMER_ID']] = [c];
-      }
-    });
-
     const expiredCalc = (date: string) => {
       const dateEnd = new Date(date);
       const now = new Date();
@@ -112,18 +103,15 @@ const find: FindHandler<IExpectedReceiptDev> = async (
 
     const clients: IExpectedReceiptDev[] = [];
 
-    const sortedClients: any[] = Object.values(sortedData);
+    const sortedClients: any[] = Object.values(data);
 
-    for (const contracts of sortedClients) {
-      const clientContracts: IExpectedReceiptDevContract[] = [];
+    for (const contract of sortedClients) {
+      // Оплнируемый договор
+      const planned = contract['STATE_XID'] === filedState[0] && contract['STATE_DBID'] === filedState[1];
 
-      for (const contract of contracts) {
-        // Оплнируемый договор
-        const planned = contract['STATE_XID'] === filedState[0] && contract['STATE_DBID'] === filedState[1];
+      if (planned && !includePlanned) continue;
 
-        if (planned && !includePlanned) continue;
-
-        let sql = `
+      let sql = `
         SELECT
           SUM(al.USR$SUMNCU) as AMOUNT,
           SUM(al.USR$SUMNCU) /
@@ -136,7 +124,8 @@ const find: FindHandler<IExpectedReceiptDev> = async (
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
             ROWS 1
-          ) AS AMOUNT_VAL
+          ) AS AMOUNT_VAL,
+          MAX(ac.USR$PAYMENTDATE) AS LASTACT
         FROM
           USR$BNF_ACTS ac
         LEFT JOIN
@@ -147,10 +136,10 @@ const find: FindHandler<IExpectedReceiptDev> = async (
           ac.USR$PAYMENTDATE;
         `;
 
-        // Сумма оплаты за выполненые работы по договору
-        const done = planned ? undefined : (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
+      // Сумма оплаты за выполненые работы по договору
+      const done = planned ? undefined : (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
 
-        sql = `
+      sql = `
         SELECT
           SUM(bsl.CSUMNCU) as AMOUNT,
           SUM(bsl.CSUMNCU /
@@ -163,56 +152,55 @@ const find: FindHandler<IExpectedReceiptDev> = async (
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
             ROWS 1
-          )) AS AMOUNT_VAL
+          )) AS AMOUNT_VAL,
+          MAX(d.DOCUMENTDATE) AS LASTPAYMENT
         FROM BN_BANKSTATEMENTLINE bsl
           LEFT JOIN gd_document d ON d.id = bsl.id
         WHERE bsl.USR$BN_CONTRACTKEY = :contractId
         GROUP BY d.DOCUMENTDATE
         `;
 
-        const paid = (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
-        const rest = planned ? (contract?.['AMOUNT'] ?? 0) / 2 : (contract?.['AMOUNT'] ?? 0) - (paid?.['AMOUNT'] ?? 0);
+      const paid = (await fetchAsObject<IContract>(sql, { contractId: contract['CONTRACTID'] }))[0];
 
-        if (rest < 1 && !includeZeroRest) continue;
+      const rest = planned ? (contract?.['AMOUNT'] ?? 0) / 2 : (contract?.['AMOUNT'] ?? 0) - (paid?.['AMOUNT'] ?? 0);
 
-        clientContracts.push({
-          customer: {
-            ID: contracts[0]['CUSTOMER_ID'],
-            NAME: contracts[0]['CUSTOMER_NAME']
-          },
-          number: `№ ${contract?.['NUMBER']} ${formatDate(contract?.['DOCUMENTDATE'])} `,
-          dateBegin: formatDate(contract?.['USR$FROMDATE']),
-          dateEnd: formatDate(contract?.['USR$EXPIRYDATE']),
-          expired: planned ? undefined : expiredCalc(contract?.['USR$EXPIRYDATE']),
-          planned: planned,
-          subject: await blob2String(contract?.['USR$CONTRACTTEXT']),
-          amount: {
-            value: numberFix(contract?.['AMOUNT']),
-            currency: numberFix(contract?.['AMOUNT_VAL'])
-          },
-          done: planned ? undefined : {
-            value: numberFix(done?.['AMOUNT']),
-            currency: numberFix(done?.['AMOUNT_VAL'])
-          },
-          paid: planned ? undefined : {
-            value: numberFix(paid?.['AMOUNT']),
-            currency: numberFix(paid?.['AMOUNT_VAL'])
-          },
-          rest: {
-            value: numberFix(rest),
-            currency: numberFix(rest / currrate)
-          }
-        });
-      }
+      const lastAct = done?.['LASTACT'] ? new Date(done?.['LASTACT']) : new Date();
+      const lastPayment = paid?.['LASTPAYMENT'] ? new Date(paid?.['LASTPAYMENT']) : new Date();
+      const twoYearsAgo = new Date();
+      twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+      twoYearsAgo.setDate(twoYearsAgo.getDate() - 1);
 
-      if (clientContracts.length === 0) continue;
+      const feezing = lastAct < twoYearsAgo || lastPayment < twoYearsAgo;
+
+      if ((rest < 1 && !includeZeroRest) || (feezing && !inculdeFreezing)) continue;
 
       clients.push({
         customer: {
-          ID: contracts[0]['CUSTOMER_ID'],
-          NAME: contracts[0]['CUSTOMER_NAME']
+          ID: contract['CUSTOMER_ID'],
+          NAME: contract['CUSTOMER_NAME']
         },
-        contracts: clientContracts
+        number: `№ ${contract?.['NUMBER']} ${formatDate(contract?.['DOCUMENTDATE'])}`,
+        dateBegin: formatDate(contract?.['USR$FROMDATE']),
+        dateEnd: formatDate(contract?.['USR$EXPIRYDATE']),
+        expired: planned ? undefined : expiredCalc(contract?.['USR$EXPIRYDATE']),
+        planned: planned,
+        subject: await blob2String(contract?.['USR$CONTRACTTEXT']),
+        amount: {
+          value: numberFix(contract?.['AMOUNT']),
+          currency: numberFix(contract?.['AMOUNT_VAL'])
+        },
+        done: planned ? undefined : {
+          value: numberFix(done?.['AMOUNT']),
+          currency: numberFix(done?.['AMOUNT_VAL'])
+        },
+        paid: planned ? undefined : {
+          value: numberFix(paid?.['AMOUNT']),
+          currency: numberFix(paid?.['AMOUNT_VAL'])
+        },
+        rest: {
+          value: numberFix(rest),
+          currency: numberFix(rest / currrate)
+        }
       });
     };
 

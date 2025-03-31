@@ -4,27 +4,14 @@ import { useGetExpensesQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/
 import { DateRange } from '@mui/x-date-pickers-pro';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useMemo } from 'react';
-import { IFilteringData } from '@gsbelarus/util-api-types';
+import { IExpense, IFilteringData } from '@gsbelarus/util-api-types';
 
 export interface ExpensesReportProps {
-  onDate: DateRange<Date>;
-  filterData: IFilteringData
+  data: IExpense[] | undefined;
+  isFetching: boolean
 }
 
-export function ExpensesReport({ onDate, filterData }: Readonly<ExpensesReportProps>) {
-  const options = useMemo(() => {
-    const filter = { ...filterData };
-    const sort = { field: filter.sortField, sort: filter.sort };
-    delete filter['sortField'];
-    delete filter['sort'];
-    return {
-      ...filter,
-      ...sort
-    };
-  }, [filterData]);
-
-  const { data, isFetching } = useGetExpensesQuery({ onDate, options });
-
+export function ExpensesReport({ data, isFetching }: Readonly<ExpensesReportProps>) {
   const total = useMemo(() => {
     if ((data?.length ?? 0) < 1) return;
 
@@ -59,7 +46,7 @@ export function ExpensesReport({ onDate, filterData }: Readonly<ExpensesReportPr
           paddingBottom: '10px'
         }}
       >
-        {data
+        {data && !isFetching
           ? <div
             style={{
               borderRadius: 'var(--border-radius)',

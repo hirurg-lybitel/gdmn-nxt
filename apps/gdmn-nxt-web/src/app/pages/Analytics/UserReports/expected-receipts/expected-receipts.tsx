@@ -2,7 +2,7 @@ import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, Typo
 import { DateRangePicker, PickersShortcutsItem } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './expected-receipts.module.less';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import ExpectedReceiptsReport from './expected-receipts-report/expected-receipts-report';
 import { DateRange } from '@mui/lab';
 import { SingleInputDateRangeField } from '@mui/x-date-pickers-pro/SingleInputDateRangeField';
@@ -14,6 +14,7 @@ import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { ExpectedReceiptsFilter } from './expected-receipts-filter/expected-receipts-filter';
 import { sortFields } from './constants';
 import dayjs, { Dayjs } from 'dayjs';
+import { useGetExpectedReceiptsQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -73,7 +74,23 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
 
   const filterEntityName = 'expectedReceipts';
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.[`${filterEntityName}`]);
-  const [filtersIsLoading] = useFilterStore(filterEntityName, { includePerTime: true, sortField: sortFields[0].value, sort: sortFields[0].sort });
+  const defaultFilterOptions = { sortField: sortFields[0].value, sort: sortFields[0].sort };
+  const [filtersIsLoading] = useFilterStore(filterEntityName, defaultFilterOptions);
+
+  const show = generate && !!onDate && !!onDate[0] && !!onDate[1];
+
+  const options = useMemo(() => {
+    const filter = { ...filterData };
+    const sort = { field: filter.sortField, sort: filter.sort };
+    delete filter['sortField'];
+    delete filter['sort'];
+    return {
+      ...filter,
+      ...sort
+    };
+  }, [filterData]);
+
+  const { data, isFetching, refetch } = useGetExpectedReceiptsQuery({ onDate: onDate || [new Date(), new Date()], options }, { skip: !show });
 
   const dispatch = useDispatch();
 
@@ -82,18 +99,20 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
     generate && setGenerate(false);
   }, [dispatch, generate]);
 
-  const handleChange = (newValue: DateRange<Date> | undefined) => {
+  const handleChange = useCallback((newValue: DateRange<Date> | undefined) => {
     setOnDate(newValue);
     generate && setGenerate(false);
-  };
+  }, [generate]);
 
-  const handleGenerate = () => {
+  const handleGenerate = useCallback(() => {
     setGenerate(true);
-  };
+    generate && refetch();
+  }, [generate, refetch]);
 
-  const handelClear = () => {
-    setGenerate(false);
-  };
+  const handelClear = useCallback(() => {
+    dispatch(saveFilterData({ [`${filterEntityName}`]: defaultFilterOptions }));
+    setOnDate([null, null]);
+  }, [dispatch]);
 
   return (
     <Stack
@@ -135,7 +154,6 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
             <Box flex={1} />
             <Button
               onClick={handelClear}
-              disabled={!onDate?.[0] || !onDate?.[1]}
               variant="outlined"
             >
                   Очистить
@@ -151,10 +169,7 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
         </CardActions>
 
       </CustomizedCard>
-      {generate && onDate && onDate[0] && onDate[1]
-        ?
-        <ExpectedReceiptsReport onDate={onDate} filterData={filterData} />
-        : null}
+      {show ? <ExpectedReceiptsReport data={data} isFetching={isFetching} /> : null}
     </Stack>
   );
 }
