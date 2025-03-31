@@ -54,8 +54,7 @@ export function ExpectedReceiptsDevReport({ data, isFetching }: Readonly<Expecte
       }
     };
 
-    data?.forEach((client) => client.contracts.forEach(contract => {
-      total.length += 1;
+    data?.forEach((contract => {
       total.expired += contract.expired ?? 0;
       total.amount.value += contract.amount.value ?? 0;
       total.amount.currency += contract.amount.currency ?? 0;
@@ -143,15 +142,15 @@ export function ExpectedReceiptsDevReport({ data, isFetching }: Readonly<Expecte
                 </tr>
               </thead>
               <tbody className={styles.lines}>
-                {data.map((client, index) => client.contracts.map((contract, iindex) => {
+                {data.map((contract, index) => {
                   rowCount ++;
                   return (
                     <tr
                       className={styles.tableRow}
-                      style={(rowCount - 1) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
-                      key={`${index}${iindex}`}
+                      style={index % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
+                      key={index}
                     >
-                      <th>{iindex === 0 && client?.customer?.NAME}</th>
+                      <th>{contract.customer?.NAME}</th>
                       <th>{contract.number}</th>
                       <th>{contract.dateBegin}</th>
                       <th>{contract.dateEnd}</th>
@@ -171,14 +170,13 @@ export function ExpectedReceiptsDevReport({ data, isFetching }: Readonly<Expecte
                       <th className={styles.numberTh}>{procentCalc(contract.rest.value)}</th>
                     </tr>
                   );
-                })
-                )}
-                <tr className={styles.tableRow} style={(total?.length ?? 0) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
+                })}
+                <tr className={styles.tableRow} style={(data?.length ?? 0) % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
                   <th className={styles.noBottomBorder}>Итого</th>
                   <th className={styles.noBottomBorder}/>
                   <th className={styles.noBottomBorder}/>
                   <th className={styles.noBottomBorder}/>
-                  <th className={styles.noBottomBorder}/>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.expired)}</th>
                   <th className={styles.noBottomBorder}/>
                   <th className={styles.noBottomBorder}/>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.amount.value)}</th>

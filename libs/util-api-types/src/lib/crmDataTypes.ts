@@ -619,7 +619,7 @@ export interface IExpectedReceipt {
   valAmount: number
 }
 
-export interface IExpectedReceiptDevContract {
+export interface IExpectedReceiptDev {
   customer?: ICustomer,
   number: string,
   dateBegin: string,
@@ -643,11 +643,6 @@ export interface IExpectedReceiptDevContract {
     value: number,
     currency: number
   }
-}
-
-export interface IExpectedReceiptDev {
-  customer?: ICustomer,
-  contracts: IExpectedReceiptDevContract[]
 }
 
 export interface IExpense {

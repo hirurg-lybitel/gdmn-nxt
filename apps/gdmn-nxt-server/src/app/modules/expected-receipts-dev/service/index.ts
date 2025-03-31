@@ -17,7 +17,7 @@ const findAll = async (
   const dateEnd = filter.dateEnd;
 
   try {
-    const clients = await expectedReceiptsDevRepository.find(sessionID,
+    const contracts = await expectedReceiptsDevRepository.find(sessionID,
       {
         dateBegin,
         dateEnd,
@@ -103,88 +103,9 @@ const findAll = async (
       rest: 'value'
     };
 
-    clients?.sort((a, b) => {
-      // b.contracts.sort(sortFun);
+    contracts?.sort(sortFun);
 
-      // if (first)a.contracts.sort(sortFun);
-
-      // first = false;
-
-      if (String(sortField).toLowerCase() === 'customer') {
-        const nameA = (() => {
-          const fieldValue = a[String(sortField).toLowerCase()]['NAME'];
-          return fieldValue?.toLowerCase() || '';
-        })();
-
-        const nameB = (() => {
-          const fieldValue = b[String(sortField).toLowerCase()]['NAME'];
-          return fieldValue?.toLowerCase() || '';
-        })();
-
-        return String(sortMode).toUpperCase() === 'ASC'
-          ? nameA?.localeCompare(nameB)
-          : nameB?.localeCompare(nameA);
-      }
-
-
-      const sumFun = (count: IExpectedReceiptDevContract, contract: IExpectedReceiptDevContract) => {
-        return {
-          ...contract,
-          number: count.number === '' ? contract.number : count.number,
-          amount: {
-            value: count.amount.value + contract.amount.value,
-            currency: count.amount.currency + contract.amount.currency
-          },
-          done: {
-            value: count.done?.value + contract.done?.value,
-            currency: count.done?.currency + contract.done?.currency
-          },
-          paid: {
-            value: count.paid?.value + contract.paid?.value,
-            currency: count.paid?.currency + contract.paid?.currency
-          },
-          rest: {
-            value: count.rest?.value + contract.rest?.value,
-            currency: count.rest?.currency + contract.rest?.currency
-          },
-        };
-      };
-
-      const init: IExpectedReceiptDevContract = {
-        customer: {
-          ID: -1,
-          NAME: ''
-        },
-        number: '',
-        dateBegin: '',
-        dateEnd: '',
-        planned: false,
-        subject: '',
-        amount: {
-          value: 0,
-          currency: 0
-        },
-        done: {
-          value: 0,
-          currency: 0
-        },
-        paid: {
-          value: 0,
-          currency: 0
-        },
-        rest: {
-          value: 0,
-          currency: 0
-        }
-      };
-
-      const aSum = a.contracts.reduce(sumFun, init);
-      const bSum = b.contracts.reduce(sumFun, init);
-
-      return sortFun(aSum, bSum);
-    });
-
-    return clients;
+    return contracts;
   } catch (error) {
     throw error;
   }
