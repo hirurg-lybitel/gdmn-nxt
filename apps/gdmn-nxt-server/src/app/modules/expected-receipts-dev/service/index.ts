@@ -1,4 +1,3 @@
-import { IExpectedReceiptDevContract } from '@gsbelarus/util-api-types';
 import { expectedReceiptsDevRepository } from '../repository';
 
 const findAll = async (
