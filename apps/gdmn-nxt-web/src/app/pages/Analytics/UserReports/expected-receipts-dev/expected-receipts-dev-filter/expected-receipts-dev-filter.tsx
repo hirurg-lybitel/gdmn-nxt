@@ -1,4 +1,4 @@
-import { Autocomplete, Checkbox, FormControlLabel, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, FormControlLabel, TextField, Tooltip } from '@mui/material';
 import { IFieldsSort, sortFields } from '../constants';
 import { IFilteringData } from '@gsbelarus/util-api-types';
 import { useCallback } from 'react';
@@ -36,7 +36,7 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
         disabled={disabled}
         options={sortFields}
         size="small"
-        sx={{ width: 310 }}
+        sx={{ width: 330 }}
         disableClearable
         getOptionLabel={option => option.name}
         value={sortFields.find(item => {
@@ -88,6 +88,18 @@ export function ExpectedReceiptsDevFilter({ filterData, saveFilters, disabled }:
         }
         label="Оканчиваются в периоде"
       />
+      <Tooltip title={'Договоры с последней оплатной или актом > 2-х лет назад'}>
+        <FormControlLabel
+          disabled={disabled}
+          control={
+            <Checkbox
+              checked={filterData?.inculdeFreezing ?? false}
+              onChange={(e) => handleChange(e, 'inculdeFreezing')}
+            />
+          }
+          label="Зависшие"
+        />
+      </Tooltip>
     </>
   );
 }
