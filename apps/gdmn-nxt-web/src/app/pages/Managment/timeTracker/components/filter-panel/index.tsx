@@ -91,6 +91,13 @@ export function FilterPanel({
       </CardContent>
       <CardActions style={{ padding: '16px' }}>
         <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => onClose()}
+        >
+          Закрыть
+        </Button>
+        <Button
           variant="contained"
           fullWidth
           onClick={() => {

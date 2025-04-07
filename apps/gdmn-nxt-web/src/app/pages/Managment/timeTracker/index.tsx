@@ -16,6 +16,7 @@ import {
   Tooltip,
   TextField,
   Skeleton,
+  useMediaQuery,
 } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -166,45 +167,54 @@ export function TimeTracker() {
     }, [filterData.period])
   };
 
+  const breakPoint975 = useMediaQuery('(max-width:975px)');
+  const breakPoint900 = useMediaQuery('(max-width:900px)');
+  const breakPoint775 = useMediaQuery('(max-width:775px)');
+  const breakPoint630 = useMediaQuery('(max-width:630px)');
+
   const Header = useMemo(() => {
+    const serchBar = (
+      <SearchBar
+        fullWidth={(breakPoint975 && !breakPoint900) || breakPoint775}
+        disabled={isLoading}
+        onCancelSearch={cancelSearch}
+        onRequestSearch={requestSearch}
+        cancelOnEscape
+        placeholder="Поиск"
+        value={
+          filterData && filterData.name
+            ? filterData.name[0]
+            : undefined
+        }
+      />
+    );
     return (
       <CustomizedCard
         direction="row"
         className={styles.headerCard}
+        style={{ flexDirection: 'column', overflow: breakPoint630 ? 'visible' : 'hidden', minHeight: breakPoint630 ? 'auto' : '54px' }}
       >
-        <Typography variant="pageHeader">Учёт времени</Typography>
-        <Box flex={1} />
-        <Box
-          pr={1}
-        >
-          <SearchBar
-            disabled={isLoading}
-            onCancelSearch={cancelSearch}
-            onRequestSearch={requestSearch}
-            cancelOnEscape
-            placeholder="Поиск"
-            value={
-              filterData && filterData.name
-                ? filterData.name[0]
-                : undefined
-            }
+        <div style={{ width: '100%', display: 'flex', alignItems: 'center', minHeight: '34px' }}>
+          <Typography variant="pageHeader">Учёт времени</Typography>
+          <Box flex={1} />
+          {breakPoint630 ? <></> : <Box pr={1}>{serchBar}</Box>}
+          <CustomLoadingButton
+            hint="Обновить данные"
+            loading={isFetching}
+            onClick={() => {
+              refetch();
+              refetchTimeTrackingInProgress();
+            }}
           />
-        </Box>
-        <CustomLoadingButton
-          hint="Обновить данные"
-          loading={isFetching}
-          onClick={() => {
-            refetch();
-            refetchTimeTrackingInProgress();
-          }}
-        />
-        <Box display="inline-flex" alignSelf="center">
-          <CustomFilterButton
-            onClick={filterHandlers.filterClick}
-            disabled={isFetching}
-            hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
-          />
-        </Box>
+          <Box display="inline-flex" alignSelf="center">
+            <CustomFilterButton
+              onClick={filterHandlers.filterClick}
+              disabled={isFetching}
+              hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
+            />
+          </Box>
+        </div>
+        {breakPoint630 ? <Box style={{ width: '100% ', marginTop: '10px' }}>{serchBar}</Box> : <></>}
       </CustomizedCard>
     );
   }, [
@@ -212,7 +222,11 @@ export function TimeTracker() {
     isLoading,
     refetch,
     refetchTimeTrackingInProgress,
-    filterData
+    filterData,
+    breakPoint775,
+    breakPoint900,
+    breakPoint975,
+    breakPoint630
   ]);
 
   const handleSubmit = (value: ITimeTrack, mode: 'add' | 'update') => {
@@ -303,6 +317,8 @@ export function TimeTracker() {
     });
   };
 
+  const breakPoint442 = useMediaQuery('(max-width:442px)');
+
   return (
     <Stack flex={1} spacing={3}>
       {memoFilter}
@@ -313,6 +329,7 @@ export function TimeTracker() {
       />
       <Stack direction="row">
         <ButtonDateRangePicker
+          label={breakPoint442 ? false : undefined}
           options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
           value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
           onChange={dateRangeOnChange}
@@ -323,8 +340,9 @@ export function TimeTracker() {
           spacing={1}
           alignItems="center"
           mr={'16px'}
+          ml={'16px'}
         >
-          <Typography variant="caption">
+          <Typography variant="caption" style={{ textWrap: 'nowrap' }}>
             Итого за период:
           </Typography>
           <Typography fontWeight={600} width={60}>
@@ -340,191 +358,206 @@ export function TimeTracker() {
           </Typography>
         </Stack>
       </Stack>
-      <CustomizedScrollBox container={{ style: { marginRight: '-16px' } }}>
-        <Stack spacing={2} mr={2}>
-          {isLoading ?
-            <ItemsSkeleton /> :
-            timeTrackGroup.map(({ date, duration, items }, idx) => {
-              return (
-                <CustomizedCard key={idx}>
-                  <Accordion defaultExpanded={false}>
-                    <AccordionSummary>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        flex={1}
-                        alignItems="center"
-                      >
-                        <Typography fontWeight={600} textTransform="capitalize" >
-                          {dayjs(date).format('MMM D, YYYY')}
-                        </Typography>
-                        <Box flex={1} />
-                        <Typography variant="caption">
-                          Итого:
-                        </Typography>
-                        <Typography fontWeight={600} width={60}>
-                          {durationFormat(duration)}
-                        </Typography>
-                      </Stack>
-                    </AccordionSummary>
-                    <AccordionDetails style={{ padding: '0 16px' }}>
-                      {items.map((item, index) => {
-                        const {
-                          ID,
-                          customer,
-                          description = '',
-                          startTime,
-                          endTime,
-                          duration,
-                          billable = true,
-                          task,
-                          user
-                        } = item;
-
-                        if (isFetching) {
-                          return (
-                            <Skeleton
-                              key={item.ID}
-                              variant="rounded"
-                              animation="wave"
-                              style={{
-                                borderRadius: 'var(--border-radius)',
-                                height: 58,
-                                width: 'auto',
-                                margin: '10px 0px'
-                              }}
-                            />
-                          );
+      <div style={{ height: '100%', minHeight: '300px', position: 'relative' }}>
+        <div className={styles.scrollbarContainer} style={{ position: 'absolute', inset: 0, overflowY: 'scroll', marginRight: '-16px' }}>
+          <Stack
+            spacing={2}
+            mr={'6px'}
+          >
+            {isLoading ?
+              <ItemsSkeleton /> :
+              timeTrackGroup.map(({ date, duration, items }, idx) => {
+                return (
+                  <CustomizedCard key={idx}>
+                    <Accordion
+                      defaultExpanded={false}
+                      sx={{
+                        '& .MuiCollapse-root': {
+                          overflowX: 'auto'
+                        },
+                        '& .MuiCollapse-wrapper': {
+                          minWidth: '555px'
                         }
+                      }}
+                    >
+                      <AccordionSummary>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          flex={1}
+                          alignItems="center"
+                        >
+                          <Typography fontWeight={600} textTransform="capitalize" >
+                            {dayjs(date).format('MMM D, YYYY')}
+                          </Typography>
+                          <Box flex={1} />
+                          <Typography variant="caption">
+                          Итого:
+                          </Typography>
+                          <Typography fontWeight={600} width={60}>
+                            {durationFormat(duration)}
+                          </Typography>
+                        </Stack>
+                      </AccordionSummary>
+                      <AccordionDetails style={{ padding: '0 16px' }}>
+                        {items.map((item, index) => {
+                          const {
+                            ID,
+                            customer,
+                            description = '',
+                            startTime,
+                            endTime,
+                            duration,
+                            billable = true,
+                            task,
+                            user
+                          } = item;
 
-                        return (
-                          <Stack
-                            key={ID}
-                            direction="row"
-                            spacing={2}
-                            alignItems={'center'}
-                            sx={{
-                              borderBottom: '1px solid',
-                              borderBottomColor: 'divider',
-                              padding: '8px 0px',
-                              ':last-child': {
-                                borderBottom: 'none'
-                              }
-                            }}
-                          >
-                            <Stack flex={1}>
-                              {(filterData.allEmployees || (filterData.employees?.length ?? 0) > 0) && <Typography variant={'caption'}>{user?.CONTACT?.NAME}</Typography>}
-                              <Stack direction="row" spacing={0.5}>
-                                <Typography
-                                  variant={'caption'}
-                                  onClick={setInitial({ customer, task: {} })}
-                                  style={{
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  {customer?.NAME}
-                                </Typography>
-                                <Typography
-                                  variant={'caption'}
-                                  onClick={setInitial({ customer, task: {} })}
-                                  style={{
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  {task?.project && `→ ${task?.project?.name}`}
-                                </Typography>
-                                <Typography
-                                  variant={'caption'}
-                                  onClick={setInitial({ customer, task })}
-                                  style={{
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  {task ? `→ ${task.name}` : ''}
-                                </Typography>
+                          if (isFetching) {
+                            return (
+                              <Skeleton
+                                key={item.ID}
+                                variant="rounded"
+                                animation="wave"
+                                style={{
+                                  borderRadius: 'var(--border-radius)',
+                                  height: 58,
+                                  width: 'auto',
+                                  margin: '10px 0px'
+                                }}
+                              />
+                            );
+                          }
+
+                          return (
+                            <Stack
+                              key={ID}
+                              direction="row"
+                              spacing={2}
+                              alignItems={'center'}
+                              sx={{
+                                borderBottom: '1px solid',
+                                borderBottomColor: 'divider',
+                                padding: '8px 0px',
+                                ':last-child': {
+                                  borderBottom: 'none'
+                                }
+                              }}
+                            >
+                              <Stack flex={1}>
+                                {(filterData.allEmployees || (filterData.employees?.length ?? 0) > 0) && <Typography variant={'caption'}>{user?.CONTACT?.NAME}</Typography>}
+                                <Stack direction="row" spacing={0.5}>
+                                  <Typography
+                                    variant={'caption'}
+                                    onClick={setInitial({ customer, task: {} })}
+                                    style={{
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    {customer?.NAME}
+                                  </Typography>
+                                  <Typography
+                                    variant={'caption'}
+                                    onClick={setInitial({ customer, task: {} })}
+                                    style={{
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    {task?.project && `→ ${task?.project?.name}`}
+                                  </Typography>
+                                  <Typography
+                                    variant={'caption'}
+                                    onClick={setInitial({ customer, task })}
+                                    style={{
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    {task ? `→ ${task.name}` : ''}
+                                  </Typography>
+                                </Stack>
+                                <EditableTypography
+                                  value={description}
+                                  editEmpty={false}
+                                  cancellable
+                                  onSave={descriptionOnClose(item)}
+                                  editComponent={
+                                    <TextField
+                                      inputRef={descriptionRef}
+                                      multiline
+                                      minRows={1}
+                                      autoFocus
+                                      defaultValue={description}
+                                      fullWidth
+                                    />
+                                  }
+                                />
                               </Stack>
+                              <Divider orientation="vertical" flexItem />
+                              <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
+                                <Checkbox
+                                  inputRef={billableRef}
+                                  size="small"
+                                  icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
+                                  checkedIcon={<MonetizationOnIcon fontSize="medium" />}
+                                  sx={{
+                                    height: 34,
+                                    width: 34,
+                                  }}
+                                  checked={billable}
+                                  onChange={billableOnChange(item)}
+                                />
+                              </Tooltip>
+                              <Divider orientation="vertical" flexItem />
+                              <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
+                              <Divider orientation="vertical" flexItem />
                               <EditableTypography
-                                value={description}
-                                editEmpty={false}
+                                containerStyle={{
+                                  maxWidth: 158,
+                                  width: 'auto'
+                                }}
+                                value={durationFormat(duration)}
                                 cancellable
-                                onSave={descriptionOnClose(item)}
+                                onSave={durationOnClose(item)}
                                 editComponent={
-                                  <TextField
-                                    inputRef={descriptionRef}
-                                    multiline
-                                    minRows={1}
+                                  <TextFieldMasked
+                                    style={{
+                                      maxWidth: 86
+                                    }}
+                                    inputRef={durationRef}
                                     autoFocus
-                                    defaultValue={description}
-                                    fullWidth
+                                    mask={durationMask}
+                                    defaultValue={durationFormat(duration)}
                                   />
                                 }
                               />
-                            </Stack>
-                            <Divider orientation="vertical" flexItem />
-                            <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
-                              <Checkbox
-                                inputRef={billableRef}
-                                size="small"
-                                icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
-                                checkedIcon={<MonetizationOnIcon fontSize="medium" />}
-                                sx={{
-                                  height: 34,
-                                  width: 34,
-                                }}
-                                checked={billable}
-                                onChange={billableOnChange(item)}
+                              <MenuBurger
+                                items={({ closeMenu }) => [
+                                  <Confirmation
+                                    key="delete"
+                                    title="Удалить запись?"
+                                    text={'Данные невозможно будет восстановить'}
+                                    dangerous
+                                    onConfirm={onDelete(ID)}
+                                    onClose={closeMenu}
+                                  >
+                                    <ItemButtonDelete
+                                      label="Удалить"
+                                      confirmation={false}
+                                    />
+                                  </Confirmation>,
+                                ]}
                               />
-                            </Tooltip>
-                            <Divider orientation="vertical" flexItem />
-                            <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
-                            <Divider orientation="vertical" flexItem />
-                            <EditableTypography
-                              containerStyle={{
-                                maxWidth: 158,
-                                width: 'auto'
-                              }}
-                              value={durationFormat(duration)}
-                              cancellable
-                              onSave={durationOnClose(item)}
-                              editComponent={
-                                <TextFieldMasked
-                                  style={{
-                                    maxWidth: 86
-                                  }}
-                                  inputRef={durationRef}
-                                  autoFocus
-                                  mask={durationMask}
-                                  defaultValue={durationFormat(duration)}
-                                />
-                              }
-                            />
-                            <MenuBurger
-                              items={({ closeMenu }) => [
-                                <Confirmation
-                                  key="delete"
-                                  title="Удалить запись?"
-                                  text={'Данные невозможно будет восстановить'}
-                                  dangerous
-                                  onConfirm={onDelete(ID)}
-                                  onClose={closeMenu}
-                                >
-                                  <ItemButtonDelete
-                                    label="Удалить"
-                                    confirmation={false}
-                                  />
-                                </Confirmation>,
-                              ]}
-                            />
-                          </Stack>
-                        );
-                      })}
-                    </AccordionDetails>
-                  </Accordion>
-                </CustomizedCard>
-              );
-            })}
-        </Stack>
-      </CustomizedScrollBox>
+                            </Stack>
+                          );
+                        })}
+                      </AccordionDetails>
+                    </Accordion>
+                  </CustomizedCard>
+                );
+              })}
+          </Stack>
+        </div>
+      </div>
     </Stack>
   );
 };

@@ -1,5 +1,5 @@
 import { DateRange, DateRangePicker, DateRangePickerProps, PickersShortcutsItem, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
-import { forwardRef, Ref, RefAttributes, useCallback, useState } from 'react';
+import { forwardRef, Ref, RefAttributes, useCallback, useEffect, useRef, useState } from 'react';
 import dayjs from '@gdmn-nxt/dayjs';
 import { Button, useForkRef } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -79,7 +79,9 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
     label: shortcutsLabels[7],
     getValue: () => {
       const today = dayjs();
-      return [today.add(-1, 'year').startOf('year').toDate(), today.add(-1, 'year').endOf('year').toDate()];
+      return [today.add(-1, 'year').startOf('year')
+        .toDate(), today.add(-1, 'year').endOf('year')
+        .toDate()];
     }
   },
   { label: shortcutsLabels[shortcutsLabels.length - 1], getValue: () => [null, null] },
@@ -98,31 +100,55 @@ const DateRangeButtonField = forwardRef(
       disabled,
       value,
       InputProps: { ref: containerRef } = {},
-      inputProps: { 'aria-label': ariaLabel } = {},
+      inputProps: { 'aria-label': ariaLabel } = {}
     } = props;
 
     const handleRef = useForkRef(ref, containerRef);
 
+    const [shortLabel, setShortLabel] = useState(false);
+
+    useEffect(() => {
+      const onResize = () => {
+        if (shortLabel === false && elRef.current.offsetWidth <= 204) {
+          setShortLabel(true);
+        }
+        if (shortLabel === true && elRef.current.offsetWidth > 204) {
+          setShortLabel(false);
+        }
+      };
+      window.addEventListener('resize', onResize);
+      onResize();
+      return () => window.removeEventListener('resize', onResize);
+    }, [shortLabel]);
+
+    const elRef = useRef<any>(null);
+
     return (
-      <Button
-        variant="outlined"
-        id={id}
-        disabled={disabled}
-        ref={handleRef}
-        aria-label={ariaLabel}
-        onClick={onClick}
-        style={{
-          width: 'fit-content',
-          textTransform: 'none'
-        }}
-        startIcon={<CalendarMonthIcon />}
-      >
-        {label
-          ? label
-          : Array.isArray(value) && value?.length > 0 && value[0] !== null
-            ? `Текущий диапазон дат: ${value.map(date => date ? dayjs(date).format('DD.MM.YYYY') : 'null').join(' - ')}`
-            : 'Выберите диапазон дат'}
-      </Button>
+      <div ref={elRef}>
+        <Button
+          variant="outlined"
+          id={id}
+          disabled={disabled}
+          ref={handleRef}
+          aria-label={ariaLabel}
+          onClick={onClick}
+          style={{
+            width: 'fit-content',
+            textTransform: 'none'
+          }}
+          startIcon={<CalendarMonthIcon />}
+          sx={{
+            '& span': { marginRight: label === false ? 0 : '8px' },
+            minWidth: 0
+          }}
+        >
+          {label !== undefined
+            ? label
+            : Array.isArray(value) && value?.length > 0 && value[0] !== null
+              ? `${shortLabel ? '' : 'Текущий диапазон дат:'} ${value.map(date => date ? dayjs(date).format('DD.MM.YYYY') : 'null').join(' - ')}`
+              : 'Выберите диапазон дат'}
+        </Button>
+      </div>
     );
   }
 ) as DateRangeButtonFieldComponent;

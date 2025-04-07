@@ -227,19 +227,20 @@ export const AddItem = ({
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
-  const matches = useMediaQuery('(max-width:755px)');
+  const breakPoint797 = useMediaQuery('(max-width:797px)');
+  const breakPoint510 = useMediaQuery('(max-width:510px)');
 
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
         <Form id="timeTrackingForm" onSubmit={formik.handleSubmit}>
           <Stack
-            direction={matches ? 'column' : 'row'}
+            direction={breakPoint797 ? 'column' : 'row'}
             spacing={2}
             alignItems="center"
           >
             <Stack
-              width={matches ? '100%' : undefined}
+              width={breakPoint797 ? '100%' : undefined}
               spacing={1}
               flex={1}
             >
@@ -258,7 +259,7 @@ export const AddItem = ({
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
-              <div style={{ height: '40px', width: '100%', position: 'relative' }}>
+              <div style={{ marginTop: breakPoint797 ? '16px' : '9px', height: '40px', width: '100%', position: 'relative' }}>
                 <TextField
                   placeholder="Над чем вы работали?"
                   name="description"
@@ -280,9 +281,9 @@ export const AddItem = ({
             </Stack>
             {calcMode === 'manual' &&
               <Stack
-                width={matches ? '100%' : 216}
+                width={breakPoint797 ? '100%' : 216}
                 spacing={1}
-                direction={matches ? 'row' : 'column'}
+                direction={breakPoint510 ? 'column' : (breakPoint797 ? 'row' : 'column')}
               >
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
@@ -291,7 +292,8 @@ export const AddItem = ({
                   sx={{
                     '& .MuiInputBase-root': {
                       paddingRight: 1,
-                    }
+                    },
+                    width: breakPoint797 ? '100%' : undefined
                   }}
                 />
                 <Stack
@@ -339,12 +341,28 @@ export const AddItem = ({
               </Stack>
             }
             <Stack
-              direction={matches ? 'row-reverse' : 'column'}
-              width={matches ? '100%' : undefined}
+              direction={breakPoint510 ? 'column-reverse' : (breakPoint797 ? 'row-reverse' : 'column')}
+              width={breakPoint797 ? '100%' : undefined}
               spacing={2}
             >
-              <Stack spacing={1} direction={matches ? 'row-reverse' : 'row'}>
-                <Box display="inline-flex" alignSelf="center">
+              <Stack
+                spacing={1}
+                direction={breakPoint797 ? 'row-reverse' : 'row'}
+                sx={{
+                  width: '100%'
+                }}
+              >
+                <Box
+                  display="inline-flex"
+                  alignSelf="center"
+                  height={breakPoint797 ? '100%' : undefined}
+                  sx={{
+                    width: '100%',
+                    '& button': {
+                      width: '100%'
+                    }
+                  }}
+                >
                   {calcMode === 'calc'
                     ? (formik.values.inProgress)
                       ? <Button
@@ -398,12 +416,14 @@ export const AddItem = ({
               <Stack
                 alignItems="center"
                 spacing={1}
-                direction={matches ? 'row-reverse' : 'row'}
+                direction={'row'}
               >
                 <TextFieldMasked
                   label="Длительность"
                   style={{
-                    maxWidth: 117
+                    maxWidth: breakPoint797 ? undefined : 117,
+                    minWidth: 105,
+                    width: breakPoint510 ? '100%' : 'auto'
                   }}
                   mask={durationMask}
                   value={durationFormat(formik.values.duration)}
