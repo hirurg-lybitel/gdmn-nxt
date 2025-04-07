@@ -93,19 +93,19 @@ export function FilterPanel({
         <Button
           variant="outlined"
           fullWidth
-          onClick={() => onClose()}
-        >
-          Закрыть
-        </Button>
-        <Button
-          variant="contained"
-          fullWidth
           onClick={() => {
             filterClear();
             onClose();
           }}
         >
           Очистить
+        </Button>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => onClose()}
+        >
+          Закрыть
         </Button>
       </CardActions>
     </CustomizedDialog>
