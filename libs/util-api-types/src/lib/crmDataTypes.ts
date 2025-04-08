@@ -378,6 +378,7 @@ export type ActionName =
   'reports/topEarning' |
   'reports/remains-by-invoices' |
   'reports/reconciliation-statement' |
+  'reports/debts' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -649,4 +650,19 @@ export interface IExpense {
   expenseName: string,
   amount: number,
   valAmount: number
+}
+
+export interface IDebt {
+  customer: ICustomer,
+  saldoBegin: {
+    value: number,
+    currency: number
+  },
+  saldoEnd: {
+    value: number,
+    currency: number
+  },
+  done: number,
+  paid: number,
+  change: number
 }

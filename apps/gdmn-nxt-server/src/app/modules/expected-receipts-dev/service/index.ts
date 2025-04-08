@@ -5,7 +5,7 @@ const findAll = async (
   filter?: { [key: string]: any }
 ) => {
   /** Sorting */
-  const sortField = filter?.field ?? 'NAME';
+  const sortField = filter?.field ?? 'customer';
   const sortMode = filter?.sort ?? 'ASC';
   /** Filtering */
   const includeZeroRest = filter.includeZeroRest === 'true';

@@ -75,6 +75,15 @@ const analytics: IMenuItem = {
             name: 'reports/expenses',
             method: 'GET'
           },
+        }, {
+          id: 'debts',
+          title: 'Задолжности',
+          url: 'analytics/reports/debts',
+          type: 'item',
+          actionCheck: {
+            name: 'reports/debts',
+            method: 'GET'
+          },
         },
       ]
     },
