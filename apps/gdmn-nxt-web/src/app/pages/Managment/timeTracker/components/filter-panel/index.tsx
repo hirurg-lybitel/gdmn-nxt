@@ -6,6 +6,7 @@ import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/c
 import { useCallback } from 'react';
 import UserSelect from '@gdmn-nxt/components/selectors/user-select';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import FilterDialog from '@gdmn-nxt/components/filter-dialog/filter-dialog';
 
 export interface FilterPanelProps {
   open: boolean;
@@ -44,71 +45,48 @@ export function FilterPanel({
     onFilteringDataChange({ ...newObject, ...newEntities });
   };
 
-  const filterClear = useCallback(() => {
-    onClear();
-  }, [onClear]);
+  const filterClear = useCallback(() => onClear(), [onClear]);
 
   const userPermissions = usePermissions();
 
   return (
-    <CustomizedDialog
+    <FilterDialog
       open={open}
+      onClear={filterClear}
       onClose={onClose}
-      width={400}
     >
-      <CardContent style={{ flex: 1 }}>
-        <Stack spacing={2}>
-          <CustomerSelect
-            label="Клиенты"
-            placeholder="Выберите клиента"
-            multiple
-            disableCloseOnSelect
-            limitTags={-1}
-            value={filteringData?.customers as ICustomer[] ?? []}
-            onChange={(value) => handleOnChange(['customers'], [value])}
-          />
-          {/* {userPermissions?.['time-tracking']?.ALL && */}
-          <UserSelect
-            multiple
-            disableCloseOnSelect
-            selectAllButton
-            // open
-            value={filteringData?.employees as IUser[] ?? []}
-            allSelected={filteringData?.allEmployees ?? false}
-            onChange={(e, value, allSelected) => handleOnChange(['employees', 'allEmployees'], [value, allSelected])}
-          />
-          {/* } */}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={filteringData?.billableOnly ?? false}
-                onChange={(e) => handleOnChange(['billableOnly'], [e.target.checked])}
-              />
-            }
-            label="Только оплачиваемые"
-          />
-        </Stack>
-      </CardContent>
-      <CardActions style={{ padding: '16px' }}>
-        <Button
-          variant="outlined"
-          fullWidth
-          onClick={() => {
-            filterClear();
-            onClose();
-          }}
-        >
-          Очистить
-        </Button>
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={() => onClose()}
-        >
-          Закрыть
-        </Button>
-      </CardActions>
-    </CustomizedDialog>
+      <Stack spacing={2}>
+        <CustomerSelect
+          label="Клиенты"
+          placeholder="Выберите клиента"
+          multiple
+          disableCloseOnSelect
+          limitTags={-1}
+          value={filteringData?.customers as ICustomer[] ?? []}
+          onChange={(value) => handleOnChange(['customers'], [value])}
+        />
+        {/* {userPermissions?.['time-tracking']?.ALL && */}
+        <UserSelect
+          multiple
+          disableCloseOnSelect
+          selectAllButton
+          // open
+          value={filteringData?.employees as IUser[] ?? []}
+          allSelected={filteringData?.allEmployees ?? false}
+          onChange={(e, value, allSelected) => handleOnChange(['employees', 'allEmployees'], [value, allSelected])}
+        />
+        {/* } */}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filteringData?.billableOnly ?? false}
+              onChange={(e) => handleOnChange(['billableOnly'], [e.target.checked])}
+            />
+          }
+          label="Только оплачиваемые"
+        />
+      </Stack>
+    </FilterDialog>
   );
 }
 

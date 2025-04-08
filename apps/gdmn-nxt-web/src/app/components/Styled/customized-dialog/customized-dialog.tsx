@@ -23,18 +23,19 @@ const Transition = forwardRef(function Transition(
 
 export interface CustomizedDialogProps {
   open: boolean;
-  onClose?: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown') => void;
+  onClose?: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown' | 'swipe') => void;
   children: ReactNode;
   width?: number | string;
   minWidth?: number | string;
   hideBackdrop?: boolean;
   disableEscape?: boolean;
-  confirmation?: boolean
+  confirmation?: boolean;
+  closeOnSwipe?: boolean;
 }
 
 
 function CustomizedDialog(props: CustomizedDialogProps) {
-  const { children, open, onClose, confirmation = false } = props;
+  const { children, open, onClose, confirmation = false, closeOnSwipe = true } = props;
   const {
     width = 500,
     minWidth = 0,
@@ -48,6 +49,28 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   };
 
   const [cleanDom, setCleanDom] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchTimeout, setTouchTimeout] = useState<NodeJS.Timeout | undefined>();
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!closeOnSwipe) return;
+    clearTimeout(touchTimeout);
+    setTouchStart(e.touches[0].clientX);
+
+    const timeout = setTimeout(() => {
+      setTouchStart(null);
+    }, 500);
+
+    setTouchTimeout(timeout);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStart || !closeOnSwipe) return;
+    if (touchStart - e.changedTouches[0].clientX < -50) {
+      handleOnClose(e, 'swipe');
+    }
+    clearTimeout(touchTimeout);
+  };
 
   useEffect(() => {
     if (open && cleanDom) {
@@ -57,6 +80,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
 
   const handleOnClose = (event: object, reason: string) => {
     switch (reason) {
+      case 'swipe':
       case 'backdropClick':
         if (confirmation) {
           setConfirmOpen(true);
@@ -118,6 +142,8 @@ function CustomizedDialog(props: CustomizedDialogProps) {
           onExited: () => clearAfterExit()
         }}
         onClose={handleOnClose}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         hideBackdrop={hideBackdrop}
         PaperProps={{
           sx: {

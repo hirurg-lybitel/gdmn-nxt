@@ -149,7 +149,7 @@ export const MainLayout = (props: MainLayoutProps) => {
       x = e.changedTouches[0].clientX;
       swipeTimeout = setTimeout(() => {
         x = NaN;
-      }, 1000);
+      }, 500);
     };
     const touchendFun = (e: TouchEvent) => {
       clearTimeout(swipeTimeout);

@@ -25,16 +25,18 @@ export function Sidebar(props: SidebarProps) {
     </>
   );
 
+  const breakPoint400 = useMediaQuery('(max-width:400px)');
+
   return (
     <Box
       component="nav"
-      sx={{ flexShrink: { md: 0 }, width: theme.drawerWidth }}
+      sx={{ flexShrink: { md: 0 }, width: breakPoint400 ? '240px' : theme.drawerWidth }}
       id="sidebar"
     >
       {
         matchDownMd &&
         <IconButton
-          style={{ margin: '5px' }}
+          style={{ margin: '5px', padding: breakPoint400 ? '5px' : '12px' }}
           size="large"
           color="secondary"
           onClick={onToogle}

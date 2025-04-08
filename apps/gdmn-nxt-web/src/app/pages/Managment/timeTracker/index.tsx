@@ -40,6 +40,11 @@ import EditableTypography from '@gdmn-nxt/components/editable-typography/editabl
 import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
+import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
+import { Form, FormikProvider, useFormik } from 'formik';
+import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 
 const durationMask = [
   /[0-9]/,
@@ -90,7 +95,6 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   // backgroundColor: 'var(--color-card-bg)',
 }));
 
-
 export function TimeTracker() {
   const dispatch = useDispatch();
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking) ?? {};
@@ -111,11 +115,6 @@ export function TimeTracker() {
   } = useGetTimeTrackingInProgressQuery();
   const [addTimeTrack] = useAddTimeTrackingMutation();
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
-  const [deleteTimeTrack] = useDeleteTimeTrackingMutation();
-
-  const descriptionRef = useRef<HTMLInputElement>(null);
-  const billableRef = useRef<HTMLInputElement>(null);
-  const durationRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (filterData?.period) {
@@ -237,10 +236,6 @@ export function TimeTracker() {
     addTimeTrack(value);
   };
 
-  const onDelete = (id: number) => () => {
-    deleteTimeTrack(id);
-  };
-
   const handleStopPropagation = (e: any) => {
     e.stopPropagation();
   };
@@ -281,43 +276,8 @@ export function TimeTracker() {
     });
   };
 
-  const descriptionOnClose = (timeTrack: ITimeTrack) => () => {
-    const description = descriptionRef.current?.value;
-
-    updateTimeTrack({ ...timeTrack, description });
-  };
-
-  const billableOnChange = (
-    timeTrack: ITimeTrack
-  ) => (
-    e: ChangeEvent<HTMLInputElement>,
-    checked: boolean
-  ) => {
-    updateTimeTrack({ ...timeTrack, billable: checked });
-  };
-
-  const durationOnClose = (timeTrack: ITimeTrack) => () => {
-    const value = durationRef.current?.value ?? '';
-
-    const [hours, minutes, seconds] = value
-      .replaceAll('_', '0')
-      .split(':')
-      .map(Number);
-
-    const newDuration = dayjs.duration({ hours, minutes, seconds });
-    const isoDuration = newDuration.toISOString();
-    const duration = isoDuration;
-    const startTime = dayjs(timeTrack.startTime);
-    const endTime = startTime.add(newDuration).toDate();
-
-    updateTimeTrack({
-      ...timeTrack,
-      duration,
-      endTime
-    });
-  };
-
   const breakPoint442 = useMediaQuery('(max-width:442px)');
+  const breakPoint350 = useMediaQuery('(max-width:350px)');
 
   return (
     <Stack flex={1} spacing={3}>
@@ -343,7 +303,7 @@ export function TimeTracker() {
           ml={'16px'}
         >
           <Typography variant="caption" style={{ textWrap: 'nowrap' }}>
-            Итого за период:
+            {breakPoint350 ? 'Итого: ' : 'Итого за период:'}
           </Typography>
           <Typography fontWeight={600} width={60}>
             {durationFormat(timeTrackGroup.reduce((total, { duration }) =>
@@ -400,156 +360,18 @@ export function TimeTracker() {
                         </Stack>
                       </AccordionSummary>
                       <AccordionDetails style={{ padding: '0 16px' }}>
-                        {items.map((item, index) => {
-                          const {
-                            ID,
-                            customer,
-                            description = '',
-                            startTime,
-                            endTime,
-                            duration,
-                            billable = true,
-                            task,
-                            user
-                          } = item;
-
-                          if (isFetching) {
-                            return (
-                              <Skeleton
-                                key={item.ID}
-                                variant="rounded"
-                                animation="wave"
-                                style={{
-                                  borderRadius: 'var(--border-radius)',
-                                  height: 58,
-                                  width: 'auto',
-                                  margin: '10px 0px'
-                                }}
-                              />
-                            );
-                          }
-
-                          return (
-                            <Stack
-                              key={ID}
-                              direction="row"
-                              spacing={2}
-                              alignItems={'center'}
-                              sx={{
-                                borderBottom: '1px solid',
-                                borderBottomColor: 'divider',
-                                padding: '8px 0px',
-                                ':last-child': {
-                                  borderBottom: 'none'
-                                }
-                              }}
-                            >
-                              <Stack flex={1}>
-                                {(filterData.allEmployees || (filterData.employees?.length ?? 0) > 0) && <Typography variant={'caption'}>{user?.CONTACT?.NAME}</Typography>}
-                                <Stack direction="row" spacing={0.5}>
-                                  <Typography
-                                    variant={'caption'}
-                                    onClick={setInitial({ customer, task: {} })}
-                                    style={{
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    {customer?.NAME}
-                                  </Typography>
-                                  <Typography
-                                    variant={'caption'}
-                                    onClick={setInitial({ customer, task: {} })}
-                                    style={{
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    {task?.project && `→ ${task?.project?.name}`}
-                                  </Typography>
-                                  <Typography
-                                    variant={'caption'}
-                                    onClick={setInitial({ customer, task })}
-                                    style={{
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    {task ? `→ ${task.name}` : ''}
-                                  </Typography>
-                                </Stack>
-                                <EditableTypography
-                                  value={description}
-                                  editEmpty={false}
-                                  cancellable
-                                  onSave={descriptionOnClose(item)}
-                                  editComponent={
-                                    <TextField
-                                      inputRef={descriptionRef}
-                                      multiline
-                                      minRows={1}
-                                      autoFocus
-                                      defaultValue={description}
-                                      fullWidth
-                                    />
-                                  }
-                                />
-                              </Stack>
-                              <Divider orientation="vertical" flexItem />
-                              <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
-                                <Checkbox
-                                  inputRef={billableRef}
-                                  size="small"
-                                  icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
-                                  checkedIcon={<MonetizationOnIcon fontSize="medium" />}
-                                  sx={{
-                                    height: 34,
-                                    width: 34,
-                                  }}
-                                  checked={billable}
-                                  onChange={billableOnChange(item)}
-                                />
-                              </Tooltip>
-                              <Divider orientation="vertical" flexItem />
-                              <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
-                              <Divider orientation="vertical" flexItem />
-                              <EditableTypography
-                                containerStyle={{
-                                  maxWidth: 158,
-                                  width: 'auto'
-                                }}
-                                value={durationFormat(duration)}
-                                cancellable
-                                onSave={durationOnClose(item)}
-                                editComponent={
-                                  <TextFieldMasked
-                                    style={{
-                                      maxWidth: 86
-                                    }}
-                                    inputRef={durationRef}
-                                    autoFocus
-                                    mask={durationMask}
-                                    defaultValue={durationFormat(duration)}
-                                  />
-                                }
-                              />
-                              <MenuBurger
-                                items={({ closeMenu }) => [
-                                  <Confirmation
-                                    key="delete"
-                                    title="Удалить запись?"
-                                    text={'Данные невозможно будет восстановить'}
-                                    dangerous
-                                    onConfirm={onDelete(ID)}
-                                    onClose={closeMenu}
-                                  >
-                                    <ItemButtonDelete
-                                      label="Удалить"
-                                      confirmation={false}
-                                    />
-                                  </Confirmation>,
-                                ]}
-                              />
-                            </Stack>
-                          );
-                        })}
+                        {items.map((item, index) => (
+                          <>
+                            <TimeTrackerItem
+                              key={item.ID}
+                              item={item}
+                              isFetching={isFetching}
+                              filterData={filterData}
+                              setInitial={setInitial}
+                              lastItem={items.length - 1 === index}
+                            />
+                          </>
+                        ))}
                       </AccordionDetails>
                     </Accordion>
                   </CustomizedCard>
@@ -578,3 +400,282 @@ const ItemsSkeleton = () => (
   ))
 
 );
+
+interface ITimeTrackerItemProps {
+  item: ITimeTrack,
+  isFetching: boolean,
+  filterData: IFilteringData,
+  setInitial: (value: any) => (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void,
+  lastItem: boolean
+}
+
+const TimeTrackerItem = (props: ITimeTrackerItemProps) => {
+  const {
+    isFetching,
+    filterData,
+    setInitial,
+    item,
+    lastItem
+  } = props;
+
+  const {
+    ID,
+    customer,
+    description = '',
+    startTime: startTimeValue,
+    endTime: endTimeValue,
+    duration,
+    billable = true,
+    task,
+    user,
+  } = props.item;
+
+  const [updateTimeTrack, { isLoading: updateIsLoading }] = useUpdateTimeTrackingMutation();
+  const [deleteTimeTrack, { isLoading: deleteIsLoading }] = useDeleteTimeTrackingMutation();
+
+  const formik = useFormik<ITimeTrack>({
+    enableReinitialize: true,
+    validateOnBlur: false,
+    initialValues: {
+      ...item
+    },
+    onSubmit: (values, { resetForm }) => {
+      resetForm();
+      handleCancelClick();
+      updateTimeTrack(values);
+    },
+  });
+
+
+  const onDelete = (id: number) => () => {
+    deleteTimeTrack(id);
+  };
+
+  const [editMode, setEditMode] = useState(false);
+
+  const endTime = useMemo(() => editMode ? formik.values.endTime : endTimeValue, [editMode, endTimeValue, formik.values.endTime]);
+  const startTime = useMemo(() => editMode ? formik.values.startTime : startTimeValue, [editMode, startTimeValue, formik.values.endTime]);
+
+  const [confirmDialog] = useConfirmation();
+
+  const handleEditClick = () => {
+    setEditMode(true);
+  };
+
+  const onClose = () => {
+    setEditMode(false);
+    formik.resetForm();
+  };
+
+  const handleCancelClick = () => {
+    if (formik.dirty) {
+      confirmDialog.setOpen(true);
+      confirmDialog.setOptions({
+        title: 'Внимание',
+        text: 'Изменения будут утеряны. Продолжить?',
+        dangerous: true,
+        confirmClick: () => {
+          confirmDialog.setOpen(false);
+          onClose();
+        },
+      });
+      return;
+    }
+
+    onClose();
+  };
+
+  const durationOnChange = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const [hours, minutes, seconds] = e.target.value
+      .replaceAll('_', '0')
+      .split(':')
+      .map(Number);
+
+    const newDuration = dayjs.duration({ hours, minutes, seconds });
+    const isoDuration = newDuration.toISOString();
+    formik.setFieldValue('duration', isoDuration);
+
+    const startTime = dayjs(formik.values.startTime);
+    formik.setFieldValue('endTime', startTime.add(newDuration).toDate());
+  };
+
+  const billableChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    checked: boolean
+  ) => {
+    formik.setFieldValue('billable', checked);
+  };
+
+  if (isFetching || updateIsLoading || deleteIsLoading) {
+    return (
+      <Skeleton
+        variant="rounded"
+        animation="wave"
+        style={{
+          borderRadius: 'var(--border-radius)',
+          height: 58,
+          width: 'auto',
+          margin: '10px 0px'
+        }}
+      />
+    );
+  }
+
+  return (
+    <FormikProvider value={formik}>
+      <Form
+        id="timeTrackingItemForm"
+        onSubmit={formik.handleSubmit}
+      >
+        {confirmDialog.dialog}
+        <Stack
+          key={ID}
+          direction="row"
+          spacing={2}
+          alignItems={'center'}
+          sx={{
+            borderBottom: '1px solid',
+            borderBottomColor: 'divider',
+            padding: '8px 0px',
+            ':last-child': {
+              borderBottom: 'none'
+            }
+          }}
+        >
+          <Stack flex={1}>
+            {(filterData.allEmployees || (filterData.employees?.length ?? 0) > 0) && <Typography variant={'caption'}>{user?.CONTACT?.NAME}</Typography>}
+            <Stack direction="row" spacing={0.5}>
+              <Typography
+                variant={'caption'}
+                onClick={setInitial({ customer, task: {} })}
+                style={{
+                  cursor: 'pointer'
+                }}
+              >
+                {customer?.NAME}
+              </Typography>
+              <Typography
+                variant={'caption'}
+                onClick={setInitial({ customer, task: {} })}
+                style={{
+                  cursor: 'pointer'
+                }}
+              >
+                {task?.project && `→ ${task?.project?.name}`}
+              </Typography>
+              <Typography
+                variant={'caption'}
+                onClick={setInitial({ customer, task })}
+                style={{
+                  cursor: 'pointer'
+                }}
+              >
+                {task ? `→ ${task.name}` : ''}
+              </Typography>
+            </Stack>
+            {editMode ? (
+              <TextField
+                name="description"
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                multiline
+                minRows={1}
+                autoFocus
+                fullWidth
+              />
+            ) : <div style={{ minHeight: '32px', display: 'flex', alignItems: 'center' }}>{description}</div>}
+          </Stack>
+          <Divider orientation="vertical" flexItem />
+          <Tooltip title={billable ? 'Оплачиваемый' : 'Неоплачиваемый'}>
+            {editMode ? (
+              <Checkbox
+                size="small"
+                icon={<MonetizationOnOutlinedIcon fontSize="medium" />}
+                checkedIcon={<MonetizationOnIcon fontSize="medium" />}
+                sx={{
+                  height: 34,
+                  width: 34,
+                }}
+                checked={formik.values.billable}
+                onChange={billableChange}
+              />
+            )
+              : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5px' }}>
+                  {billable ? <MonetizationOnIcon color="primary" fontSize="medium" /> : <MonetizationOnOutlinedIcon style={{ color: 'rgba(255, 255, 255, 0.7)' }} fontSize="medium" />}
+                </div>
+              )}
+          </Tooltip>
+          <Divider orientation="vertical" flexItem />
+          <Typography>{`${startTime ? dayjs(startTime).format('HH:mm') : ''} - ${endTime ? dayjs(endTime).format('HH:mm') : ''}`}</Typography>
+          <Divider orientation="vertical" flexItem />
+          {editMode ? (
+            <TextFieldMasked
+              style={{
+                maxWidth: 86
+              }}
+              autoFocus
+              mask={durationMask}
+              onChange={durationOnChange}
+              value={durationFormat(formik.values.duration)}
+            />
+          ) : <div style={{ marginLeft: '16px' }}>{durationFormat(duration)}</div>}
+          <MenuBurger
+            items={({ closeMenu }) => [
+              editMode ? (
+                <ItemButtonSave
+                  key="save"
+                  size={'small'}
+                  label="Сохранить"
+                  onClick={(e) => {
+                    formik.handleSubmit();
+                    closeMenu();
+                  }}
+                />)
+                : <></>,
+              editMode
+                ? (
+                  <ItemButtonCancel
+                    key="cancel"
+                    label={'Отменить'}
+                    onClick={(e) => {
+                      handleCancelClick();
+                      closeMenu();
+                    }}
+                  />)
+                : <></>,
+              !editMode
+                ? (
+                  <ItemButtonEdit
+                    key="edit"
+                    size={'small'}
+                    label="Редактировать"
+                    onClick={(e) => {
+                      handleEditClick();
+                      closeMenu();
+                    }}
+                  />)
+                : <></>,
+              <Confirmation
+                key="delete"
+                title="Удалить запись?"
+                text={'Данные невозможно будет восстановить'}
+                dangerous
+                onConfirm={onDelete(ID)}
+                onClose={closeMenu}
+              >
+                <ItemButtonDelete
+                  label="Удалить"
+                  confirmation={false}
+                />
+              </Confirmation>,
+            ]}
+          />
+        </Stack>
+      </Form>
+      {!lastItem && <Divider/>}
+    </FormikProvider>
+  );
+};
