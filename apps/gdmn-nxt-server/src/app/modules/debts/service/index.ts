@@ -1,4 +1,4 @@
-import { expectedReceiptsRepository } from '../repository';
+import { debtsRepository } from '../repository';
 
 const findAll = async (
   sessionID: string,
@@ -8,24 +8,22 @@ const findAll = async (
   const sortField = filter?.field ?? 'customer';
   const sortMode = filter?.sort ?? 'ASC';
   /** Filtering */
-  const includePerTime = filter.includePerTime === 'true';
   const dateBegin = filter.dateBegin;
   const dateEnd = filter.dateEnd;
 
   try {
-    const contracts = await expectedReceiptsRepository.find(sessionID,
+    const items = await debtsRepository.find(sessionID,
       {
         dateBegin,
-        dateEnd,
-        includePerTime,
+        dateEnd
       }
     );
 
-    contracts?.sort((a, b) => {
-      const dataType = typeof (a[String(sortField).toLowerCase()] ?? b[String(sortField).toLowerCase()]);
+    items?.sort((a, b): number => {
+      const dataType = typeof (a[sortField] ?? b[sortField]);
 
       const nameA = (() => {
-        const fieldValue = a[String(sortField).toLowerCase()];
+        const fieldValue = a[sortField];
         if (dataType === 'string') {
           return fieldValue?.toLowerCase() || '';
         }
@@ -33,7 +31,7 @@ const findAll = async (
       })();
 
       const nameB = (() => {
-        const fieldValue = b[String(sortField).toLowerCase()];
+        const fieldValue = b[sortField];
         if (typeof fieldValue === 'string') {
           return fieldValue?.toLowerCase() || '';
         }
@@ -47,28 +45,39 @@ const findAll = async (
       }
 
       if (dataType === 'number') {
+        const a = sortField === 'change' ? Math.abs(nameA) : nameA;
+        const b = sortField === 'change' ? Math.abs(nameB) : nameB;
+
         return String(sortMode).toUpperCase() === 'ASC'
-          ? nameA - nameB
-          : nameB - nameA;
+          ? a - b
+          : b - a;
       }
 
       if (dataType === 'object') {
-        const a = (nameA['NAME']).toLowerCase();
-        const b = (nameB['NAME']).toLowerCase();
+        if (sortField === 'customer') {
+          const a = (nameA['NAME']).toLowerCase();
+          const b = (nameB['NAME']).toLowerCase();
+          return String(sortMode).toUpperCase() === 'ASC'
+            ? a?.localeCompare(b)
+            : b?.localeCompare(a);
+        }
+
+        const a = nameA['value'];
+        const b = nameB['value'];
         return String(sortMode).toUpperCase() === 'ASC'
-          ? a?.localeCompare(b)
-          : b?.localeCompare(a);
+          ? a - b
+          : b - a;;
       }
 
       return 0;
     });
 
-    return contracts;
+    return items;
   } catch (error) {
     throw error;
   }
 };
 
-export const expectedReceiptsService = {
+export const debtsService = {
   findAll
 };
