@@ -5,7 +5,7 @@ const findAll = async (
   filter?: { [key: string]: any }
 ) => {
   /** Sorting */
-  const sortField = filter?.field ?? 'NAME';
+  const sortField = filter?.field ?? 'article';
   const sortMode = filter?.sort ?? 'ASC';
   /** Filtering */
   const dateBegin = filter.dateBegin;

@@ -5,9 +5,11 @@ import { getTopEarning } from '../../controllers/reports/topEarning';
 import { getReconciliationStatement } from '../../reconciliationStatement';
 import { expectedReceiptsController } from '@gdmn-nxt/modules/expected-receipts/controller';
 import { expectedReceiptsDevController } from '@gdmn-nxt/modules/expected-receipts-dev/controller';
+import { debtsController } from '@gdmn-nxt/modules/debts/controller';
 
 const router = express.Router();
 
+router.get('/debts/:dateBegin-:dateEnd', debtsController.findAll);
 router.get('/expenses/:dateBegin-:dateEnd', expensesController.findAll);
 router.get('/expected-receipts/:dateBegin-:dateEnd', expectedReceiptsController.findAll);
 router.get('/expected-receipts-dev/:dateBegin-:dateEnd', expectedReceiptsDevController.findAll);
