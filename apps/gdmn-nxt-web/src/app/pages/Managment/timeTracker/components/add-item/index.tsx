@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -227,20 +227,21 @@ export const AddItem = ({
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
-  const breakPoint797 = useMediaQuery('(max-width:797px)');
-  const breakPoint510 = useMediaQuery('(max-width:510px)');
+  const theme = useTheme();
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
         <Form id="timeTrackingForm" onSubmit={formik.handleSubmit}>
           <Stack
-            direction={breakPoint797 ? 'column' : 'row'}
+            direction={matchDownMd ? 'column' : 'row'}
             spacing={2}
             alignItems="center"
           >
             <Stack
-              width={breakPoint797 ? '100%' : undefined}
+              width={matchDownMd ? '100%' : undefined}
               spacing={1}
               flex={1}
             >
@@ -259,7 +260,7 @@ export const AddItem = ({
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
-              <div style={{ marginTop: breakPoint797 ? '16px' : '9px', height: '40px', width: '100%', position: 'relative' }}>
+              <div style={{ marginTop: matchDownMd ? '16px' : '9px', height: '40px', width: '100%', position: 'relative' }}>
                 <TextField
                   placeholder="Над чем вы работали?"
                   name="description"
@@ -281,9 +282,9 @@ export const AddItem = ({
             </Stack>
             {calcMode === 'manual' &&
               <Stack
-                width={breakPoint797 ? '100%' : 216}
+                width={matchDownMd ? '100%' : 216}
                 spacing={1}
-                direction={breakPoint510 ? 'column' : (breakPoint797 ? 'row' : 'column')}
+                direction={matchDownSm ? 'column' : (matchDownMd ? 'row' : 'column')}
               >
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
@@ -293,7 +294,7 @@ export const AddItem = ({
                     '& .MuiInputBase-root': {
                       paddingRight: 1,
                     },
-                    width: breakPoint797 ? '100%' : undefined
+                    width: matchDownMd ? '100%' : undefined
                   }}
                 />
                 <Stack
@@ -341,13 +342,13 @@ export const AddItem = ({
               </Stack>
             }
             <Stack
-              direction={breakPoint510 ? 'column-reverse' : (breakPoint797 ? 'row-reverse' : 'column')}
-              width={breakPoint797 ? '100%' : undefined}
+              direction={matchDownSm ? 'column-reverse' : (matchDownMd ? 'row-reverse' : 'column')}
+              width={matchDownMd ? '100%' : undefined}
               spacing={2}
             >
               <Stack
                 spacing={1}
-                direction={breakPoint797 ? 'row-reverse' : 'row'}
+                direction={matchDownMd ? 'row-reverse' : 'row'}
                 sx={{
                   width: '100%'
                 }}
@@ -355,7 +356,7 @@ export const AddItem = ({
                 <Box
                   display="inline-flex"
                   alignSelf="center"
-                  height={breakPoint797 ? '100%' : undefined}
+                  height={matchDownMd ? '100%' : undefined}
                   sx={{
                     width: '100%',
                     '& button': {
@@ -421,9 +422,9 @@ export const AddItem = ({
                 <TextFieldMasked
                   label="Длительность"
                   style={{
-                    maxWidth: breakPoint797 ? undefined : 117,
+                    maxWidth: matchDownMd ? undefined : 117,
                     minWidth: 105,
-                    width: breakPoint510 ? '100%' : 'auto'
+                    width: matchDownSm ? '100%' : 'auto'
                   }}
                   mask={durationMask}
                   value={durationFormat(formik.values.duration)}

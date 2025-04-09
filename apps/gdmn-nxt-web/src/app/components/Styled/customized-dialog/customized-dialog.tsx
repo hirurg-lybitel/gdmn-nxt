@@ -49,28 +49,6 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   };
 
   const [cleanDom, setCleanDom] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchTimeout, setTouchTimeout] = useState<NodeJS.Timeout | undefined>();
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!closeOnSwipe) return;
-    clearTimeout(touchTimeout);
-    setTouchStart(e.touches[0].clientX);
-
-    const timeout = setTimeout(() => {
-      setTouchStart(null);
-    }, 500);
-
-    setTouchTimeout(timeout);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!touchStart || !closeOnSwipe) return;
-    if (touchStart - e.changedTouches[0].clientX < -50) {
-      handleOnClose(e, 'swipe');
-    }
-    clearTimeout(touchTimeout);
-  };
 
   useEffect(() => {
     if (open && cleanDom) {
@@ -142,8 +120,6 @@ function CustomizedDialog(props: CustomizedDialogProps) {
           onExited: () => clearAfterExit()
         }}
         onClose={handleOnClose}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
         hideBackdrop={hideBackdrop}
         PaperProps={{
           sx: {

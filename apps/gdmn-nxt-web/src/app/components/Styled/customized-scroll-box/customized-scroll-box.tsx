@@ -58,7 +58,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     return true;
   }, []);
 
-  const omScrollStart = (mobile: boolean) => () => {
+  const onScrollStart = (mobile: boolean) => () => {
     window.addEventListener(wheelEvent(mobile), preventDefault, { passive: false });
   };
 
@@ -88,9 +88,9 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
           {...style}
           containerRef={(ref) => containerRef.current = ref}
           onScrollY={handleScroll}
-          onMouseEnter={omScrollStart(false)}
+          onMouseEnter={onScrollStart(false)}
           onMouseLeave={onScrollEnd(false)}
-          onTouchStart={omScrollStart(true)}
+          onTouchStart={onScrollStart(true)}
           onTouchEnd={onScrollEnd(true)}
         >
           {children}
