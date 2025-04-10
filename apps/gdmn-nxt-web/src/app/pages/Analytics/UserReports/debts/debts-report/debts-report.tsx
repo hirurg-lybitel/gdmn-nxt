@@ -36,6 +36,12 @@ export function DebtsReport({ data, isFetching }: Readonly<DebtsReportProps>) {
     return number.toLocaleString();
   };
 
+  const calcChange = (saldoBegin?: number, saldoEnd?: number) => {
+    if (!saldoEnd || !saldoBegin) return 0;
+    const difference = saldoEnd - saldoBegin;
+    return Number(((difference / saldoBegin) * 100).toFixed(2));
+  };
+
   return (
     <div style={{ flex: 1 }}>
       <PerfectScrollbar
@@ -103,7 +109,7 @@ export function DebtsReport({ data, isFetching }: Readonly<DebtsReportProps>) {
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.paid)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.saldoEnd.value)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.saldoEnd.currency)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{total?.change && total?.change + '%'}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{calcChange(total?.saldoBegin.value, total?.saldoEnd.value) + '%'}</th>
                 </tr>
               </tbody>
             </table>
