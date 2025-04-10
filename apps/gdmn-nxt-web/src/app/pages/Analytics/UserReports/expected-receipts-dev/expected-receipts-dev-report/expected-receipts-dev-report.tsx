@@ -80,7 +80,7 @@ export function ExpectedReceiptsDevReport({ data, isFetching }: Readonly<Expecte
   }, [total?.rest.value]);
 
   const numberFormat = useCallback((number?: number) => {
-    if (!number || number <= 0) return '';
+    if (!number || number === 0) return '';
     return number.toLocaleString();
   }, []);
 

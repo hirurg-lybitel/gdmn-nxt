@@ -65,7 +65,7 @@ export function ExpectedReceiptsReport({ data, isFetching }: Readonly<ExpectedRe
   }, [total?.amount]);
 
   const numberFormat = useCallback((number?: number) => {
-    if (!number || number <= 0) return '';
+    if (!number || number === 0) return '';
     return number.toLocaleString();
   }, []);
 

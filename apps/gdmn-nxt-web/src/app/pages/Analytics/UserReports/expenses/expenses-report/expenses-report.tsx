@@ -33,7 +33,7 @@ export function ExpensesReport({ data, isFetching }: Readonly<ExpensesReportProp
   })), [data, total]);
 
   const numberFormat = (number?: number) => {
-    if (!number || number <= 0) return '';
+    if (!number || number === 0) return '';
     return number.toLocaleString();
   };
 
