@@ -92,7 +92,7 @@ export function DebtsReport({ data, isFetching }: Readonly<DebtsReportProps>) {
                     <th className={styles.numberTh}>{numberFormat(item.paid)}</th>
                     <th className={styles.numberTh}>{numberFormat(item.saldoEnd.value)}</th>
                     <th className={styles.numberTh}>{numberFormat(item.saldoEnd.currency)}</th>
-                    <th className={styles.numberTh}>{!item.change && item.change + '%'}</th>
+                    <th className={styles.numberTh}>{!!item.change && item.change + '%'}</th>
                   </tr>
                 ))}
                 <tr className={styles.tableRow} style={data.length % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}>
@@ -103,7 +103,7 @@ export function DebtsReport({ data, isFetching }: Readonly<DebtsReportProps>) {
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.paid)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.saldoEnd.value)}</th>
                   <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{numberFormat(total?.saldoEnd.currency)}</th>
-                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{!total?.change && total?.change + '%'}</th>
+                  <th className={`${styles.noBottomBorder} ${styles.numberTh}`}>{!!total?.change && total?.change + '%'}</th>
                 </tr>
               </tbody>
             </table>
