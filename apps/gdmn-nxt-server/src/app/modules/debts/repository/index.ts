@@ -25,7 +25,7 @@ const find: FindHandler<IDebt> = async (
             SELECT
               VAL
             FROM GD_CURRRATE
-            WHERE FORDATE <= e.ENTRYDATE
+            WHERE FORDATE <= :dateBegin
               AND FROMCURR = 200020
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
@@ -38,7 +38,7 @@ const find: FindHandler<IDebt> = async (
             SELECT
               VAL
             FROM GD_CURRRATE
-            WHERE FORDATE <= e.ENTRYDATE
+            WHERE FORDATE <= :dateEnd
               AND FROMCURR = 200020
               AND TOCURR = 200010
             ORDER BY FORDATE DESC
@@ -68,10 +68,14 @@ const find: FindHandler<IDebt> = async (
 
     const data = await fetchAsObject<any>(sql, { dateBegin, dateEnd });
 
-    const calcChange = (saldoBegin: number, saldoEnd: number) => {
+    const calcChange = (saldoBegin?: number, saldoEnd?: number) => {
+      if (!saldoEnd || !saldoBegin) return 0;
       const difference = saldoEnd - saldoBegin;
-      if (!difference) return 0;
       return Number(((difference / saldoBegin) * 100).toFixed(2));
+    };
+
+    const numberFix = (number: number) => {
+      return Number((number ?? 0).toFixed());
     };
 
     const result: IDebt[] = data.map(debt => ({
@@ -80,16 +84,16 @@ const find: FindHandler<IDebt> = async (
         NAME: debt['NAME']
       },
       saldoBegin: {
-        value: debt['SaldoBegin'],
-        currency: debt['ValSaldoBegin']
+        value: numberFix(debt['SALDOBEGIN']),
+        currency: numberFix(debt['VALSALDOBEGIN'])
       },
       saldoEnd: {
-        value: debt['SaldoEnd'],
-        currency: debt['ValSaldoEnd']
+        value: numberFix(debt['SALDOEND']),
+        currency: numberFix(debt['VALSALDOEND'])
       },
-      done: debt['Debit'],
-      paid: debt['Credit'],
-      change: calcChange(debt['SaldoBegin'], debt['SaldoEnd'])
+      done: numberFix(debt['DEBIT']),
+      paid: numberFix(debt['CREDIT']),
+      change: calcChange(debt['SALDOBEGIN'], debt['SALDOEND'])
     }));
 
     return result;
