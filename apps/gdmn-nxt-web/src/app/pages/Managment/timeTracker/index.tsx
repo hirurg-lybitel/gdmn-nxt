@@ -17,6 +17,7 @@ import {
   TextField,
   Skeleton,
   useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -276,7 +277,8 @@ export function TimeTracker() {
     });
   };
 
-  const breakPoint442 = useMediaQuery('(max-width:442px)');
+  const theme = useTheme();
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('sm'));
   const breakPoint350 = useMediaQuery('(max-width:350px)');
 
   return (
@@ -287,20 +289,27 @@ export function TimeTracker() {
         initial={addTimeTrackInitial}
         onSubmit={handleSubmit}
       />
-      <Stack direction="row">
-        <ButtonDateRangePicker
-          label={breakPoint442 ? false : undefined}
-          options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
-          value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
-          onChange={dateRangeOnChange}
-        />
+      <Stack
+        direction={matchDownMd ? 'column' : 'row'}
+        sx={{
+          alignItems: matchDownMd ? 'flex-end' : 'auto'
+        }}
+      >
+        <div style={{ display: 'flex', width: '100%' }}>
+          <ButtonDateRangePicker
+            options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
+            value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
+            onChange={dateRangeOnChange}
+          />
+        </div>
         <Box flex={1} />
         <Stack
           direction="row"
           spacing={1}
           alignItems="center"
           mr={'16px'}
-          ml={'16px'}
+          ml={matchDownMd ? '0px' : '16px'}
+          mt={matchDownMd ? '16px' : '0px'}
         >
           <Typography variant="caption" style={{ textWrap: 'nowrap' }}>
             {breakPoint350 ? 'Итого: ' : 'Итого за период:'}
