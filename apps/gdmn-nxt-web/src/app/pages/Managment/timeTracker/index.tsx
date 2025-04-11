@@ -279,7 +279,6 @@ export function TimeTracker() {
 
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('sm'));
-  const breakPoint350 = useMediaQuery('(max-width:350px)');
 
   return (
     <Stack flex={1} spacing={3}>
@@ -312,7 +311,7 @@ export function TimeTracker() {
           mt={matchDownMd ? '16px' : '0px'}
         >
           <Typography variant="caption" style={{ textWrap: 'nowrap' }}>
-            {breakPoint350 ? 'Итого: ' : 'Итого за период:'}
+            Итого за период:
           </Typography>
           <Typography fontWeight={600} width={60}>
             {durationFormat(timeTrackGroup.reduce((total, { duration }) =>

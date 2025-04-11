@@ -109,10 +109,10 @@ const DateRangeButtonField = forwardRef(
 
     useEffect(() => {
       const onResize = () => {
-        if (shortLabel === false && elRef.current.offsetWidth <= 204) {
+        if (shortLabel === false && elRef.current.offsetWidth <= 385) {
           setShortLabel(true);
         }
-        if (shortLabel === true && elRef.current.offsetWidth > 204) {
+        if (shortLabel === true && elRef.current.offsetWidth > 385) {
           setShortLabel(false);
         }
       };
@@ -124,7 +124,7 @@ const DateRangeButtonField = forwardRef(
     const elRef = useRef<any>(null);
 
     return (
-      <div ref={elRef}>
+      <div ref={elRef} style={{ width: '100%' }}>
         <Button
           variant="outlined"
           id={id}
