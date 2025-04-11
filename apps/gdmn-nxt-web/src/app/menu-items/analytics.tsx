@@ -77,7 +77,7 @@ const analytics: IMenuItem = {
           },
         }, {
           id: 'debts',
-          title: 'Задолжности',
+          title: 'Задолженности',
           url: 'analytics/reports/debts',
           type: 'item',
           actionCheck: {
