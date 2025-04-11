@@ -122,7 +122,7 @@ export function Debts(props: DebtsProps) {
       width={'100%'}
     >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Задолжности</Typography>} />
+        <CardHeader title={<Typography variant="pageHeader">Задолженности</Typography>} />
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <DateRangePicker
