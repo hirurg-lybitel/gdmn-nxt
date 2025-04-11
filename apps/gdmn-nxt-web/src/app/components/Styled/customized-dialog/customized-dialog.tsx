@@ -30,12 +30,11 @@ export interface CustomizedDialogProps {
   hideBackdrop?: boolean;
   disableEscape?: boolean;
   confirmation?: boolean;
-  closeOnSwipe?: boolean;
 }
 
 
 function CustomizedDialog(props: CustomizedDialogProps) {
-  const { children, open, onClose, confirmation = false, closeOnSwipe = true } = props;
+  const { children, open, onClose, confirmation = false } = props;
   const {
     width = 500,
     minWidth = 0,
