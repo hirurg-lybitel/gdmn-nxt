@@ -1,6 +1,6 @@
-import { Button, CardActions, CardContent, useMediaQuery } from '@mui/material';
+import { Button, CardActions, CardContent, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 
 interface FilterDialogProps {
   open: boolean,
@@ -16,10 +16,16 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
     onClose,
     onClear,
     children,
-    width = 400
+    width: propsWiddth
   } = props;
 
-  const modile = useMediaQuery(`(max-width:${width + 100}px)`);
+  const theme = useTheme();
+
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+
+  const width = useMemo(() => propsWiddth ?? matchDownMd ? 320 : 400, [matchDownMd, propsWiddth]);
+
+  const modile = useMediaQuery(`(max-width:${width + 200}px)`);
 
   return (
     <CustomizedDialog

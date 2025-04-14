@@ -43,10 +43,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 export interface MenuItemProps {
   item: IMenuItem;
   level?: number;
+  onClick: (item: IMenuItem, lavel: number) => void
 };
 
 export function MenuItem(props: MenuItemProps) {
-  const { item, level = 0 } = props;
+  const { item, level = 0, onClick } = props;
 
   const classes = useStyles();
 
@@ -84,14 +85,20 @@ export function MenuItem(props: MenuItemProps) {
   const MyNavLink = useMemo(() => forwardRef<HTMLAnchorElement, MyNavLinkProps>((navLinkProps, ref) => {
     const { className: previousClasses, ...rest } = navLinkProps;
     const elementClasses = previousClasses?.toString() ?? '';
+
+    const handleClick = () => {
+      onClick(item, level);
+    };
+
     return (
       <NavLink
         {...rest}
         ref={ref}
         to={item.url || ''}
+        onClick={handleClick}
         className={({ isActive }) => lickClassAndReroute(isActive, elementClasses)}
       />);
-  }), [item.url]);
+  }), [item.url, onClick]);
 
   return (
     <ListItemButton

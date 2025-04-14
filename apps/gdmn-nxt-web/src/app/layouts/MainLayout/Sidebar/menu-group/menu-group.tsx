@@ -10,10 +10,11 @@ import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 
 export interface MenuGroupProps {
   item: any,
+  onClick: (item: IMenuItem, lavel: number) => void
 }
 
 export function MenuGroup(props: MenuGroupProps) {
-  const { item } = props;
+  const { item, onClick } = props;
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
 
@@ -31,7 +32,11 @@ export function MenuGroup(props: MenuGroupProps) {
           }
         >
           {userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? '']}
-          <MenuCollapse menu={menu} level={1} />
+          <MenuCollapse
+            onClick={onClick}
+            menu={menu}
+            level={1}
+          />
         </PermissionsGate>;
       };
       case 'item':
@@ -40,6 +45,7 @@ export function MenuGroup(props: MenuGroupProps) {
           actionAllowed={userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? ''] ?? !menu.actionCheck}
         >
           <MenuItem
+            onClick={onClick}
             key={menu.id}
             item={menu}
             level={1}

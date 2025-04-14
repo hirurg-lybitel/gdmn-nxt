@@ -1,7 +1,7 @@
-import { DateRange, DateRangePicker, DateRangePickerProps, PickersShortcutsItem, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
-import { forwardRef, Ref, RefAttributes, useCallback, useEffect, useRef, useState } from 'react';
+import { DateRange, DateRangePicker, DateRangePickerProps, DateRangeValidationError, PickerChangeHandlerContext, PickersShortcutsItem, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
+import { forwardRef, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from '@gdmn-nxt/dayjs';
-import { Button, useForkRef } from '@mui/material';
+import { Box, Button, Dialog, Popper, useForkRef, useMediaQuery } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 interface DateRangeButtonFieldProps extends SingleInputDateRangeFieldProps<Date> {
@@ -161,21 +161,83 @@ const ButtonDateRangePicker = forwardRef(
     props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[] },
     ref: Ref<HTMLDivElement>
   ) => {
+    const { onChange } = props;
+
     const [open, setOpen] = useState(false);
     const buttonOnClick = useCallback(() => setOpen(prev => !prev), []);
     const onClose = useCallback(() => setOpen(false), []);
     const onOpen = useCallback(() => setOpen(true), []);
 
+    const shortcuts = useMemo(() => props.options ?
+      shortcutsItems.filter(({ label }) => props.options?.includes(label as ShortcutsLabel))
+      : shortcutsItems, [JSON.stringify(props.options)]);
+
+    const matchDown450 = useMediaQuery('(max-width:450px)');
+    const heightDown750 = useMediaQuery('(max-height:750px)');
+
+    const smallPadding = matchDown450 || heightDown750;
+
     return (
       <DateRangePicker
         slots={{
           field: DateRangeButtonField,
-          ...props.slots
+          ...props.slots,
+          dialog: useCallback((dialogProps: any) => {
+            return (
+              <Dialog {...dialogProps}>
+                <Box
+                  sx={{
+                    '& .MuiPickersLayout-shortcuts': {
+                      display: 'none'
+                    },
+                    '& .MuiDialogContent-root': {
+                      padding: smallPadding ? '0' : undefined
+                    },
+                    '& .MuiPickersLayout-root': {
+                      display: 'flex',
+                      flexDirection: 'column'
+                    },
+                    '& .MuiPickersSlideTransition-root': {
+                      minHeight: 0
+                    }
+                  }}
+                >
+                  <div style={{ padding: '20px 24px 0 20px', display: 'flex', flexWrap: 'wrap', gap: '10px', maxWidth: '400px' }}>
+                    {shortcuts.map((shortcut, index) => {
+                      const handleShortCutClick = () => {
+                        onChange && onChange(
+                          shortcut.getValue({ isValid: () => true }),
+                          { shortcut: { label: shortcut.label }, validationError: [null, null] }
+                        );
+                        dialogProps.onClose();
+                      };
+                      return (
+                        <Button
+                          key={index}
+                          variant="contained"
+                          onClick={handleShortCutClick}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.16)',
+                            textTransform: 'none',
+                            borderRadius: '16px',
+                            fontWeight: '400'
+                          }}
+                        >
+                          {shortcut.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  {dialogProps.children}
+                </Box>
+              </Dialog>
+            );
+          }, [JSON.stringify(onChange), shortcuts, smallPadding])
         }}
         slotProps={{
           field: { onClick: buttonOnClick } as any,
           shortcuts: {
-            items: props.options ? shortcutsItems.filter(({ label }) => props.options?.includes(label as ShortcutsLabel)) : shortcutsItems,
+            items: shortcuts,
           },
         }}
         ref={ref}

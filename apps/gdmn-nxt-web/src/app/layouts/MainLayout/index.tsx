@@ -39,12 +39,14 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen
       }),
-      marginLeft: -(theme.drawerWidth - 60),
+      marginLeft: -(theme.drawerWidth - 20),
       width: `calc(100% - ${theme.drawerWidth}px)`,
-      [theme.breakpoints.up('md')]: {
-        marginLeft: -(theme.drawerWidth - 20),
-        width: `calc(100% - ${theme.drawerWidth}px)`
-      },
+      [theme.breakpoints.down('md')]: {
+        margin: 0,
+        marginTop: '40px',
+        marginLeft: -theme.drawerWidth,
+        width: `calc(100% - ${theme.drawerWidth}px)`,
+      }
       // [theme.breakpoints.down('md')]: {
       //     marginLeft: '10px',
       //     width: `calc(100% - ${theme.drawerWidth}px)`,
@@ -154,17 +156,12 @@ export const MainLayout = (props: MainLayoutProps) => {
     const touchendFun = (e: TouchEvent) => {
       clearTimeout(swipeTimeout);
       if (e.changedTouches[0].clientX - x < -50) swipeLeft();
-      if (e.changedTouches[0].clientX - x > 50 && targetId === 'sidebar') swipeRight();
     };
     document.addEventListener('touchstart', touchstartFun);
     document.addEventListener('touchend', touchendFun);
 
     const swipeLeft = () => {
       dispatch(toggleMenu(false));
-    };
-
-    const swipeRight = () => {
-      dispatch(toggleMenu(true));
     };
 
     return () => {

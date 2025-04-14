@@ -278,7 +278,7 @@ export function TimeTracker() {
   };
 
   const theme = useTheme();
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Stack flex={1} spacing={3}>
@@ -289,9 +289,9 @@ export function TimeTracker() {
         onSubmit={handleSubmit}
       />
       <Stack
-        direction={matchDownMd ? 'column' : 'row'}
+        direction={matchDownSm ? 'column' : 'row'}
         sx={{
-          alignItems: matchDownMd ? 'flex-end' : 'auto'
+          alignItems: matchDownSm ? 'flex-end' : 'auto'
         }}
       >
         <div style={{ display: 'flex', width: '100%' }}>
@@ -307,8 +307,8 @@ export function TimeTracker() {
           spacing={1}
           alignItems="center"
           mr={'16px'}
-          ml={matchDownMd ? '0px' : '16px'}
-          mt={matchDownMd ? '16px' : '0px'}
+          ml={matchDownSm ? '0px' : '16px'}
+          mt={matchDownSm ? '16px' : '0px'}
         >
           <Typography variant="caption" style={{ textWrap: 'nowrap' }}>
             Итого за период:
