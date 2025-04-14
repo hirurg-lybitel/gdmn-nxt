@@ -1,9 +1,9 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, Checkbox, InputAdornment, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, createFilterOptions, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
-import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import EditNoteIcon from '@mui/icons-material/EditNote';
@@ -12,14 +12,14 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 // import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
-import { ICustomer, ITimeTrack, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
+import { ICustomer, ITimeTrack, ITimeTrackProject, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
 import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
-import { useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+import { useAddFavoriteTaskMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery, useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 
 const durationMask = [
@@ -40,6 +40,38 @@ interface AddItemProps {
   initial?: Partial<ITimeTrack>;
   onSubmit: (value: ITimeTrack, mode: SubmitMode) => void
 }
+
+const TasksListboxComponent = forwardRef<
+HTMLUListElement,
+HTMLAttributes<HTMLElement>
+>(function ListboxComponent(
+  props,
+  ref
+) {
+  const { children, ...other } = props;
+
+  return (
+    <List
+      {...other}
+      subheader={<li />}
+      dense
+      disablePadding
+      ref={ref}
+      sx={{
+        width: '100%',
+        position: 'relative',
+        overflow: 'auto',
+        zIndex: 0,
+        '& ul': {
+          padding: 0,
+          flex: 1
+        },
+      }}
+    >
+      {children}
+    </List>
+  );
+});
 
 export const AddItem = ({
   initial,
@@ -227,21 +259,83 @@ export const AddItem = ({
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
+  const theme = useTheme();
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const filterProjects = (limit = 50) => createFilterOptions({
+    matchFrom: 'any',
+    ignoreCase: true,
+    stringify: (option: ITimeTrackProject) => `${option.name} ${option.tasks?.map(task => task.name).join(' ')}`,
+  });
+
+  const [selectedProject, setSelectedProject] = useState<ITimeTrackProject | null>(null);
+
+  const projectOnChange = (
+    e: SyntheticEvent,
+    value: ITimeTrackProject | null
+  ) => {
+    setSelectedProject(value);
+  };
+
+  // useEffect(() => {
+  //   if (!formik.values.task?.project) {
+  //     return;
+  //   }
+
+  //   setSelectedProject(formik.values.task?.project);
+  // }, [formik.values.task?.project]);
+
+  const [addFavoriteTask] = useAddFavoriteTaskMutation();
+  const [deleteFavoriteTask] = useDeleteFavoriteTaskMutation();
+
+  const toggleTaskFavorite = (taskId: number, projectId: number, favorite: boolean) => (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+    e.stopPropagation();
+    if (favorite) {
+      deleteFavoriteTask({ taskId, projectId });
+    } else {
+      addFavoriteTask({ taskId, projectId });
+    }
+  };
+
+  function preventAction<T>(e: MouseEvent<T>) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
+  const {
+    data,
+    isLoading: projectsIsLoading,
+    isFetching: projectsIsFetching
+  } = useGetProjectsQuery({
+    ...(!Array.isArray(formik.values.customer)
+      ? { filter: { customerId: formik.values.customer?.ID, groupByFavorite: true, taskisActive: true, status: 'active' } }
+      : {}),
+  }, {
+    skip: !formik.values.customer
+  });
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
         <Form id="timeTrackingForm" onSubmit={formik.handleSubmit}>
           <Stack
-            direction="row"
+            direction={matchDownLg ? 'column' : 'row'}
             spacing={2}
             alignItems="center"
           >
-            <Stack spacing={1} flex={1}>
+            <Stack
+              width={matchDownLg ? '100%' : undefined}
+              spacing={{ xs: 2, lg: 1 }}
+              flex={1}
+            >
               <CustomerSelect
                 disableEdition
                 disableCaption
                 disableFavorite={false}
                 withTasks
+                // showTasks
                 debt
                 agreement
                 required
@@ -252,6 +346,88 @@ export const AddItem = ({
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
+              {matchDownMd && formik.values.customer && data?.projects && data?.projects.length !== 0 && (
+                <Autocomplete
+                  disabled={projectsIsLoading || projectsIsFetching}
+                  // style={{ marginTop: '16px' }}
+                  ListboxComponent={TasksListboxComponent}
+                  options={data?.projects || []}
+                  getOptionLabel={() => formik.values.task?.name ?? ''}
+                  filterOptions={filterProjects()}
+                  onChange={projectOnChange}
+                  value={selectedProject}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant={'outlined'}
+                      placeholder="Выберите задачу"
+                      label={'Задача'}
+                      InputProps={{
+                        ref: params.InputProps.ref,
+                        endAdornment: params.InputProps.endAdornment
+                      }}
+                    />
+                  )}
+                  groupBy={({ isFavorite }: ITimeTrackProject) => isFavorite ? 'Избранные' : 'Остальные'}
+                  renderGroup={(params) => (
+                    <li key={params.key}>
+                      <GroupHeader>
+                        <Typography variant="subtitle1">{params.group}</Typography>
+                      </GroupHeader>
+                      <GroupItems>{params.children}</GroupItems>
+                    </li>
+                  )}
+                  renderOption={(props, { tasks, ...option }) => (
+                    <li
+                      {...props}
+                      key={`section-${option.ID}`}
+                      style={{
+                        padding: 0,
+                      }}
+                    >
+                      <ul>
+                        <ListSubheader
+                          style={{
+                            zIndex: 0,
+                            lineHeight: '36px',
+                            cursor: 'text',
+                          }}
+                          onClick={preventAction<HTMLLIElement>}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            {option.name}
+                          </div>
+                        </ListSubheader>
+                        {tasks?.map(task => (
+                          <ListItem
+                            key={`item-${option.ID}-${task.ID}`}
+                            onClick={() => handleTaskSelected({ ...task, project: option })}
+                            disablePadding
+                            style={{
+                              backgroundColor: 'var(--color-main-bg)',
+                            }}
+                          >
+                            <ListItemButton>
+                              <ListItemText inset primary={task.name} />
+                              <Box flex={1} minWidth={12} />
+                              <SwitchStar
+                                selected={!!task.isFavorite}
+                                onClick={toggleTaskFavorite(task.ID, option.ID, !!task.isFavorite)}
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </li>
+                  )}
+                />
+              )}
               <div style={{ height: '40px', width: '100%', position: 'relative' }}>
                 <TextField
                   placeholder="Над чем вы работали?"
@@ -273,7 +449,11 @@ export const AddItem = ({
               </div>
             </Stack>
             {calcMode === 'manual' &&
-              <Stack spacing={1} width={216}>
+              <Stack
+                width={matchDownLg ? '100%' : 216}
+                spacing={{ xs: 2, lg: 1 }}
+                direction={matchDownLg ? 'row' : 'column'}
+              >
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
                   value={formik.values.date}
@@ -281,7 +461,8 @@ export const AddItem = ({
                   sx={{
                     '& .MuiInputBase-root': {
                       paddingRight: 1,
-                    }
+                    },
+                    width: matchDownLg ? '100%' : undefined
                   }}
                 />
                 <Stack
@@ -328,9 +509,29 @@ export const AddItem = ({
                 </Stack>
               </Stack>
             }
-            <Stack spacing={2}>
-              <Stack spacing={1} direction="row">
-                <Box display="inline-flex" alignSelf="center">
+            <Stack
+              direction={matchDownLg ? matchDownSm ? 'column-reverse' : 'row-reverse' : 'column'}
+              width={matchDownLg ? '100%' : undefined}
+              spacing={2}
+            >
+              <Stack
+                spacing={{ xs: 2, lg: 1 }}
+                direction={matchDownLg ? 'row-reverse' : 'row'}
+                sx={{
+                  width: '100%'
+                }}
+              >
+                <Box
+                  display="inline-flex"
+                  alignSelf="center"
+                  height="100%"
+                  sx={{
+                    width: '100%',
+                    '& button': {
+                      width: '100%'
+                    }
+                  }}
+                >
                   {calcMode === 'calc'
                     ? (formik.values.inProgress)
                       ? <Button
@@ -382,14 +583,14 @@ export const AddItem = ({
                 </ToggleButtonGroup>
               </Stack>
               <Stack
-                direction="row"
                 alignItems="center"
                 spacing={1}
+                direction={'row'}
               >
                 <TextFieldMasked
                   label="Длительность"
                   style={{
-                    maxWidth: 117
+                    width: matchDownSm ? '100%' : 117
                   }}
                   mask={durationMask}
                   value={durationFormat(formik.values.duration)}

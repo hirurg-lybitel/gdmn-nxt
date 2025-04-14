@@ -52,6 +52,7 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   debt?: boolean;
   /** Отображать информацию по договорам */
   agreement?: boolean;
+  showTasks?: boolean;
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: Readonly<CustomerSelectProps<Multiple>>) {
@@ -158,7 +159,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
-    limit: withTasks ? 100 : maxVirtualizationList,
+    limit: withTasks || !disableFavorite ? 100 : maxVirtualizationList,
     ignoreCase: true,
     stringify: (option: ICustomer) => `${option.NAME} ${option.TAXID}`,
   });
@@ -233,8 +234,9 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   return (
     <div style={{ position: 'relative' }}>
-      <div
+      <Box
         ref={taskSelectAreaRef}
+        display={{ xs: 'none', md: 'block' }}
         style={{
           position: 'absolute',
           right: '14px',
@@ -272,7 +274,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             onSelect={handleTaskSelect}
           />
         </div>
-      </div>
+      </Box>
       <Autocomplete
         style={style}
         fullWidth
@@ -324,11 +326,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               key={option.ID}
               disablePadding
               sx={{
-                py: '2px !important',
+                py: '4px !important',
                 '&:hover .action': {
                   display: 'flex !important',
                 },
-                padding: '0px !important',
+                px: '0px !important',
                 '& .StyledEditButton': {
                   visibility: 'hidden',
                 },
@@ -385,17 +387,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 </>)
             }}
           />
-        ), [
-          insertCustomerIsLoading,
-          rest,
-          value,
-          disableEdition,
-          handleTaskSelect,
-          handleEditCustomer,
-          customers,
-          selectedTask,
-          projects,
-          projectsIsLoading])}
+        ), [required, insertCustomerIsLoading, rest, withTasks, taskSelectAreaWidth, value, disableEdition, handleEditCustomer, customers])}
         renderGroup={(params) => (
           <li key={params.key}>
             <GroupHeader>
@@ -467,9 +459,9 @@ const CustomerItem = ({
     >
       <Stack
         flex={1}
-        direction="row"
-        alignItems="center"
-        spacing={1}
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'initial', sm: 'center' }}
+        spacing={{ xs: 0, sm: 1 }}
         style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
@@ -486,16 +478,19 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        {withTasks && (taskCount ?? 0) > 0 &&
-          <Stack
-            direction="row"
-            alignItems={'center'}
-            spacing={0.5}
-          >
-            <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
-          </Stack>
-        }
-        {!(disableEdition && !agreement && !debt && disableFavorite) &&
+        <Stack direction="row" spacing={{ xs: 0, sm: 1 }} flex={1}>
+          <Box flex={1} display={{ xs: 'none', sm: 'block' }} />
+          {withTasks && (taskCount ?? 0) > 0 &&
+            <Stack
+              direction="row"
+              alignItems={'center'}
+              spacing={0.5}
+            >
+              <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
+            </Stack>
+          }
+          <Box flex={1} display={{ xs: 'block', sm: 'none' }} />
+          {!(disableEdition && !agreement && !debt && disableFavorite) &&
           <Stack
             className="action"
             direction="row"
@@ -531,7 +526,8 @@ const CustomerItem = ({
             }
 
           </Stack>
-        }
+          }
+        </Stack>
       </Stack>
     </Stack>
   );
@@ -672,6 +668,7 @@ const CustomerTasks = ({
           <ul>
             <ListSubheader
               style={{
+                zIndex: 0,
                 lineHeight: '36px',
                 cursor: 'text',
               }}

@@ -36,8 +36,8 @@ export function CheckCode({ onSubmit, onCancel }: CheckCodeProps) {
   return (
     <Stack
       spacing={3}
+      className={styles.twoFABody}
       sx={{
-        width: { xs: '100%', sm: 424 },
         padding: { xs: 2.5, sm: 4 },
         borderRadius: 2,
         boxShadow: (theme) => theme.shadows[3],

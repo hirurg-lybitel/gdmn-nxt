@@ -25,7 +25,7 @@ interface ISettingsState {
 };
 
 const initialState: ISettingsState = {
-  menuOpened: true,
+  menuOpened: false,
   customization: initCustomization,
   appOptions: initAppOptions
 };

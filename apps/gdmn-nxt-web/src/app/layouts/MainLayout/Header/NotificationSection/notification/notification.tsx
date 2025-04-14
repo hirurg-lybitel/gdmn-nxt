@@ -285,11 +285,7 @@ export function Notification(props: NotificationProps) {
   };
 
   return (
-    <Box
-      sx={{
-        mx: 2
-      }}
-    >
+    <Box >
       <Tooltip title={messages.length > 0 ? 'У вас есть непрочитанные уведомления' : 'У вас нет непрочитанных уведомлений'} arrow>
         <IconButton
           size="large"

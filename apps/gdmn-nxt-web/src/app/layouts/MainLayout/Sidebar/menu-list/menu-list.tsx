@@ -4,7 +4,7 @@ import MenuGroup from '../menu-group/menu-group';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { makeStyles } from '@mui/styles';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import MenuItem from '../menu-item/menu-item';
 import { useSelector } from 'react-redux';
@@ -29,9 +29,10 @@ const useStyles = makeStyles(() => ({
 
 /* eslint-disable-next-line */
 export interface MenuListProps {
+  onItemClick?: (item: IMenuItem, lavel: number) => void
 }
 
-export function MenuList(props: MenuListProps) {
+export function MenuList({ onItemClick }: MenuListProps) {
   const classes = useStyles();
   const theme = useTheme();
 
@@ -55,19 +56,30 @@ export function MenuList(props: MenuListProps) {
     }, [] as IMenuItem[]);
   }
 
+  const handleClick = useCallback((item: IMenuItem, lavel: number) => {
+    onItemClick && onItemClick(item, lavel);
+  }, [onItemClick]);
+
   const navItems = useMemo(() => filterMenuItems(menuItems.items, searchText)
     .map((item) => {
       switch (item.type) {
         case 'collapse':
           return (
             <MenuCollapse
+              onClick={handleClick}
               key={item.id}
               menu={item}
               level={1}
             />
           );
         case 'group':
-          return <MenuGroup key={item.id} item={item} />;
+          return (
+            <MenuGroup
+              onClick={handleClick}
+              key={item.id}
+              item={item}
+            />
+          );
         case 'item':
           return (
             <PermissionsGate
@@ -75,6 +87,7 @@ export function MenuList(props: MenuListProps) {
               actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck}
             >
               <MenuItem
+                onClick={handleClick}
                 key={item.id}
                 item={item}
                 level={1}
@@ -93,7 +106,7 @@ export function MenuList(props: MenuListProps) {
             </Typography>
           );
       }
-    }), [searchText, userPermissions]);
+    }), [filterMenuItems, handleClick, searchText, userPermissions]);
 
   const searchOnChange = (value: string) => {
     setSearchText(value);

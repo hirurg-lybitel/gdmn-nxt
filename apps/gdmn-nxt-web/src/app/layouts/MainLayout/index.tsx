@@ -1,4 +1,4 @@
-import { Box, MenuItem, SvgIconTypeMap, useMediaQuery } from '@mui/material';
+import { Box, SvgIconTypeMap, useMediaQuery } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
@@ -39,12 +39,15 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen
       }),
-      marginLeft: -(theme.drawerWidth - 60),
+      marginLeft: -(theme.drawerWidth - 20),
       width: `calc(100% - ${theme.drawerWidth}px)`,
-      [theme.breakpoints.up('md')]: {
-        marginLeft: -(theme.drawerWidth - 20),
-        width: `calc(100% - ${theme.drawerWidth}px)`
-      },
+      [theme.breakpoints.down('md')]: {
+        margin: 0,
+        marginTop: '40px',
+        marginLeft: -theme.drawerWidth,
+        width: `calc(100% - ${theme.drawerWidth}px)`,
+        borderRadius: 0,
+      }
       // [theme.breakpoints.down('md')]: {
       //     marginLeft: '10px',
       //     width: `calc(100% - ${theme.drawerWidth}px)`,
@@ -140,6 +143,33 @@ export const MainLayout = (props: MainLayoutProps) => {
     navigate(savedPathname);
   }, [filterData?.path]);
 
+  useEffect(() => {
+    let x: number;
+    let swipeTimeout: NodeJS.Timeout;
+    let targetId: undefined | string | number;
+    const touchstartFun = (e: TouchEvent) => {
+      targetId = (e.target as any)?.id;
+      x = e.changedTouches[0].clientX;
+      swipeTimeout = setTimeout(() => {
+        x = NaN;
+      }, 500);
+    };
+    const touchendFun = (e: TouchEvent) => {
+      clearTimeout(swipeTimeout);
+      if (e.changedTouches[0].clientX - x < -50) swipeLeft();
+    };
+    document.addEventListener('touchstart', touchstartFun);
+    document.addEventListener('touchend', touchendFun);
+
+    const swipeLeft = () => {
+      dispatch(toggleMenu(false));
+    };
+
+    return () => {
+      document.removeEventListener('touchstart', touchstartFun);
+      document.removeEventListener('touchend', touchendFun);
+    };
+  }, []);
 
   useEffect(() => {
     // сохранение последнего открытого пути

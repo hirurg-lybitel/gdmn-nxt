@@ -47,7 +47,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
   }, []);
 
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
-  const wheelEvent = useMemo(() => 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
+  const wheelEvent = useCallback((mobile: boolean) => mobile ? 'touchmove' : 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
 
   const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
   const preventDefaultForScrollKeys = useCallback((e: KeyboardEvent) => {
@@ -58,12 +58,12 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     return true;
   }, []);
 
-  const omMouseEnter = () => {
-    window.addEventListener(wheelEvent, preventDefault, { passive: false });
+  const onScrollStart = (mobile: boolean) => () => {
+    window.addEventListener(wheelEvent(mobile), preventDefault, { passive: false });
   };
 
-  const onMouseLeave = () => {
-    window.removeEventListener(wheelEvent, preventDefault, false);
+  const onScrollEnd = (mobile: boolean) => () => {
+    window.removeEventListener(wheelEvent(mobile), preventDefault, false);
   };
 
   return (
@@ -88,8 +88,10 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
           {...style}
           containerRef={(ref) => containerRef.current = ref}
           onScrollY={handleScroll}
-          onMouseEnter={omMouseEnter}
-          onMouseLeave={onMouseLeave}
+          onMouseEnter={onScrollStart(false)}
+          onMouseLeave={onScrollEnd(false)}
+          onTouchStart={onScrollStart(true)}
+          onTouchEnd={onScrollEnd(true)}
         >
           {children}
         </PerfectScrollbar>

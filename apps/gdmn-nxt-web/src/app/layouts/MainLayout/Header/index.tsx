@@ -4,16 +4,18 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Notification from './NotificationSection/notification/notification';
 import Profile from './profile/profile';
 import ToggleTheme from './toggle-theme/toggle-theme';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface IHeaderProps {
   onDrawerToggle: () => void;
+  mobile?: boolean
 };
 
 export const Header = (props: IHeaderProps) => {
-  const { onDrawerToggle } = props;
+  const { onDrawerToggle, mobile = false } = props;
 
   return (
-    <>
+    <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: mobile ? 'space-between' : '', gap: mobile ? '' : '16px' }}>
       {/* <IconButton
         size="large"
         edge="start"
@@ -33,6 +35,9 @@ export const Header = (props: IHeaderProps) => {
       <Profile />
       <Notification />
       <ToggleTheme />
-    </>
+      {mobile && <IconButton size="large" onClick={onDrawerToggle}>
+        <CloseIcon color="secondary"/>
+      </IconButton>}
+    </div>
   );
 };
