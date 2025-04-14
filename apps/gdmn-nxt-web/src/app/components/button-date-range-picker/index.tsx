@@ -196,9 +196,6 @@ const ButtonDateRangePicker = forwardRef(
                     '& .MuiPickersLayout-root': {
                       display: 'flex',
                       flexDirection: 'column'
-                    },
-                    '& .MuiPickersSlideTransition-root': {
-                      minHeight: 0
                     }
                   }}
                 >
