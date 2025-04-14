@@ -34,10 +34,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 export interface MenuCollapseProps {
   menu: IMenuItem;
   level?: number;
+  onClick: (item: IMenuItem, lavel: number) => void
 }
 
 export function MenuCollapse(props: MenuCollapseProps) {
-  const { menu, level = 0 } = props;
+  const { menu, level = 0, onClick } = props;
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);;
@@ -57,6 +58,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
             actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck}
           >
             <MenuItem
+              onClick={onClick}
               key={item.id}
               item={item}
               level={level + 1}
@@ -65,6 +67,7 @@ export function MenuCollapse(props: MenuCollapseProps) {
         );
       case 'collapse':
         return <MenuCollapse
+          onClick={onClick}
           key={item.id}
           menu={item}
           level={level + 1}
