@@ -36,7 +36,7 @@ export const Header = (props: IHeaderProps) => {
       <Notification />
       <ToggleTheme />
       {mobile && <IconButton size="large" onClick={onDrawerToggle}>
-        <CloseIcon/>
+        <CloseIcon color="secondary"/>
       </IconButton>}
     </div>
   );

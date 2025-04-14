@@ -1,7 +1,7 @@
 import { DateRange, DateRangePicker, DateRangePickerProps, DateRangeValidationError, PickerChangeHandlerContext, PickersShortcutsItem, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
 import { forwardRef, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from '@gdmn-nxt/dayjs';
-import { Box, Button, Dialog, Popper, useForkRef, useMediaQuery } from '@mui/material';
+import { Box, Button, Dialog, Popper, useForkRef, useMediaQuery, useTheme } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 interface DateRangeButtonFieldProps extends SingleInputDateRangeFieldProps<Date> {
@@ -177,6 +177,8 @@ const ButtonDateRangePicker = forwardRef(
 
     const smallPadding = matchDown450 || heightDown750;
 
+    const theme = useTheme();
+
     return (
       <DateRangePicker
         slots={{
@@ -217,7 +219,8 @@ const ButtonDateRangePicker = forwardRef(
                             background: 'rgba(255, 255, 255, 0.16)',
                             textTransform: 'none',
                             borderRadius: '16px',
-                            fontWeight: '400'
+                            fontWeight: '400',
+                            color: theme.palette.mode === 'dark' ? theme.textColor : theme.palette.text.primary
                           }}
                         >
                           {shortcut.label}
@@ -229,7 +232,7 @@ const ButtonDateRangePicker = forwardRef(
                 </Box>
               </Dialog>
             );
-          }, [JSON.stringify(onChange), shortcuts, smallPadding])
+          }, [JSON.stringify(onChange), shortcuts, smallPadding, theme.palette.mode, theme.palette.text.primary, theme.textColor])
         }}
         slotProps={{
           field: { onClick: buttonOnClick } as any,
