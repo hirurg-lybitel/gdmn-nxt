@@ -100,26 +100,14 @@ const DateRangeButtonField = forwardRef(
       disabled,
       value,
       InputProps: { ref: containerRef } = {},
-      inputProps: { 'aria-label': ariaLabel } = {}
+      inputProps: { 'aria-label': ariaLabel } = {},
+      sx
     } = props;
 
     const handleRef = useForkRef(ref, containerRef);
 
-    const [shortLabel, setShortLabel] = useState(false);
-
-    useEffect(() => {
-      const onResize = () => {
-        if (shortLabel === false && elRef.current.offsetWidth <= 385) {
-          setShortLabel(true);
-        }
-        if (shortLabel === true && elRef.current.offsetWidth > 385) {
-          setShortLabel(false);
-        }
-      };
-      window.addEventListener('resize', onResize);
-      onResize();
-      return () => window.removeEventListener('resize', onResize);
-    }, [shortLabel]);
+    const theme = useTheme();
+    const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
     const elRef = useRef<any>(null);
 
@@ -132,21 +120,21 @@ const DateRangeButtonField = forwardRef(
           ref={handleRef}
           aria-label={ariaLabel}
           onClick={onClick}
-          style={{
-            width: 'fit-content',
-            textTransform: 'none'
-          }}
           startIcon={<CalendarMonthIcon />}
           sx={{
+            width: 'fit-content',
+            textTransform: 'none',
             '& span': { marginRight: label === false ? 0 : '8px' },
-            minWidth: 0
+            minWidth: 0,
+            ...sx
           }}
         >
-          {label !== undefined
-            ? label
-            : Array.isArray(value) && value?.length > 0 && value[0] !== null
-              ? `${shortLabel ? '' : 'Текущий диапазон дат:'} ${value.map(date => date ? dayjs(date).format('DD.MM.YYYY') : 'null').join(' - ')}`
-              : 'Выберите диапазон дат'}
+          <span style={{ width: '100%' }}>
+            {label ?? (
+              Array.isArray(value) && value?.length > 0 && value[0] !== null
+                ? `${matchDownSm ? '' : 'Текущий диапазон дат:'} ${value.map(date => date ? dayjs(date).format('DD.MM.YYYY') : 'null').join(' - ')}`
+                : 'Выберите диапазон дат')}
+          </span>
         </Button>
       </div>
     );
@@ -170,14 +158,10 @@ const ButtonDateRangePicker = forwardRef(
 
     const shortcuts = useMemo(() => props.options ?
       shortcutsItems.filter(({ label }) => props.options?.includes(label as ShortcutsLabel))
-      : shortcutsItems, [JSON.stringify(props.options)]);
-
-    const matchDown450 = useMediaQuery('(max-width:450px)');
-    const heightDown750 = useMediaQuery('(max-height:750px)');
-
-    const smallPadding = matchDown450 || heightDown750;
+      : shortcutsItems, [props.options]);
 
     const theme = useTheme();
+    const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
     return (
       <DateRangePicker
@@ -193,7 +177,7 @@ const ButtonDateRangePicker = forwardRef(
                       display: 'none'
                     },
                     '& .MuiDialogContent-root': {
-                      padding: smallPadding ? '0' : undefined
+                      padding: matchDownSm ? 0 : undefined
                     },
                     '& .MuiPickersLayout-root': {
                       display: 'flex',
@@ -232,7 +216,7 @@ const ButtonDateRangePicker = forwardRef(
                 </Box>
               </Dialog>
             );
-          }, [JSON.stringify(onChange), shortcuts, smallPadding, theme.palette.mode, theme.palette.text.primary, theme.textColor])
+          }, [matchDownSm, onChange, shortcuts, theme.palette.mode, theme.palette.text.primary, theme.textColor])
         }}
         slotProps={{
           field: { onClick: buttonOnClick } as any,

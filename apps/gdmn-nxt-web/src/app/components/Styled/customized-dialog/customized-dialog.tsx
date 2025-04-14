@@ -27,6 +27,7 @@ export interface CustomizedDialogProps {
   children: ReactNode;
   width?: number | string;
   minWidth?: number | string;
+  maxWidth?: number | string;
   hideBackdrop?: boolean;
   disableEscape?: boolean;
   confirmation?: boolean;
@@ -38,13 +39,15 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const {
     width = 500,
     minWidth = 0,
+    maxWidth = '100%',
     hideBackdrop = false,
     disableEscape = false
   } = props;
 
   const styles = {
     width: width,
-    minWidth
+    minWidth,
+    maxWidth
   };
 
   const [cleanDom, setCleanDom] = useState(false);
@@ -129,7 +132,6 @@ function CustomizedDialog(props: CustomizedDialogProps) {
             maxHeight: '100%',
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
-            maxWidth: '100%',
             '& .MuiDialogActions-root': {
               padding: '12px 24px 12px 24px !important',
               gap: '6px',

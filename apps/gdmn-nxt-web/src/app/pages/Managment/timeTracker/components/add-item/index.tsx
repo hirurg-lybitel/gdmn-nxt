@@ -260,12 +260,8 @@ export const AddItem = ({
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
   const theme = useTheme();
-  const matchDown1050 = useMediaQuery('(max-width:1050px)');
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-  const matchDown800 = useMediaQuery('(max-width:800px)');
-
-  const smallView = (matchDown1050 && !matchDownMd) || matchDown800;
-
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const filterProjects = (limit = 50) => createFilterOptions({
@@ -317,7 +313,7 @@ export const AddItem = ({
       ? { filter: { customerId: formik.values.customer?.ID, groupByFavorite: true, taskisActive: true, status: 'active' } }
       : {}),
   }, {
-    skip: !formik.values.customer || !matchDown800
+    skip: !formik.values.customer
   });
 
   return (
@@ -325,21 +321,21 @@ export const AddItem = ({
       <FormikProvider value={formik}>
         <Form id="timeTrackingForm" onSubmit={formik.handleSubmit}>
           <Stack
-            direction={smallView ? 'column' : 'row'}
+            direction={matchDownLg ? 'column' : 'row'}
             spacing={2}
             alignItems="center"
           >
             <Stack
-              width={smallView ? '100%' : undefined}
-              spacing={1}
+              width={matchDownLg ? '100%' : undefined}
+              spacing={{ xs: 2, lg: 1 }}
               flex={1}
             >
               <CustomerSelect
                 disableEdition
                 disableCaption
                 disableFavorite={false}
-                withTasks={!matchDown800}
-                showTasks
+                withTasks
+                // showTasks
                 debt
                 agreement
                 required
@@ -350,10 +346,10 @@ export const AddItem = ({
                 error={getIn(formik.touched, 'customer') && Boolean(getIn(formik.errors, 'customer'))}
                 helperText={getIn(formik.touched, 'customer') && getIn(formik.errors, 'customer')}
               />
-              {matchDown800 && formik.values.customer && data?.projects && data?.projects.length !== 0 && (
+              {matchDownMd && formik.values.customer && data?.projects && data?.projects.length !== 0 && (
                 <Autocomplete
                   disabled={projectsIsLoading || projectsIsFetching}
-                  style={{ marginTop: '16px' }}
+                  // style={{ marginTop: '16px' }}
                   ListboxComponent={TasksListboxComponent}
                   options={data?.projects || []}
                   getOptionLabel={() => formik.values.task?.name ?? ''}
@@ -432,7 +428,7 @@ export const AddItem = ({
                   )}
                 />
               )}
-              <div style={{ marginTop: smallView ? '16px' : '9px', height: '40px', width: '100%', position: 'relative' }}>
+              <div style={{ height: '40px', width: '100%', position: 'relative' }}>
                 <TextField
                   placeholder="Над чем вы работали?"
                   name="description"
@@ -454,9 +450,9 @@ export const AddItem = ({
             </Stack>
             {calcMode === 'manual' &&
               <Stack
-                width={smallView ? '100%' : 216}
-                spacing={1}
-                direction={matchDownSm ? 'column' : (smallView ? 'row' : 'column')}
+                width={matchDownLg ? '100%' : 216}
+                spacing={{ xs: 2, lg: 1 }}
+                direction={matchDownLg ? 'row' : 'column'}
               >
                 <DatePicker
                   slotProps={{ textField: { placeholder: 'Сегодня' } }}
@@ -466,7 +462,7 @@ export const AddItem = ({
                     '& .MuiInputBase-root': {
                       paddingRight: 1,
                     },
-                    width: smallView ? '100%' : undefined
+                    width: matchDownLg ? '100%' : undefined
                   }}
                 />
                 <Stack
@@ -514,13 +510,13 @@ export const AddItem = ({
               </Stack>
             }
             <Stack
-              direction={matchDownSm ? 'column-reverse' : (smallView ? 'row-reverse' : 'column')}
-              width={smallView ? '100%' : undefined}
+              direction={matchDownLg ? matchDownSm ? 'column-reverse' : 'row-reverse' : 'column'}
+              width={matchDownLg ? '100%' : undefined}
               spacing={2}
             >
               <Stack
-                spacing={1}
-                direction={smallView ? 'row-reverse' : 'row'}
+                spacing={{ xs: 2, lg: 1 }}
+                direction={matchDownLg ? 'row-reverse' : 'row'}
                 sx={{
                   width: '100%'
                 }}
@@ -528,7 +524,7 @@ export const AddItem = ({
                 <Box
                   display="inline-flex"
                   alignSelf="center"
-                  height={smallView ? '100%' : undefined}
+                  height="100%"
                   sx={{
                     width: '100%',
                     '& button': {
@@ -594,9 +590,7 @@ export const AddItem = ({
                 <TextFieldMasked
                   label="Длительность"
                   style={{
-                    maxWidth: smallView ? undefined : 117,
-                    minWidth: 105,
-                    width: matchDownSm ? '100%' : undefined
+                    width: matchDownSm ? '100%' : 117
                   }}
                   mask={durationMask}
                   value={durationFormat(formik.values.duration)}

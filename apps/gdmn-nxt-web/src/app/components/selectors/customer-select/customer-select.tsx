@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions, Popper } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -52,7 +52,7 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   debt?: boolean;
   /** Отображать информацию по договорам */
   agreement?: boolean;
-  showTasks?: boolean
+  showTasks?: boolean;
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: Readonly<CustomerSelectProps<Multiple>>) {
@@ -66,7 +66,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     disableFavorite = true,
     disableCloseOnSelect = false,
     withTasks = false,
-    showTasks = withTasks,
     limitTags = 2,
     style,
     task,
@@ -79,7 +78,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const { data: customersResponse, isFetching: customersIsFetching } = useGetCustomersQuery({
     filter: {
-      withTasks: showTasks || withTasks,
+      withTasks,
       withAgreements: agreement,
       withDebt: debt
     }
@@ -233,28 +232,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setTaskSelectAreaWidth(taskSelectAreaRef.current?.clientWidth ?? 0);
   }, [selectedTask?.name, projects.length]);
 
-  const [smallField, setSmallField] = useState(false);
-
-  useEffect(() => {
-    const onResize = () => {
-      if (smallField === false && elRef.current.offsetWidth <= 400) {
-        setSmallField(true);
-      }
-      if (smallField === true && elRef.current.offsetWidth > 400) {
-        setSmallField(false);
-      }
-    };
-    window.addEventListener('resize', onResize);
-    onResize();
-    return () => window.removeEventListener('resize', onResize);
-  }, [smallField]);
-
-  const elRef = useRef<any>(null);
-
   return (
-    <div ref={elRef} style={{ position: 'relative', minWidth: withTasks ? '300px' : '0px' }}>
-      <div
+    <div style={{ position: 'relative' }}>
+      <Box
         ref={taskSelectAreaRef}
+        display={{ xs: 'none', md: 'block' }}
         style={{
           position: 'absolute',
           right: '14px',
@@ -292,7 +274,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             onSelect={handleTaskSelect}
           />
         </div>
-      </div>
+      </Box>
       <Autocomplete
         style={style}
         fullWidth
@@ -344,11 +326,11 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               key={option.ID}
               disablePadding
               sx={{
-                py: '2px !important',
+                py: '4px !important',
                 '&:hover .action': {
                   display: 'flex !important',
                 },
-                padding: '0px !important',
+                px: '0px !important',
                 '& .StyledEditButton': {
                   visibility: 'hidden',
                 },
@@ -358,8 +340,6 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               }}
             >
               <CustomerItem
-                smallField={smallField}
-                showTasks={showTasks}
                 customer={option}
                 selected={selected}
                 multiple={multiple}
@@ -375,7 +355,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [smallField, disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
+        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
@@ -407,17 +387,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 </>)
             }}
           />
-        ), [
-          insertCustomerIsLoading,
-          rest,
-          value,
-          disableEdition,
-          handleTaskSelect,
-          handleEditCustomer,
-          customers,
-          selectedTask,
-          projects,
-          projectsIsLoading])}
+        ), [required, insertCustomerIsLoading, rest, withTasks, taskSelectAreaWidth, value, disableEdition, handleEditCustomer, customers])}
         renderGroup={(params) => (
           <li key={params.key}>
             <GroupHeader>
@@ -437,7 +407,6 @@ interface CustomerItemProps {
   selected: boolean;
   multiple?: boolean;
   withTasks?: boolean;
-  showTasks: boolean;
   disableCaption?: boolean;
   disableFavorite?: boolean;
   disableEdition?: boolean;
@@ -446,7 +415,6 @@ interface CustomerItemProps {
   editCustomer: (customer: ICustomer | undefined) => (e: MouseEvent<HTMLButtonElement>) => void;
   favoriteClick: (customer: ICustomer) => (e: MouseEvent<HTMLElement>) => void;
   onCustomerSelect: (event: MouseEvent<HTMLDivElement>, customer: ICustomer) => void;
-  smallField: boolean
 };
 
 const CustomerItem = ({
@@ -454,7 +422,6 @@ const CustomerItem = ({
   selected,
   multiple = false,
   withTasks = false,
-  showTasks = withTasks,
   disableCaption = true,
   disableFavorite = true,
   disableEdition = false,
@@ -463,7 +430,6 @@ const CustomerItem = ({
   editCustomer,
   favoriteClick,
   onCustomerSelect,
-  smallField
 }: CustomerItemProps) => {
   const customerClick = useCallback((customer: ICustomer) => (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -493,9 +459,9 @@ const CustomerItem = ({
     >
       <Stack
         flex={1}
-        direction="row"
-        alignItems="center"
-        spacing={1}
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'initial', sm: 'center' }}
+        spacing={{ xs: 0, sm: 1 }}
         style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
@@ -506,59 +472,25 @@ const CustomerItem = ({
             style={{ marginRight: 8 }}
             checked={selected}
           />}
-        <div style={{ display: 'flex', alignItems: smallField ? 'flex-start' : 'center', gap: smallField ? '3px' : '8px', width: '100%', flexDirection: smallField ? 'column' : 'row' }}>
-          <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-            {customer.NAME}
-            {!disableCaption && customer.TAXID
-              ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
-              : <></>}
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {showTasks && (taskCount ?? 0) > 0 &&
-              <Stack
-                direction="row"
-                alignItems={'center'}
-                spacing={0.5}
-              >
-                <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
-              </Stack>
-            }
-            {!(disableEdition && !agreement && !debt) &&
-              <Stack
-                className="action"
-                direction="row"
-                spacing={0.5}
-                alignItems="center"
-                sx={{
-                  display: 'flex',
-                }}
-              >
-                {!disableEdition &&
-                  <ItemButtonEdit
-                    button
-                    onClick={editCustomer(customer)}
-                  />
-                }
-                {agreement && (customer.agreementCount ?? 0) > 0 && (
-                  <Tooltip title="Действует договор">
-                    <IconButton onClick={agreementClick}>
-                      <ContentPasteIcon fontSize="small" color="primary" />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                {debt && (customer.debt ?? 0) > 0 && (
-                  <Tooltip
-                    title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
-                    onClick={preventAction<HTMLDivElement>}
-                  >
-                    <WarningIcon fontSize="small" color="warning" />
-                  </Tooltip>
-                )}
-              </Stack>
-            }
-          </div>
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+          {customer.NAME}
+          {!disableCaption && customer.TAXID
+            ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
+            : <></>}
         </div>
-        {!disableFavorite &&
+        <Stack direction="row" spacing={{ xs: 0, sm: 1 }} flex={1}>
+          <Box flex={1} display={{ xs: 'none', sm: 'block' }} />
+          {withTasks && (taskCount ?? 0) > 0 &&
+            <Stack
+              direction="row"
+              alignItems={'center'}
+              spacing={0.5}
+            >
+              <Typography>{`${taskCount} ${pluralize(taskCount ?? 0, 'задача', 'задачи', 'задач')}`}</Typography>
+            </Stack>
+          }
+          <Box flex={1} display={{ xs: 'block', sm: 'none' }} />
+          {!(disableEdition && !agreement && !debt && disableFavorite) &&
           <Stack
             className="action"
             direction="row"
@@ -568,9 +500,34 @@ const CustomerItem = ({
               display: 'flex',
             }}
           >
-            <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />
+            {!disableEdition &&
+              <ItemButtonEdit
+                button
+                onClick={editCustomer(customer)}
+              />
+            }
+            {agreement && (customer.agreementCount ?? 0) > 0 && (
+              <Tooltip title="Действует договор">
+                <IconButton onClick={agreementClick}>
+                  <ContentPasteIcon fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {debt && (customer.debt ?? 0) > 0 && (
+              <Tooltip
+                title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
+                onClick={preventAction<HTMLDivElement>}
+              >
+                <WarningIcon fontSize="small" color="warning" />
+              </Tooltip>
+            )}
+            {!disableFavorite &&
+              <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />
+            }
+
           </Stack>
-        }
+          }
+        </Stack>
       </Stack>
     </Stack>
   );
@@ -671,18 +628,14 @@ const CustomerTasks = ({
     setSelectedProject(task?.project);
   }, [task?.project]);
 
-  const CustomPopper = (props: any) => {
-    return <Popper {...props} style={{ width: 'fit-content' }} />;
-  };
-
   return (
     <Autocomplete
+      clearIcon={null}
       options={projects}
       getOptionLabel={() => task?.name ?? ''}
       filterOptions={filterProjects()}
       onChange={projectOnChange}
       value={selectedProject}
-      PopperComponent={CustomPopper}
       renderInput={(params) => (
         <TextField
           {...params}
@@ -691,11 +644,6 @@ const CustomerTasks = ({
           InputProps={{
             ref: params.InputProps.ref,
             endAdornment: params.InputProps.endAdornment
-          }}
-          sx={{
-            '& .MuiList-dense': {
-              background: 'red'
-            },
           }}
         />
       )}
@@ -768,9 +716,6 @@ const CustomerTasks = ({
         top: -2,
         width: '100%',
         '& .MuiInput-root::before': { borderBottom: 0 },
-        '& .MuiAutocomplete-clearIndicator': {
-          display: 'none'
-        },
         ...sx
       }}
       slotProps={{

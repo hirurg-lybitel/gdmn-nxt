@@ -1,4 +1,4 @@
-import { Box, MenuItem, SvgIconTypeMap, useMediaQuery } from '@mui/material';
+import { Box, SvgIconTypeMap, useMediaQuery } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
@@ -46,6 +46,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened'
         marginTop: '40px',
         marginLeft: -theme.drawerWidth,
         width: `calc(100% - ${theme.drawerWidth}px)`,
+        borderRadius: 0,
       }
       // [theme.breakpoints.down('md')]: {
       //     marginLeft: '10px',

@@ -1,6 +1,6 @@
 import { Button, CardActions, CardContent, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode } from 'react';
 
 interface FilterDialogProps {
   open: boolean,
@@ -16,27 +16,23 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
     onClose,
     onClear,
     children,
-    width: propsWiddth
+    width
   } = props;
 
   const theme = useTheme();
-
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-
-  const width = useMemo(() => propsWiddth ?? matchDownMd ? 320 : 400, [matchDownMd, propsWiddth]);
-
-  const modile = useMediaQuery(`(max-width:${width + 200}px)`);
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <CustomizedDialog
       open={open}
       onClose={onClose}
       width={width}
+      maxWidth="80%"
     >
       <CardContent style={{ flex: 1 }}>{children}</CardContent>
       <CardActions style={{ padding: '16px', flexDirection: 'column' }}>
         <Button
-          variant={modile ? 'outlined' : 'contained'}
+          variant="contained"
           fullWidth
           onClick={() => {
             onClear();
@@ -45,9 +41,9 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
         >
           Очистить
         </Button>
-        {modile && <Button
+        {matchDownSm && <Button
           style={{ marginLeft: 0, marginTop: '10px', textTransform: 'none' }}
-          variant="contained"
+          variant="outlined"
           fullWidth
           onClick={() => onClose()}
         >

@@ -37,7 +37,6 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import FilterPanel from './components/filter-panel';
-import EditableTypography from '@gdmn-nxt/components/editable-typography/editable-typography';
 import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
@@ -164,18 +163,16 @@ export function TimeTracker() {
     // }, [dispatch]),
     filterClear: useCallback(() => {
       saveFilters({ period: filterData.period });
-    }, [filterData.period])
+    }, [filterData.period, saveFilters])
   };
 
-  const breakPoint975 = useMediaQuery('(max-width:975px)');
-  const breakPoint900 = useMediaQuery('(max-width:900px)');
-  const breakPoint775 = useMediaQuery('(max-width:775px)');
-  const breakPoint630 = useMediaQuery('(max-width:630px)');
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const Header = useMemo(() => {
     const serchBar = (
       <SearchBar
-        fullWidth={(breakPoint975 && !breakPoint900) || breakPoint775}
+        fullWidth={matchDownSm}
         disabled={isLoading}
         onCancelSearch={cancelSearch}
         onRequestSearch={requestSearch}
@@ -192,12 +189,18 @@ export function TimeTracker() {
       <CustomizedCard
         direction="row"
         className={styles.headerCard}
-        style={{ flexDirection: 'column', overflow: breakPoint630 ? 'visible' : 'hidden', minHeight: breakPoint630 ? 'auto' : '54px' }}
+        style={{
+          flexDirection: 'column',
+          overflow: matchDownSm ? 'visible' : 'hidden',
+          minHeight: matchDownSm ? 'auto' : '54px'
+        }}
       >
         <div style={{ width: '100%', display: 'flex', alignItems: 'center', minHeight: '34px' }}>
           <Typography variant="pageHeader">Учёт времени</Typography>
           <Box flex={1} />
-          {breakPoint630 ? <></> : <Box pr={1}>{serchBar}</Box>}
+          <Box pr={1} display={{ xs: 'none', sm: 'block' }}>
+            {serchBar}
+          </Box>
           <CustomLoadingButton
             hint="Обновить данные"
             loading={isFetching}
@@ -214,20 +217,22 @@ export function TimeTracker() {
             />
           </Box>
         </div>
-        {breakPoint630 ? <Box style={{ width: '100% ', marginTop: '10px' }}>{serchBar}</Box> : <></>}
+
+        <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
+          {serchBar}
+        </Box>
       </CustomizedCard>
     );
   }, [
-    isFetching,
+    matchDownSm,
     isLoading,
-    refetch,
-    refetchTimeTrackingInProgress,
+    cancelSearch,
+    requestSearch,
     filterData,
-    breakPoint775,
-    breakPoint900,
-    breakPoint975,
-    breakPoint630
-  ]);
+    isFetching,
+    filterHandlers.filterClick,
+    refetch,
+    refetchTimeTrackingInProgress]);
 
   const handleSubmit = (value: ITimeTrack, mode: 'add' | 'update') => {
     if (mode === 'update') {
@@ -277,9 +282,6 @@ export function TimeTracker() {
     });
   };
 
-  const theme = useTheme();
-  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
-
   return (
     <Stack flex={1} spacing={3}>
       {memoFilter}
@@ -299,6 +301,9 @@ export function TimeTracker() {
             options={['Последние 7 дней', 'Прошлая неделя', 'Прошлый месяц', 'Сбросить', 'Текущий месяц', 'Эта неделя']}
             value={filterData.period?.map((date: string) => new Date(Number(date))) ?? [null, null]}
             onChange={dateRangeOnChange}
+            sx={{
+              ...matchDownSm && { width: '100%' },
+            }}
           />
         </div>
         <Box flex={1} />

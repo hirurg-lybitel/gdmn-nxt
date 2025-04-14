@@ -54,6 +54,7 @@ export function FilterPanel({
       open={open}
       onClear={filterClear}
       onClose={onClose}
+      width={400}
     >
       <Stack spacing={2}>
         <CustomerSelect
