@@ -165,6 +165,7 @@ const ButtonDateRangePicker = forwardRef(
 
     return (
       <DateRangePicker
+        {...props}
         slots={{
           field: DateRangeButtonField,
           ...props.slots,
@@ -227,7 +228,6 @@ const ButtonDateRangePicker = forwardRef(
         }}
         ref={ref}
         calendars={1}
-        {...props}
         open={open}
         onClose={onClose}
         onOpen={onOpen}

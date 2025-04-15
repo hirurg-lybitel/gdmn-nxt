@@ -1,4 +1,4 @@
-import { Box, ClickAwayListener, Grid, Popper, TextField, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
+import { Box, ClickAwayListener, Grid, Popper, TextField, ToggleButton, ToggleButtonGroup, useForkRef, useTheme } from '@mui/material';
 import ChartColumn from '../../../components/Charts/chart-column/chart-column';
 import ChartDonut from '../../../components/Charts/chart-donut/chart-donut';
 import EarningCard from '../../../components/Charts/earning-card/earning-card';
@@ -7,16 +7,64 @@ import './dashboard.module.less';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { DealsSummarize } from './deals-summarize';
 import { TasksSummarize } from './tasks-summarize';
-import { KeyboardEvent, useRef, useState } from 'react';
-import { DateRange, DateRangeCalendar } from '@mui/x-date-pickers-pro';
+import { forwardRef, KeyboardEvent, Ref, RefAttributes, useRef, useState } from 'react';
+import { DateRange, DateRangeCalendar, DateRangePicker, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
 import dayjs, { Dayjs } from '@gdmn-nxt/dayjs';
 import { ColorMode } from '@gsbelarus/util-api-types';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import styles from './dashboard.module.less';
+import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
 
 const dateFormat = 'DD.MM.YYYY';
 
 /* eslint-disable-next-line */
 export interface DashboardProps {}
+
+interface DateRangeButtonFieldProps extends SingleInputDateRangeFieldProps<Date> {
+  onClick: () => void;
+}
+
+type DateRangeButtonFieldComponent = ((
+  props: DateRangeButtonFieldProps & RefAttributes<HTMLDivElement>
+) => JSX.Element) & { fieldType?: any, displayName: string }
+
+const DateRangeButtonField = forwardRef(
+  (props: DateRangeButtonFieldProps, ref: Ref<HTMLElement>) => {
+    const {
+      onClick,
+      label,
+      id,
+      disabled,
+      value,
+      InputProps: { ref: containerRef } = {},
+      inputProps: { 'aria-label': ariaLabel } = {},
+      sx
+    } = props;
+
+    const handleRef = useForkRef(ref, containerRef);
+
+    return (
+      <TextField
+        variant="standard"
+        ref={handleRef}
+        id={id}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        style={{ height: '26px', width: '180px' }}
+        value={label ?? (
+          Array.isArray(value) && value?.length > 0 && value[0] !== null
+            ? `${value.map(date => date ? dayjs(date).format('DD.MM.YYYY') : 'null').join(' - ')}`
+            : 'Выберите диапазон дат')}
+        onClick={onClick}
+        sx={{
+          ...sx
+        }}
+      />
+    );
+  }) as DateRangeButtonFieldComponent;
+
+DateRangeButtonField.displayName = 'DateRangeButtonField';
+DateRangeButtonField.fieldType = 'single-input';
 
 export function Dashboard(props: DashboardProps) {
   const theme = useTheme();
@@ -64,7 +112,7 @@ export function Dashboard(props: DashboardProps) {
     setOpenDateRange(false);
   };
 
-  const dateRangePickerChange = (newValue: DateRange<dayjs.Dayjs>) => {
+  const dateRangePickerChange = (newValue: DateRange<Date>) => {
     if (!dayjs(newValue[0])?.isValid() || !dayjs(newValue[1])?.isValid()) return;
     setPeriod([dayjs(newValue[0]), dayjs(newValue[1])]);
   };
@@ -89,58 +137,31 @@ export function Dashboard(props: DashboardProps) {
           <ToggleButtonGroup
             style={{
               borderRadius: 'var(--border-radius)',
-              height: '50px',
+              flexWrap: 'wrap'
             }}
             color="primary"
             value={periodType}
             exclusive
             onChange={handleChange}
           >
-            <ToggleButton value="1">Сегодня</ToggleButton>
-            <ToggleButton value="2">Вчера</ToggleButton>
-            <ToggleButton value="3">Неделя</ToggleButton>
-            <ToggleButton value="4">Месяц</ToggleButton>
+            <ToggleButton className={styles.ToggleButton} value="1">Сегодня</ToggleButton>
+            <ToggleButton className={styles.ToggleButton} value="2">Вчера</ToggleButton>
+            <ToggleButton className={styles.ToggleButton} value="3">Неделя</ToggleButton>
+            <ToggleButton className={styles.ToggleButton} value="4">Месяц</ToggleButton>
             <ToggleButton
+              className={styles.ToggleButton}
               value="5"
               ref={periodButtonRef}
               onKeyDown={closeDateRangeCardByKey}
             >
               {periodType === '5' ?
-                <div>
-                  <TextField
-                    variant="standard"
-                    style={{ height: '26px', width: '180px' }}
-                    value={`${dayjs(period[0], dateFormat)?.toDate()
-                      .toLocaleDateString()} - ${dayjs(period[1], dateFormat)?.toDate()
-                      .toLocaleDateString()}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenDateRange(true);
-                    }}
-                    onChange={(e) => {
-                      const period = e.target.value.split(' - ');
-
-                      if (!dayjs(period[0], dateFormat)?.isValid() || !dayjs(period[1], dateFormat)?.isValid()) return;
-                      setPeriod([dayjs(period[0], dateFormat), dayjs(period[1], dateFormat)]);
-                    }}
-                  />
-                  <ClickAwayListener
-                    onClickAway={closeDateRangeCardByMouse}
-                  >
-                    <Popper
-                      open={openDateRange}
-                      anchorEl={periodButtonRef.current}
-                      onKeyDown={closeDateRangeCardByKey}
-                    >
-                      <CustomizedCard borders>
-                        <DateRangeCalendar
-                          value={[period[0]?.toDate(), period[1]?.toDate()] as any}
-                          onChange={dateRangePickerChange}
-                        />
-                      </CustomizedCard>
-                    </Popper>
-                  </ClickAwayListener>
-                </div>
+                <ButtonDateRangePicker
+                  value={[period[0]?.toDate(), period[1]?.toDate()] as any}
+                  onChange={dateRangePickerChange}
+                  slots={{
+                    field: DateRangeButtonField
+                  }}
+                />
                 : 'Период'}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -156,10 +177,11 @@ export function Dashboard(props: DashboardProps) {
         columns={{ xs: 12, lg: 12 }}
       >
         <Grid
+          className={styles.TaskSummarize}
           container
           item
           spacing={3}
-          columns={{ sm: 2, md: 4, lg: 12 }}
+          columns={{ xs: 1, sm: 2, md: 4, lg: 12 }}
           xs={12}
           lg={5}
         >

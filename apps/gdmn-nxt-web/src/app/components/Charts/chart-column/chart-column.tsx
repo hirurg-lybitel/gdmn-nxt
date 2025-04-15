@@ -16,6 +16,7 @@ import ChartSkeleton from './chart-skeleton';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
+import styles from './chart-column.module.less';
 
 interface IPeriodType {
   id: number;
@@ -326,10 +327,16 @@ export function ChartColumn(props: ChartColumnProps) {
               style={{
                 width: '100%',
                 paddingRight: '15.8px',
-                paddingLeft: '7.8px'
+                paddingLeft: '7.8px',
+                display: 'flex',
+                flexWrap: 'wrap'
               }}
             >
-              <Grid item xs={4}>
+              <Grid
+                className={styles.formItem}
+                item
+                xs={4}
+              >
                 <DepartmentsSelect
                   multiple
                   value={chartFilter.departments}
@@ -338,7 +345,11 @@ export function ChartColumn(props: ChartColumnProps) {
                   placeholder="Все отделы"
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid
+                className={styles.formItem}
+                item
+                xs={4}
+              >
                 <ContractsSelect
                   multiple
                   value={chartFilter.contracts || []}
@@ -347,7 +358,11 @@ export function ChartColumn(props: ChartColumnProps) {
                   placeholder="Все заказы"
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid
+                className={styles.formItem}
+                item
+                xs={4}
+              >
                 <WorktypesSelect
                   multiple
                   onChange={(value) => changeChartFilter('workTypes', (value ?? []) as IWorkType[])}

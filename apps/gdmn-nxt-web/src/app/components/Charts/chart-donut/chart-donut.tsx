@@ -16,6 +16,7 @@ export interface ChartDonutProps {
 
 const useStyles = makeStyles((theme: Theme) => ({
   donut: {
+    minWidth: '620px',
     maxHeight: '323px',
     '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
       background: 'var(--color-scroll-thumb)'
@@ -152,12 +153,12 @@ export function ChartDonut({ period }: ChartDonutProps) {
       sx={(theme: any) => ({
         flex: 1,
         display: 'flex',
-        [theme.breakpoints.down('lg')]: {
-          minHeight: 'calc(100vh - 130px)',
-        },
         '& .apexcharts-legend': {
           maxWidth: '40%',
           minWidth: '260px',
+        },
+        '& .MuiPaper-root': {
+          minHeight: '0 !important'
         }
       })}
     >
@@ -167,7 +168,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
         p={2}
         flex={1}
         display="flex"
-        style={{ maxWidth: '100%', padding: '15px 0' }}
+        style={{ maxWidth: '100%', padding: '15px 0', overflow: 'auto' }}
       >
         {stagesIsLoading
           ? <ChartSkeleton />
